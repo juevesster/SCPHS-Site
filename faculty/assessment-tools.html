@@ -1,0 +1,134 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Assessment Tools – SCPHS Faculty</title>
+  <meta name="description" content="Quiz &amp; Exam Checker tools for SCPHS teachers." />
+  <link rel="stylesheet" href="../assets/css/styles.css" />
+  <style>
+    .grid { display:grid; gap:14px; grid-template-columns:repeat(auto-fit,minmax(260px,1fr)); }
+    .card h3 { margin-top:0 }
+  </style>
+</head>
+<body>
+
+  <header class="subhead">
+    <div class="wrap">
+      <h1>Assessment Tools</h1>
+      <p class="meta">Quiz &amp; Exam Checker • Online/Offline • QR-based</p>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <section class="grid">
+      <a class="card" href="assessments/quizzes/new/">
+        <h3>Create Quiz / Exam</h3>
+        <p>Build timed assessments; randomize items; set availability.</p>
+        <div class="links"><span>New assessment</span> →</div>
+      </a>
+
+      <a class="card" href="assessments/question-bank/">
+        <h3>Question Bank</h3>
+        <p>Manage MCQ/TF/short-answer; tag by subject, grade, competency.</p>
+        <div class="links"><span>Open bank</span> →</div>
+      </a>
+
+      <a class="card" href="assessments/scan/">
+        <h3>Scan Student QR</h3>
+        <p>Mark attendance and verify identity using your phone camera.</p>
+        <div class="links"><span>Open scanner</span> →</div>
+      </a>
+
+      <a class="card" href="assessments/live/">
+        <h3>Live Exams / Proctor</h3>
+        <p>Monitor active attempts; enforce time limits; re-issue tokens.</p>
+        <div class="links"><span>View live</span> →</div>
+      </a>
+
+      <a class="card" href="assessments/results/">
+        <h3>Results &amp; Analytics</h3>
+        <p>Auto-grading, item analysis, class summaries; export CSV.</p>
+        <div class="links"><span>View results</span> →</div>
+      </a>
+
+      <a class="card" href="../resources/downloads/">
+        <h3>Downloads</h3>
+        <p>Templates, manuals, INSET slide decks, and documentation.</p>
+        <div class="links"><span>Open downloads</span> →</div>
+      </a>
+    </section>
+
+    <nav class="links" style="margin-top:14px">
+      <a href="index.html">← Back to Faculty Home</a>
+      <a href="../index.html" style="margin-left:12px">← Back to Site Home</a>
+    </nav>
+  </main>
+
+  <!-- (Optional) paste your standard school footer here -->
+
+</body>
+</html>
+
+ <!-- Chatbot mount -->
+<div id="scphs-chatbot-root"></div>
+
+<!-- Chatbot auto-loader: tries absolute path, then ../, then ../../ -->
+<script>
+(function(){
+  const rootId = 'scphs-chatbot-root';
+  if (!document.getElementById(rootId)) {
+    const m = document.createElement('div');
+    m.id = rootId;
+    document.body.appendChild(m);
+  }
+
+  const tried = {};
+  function load(src, onOk, onFail){
+    if (tried[src]) return onFail && onFail();
+    tried[src] = true;
+    const s = document.createElement('script');
+    s.src = src; s.defer = true;
+    s.onload = onOk;
+    s.onerror = onFail;
+    document.body.appendChild(s);
+  }
+
+  // Try absolute (works when hosted), then step-wise relatives (works offline)
+  load('/assets/js/chatbot.js', null, () =>
+    load('assets/js/chatbot.js', null, () =>
+      load('../assets/js/chatbot.js', null, () =>
+        load('../../assets/js/chatbot.js', null, () =>
+          console.warn('SCPHS chatbot: unable to load script from any known path.')
+        )
+      )
+    )
+  );
+})();
+</script>
+
+{% load static %}
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Assessment Tools – SCPHS Faculty</title>
+
+  <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+  {# Put the CSRF token in a meta tag for your JS to read #}
+  <meta name="csrf-token" content="{{ csrf_token }}">
+</head>
+<body>
+  <header class="subhead">
+    <div class="wrap">
+      <h1>Assessment Tools</h1>
+      <p class="meta">Quiz &amp; Exam Checker • Online/Offline • QR-based</p>
+    </div>
+  </header>
+
+  <!-- your cards/links here ... -->
+
+  <script defer src="{% static 'js/main.js' %}"></script>
+</body>
+</html>

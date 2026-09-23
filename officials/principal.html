@@ -1,0 +1,1130 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>School Principal — SCPHS</title>
+  <link rel="stylesheet" href="../assets/css/styles.css">
+
+  <style>
+    /* =========================================================
+       SCHOOL PRINCIPAL PAGE — self-contained styling
+       ========================================================= */
+    :root {
+      --p-brand:      #0f4c81;
+      --p-brand-2:    #1e6bb8;
+      --p-accent:     #c8102e;
+      --p-line:       #e5e7eb;
+      --p-line-2:     #eef0f3;
+      --p-muted:      #6b7280;
+      --p-text:       #111827;
+      --p-bg-soft:    #f6f7f9;
+      --p-ok:         #059669;
+      --p-warn:       #b45309;
+      --p-err:        #b91c1c;
+      --p-radius:     12px;
+      --p-shadow:     0 1px 2px rgba(16,24,40,.04), 0 4px 12px rgba(16,24,40,.06);
+      --p-shadow-lg:  0 8px 24px rgba(16,24,40,.10);
+    }
+
+    body { background: var(--p-bg-soft); color: var(--p-text); }
+    .page { padding: 24px 0 56px; }
+
+    /* ---------- Breadcrumbs ---------- */
+    .breadcrumbs {
+      font-size: 13px;
+      color: var(--p-muted);
+      margin-bottom: 10px;
+    }
+    .breadcrumbs a { color: var(--p-brand-2); text-decoration: none; }
+    .breadcrumbs a:hover { text-decoration: underline; }
+    .breadcrumbs .sep { margin: 0 6px; opacity: .5; }
+
+    /* ---------- Page head ---------- */
+    .page-head {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 16px;
+      flex-wrap: wrap;
+      margin-bottom: 16px;
+    }
+    .page-head h1 {
+      margin: 0 0 4px;
+      font-size: 1.6rem;
+      letter-spacing: .01em;
+    }
+    .page-head .meta {
+      margin: 0;
+      font-size: .9rem;
+      color: var(--p-muted);
+    }
+    .page-head .head-actions {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    /* ---------- School badge ---------- */
+    .school-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 10px;
+      border-radius: 999px;
+      background: #eef2f6;
+      color: var(--p-brand);
+      font-size: .78rem;
+      font-weight: 700;
+      letter-spacing: .02em;
+      margin-bottom: 6px;
+    }
+    .school-badge .dot {
+      width: 6px; height: 6px; border-radius: 50%;
+      background: var(--p-accent);
+    }
+
+    /* ---------- Cards ---------- */
+    .p-card {
+      background: #fff;
+      border: 1px solid var(--p-line);
+      border-radius: var(--p-radius);
+      box-shadow: var(--p-shadow);
+      overflow: hidden;
+    }
+    .p-card + .p-card { margin-top: 18px; }
+
+    .p-card-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 14px 18px;
+      border-bottom: 1px solid var(--p-line-2);
+      background: #fafbfc;
+      flex-wrap: wrap;
+    }
+    .p-card-head h3 {
+      margin: 0;
+      font-size: 1rem;
+      color: #111827;
+    }
+    .p-card-body { padding: 18px; }
+
+    /* ---------- Profile layout ---------- */
+    .profile {
+      display: grid;
+      grid-template-columns: 300px 1fr;
+      gap: 22px;
+      padding: 18px;
+    }
+    @media (max-width: 820px) {
+      .profile { grid-template-columns: 1fr; }
+    }
+
+    .profile-photo {
+      position: relative;
+      background: #f3f4f6;
+      border: 1px solid var(--p-line);
+      border-radius: 10px;
+      overflow: hidden;
+      aspect-ratio: 3 / 4;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .profile-photo img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+    .profile-photo .photo-badge {
+      position: absolute;
+      top: 10px; left: 10px;
+      background: rgba(15,76,129,.9);
+      color: #fff;
+      font-size: .7rem;
+      font-weight: 700;
+      letter-spacing: .05em;
+      padding: 4px 8px;
+      border-radius: 999px;
+      text-transform: uppercase;
+    }
+
+    /* ---------- Profile info ---------- */
+    .profile-info h2 {
+      margin: 0 0 4px;
+      font-size: 1.4rem;
+      color: var(--p-brand);
+    }
+    .profile-info .term {
+      font-size: .9rem;
+      color: var(--p-muted);
+      margin-bottom: 14px;
+    }
+    .profile-info h3 {
+      font-size: 1rem;
+      margin: 18px 0 6px;
+      color: #111827;
+    }
+    .profile-info p { margin: 0 0 10px; line-height: 1.6; }
+    .profile-info ul { margin: 0 0 12px; padding-left: 20px; }
+    .profile-info ul li { margin-bottom: 4px; line-height: 1.5; }
+
+    /* ---------- Quick facts strip ---------- */
+    .facts {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 10px;
+      margin: 14px 0 6px;
+    }
+    .fact {
+      padding: 10px 12px;
+      border: 1px solid var(--p-line);
+      border-radius: 8px;
+      background: #fafbfc;
+    }
+    .fact .label {
+      font-size: .7rem;
+      text-transform: uppercase;
+      color: var(--p-muted);
+      font-weight: 700;
+      letter-spacing: .04em;
+      margin-bottom: 3px;
+    }
+    .fact .value {
+      font-size: .9rem;
+      color: #111827;
+      font-weight: 600;
+    }
+
+    /* ---------- Edit mode ---------- */
+    .edit-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+    }
+    @media (max-width: 700px) { .edit-grid { grid-template-columns: 1fr; } }
+
+    .edit-field { display: flex; flex-direction: column; gap: 4px; }
+    .edit-field.full { grid-column: 1 / -1; }
+    .edit-field label {
+      font-size: .78rem;
+      font-weight: 600;
+      color: #374151;
+      letter-spacing: .02em;
+      text-transform: uppercase;
+    }
+    .edit-field input[type="text"],
+    .edit-field input[type="file"],
+    .edit-field textarea {
+      width: 100%;
+      padding: 9px 11px;
+      font-size: .92rem;
+      border: 1px solid var(--p-line);
+      border-radius: 8px;
+      background: #fff;
+      color: var(--p-text);
+      font-family: inherit;
+      outline: none;
+      transition: border-color .15s, box-shadow .15s;
+      box-sizing: border-box;
+    }
+    .edit-field input:focus,
+    .edit-field textarea:focus {
+      border-color: var(--p-brand-2);
+      box-shadow: 0 0 0 3px rgba(30,107,184,.15);
+    }
+    .edit-field textarea { min-height: 80px; resize: vertical; }
+    .edit-field .hint { font-size: .75rem; color: var(--p-muted); }
+
+    /* ---------- Photo uploader ---------- */
+    .photo-uploader {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      align-items: center;
+      padding: 14px;
+      border: 2px dashed var(--p-line);
+      border-radius: 10px;
+      background: #fafbfc;
+      text-align: center;
+      transition: border-color .15s, background .15s;
+      cursor: pointer;
+    }
+    .photo-uploader:hover,
+    .photo-uploader.dragover {
+      border-color: var(--p-brand-2);
+      background: #f0f6fc;
+    }
+    .photo-uploader .upload-icon { font-size: 1.6rem; color: var(--p-brand); }
+    .photo-uploader .upload-text { font-size: .85rem; color: #374151; }
+    .photo-uploader .upload-text strong { color: var(--p-brand); }
+    .photo-uploader .upload-hint { font-size: .72rem; color: var(--p-muted); }
+    .photo-uploader input[type="file"] { display: none; }
+
+    /* ---------- Buttons ---------- */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      padding: 9px 14px;
+      font-size: .9rem;
+      font-weight: 600;
+      border-radius: 8px;
+      border: 1px solid transparent;
+      cursor: pointer;
+      text-decoration: none;
+      transition: background .15s, color .15s, border-color .15s;
+      font-family: inherit;
+      line-height: 1;
+    }
+    .btn { background: var(--p-brand); color: #fff; }
+    .btn:hover { background: var(--p-brand-2); }
+    .btn.outline {
+      background: #fff;
+      color: var(--p-brand);
+      border-color: var(--p-line);
+    }
+    .btn.outline:hover {
+      background: #f3f6fa;
+      border-color: var(--p-brand-2);
+      color: var(--p-brand-2);
+    }
+    .btn.ghost { background: transparent; color: var(--p-brand); }
+    .btn.ghost:hover { background: #eef2f6; }
+    .btn.danger {
+      background: #fff;
+      color: var(--p-err);
+      border-color: #fecaca;
+    }
+    .btn.danger:hover {
+      background: #fef2f2;
+      border-color: var(--p-err);
+    }
+    .btn.success { background: var(--p-ok); color: #fff; }
+    .btn.success:hover { background: #047857; }
+    .btn:disabled {
+      opacity: .5;
+      cursor: not-allowed;
+      pointer-events: none;
+    }
+
+    /* ---------- Previous Principals list ---------- */
+    .prev-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: 14px;
+    }
+    .prev-card {
+      display: flex;
+      gap: 12px;
+      align-items: flex-start;
+      padding: 12px;
+      border: 1px solid var(--p-line);
+      border-radius: 10px;
+      background: #fff;
+      transition: box-shadow .15s, transform .15s;
+      position: relative;
+    }
+    .prev-card:hover {
+      box-shadow: var(--p-shadow);
+      transform: translateY(-1px);
+    }
+    .prev-card .prev-photo {
+      flex: 0 0 64px;
+      width: 64px;
+      height: 64px;
+      border-radius: 8px;
+      overflow: hidden;
+      background: #f3f4f6;
+      border: 1px solid var(--p-line);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .prev-card .prev-photo img {
+      width: 100%; height: 100%; object-fit: cover; display: block;
+    }
+    .prev-card .prev-photo .initials {
+      font-weight: 700;
+      color: var(--p-brand);
+      font-size: 1.1rem;
+    }
+    .prev-card .prev-info { flex: 1; min-width: 0; }
+    .prev-card .prev-info h4 {
+      margin: 0 0 2px;
+      font-size: .95rem;
+      color: #111827;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .prev-card .prev-info .term {
+      font-size: .8rem;
+      color: var(--p-muted);
+      margin-bottom: 4px;
+    }
+    .prev-card .prev-info .desc {
+      font-size: .82rem;
+      color: #4b5563;
+      line-height: 1.45;
+      margin: 0;
+      overflow: hidden;
+      display: -webkit-box;
+      -webkit-line-clamp: 3;
+      -webkit-box-orient: vertical;
+    }
+    .prev-card .prev-actions {
+      position: absolute;
+      top: 8px; right: 8px;
+      display: flex;
+      gap: 4px;
+      opacity: 0;
+      transition: opacity .15s;
+    }
+    .prev-card:hover .prev-actions { opacity: 1; }
+    .prev-card .prev-actions button {
+      width: 26px; height: 26px;
+      border-radius: 50%;
+      border: 1px solid var(--p-line);
+      background: #fff;
+      color: var(--p-muted);
+      font-size: .85rem;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+      line-height: 1;
+      transition: background .12s, color .12s, border-color .12s;
+    }
+    .prev-card .prev-actions button:hover {
+      background: #f3f6fa;
+      color: var(--p-brand);
+      border-color: var(--p-brand-2);
+    }
+    .prev-card .prev-actions button.del:hover {
+      color: var(--p-err);
+      border-color: var(--p-err);
+      background: #fef2f2;
+    }
+
+    /* ---------- States ---------- */
+    .state {
+      padding: 28px 18px;
+      text-align: center;
+      color: var(--p-muted);
+      font-size: .9rem;
+    }
+    .state strong { display: block; color: #374151; margin-bottom: 6px; }
+
+    /* ---------- Info banner ---------- */
+    .banner {
+      display: flex;
+      gap: 10px;
+      align-items: flex-start;
+      padding: 10px 14px;
+      border-radius: 8px;
+      background: #eff6ff;
+      border: 1px solid #bfdbfe;
+      color: #1e40af;
+      font-size: .85rem;
+      margin-bottom: 14px;
+    }
+
+    /* ---------- Print ---------- */
+    @media print {
+      .no-print { display: none !important; }
+      body { background: #fff; }
+      .p-card { box-shadow: none; border: 1px solid #ddd; }
+    }
+  </style>
+</head>
+
+<body>
+
+  <main class="wrap page">
+
+    <!-- Breadcrumbs -->
+    <nav class="breadcrumbs">
+      <a href="../index.html">Home</a>
+      <span class="sep">›</span>
+      <span>DepEd Officials</span>
+      <span class="sep">›</span>
+      <span>School Principal</span>
+    </nav>
+
+    <!-- Page head -->
+    <div class="page-head">
+      <div>
+        <div class="school-badge">
+          <span class="dot"></span> STA. CRUZ PINGKIAN HIGH SCHOOL
+        </div>
+        <h1>School Principal</h1>
+        <p class="meta">School Administrator • Leadership &amp; Governance</p>
+      </div>
+      <div class="head-actions no-print">
+        <button id="btn-edit" class="btn outline" type="button">✏️ Edit</button>
+        <button id="btn-reset" class="btn danger" type="button" title="Reset to defaults">↺ Reset</button>
+        <button class="btn" type="button" onclick="window.print()">🖨️ Print</button>
+        <a class="btn ghost" href="../index.html#home">← Back to Home</a>
+      </div>
+    </div>
+
+    <!-- ===================== CURRENT PRINCIPAL ===================== -->
+    <section class="p-card" aria-labelledby="current-title">
+      <div class="p-card-head">
+        <h3 id="current-title">Current School Principal</h3>
+        <span class="meta" style="font-size:.8rem; color:var(--p-muted);">In office</span>
+      </div>
+
+      <!-- VIEW MODE -->
+      <div id="view-mode" class="profile">
+        <div class="profile-photo">
+          <span class="photo-badge">In Office</span>
+          <img id="pr-photo" src="../assets/images/officials/principal.jpg" alt="School Principal" loading="lazy">
+        </div>
+
+        <div class="profile-info">
+          <h2 id="pr-name">School Principal</h2>
+          <div class="term" id="pr-term">—</div>
+
+          <!-- Quick facts -->
+          <div class="facts">
+            <div class="fact">
+              <div class="label">Position</div>
+              <div class="value" id="pr-position">School Principal</div>
+            </div>
+            <div class="fact">
+              <div class="label">Division</div>
+              <div class="value" id="pr-division">SDO Nueva Vizcaya</div>
+            </div>
+            <div class="fact">
+              <div class="label">School</div>
+              <div class="value" id="pr-school">SCPHS</div>
+            </div>
+          </div>
+
+          <h3>Overview</h3>
+          <p id="pr-bio">
+            The School Principal leads the school community, ensuring that teaching,
+            learning, and operations are managed effectively and in alignment with the
+            Department of Education's goals and standards.
+          </p>
+
+          <h3>Key Responsibilities</h3>
+          <ul id="pr-resp">
+            <li>Leads school improvement planning and implementation.</li>
+            <li>Supervises faculty, staff, and academic programs.</li>
+            <li>Oversees curriculum delivery, student services, and school operations.</li>
+            <li>Ensures a safe, inclusive, and supportive learning environment.</li>
+          </ul>
+
+          <div class="actions no-print" style="margin-top:14px; display:flex; gap:10px; flex-wrap:wrap;">
+            <a class="btn outline" href="../index.html#home">← Back to Home</a>
+            <a class="btn ghost" href="#previous-principals">↓ Previous Principals</a>
+          </div>
+        </div>
+      </div>
+
+      <!-- EDIT MODE (hidden by default) -->
+      <div id="edit-mode" class="p-card-body" hidden>
+        <div class="banner">
+          <span>💡</span>
+          <div>Changes are stored locally in your browser. They will not be shared with other visitors. To publish changes for everyone, update the defaults in this file.</div>
+        </div>
+
+        <div class="edit-grid">
+
+          <div class="edit-field full">
+            <label for="edit-photo">Photo</label>
+            <label class="photo-uploader" id="photo-uploader" for="edit-photo">
+              <div class="upload-icon">📷</div>
+              <div class="upload-text">Drop a photo here, or <strong>click to browse</strong></div>
+              <div class="upload-hint">PNG / JPG / WEBP • Max ~2MB (auto-resized)</div>
+              <input id="edit-photo" type="file" accept="image/*">
+            </label>
+            <div style="display:flex; gap:8px; margin-top:6px;">
+              <button id="btn-remove-photo" class="btn ghost" type="button" style="font-size:.8rem;">Remove photo</button>
+            </div>
+          </div>
+
+          <div class="edit-field">
+            <label for="edit-name">Full name</label>
+            <input id="edit-name" type="text" placeholder="e.g. Juan Dela Cruz">
+          </div>
+
+          <div class="edit-field">
+            <label for="edit-term">Term</label>
+            <input id="edit-term" type="text" placeholder="e.g. 2025 – Present">
+          </div>
+
+          <div class="edit-field">
+            <label for="edit-position">Position</label>
+            <input id="edit-position" type="text" placeholder="e.g. School Principal IV">
+          </div>
+
+          <div class="edit-field">
+            <label for="edit-division">Division</label>
+            <input id="edit-division" type="text" placeholder="e.g. SDO Nueva Vizcaya">
+          </div>
+
+          <div class="edit-field full">
+            <label for="edit-school">School</label>
+            <input id="edit-school" type="text" placeholder="e.g. Sta. Cruz Pingkian High School">
+          </div>
+
+          <div class="edit-field full">
+            <label for="edit-bio">Overview / Bio</label>
+            <textarea id="edit-bio" placeholder="Short bio or description…"></textarea>
+          </div>
+
+          <div class="edit-field full">
+            <label for="edit-resp">Key Responsibilities (one per line)</label>
+            <textarea id="edit-resp" placeholder="One responsibility per line…"></textarea>
+            <div class="hint">Each line becomes a bullet point.</div>
+          </div>
+        </div>
+
+        <div style="display:flex; gap:10px; margin-top:18px; flex-wrap:wrap;">
+          <button id="btn-save" class="btn success" type="button">💾 Save changes</button>
+          <button id="btn-cancel" class="btn outline" type="button">Cancel</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================== PREVIOUS PRINCIPALS ===================== -->
+    <section id="previous-principals" class="p-card" aria-labelledby="prev-title">
+      <div class="p-card-head">
+        <h3 id="prev-title">Previous Principals</h3>
+        <button id="btn-add-prev" class="btn outline no-print" type="button" style="padding:6px 10px; font-size:.82rem;">＋ Add</button>
+      </div>
+      <div class="p-card-body">
+        <div id="prev-list" class="prev-grid">
+          <div class="state"><strong>Loading…</strong></div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ===================== SCHOOL FOOTER ===================== -->
+  <footer>
+    <div class="wrap">
+      <div class="foot-grid">
+        <div>
+          <strong>Sta. Cruz Pingkian High School</strong><br/>
+          Brgy. Sta. Cruz, Pingkian • Nueva Vizcaya • Philippines<br/>
+          Email: 300648@deped.gov.ph • Phone: +63 967-8848989
+        </div>
+        <div>
+          <a href="#privacy">Privacy Notice</a> •
+          <a href="#foi">FOI</a> •
+          <a href="#sitemap">Sitemap</a> •
+          <a href="https://www.facebook.com/p/Santa-Cruz-Pingkian-High-School-Official-61554495084090/" target="_blank" rel="noopener">Facebook</a>
+        </div>
+      </div>
+      <div class="copy">© <span id="year-copy">2026</span> SCPHS. All rights reserved.</div>
+    </div>
+  </footer>
+
+  <footer class="govph-footer" role="contentinfo">
+    <div class="wrap govph-footer__grid">
+      <div class="govph-footer__col">
+        <h4>Republic of the Philippines</h4>
+        <p>All content is in the public domain unless otherwise stated.</p>
+      </div>
+      <div class="govph-footer__col">
+        <h4>About GOVPH</h4>
+        <ul class="govph-footer__links">
+          <li><a href="https://www.gov.ph/" target="_blank" rel="noopener">GOV.PH</a></li>
+          <li><a href="https://data.gov.ph/" target="_blank" rel="noopener">Open Data Portal</a></li>
+          <li><a href="https://www.officialgazette.gov.ph/" target="_blank" rel="noopener">Official Gazette</a></li>
+        </ul>
+      </div>
+      <div class="govph-footer__col">
+        <h4>Government Links</h4>
+        <ul class="govph-footer__links">
+          <li><a href="https://op-proper.gov.ph/" target="_blank" rel="noopener">Office of the President</a></li>
+          <li><a href="https://ovp.gov.ph/" target="_blank" rel="noopener">Office of the Vice President</a></li>
+          <li><a href="https://www.senate.gov.ph/" target="_blank" rel="noopener">Senate of the Philippines</a></li>
+          <li><a href="https://www.congress.gov.ph/" target="_blank" rel="noopener">House of Representatives</a></li>
+          <li><a href="https://sc.judiciary.gov.ph/" target="_blank" rel="noopener">Supreme Court</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="govph-footer__bar">
+      <div class="wrap">
+        <small>© <span id="year-now"></span> Sta. Cruz Pingkian High School • A Philippine Government Website</small>
+      </div>
+    </div>
+  </footer>
+
+  <!-- ===================== SCRIPTS ===================== -->
+  <script>
+  (function () {
+    'use strict';
+
+    // ============ Defaults ============
+    // Pre-filled with the actual SCPHS principals timeline from index.html
+    const DEFAULTS = {
+      current: {
+        name: 'Saturnino P. Calansi',
+        term: '2025 – Present',
+        position: 'School Principal',
+        division: 'SDO Nueva Vizcaya',
+        school: 'Sta. Cruz Pingkian High School',
+        bio: 'The School Principal leads the school community, ensuring that teaching, learning, and operations are managed effectively and in alignment with the Department of Education\'s goals and standards.',
+        photo: '../assets/images/officials/satur-calansi1.jpg',
+        responsibilities: [
+          'Leads school improvement planning and implementation.',
+          'Supervises faculty, staff, and academic programs.',
+          'Oversees curriculum delivery, student services, and school operations.',
+          'Ensures a safe, inclusive, and supportive learning environment.'
+        ]
+      },
+      previous: [
+        {
+          id: 'pr-1',
+          name: 'Dolores C. Dodon',
+          term: '2021 – 2025',
+          photo: '../assets/images/officials/doris-dodon.jpg',
+          desc: 'Led the school through post-pandemic recovery and modernization.'
+        },
+        {
+          id: 'pr-2',
+          name: 'Saturnino P. Calansi',
+          term: '2015 – 2021',
+          photo: '../assets/images/officials/satur-calansi.jpg',
+          desc: 'Strengthened community partnerships and school facilities.'
+        },
+        {
+          id: 'pr-3',
+          name: 'Rayda Joy C. Calansi',
+          term: '2013 – 2015',
+          photo: '../assets/images/officials/rayda-calansi.jpg',
+          desc: 'Focused on instructional leadership and teacher development.'
+        },
+        {
+          id: 'pr-4',
+          name: 'Ruben S. Bugnay',
+          term: '1999 – 2003 / 2006 – 2013',
+          photo: '../assets/images/officials/ruben-bugnay.jpg',
+          desc: 'Led two terms of school growth and academic expansion.'
+        },
+        {
+          id: 'pr-5',
+          name: 'Noe V. Dayag',
+          term: '2006 – 2013',
+          photo: '../assets/images/officials/noe-dayag.jpg',
+          desc: 'Advanced curriculum programs and student services.'
+        },
+        {
+          id: 'pr-6',
+          name: 'Porfirio V. Fragata',
+          term: '2003 – 2006',
+          photo: '../assets/images/officials/porfirio-fragata.jpg',
+          desc: 'Managed the school during a period of infrastructure growth.'
+        },
+        {
+          id: 'pr-7',
+          name: 'Ray L. Castillo',
+          term: '1978 – 1999',
+          photo: '../assets/images/officials/ray-castillo.jpg',
+          desc: 'Long-serving principal who expanded the school\'s academic offerings.'
+        },
+        {
+          id: 'pr-8',
+          name: 'Domingo Carnate',
+          term: '1973 – 1978',
+          photo: '../assets/images/officials/domingo-carnate.jpg',
+          desc: 'Led early expansions and strengthened community partnerships.'
+        },
+        {
+          id: 'pr-9',
+          name: 'Antonio G. Balasya',
+          term: '1968 – 1973',
+          photo: '../assets/images/officials/antonio-balasya.jpg',
+          desc: 'Founding principal who laid the groundwork for initial operations.'
+        }
+      ]
+    };
+
+    // ============ Storage key ============
+    const STORAGE_KEY = 'scphs_principal_data_v1';
+
+    // ============ DOM ============
+    const $ = (id) => document.getElementById(id);
+
+    const VIEW_MODE   = $('view-mode');
+    const EDIT_MODE   = $('edit-mode');
+    const BTN_EDIT    = $('btn-edit');
+    const BTN_RESET   = $('btn-reset');
+    const BTN_SAVE    = $('btn-save');
+    const BTN_CANCEL  = $('btn-cancel');
+    const BTN_ADD_PREV= $('btn-add-prev');
+    const BTN_RM_PHOTO= $('btn-remove-photo');
+    const PHOTO_UPLOADER = $('photo-uploader');
+    const EDIT_PHOTO  = $('edit-photo');
+    const EDIT_NAME   = $('edit-name');
+    const EDIT_TERM   = $('edit-term');
+    const EDIT_POSITION = $('edit-position');
+    const EDIT_DIVISION = $('edit-division');
+    const EDIT_SCHOOL = $('edit-school');
+    const EDIT_BIO    = $('edit-bio');
+    const EDIT_RESP   = $('edit-resp');
+
+    const PR_PHOTO    = $('pr-photo');
+    const PR_NAME     = $('pr-name');
+    const PR_TERM     = $('pr-term');
+    const PR_POSITION = $('pr-position');
+    const PR_DIVISION = $('pr-division');
+    const PR_SCHOOL   = $('pr-school');
+    const PR_BIO      = $('pr-bio');
+    const PR_RESP     = $('pr-resp');
+    const PREV_LIST   = $('prev-list');
+
+    // ============ State ============
+    let data = loadData();
+    let stagedPhoto = null;
+
+    // ============ Load / Save ============
+    function loadData() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (!raw) return JSON.parse(JSON.stringify(DEFAULTS));
+        const parsed = JSON.parse(raw);
+        return {
+          current: { ...DEFAULTS.current, ...(parsed.current || {}) },
+          previous: Array.isArray(parsed.previous) ? parsed.previous : DEFAULTS.previous.slice()
+        };
+      } catch {
+        return JSON.parse(JSON.stringify(DEFAULTS));
+      }
+    }
+
+    function saveData() {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+      } catch (e) {
+        alert('Could not save: storage may be full. Try a smaller photo.');
+        console.error(e);
+      }
+    }
+
+    // ============ Render current ============
+    function renderCurrent() {
+      const c = data.current;
+      PR_PHOTO.src = c.photo || '../assets/images/officials/principal.jpg';
+      PR_PHOTO.alt = c.name || 'School Principal';
+      PR_PHOTO.onerror = () => { PR_PHOTO.style.opacity = '0.3'; };
+
+      PR_NAME.textContent     = c.name     || 'School Principal';
+      PR_TERM.textContent     = c.term     || '';
+      PR_POSITION.textContent = c.position || 'School Principal';
+      PR_DIVISION.textContent = c.division || 'SDO Nueva Vizcaya';
+      PR_SCHOOL.textContent   = c.school   || 'Sta. Cruz Pingkian High School';
+      PR_BIO.textContent      = c.bio      || '';
+
+      PR_RESP.innerHTML = (c.responsibilities || [])
+        .map(r => `<li>${escapeHtml(r)}</li>`)
+        .join('');
+    }
+
+    // ============ Render previous principals ============
+    function renderPrevious() {
+      const list = data.previous || [];
+
+      if (!list.length) {
+        PREV_LIST.innerHTML = `
+          <div class="state" style="grid-column:1/-1;">
+            <strong>No previous principals yet.</strong>
+            <div>Click "＋ Add" to add one.</div>
+          </div>`;
+        return;
+      }
+
+      PREV_LIST.innerHTML = list.map(p => {
+        const initials = (p.name || '?').split(/\s+/).map(w => w[0]).slice(0, 2).join('').toUpperCase();
+        const photoHtml = p.photo
+          ? `<img src="${escapeAttr(p.photo)}" alt="${escapeAttr(p.name)}" onerror="this.style.display='none'; this.parentElement.innerHTML='<span class=\\'initials\\'>${initials}</span>';">`
+          : `<span class="initials">${initials}</span>`;
+
+        return `
+          <div class="prev-card" data-id="${escapeAttr(p.id)}">
+            <div class="prev-photo">${photoHtml}</div>
+            <div class="prev-info">
+              <h4 title="${escapeAttr(p.name)}">${escapeHtml(p.name)}</h4>
+              <div class="term">${escapeHtml(p.term || '—')}</div>
+              <p class="desc">${escapeHtml(p.desc || '')}</p>
+            </div>
+            <div class="prev-actions no-print">
+              <button type="button" class="edit" title="Edit" data-action="edit">✎</button>
+              <button type="button" class="del" title="Delete" data-action="delete">✕</button>
+            </div>
+          </div>`;
+      }).join('');
+    }
+
+    // ============ Escape helpers ============
+    function escapeHtml(s) {
+      return String(s == null ? '' : s)
+        .replaceAll('&', '&amp;').replaceAll('<', '&lt;')
+        .replaceAll('>', '&gt;').replaceAll('"', '&quot;').replaceAll("'", '&#39;');
+    }
+    function escapeAttr(s) { return escapeHtml(s); }
+
+    // ============ Edit mode ============
+    function enterEditMode() {
+      const c = data.current;
+      EDIT_NAME.value     = c.name     || '';
+      EDIT_TERM.value     = c.term     || '';
+      EDIT_POSITION.value = c.position || '';
+      EDIT_DIVISION.value = c.division || '';
+      EDIT_SCHOOL.value   = c.school   || '';
+      EDIT_BIO.value      = c.bio      || '';
+      EDIT_RESP.value     = (c.responsibilities || []).join('\n');
+      stagedPhoto = null;
+
+      VIEW_MODE.hidden = true;
+      EDIT_MODE.hidden = false;
+      BTN_EDIT.textContent = '👁 View';
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function exitEditMode() {
+      VIEW_MODE.hidden = false;
+      EDIT_MODE.hidden = true;
+      BTN_EDIT.textContent = '✏️ Edit';
+    }
+
+    function saveChanges() {
+      const name     = EDIT_NAME.value.trim()     || 'School Principal';
+      const term     = EDIT_TERM.value.trim();
+      const position = EDIT_POSITION.value.trim() || 'School Principal';
+      const division = EDIT_DIVISION.value.trim() || 'SDO Nueva Vizcaya';
+      const school   = EDIT_SCHOOL.value.trim()   || 'Sta. Cruz Pingkian High School';
+      const bio      = EDIT_BIO.value.trim();
+      const resp     = EDIT_RESP.value
+        .split('\n')
+        .map(l => l.trim())
+        .filter(Boolean);
+
+      data.current = {
+        ...data.current,
+        name, term, position, division, school,
+        bio,
+        responsibilities: resp.length ? resp : ['—']
+      };
+
+      if (stagedPhoto) {
+        data.current.photo = stagedPhoto;
+      }
+
+      saveData();
+      renderCurrent();
+      exitEditMode();
+      showToast('✓ Saved');
+    }
+
+    // ============ Photo upload ============
+    function handlePhotoFile(file) {
+      if (!file) return;
+      if (!file.type.startsWith('image/')) {
+        alert('Please choose an image file.');
+        return;
+      }
+      if (file.size > 4 * 1024 * 1024) {
+        alert('File is larger than 4MB. Please choose a smaller image.');
+        return;
+      }
+
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        resizeImage(e.target.result, 800, 1000, (resized) => {
+          stagedPhoto = resized;
+          PR_PHOTO.src = resized;
+          const uploader = PHOTO_UPLOADER.querySelector('.upload-text');
+          if (uploader) uploader.innerHTML = `<strong>${escapeHtml(file.name)}</strong> — ready to save`;
+        });
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function resizeImage(dataUrl, maxW, maxH, cb) {
+      const img = new Image();
+      img.onload = () => {
+        let { width, height } = img;
+        if (width > maxW || height > maxH) {
+          const ratio = Math.min(maxW / width, maxH / height);
+          width  = Math.round(width * ratio);
+          height = Math.round(height * ratio);
+        }
+        const canvas = document.createElement('canvas');
+        canvas.width = width;
+        canvas.height = height;
+        canvas.getContext('2d').drawImage(img, 0, 0, width, height);
+        cb(canvas.toDataURL('image/jpeg', 0.85));
+      };
+      img.onerror = () => cb(dataUrl);
+      img.src = dataUrl;
+    }
+
+    // Drag & drop
+    ['dragenter', 'dragover'].forEach(evt => {
+      PHOTO_UPLOADER.addEventListener(evt, e => {
+        e.preventDefault();
+        PHOTO_UPLOADER.classList.add('dragover');
+      });
+    });
+    ['dragleave', 'drop'].forEach(evt => {
+      PHOTO_UPLOADER.addEventListener(evt, e => {
+        e.preventDefault();
+        PHOTO_UPLOADER.classList.remove('dragover');
+      });
+    });
+    PHOTO_UPLOADER.addEventListener('drop', e => {
+      const file = e.dataTransfer.files && e.dataTransfer.files[0];
+      if (file) handlePhotoFile(file);
+    });
+    EDIT_PHOTO.addEventListener('change', e => {
+      const file = e.target.files && e.target.files[0];
+      if (file) handlePhotoFile(file);
+    });
+    BTN_RM_PHOTO.addEventListener('click', () => {
+      stagedPhoto = null;
+      PR_PHOTO.src = '../assets/images/officials/principal.jpg';
+      const uploader = PHOTO_UPLOADER.querySelector('.upload-text');
+      if (uploader) uploader.innerHTML = `Drop a photo here, or <strong>click to browse</strong>`;
+      data.current.photo = '';
+    });
+
+    // ============ Previous principals edit ============
+    BTN_ADD_PREV.addEventListener('click', () => {
+      const name = prompt('Name of the previous Principal:');
+      if (!name) return;
+      const term = prompt('Term (e.g. 2015 – 2021):', '');
+      const desc = prompt('Short description:', '');
+      const photo = prompt('Photo URL (optional, leave blank for initials):', '');
+
+      const newItem = {
+        id: 'pr-' + Date.now(),
+        name: name.trim(),
+        term: (term || '').trim(),
+        desc: (desc || '').trim(),
+        photo: (photo || '').trim()
+      };
+      data.previous.unshift(newItem);
+      saveData();
+      renderPrevious();
+      showToast('✓ Added');
+    });
+
+    PREV_LIST.addEventListener('click', e => {
+      const btn = e.target.closest('button[data-action]');
+      if (!btn) return;
+      const card = btn.closest('.prev-card');
+      const id = card?.dataset.id;
+      if (!id) return;
+
+      const idx = data.previous.findIndex(p => p.id === id);
+      if (idx < 0) return;
+
+      if (btn.dataset.action === 'edit') {
+        const p = data.previous[idx];
+        const name = prompt('Name:', p.name);
+        if (name === null) return;
+        const term = prompt('Term:', p.term || '');
+        if (term === null) return;
+        const desc = prompt('Description:', p.desc || '');
+        if (desc === null) return;
+        const photo = prompt('Photo URL (optional):', p.photo || '');
+        if (photo === null) return;
+
+        data.previous[idx] = {
+          ...p,
+          name: name.trim(),
+          term: term.trim(),
+          desc: desc.trim(),
+          photo: photo.trim()
+        };
+        saveData();
+        renderPrevious();
+        showToast('✓ Updated');
+      }
+
+      if (btn.dataset.action === 'delete') {
+        if (!confirm('Delete this entry?')) return;
+        data.previous.splice(idx, 1);
+        saveData();
+        renderPrevious();
+        showToast('✓ Deleted');
+      }
+    });
+
+    // ============ Reset ============
+    BTN_RESET.addEventListener('click', () => {
+      if (!confirm('Reset all changes back to defaults? This cannot be undone.')) return;
+      data = JSON.parse(JSON.stringify(DEFAULTS));
+      saveData();
+      renderCurrent();
+      renderPrevious();
+      exitEditMode();
+      showToast('↺ Reset to defaults');
+    });
+
+    // ============ Edit toggle ============
+    BTN_EDIT.addEventListener('click', () => {
+      if (EDIT_MODE.hidden) enterEditMode();
+      else exitEditMode();
+    });
+    BTN_SAVE.addEventListener('click', saveChanges);
+    BTN_CANCEL.addEventListener('click', () => {
+      exitEditMode();
+      renderCurrent();
+    });
+
+    // ============ Toast ============
+    function showToast(msg) {
+      let t = document.getElementById('toast');
+      if (!t) {
+        t = document.createElement('div');
+        t.id = 'toast';
+        t.style.cssText = `
+          position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(20px);
+          background: #111827; color: #fff; padding: 10px 18px; border-radius: 8px;
+          font-size: .9rem; font-weight: 500; box-shadow: 0 8px 24px rgba(0,0,0,.2);
+          opacity: 0; transition: opacity .2s, transform .2s; z-index: 9999;
+        `;
+        document.body.appendChild(t);
+      }
+      t.textContent = msg;
+      requestAnimationFrame(() => {
+        t.style.opacity = '1';
+        t.style.transform = 'translateX(-50%) translateY(0)';
+      });
+      clearTimeout(t._tid);
+      t._tid = setTimeout(() => {
+        t.style.opacity = '0';
+        t.style.transform = 'translateX(-50%) translateY(20px)';
+      }, 1800);
+    }
+
+    // ============ Footer years ============
+    const yVal = new Date().getFullYear();
+    const yc = $('year-copy');
+    const yn = $('year-now');
+    if (yc) yc.textContent = yVal;
+    if (yn) yn.textContent = yVal;
+
+    // ============ Boot ============
+    renderCurrent();
+    renderPrevious();
+
+  })();
+  </script>
+
+</body>
+</html>

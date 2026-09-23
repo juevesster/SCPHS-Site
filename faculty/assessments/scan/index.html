@@ -1,0 +1,41 @@
+<!-- In the <body> of /faculty/assessments/scan/index.html -->
+<div class="wrap card">
+  <h2>Scan Student QR</h2>
+  <div id="reader" style="width:320px;max-width:100%"></div>
+  <pre id="log" style="background:#f7f7f7;padding:8px;border-radius:6px"></pre>
+</div>
+
+<!-- Load library then your init script -->
+<script src="https://unpkg.com/html5-qrcode" defer></script>
+<script defer>
+document.addEventListener('DOMContentLoaded', () => {
+  const log = (m) => { const el = document.getElementById('log'); el.textContent = m + '\n' + el.textContent; };
+
+  const onScanSuccess = async (decodedText) => {
+    log("Scanned: " + decodedText);
+
+    // Call your backend (Django or static mock)
+    try {
+      const res = await fetch("/api/verify-student/", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          // In Django templates, include {% csrf_token %} or read csrftoken cookie:
+          "X-CSRFToken": (document.cookie.match(/csrftoken=([^;]+)/)||[])[1] || ""
+        },
+        credentials: "include",
+        body: JSON.stringify({ student_id: decodedText })
+      });
+      const data = await res.json();
+      log("Verified: " + (data.name ? `${data.name} (${data.section})` : "Unknown student"));
+    } catch (e) { log("Error: " + e.message); }
+  };
+
+  const html5QrCode = new Html5Qrcode("reader");
+  Html5Qrcode.getCameras().then(devs => {
+    const camId = (devs.find(d => /back|rear|environment/i.test(d.label)) || devs[0] || {}).id;
+    if (!camId) return log("No camera found.");
+    html5QrCode.start(camId, { fps: 10, qrbox: 240 }, onScanSuccess, () => {});
+  }).catch(err => log("Camera error: " + err));
+});
+</script>

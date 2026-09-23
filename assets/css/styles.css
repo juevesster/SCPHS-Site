@@ -1,0 +1,1237 @@
+:root{
+  --brand:#0b4f9c;
+  --brand-2:#0a3f7e;
+  --accent:#f1b814;
+  --ink:#1f2937;
+  --muted:#6b7280;
+  --bg:#f7f9fc;
+  --card:#ffffff;
+  --line:#e5e7eb;
+  --govph-strip:#e9eff7;
+  /* Added: used by .btn-return */
+  --primary: var(--brand);
+}
+
+/* ================= GLOBAL ================= */
+*{ box-sizing:border-box }
+html{ scroll-behavior:smooth }
+body{
+  margin:0;
+  padding:0;
+  font-family:Arial, Helvetica, sans-serif;
+  color:var(--ink);
+  background:var(--bg);
+}
+a{ color:var(--brand); text-decoration:none }
+a:hover{ text-decoration:underline }
+img{ max-width:100%; display:block }
+.wrap{ max-width:1160px; margin:0 auto; padding:0 16px }
+
+/* ================= GOVPH STRIP ================= */
+.govph{
+  background:var(--govph-strip);
+  color:#1e2a3a;
+  font-size:13px;
+  border-bottom:1px solid var(--line);
+}
+.govph .wrap{
+  padding:6px 0;
+  display:flex;
+  align-items:center;
+  gap:10px;
+}
+.govph a.govph-link{
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+  color:#0a3f7e;
+  font-weight:800;
+  letter-spacing:.2px;
+  padding:3px 8px;
+  border-radius:999px;
+  background:#ffffffcc;
+  border:1px solid #dbe7ff;
+}
+.govph a.govph-link:hover{
+  text-decoration:none;
+  background:#fff;
+  border-color:#cbd6ff;
+}
+.govph .sep{
+  height:12px;
+  width:1px;
+  background:#c7d5ea;
+  display:inline-block;
+  transform:translateY(1px);
+}
+.govph .label{ opacity:.92 }
+
+/* ================= HEADER ================= */
+header{
+  background:#fff;
+  border-bottom:1px solid var(--line);
+}
+.brandbar{
+  display:grid;
+  grid-template-columns:auto 1fr auto;
+  gap:8px;
+  align-items:center;
+  padding:12px 0;
+}
+.logos-left img{ height:64px; border-radius:6px }
+.brandtext h1{
+  margin:0;
+  font-size:clamp(1.5rem,3.2vw,2.1rem);
+  font-weight:800;
+  color:#0f2b4f;
+}
+.brandtext p{
+  margin:.25rem 0 0;
+  font-size:clamp(.92rem,1.6vw,1.06rem);
+  color:#2f3e56;
+}
+.logos-right{
+  display:flex;
+  align-items:center;
+  gap:10px;
+}
+.logos-right img{ height:56px }
+.logo--seal{
+  height:60px;
+  border-radius:50%;
+  transition:.2s ease;
+}
+.logo-link:hover .logo--seal{
+  transform:scale(1.06);
+  box-shadow:0 0 0 3px rgba(0,96,223,.25);
+}
+
+/* ================= NAVIGATION (FIXED + DROPDOWN) ================= */
+nav{
+  background:var(--brand-2);
+  position:relative;
+  z-index:100;
+}
+.menu{
+  display:flex;
+  flex-wrap:wrap;
+  gap:8px;
+  padding:8px 0;
+  list-style:none;
+  margin:0;
+  align-items:center;
+}
+.menu > li{ position:relative } /* fixed selector */
+
+/* Top-level items: links and dropdown button */
+.menu a,
+.menu .menu-toggle{
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+  padding:10px 14px;
+  border-radius:8px;
+  font-weight:700;
+  text-decoration:none;
+  cursor:pointer;
+  background:transparent;
+  border:none;
+  font-family:inherit;
+  color:#ffffff !important; /* force readable white on dark bar */
+}
+.menu a:hover,
+.menu a:focus-visible,
+.menu .menu-toggle:hover,
+.menu .menu-toggle:focus-visible{
+  background:rgba(255,255,255,0.18);
+  color:#ffffff !important;
+  outline:none;
+}
+.menu a.active{
+  background:var(--brand);
+  color:#ffffff !important;
+}
+
+/* Caret */
+.menu .chev{ transition:transform .2s ease }
+
+/* Dropdown panel */
+.menu .dropdown{
+  position:absolute;
+  left:0;
+  top:calc(100% + 6px);
+  min-width:220px;
+  padding:8px;
+  margin:0;
+  list-style:none;
+  background:#ffffff;
+  border:1px solid #e5e7eb;
+  border-radius:12px;
+  box-shadow:0 8px 24px rgba(0,0,0,.12);
+  opacity:0;
+  visibility:hidden;
+  transform:translateY(6px);
+  transition:.18s ease;
+  z-index:50;
+}
+
+/* Dropdown items */
+.menu .dropdown a{
+  display:block;
+  padding:10px 12px;
+  border-radius:8px;
+  white-space:nowrap;
+  color:#111827 !important;
+  font-weight:500;
+}
+.menu .dropdown a:hover{ background:#f3f4f6 }
+
+/* Opened state (JS toggles .open on .has-dropdown) */
+.menu .has-dropdown.open > .dropdown{
+  opacity:1; visibility:visible; transform:translateY(0);
+}
+.menu .has-dropdown.open > .menu-toggle .chev{ transform:rotate(180deg) }
+
+/* Hover open on desktop */
+@media (hover:hover) and (pointer:fine){
+  .menu .has-dropdown:hover > .dropdown{
+    opacity:1; visibility:visible; transform:translateY(0);
+  }
+  .menu .has-dropdown:hover > .menu-toggle .chev{ transform:rotate(180deg) }
+}
+
+/* ================= HERO ================= */
+.hero{
+  background:linear-gradient(90deg,var(--brand),#1d4e86);
+  color:#fff;
+}
+.hero .inner{
+  display:grid;
+  grid-template-columns:2fr 1fr;
+  gap:24px;
+  padding:26px 0;
+  align-items:center;
+}
+.btn{
+  display:inline-block;
+  background:#fff;
+  color:var(--brand);
+  padding:10px 14px;
+  border-radius:10px;
+  font-weight:700;
+  box-shadow:0 2px 6px rgba(0,0,0,.08);
+  transition:all .2s ease;
+}
+.btn:hover{ transform:translateY(-1px); box-shadow:0 4px 12px rgba(0,0,0,.12) }
+.btn.alt{ background:transparent; border:2px solid #fff; color:#fff }
+.btn.outline{ background:#fff; border:1px solid var(--brand) }
+
+/* ================= SLIDER ================= */
+.slider{
+  position:relative;
+  width:100%;
+  aspect-ratio:16/6;
+  min-height:280px;
+  border-radius:12px;
+  overflow:hidden;
+  background:#0b4f9c;
+}
+.slide{
+  position:absolute;
+  inset:0;
+  opacity:0;
+  transition:opacity .6s ease;
+}
+.slide.is-active{ opacity:1 }
+.slide img{ width:100%; height:100%; object-fit:cover }
+.slide-overlay{
+  position:absolute;
+  inset:0;
+  background:linear-gradient(180deg,rgba(0,0,0,.25),rgba(0,0,0,.45));
+}
+.slide-caption{
+  position:absolute;
+  left:16px; right:16px; bottom:14px; color:#fff;
+}
+.slide-caption h2{ margin:0 0 4px; font-size:clamp(1.25rem,2.6vw,1.8rem) }
+
+/* ================= MAIN 3 COLUMN ================= */
+main .content-grid{
+  display:grid;
+  grid-template-columns:1fr minmax(0,1.5fr) 1fr;
+  gap:32px;
+  padding:32px 0;
+}
+.card{
+  background:#fff;
+  border:1px solid var(--line);
+  border-radius:14px;
+  overflow:hidden;
+  box-shadow:0 4px 12px rgba(0,0,0,.04);
+  transition:transform .2s ease, box-shadow .2s ease;
+}
+.card:hover{
+  transform:translateY(-2px);
+  box-shadow:0 8px 18px rgba(0,0,0,.08);
+}
+.card h3{
+  margin:0;
+  padding:16px;
+  border-bottom:1px solid var(--line);
+  font-size:19px;
+  font-weight:800;
+}
+
+/* ================= SIDEBAR ================= */
+aside .widget{
+  background:#fff;
+  border:1px solid var(--line);
+  border-radius:14px;
+  padding:18px;
+  margin-bottom:20px;
+  box-shadow:0 4px 12px rgba(0,0,0,.04);
+  transition:transform .2s ease, box-shadow .2s ease;
+}
+.widget:hover{ transform:translateY(-2px); box-shadow:0 8px 18px rgba(0,0,0,.08) }
+.widget h4{
+  margin:0 0 14px;
+  border-bottom:1px solid var(--line);
+  padding-bottom:8px;
+  font-size:17px;
+  font-weight:700;
+}
+.list{ list-style:none; padding:0; margin:0 }
+.list li{ padding:8px 0; border-bottom:1px dashed var(--line) }
+.list li:last-child{ border:0 }
+.widget .list li a{
+  display:flex; align-items:center; gap:8px;
+  padding:8px 6px; border-radius:6px; font-weight:500;
+  transition:all .2s ease;
+}
+.widget .list li a:hover{
+  background:#eef2ff; padding-left:10px; text-decoration:none;
+}
+.widget .list li a .icon{ font-size:15px; opacity:.8 }
+
+/* ================= GOVPH FOOTER (3 COLUMN) ================= */
+.govph-footer{
+  background:#f3f4f6;
+  margin-top:40px;
+  padding:30px 0 20px;
+  font-size:14px;
+  color:#1f2937;
+}
+.govph-footer__grid{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:40px;
+  padding-bottom:20px;
+  position:relative;
+}
+.govph-footer__col{ position:relative; padding-right:20px }
+.govph-footer__col:not(:last-child)::after{
+  content:""; position:absolute; right:-20px; top:0; height:100%; width:1px; background:#e5e7eb;
+}
+.govph-footer__col h4{ margin-bottom:10px; font-size:15px; font-weight:700; color:#0f2b4f }
+.govph-footer__col p{ font-size:13px; color:#4b5563 }
+.govph-footer__links{ list-style:none; padding:0; margin:0 }
+.govph-footer__links li{ margin-bottom:6px }
+.govph-footer__links a{ color:#1f2937; transition:.2s }
+.govph-footer__links a:hover{ color:var(--brand); text-decoration:underline }
+.govph-footer__bar{
+  background:#e5e7eb; padding:10px 0; text-align:center; font-size:13px; color:#374151;
+}
+
+/* ================= DEPED BUTTONS WITH ICONS ================= */
+.deped-buttons li { margin-bottom: 12px }
+.deped-buttons a{
+  display:flex; align-items:center; gap:10px;
+  padding:10px 12px; border-radius:10px;
+  background:#f7f9fc; border:1px solid #d1d5db;
+  font-weight:500; transition:all .2s ease;
+}
+.deped-buttons a:hover{
+  background:var(--brand); color:#fff;
+  transform:translateY(-1px);
+  box-shadow:0 4px 12px rgba(0,0,0,0.12);
+}
+.deped-buttons a:hover img{ filter:brightness(0) invert(1) }
+.deped-icon{ width:26px; height:26px; object-fit:contain }
+
+/* ================= ABOUT HELPERS ================= */
+.section.about .subnav .pill{
+  display:inline-block; margin:4px 6px 0 0; padding:6px 10px;
+  border:1px solid var(--line); border-radius:999px;
+  text-decoration:none; color:#ffffff !important; /* fixed theme override */
+  background: rgba(255,255,255,0.08);
+  border-color: rgba(255,255,255,0.25);
+  font-size:.9rem;
+}
+/* Hover / focus state */
+.section.about .subnav .pill:hover,
+.section.about .subnav .pill:focus-visible{
+  background: rgba(255,255,255,0.20);
+  color:#ffffff !important;
+}
+
+.section.about .timeline { list-style:none; padding:0; margin:0 }
+.section.about .timeline li { padding:10px 0; border-top:1px solid #eee }
+.section.about .timeline li:first-child { border-top:none }
+.section.about .timeline .meta { display:block; color:#6b7280; font-size:.9rem; margin-top:2px }
+.section.about .timeline .desc { color:#374151; margin-top:4px }
+.section.about .org { margin-left:1rem }
+.section.about .org > li { margin:.25rem 0 } /* fixed selector */
+.section.about .org ol,
+.section.about .org ul { margin:.25rem 0 .25rem 1rem }
+
+/* ============ OFFICIALS & PERSONNEL (Multi-column Dropdown) ============ */
+
+/* (from your inline <style> block – turned into plain CSS) */
+.dropdown .menu-label{
+  display:block;
+  font-size:12px;
+  letter-spacing:.04em;
+  text-transform:uppercase;
+  color: var(--muted, #9ca3af);
+  padding: 8px 10px 4px;
+  cursor: default;
+}
+
+/* Wider multi-column layout for a long list */
+.dropdown.dropdown--columns{
+  width: min(860px, 92vw);
+  columns: 3;           /* number of columns on desktop */
+  column-gap: 16px;
+  padding-right: 6px;   /* breathing space on the right edge */
+}
+.dropdown.dropdown--columns > li{ break-inside: avoid } /* fixed selector */
+
+/* Keep it compact on smaller screens */
+@media (max-width: 900px){
+  .dropdown.dropdown--columns{ columns: 2; width: min(680px, 94vw) }
+}
+@media (max-width: 640px){
+  .dropdown.dropdown--columns{ columns: 1; width: 92vw }
+}
+
+/* Mega dropdown grid */
+.dropdown--mega{
+  display:grid;
+  grid-template-columns: repeat(4, minmax(180px, 1fr));
+  gap: 12px 18px;
+  padding: 12px;
+  min-width: min(92vw, 980px);
+}
+.dropdown--mega .menu-col{
+  list-style:none; margin:0; padding:0;
+}
+.dropdown--mega .menu-col-list{
+  list-style:none; margin:6px 0 0; padding:0;
+}
+.dropdown--mega .menu-heading{
+  font-size:13px; font-weight:700; letter-spacing:.02em;
+  text-transform:uppercase;
+  color: var(--brand-700, #0f766e);
+  margin:0 0 6px;
+}
+.dropdown--mega .menu-label{
+  font-size:12px; color: var(--muted, #475569);
+  margin:8px 0 4px; list-style:none;
+}
+.dropdown--mega .menu-sep{
+  height:1px; background: var(--line, #e2e8f0); margin:8px 0;
+}
+.menu-item--thumb{
+  display:flex; align-items:center; gap:10px;
+  padding:8px 8px; border-radius:8px; line-height:1.2;
+  transition: background-color .15s ease, color .15s ease;
+}
+.menu-item--thumb .thumb{
+  width:28px; height:28px; object-fit:cover; border-radius:6px;
+  border:1px solid var(--line, #e2e8f0);
+}
+.menu-item--thumb:hover,
+.menu-item--thumb:focus-visible{
+  background: var(--brand-50, #ecfdf5);
+  color: var(--brand-800, #065f46);
+}
+
+/* Responsive: stack columns on narrow screens */
+@media (max-width:960px){
+  .dropdown--mega{
+    grid-template-columns: 1fr 1fr;
+    min-width: unset;
+    padding:6px;
+  }
+}
+
+/* ================= BUTTON: RETURN (deduped) ================= */
+.btn-return{
+  display:inline-block;
+  padding:8px 14px;
+  font-size:14px;
+  border-radius:6px;
+  background: var(--primary);
+  color:#fff !important;
+  text-decoration:none;
+  transition:.15s ease;
+}
+.btn-return:hover{ background:#1e3a8a }
+
+/* ================= PRINCIPALS GRID & CARDS ================= */
+.principals-grid{
+  display:grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap:18px;
+}
+.p-card{
+  padding:14px;
+  background:var(--card);
+  border:1px solid var(--line);
+  border-radius:6px;
+  text-align:center;
+}
+.p-card img{
+  display:block;
+  width:200px;
+  height:200px;           /* fixed a consistent square */
+  object-fit:cover;
+  border-radius:6px;
+  margin:0 auto 10px;     /* fixed: was `px` only */
+}
+
+/* Slider container */
+.slider{
+  position:relative;
+  width:100%;
+  aspect-ratio:16/6;
+  min-height:280px;
+  border-radius:12px;
+  overflow:hidden;
+  background:#0b4f9c;
+}
+
+/* Slides */
+.slide{
+  position:absolute;
+  inset:0;
+  opacity:0;
+  transition: opacity .6s ease;
+}
+.slide.is-active{ opacity:1 }
+
+/* Slide media and effects */
+.slide img{
+  width:100%; height:100%; object-fit:cover;
+  transform: scale(1.06);
+  opacity: 0;
+  animation: heroIn .9s ease forwards;
+}
+@keyframes heroIn{
+  to{ transform:scale(1); opacity:1; }
+}
+
+/* Overlay + caption */
+.slide-overlay{
+  position:absolute; inset:0;
+  background:linear-gradient(180deg,rgba(0,0,0,.15),rgba(0,0,0,.5));
+}
+.slide-caption{
+  position:absolute;
+  left:16px; right:16px; bottom:14px;
+  color:#fff;
+  max-width: 680px;
+  opacity:0; transform: translateY(12px);
+  animation: captionIn .7s ease .15s forwards;
+}
+.slide-caption h2{
+  margin:0 0 4px;
+  font-size:clamp(1.4rem,2.8vw,2.2rem);
+  line-height:1.15;
+  text-shadow:0 4px 12px rgba(0,0,0,.35);
+}
+.slide-caption p{
+  margin:0; color:#e7ebf5;
+  font-size:clamp(.95rem,1.4vw,1.15rem);
+}
+
+/* Nav arrows */
+.slider .nav{
+  position:absolute;
+  top:50%;
+  transform:translateY(-50%);
+  width:38px; height:38px; border-radius:50%;
+  border:none; cursor:pointer;
+  display:grid; place-items:center;
+  font-size:22px; line-height:1;
+  background:rgba(255,255,255,.86);
+  color:#0b4f9c;
+  box-shadow:0 4px 12px rgba(0,0,0,.15);
+  transition: transform .15s ease, background .15s ease;
+}
+.slider .nav:hover{ transform:translateY(-50%) scale(1.06); background:#fff }
+.slider .nav:focus-visible{ outline:3px solid rgba(14,165,233,.45) }
+.slider .prev{ left:12px }
+.slider .next{ right:12px }
+
+/* Dots */
+.dots{
+  position:absolute; left:0; right:0; bottom:10px;
+  display:flex; justify-content:center; gap:8px;
+  padding:6px 0;
+}
+.dots [role="tab"]{
+  width:9px; height:9px; border-radius:50%;
+  background:rgba(255,255,255,.5);
+  border:0; cursor:pointer; padding:0;
+}
+.dots [role="tab"][aria-selected="true"]{
+  background:#fff; box-shadow:0 0 0 2px rgba(255,255,255,.6);
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce){
+  .slide{ transition:none }
+  .slide img, .slide-caption{ animation:none; opacity:1; transform:none }
+}
+
+/* Responsive tweaks */
+@media (max-width:760px){
+  .slider{ aspect-ratio:16/9; min-height:220px }
+}
+@keyframes captionIn{ to{ opacity:1; transform:none } }
+
+/* Ensure menu is above hero/slider */
+nav { position: relative; z-index: 200; }
+
+/* Base dropdown panel (keep your existing style, but ensure visibility & stacking) */
+.menu .dropdown{
+  position: absolute;
+  left: 0;
+  top: calc(100% + 6px);
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  box-shadow: 0 12px 28px rgba(0,0,0,.14);
+  padding: 12px;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(6px);
+  transition: .18s ease;
+  z-index: 300;
+  overflow: visible;
+}
+
+/* Open state (your JS adds .open to .has-dropdown) */
+.menu .has-dropdown.open > .dropdown{
+  opacity: 1; visibility: visible; transform: none;
+}
+
+/* Hover open on desktop (kept) */
+@media (hover:hover) and (pointer:fine){
+  .menu .has-dropdown:hover > .dropdown{
+    opacity: 1; visibility: visible; transform: none;
+  }
+}
+
+/* -------- MEGA DROPDOWN (GRID) -------- */
+.menu .dropdown.dropdown--mega{
+  display: grid !important; /* override any multi-column flow */
+  grid-template-columns: repeat(4, minmax(220px, 1fr));
+  gap: 14px 20px;
+  min-width: min(96vw, 1040px);
+  padding: 14px;
+}
+
+/* Neutralize any old multi-column variant anywhere */
+.menu .dropdown.dropdown--columns{
+  columns: initial !important;
+  width: auto !important;
+}
+
+/* Columns */
+.dropdown--mega .menu-col{
+  list-style: none;
+  margin: 0; padding: 0;
+  break-inside: avoid;
+}
+
+/* Headings */
+.dropdown--mega .menu-heading{
+  margin: 2px 0 6px;
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: .02em;
+  text-transform: uppercase;
+  color: #0f2b4f;
+}
+
+/* Inner list */
+.dropdown--mega .menu-col-list{
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+/* Inline label (e.g., “Administrators”) */
+.dropdown--mega .menu-label{
+  margin: 8px 0 4px;
+  font-size: 12px;
+  color: var(--muted, #6b7280);
+  list-style: none;
+}
+
+/* Separator line */
+.dropdown--mega .menu-sep{
+  height: 1px;
+  background: var(--line, #e5e7eb);
+  margin: 8px 0;
+}
+
+/* Items with thumbs – anchor is the flex row */
+.dropdown--mega .menu-item--thumb{
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 8px;
+  border-radius: 8px;
+  line-height: 1.25;
+  color: #111827;
+  white-space: normal;            /* allow label to wrap nicely */
+  text-decoration: none;
+  transition: background-color .15s ease, color .15s ease;
+}
+.dropdown--mega .menu-item--thumb:hover,
+.dropdown--mega .menu-item--thumb:focus-visible{
+  background: #f3f4f6;
+  color: var(--brand, #0b4f9c);
+  text-decoration: none;
+  outline: none;
+}
+
+/* Thumbnail sizing & alignment */
+.dropdown--mega .menu-item--thumb .thumb{
+  width: 28px;
+  height: 28px;
+  object-fit: cover;
+  border-radius: 6px;
+  border: 1px solid var(--line, #e5e7eb);
+  flex: 0 0 28px;                /* lock size so text never pushes it */
+}
+
+/* Responsive: fewer columns as width reduces */
+@media (max-width: 1024px){
+  .menu .dropdown.dropdown--mega{
+    grid-template-columns: repeat(3, minmax(220px, 1fr));
+    min-width: min(96vw, 880px);
+  }
+}
+@media (max-width: 900px){
+  .menu .dropdown.dropdown--mega{
+    grid-template-columns: repeat(2, minmax(220px, 1fr));
+    min-width: min(96vw, 680px);
+  }
+}
+@media (max-width: 640px){
+  .menu .dropdown.dropdown--mega{
+    grid-template-columns: 1fr;
+    min-width: 92vw;
+  }
+}
+
+@media (hover:hover) and (pointer:fine){
+  .menu .has-dropdown:hover > .dropdown{
+    opacity:1; visibility:visible; transform:translateY(0);
+  }
+  .menu .has-dropdown:hover > .menu-toggle .chev{ transform:rotate(180deg); }
+}
+
+/* Floating badge on top of the slide */
+.welcome-badge{
+  position:absolute;
+  top:18px; left:18px;
+  display:flex; align-items:center; gap:10px;
+  background: rgba(11,79,156,0.12);
+  border:1px solid rgba(255,255,255,0.35);
+  color:#fff;
+  border-radius:999px;
+  padding:8px 12px 8px 8px;
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  box-shadow: 0 8px 22px rgba(0,0,0,.18);
+  opacity:0; transform: translateY(-6px);
+  animation: badgeIn .6s ease .25s forwards;
+}
+@keyframes badgeIn{ to{ opacity:1; transform:none } }
+
+.badge-logo{
+  position:relative;
+  width:36px; height:36px;
+  display:grid; place-items:center;
+}
+.badge-logo img{
+  width:32px; height:32px; border-radius:50%;
+  border:1px solid rgba(255,255,255,0.7);
+  object-fit:cover;
+  background:#fff;
+}
+.badge-spinner{
+  position:absolute; inset:-2px;
+  border-radius:50%;
+  border:2px dashed rgba(255,255,255,.9);
+  animation: spin 10s linear infinite;
+}
+@keyframes spin{ to{ transform: rotate(360deg) } }
+
+.badge-text{ display:flex; flex-direction:column; line-height:1 }
+.badge-text .eyebrow{
+  text-transform: uppercase; letter-spacing:.12em; font-size:11px; opacity:.9;
+}
+.badge-text strong{
+  font-size:18px; letter-spacing:.02em;
+  text-shadow: 0 2px 8px rgba(0,0,0,.35);
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce){
+  .welcome-badge{ animation:none; opacity:1; transform:none }
+  .badge-spinner{ animation:none }
+}
+
+/* Small screens */
+@media (max-width: 480px){
+  .welcome-badge{ top:10px; left:10px; padding:6px 10px 6px 6px }
+  .badge-logo{ width:30px; height:30px }
+  .badge-logo img{ width:26px; height:26px }
+  .badge-text strong{ font-size:16px }
+}
+
+/* Admin UI minor polish */
+.hero-image-admin .btn { white-space: nowrap; }
+.hero-image-admin .warning {
+  background:#fff7ed; color:#9a3412; border:1px solid #fed7aa;
+  padding:4px 8px; border-radius:6px; font-size:12px; margin-left:6px;
+}
+
+/* --- Facebook-like square thumbnail, without changing markup --- */
+
+/* A small square container for the post image */
+.bb-imgbox{
+  width: 220px;              /* square size (tweak to taste: 200–260px) */
+  aspect-ratio: 1 / 1;       /* perfect square */
+  background: #f3f4f6;       /* subtle placeholder bg */
+  border: 1px solid var(--line, #e5e7eb);
+  border-radius: 12px;
+  overflow: hidden;
+  margin: 4px 14px 8px 0;    /* default margins when floated left */
+  float: left;               /* odd posts: image left */
+}
+
+/* The image fills the square and crops nicely */
+.bb-imgbox img{
+  width: 100%;
+  height: 100%;
+  object-fit: cover;         /* fill the square; crop excess like FB */
+  display: block;
+}
+
+/* Alternate: on every even post card, float the image to the right */
+.bb-feed .bb-card:nth-child(even) .bb-imgbox{
+  float: right;
+  margin: 4px 0 8px 14px;    /* swap margins when on the right */
+}
+
+/* Ensure each card clears the floated image so the next card starts clean */
+.bb-card::after{
+  content: "";
+  display: table;
+  clear: both;
+}
+
+/* Mobile: stack image on top (centered) to keep it readable */
+@media (max-width: 720px){
+  .bb-imgbox{
+    float: none;
+    margin: 8px auto 10px auto;   /* center the square on small screens */
+    display: block;
+  }
+}
+
+/* === SCPHS Chatbot (offline, no server) === */
+:root {
+  --sc-bgc: #ffffff;
+  --sc-line: var(--line, #e5e7eb);
+  --sc-brand: var(--brand, #2563eb);
+  --sc-text: #111827;
+  --sc-muted: #6b7280;
+}
+
+.scbot-bubble {
+  position: fixed; right: 18px; bottom: 18px; z-index: 9999;
+  width: 56px; height: 56px; border-radius: 50%;
+  background: var(--sc-brand); color: #fff; display: grid; place-items: center;
+  box-shadow: 0 10px 24px rgba(0,0,0,.18); cursor: pointer; user-select: none;
+}
+.scbot-bubble svg { width: 28px; height: 28px; }
+
+.scbot-panel {
+  position: fixed; right: 18px; bottom: 86px; z-index: 9999;
+  width: min(360px, 92vw); max-height: min(70vh, 640px);
+  display: none; flex-direction: column; background: var(--sc-bgc);
+  border: 1px solid var(--sc-line); border-radius: 14px; overflow: hidden;
+  box-shadow: 0 18px 40px rgba(0,0,0,.20);
+}
+.scbot-header {
+  display: flex; align-items: center; justify-content: space-between; gap: 8px;
+  padding: 10px 12px; background: #f8fafc; border-bottom: 1px solid var(--sc-line);
+}
+.scbot-title { font-weight: 700; color: var(--sc-text); margin: 0; font-size: 15px; }
+.scbot-actions { display: flex; gap: 6px; }
+.scbot-actions button {
+  border: 1px solid var(--sc-line); background: #fff; color: var(--sc-text);
+  padding: 6px 8px; border-radius: 8px; font-size: 12px; cursor: pointer;
+}
+
+.scbot-body { padding: 10px; overflow: auto; display: flex; flex-direction: column; gap: 10px; }
+.scbot-msg { display: flex; gap: 8px; align-items: flex-start; }
+.scbot-msg.bot .bubble {
+  background: #f1f5f9; color: var(--sc-text); border: 1px solid var(--sc-line);
+}
+.scbot-msg.user { justify-content: flex-end; }
+.scbot-msg.user .bubble {
+  background: var(--sc-brand); color: #fff; border: 1px solid transparent;
+}
+.scbot-msg .bubble {
+  padding: 8px 10px; border-radius: 12px; max-width: 85%;
+  font-size: 14px; line-height: 1.35;
+}
+.scbot-meta { font-size: 11px; color: var(--sc-muted); margin-top: 2px; }
+
+.scbot-footer { border-top: 1px solid var(--sc-line); padding: 8px; display: flex; gap: 8px; }
+.scbot-input {
+  flex: 1; border: 1px solid var(--sc-line); border-radius: 10px; padding: 10px;
+  font-size: 14px;
+}
+.scbot-send {
+  border: 1px solid var(--sc-brand); background: var(--sc-brand); color: #fff;
+  border-radius: 10px; padding: 0 12px; font-size: 14px; cursor: pointer;
+}
+
+.scbot-quick { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
+.scbot-quick button {
+  border: 1px solid var(--sc-line); background: #fff; color: var(--sc-text);
+  border-radius: 999px; font-size: 12px; padding: 6px 10px; cursor: pointer;
+}
+
+.scbot-card {
+  border: 1px solid var(--sc-line); border-radius: 10px; padding: 8px; background: #fff;
+  font-size: 13px; margin-top: 6px;
+}
+.scbot-tag { display:inline-block; background: var(--sc-brand); color:#fff; border-radius:6px; padding:2px 6px; font-size:11px; margin-right:6px; }
+.scbot-link { color: var(--sc-brand); text-decoration: none; }
+
+/* ========= Support Services dropdown look ========= */
+/* Reuse your site variables if you have them; fallbacks are provided */
+:root{
+  --dropdown-bg: #ffffff;
+  --dropdown-text: #1f2937;          /* gray-800 */
+  --dropdown-line: var(--line, #e5e7eb);
+  --dropdown-shadow: 0 12px 24px rgba(0,0,0,.18);
+  --dropdown-radius: 12px;
+}
+
+/* Rounded white panel + shadow (desktop) */
+.dropdown--panel{
+  position: absolute;                /* desktop default; your script handles open/close */
+  top: calc(100% + 10px);
+  left: 0;
+  min-width: 260px;
+  background: var(--dropdown-bg);
+  color: var(--dropdown-text);
+  border: 1px solid var(--dropdown-line);
+  border-radius: var(--dropdown-radius);
+  box-shadow: var(--dropdown-shadow);
+  padding: 8px;
+  list-style: none;
+  margin: 0;
+  display: none;                     /* your JS toggles .open class on the parent <li> */
+}
+
+/* Little arrow pointer */
+.has-dropdown > .dropdown--panel::before{
+  content:"";
+  position:absolute;
+  top:-8px; left:22px;
+  width:14px; height:14px;
+  background: var(--dropdown-bg);
+  border-left: 1px solid var(--dropdown-line);
+  border-top: 1px solid var(--dropdown-line);
+  transform: rotate(45deg);
+}
+
+/* Items inside the panel */
+.dropdown--panel a{
+  display:block;
+  padding:10px 12px;
+  border-radius:8px;
+  text-decoration:none;
+  color: var(--dropdown-text);
+  font-size:14px;
+}
+.dropdown--panel a:hover,
+.dropdown--panel a:focus-visible{
+  background:#f3f4f6;
+  outline:none;
+}
+
+/* Show on hover for pointer devices (if your CSS uses it elsewhere, keep consistent) */
+@media (hover:hover){
+  .has-dropdown:hover > .dropdown--panel{
+    display:block;
+  }
+}
+
+/* Mobile: make dropdowns stack as accordion (no absolute, no shadow) */
+@media (max-width: 991.98px){
+  .dropdown--panel{
+    position: static;
+    box-shadow: none;
+    border: 0;
+    padding: 0 0 8px 0;
+  }
+  .has-dropdown > .dropdown--panel::before{ display:none; }
+}
+
+/* =========================
+   THEME VARIABLES
+   ========================= */
+:root{
+  /* Brand */
+  --brand: #0d47a1;                /* deep blue */
+  --brand-2: #1565c0;              /* lighter blue */
+  --ink: #1f2937;                  /* gray-800 text */
+  --muted: #6b7280;                /* gray-500 */
+  --surface: #ffffff;              /* cards, panels */
+  --line: #e5e7eb;                 /* borders */
+
+  /* Decorations */
+  --bg-grad-start: #eef2ff;        /* soft indigo-50 */
+  --bg-grad-end: #ffffff;          /* white */
+  --bg-pattern: radial-gradient(circle at 20% 10%, rgba(13,71,161,.08), transparent 40%),
+                radial-gradient(circle at 80% 0%, rgba(21,101,192,.06), transparent 35%),
+                radial-gradient(circle at 50% 90%, rgba(13,71,161,.05), transparent 40%);
+  --shadow-1: 0 6px 18px rgba(0,0,0,.10);
+  --shadow-2: 0 12px 28px rgba(0,0,0,.14);
+  --radius: 12px;
+}
+
+/* =========================
+   GLOBAL BACKGROUND / TYPOGRAPHY
+   ========================= */
+html, body{
+  background:
+    linear-gradient(180deg, var(--bg-grad-start), var(--bg-grad-end)) fixed,
+    var(--bg-pattern) fixed;  /* subtle, professional pattern */
+  color: var(--ink);
+}
+
+.wrap { max-width: 1200px; margin: 0 auto; padding: 0 16px; }
+
+/* =========================
+   MINI-HEADER (on subpages)
+   ========================= */
+.mini-header{
+  background:
+    linear-gradient(135deg, rgba(13,71,161,.95), rgba(21,101,192,.92)),
+    url("../images/bg/abstract-wave.svg") center/cover no-repeat; /* optional */
+  color: #fff;
+  border-bottom: 1px solid rgba(255,255,255,.15);
+}
+.mini-header .brand{
+  color: #fff; text-decoration: none; font-weight: 800; letter-spacing: .2px;
+}
+.crumbs a{ color: #e6eefc; text-decoration: none; }
+.crumbs a:hover{ text-decoration: underline; }
+.crumbs{ color: #dbe6fb; }
+
+/* =========================
+   SECTION BACKDROP
+   ========================= */
+.section-backdrop{
+  background: rgba(255,255,255,.6);
+  backdrop-filter: saturate(130%) blur(4px);
+  -webkit-backdrop-filter: saturate(130%) blur(4px);
+  border: 1px solid rgba(255,255,255,.6);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-1);
+  padding: 16px;
+}
+
+/* =========================
+   CARDS / PANELS
+   ========================= */
+.card{
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-1);
+  overflow: hidden;
+}
+.card.soft{
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  box-shadow: none;
+  padding: 16px;
+}
+.card > header{
+  background: linear-gradient(180deg, #ffffff, #fafafa);
+}
+.table td{ padding: 6px 8px; border-bottom: 1px dashed var(--line); }
+.list{ padding-left: 18px; }
+
+/* =========================
+   HEADINGS
+   ========================= */
+h1,h2,h3{ line-height: 1.25; }
+h1{
+  font-weight: 800;
+  letter-spacing: .2px;
+  background: linear-gradient(90deg, var(--brand), var(--brand-2));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;        /* creates a subtle brand gradient text */
+}
+
+/* =========================
+   BADGES / EYEBROWS (optional)
+   ========================= */
+.badge{
+  display: inline-block;
+  font-size: 12px; font-weight: 700; letter-spacing: .3px;
+  color: #0d3b87; background: #e6eefc; border: 1px solid #cfe0ff;
+  padding: 3px 8px; border-radius: 999px;
+}
+
+/* =========================
+   RESPONSIVE LAYOUT HELPERS
+   ========================= */
+.info-grid{
+  display:grid; grid-template-columns: 1fr 1fr; gap:16px;
+}
+@media (max-width: 768px){
+  .info-grid{ grid-template-columns: 1fr; }
+}
+
+/* =========================
+   OPTIONAL: PAGE BANNER with photo + overlay
+   (apply .page-hero on a div before your <main>)
+   ========================= */
+.page-hero{
+  position: relative; isolation: isolate;
+  background: linear-gradient(135deg, rgba(13,71,161,.80), rgba(21,101,192,.80)),
+              url("../images/bg/campus.jpg") center/cover no-repeat; /* replace with your image */
+  color:#fff;
+  border-bottom: 1px solid rgba(255,255,255,.15);
+}
+.page-hero .wrap{ padding: 28px 16px; }
+.page-hero h1{ color:#fff; background:none; }
+.page-hero p.meta{ color: #e6eefc; }
+
+.ph-time-box {
+  text-align: right;
+  padding: 6px 20px 0 20px; /* top right bottom left */
+  font-size: 14px;
+  font-weight: 500;
+}
+.ph-label { font-weight: 700; }
+
+/* --- Barangay Cards: Responsive Grid Layout --- */
+.brgy-grid {
+  display: grid !important;
+  gap: 16px;
+  /* Mobile-first: 1 column, then scale up */
+  grid-template-columns: 1fr;
+  align-items: stretch; /* equal-height cards */
+}
+
+/* ≥600px: 2 columns */
+@media (min-width: 600px) {
+  .brgy-grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+/* ≥900px: 3 columns */
+@media (min-width: 900px) {
+  .brgy-grid { grid-template-columns: repeat(3, 1fr); }
+}
+
+/* ≥1200px: 4 columns */
+@media (min-width: 1200px) {
+  .brgy-grid { grid-template-columns: repeat(4, 1fr); }
+}
+
+/* Card polish to fit grid cleanly */
+.brgy-grid .card {
+  height: 100%;                   /* stretch to equal height */
+  display: flex;                  /* vertical layout inside */
+  align-items: stretch;
+  border-radius: 12px;
+  border: 1px solid #e5e7eb;
+  background: #fff;
+  padding: 14px 16px;
+  box-shadow: 0 2px 4px rgba(0,0,0,.06);
+  transition: transform .2s ease, box-shadow .2s ease, border-color .2s ease;
+}
+
+.brgy-grid .card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 18px rgba(0,0,0,.12);
+  border-color: #3b82f6;
+}
+
+/* Keep the link tidy and full-width without breaking layout */
+.brgy-grid .card h3 {
+  margin: 0;
+  font-size: 16.5px;
+  font-weight: 700;
+  line-height: 1.25;
+}
+
+.brgy-grid .card h3 a {
+  display: block;
+  color: #0f172a;
+  text-decoration: none;
+  /* Let long barangay names wrap instead of stretching the card */
+  white-space: normal;
+  word-wrap: break-word;
+}
+
+/* Optional: consistent height for title area if you want perfect rows */
+/*
+.brgy-grid .card h3 {
+  min-height: 48px; 
+  display: flex;
+  align-items: center;
+}
+*/
+
+/* If your global CSS sets .grid margins/gaps, neutralize here */
+.brgy-grid { margin-top: 16px; margin-bottom: 40px; }
+
+/* base dropdown already present; add submenu */
+.has-submenu { position: relative; }
+.dropdown-sub {
+  display: none;
+  position: absolute;
+  left: 100%;
+  top: 0;
+  min-width: 220px;
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  box-shadow: 0 8px 24px rgba(0,0,0,.08);
+  padding: 8px 0;
+  z-index: 40;
+}
+.has-submenu.open > .dropdown-sub { display: block; }
+.submenu-toggle { background:none;border:0;cursor:pointer;font:inherit;padding:10px 14px;display:flex;gap:6px;align-items:center;width:100%;text-align:left;}

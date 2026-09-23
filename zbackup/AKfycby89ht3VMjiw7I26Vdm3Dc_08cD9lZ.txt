@@ -1,0 +1,273 @@
+AKfycby89ht3VMjiw7I26Vdm3Dc_08cD9lZsmrBzbnuZaHDBhlYjsG03nCgc5TLang_9O0XmqA
+
+
+https://script.google.com/macros/s/AKfycby89ht3VMjiw7I26Vdm3Dc_08cD9lZsmrBzbnuZaHDBhlYjsG03nCgc5TLang_9O0XmqA/exec
+
+
+
+/************************************************************
+ * SCPHS Issuances Harvester (DepEd Central, RO2, SDO NV)
+ * Runs on Google Apps Script
+ * - Harvests Orders & Memoranda
+ * - Stores in Google Sheet (Issuances tab)
+ * - Exposes a JSON feed via doGet()
+ * - Caches JSON for 10 minutes to stay fast
+ ************************************************************/
+
+/** ======================
+ * CONFIG
+ * ======================= */
+const CONFIG = {
+  SHEET_ID: '1OKi8_qt3HOShs1JLWsP1UYAjlSt6FjjpoUilISLwQOA',     // <-- TODO: paste your Google Sheet ID
+  SHEET_NAME: 'Issuances',
+  FEED_LIMIT: 100, // default items returned by API
+
+  // Sources to harvest
+  SOURCES: [
+    {
+      key: 'national_orders',
+      label: 'DepEd Central Office – Orders',
+      level: 'national',
+      type: 'order',
+      url: 'https://www.deped.gov.ph/category/issuances/deped-orders/',
+      parser: 'parseDepEdWPList'
+    },
+    {
+      key: 'national_memos',
+      label: 'DepEd Central Office – Memoranda',
+      level: 'national',
+      type: 'memorandum',
+      url: 'https://www.deped.gov.ph/deped-memorandum/',
+      parser: 'parseDepEdWPList'
+    },
+    {
+      key: 'region2',
+      label: 'DepEd Region II (RO2) – Issuances',
+      level: 'region',
+      type: 'issuance',
+      url: 'https://region2.deped.gov.ph/',
+      parser: 'parseRegion2'
+    },
+    {
+      key: 'sdo_nv_memo',
+      label: 'SDO Nueva Vizcaya – Numbered Memoranda',
+      level: 'division',
+      type: 'memorandum',
+      url: 'https://sdonuevavizcaya.com/category/division-memoranda/',
+      parser: 'parseSdoNvCategory'
+    },
+  ]
+};
+
+/** ======================
+ * Utilities
+ * ======================= */
+function getSheet_() {
+  const ss = SpreadsheetApp.openById(CONFIG.SHEET_ID);
+  const sh = ss.getSheetByName(CONFIG.SHEET_NAME);
+  if (!sh) throw new Error('Sheet not found: ' + CONFIG.SHEET_NAME);
+  return sh;
+}
+
+function hash_(str) {
+  return Utilities.base64Encode(
+    Utilities.computeDigest(Utilities.DigestAlgorithm.SHA_256, str, Utilities.Charset.UTF_8)
+  ).substring(0, 32);
+}
+
+function upsertRows_(rows) {
+  if (!rows || !rows.length) return 0;
+  const sh = getSheet_();
+  const data = sh.getDataRange().getValues();
+  const header = data.shift();
+  const idx = Object.fromEntries(header.map((h, i) => [h, i]));
+  const existing = new Set(data.map(r => r[idx.hash] || ''));
+
+  const fresh = rows.filter(r => !existing.has(r.hash));
+  if (!fresh.length) return 0;
+
+  sh.getRange(sh.getLastRow() + 1, 1, fresh.length, header.length)
+    .setValues(fresh.map(r => header.map(h => r[h] ?? '')));
+  return fresh.length;
+}
+
+function fetchHtml_(url) {
+  const res = UrlFetchApp.fetch(url, {
+    muteHttpExceptions: true,
+    followRedirects: true,
+    headers: { 'User-Agent': 'SCPHS-Harvester/1.0 (+https://example.com)' },
+  });
+  const code = res.getResponseCode();
+  if (code >= 400) throw new Error('HTTP ' + code + ' for ' + url);
+  return res.getContentText();
+}
+
+/** ======================
+ * Parsers
+ * ======================= */
+
+// Generic WordPress list parser (DepEd Central pages for Orders/Memos)
+function parseDepEdWPList(html, src) {
+  const rows = [];
+  const postRegex = /<article[\s\S]*?<\/article>/gi;
+  const titleRegex = /<h2[^>]*class="[^"]*?(entry-title|title)[^"]*?"[^>]*>\s*<a[^>]*?href="([^"]+)"[^>]*>([\s\S]*?)<\/a>\s*<\/h2>/i;
+  const dateRegex = /<time[^>]*datetime="([^"]+)"/i;
+
+  const posts = html.match(postRegex) || [];
+  posts.forEach(p => {
+    const t = p.match(titleRegex);
+    if (!t) return;
+    const url = t[2].trim();
+    const title = t[3].replace(/<[^>]+>/g, '').trim();
+    const d = p.match(dateRegex);
+    const iso = d ? d[1].slice(0,10) : '';
+
+    // Detect series "DO 001, s. 2026" or "DM 006, s. 2026"
+    const seriesMatch = title.match(/(DM|DO)\s*\d+[A-Z\-]*[^,]*,\s*s\.\s*\d{4}/i);
+    const series = seriesMatch ? seriesMatch[0] : '';
+    const type = series.toUpperCase().startsWith('DM') ? 'memorandum'
+               : series.toUpperCase().startsWith('DO') ? 'order'
+               : src.type;
+
+    const row = {
+      source: src.label,
+      level: src.level,
+      series,
+      date: iso || '',
+      title,
+      url,
+      type
+    };
+    row.hash = hash_([row.title, row.url, row.date].join('|'));
+    rows.push(row);
+  });
+  return rows;
+}
+
+// Region II (filters anchors containing DM/DO/Memorandum/Order/Issuance)
+function parseRegion2(html, src) {
+  const rows = [];
+  const linkRegex = /<a\s[^>]*href="([^"]+)"[^>]*>([\s\S]*?)<\/a>/gi;
+  let m;
+  while ((m = linkRegex.exec(html)) !== null) {
+    const url = m[1];
+    const txt = m[2].replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
+    if (!txt) continue;
+    if (!/(^|\s)(DM|DO)\b|\b(Memorandum|Order|Issuance)\b/i.test(txt)) continue;
+
+    const series = (txt.match(/(DM|DO)\s*[\w.-]+/i) || [''])[0];
+    const row = {
+      source: src.label,
+      level: src.level,
+      series,
+      date: '',
+      title: txt,
+      url,
+      type: (/^DM/i.test(series) ? 'memorandum' : (/^DO/i.test(series) ? 'order' : src.type)),
+    };
+    row.hash = hash_([row.title, row.url, row.date].join('|'));
+    rows.push(row);
+  }
+  return rows.slice(0, 40);
+}
+
+// SDO Nueva Vizcaya category page
+function parseSdoNvCategory(html, src) {
+  const rows = [];
+  const postRegex = /<article[\s\S]*?<\/article>/gi;
+  const titleRegex = /<h2[^>]*class="[^"]*?(entry-title|title)[^"]*?"[^>]*>\s*<a[^>]*?href="([^"]+)"[^>]*>([\s\S]*?)<\/a>\s*<\/h2>/i;
+  const dateRegex = /<time[^>]*datetime="([^"]+)"/i;
+
+  const posts = html.match(postRegex) || [];
+  posts.forEach(p => {
+    const t = p.match(titleRegex);
+    if (!t) return;
+    const url = t[2].trim();
+    const title = t[3].replace(/<[^>]+>/g, '').trim();
+    const d = p.match(dateRegex);
+    const iso = d ? d[1].slice(0,10) : '';
+
+    const series = (title.match(/(DM|DO)\s*(No\.)?\s*[\w.\-]+/i) || [''])[0];
+    const row = {
+      source: src.label,
+      level: src.level,
+      series,
+      date: iso,
+      title,
+      url,
+      type: (/^DM/i.test(series) ? 'memorandum' : (/^DO/i.test(series) ? 'order' : src.type)),
+    };
+    row.hash = hash_([row.title, row.url, row.date].join('|'));
+    rows.push(row);
+  });
+  return rows;
+}
+
+/** ======================
+ * Harvesters
+ * ======================= */
+function harvestOnce_() {
+  let total = 0;
+  CONFIG.SOURCES.forEach(src => {
+    try {
+      const html = fetchHtml_(src.url);
+      const parserFn = this[src.parser];
+      if (typeof parserFn !== 'function') throw new Error('Parser not found: ' + src.parser);
+      const rows = parserFn(html, src);
+      total += upsertRows_(rows);
+    } catch (e) {
+      console.error('Harvest error for', src.key, e);
+    }
+  });
+  return total;
+}
+
+/** Cron entry point (use in time-driven trigger) */
+function cronHarvest() {
+  const added = harvestOnce_();
+  console.log('New rows added:', added);
+}
+
+/** ======================
+ * Web API (JSON) with 10-min cache
+ * ======================= */
+function doGet(e) {
+  const limit = Math.min(parseInt(e.parameter.limit || CONFIG.FEED_LIMIT, 10), 300);
+  const filterLevel = (e.parameter.level || '').toLowerCase();   // national|region|division
+  const filterType  = (e.parameter.type  || '').toLowerCase();   // memorandum|order|issuance
+  const q = (e.parameter.q || '').toLowerCase();
+
+  const cache = CacheService.getScriptCache();
+  const cacheKey = 'feed:' + [limit, filterLevel, filterType, q].join('|');
+  const cached = cache.get(cacheKey);
+  if (cached) {
+    return ContentService.createTextOutput(cached).setMimeType(ContentService.MimeType.JSON);
+  }
+
+  const sh = getSheet_();
+  const data = sh.getDataRange().getValues();
+  const header = data.shift();
+  const idx = Object.fromEntries(header.map((h, i) => [h, i]));
+
+  let rows = data.map(r => ({
+    source: r[idx.source],
+    level:  r[idx.level],
+    series: r[idx.series],
+    date:   r[idx.date],
+    title:  r[idx.title],
+    url:    r[idx.url],
+    type:   r[idx.type],
+    hash:   r[idx.hash]
+  }));
+
+  rows.sort((a, b) => (b.date || '').localeCompare(a.date || '') || b.title.localeCompare(a.title));
+
+  if (filterLevel) rows = rows.filter(x => (x.level || '').toLowerCase() === filterLevel);
+  if (filterType)  rows = rows.filter(x => (x.type  || '').toLowerCase() === filterType);
+  if (q)           rows = rows.filter(x => (x.title || '').toLowerCase().includes(q));
+
+  const payload = JSON.stringify({ count: rows.length, items: rows.slice(0, limit) });
+
+  cache.put(cacheKey, payload, 600); // cache 10 minutes
+  return ContentService.createTextOutput(payload).setMimeType(ContentService.MimeType.JSON);
+}

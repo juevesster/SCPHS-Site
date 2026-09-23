@@ -1,0 +1,702 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Sta. Cruz Pingkian High School – School Community Portal</title>
+  <meta name="description" content="SCPHS – Official school community portal for announcements, issuances, downloads, and stakeholder info." />
+
+  <style>
+    /* =========================
+       THEME — tune these to match SDO NV
+       ========================= */
+    :root{
+      /* Approximate SDO NV / GOVPH blues — adjust as you like */
+      --brand:#0b4f9c;   /* Primary (links, accents, hero gradient start)  */
+      --brand-2:#0a3f7e; /* Darker (nav/footer background)                  */
+      --accent:#f1b814;  /* Gold accent (keep) */
+      --ink:#1f2937;     /* Text color */
+      --muted:#6b7280;
+      --bg:#f7f9fc;      /* Page background, slightly bluer                */
+      --card:#ffffff;    /* Cards/containers */
+      --line:#e5e7eb;    /* Borders */
+      --govph-strip:#e9eff7; /* GOVPH strip background (light blue)       */
+    }
+
+    /* ====== Base ====== */
+    *{box-sizing:border-box}
+    body{
+      margin:0; padding:0; font-family:Arial, Helvetica, sans-serif;
+      color:var(--ink); background:var(--bg);
+    }
+    a{color:var(--brand); text-decoration:none}
+    a:hover{text-decoration:underline}
+    img{max-width:100%; display:block}
+    .wrap{max-width:1160px; margin:0 auto; padding:0 16px}
+
+    /* ====== GOVPH strip ====== */
+    .govph{
+      background:var(--govph-strip); color:#1e2a3a; font-size:13px;
+      border-bottom:1px solid var(--line);
+    }
+    .govph .wrap{
+      padding:6px 0; display:flex; align-items:center; gap:10px;
+    }
+    .govph a.govph-link{
+      display:inline-flex; align-items:center; gap:6px;
+      color:#0a3f7e; font-weight:800; letter-spacing:.2px;
+      padding:3px 8px; border-radius:999px; background:#ffffffcc; /* subtle chip */
+      border:1px solid #dbe7ff;
+    }
+    .govph a.govph-link:hover{
+      text-decoration:none; background:#fff; border-color:#cbd6ff;
+    }
+    .govph .sep{
+      height:12px; width:1px; background:#c7d5ea; display:inline-block;
+      transform: translateY(1px);
+    }
+    .govph .label{opacity:.92}
+
+    /* ====== Header ====== */
+    header{background:#fff; border-bottom:1px solid var(--line)}
+    /* Grid: LEFT logo | CENTER text | RIGHT logos */
+    .brandbar {
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      gap: 8px;                 /* tighter so name is closer to logo */
+      align-items: center;
+      padding: 12px 0;          /* slightly tighter vertical rhythm  */
+    }
+
+    /* LEFT: School logo */
+    .logos-left img {
+      display: block;
+      height: 64px;
+      width: auto;
+      object-fit: contain;
+      border-radius: 6px;
+    }
+
+    /* CENTER: larger type and aligned left on desktop */
+    .brandtext{ justify-self: start; }
+    .brandtext h1 {
+      margin: 0;
+      font-size: clamp(1.5rem, 3.2vw, 2.1rem); /* a notch larger */
+      line-height: 1.12;
+      font-weight: 800;
+      text-align: left;         /* left-align near logo */
+      letter-spacing: 0.2px;
+      color:#0f2b4f;            /* slightly deeper for contrast */
+    }
+    .brandtext p {
+      margin: 0.25rem 0 0 0;
+      font-size: clamp(0.92rem, 1.6vw, 1.06rem);
+      color: #2f3e56;           /* cooler gray */
+      text-align: left;
+    }
+
+    /* === Follow Us on Facebook (header button) === */
+    .fb-follow-btn{
+      justify-self: start;          /* sits near the brand text */
+      display:inline-flex; align-items:center; gap:8px;
+      background:#1877f2; color:#fff;
+      padding:8px 12px; border-radius:999px;
+      font-weight:700; font-size:14px; line-height:1;
+      border:1px solid #0f5bd3;
+      box-shadow:0 1px 2px rgba(0,0,0,.08);
+      text-decoration:none;
+    }
+    .fb-follow-btn:hover{
+      background:#1a6fe0; text-decoration:none; border-color:#0d4fc0;
+    }
+    .fb-follow-btn .fb-icon{
+      display:inline-grid; place-items:center;
+      width:18px; height:18px; border-radius:50%;
+      background:#fff; color:#1877f2;
+      font-weight:900; font-family:Arial, Helvetica, sans-serif;
+      font-size:14px;
+    }
+
+    /* RIGHT: Bagong Pilipinas + Transparency Seal */
+    .logos-right {
+      display: flex;
+      align-items: center;
+      gap: 10px;                /* spacing between right-side logos */
+      justify-self: end;        /* pin to right edge of the wrap   */
+    }
+    .logos-right img {
+      display: block;
+      height: 56px;
+      width: auto;
+      object-fit: contain;
+      image-rendering: -webkit-optimize-contrast;
+      background: transparent;
+    }
+    .logos-right .logo--gov { transition: transform 160ms ease; }
+    .logos-right .logo--gov:hover { transform: translateY(-1px); }
+
+    /* Seal emphasis + hover effect */
+    .logo--seal {
+      height: 60px;
+      transition: transform 180ms ease, filter 180ms ease, box-shadow 180ms ease;
+      border-radius: 50%;
+    }
+    .logo-link { display: inline-flex; align-items: center; }
+    .logo-link:hover .logo--seal,
+    .logo-link:focus-visible .logo--seal {
+      transform: scale(1.06);
+      filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.25));
+      box-shadow: 0 0 0 3px rgba(0, 96, 223, 0.25);
+      outline: none;
+    }
+
+    /* ====== Navigation ====== */
+    nav{background:var(--brand-2)}
+    .menu{display:flex; flex-wrap:wrap; gap:8px; padding:8px 0; margin:0; list-style:none}
+    .menu a{
+      color:#fff; text-decoration:none; padding:10px 14px; display:block; border-radius:8px; font-weight:700
+    }
+    .menu a:hover, .menu a.active{background:var(--brand); text-decoration:none}
+
+    /* ====== Hero ====== */
+    .hero{
+      background:linear-gradient(90deg, var(--brand), #1d4e86); color:#fff;
+    }
+    .hero .inner{
+      display:grid; grid-template-columns:2fr 1fr; gap:24px; padding:26px 0; align-items:center;
+    }
+    .badge{
+      display:inline-block; background:#0ea5e9; color:#07263f;
+      padding:4px 10px; border-radius:999px; font-weight:700; margin-bottom:8px
+    }
+    .actions{margin-top:12px; display:flex; gap:10px}
+    .btn{display:inline-block; background:#fff; color:var(--brand); padding:10px 14px; border-radius:8px; font-weight:700}
+    .btn.alt{background:transparent; border:2px solid #fff; color:#fff}
+
+    /* ====== Slider (in hero left column) ====== */
+    .slider{
+      position:relative; width:100%;
+      aspect-ratio: 16 / 6;
+      min-height: 280px;
+      border-radius:12px; overflow:hidden;
+      box-shadow:0 8px 20px rgba(0,0,0,.08);
+      background:#0b4f9c; /* fallback color */
+    }
+    .slide{ position:absolute; inset:0; opacity:0; transition:opacity 600ms ease-in-out; will-change: opacity; }
+    .slide.is-active{ opacity:1; }
+    .slide img{ width:100%; height:100%; object-fit:cover; display:block; }
+    .slide-overlay{ position:absolute; inset:0; background: linear-gradient(180deg, rgba(0,0,0,.25) 0%, rgba(0,0,0,.35) 60%, rgba(0,0,0,.45) 100%); }
+    .slide-caption{ position:absolute; left:16px; right:16px; bottom:14px; color:#fff; text-shadow:0 1px 2px rgba(0,0,0,.35); }
+    .slide-caption h2{ margin:0 0 4px; font-size: clamp(1.25rem, 2.6vw, 1.8rem); font-weight:800; }
+    .slide-caption p{ margin:0; font-size: clamp(.9rem, 1.6vw, 1rem); opacity:.95; }
+
+    .nav{
+      position:absolute; top:50%; transform:translateY(-50%);
+      background: rgba(255,255,255,.9); color:#0a3f7e;
+      border:none; width:36px; height:36px; border-radius:999px;
+      display:grid; place-items:center; cursor:pointer;
+      box-shadow:0 2px 8px rgba(0,0,0,.15);
+      transition: transform 120ms ease, background 120ms ease, opacity 200ms ease;
+      opacity:0;
+    }
+    .slider:hover .nav{ opacity:1; }
+    .nav:hover{ transform: translateY(-50%) scale(1.06); background:#fff; }
+    .nav.prev{ left:10px; }
+    .nav.next{ right:10px; }
+
+    .dots{
+      position:absolute; left:0; right:0; bottom:10px;
+      display:flex; justify-content:center; gap:8px;
+    }
+    .dots button{
+      width:10px; height:10px; border-radius:50%;
+      border:1px solid #ffffffcc; background:transparent; cursor:pointer; padding:0;
+      transition: background 150ms ease, transform 150ms ease, border-color 150ms ease;
+    }
+    .dots button[aria-current="true"]{ background:#fff; border-color:#fff; transform:scale(1.05); }
+
+    /* ====== Main (Sidebar LEFT + Feed RIGHT) ====== */
+    main .grid{
+      display:grid;
+      grid-template-columns:.9fr 1.7fr; /* sidebar left, feed right */
+      gap:28px; padding:24px 0
+    }
+    .card{background:var(--card); border:1px solid var(--line); border-radius:12px; overflow:hidden}
+    .card h3{margin:0; padding:16px; border-bottom:1px solid var(--line); font-size:18px}
+    .posts{padding:8px}
+    .post{padding:12px; border-bottom:1px solid var(--line)}
+    .post:last-child{border-bottom:0}
+    .meta{font-size:12px; color:var(--muted)}
+    .post h4{margin:4px 0 6px; font-size:16px}
+    .excerpt{color:#475569}
+    .pager{padding:12px}
+    .btn.outline{background:#fff; color:var(--brand); border:1px solid var(--brand)}
+
+    /* ====== Sidebar widgets ====== */
+    aside .widget{background:#fff; border:1px solid var(--line); border-radius:12px; padding:14px; margin-bottom:16px}
+    .widget h4{margin:0 0 10px; font-size:16px; border-bottom:1px solid var(--line); padding-bottom:8px}
+    .list{list-style:none; padding:0; margin:0}
+    .list li{padding:6px 0; border-bottom:1px dashed var(--line)}
+    .list li:last-child{border:0}
+    input[type=search]{width:100%; padding:10px; border:1px solid var(--line); border-radius:8px}
+
+    /* ====== Featured boxes ====== */
+    .featured-boxes{
+      display:flex; flex-wrap:wrap; gap:20px; justify-content:center; padding:20px 0;
+    }
+    .featured-boxes .box{
+      background:#fff; border-radius:8px; padding:15px; max-width:250px;
+      text-align:center; box-shadow:0 2px 5px rgba(0,0,0,.07);
+    }
+    .featured-boxes .box img{border-radius:6px}
+
+    /* ====== Footer ====== */
+    footer{background:var(--brand-2); color:var(--card); padding:24px 0; margin-top:16px}
+    footer a{color:#e2e8f0}
+    .foot-grid{display:grid; grid-template-columns:2fr 1fr; gap:16px}
+    .copy{margin-top:8px; font-size:12px; color:#c7d2fe}
+
+    /* ====== Responsive ====== */
+    @media (max-width:900px){
+      .hero .inner{grid-template-columns:1fr}
+      main .grid{grid-template-columns:1fr}
+      .foot-grid{grid-template-columns:1fr}
+    }
+    @media (max-width:760px){
+      .brandbar{grid-template-columns:1fr; text-align:center}
+      .brandtext, .brandtext h1, .brandtext p{ text-align:center; justify-self:center; }
+      .fb-follow-btn{ justify-self:center; } /* center the Follow button on mobile */
+      .menu{flex-direction:column}
+      .menu a{border-top:1px solid #002060}
+      .logos-left, .logos-right{justify-content:center}
+      .logos-right img{height:44px}
+      .logo--seal{height:48px}
+      .logos-left img{height:44px}
+      .brandtext h1{font-size:clamp(1.25rem, 5.2vw, 1.6rem)}
+      .brandtext p{font-size:clamp(0.85rem, 3.8vw, 0.95rem)}
+      .slider{ aspect-ratio: 16 / 9; min-height: 220px; }
+    }
+
+    /* Reduce motion */
+    @media (prefers-reduced-motion: reduce){
+      .slide{ transition:none; }
+      .nav, .dots{ display:none !important; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- GOVPH / DepEd strip -->
+  <div class="govph">
+    <div class="wrap">
+      <!-- Clickable GOVPH at the left -->
+      <a class="govph-link" href="https://www.gov.ph" target="_blank" rel="noopener noreferrer">GOVPH</a>
+      <span class="sep" aria-hidden="true"></span>
+      <span class="label">Republic of the Philippines • Department of Education</span>
+    </div>
+  </div>
+
+  <!-- Header -->
+  <header>
+    <div class="wrap">
+      <div class="brandbar">
+        <!-- LEFT: School logo -->
+        <div class="logos-left" aria-label="School logo">
+          <img src="assets/images/scphslogo.png" alt="SCPHS Logo" />
+        </div>
+
+        <!-- CENTER: Text -->
+        <div class="brandtext">
+          <h1>STA. CRUZ PINGKIAN HIGH SCHOOL</h1>
+          <p>School Division of Nueva Vizcaya • Region II – Cagayan Valley • Department of Education</p>
+        </div>
+
+        <!-- FOLLOW FB: compact header button (added) -->
+        <a class="fb-follow-btn"
+           href="https://www.facebook.com/p/Santa-Cruz-Pingkian-High-School-Official-61554495084090/"
+           target="_blank" rel="noopener noreferrer" aria-label="Follow Us on Facebook">
+          <span class="fb-icon" aria-hidden="true">f</span>
+          <span>Follow Us on Facebook</span>
+        </a>
+
+        <!-- RIGHT: Bagong Pilipinas + Transparency Seal -->
+        <div class="logos-right" aria-label="Government logos">
+          <img
+            src="assets/images/Bagong-Pilipinas-Logo.png"
+            alt="Republic of the Philippines – Bagong Pilipinas"
+            class="logo--gov"
+          />
+          <a
+            href="/transparency"
+            target="_blank"
+            rel="noopener"
+            class="logo-link"
+            aria-label="Transparency Seal (opens in new tab)"
+            title="Transparency Seal"
+          >
+            <img
+              src="assets/images/transparency-seal.png"
+              alt="Transparency Seal"
+              class="logo--seal"
+            />
+          </a>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Navigation -->
+  <nav aria-label="Primary">
+    <ul class="menu wrap">
+      <li><a class="active" href="#home">Home</a></li>
+      <li><a href="#about">About</a></li>
+      <li><a href="#issuances">Issuances</a></li>
+      <li><a href="#downloads">Downloads</a></li>
+      <li><a href="#transparency">Transparency</a></li>
+      <li><a href="#contact">Contact</a></li>
+    </ul>
+  </nav>
+
+  <!-- Hero (with slider) -->
+  <section class="hero" id="home">
+    <div class="wrap inner">
+
+      <!-- LEFT: Slider + actions -->
+      <div>
+        <div class="slider" id="home-slider" aria-label="SCPHS Highlights" data-interval="5000">
+          <!-- Slide 1: Welcome -->
+          <div class="slide is-active">
+            <img src="assets/images/Slider-Welcome.png" alt="Welcome to SCPHS – School community portal" />
+            <div class="slide-overlay"></div>
+            <div class="slide-caption">
+              <h2>Welcome to SCPHS</h2>
+              <p>Announcements, issuances, forms &amp; resources for our community.</p>
+            </div>
+          </div>
+
+          <!-- Slide 2: MATATAG -->
+          <div class="slide">
+            <img src="assets/images/Matatag.png" alt="MATATAG – Stronger foundations for learning" />
+            <div class="slide-overlay"></div>
+            <div class="slide-caption">
+              <h2>MATATAG</h2>
+              <p>Stronger foundations for learning and nation-building.</p>
+            </div>
+          </div>
+
+          <!-- Slide 3: 58th Founding Anniversary -->
+          <div class="slide">
+            <img src="assets/images/58founding-anniversary.png" alt="58th Founding Anniversary – Celebrating excellence" />
+            <div class="slide-overlay"></div>
+            <div class="slide-caption">
+              <h2>58th Founding Anniversary</h2>
+              <p>Celebrating excellence and community since 1968.</p>
+            </div>
+          </div>
+
+          <!-- Controls -->
+          <button class="nav prev" aria-label="Previous slide" type="button">‹</button>
+          <button class="nav next" aria-label="Next slide" type="button">›</button>
+
+          <!-- Dots -->
+          <div class="dots" role="tablist" aria-label="Slide indicators"></div>
+        </div>
+
+        <!-- Primary actions below the slider -->
+        <div class="actions">
+          <a class="btn" href="#issuances">View Issuances</a>
+          <a class="btn alt" href="#downloads">Forms &amp; Downloads</a>
+        </div>
+      </div>
+
+      <!-- RIGHT: Quick Links card -->
+      <div class="card">
+        <h3>Quick Links</h3>
+        <div style="padding:16px; display:grid; grid-template-columns:1fr 1fr; gap:10px">
+          <a class="btn outline" href="#calendar">School Calendar</a>
+          <a class="btn outline" href="#enrollment">Enrollment</a>
+          <a class="btn outline" href="#downloads">Forms &amp; Policies</a>
+          <a class="btn outline" href="#contact">Contact SCPHS</a>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- Optional Featured Section -->
+  <section class="wrap">
+    <div class="featured-boxes">
+      <div class="box">
+        <img src="assets/images/project1.png" alt="Smart Automotive Simulator">
+        <h3>Smart Automotive Simulator</h3>
+        <p>Hands-on learning with diagnostics for real-world readiness.</p>
+      </div>
+      <div class="box">
+        <img src="assets/images/project2.png" alt="Electrical Workshop Activities">
+        <h3>Electrical Workshop Activities</h3>
+        <p>Guided project builds to strengthen technical foundations.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Main: Sidebar LEFT (Map + Google Calendar + Facebook) and Feed RIGHT -->
+  <main class="wrap">
+    <div class="grid">
+
+      <!-- Sidebar (LEFT) -->
+      <aside aria-label="Sidebar">
+        <div class="widget">
+          <h4>Search</h4>
+          <input type="search" aria-label="Search site" placeholder="Search…" />
+        </div>
+
+        <!-- Map widget (Google Maps) -->
+        <div class="widget" id="map">
+          <h4>Find Us</h4>
+          <iframe
+            title="Sta. Cruz Pingkian High School Map"
+            src="https://www.google.com/maps?q=Sta.%20Cruz%20Pingkian%20High%20School,%20Nueva%20Vizcaya,%20Philippines&output=embed"
+            width="100%"
+            height="260"
+            style="border:0; border-radius:8px;"
+            allowfullscreen
+            loading="lazy"
+            referrerpolicy="no-referrer-when-downgrade"
+          ></iframe>
+          <div style="margin-top:8px; font-size:12px;">
+            <a href="https://www.google.com/maps/search/?api=1&query=Sta.+Cruz+Pingkian+High+School,+Nueva+Vizcaya,+Philippines" target="_blank" rel="noopener noreferrer">
+              Open in Google Maps
+            </a>
+          </div>
+        </div>
+
+        <!-- Google Calendar widget -->
+        <div class="widget" id="calendar">
+          <h4>School Calendar</h4>
+          <!-- Replace YOUR_PUBLIC_CALENDAR_ID@group.calendar.google.com with your public calendar ID -->
+          <iframe
+            title="SCPHS Google Calendar"
+            src="https://calendar.google.com/calendar/embed?src=YOUR_PUBLIC_CALENDAR_ID%40group.calendar.google.com&ctz=Asia/Manila"
+            style="border:0; border-radius:8px;"
+            width="100%"
+            height="500"
+            frameborder="0"
+            scrolling="no"
+          ></iframe>
+          <div style="margin-top:8px; font-size:12px;">
+            <a href="https://calendar.google.com/" target="_blank" rel="noopener noreferrer">Open Google Calendar</a>
+          </div>
+        </div>
+
+        <!-- Facebook Page plugin (official) -->
+        <div class="widget">
+          <h4>Follow Us on Facebook</h4>
+          <div id="fb-root"></div>
+          <div
+            class="fb-page"
+            data-href="https://www.facebook.com/p/Santa-Cruz-Pingkian-High-School-Official-61554495084090/"
+            data-tabs="timeline"
+            data-width="100%"
+            data-height="420"
+            data-small-header="false"
+            data-adapt-container-width="true"
+            data-hide-cover="false"
+            data-show-facepile="true">
+            <blockquote cite="https://www.facebook.com/p/Santa-Cruz-Pingkian-High-School-Official-61554495084090/" class="fb-xfbml-parse-ignore">
+              <a href="https://www.facebook.com/p/Santa-Cruz-Pingkian-High-School-Official-61554495084090/" target="_blank" rel="noopener noreferrer">
+                Santa Cruz Pingkian High School – Official
+              </a>
+            </blockquote>
+          </div>
+        </div>
+
+        <!-- Categories -->
+        <div class="widget">
+          <h4>Categories</h4>
+          <ul class="list">
+            <li><a href="#">Issuances</a></li>
+            <li><a href="#">Advisories</a></li>
+            <li><a href="#">Events</a></li>
+            <li><a href="#">Achievements</a></li>
+          </ul>
+        </div>
+
+        <!-- Archives -->
+        <div class="widget">
+          <h4>Archives</h4>
+          <ul class="list">
+            <li><a href="#">February 2026</a></li>
+            <li><a href="#">January 2026</a></li>
+            <li><a href="#">December 2025</a></li>
+          </ul>
+        </div>
+      </aside>
+
+      <!-- Feed (RIGHT) -->
+      <section id="issuances" aria-labelledby="issuances-title">
+        <div class="card">
+          <h3 id="issuances-title">Latest Issuances &amp; Advisories</h3>
+          <div class="posts">
+            <!-- Post 1 -->
+            <article class="post">
+              <div class="meta">Posted on Feb 10, 2026 • Records Office</div>
+              <h4>National Science Fair Results</h4>
+              <p class="excerpt">Congratulations to our campus journalists and science achievers. See complete results and attachments.</p>
+            </article>
+            <!-- Post 2 -->
+            <article class="post">
+              <div class="meta">Posted on Feb 05, 2026 • Records Office</div>
+              <h4>School Press Conference Winners Announced</h4>
+              <p class="excerpt">Division results released; regional qualifiers list included.</p>
+            </article>
+            <!-- Post 3 -->
+            <article class="post">
+              <div class="meta">Posted on Jan 30, 2026 • ICT Unit</div>
+              <h4>New TLE and e-Module Release</h4>
+              <p class="excerpt">Updated modules and practical guides for Automotive and EIM are now available for download.</p>
+            </article>
+
+            <!-- Pagination / Older posts -->
+            <div class="pager">
+              <a class="btn outline" href="#older">← Older posts</a>
+            </div>
+          </div>
+        </div>
+      </section>
+
+    </div>
+  </main>
+
+  <!-- About -->
+  <section id="about" class="wrap" style="padding: 0 0 24px;">
+    <div class="card" style="padding:16px;">
+      <h3>About SCPHS</h3>
+      <p><strong>Vision:</strong> Learners who are technically skilled, values-driven, and future‑ready.</p>
+      <p><strong>Mission:</strong> Provide equitable, practical, and engaging learning opportunities that prepare students for higher education and the workforce.</p>
+      <p><strong>Core Values:</strong> Maka‑Diyos • Maka‑tao • Makakalikasan • Makabansa</p>
+    </div>
+  </section>
+
+  <!-- Downloads -->
+  <section id="downloads" class="wrap" style="padding-bottom:24px;">
+    <div class="card" style="padding:16px;">
+      <h3>Downloads</h3>
+      <ul>
+        <li><a href="#">Enrollment Form (PDF)</a></li>
+        <li><a href="#">ICT Acceptable Use Policy (PDF)</a></li>
+        <li><a href="#">School Calendar (PDF)</a></li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- Transparency -->
+  <section id="transparency" class="wrap" style="padding-bottom:24px;">
+    <div class="card" style="padding:16px;">
+      <h3>Transparency / Policies</h3>
+      <ul>
+        <li><a href="#">Privacy Notice</a></li>
+        <li><a href="#">FOI</a></li>
+        <li><a href="#">Data Protection &amp; Cookies</a></li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- Contact -->
+  <section id="contact" class="wrap" style="padding-bottom:36px;">
+    <div class="card" style="padding:16px;">
+      <h3>Contact Us</h3>
+      <p>Email: <a href="mailto:info@scphs.edu.ph">info@scphs.edu.ph</a></p>
+      <p>Phone: +63 912 345 6789</p>
+      <p>Address: Sta. Cruz Pingkian High School, Nueva Vizcaya, Philippines</p>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer>
+    <div class="wrap">
+      <div class="foot-grid">
+        <div>
+          <strong>Sta. Cruz Pingkian High School</strong><br/>
+          Brgy. Sta. Cruz, Pingkian • Nueva Vizcaya • Philippines<br/>
+          Email: info@scphs.edu.ph • Phone: +63 912 345 6789
+        </div>
+        <div>
+          <a href="#privacy">Privacy Notice</a> •
+          <a href="#foi">FOI</a> •
+          <a href="#sitemap">Sitemap</a> •
+          <a href="https://www.facebook.com/p/Santa-Cruz-Pingkian-High-School-Official-61554495084090/" target="_blank" rel="noopener noreferrer">
+            Follow Us on Facebook
+          </a>
+        </div>
+      </div>
+      <div class="copy">© 2026 SCPHS. All rights reserved.</div>
+    </div>
+  </footer>
+
+  <!-- Slider JS -->
+  <script>
+  (() => {
+    const slider = document.getElementById('home-slider');
+    if (!slider) return;
+
+    const slides = Array.from(slider.querySelectorAll('.slide'));
+    const dotsHost = slider.querySelector('.dots');
+    const prevBtn = slider.querySelector('.prev');
+    const nextBtn = slider.querySelector('.next');
+    const interval = parseInt(slider.dataset.interval, 10) || 5000;
+
+    // Build dots dynamically based on slides
+    const dots = slides.map((_, i) => {
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.setAttribute('aria-label', `Go to slide ${i + 1}`);
+      b.addEventListener('click', () => go(i, true));
+      dotsHost.appendChild(b);
+      return b;
+    });
+
+    let index = 0;
+    let timer;
+
+    function setActive(i){
+      slides.forEach((s, j) => s.classList.toggle('is-active', j === i));
+      dots.forEach((d, j) => d.setAttribute('aria-current', String(j === i)));
+    }
+
+    function next(){ go((index + 1) % slides.length); }
+    function prev(){ go((index - 1 + slides.length) % slides.length); }
+
+    function go(i, user=false){
+      index = i;
+      setActive(index);
+      if (user) restart();
+    }
+
+    function start(){
+      if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+      timer = setInterval(next, interval);
+    }
+    function stop(){ clearInterval(timer); }
+    function restart(){ stop(); start(); }
+
+    nextBtn.addEventListener('click', () => go((index + 1) % slides.length, true));
+    prevBtn.addEventListener('click', () => go((index - 1 + slides.length) % slides.length, true));
+    slider.addEventListener('mouseenter', stop);
+    slider.addEventListener('mouseleave', start);
+    slider.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowRight') { e.preventDefault(); nextBtn.click(); }
+      if (e.key === 'ArrowLeft')  { e.preventDefault(); prevBtn.click(); }
+    });
+    slider.tabIndex = 0; // focusable
+
+    // Init
+    setActive(0);
+    start();
+  })();
+  </script>
+
+  <!-- Facebook SDK (for Page plugin) -->
+  <script async defer crossorigin="anonymous"
+          src="https://connect.facebook.net/en_US/sdk.js#xfbml=1&version=v18.0"></script>
+</body>
+</html>

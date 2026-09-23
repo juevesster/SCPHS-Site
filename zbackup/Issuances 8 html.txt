@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Issuances Archive – Sta. Cruz Pingkian HS</title>
+  <meta name="description" content="Browse National (DepEd) and Division (SDO Nueva Vizcaya) issuances from the SCPHS archive." />
+  <link rel="stylesheet" href="assets/css/styles.css" />
+</head>
+<body>
+  <!-- Header -->
+  <header>
+    <div class="wrap">
+      <div class="brandbar">
+        <div class="logos-left" aria-label="School logo">
+          <img src="assets/images/scphslogo.png" alt="SCPHS">
+        </div>
+        <div class="brandtext">
+          <h1>Issuances Archive</h1>
+          <p>Browse National (DepEd) and Division (SDO Nueva Vizcaya) issuances</p>
+        </div>
+        <div class="logos-right">
+          <a class="btn outline" href="index.html">← Back to Home</a>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main -->
+  <main class="wrap" style="padding:20px 0;">
+    <!-- Filters -->
+    <div class="card" style="margin-bottom:16px;">
+      <h3 style="display:flex; align-items:center; justify-content:space-between;">
+        <span>Filters</span>
+        <button id="reset-filters" class="btn outline" type="button">Reset</button>
+      </h3>
+      <div style="padding:12px; display:grid; gap:12px; grid-template-columns: repeat(4, minmax(0,1fr));">
+        <label>
+          <span class="meta">Level</span>
+          <select id="f-level" style="width:100%; padding:8px; border:1px solid var(--line); border-radius:8px;">
+            <option value="">All</option>
+            <option value="national">National (DepEd)</option>
+            <option value="division">SDO Nueva Vizcaya</option>
+          </select>
+        </label>
+        <label>
+          <span class="meta">Type</span>
+          <select id="f-type" style="width:100%; padding:8px; border:1px solid var(--line); border-radius:8px;">
+            <option value="">All</option>
+            <option value="memorandum">Memorandum</option>
+            <option value="order">Order</option>
+          </select>
+        </label>
+        <label>
+          <span class="meta">Items per page</span>
+          <select id="f-size" style="width:100%; padding:8px; border:1px solid var(--line); border-radius:8px;">
+            <option>20</option><option>40</option><option>60</option><option>100</option>
+          </select>
+        </label>
+        <label>
+          <span class="meta">Search title</span>
+          <input id="f-q" type="search" placeholder="e.g. DM 006, s. 2026" style="width:100%; padding:8px; border:1px solid var(--line); border-radius:8px;">
+        </label>
+      </div>
+      <div style="padding:0 12px 12px; color:var(--muted); font-size:13px;">
+        Tip: You can link directly with filters, e.g. <code>issuances.html?cat=memoranda&amp;year=2026&amp;month=02</code>
+      </div>
+    </div>
+
+    <!-- Results -->
+    <div class="card">
+      <h3>Results</h3>
+      <div id="archive-list" class="posts" aria-live="polite">
+        <div class="meta">Loading…</div>
+      </div>
+      <div class="loadbar" style="justify-content:space-between; padding:12px;">
+        <div class="meta" id="page-info"></div>
+        <div>
+          <button id="prev-page" class="btn" type="button">Prev</button>
+          <button id="next-page" class="btn" type="button" style="margin-left:8px;">Next</button>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- ===================== Inline JS ===================== -->
+  <script>
+    // ---- CONFIG ----
+    const SHEET_JSON = 'https://opensheet.elk.sh/1OKi8_qt3HOShs1JLWsP1UYAjlSt6FjjpoUilISLwQOA/Issuances';
+
+    // ---- DOM ----
+    const LIST   = document.getElementById('archive-list');
+    const INFO   = document.getElementById('page-info');
+    const PREV   = document.getElementById('prev-page');
+    const NEXT   = document.getElementById('next-page');
+
+    const F_LEVEL = document.getElementById('f-level');
+    const F_TYPE  = document.getElementById('f-type');
+    const F_SIZE  = document.getElementById('f-size');
+    const F_Q     = document.getElementById('f-q');
+    const BTN_RST = document.getElementById('reset-filters');
+
+    // ---- HELPERS ----
+    const esc = (s='') => String(s)
+      .replaceAll('&','&amp;').replaceAll('<','&lt;')
+      .replaceAll('>','&gt;').replaceAll('"','&quot;').replaceAll("'","&#39;");
+
+    const fmtDate = (iso='') => {
+      if (!iso) return '';
+      const [y,m,d] = iso.split('-');
+      const dt = new Date(+y, (+m||1)-1, +d||1);
+      if (isNaN(dt)) return iso;
+      return dt.toLocaleDateString('en-PH', { month:'short', day:'numeric', year:'numeric' });
+    };
+
+    const renderItems = (items) => {
+      if (!items.length) return '<div class="meta">No issuances found.</div>';
+      return items.map(row => {
+        const title = esc(row.title || 'Untitled');
+        const url   = esc(row.url   || '#');
+        const date  = fmtDate(row.date || '');
+        const src   = esc(row.source || '');
+        const series= esc((row.series || '').toUpperCase());
+        const level = row.level ? ' • ' + esc(String(row.level).toUpperCase()) : '';
+        const type  = row.type  ? ' • ' + esc(row.type) : '';
+        return `
+          <article class="post">
+            <div class="meta">${date} • ${src}</div>
+            <h4><a href="${url}" target="_blank" rel="noopener noreferrer">${title}</a></h4>
+            <div class="meta">${series}${level}${type}</div>
+          </article>
+        `;
+      }).join('');
+    };
+
+    // ---- STATE ----
+    let ALL = [];     // normalized rows
+    let level = '';   // '', 'national', 'division'
+    let type  = '';   // '', 'memorandum', 'order'
+    let size  = 20;   // items per page
+    let q     = '';   // search text
+    let page  = 1;
+    let year  = '';   // 'YYYY'
+    let month = '';   // 'MM'
+
+    // ---- URL PARAMS <-> UI ----
+    function readParams() {
+      const p = new URLSearchParams(location.search);
+
+      // cat mapping
+      const cat = (p.get('cat') || '').toLowerCase();
+      if (cat === 'orders' || cat === 'order') type = 'order';
+      else if (cat === 'memoranda' || cat === 'memorandum') type = 'memorandum';
+      else if (cat === 'division' || cat === 'division-memos') level = 'division';
+      else if (cat === 'national') level = 'national';
+
+      // explicit params override cat-mapping
+      level = (p.get('level') || level || '').toLowerCase();
+      type  = (p.get('type')  || type  || '').toLowerCase();
+      size  = parseInt(p.get('size') || size, 10) || 20;
+      q     = (p.get('q') || '').trim();
+
+      year  = (p.get('year')  || '').replace(/[^\d]/g,'').slice(0,4);
+      month = (p.get('month') || '').replace(/[^\d]/g,'').slice(0,2);
+
+      // reflect to UI
+      F_LEVEL.value = level;
+      F_TYPE.value  = type;
+      F_SIZE.value  = String(size);
+      F_Q.value     = q;
+    }
+
+    function writeParams() {
+      const p = new URLSearchParams();
+      if (level) p.set('level', level);
+      if (type)  p.set('type', type);
+      if (q)     p.set('q', q);
+      if (size !== 20) p.set('size', String(size));
+      if (year)  p.set('year', year);
+      if (month) p.set('month', month);
+      history.replaceState(null, '', location.pathname + (p.toString() ? '?' + p.toString() : ''));
+    }
+
+    // ---- FETCH with retry/backoff ----
+    async function fetchJSON(url, attempts = 3, wait = 400) {
+      let lastErr;
+      for (let i = 1; i <= attempts; i++) {
+        try {
+          const res = await fetch(url, { cache: 'no-store' });
+          if (!res.ok) throw new Error('HTTP ' + res.status);
+          const data = await res.json();
+          if (data && data.error === 'Permission') {
+            throw new Error('OpenSheet permission: enable "Anyone with the link – Viewer" or check tab name/ID.');
+          }
+          return data;
+        } catch (e) {
+          lastErr = e;
+          if (i < attempts) {
+            await new Promise(r => setTimeout(r, wait));
+            wait *= 2;
+            continue;
+          }
+        }
+      }
+      throw lastErr;
+    }
+
+    async function fetchAll() {
+      LIST.innerHTML = '<div class="meta">Loading…</div>';
+      try {
+        const data = await fetchJSON(SHEET_JSON, 3, 400);
+        if (!Array.isArray(data)) throw new Error('Sheet JSON not an array');
+
+        // normalize keys
+        ALL = data.map(r => {
+          const o = {};
+          Object.keys(r).forEach(k => o[k.toLowerCase()] = r[k]);
+          return o;
+        });
+
+        page = 1;
+        renderPage();
+      } catch (e) {
+        console.error(e);
+        LIST.innerHTML = '<div class="meta" style="color:#b91c1c;">Failed to load issuances.</div>';
+        INFO.textContent = '';
+      }
+    }
+
+    // ---- FILTER + PAGINATE + RENDER ----
+    function getFiltered() {
+      let rows = ALL.slice();
+
+      // Level & Type
+      if (level) rows = rows.filter(r => String(r.level || '').toLowerCase() === level);
+      if (type)  rows = rows.filter(r => String(r.type  || '').toLowerCase() === type);
+
+      // Year/Month prefix match on date
+      if (year && month) {
+        const prefix = `${year}-${month.padStart(2,'0')}`;
+        rows = rows.filter(r => String(r.date || '').startsWith(prefix));
+      } else if (year) {
+        const prefix = `${year}-`;
+        rows = rows.filter(r => String(r.date || '').startsWith(prefix));
+      }
+
+      // Title search
+      if (q) {
+        const nd = q.toLowerCase();
+        rows = rows.filter(r => String(r.title || '').toLowerCase().includes(nd));
+      }
+
+      // Sort: newest first, then title
+      rows.sort((a, b) =>
+        String(b.date||'').localeCompare(String(a.date||'')) ||
+        String(b.title||'').localeCompare(String(a.title||''))
+      );
+      return rows;
+    }
+
+    function renderPage() {
+      const rows  = getFiltered();
+      const total = rows.length;
+      const pages = Math.max(1, Math.ceil(total / size));
+      if (page > pages) page = pages;
+
+      const start = (page - 1) * size;
+      const pageItems = rows.slice(start, start + size);
+
+      LIST.innerHTML = renderItems(pageItems);
+      INFO.textContent = total ? `Page ${page} of ${pages} • ${total} item(s)` : 'No items found.';
+      PREV.disabled = page <= 1;
+      NEXT.disabled = page >= pages;
+
+      writeParams();
+    }
+
+    // ---- EVENTS ----
+    F_LEVEL.addEventListener('change', () => { level = F_LEVEL.value; page = 1; renderPage(); });
+    F_TYPE .addEventListener('change', () => { type  = F_TYPE.value;  page = 1; renderPage(); });
+    F_SIZE .addEventListener('change', () => { size  = parseInt(F_SIZE.value, 10) || 20; page = 1; renderPage(); });
+    F_Q    .addEventListener('keydown', (e) => { if (e.key === 'Enter') { q = F_Q.value.trim(); page = 1; renderPage(); } });
+
+    BTN_RST.addEventListener('click', () => {
+      level = ''; type = ''; size = 20; q = ''; page = 1; year = ''; month = '';
+      F_LEVEL.value = ''; F_TYPE.value = ''; F_SIZE.value = '20'; F_Q.value = '';
+      renderPage();
+    });
+
+    PREV.addEventListener('click', () => { if (page > 1) { page--; renderPage(); } });
+    NEXT.addEventListener('click', () => { page++; renderPage(); });
+
+    // ---- INIT ----
+    readParams();
+    fetchAll();
+  </script>
+
+  <!-- ================== GOVPH FOOTER ================== -->
+  <footer class="govph-footer" role="contentinfo" aria-label="GOVPH site footer">
+    <div class="wrap govph-footer__grid">
+      <section class="govph-footer__col govph-footer__brand">
+        <h4>Republic of the Philippines</h4>
+        <p>All content is in the public domain unless otherwise stated.</p>
+      </section>
+
+      <section class="govph-footer__col">
+        <h4>About GOVPH</h4>
+        <p>Learn more about the Philippine government, its structure, how government works and the people behind it.</p>
+        <ul class="govph-footer__links">
+          <li><a href="https://www.gov.ph/" target="_blank" rel="noopener">GOV.PH</a></li>
+          <li><a href="https://data.gov.ph/" target="_blank" rel="noopener">Open Data Portal</a></li>
+          <li><a href="https://www.officialgazette.gov.ph/" target="_blank" rel="noopener">Official Gazette</a></li>
+        </ul>
+      </section>
+
+      <section class="govph-footer__col">
+        <h4>Government Links</h4>
+        <ul class="govph-footer__links">
+          <li><a href="https://op-proper.gov.ph/" target="_blank" rel="noopener">Office of the President</a></li>

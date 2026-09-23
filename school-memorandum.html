@@ -1,0 +1,639 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>School Memorandum – Admin – SCPHS</title>
+  <link rel="stylesheet" href="assets/css/styles.css">
+
+  <style>
+    /* =========================================================
+       SCHOOL MEMORANDUM ADMIN — self-contained styling
+       ========================================================= */
+    :root {
+      --m-brand:      #0f4c81;
+      --m-brand-2:    #1e6bb8;
+      --m-accent:     #c8102e;
+      --m-line:       #e5e7eb;
+      --m-line-2:     #eef0f3;
+      --m-muted:      #6b7280;
+      --m-text:       #111827;
+      --m-bg-soft:    #f6f7f9;
+      --m-ok:         #059669;
+      --m-err:        #b91c1c;
+      --m-warn:       #b45309;
+      --m-radius:     12px;
+      --m-shadow:     0 1px 2px rgba(16,24,40,.04), 0 4px 12px rgba(16,24,40,.06);
+    }
+
+    body { background: var(--m-bg-soft); color: var(--m-text); }
+    .m-page { padding: 24px 0 56px; }
+    .m-wrap { max-width: 1080px; margin: 0 auto; padding: 0 16px; }
+
+    /* ---------- Cards ---------- */
+    .m-card {
+      background: #fff;
+      border: 1px solid var(--m-line);
+      border-radius: var(--m-radius);
+      box-shadow: var(--m-shadow);
+      overflow: hidden;
+    }
+    .m-card + .m-card { margin-top: 18px; }
+
+    .m-card-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 14px 18px;
+      border-bottom: 1px solid var(--m-line-2);
+      background: #fafbfc;
+      flex-wrap: wrap;
+    }
+    .m-card-head h3 { margin: 0; font-size: 1rem; }
+    .m-card-body { padding: 18px; }
+
+    /* ---------- Page head ---------- */
+    .m-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 16px;
+      flex-wrap: wrap;
+      margin-bottom: 16px;
+    }
+    .m-head h1 { margin: 0 0 4px; font-size: 1.5rem; }
+    .m-head p  { margin: 0; font-size: .9rem; color: var(--m-muted); }
+
+    /* ---------- Form ---------- */
+    .m-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+    }
+    @media (max-width: 700px) { .m-grid { grid-template-columns: 1fr; } }
+
+    .m-field { display: flex; flex-direction: column; gap: 4px; }
+    .m-field.full { grid-column: 1 / -1; }
+    .m-field label {
+      font-size: .78rem;
+      font-weight: 600;
+      color: #374151;
+      text-transform: uppercase;
+      letter-spacing: .02em;
+    }
+    .m-field input[type="text"],
+    .m-field input[type="date"],
+    .m-field input[type="url"],
+    .m-field textarea,
+    .m-field select {
+      width: 100%;
+      padding: 9px 11px;
+      font-size: .92rem;
+      border: 1px solid var(--m-line);
+      border-radius: 8px;
+      background: #fff;
+      color: var(--m-text);
+      font-family: inherit;
+      outline: none;
+      transition: border-color .15s, box-shadow .15s;
+      box-sizing: border-box;
+    }
+    .m-field input:focus,
+    .m-field textarea:focus,
+    .m-field select:focus {
+      border-color: var(--m-brand-2);
+      box-shadow: 0 0 0 3px rgba(30,107,184,.15);
+    }
+    .m-field textarea { min-height: 90px; resize: vertical; }
+    .m-field .hint { font-size: .75rem; color: var(--m-muted); }
+
+    /* ---------- Buttons ---------- */
+    .m-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      padding: 9px 14px;
+      font-size: .9rem;
+      font-weight: 600;
+      border-radius: 8px;
+      border: 1px solid transparent;
+      cursor: pointer;
+      text-decoration: none;
+      transition: background .15s, color .15s, border-color .15s;
+      font-family: inherit;
+      line-height: 1;
+    }
+    .m-btn { background: var(--m-brand); color: #fff; }
+    .m-btn:hover { background: var(--m-brand-2); }
+    .m-btn.outline {
+      background: #fff;
+      color: var(--m-brand);
+      border-color: var(--m-line);
+    }
+    .m-btn.outline:hover {
+      background: #f3f6fa;
+      border-color: var(--m-brand-2);
+      color: var(--m-brand-2);
+    }
+    .m-btn.ghost { background: transparent; color: var(--m-brand); }
+    .m-btn.ghost:hover { background: #eef2f6; }
+    .m-btn.danger {
+      background: #fff;
+      color: var(--m-err);
+      border-color: #fecaca;
+    }
+    .m-btn.danger:hover {
+      background: #fef2f2;
+      border-color: var(--m-err);
+    }
+    .m-btn.success { background: var(--m-ok); color: #fff; }
+    .m-btn.success:hover { background: #047857; }
+    .m-btn.small { padding: 6px 10px; font-size: .8rem; }
+    .m-btn:disabled { opacity: .5; cursor: not-allowed; pointer-events: none; }
+
+    /* ---------- Login gate ---------- */
+    .m-gate {
+      max-width: 420px;
+      margin: 40px auto;
+      padding: 26px 24px;
+      background: #fff;
+      border: 1px solid var(--m-line);
+      border-radius: var(--m-radius);
+      box-shadow: var(--m-shadow);
+    }
+    .m-gate h2 { margin: 0 0 6px; font-size: 1.2rem; color: var(--m-brand); }
+    .m-gate p  { margin: 0 0 16px; font-size: .88rem; color: var(--m-muted); }
+    .m-gate .m-field { margin-bottom: 12px; }
+    .m-gate .m-error {
+      color: var(--m-err);
+      font-size: .85rem;
+      margin-top: 8px;
+      min-height: 1.2em;
+    }
+
+    /* ---------- Memo list ---------- */
+    .m-list {
+      display: grid;
+      gap: 12px;
+    }
+    .m-item {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 12px;
+      padding: 14px;
+      border: 1px solid var(--m-line);
+      border-radius: 10px;
+      background: #fff;
+      align-items: start;
+    }
+    .m-item .m-item-title {
+      margin: 0 0 4px;
+      font-weight: 600;
+      font-size: .98rem;
+      line-height: 1.4;
+      color: var(--m-brand);
+    }
+    .m-item .m-item-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      font-size: .78rem;
+      color: var(--m-muted);
+      margin-bottom: 6px;
+    }
+    .m-item .m-item-meta .chip {
+      padding: 2px 8px;
+      background: #eef2f6;
+      border-radius: 999px;
+      font-weight: 600;
+      color: #1f2937;
+    }
+    .m-item .m-item-desc {
+      margin: 0;
+      font-size: .88rem;
+      color: #4b5563;
+      line-height: 1.5;
+    }
+    .m-item .m-item-actions {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+
+    .m-empty {
+      padding: 30px 18px;
+      text-align: center;
+      color: var(--m-muted);
+      font-size: .9rem;
+      border: 2px dashed var(--m-line);
+      border-radius: 10px;
+    }
+
+    /* ---------- Toast ---------- */
+    .m-toast {
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%) translateY(20px);
+      background: #111827;
+      color: #fff;
+      padding: 10px 18px;
+      border-radius: 8px;
+      font-size: .9rem;
+      font-weight: 500;
+      box-shadow: 0 8px 24px rgba(0,0,0,.2);
+      opacity: 0;
+      transition: opacity .2s, transform .2s;
+      z-index: 9999;
+      pointer-events: none;
+    }
+    .m-toast.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+
+    .m-banner {
+      display: flex;
+      gap: 10px;
+      align-items: flex-start;
+      padding: 10px 14px;
+      border-radius: 8px;
+      background: #eff6ff;
+      border: 1px solid #bfdbfe;
+      color: #1e40af;
+      font-size: .85rem;
+      margin-bottom: 14px;
+    }
+    .m-banner.warn { background: #fffbeb; border-color: #fde68a; color: #92400e; }
+  </style>
+</head>
+
+<body>
+
+  <!-- ===================== LOGIN GATE ===================== -->
+  <main id="gate" class="m-wrap m-page" hidden>
+    <div class="m-gate">
+      <h2>🔒 Admin Access</h2>
+      <p>Only authorized personnel may upload or manage school memoranda.</p>
+
+      <div class="m-field">
+        <label for="login-user">Username</label>
+        <input id="login-user" type="text" autocomplete="username" placeholder="Enter username">
+      </div>
+      <div class="m-field">
+        <label for="login-pass">Password</label>
+        <input id="login-pass" type="password" autocomplete="current-password" placeholder="Enter password">
+      </div>
+
+      <div class="m-row" style="display:flex;gap:8px;flex-wrap:wrap;">
+        <button id="btn-login" class="m-btn" type="button">Login</button>
+        <a class="m-btn ghost" href="issuances.html">← Back to Issuances</a>
+      </div>
+
+      <div class="m-error" id="login-error"></div>
+
+      <p class="hint" style="margin-top:14px;font-size:.78rem;color:var(--m-muted);">
+        Default: <strong>admin</strong> / <strong>scphs2026</strong><br>
+        Session lasts 8 hours. Change credentials in <code>assets/js/school-memos.js</code>.
+      </p>
+    </div>
+  </main>
+
+  <!-- ===================== MAIN ADMIN UI ===================== -->
+  <main id="admin" class="m-wrap m-page" hidden>
+
+    <!-- Page head -->
+    <div class="m-head">
+      <div>
+        <h1>School Memorandum</h1>
+        <p>Upload, edit, and remove official SCPHS memoranda. School memos appear in the public <a href="issuances.html?level=school">Issuances feed</a>.</p>
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;">
+        <span class="m-item-meta" style="align-self:center;">Signed in as <strong id="who"></strong></span>
+        <a class="m-btn outline" href="issuances.html?level=school">View public feed</a>
+        <button id="btn-logout" class="m-btn danger" type="button">Logout</button>
+      </div>
+    </div>
+
+    <!-- Create form -->
+    <section class="m-card">
+      <div class="m-card-head">
+        <h3 id="form-title">➕ Add School Memorandum</h3>
+        <button id="btn-clear" class="m-btn ghost small" type="button">Clear form</button>
+      </div>
+      <div class="m-card-body">
+
+        <div class="m-banner">
+          <span>💡</span>
+          <div>School memos are stored locally in your browser. To publish for all visitors, eventually move this to a shared backend (e.g., Google Sheets via Apps Script).</div>
+        </div>
+
+        <div class="m-grid">
+          <div class="m-field full">
+            <label for="f-title">Title <span style="color:var(--m-err)">*</span></label>
+            <input id="f-title" type="text" placeholder="e.g. SM No. 03, s. 2026 – Guidelines on School Uniform and ID">
+          </div>
+
+          <div class="m-field">
+            <label for="f-series">Series / Number</label>
+            <input id="f-series" type="text" placeholder="e.g. SM No. 03, s. 2026">
+          </div>
+
+          <div class="m-field">
+            <label for="f-date">Date issued</label>
+            <input id="f-date" type="date">
+          </div>
+
+          <div class="m-field full">
+            <label for="f-url">Link to PDF / File (optional)</label>
+            <input id="f-url" type="url" placeholder="https://drive.google.com/file/d/… or direct PDF">
+            <span class="hint">Paste a Google Drive share link or direct PDF URL.</span>
+          </div>
+
+          <div class="m-field full">
+            <label for="f-source">Source / Issuing office</label>
+            <input id="f-source" type="text" placeholder="e.g. SCPHS – Office of the Principal" value="SCPHS – Office of the Principal">
+          </div>
+
+          <div class="m-field full">
+            <label for="f-desc">Short description</label>
+            <textarea id="f-desc" placeholder="A 1–3 sentence summary shown in the feed."></textarea>
+          </div>
+        </div>
+
+        <div style="display:flex;gap:10px;margin-top:18px;flex-wrap:wrap;">
+          <button id="btn-save" class="m-btn success" type="button">💾 Save memorandum</button>
+          <button id="btn-cancel-edit" class="m-btn outline" type="button" style="display:none;">Cancel edit</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Existing memos -->
+    <section class="m-card">
+      <div class="m-card-head">
+        <h3>📚 Existing School Memoranda</h3>
+        <div style="display:flex;gap:8px;">
+          <span class="m-item-meta" id="count" style="align-self:center;"></span>
+          <button id="btn-delete-all" class="m-btn danger small" type="button">Delete All</button>
+        </div>
+      </div>
+      <div class="m-card-body">
+        <div id="memo-list" class="m-list"></div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Toast -->
+  <div id="toast" class="m-toast" role="status" aria-live="polite"></div>
+
+  <!-- Shared store -->
+  <script src="assets/js/school-memos.js"></script>
+
+  <script>
+  (function () {
+    'use strict';
+
+    // ---------- DOM ----------
+    const $ = id => document.getElementById(id);
+    const GATE   = $('gate');
+    const ADMIN  = $('admin');
+
+    const IN_USER = $('login-user');
+    const IN_PASS = $('login-pass');
+    const BTN_LOGIN = $('btn-login');
+    const LOGIN_ERR = $('login-error');
+
+    const BTN_LOGOUT = $('btn-logout');
+    const WHO        = $('who');
+    const COUNT      = $('count');
+
+    const F_TITLE  = $('f-title');
+    const F_SERIES = $('f-series');
+    const F_DATE   = $('f-date');
+    const F_URL    = $('f-url');
+    const F_SOURCE = $('f-source');
+    const F_DESC   = $('f-desc');
+
+    const BTN_SAVE  = $('btn-save');
+    const BTN_CLEAR = $('btn-clear');
+    const BTN_CANCEL_EDIT = $('btn-cancel-edit');
+    const BTN_DELETE_ALL  = $('btn-delete-all');
+    const FORM_TITLE = $('form-title');
+    const LIST = $('memo-list');
+
+    // ---------- State ----------
+    let editingId = null; // when set, form is in "edit" mode
+
+    // ---------- Toast ----------
+    let toastTimer;
+    function toast(msg) {
+      const t = $('toast');
+      t.textContent = msg;
+      t.classList.add('show');
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => t.classList.remove('show'), 1800);
+    }
+
+    // ---------- Helpers ----------
+    function esc(s) {
+      return String(s == null ? '' : s)
+        .replaceAll('&','&amp;').replaceAll('<','&lt;')
+        .replaceAll('>','&gt;').replaceAll('"','&quot;').replaceAll("'",'&#39;');
+    }
+    function fmtDate(d) {
+      if (!d) return '—';
+      const [y,m,day] = String(d).split('-');
+      if (!y || !m || !day) return d;
+      const dt = new Date(+y, +m - 1, +day);
+      if (isNaN(dt)) return d;
+      return dt.toLocaleDateString('en-PH', { month:'short', day:'numeric', year:'numeric' });
+    }
+    function resetForm() {
+      F_TITLE.value = '';
+      F_SERIES.value = '';
+      F_DATE.value = new Date().toISOString().slice(0, 10);
+      F_URL.value = '';
+      F_SOURCE.value = 'SCPHS – Office of the Principal';
+      F_DESC.value = '';
+      editingId = null;
+      FORM_TITLE.textContent = '➕ Add School Memorandum';
+      BTN_SAVE.textContent = '💾 Save memorandum';
+      BTN_CANCEL_EDIT.style.display = 'none';
+    }
+
+    // ---------- Auth ----------
+    function showGate() {
+      GATE.hidden = false;
+      ADMIN.hidden = true;
+      document.title = 'School Memorandum – Admin – SCPHS';
+    }
+    function showAdmin() {
+      GATE.hidden = true;
+      ADMIN.hidden = false;
+      WHO.textContent = window.SchoolMemos.currentUser() || 'admin';
+      document.title = 'School Memorandum – Admin – SCPHS';
+      renderList();
+    }
+
+    BTN_LOGIN.addEventListener('click', () => {
+      LOGIN_ERR.textContent = '';
+      const u = IN_USER.value.trim();
+      const p = IN_PASS.value;
+      if (!u || !p) {
+        LOGIN_ERR.textContent = 'Please enter username and password.';
+        return;
+      }
+      if (window.SchoolMemos.login(u, p)) {
+        IN_USER.value = ''; IN_PASS.value = '';
+        toast('✓ Signed in');
+        showAdmin();
+      } else {
+        LOGIN_ERR.textContent = 'Incorrect username or password.';
+      }
+    });
+    IN_PASS.addEventListener('keydown', e => { if (e.key === 'Enter') BTN_LOGIN.click(); });
+
+    BTN_LOGOUT.addEventListener('click', () => {
+      window.SchoolMemos.logout();
+      toast('Signed out');
+      showGate();
+    });
+
+    // ---------- Render list ----------
+    function renderList() {
+      const items = window.SchoolMemos.list();
+      COUNT.textContent = `${items.length} item${items.length === 1 ? '' : 's'}`;
+
+      if (!items.length) {
+        LIST.innerHTML = `<div class="m-empty">
+          <strong>No school memoranda yet.</strong>
+          <div style="margin-top:6px;">Use the form above to add your first memo.</div>
+        </div>`;
+        return;
+      }
+
+      LIST.innerHTML = items.map(m => {
+        const title = esc(m.title);
+        const series = esc(m.series || '');
+        const date = fmtDate(m.date);
+        const desc = esc(m.desc || '');
+        const url = esc(m.url || '#');
+        const hasUrl = !!m.url;
+
+        return `
+          <div class="m-item" data-id="${esc(m.id)}">
+            <div>
+              <h4 class="m-item-title">${title}</h4>
+              <div class="m-item-meta">
+                ${series ? `<span class="chip">${series}</span>` : ''}
+                <span>📅 ${date}</span>
+                <span>•</span>
+                <span>${esc(m.source || '')}</span>
+              </div>
+              ${desc ? `<p class="m-item-desc">${desc}</p>` : ''}
+              ${hasUrl ? `<a class="m-btn ghost small" style="margin-top:8px;" href="${url}" target="_blank" rel="noopener noreferrer">📄 Open file</a>` : ''}
+            </div>
+            <div class="m-item-actions">
+              <button class="m-btn outline small" data-action="edit" type="button">✎ Edit</button>
+              <button class="m-btn danger small" data-action="delete" type="button">✕ Delete</button>
+            </div>
+          </div>`;
+      }).join('');
+    }
+
+    LIST.addEventListener('click', e => {
+      const btn = e.target.closest('button[data-action]');
+      if (!btn) return;
+      const wrap = btn.closest('.m-item');
+      const id = wrap.dataset.id;
+      const action = btn.dataset.action;
+
+      if (action === 'edit') {
+        const m = window.SchoolMemos.get(id);
+        if (!m) return;
+        editingId = id;
+        F_TITLE.value  = m.title || '';
+        F_SERIES.value = m.series || '';
+        F_DATE.value   = m.date || '';
+        F_URL.value    = m.url || '';
+        F_SOURCE.value = m.source || 'SCPHS – Office of the Principal';
+        F_DESC.value   = m.desc || '';
+        FORM_TITLE.textContent = '✏️ Edit School Memorandum';
+        BTN_SAVE.textContent = '💾 Update memorandum';
+        BTN_CANCEL_EDIT.style.display = 'inline-flex';
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        F_TITLE.focus();
+      }
+
+      if (action === 'delete') {
+        const m = window.SchoolMemos.get(id);
+        if (!m) return;
+        if (!confirm(`Delete "${m.title}"?`)) return;
+        window.SchoolMemos.remove(id);
+        toast('🗑️ Memo deleted');
+        renderList();
+      }
+    });
+
+    // ---------- Save ----------
+    BTN_SAVE.addEventListener('click', () => {
+      const title = F_TITLE.value.trim();
+      if (!title) {
+        toast('⚠️ Title is required');
+        F_TITLE.focus();
+        return;
+      }
+      const payload = {
+        title,
+        series: F_SERIES.value.trim(),
+        date:   F_DATE.value || new Date().toISOString().slice(0, 10),
+        url:    F_URL.value.trim(),
+        source: F_SOURCE.value.trim() || 'SCPHS – Office of the Principal',
+        desc:   F_DESC.value.trim()
+      };
+
+      try {
+        if (editingId) {
+          window.SchoolMemos.update(editingId, payload);
+          toast('✓ Memo updated');
+        } else {
+          window.SchoolMemos.add(payload);
+          toast('✓ Memo added');
+        }
+        resetForm();
+        renderList();
+      } catch (err) {
+        console.error(err);
+        toast('⚠️ ' + (err.message || 'Could not save'));
+      }
+    });
+
+    BTN_CLEAR.addEventListener('click', () => { resetForm(); toast('Form cleared'); });
+    BTN_CANCEL_EDIT.addEventListener('click', () => { resetForm(); toast('Edit cancelled'); });
+
+    BTN_DELETE_ALL.addEventListener('click', () => {
+      if (!confirm('Delete ALL school memoranda? This cannot be undone.')) return;
+      window.SchoolMemos.removeAll();
+      toast('🗑️ All memos deleted');
+      renderList();
+    });
+
+    // ---------- Boot ----------
+    if (window.SchoolMemos.isAdmin()) {
+      showAdmin();
+    } else {
+      showGate();
+      resetForm();
+    }
+
+    // Prefill date
+    if (!F_DATE.value) F_DATE.value = new Date().toISOString().slice(0, 10);
+
+  })();
+  </script>
+
+</body>
+</html>

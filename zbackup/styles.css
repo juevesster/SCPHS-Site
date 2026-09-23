@@ -1,0 +1,747 @@
+:root{
+  --brand:#0b4f9c;
+  --brand-2:#0a3f7e;
+  --accent:#f1b814;
+  --ink:#1f2937;
+  --muted:#6b7280;
+  --bg:#f7f9fc;
+  --card:#ffffff;
+  --line:#e5e7eb;
+  --govph-strip:#e9eff7;
+  /* Added: used by .btn-return */
+  --primary: var(--brand);
+}
+
+/* ================= GLOBAL ================= */
+*{ box-sizing:border-box }
+html{ scroll-behavior:smooth }
+body{
+  margin:0;
+  padding:0;
+  font-family:Arial, Helvetica, sans-serif;
+  color:var(--ink);
+  background:var(--bg);
+}
+a{ color:var(--brand); text-decoration:none }
+a:hover{ text-decoration:underline }
+img{ max-width:100%; display:block }
+.wrap{ max-width:1160px; margin:0 auto; padding:0 16px }
+
+/* ================= GOVPH STRIP ================= */
+.govph{
+  background:var(--govph-strip);
+  color:#1e2a3a;
+  font-size:13px;
+  border-bottom:1px solid var(--line);
+}
+.govph .wrap{
+  padding:6px 0;
+  display:flex;
+  align-items:center;
+  gap:10px;
+}
+.govph a.govph-link{
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+  color:#0a3f7e;
+  font-weight:800;
+  letter-spacing:.2px;
+  padding:3px 8px;
+  border-radius:999px;
+  background:#ffffffcc;
+  border:1px solid #dbe7ff;
+}
+.govph a.govph-link:hover{
+  text-decoration:none;
+  background:#fff;
+  border-color:#cbd6ff;
+}
+.govph .sep{
+  height:12px;
+  width:1px;
+  background:#c7d5ea;
+  display:inline-block;
+  transform:translateY(1px);
+}
+.govph .label{ opacity:.92 }
+
+/* ================= HEADER ================= */
+header{
+  background:#fff;
+  border-bottom:1px solid var(--line);
+}
+.brandbar{
+  display:grid;
+  grid-template-columns:auto 1fr auto;
+  gap:8px;
+  align-items:center;
+  padding:12px 0;
+}
+.logos-left img{ height:64px; border-radius:6px }
+.brandtext h1{
+  margin:0;
+  font-size:clamp(1.5rem,3.2vw,2.1rem);
+  font-weight:800;
+  color:#0f2b4f;
+}
+.brandtext p{
+  margin:.25rem 0 0;
+  font-size:clamp(.92rem,1.6vw,1.06rem);
+  color:#2f3e56;
+}
+.logos-right{
+  display:flex;
+  align-items:center;
+  gap:10px;
+}
+.logos-right img{ height:56px }
+.logo--seal{
+  height:60px;
+  border-radius:50%;
+  transition:.2s ease;
+}
+.logo-link:hover .logo--seal{
+  transform:scale(1.06);
+  box-shadow:0 0 0 3px rgba(0,96,223,.25);
+}
+
+/* ================= NAVIGATION (FIXED + DROPDOWN) ================= */
+nav{
+  background:var(--brand-2);
+  position:relative;
+  z-index:100;
+}
+.menu{
+  display:flex;
+  flex-wrap:wrap;
+  gap:8px;
+  padding:8px 0;
+  list-style:none;
+  margin:0;
+  align-items:center;
+}
+.menu > li{ position:relative } /* fixed selector */
+
+/* Top-level items: links and dropdown button */
+.menu a,
+.menu .menu-toggle{
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+  padding:10px 14px;
+  border-radius:8px;
+  font-weight:700;
+  text-decoration:none;
+  cursor:pointer;
+  background:transparent;
+  border:none;
+  font-family:inherit;
+  color:#ffffff !important; /* force readable white on dark bar */
+}
+.menu a:hover,
+.menu a:focus-visible,
+.menu .menu-toggle:hover,
+.menu .menu-toggle:focus-visible{
+  background:rgba(255,255,255,0.18);
+  color:#ffffff !important;
+  outline:none;
+}
+.menu a.active{
+  background:var(--brand);
+  color:#ffffff !important;
+}
+
+/* Caret */
+.menu .chev{ transition:transform .2s ease }
+
+/* Dropdown panel */
+.menu .dropdown{
+  position:absolute;
+  left:0;
+  top:calc(100% + 6px);
+  min-width:220px;
+  padding:8px;
+  margin:0;
+  list-style:none;
+  background:#ffffff;
+  border:1px solid #e5e7eb;
+  border-radius:12px;
+  box-shadow:0 8px 24px rgba(0,0,0,.12);
+  opacity:0;
+  visibility:hidden;
+  transform:translateY(6px);
+  transition:.18s ease;
+  z-index:50;
+}
+
+/* Dropdown items */
+.menu .dropdown a{
+  display:block;
+  padding:10px 12px;
+  border-radius:8px;
+  white-space:nowrap;
+  color:#111827 !important;
+  font-weight:500;
+}
+.menu .dropdown a:hover{ background:#f3f4f6 }
+
+/* Opened state (JS toggles .open on .has-dropdown) */
+.menu .has-dropdown.open > .dropdown{
+  opacity:1; visibility:visible; transform:translateY(0);
+}
+.menu .has-dropdown.open > .menu-toggle .chev{ transform:rotate(180deg) }
+
+/* Hover open on desktop */
+@media (hover:hover) and (pointer:fine){
+  .menu .has-dropdown:hover > .dropdown{
+    opacity:1; visibility:visible; transform:translateY(0);
+  }
+  .menu .has-dropdown:hover > .menu-toggle .chev{ transform:rotate(180deg) }
+}
+
+/* ================= HERO ================= */
+.hero{
+  background:linear-gradient(90deg,var(--brand),#1d4e86);
+  color:#fff;
+}
+.hero .inner{
+  display:grid;
+  grid-template-columns:2fr 1fr;
+  gap:24px;
+  padding:26px 0;
+  align-items:center;
+}
+.btn{
+  display:inline-block;
+  background:#fff;
+  color:var(--brand);
+  padding:10px 14px;
+  border-radius:10px;
+  font-weight:700;
+  box-shadow:0 2px 6px rgba(0,0,0,.08);
+  transition:all .2s ease;
+}
+.btn:hover{ transform:translateY(-1px); box-shadow:0 4px 12px rgba(0,0,0,.12) }
+.btn.alt{ background:transparent; border:2px solid #fff; color:#fff }
+.btn.outline{ background:#fff; border:1px solid var(--brand) }
+
+/* ================= SLIDER ================= */
+.slider{
+  position:relative;
+  width:100%;
+  aspect-ratio:16/6;
+  min-height:280px;
+  border-radius:12px;
+  overflow:hidden;
+  background:#0b4f9c;
+}
+.slide{
+  position:absolute;
+  inset:0;
+  opacity:0;
+  transition:opacity .6s ease;
+}
+.slide.is-active{ opacity:1 }
+.slide img{ width:100%; height:100%; object-fit:cover }
+.slide-overlay{
+  position:absolute;
+  inset:0;
+  background:linear-gradient(180deg,rgba(0,0,0,.25),rgba(0,0,0,.45));
+}
+.slide-caption{
+  position:absolute;
+  left:16px; right:16px; bottom:14px; color:#fff;
+}
+.slide-caption h2{ margin:0 0 4px; font-size:clamp(1.25rem,2.6vw,1.8rem) }
+
+/* ================= MAIN 3 COLUMN ================= */
+main .content-grid{
+  display:grid;
+  grid-template-columns:1fr minmax(0,1.5fr) 1fr;
+  gap:32px;
+  padding:32px 0;
+}
+.card{
+  background:#fff;
+  border:1px solid var(--line);
+  border-radius:14px;
+  overflow:hidden;
+  box-shadow:0 4px 12px rgba(0,0,0,.04);
+  transition:transform .2s ease, box-shadow .2s ease;
+}
+.card:hover{
+  transform:translateY(-2px);
+  box-shadow:0 8px 18px rgba(0,0,0,.08);
+}
+.card h3{
+  margin:0;
+  padding:16px;
+  border-bottom:1px solid var(--line);
+  font-size:19px;
+  font-weight:800;
+}
+
+/* ================= SIDEBAR ================= */
+aside .widget{
+  background:#fff;
+  border:1px solid var(--line);
+  border-radius:14px;
+  padding:18px;
+  margin-bottom:20px;
+  box-shadow:0 4px 12px rgba(0,0,0,.04);
+  transition:transform .2s ease, box-shadow .2s ease;
+}
+.widget:hover{ transform:translateY(-2px); box-shadow:0 8px 18px rgba(0,0,0,.08) }
+.widget h4{
+  margin:0 0 14px;
+  border-bottom:1px solid var(--line);
+  padding-bottom:8px;
+  font-size:17px;
+  font-weight:700;
+}
+.list{ list-style:none; padding:0; margin:0 }
+.list li{ padding:8px 0; border-bottom:1px dashed var(--line) }
+.list li:last-child{ border:0 }
+.widget .list li a{
+  display:flex; align-items:center; gap:8px;
+  padding:8px 6px; border-radius:6px; font-weight:500;
+  transition:all .2s ease;
+}
+.widget .list li a:hover{
+  background:#eef2ff; padding-left:10px; text-decoration:none;
+}
+.widget .list li a .icon{ font-size:15px; opacity:.8 }
+
+/* ================= GOVPH FOOTER (3 COLUMN) ================= */
+.govph-footer{
+  background:#f3f4f6;
+  margin-top:40px;
+  padding:30px 0 20px;
+  font-size:14px;
+  color:#1f2937;
+}
+.govph-footer__grid{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:40px;
+  padding-bottom:20px;
+  position:relative;
+}
+.govph-footer__col{ position:relative; padding-right:20px }
+.govph-footer__col:not(:last-child)::after{
+  content:""; position:absolute; right:-20px; top:0; height:100%; width:1px; background:#e5e7eb;
+}
+.govph-footer__col h4{ margin-bottom:10px; font-size:15px; font-weight:700; color:#0f2b4f }
+.govph-footer__col p{ font-size:13px; color:#4b5563 }
+.govph-footer__links{ list-style:none; padding:0; margin:0 }
+.govph-footer__links li{ margin-bottom:6px }
+.govph-footer__links a{ color:#1f2937; transition:.2s }
+.govph-footer__links a:hover{ color:var(--brand); text-decoration:underline }
+.govph-footer__bar{
+  background:#e5e7eb; padding:10px 0; text-align:center; font-size:13px; color:#374151;
+}
+
+/* ================= DEPED BUTTONS WITH ICONS ================= */
+.deped-buttons li { margin-bottom: 12px }
+.deped-buttons a{
+  display:flex; align-items:center; gap:10px;
+  padding:10px 12px; border-radius:10px;
+  background:#f7f9fc; border:1px solid #d1d5db;
+  font-weight:500; transition:all .2s ease;
+}
+.deped-buttons a:hover{
+  background:var(--brand); color:#fff;
+  transform:translateY(-1px);
+  box-shadow:0 4px 12px rgba(0,0,0,0.12);
+}
+.deped-buttons a:hover img{ filter:brightness(0) invert(1) }
+.deped-icon{ width:26px; height:26px; object-fit:contain }
+
+/* ================= ABOUT HELPERS ================= */
+.section.about .subnav .pill{
+  display:inline-block; margin:4px 6px 0 0; padding:6px 10px;
+  border:1px solid var(--line); border-radius:999px;
+  text-decoration:none; color:#ffffff !important; /* fixed theme override */
+  background: rgba(255,255,255,0.08);
+  border-color: rgba(255,255,255,0.25);
+  font-size:.9rem;
+}
+/* Hover / focus state */
+.section.about .subnav .pill:hover,
+.section.about .subnav .pill:focus-visible{
+  background: rgba(255,255,255,0.20);
+  color:#ffffff !important;
+}
+
+.section.about .timeline { list-style:none; padding:0; margin:0 }
+.section.about .timeline li { padding:10px 0; border-top:1px solid #eee }
+.section.about .timeline li:first-child { border-top:none }
+.section.about .timeline .meta { display:block; color:#6b7280; font-size:.9rem; margin-top:2px }
+.section.about .timeline .desc { color:#374151; margin-top:4px }
+.section.about .org { margin-left:1rem }
+.section.about .org > li { margin:.25rem 0 } /* fixed selector */
+.section.about .org ol,
+.section.about .org ul { margin:.25rem 0 .25rem 1rem }
+
+/* ============ OFFICIALS & PERSONNEL (Multi-column Dropdown) ============ */
+
+/* (from your inline <style> block – turned into plain CSS) */
+.dropdown .menu-label{
+  display:block;
+  font-size:12px;
+  letter-spacing:.04em;
+  text-transform:uppercase;
+  color: var(--muted, #9ca3af);
+  padding: 8px 10px 4px;
+  cursor: default;
+}
+
+/* Wider multi-column layout for a long list */
+.dropdown.dropdown--columns{
+  width: min(860px, 92vw);
+  columns: 3;           /* number of columns on desktop */
+  column-gap: 16px;
+  padding-right: 6px;   /* breathing space on the right edge */
+}
+.dropdown.dropdown--columns > li{ break-inside: avoid } /* fixed selector */
+
+/* Keep it compact on smaller screens */
+@media (max-width: 900px){
+  .dropdown.dropdown--columns{ columns: 2; width: min(680px, 94vw) }
+}
+@media (max-width: 640px){
+  .dropdown.dropdown--columns{ columns: 1; width: 92vw }
+}
+
+/* Mega dropdown grid */
+.dropdown--mega{
+  display:grid;
+  grid-template-columns: repeat(4, minmax(180px, 1fr));
+  gap: 12px 18px;
+  padding: 12px;
+  min-width: min(92vw, 980px);
+}
+.dropdown--mega .menu-col{
+  list-style:none; margin:0; padding:0;
+}
+.dropdown--mega .menu-col-list{
+  list-style:none; margin:6px 0 0; padding:0;
+}
+.dropdown--mega .menu-heading{
+  font-size:13px; font-weight:700; letter-spacing:.02em;
+  text-transform:uppercase;
+  color: var(--brand-700, #0f766e);
+  margin:0 0 6px;
+}
+.dropdown--mega .menu-label{
+  font-size:12px; color: var(--muted, #475569);
+  margin:8px 0 4px; list-style:none;
+}
+.dropdown--mega .menu-sep{
+  height:1px; background: var(--line, #e2e8f0); margin:8px 0;
+}
+.menu-item--thumb{
+  display:flex; align-items:center; gap:10px;
+  padding:8px 8px; border-radius:8px; line-height:1.2;
+  transition: background-color .15s ease, color .15s ease;
+}
+.menu-item--thumb .thumb{
+  width:28px; height:28px; object-fit:cover; border-radius:6px;
+  border:1px solid var(--line, #e2e8f0);
+}
+.menu-item--thumb:hover,
+.menu-item--thumb:focus-visible{
+  background: var(--brand-50, #ecfdf5);
+  color: var(--brand-800, #065f46);
+}
+
+/* Responsive: stack columns on narrow screens */
+@media (max-width:960px){
+  .dropdown--mega{
+    grid-template-columns: 1fr 1fr;
+    min-width: unset;
+    padding:6px;
+  }
+}
+
+/* ================= BUTTON: RETURN (deduped) ================= */
+.btn-return{
+  display:inline-block;
+  padding:8px 14px;
+  font-size:14px;
+  border-radius:6px;
+  background: var(--primary);
+  color:#fff !important;
+  text-decoration:none;
+  transition:.15s ease;
+}
+.btn-return:hover{ background:#1e3a8a }
+
+/* ================= PRINCIPALS GRID & CARDS ================= */
+.principals-grid{
+  display:grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap:18px;
+}
+.p-card{
+  padding:14px;
+  background:var(--card);
+  border:1px solid var(--line);
+  border-radius:6px;
+  text-align:center;
+}
+.p-card img{
+  display:block;
+  width:200px;
+  height:200px;           /* fixed a consistent square */
+  object-fit:cover;
+  border-radius:6px;
+  margin:0 auto 10px;     /* fixed: was `px` only */
+}
+
+/* Slider container */
+.slider{
+  position:relative;
+  width:100%;
+  aspect-ratio:16/6;
+  min-height:280px;
+  border-radius:12px;
+  overflow:hidden;
+  background:#0b4f9c;
+}
+
+/* Slides */
+.slide{
+  position:absolute;
+  inset:0;
+  opacity:0;
+  transition: opacity .6s ease;
+}
+.slide.is-active{ opacity:1 }
+
+/* Slide media and effects */
+.slide img{
+  width:100%; height:100%; object-fit:cover;
+  transform: scale(1.06);
+  opacity: 0;
+  animation: heroIn .9s ease forwards;
+}
+@keyframes heroIn{
+  to{ transform:scale(1); opacity:1; }
+}
+
+/* Overlay + caption */
+.slide-overlay{
+  position:absolute; inset:0;
+  background:linear-gradient(180deg,rgba(0,0,0,.15),rgba(0,0,0,.5));
+}
+.slide-caption{
+  position:absolute;
+  left:16px; right:16px; bottom:14px;
+  color:#fff;
+  max-width: 680px;
+  opacity:0; transform: translateY(12px);
+  animation: captionIn .7s ease .15s forwards;
+}
+.slide-caption h2{
+  margin:0 0 4px;
+  font-size:clamp(1.4rem,2.8vw,2.2rem);
+  line-height:1.15;
+  text-shadow:0 4px 12px rgba(0,0,0,.35);
+}
+.slide-caption p{
+  margin:0; color:#e7ebf5;
+  font-size:clamp(.95rem,1.4vw,1.15rem);
+}
+
+/* Nav arrows */
+.slider .nav{
+  position:absolute;
+  top:50%;
+  transform:translateY(-50%);
+  width:38px; height:38px; border-radius:50%;
+  border:none; cursor:pointer;
+  display:grid; place-items:center;
+  font-size:22px; line-height:1;
+  background:rgba(255,255,255,.86);
+  color:#0b4f9c;
+  box-shadow:0 4px 12px rgba(0,0,0,.15);
+  transition: transform .15s ease, background .15s ease;
+}
+.slider .nav:hover{ transform:translateY(-50%) scale(1.06); background:#fff }
+.slider .nav:focus-visible{ outline:3px solid rgba(14,165,233,.45) }
+.slider .prev{ left:12px }
+.slider .next{ right:12px }
+
+/* Dots */
+.dots{
+  position:absolute; left:0; right:0; bottom:10px;
+  display:flex; justify-content:center; gap:8px;
+  padding:6px 0;
+}
+.dots [role="tab"]{
+  width:9px; height:9px; border-radius:50%;
+  background:rgba(255,255,255,.5);
+  border:0; cursor:pointer; padding:0;
+}
+.dots [role="tab"][aria-selected="true"]{
+  background:#fff; box-shadow:0 0 0 2px rgba(255,255,255,.6);
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce){
+  .slide{ transition:none }
+  .slide img, .slide-caption{ animation:none; opacity:1; transform:none }
+}
+
+/* Responsive tweaks */
+@media (max-width:760px){
+  .slider{ aspect-ratio:16/9; min-height:220px }
+}
+@keyframes captionIn{ to{ opacity:1; transform:none } }
+
+/* Ensure menu is above hero/slider */
+nav { position: relative; z-index: 200; }
+
+/* Base dropdown panel (keep your existing style, but ensure visibility & stacking) */
+.menu .dropdown{
+  position: absolute;
+  left: 0;
+  top: calc(100% + 6px);
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  box-shadow: 0 12px 28px rgba(0,0,0,.14);
+  padding: 12px;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(6px);
+  transition: .18s ease;
+  z-index: 300;
+  overflow: visible;
+}
+
+/* Open state (your JS adds .open to .has-dropdown) */
+.menu .has-dropdown.open > .dropdown{
+  opacity: 1; visibility: visible; transform: none;
+}
+
+/* Hover open on desktop (kept) */
+@media (hover:hover) and (pointer:fine){
+  .menu .has-dropdown:hover > .dropdown{
+    opacity: 1; visibility: visible; transform: none;
+  }
+}
+
+/* -------- MEGA DROPDOWN (GRID) -------- */
+.menu .dropdown.dropdown--mega{
+  display: grid !important; /* override any multi-column flow */
+  grid-template-columns: repeat(4, minmax(220px, 1fr));
+  gap: 14px 20px;
+  min-width: min(96vw, 1040px);
+  padding: 14px;
+}
+
+/* Neutralize any old multi-column variant anywhere */
+.menu .dropdown.dropdown--columns{
+  columns: initial !important;
+  width: auto !important;
+}
+
+/* Columns */
+.dropdown--mega .menu-col{
+  list-style: none;
+  margin: 0; padding: 0;
+  break-inside: avoid;
+}
+
+/* Headings */
+.dropdown--mega .menu-heading{
+  margin: 2px 0 6px;
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: .02em;
+  text-transform: uppercase;
+  color: #0f2b4f;
+}
+
+/* Inner list */
+.dropdown--mega .menu-col-list{
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+/* Inline label (e.g., “Administrators”) */
+.dropdown--mega .menu-label{
+  margin: 8px 0 4px;
+  font-size: 12px;
+  color: var(--muted, #6b7280);
+  list-style: none;
+}
+
+/* Separator line */
+.dropdown--mega .menu-sep{
+  height: 1px;
+  background: var(--line, #e5e7eb);
+  margin: 8px 0;
+}
+
+/* Items with thumbs – anchor is the flex row */
+.dropdown--mega .menu-item--thumb{
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 8px;
+  border-radius: 8px;
+  line-height: 1.25;
+  color: #111827;
+  white-space: normal;            /* allow label to wrap nicely */
+  text-decoration: none;
+  transition: background-color .15s ease, color .15s ease;
+}
+.dropdown--mega .menu-item--thumb:hover,
+.dropdown--mega .menu-item--thumb:focus-visible{
+  background: #f3f4f6;
+  color: var(--brand, #0b4f9c);
+  text-decoration: none;
+  outline: none;
+}
+
+/* Thumbnail sizing & alignment */
+.dropdown--mega .menu-item--thumb .thumb{
+  width: 28px;
+  height: 28px;
+  object-fit: cover;
+  border-radius: 6px;
+  border: 1px solid var(--line, #e5e7eb);
+  flex: 0 0 28px;                /* lock size so text never pushes it */
+}
+
+/* Responsive: fewer columns as width reduces */
+@media (max-width: 1024px){
+  .menu .dropdown.dropdown--mega{
+    grid-template-columns: repeat(3, minmax(220px, 1fr));
+    min-width: min(96vw, 880px);
+  }
+}
+@media (max-width: 900px){
+  .menu .dropdown.dropdown--mega{
+    grid-template-columns: repeat(2, minmax(220px, 1fr));
+    min-width: min(96vw, 680px);
+  }
+}
+@media (max-width: 640px){
+  .menu .dropdown.dropdown--mega{
+    grid-template-columns: 1fr;
+    min-width: 92vw;
+  }
+}
+
+@media (hover:hover) and (pointer:fine){
+  .menu .has-dropdown:hover > .dropdown{
+    opacity:1; visibility:visible; transform:translateY(0);
+  }
+  .menu .has-dropdown:hover > .menu-toggle .chev{ transform:rotate(180deg); }
+}

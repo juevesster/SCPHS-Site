@@ -1,0 +1,783 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>SM No. 01, s. 2026 – Guidelines on School DTR System Operation</title>
+
+  <style>
+    /* =========================================================
+       PRINT-READY SCHOOL MEMORANDUM
+       – A4 / Letter, portrait
+       – Optimized for Chrome / Edge "Print → Save as PDF"
+       ========================================================= */
+
+    @page {
+      size: A4 portrait;
+      margin: 18mm 16mm 22mm 16mm;
+    }
+
+    * { box-sizing: border-box; }
+
+    html, body {
+      margin: 0;
+      padding: 0;
+      background: #f2f4f7;
+      color: #111;
+      font-family: "Times New Roman", Georgia, "Cambria", serif;
+      font-size: 11.5pt;
+      line-height: 1.5;
+    }
+
+    /* ---------- On-screen wrapper ---------- */
+    .page {
+      background: #fff;
+      max-width: 820px;
+      margin: 24px auto;
+      padding: 40px 56px 60px;
+      box-shadow: 0 8px 32px rgba(0,0,0,.10);
+      border: 1px solid #e5e7eb;
+      position: relative;
+    }
+
+    /* ---------- Print rules ---------- */
+    @media print {
+      html, body {
+        background: #fff;
+      }
+      .page {
+        max-width: none;
+        margin: 0;
+        padding: 0;
+        box-shadow: none;
+        border: none;
+      }
+      .no-print { display: none !important; }
+      a { color: #000; text-decoration: none; }
+      .page-break { page-break-before: always; }
+    }
+
+    /* ---------- Floating print button (screen only) ---------- */
+    .print-bar {
+      position: fixed;
+      top: 16px;
+      right: 16px;
+      z-index: 9999;
+      display: flex;
+      gap: 8px;
+    }
+    .print-bar button {
+      font-family: system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+      font-size: 13px;
+      font-weight: 600;
+      padding: 8px 14px;
+      border-radius: 8px;
+      border: 1px solid #cfd6df;
+      background: #fff;
+      color: #0f4c81;
+      cursor: pointer;
+      box-shadow: 0 2px 8px rgba(0,0,0,.06);
+      transition: background .15s, border-color .15s, transform .15s;
+    }
+    .print-bar button:hover {
+      background: #f3f7fb;
+      border-color: #0f4c81;
+      transform: translateY(-1px);
+    }
+    .print-bar button.primary {
+      background: #0f4c81;
+      color: #fff;
+      border-color: #0f4c81;
+    }
+    .print-bar button.primary:hover {
+      background: #1e6bb8;
+      border-color: #1e6bb8;
+    }
+
+    /* =========================================================
+       DOCUMENT HEADER
+       ========================================================= */
+    .doc-header {
+      text-align: center;
+      border-bottom: 2px solid #111;
+      padding-bottom: 10px;
+      margin-bottom: 14px;
+    }
+
+    .doc-header .republic {
+      font-size: 10.5pt;
+      letter-spacing: .04em;
+      margin: 0;
+    }
+    .doc-header .deped {
+      font-size: 11pt;
+      font-weight: 700;
+      letter-spacing: .02em;
+      margin: 2px 0 0;
+    }
+    .doc-header .region {
+      font-size: 10pt;
+      margin: 2px 0 0;
+    }
+    .doc-header .school-name {
+      font-size: 14.5pt;
+      font-weight: 800;
+      letter-spacing: .03em;
+      margin: 6px 0 2px;
+      text-transform: uppercase;
+    }
+    .doc-header .school-address {
+      font-size: 10pt;
+      margin: 0;
+    }
+    .doc-header .school-contact {
+      font-size: 9.5pt;
+      color: #444;
+      margin: 2px 0 0;
+    }
+
+    /* Optional logo row */
+    .logo-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 4px;
+    }
+    .logo-row .logo {
+      width: 70px;
+      height: 70px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .logo-row .logo img {
+      max-width: 100%;
+      max-height: 100%;
+      object-fit: contain;
+    }
+    .logo-row .logo-placeholder {
+      width: 70px;
+      height: 70px;
+      border: 1px dashed #cbd5e1;
+      border-radius: 50%;
+      font-family: system-ui, sans-serif;
+      font-size: 9px;
+      color: #94a3b8;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      line-height: 1.1;
+    }
+    .logo-row .logo-center {
+      flex: 1;
+      text-align: center;
+    }
+
+    /* =========================================================
+       MEMORANDUM TITLE
+       ========================================================= */
+    .memo-title {
+      text-align: center;
+      margin: 16px 0 4px;
+    }
+    .memo-title h1 {
+      font-family: "Times New Roman", Georgia, serif;
+      font-size: 16pt;
+      font-weight: 800;
+      letter-spacing: .06em;
+      text-transform: uppercase;
+      margin: 0;
+    }
+    .memo-title .num {
+      font-size: 12pt;
+      font-weight: 700;
+      margin: 2px 0 0;
+    }
+    .memo-rule {
+      width: 60%;
+      margin: 8px auto 20px;
+      border: none;
+      border-top: 2px solid #111;
+    }
+
+    /* =========================================================
+       MEMO META BLOCK
+       ========================================================= */
+    .memo-meta {
+      margin: 0 0 16px;
+      font-size: 11.5pt;
+    }
+    .memo-meta .row {
+      display: grid;
+      grid-template-columns: 110px 1fr;
+      gap: 8px;
+      margin-bottom: 4px;
+    }
+    .memo-meta .row .label {
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .02em;
+    }
+    .memo-meta .row .value {
+      border-bottom: 1px dotted #999;
+      padding-bottom: 1px;
+      min-height: 1.2em;
+    }
+
+    /* =========================================================
+       BODY
+       ========================================================= */
+    .body {
+      text-align: justify;
+      hyphens: auto;
+    }
+
+    .body h2 {
+      font-size: 12pt;
+      text-transform: uppercase;
+      letter-spacing: .04em;
+      margin: 18px 0 6px;
+      font-weight: 800;
+    }
+
+    .body p {
+      margin: 0 0 8px;
+      text-indent: 0;
+    }
+
+    /* Numbered list styling (mimics manual memo numbering) */
+    .body ol {
+      margin: 0 0 10px;
+      padding-left: 26px;
+    }
+    .body ol > li {
+      margin-bottom: 6px;
+      line-height: 1.5;
+    }
+    .body ul {
+      margin: 4px 0 8px;
+      padding-left: 26px;
+    }
+    .body ul > li {
+      margin-bottom: 4px;
+    }
+
+    /* Manual numbering for exact "1.1", "1.2" style */
+    .clause {
+      margin: 0 0 6px;
+      padding-left: 26px;
+      position: relative;
+      text-align: justify;
+    }
+    .clause > .num {
+      position: absolute;
+      left: 0;
+      font-weight: 700;
+      width: 30px;
+    }
+
+    /* Sub-clauses like (a), (b) */
+    .subclause {
+      margin: 4px 0 4px 26px;
+      padding-left: 26px;
+      position: relative;
+      text-align: justify;
+    }
+    .subclause > .tag {
+      position: absolute;
+      left: 0;
+      font-weight: 700;
+      width: 26px;
+    }
+
+    /* =========================================================
+       SIGNATURE BLOCK
+       ========================================================= */
+    .signature-block {
+      margin-top: 34px;
+      page-break-inside: avoid;
+    }
+
+    .signature-block .issued-line {
+      margin: 0 0 26px;
+      text-align: left;
+    }
+
+    .signature-block .issued-line .fill {
+      display: inline-block;
+      min-width: 60px;
+      border-bottom: 1px solid #111;
+      text-align: center;
+      padding: 0 4px;
+    }
+
+    .sig-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 40px;
+      margin-bottom: 30px;
+    }
+
+    .sig-box {
+      text-align: center;
+    }
+    .sig-box .role {
+      font-size: 10pt;
+      text-transform: uppercase;
+      letter-spacing: .05em;
+      margin: 0 0 4px;
+    }
+    .sig-box .name {
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: .03em;
+      margin: 24px 0 0;
+      border-top: 1px solid #111;
+      padding-top: 4px;
+      display: inline-block;
+      min-width: 220px;
+    }
+    .sig-box .title {
+      font-style: italic;
+      font-size: 10pt;
+      margin: 2px 0 0;
+    }
+
+    .centered-sig {
+      text-align: center;
+      margin-top: 28px;
+      page-break-inside: avoid;
+    }
+    .centered-sig .name {
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: .03em;
+      display: inline-block;
+      min-width: 260px;
+      border-top: 1px solid #111;
+      padding-top: 4px;
+      margin-top: 32px;
+    }
+    .centered-sig .title {
+      font-style: italic;
+      font-size: 10pt;
+      margin: 2px 0 0;
+    }
+
+    /* =========================================================
+       RECEIVED TABLE (for acknowledgements)
+       ========================================================= */
+    .ack-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+      page-break-inside: avoid;
+    }
+    .ack-table th,
+    .ack-table td {
+      border: 1px solid #333;
+      padding: 6px 8px;
+      font-size: 10pt;
+      text-align: left;
+      vertical-align: top;
+    }
+    .ack-table th {
+      background: #f0f2f5;
+      text-transform: uppercase;
+      font-size: 9.5pt;
+      letter-spacing: .03em;
+    }
+    .ack-table td {
+      height: 22px;
+    }
+
+    /* =========================================================
+       FOOTER MARKS
+       ========================================================= */
+    .copy-furnished {
+      margin-top: 22px;
+      font-size: 10pt;
+      padding-top: 8px;
+      border-top: 1px dashed #999;
+      page-break-inside: avoid;
+    }
+    .copy-furnished strong {
+      text-transform: uppercase;
+      letter-spacing: .03em;
+    }
+    .copy-furnished ul {
+      margin: 4px 0 0;
+      padding-left: 22px;
+    }
+    .copy-furnished li {
+      margin: 1px 0;
+    }
+
+    .motto {
+      text-align: center;
+      margin-top: 28px;
+      font-style: italic;
+      font-size: 10.5pt;
+      letter-spacing: .02em;
+      color: #333;
+    }
+
+    /* Small helper */
+    .mt-1 { margin-top: 6px; }
+    .mt-2 { margin-top: 12px; }
+    .mt-3 { margin-top: 20px; }
+    .center { text-align: center; }
+
+    /* Screen-only notice */
+    .screen-notice {
+      max-width: 820px;
+      margin: 0 auto 8px;
+      padding: 10px 14px;
+      font-family: system-ui, sans-serif;
+      font-size: 13px;
+      color: #0f4c81;
+      background: #eff6ff;
+      border: 1px solid #bfdbfe;
+      border-radius: 8px;
+    }
+    @media print { .screen-notice { display: none; } }
+  </style>
+</head>
+<body>
+
+  <!-- Floating Print Bar (screen only) -->
+  <div class="print-bar no-print">
+    <button class="primary" onclick="window.print()">🖨️ Print / Save as PDF</button>
+  </div>
+
+  <div class="screen-notice no-print">
+    <strong>Tip:</strong> Press <em>Ctrl&nbsp;+&nbsp;P</em> (Windows) or <em>Cmd&nbsp;+&nbsp;P</em> (Mac) → choose <strong>“Save as PDF”</strong> as the destination. Recommended paper size: <strong>A4</strong> or <strong>Letter</strong>, portrait.
+  </div>
+
+  <!-- ============================================================
+       MEMORANDUM PAGE
+       ============================================================ -->
+  <div class="page">
+
+    <!-- ---------- Official Header ---------- -->
+    <div class="doc-header">
+      <div class="logo-row">
+        <div class="logo">
+          <!-- Replace with your school logo, e.g. -->
+          <!-- <img src="assets/images/scphslogo.png" alt="School Logo"> -->
+          <div class="logo-placeholder">SCHOOL<br>LOGO</div>
+        </div>
+
+        <div class="logo-center">
+          <p class="republic">Republic of the Philippines</p>
+          <p class="deped">Department of Education</p>
+          <p class="region">Region II – Cagayan Valley • Schools Division of Nueva Vizcaya</p>
+          <h2 class="school-name">Sta. Cruz Pingkian High School</h2>
+          <p class="school-address">Brgy. Sta. Cruz, Pingkian, Kayapa, Nueva Vizcaya</p>
+          <p class="school-contact">Email: 300648@deped.gov.ph &nbsp;•&nbsp; Phone: +63 967-8848989</p>
+        </div>
+
+        <div class="logo">
+          <!-- Replace with DepEd logo, e.g. -->
+          <!-- <img src="assets/images/deped-logo.png" alt="DepEd Logo"> -->
+          <div class="logo-placeholder">DEPED<br>LOGO</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ---------- Memorandum Title ---------- -->
+    <div class="memo-title">
+      <h1>School Memorandum</h1>
+      <p class="num">No. 01, s. 2026</p>
+    </div>
+    <hr class="memo-rule" />
+
+    <!-- ---------- Meta Block ---------- -->
+    <div class="memo-meta">
+      <div class="row">
+        <div class="label">To:</div>
+        <div class="value">All Teaching and Non-Teaching Personnel</div>
+      </div>
+      <div class="row">
+        <div class="label">From:</div>
+        <div class="value">The Office of the School Principal</div>
+      </div>
+      <div class="row">
+        <div class="label">Subject:</div>
+        <div class="value"><strong>GUIDELINES ON SCHOOL DTR SYSTEM OPERATION</strong></div>
+      </div>
+      <div class="row">
+        <div class="label">Date:</div>
+        <div class="value">&nbsp;____&nbsp;day of&nbsp;________________&nbsp;, 2026</div>
+      </div>
+    </div>
+
+    <!-- ---------- Body ---------- -->
+    <div class="body">
+
+      <!-- 1. RATIONALE -->
+      <h2>1. Rationale</h2>
+
+      <div class="clause">
+        <span class="num">1.1</span>
+        In line with the Department of Education's continuous effort to promote
+        efficiency, transparency, and accountability in the daily operations of
+        the school, and pursuant to existing Civil Service Commission (CSC) rules
+        and DepEd policies on attendance and punctuality, this Office hereby
+        issues the following guidelines on the operation of the School Daily
+        Time Record (DTR) System.
+      </div>
+
+      <div class="clause">
+        <span class="num">1.2</span>
+        This memorandum aims to:
+      </div>
+
+      <div class="subclause">
+        <span class="tag">(a)</span> Standardize the process of recording daily attendance of all
+        teaching and non-teaching personnel;
+      </div>
+      <div class="subclause">
+        <span class="tag">(b)</span> Ensure accurate, timely, and tamper-proof recording of time-in and time-out;
+      </div>
+      <div class="subclause">
+        <span class="tag">(c)</span> Strengthen compliance with official working hours as prescribed by the CSC; and
+      </div>
+      <div class="subclause">
+        <span class="tag">(d)</span> Provide an orderly reference for administrative monitoring and reporting.
+      </div>
+
+      <!-- 2. COVERAGE -->
+      <h2>2. Coverage</h2>
+
+      <div class="clause">
+        <span class="num">2.1</span>
+        This guideline shall apply to <strong>all teaching and non-teaching personnel</strong>
+        of Sta. Cruz Pingkian High School, including:
+      </div>
+
+      <div class="subclause"><span class="tag">(a)</span> Permanent, temporary, and provisional employees;</div>
+      <div class="subclause"><span class="tag">(b)</span> Contractual and job-order personnel assigned to the school; and</div>
+      <div class="subclause"><span class="tag">(c)</span> Any personnel rendering service within the school premises for official purposes.</div>
+
+      <!-- 3. OFFICIAL WORKING HOURS -->
+      <h2>3. Official Working Hours</h2>
+
+      <div class="clause">
+        <span class="num">3.1</span>
+        The official working hours shall be from <strong>8:00 AM to 5:00 PM</strong>,
+        Mondays to Fridays, inclusive of a one (1) hour lunch break.
+      </div>
+
+      <div class="clause">
+        <span class="num">3.2</span>
+        A <strong>flexible time scheme</strong> may be availed of in accordance with
+        existing CSC rules and DepEd policies, subject to prior approval of the School Principal.
+      </div>
+
+      <div class="clause">
+        <span class="num">3.3</span>
+        A <strong>grace period of fifteen (15) minutes</strong> shall be observed for the
+        morning time-in only. Tardiness beyond the grace period shall be recorded.
+      </div>
+
+      <!-- 4. DTR SYSTEM OPERATION -->
+      <h2>4. DTR System Operation</h2>
+
+      <div class="clause">
+        <span class="num">4.1</span>
+        <strong>Time-In and Time-Out Logging</strong>
+      </div>
+      <div class="subclause">
+        <span class="tag">(a)</span> All personnel must personally log in their time-in upon arrival at the
+        school and time-out upon leaving, using the designated DTR system (biometric,
+        digital, or manual logbook, as applicable).
+      </div>
+      <div class="subclause">
+        <span class="tag">(b)</span> Proxy logging (logging in on behalf of another) is strictly prohibited and
+        shall be dealt with accordingly.
+      </div>
+
+      <div class="clause mt-1">
+        <span class="num">4.2</span>
+        <strong>Recording of Official Travel and Field Work</strong>
+      </div>
+      <div class="subclause">
+        <span class="tag">(a)</span> Personnel on official travel must file the corresponding
+        <em>Authority to Travel</em> and attach it to their DTR for the covered period.
+      </div>
+      <div class="subclause">
+        <span class="tag">(b)</span> Official travel hours shall be credited as hours worked, provided
+        supporting documents are submitted within three (3) working days upon return.
+      </div>
+
+      <div class="clause mt-1">
+        <span class="num">4.3</span>
+        <strong>Leave of Absence</strong>
+      </div>
+      <div class="subclause">
+        <span class="tag">(a)</span> All leaves shall be filed using the prescribed <em>CS Form No. 6
+        (Application for Leave)</em> and approved by the School Principal in advance.
+      </div>
+      <div class="subclause">
+        <span class="tag">(b)</span> Emergency leaves shall be filed immediately upon return to duty.
+      </div>
+
+      <div class="clause mt-1">
+        <span class="num">4.4</span>
+        <strong>Undertime and Tardiness</strong>
+      </div>
+      <div class="subclause">
+        <span class="tag">(a)</span> Undertime and tardiness shall be recorded and shall be subject to the
+        corresponding deduction and/or administrative action.
+      </div>
+      <div class="subclause">
+        <span class="tag">(b)</span> Personnel may offset undertime with approved compensatory time,
+        subject to existing CSC rules.
+      </div>
+
+      <!-- 5. RESPONSIBILITIES -->
+      <h2>5. Responsibilities</h2>
+
+      <div class="clause">
+        <span class="num">5.1</span>
+        <strong>School Personnel</strong> — Log in accurately and promptly; report any malfunction
+        of the system to the ICT Coordinator.
+      </div>
+      <div class="clause">
+        <span class="num">5.2</span>
+        <strong>ICT Coordinator</strong> — Maintain the DTR system, ensure its proper functioning,
+        generate reports, and safeguard data integrity.
+      </div>
+      <div class="clause">
+        <span class="num">5.3</span>
+        <strong>School Administrative Officer / DTR In-Charge</strong> — Consolidate, verify, and
+        submit monthly DTR reports to the School Principal.
+      </div>
+      <div class="clause">
+        <span class="num">5.4</span>
+        <strong>School Principal</strong> — Review, approve, and sign consolidated DTR reports;
+        monitor personnel compliance with these guidelines.
+      </div>
+
+      <!-- 6. REPORTING AND MONITORING -->
+      <h2>6. Reporting and Monitoring</h2>
+
+      <div class="clause">
+        <span class="num">6.1</span>
+        DTR summaries shall be generated <strong>every end of the month</strong> and submitted
+        to the School Principal for review and approval.
+      </div>
+      <div class="clause">
+        <span class="num">6.2</span>
+        Summary reports shall be posted on the school's transparency board, subject to the
+        provisions of the Data Privacy Act of 2012 (RA 10173).
+      </div>
+      <div class="clause">
+        <span class="num">6.3</span>
+        Any personnel may request a copy of their own DTR from the DTR In-Charge for personal records.
+      </div>
+
+      <!-- 7. PROHIBITED ACTS -->
+      <h2>7. Prohibited Acts</h2>
+
+      <div class="clause">
+        <span class="num">7.1</span>
+        The following acts are strictly prohibited and shall be subject to disciplinary action:
+      </div>
+      <div class="subclause"><span class="tag">(a)</span> Falsification of DTR entries;</div>
+      <div class="subclause"><span class="tag">(b)</span> Proxy logging (logging in/out on behalf of another);</div>
+      <div class="subclause"><span class="tag">(c)</span> Tampering with DTR equipment, software, or records;</div>
+      <div class="subclause"><span class="tag">(d)</span> Deliberate non-logging of time-in or time-out without justification; and</div>
+      <div class="subclause"><span class="tag">(e)</span> Any act that violates CSC rules on attendance and punctuality.</div>
+
+      <!-- 8. EFFECTIVITY -->
+      <h2>8. Effectivity</h2>
+
+      <div class="clause">
+        <span class="num">8.1</span>
+        This memorandum shall take effect <strong>immediately upon issuance</strong> and shall
+        remain in force until otherwise revoked or amended. All prior memoranda inconsistent
+        with this issuance are hereby superseded.
+      </div>
+
+      <!-- 9. COMPLIANCE -->
+      <h2>9. Compliance</h2>
+
+      <div class="clause">
+        <span class="num">9.1</span>
+        All concerned personnel are directed to strictly comply with these guidelines. For
+        questions or clarifications, please coordinate with the School Administrative Officer
+        or the ICT Coordinator.
+      </div>
+
+    </div><!-- /.body -->
+
+    <!-- ---------- Signature Block ---------- -->
+    <div class="signature-block">
+
+      <p class="issued-line">
+        Issued this <span class="fill">&nbsp;&nbsp;&nbsp;&nbsp;</span> day of
+        <span class="fill">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>, 2026 at Sta. Cruz Pingkian High School, Kayapa, Nueva Vizcaya.
+      </p>
+
+      <div class="sig-row">
+        <div class="sig-box">
+          <p class="role">Recommending Approval:</p>
+          <p class="name">__________________________</p>
+          <p class="title">School Administrative Officer</p>
+        </div>
+
+        <div class="sig-box">
+          <p class="role">Approved:</p>
+          <p class="name">SATURNINO P. CALANSI</p>
+          <p class="title">School Principal</p>
+        </div>
+      </div>
+
+      <!-- Acknowledgment Table -->
+      <p class="mt-2" style="margin-bottom:6px;"><strong>Received and Acknowledged by:</strong></p>
+      <table class="ack-table">
+        <thead>
+          <tr>
+            <th style="width:8%">No.</th>
+            <th style="width:38%">Name of Personnel</th>
+            <th style="width:24%">Designation</th>
+            <th style="width:18%">Signature</th>
+            <th style="width:12%">Date</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td>1</td><td></td><td></td><td></td><td></td></tr>
+          <tr><td>2</td><td></td><td></td><td></td><td></td></tr>
+          <tr><td>3</td><td></td><td></td><td></td><td></td></tr>
+          <tr><td>4</td><td></td><td></td><td></td><td></td></tr>
+          <tr><td>5</td><td></td><td></td><td></td><td></td></tr>
+          <tr><td>6</td><td></td><td></td><td></td><td></td></tr>
+          <tr><td>7</td><td></td><td></td><td></td><td></td></tr>
+          <tr><td>8</td><td></td><td></td><td></td><td></td></tr>
+        </tbody>
+      </table>
+
+      <!-- Copy Furnished -->
+      <div class="copy-furnished">
+        <strong>Copy Furnished:</strong>
+        <ul>
+          <li>Office of the Schools Division Superintendent, SDO Nueva Vizcaya</li>
+          <li>School Governance Council</li>
+          <li>School Personnel Bulletin Board</li>
+          <li>File / Records</li>
+        </ul>
+      </div>
+
+      <!-- Motto -->
+      <p class="motto">"Maka-Diyos • Maka-Tao • Makakalikasan • Makabansa"</p>
+
+    </div><!-- /.signature-block -->
+
+  </div><!-- /.page -->
+
+</body>
+</html>

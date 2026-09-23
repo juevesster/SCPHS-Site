@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>SCPHS Bulletin Board</title>
+
+  <!-- Main stylesheet -->
+  <link rel="stylesheet" href="assets/css/styles.css" />
+
+  <!-- Page-specific light polish -->
+  <style>
+    .bb-container{ max-width:1160px; margin:0 auto; padding:16px }
+    .bb-header{ display:flex; gap:12px; align-items:center; justify-content:space-between; flex-wrap:wrap; margin:10px 0 14px }
+    .bb-title{ margin:0; font-weight:800; color:#0f2b4f }
+    .bb-toolbar{ display:flex; gap:8px; align-items:center; flex-wrap:wrap }
+    .bb-filters{ display:flex; gap:8px; flex-wrap:wrap }
+    .bb-filter{ padding:6px 12px; border-radius:999px; border:1px solid var(--brand); background:#fff; cursor:pointer; font-size:14px }
+    .bb-filter.active{ background:var(--brand); color:#fff }
+    .bb-search{ width:260px }
+    .bb-search input{ width:100%; padding:9px 12px; border-radius:8px; border:1px solid var(--line) }
+
+    .bb-login, .bb-postform, .bb-manage { background:#fff; border:1px solid var(--line); border-radius:14px; padding:16px; box-shadow:0 4px 12px rgba(0,0,0,.04); margin-bottom:16px }
+    .bb-postform textarea{ width:100%; min-height:90px; padding:10px; border:1px solid var(--line); border-radius:8px }
+    .bb-row{ display:flex; gap:10px; align-items:center; flex-wrap:wrap }
+    .bb-meta{ color:#6b7280; font-size:13px }
+
+    .bb-feed{ display:grid; gap:16px; margin-top:12px }
+    .bb-card{ background:#fff; border:1px solid var(--line); border-radius:14px; padding:16px; box-shadow:0 4px 12px rgba(0,0,0,.04) }
+    .bb-card h4{ margin:0 0 6px }
+    .bb-card img{ max-width:100%; border-radius:10px; margin-top:8px }
+    .bb-tag{ display:inline-block; background:var(--brand); color:#fff; border-radius:6px; padding:3px 8px; font-size:12px; margin-right:8px }
+
+    .bb-admin-note{ font-size:12px; color:#6b7280 }
+    .bb-actions{ display:flex; gap:8px; margin-top:10px; flex-wrap:wrap }
+    .bb-actions .btn.small{ padding:6px 10px; border-radius:8px; font-size:13px }
+
+    /* Simple button look (in case your global theme doesn't have .btn) */
+    .btn{ padding:8px 12px; border:1px solid var(--line,#d1d5db); border-radius:8px; background:#fff; cursor:pointer }
+    .btn.alt{ background:#f3f4f6 }
+    .btn.outline{ background:#fff; border-color:var(--brand,#2563eb); color:var(--brand,#2563eb) }
+    .btn.small{ padding:6px 10px; font-size:13px }
+
+    /* Edit dialog */
+    .bb-dialog{ position:fixed; inset:0; display:none; align-items:center; justify-content:center; background:rgba(0,0,0,.4); z-index:9999; padding:16px }
+    .bb-dialog__panel{ background:#fff; border-radius:12px; padding:16px; max-width:560px; width:100%; border:1px solid var(--line) }
+    .bb-dialog__actions{ display:flex; gap:8px; justify-content:flex-end; margin-top:12px }
+  </style>
+
+  <!-- Load the bulletin logic (deferred so DOM is ready) -->
+  <script defer src="assets/js/bulletin.js"></script>
+</head>
+<body>
+
+  <main class="bb-container">
+    <!-- Page header -->
+    <div class="bb-header">
+      <h1 class="bb-title">SCPHS Bulletin Board</h1>
+
+      <div class="bb-toolbar">
+        <!-- Filters -->
+        <div class="bb-filters" id="bb-filters">
+          <button class="bb-filter active" data-filter="All">All</button>
+          <button class="bb-filter" data-filter="Announcements">Announcements</button>
+          <button class="bb-filter" data-filter="Events">Events</button>
+          <button class="bb-filter" data-filter="Activities">Activities</button>
+          <button class="bb-filter" data-filter="Accomplishments">Accomplishments</button>
+          <button class="bb-filter" data-filter="Sports">Sports Champions</button>
+        </div>
+
+        <!-- Search -->
+        <div class="bb-search">
+          <input id="bb-search" type="search" placeholder="Search posts…" />
+        </div>
+      </div>
+    </div>
+
+    <!-- Login (shown if not logged in) -->
+    <section id="bb-login" class="bb-login">
+      <h3>Admin / Teacher Login</h3>
+      <div class="bb-row">
+        <input id="bb-username" type="text" placeholder="Username" class="bb-input" />
+        <input id="bb-password" type="password" placeholder="Password" class="bb-input" />
+        <button id="bb-login-btn" class="btn">Login</button>
+        <!-- Always-visible Home link for convenience -->
+        <a id="bb-home-link-top" class="btn outline" href="index.html" style="margin-left:auto;">Home</a>
+      </div>
+      <p id="bb-login-status" class="bb-meta"></p>
+      <p class="bb-admin-note">Tip: We can change allowed accounts later when we move online.</p>
+    </section>
+
+    <!-- Post form (visible only when logged in) -->
+    <section id="bb-postform" class="bb-postform" style="display:none;">
+      <div class="bb-row" style="justify-content:space-between; width:100%;">
+        <h3 style="margin:0">Create a Post</h3>
+        <div class="bb-row" style="margin-left:auto; gap:8px;">
+          <!-- Return to Home (index.html) -->
+          <a id="bb-home-link" class="btn outline" href="index.html" title="Return to Home">Home</a>
+          <!-- Current user -->
+          <span class="bb-meta" id="bb-current-user"></span>
+          <!-- Logout & Delete All -->
+          <button id="bb-logout-btn" class="btn alt" type="button" title="Log out">Logout</button>
+          <button id="bb-delete-all-btn" class="btn outline" type="button" title="Delete all posts">Delete All</button>
+        </div>
+      </div>
+
+      <div class="bb-row" style="margin:8px 0;">
+        <select id="bb-category" class="bb-input">
+          <option>Announcements</option>
+          <option>Events</option>
+          <option>Activities</option>
+          <option>Accomplishments</option>
+          <option>Sports</option>
+        </select>
+        <label class="btn outline" for="bb-image-input">Attach Image</label>
+        <input id="bb-image-input" type="file" accept="image/*" style="display:none" />
+        <span class="bb-meta">Recommended image ≥ 1600×600 for hero-like banners.</span>
+      </div>
+
+      <textarea id="bb-text" placeholder="Write your content…"></textarea>
+      <img id="bb-preview" alt="" style="display:none; width:220px; margin-top:10px; border-radius:10px;" />
+
+      <div class="bb-actions">
+        <button id="bb-post-btn" class="btn">Post</button>
+        <button id="bb-clear-btn" type="button" class="btn alt">Clear</button>
+      </div>
+    </section>
+
+    <!-- Manage posts (admin) -->
+    <section id="bb-manage" class="bb-manage" style="display:none;">
+      <h3 style="margin-top:0">Manage Posts</h3>
+      <p class="bb-meta">Edit or delete posts below.</p>
+      <div id="bb-manage-list" class="bb-feed"></div>
+    </section>
+
+    <!-- Feed -->
+    <section>
+      <div id="bb-feed" class="bb-feed"></div>
+    </section>
+  </main>
+
+  <!-- Simple edit dialog -->
+  <div id="bb-edit-dialog" class="bb-dialog" role="dialog" aria-modal="true" aria-labelledby="bb-edit-title">
+    <div class="bb-dialog__panel">
+      <h3 id="bb-edit-title" style="margin-top:0">Edit Post</h3>
+      <div class="bb-row" style="margin:8px 0;">
+        <select id="bb-edit-category" class="bb-input" style="flex:1">
+          <option>Announcements</option>
+          <option>Events</option>
+          <option>Activities</option>
+          <option>Accomplishments</option>
+          <option>Sports</option>
+        </select>
+      </div>
+      <textarea id="bb-edit-text" class="bb-input" style="min-height:110px"></textarea>
+      <div class="bb-dialog__actions">
+        <button id="bb-edit-cancel" class="btn alt" type="button">Cancel</button>
+        <button id="bb-edit-save" class="btn" type="button">Save</button>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
+
+<!-- ======================= END ABOUT SECTION ======================= -->
+
+  <!-- School Footer (SCPHS) -->
+  <footer>
+    <div class="wrap">
+      <div class="foot-grid">
+        <div>
+          <strong>Sta. Cruz Pingkian High School</strong><br/>
+          Brgy. Sta. Cruz, Pingkian • Nueva Vizcaya • Philippines<br/>
+          Email: 300648@deped.gov.ph • Phone: +63 967-8848989
+        </div>
+        <div>
+          <a href="#privacy">Privacy Notice</a> •
+          <a href="#foi">FOI</a> •
+          <a href="#sitemap">Sitemap</a> •
+          <a href="https://www.facebook.com/p/Santa-Cruz-Pingkian-High-School-Official-61554495084090/" target="_blank" rel="noopener">Facebook</a>
+        </div>
+      </div>
+      <div class="copy">© 2026 SCPHS. All rights reserved.</div>
+    </div>
+  </footer>
+
+  <!-- ================== GOVPH FOOTER (final, official) ================== -->
+  <footer class="govph-footer" role="contentinfo">
+    <div class="wrap govph-footer__grid">
+      <div class="govph-footer__col">
+        <h4>Republic of the Philippines</h4>
+        <p>All content is in the public domain unless otherwise stated.</p>
+      </div>
+      <div class="govph-footer__col">
+        <h4>About GOVPH</h4>
+        <ul class="govph-footer__links">
+          <li><a href="https://www.gov.ph/" target="_blank" rel="noopener">GOV.PH</a></li>
+          <li><a href="https://data.gov.ph/" target="_blank" rel="noopener">Open Data Portal</a></li>
+          <li><a href="https://www.officialgazette.gov.ph/" target="_blank" rel="noopener">Official Gazette</a></li>
+        </ul>
+      </div>
+      <div class="govph-footer__col">
+        <h4>Government Links</h4>
+        <ul class="govph-footer__links">
+          <li><a href="https://op-proper.gov.ph/" target="_blank" rel="noopener">Office of the President</a></li>
+          <li><a href="https://ovp.gov.ph/" target="_blank" rel="noopener">Office of the Vice President</a></li>
+          <li><a href="https://www.senate.gov.ph/" target="_blank" rel="noopener">Senate of the Philippines</a></li>
+          <li><a href="https://www.congress.gov.ph/" target="_blank" rel="noopener">House of Representatives</a></li>
+          <li><a href="https://sc.judiciary.gov.ph/" target="_blank" rel="noopener">Supreme Court</a></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="govph-footer__bar">
+      <div class="wrap">
+        <small>© <span id="yearNow"></span> Sta. Cruz Pingkian High School • A Philippine Government Website</small>
+      </div>
+    </div>
+  </footer>
+
+   <!-- Chatbot mount -->
+<div id="scphs-chatbot-root"></div>
+
+<!-- Chatbot auto-loader: tries absolute path, then ../, then ../../ -->
+<script>
+(function(){
+  const rootId = 'scphs-chatbot-root';
+  if (!document.getElementById(rootId)) {
+    const m = document.createElement('div');
+    m.id = rootId;
+    document.body.appendChild(m);
+  }
+
+  const tried = {};
+  function load(src, onOk, onFail){
+    if (tried[src]) return onFail && onFail();
+    tried[src] = true;
+    const s = document.createElement('script');
+    s.src = src; s.defer = true;
+    s.onload = onOk;
+    s.onerror = onFail;
+    document.body.appendChild(s);
+  }
+
+  // Try absolute (works when hosted), then step-wise relatives (works offline)
+  load('/assets/js/chatbot.js', null, () =>
+    load('assets/js/chatbot.js', null, () =>
+      load('../assets/js/chatbot.js', null, () =>
+        load('../../assets/js/chatbot.js', null, () =>
+          console.warn('SCPHS chatbot: unable to load script from any known path.')
+        )
+      )
+    )
+  );
+})();
+</script>

@@ -1,0 +1,244 @@
+//Class Attendance
+//function onOpen() {
+ // SpreadsheetApp.getUi()
+    ui.createMenu("📅 Attendance")
+    .addItem("Create Monthly Sheet", "showMonthInputForm")
+    .addItem("Generate Attendance Doc & PDF", "generateAttendanceDocAndPDF")
+    .addToUi();
+
+}
+
+// === Modal Form Launcher ===
+function showMonthInputForm() {
+  const html = HtmlService.createHtmlOutputFromFile("MonthInputForm")
+    .setWidth(300)
+    .setHeight(200);
+  SpreadsheetApp.getUi().showModalDialog(html, "📅 Create Monthly Attendance");
+}
+
+// === Create Monthly Attendance Sheet ===
+function createMonthlySheetFromForm(data) {
+  const year = parseInt(data.year);
+  const month = parseInt(data.month);
+  const students = getStudentList();
+
+  const sheetName = Utilities.formatDate(new Date(year, month - 1, 1), Session.getScriptTimeZone(), "MMMM yyyy");
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  let sheet = ss.getSheetByName(sheetName);
+  if (sheet) ss.deleteSheet(sheet); // Overwrite if exists
+  sheet = ss.insertSheet(sheetName);
+
+  const numDays = new Date(year, month, 0).getDate();
+  const dateHeaders = Array.from({ length: numDays }, (_, i) =>
+    Utilities.formatDate(new Date(year, month - 1, i + 1), Session.getScriptTimeZone(), "MM/dd")
+  );
+  const summaryHeaders = ["Total Present", "Total Absent", "Total Late", "Total Tardy"];
+  const headers = ["#", "LRN - Student Name", ...dateHeaders, ...summaryHeaders];
+
+  sheet.getRange(1, 1, 1, headers.length).setValues([headers]);
+  sheet.getRange(1, 1, 1, headers.length).setFontWeight("bold").setBackground("#dfe3e6");
+
+  const dataRows = students.map((name, i) => {
+    const row = i + 2;
+    const colLetterEnd = columnToLetter(2 + numDays);
+    const formulas = [
+      `=COUNTIF(C${row}:${colLetterEnd}${row}, "P")`,
+      `=COUNTIF(C${row}:${colLetterEnd}${row}, "A")`,
+      `=COUNTIF(C${row}:${colLetterEnd}${row}, "L")`,
+      `=COUNTIF(C${row}:${colLetterEnd}${row}, "T")`
+    ];
+    return [i + 1, name, ...Array(numDays).fill(""), ...formulas];
+  });
+
+  sheet.getRange(2, 1, students.length, headers.length).setValues(dataRows);
+
+  const statusRange = sheet.getRange(2, 3, students.length, numDays);
+  const validation = SpreadsheetApp.newDataValidation()
+    .requireValueInList(["P", "A", "L", "T"], true)
+    .setAllowInvalid(false)
+    .build();
+  statusRange.setDataValidation(validation);
+
+  const rules = sheet.getConditionalFormatRules();
+  [["P", "#c6efce"], ["A", "#ffc7ce"], ["L", "#ffeb9c"], ["T", "#d9ead3"]].forEach(([val, color]) => {
+    rules.push(SpreadsheetApp.newConditionalFormatRule()
+      .whenTextEqualTo(val)
+      .setBackground(color)
+      .setRanges([statusRange])
+      .build()
+    );
+  });
+  sheet.setConditionalFormatRules(rules);
+
+  sheet.setFrozenRows(1);
+  sheet.setColumnWidths(1, 1, 40);
+  sheet.setColumnWidths(2, 1, 220);
+  sheet.setColumnWidths(3, numDays, 50);
+  sheet.setColumnWidths(3 + numDays, 4, 90);
+}
+
+// === Helper: Convert Column Index to Letter ===
+function columnToLetter(column) {
+  let temp = "", letter = "";
+  while (column > 0) {
+    temp = (column - 1) % 26;
+    letter = String.fromCharCode(temp + 65) + letter;
+    column = (column - temp - 1) / 26;
+  }
+  return letter;
+}
+
+// === Get Student List from External Sheet ===
+function getStudentList() {
+  const inputSS = SpreadsheetApp.openById("15Ercrp_a4_obh7xvdomNM-hkvbpmBLk__FbO6_IZ930");
+  const sheet = inputSS.getSheetByName("INPUT DATA");
+  const rows = sheet.getRange("A2:B" + sheet.getLastRow()).getValues();
+  return rows.filter(r => r[0] && r[1]).map(r => `${r[0]} - ${r[1]}`);
+}
+
+// === Header Details (Optional - if needed for Docs/PDF output) ===
+function getHeaderSettings() {
+  const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Settings");
+  const data = sheet.getRange(2, 1, 1, 10).getValues()[0]; // A2:J2
+  return {
+    teacher: data[0], course: data[1], department: data[2], grade: data[3],
+    month: data[4], year: data[5], duration: data[6], room: data[7], day: data[8], time: data[9]
+  };
+}
+
+
+// ##########################
+// PORTRAIT DOC + PDF
+function generateAttendanceDocAndPDF() {
+  const inputSheetId = '15Ercrp_a4_obh7xvdomNM-hkvbpmBLk__FbO6_IZ930';
+  const settingsSheetId = '1h1ghTawoR_mHjB93_LP6TLyiv78niWwvi6RcpZpP5dg';
+
+  // 1. Get header settings
+  const settingsSheet = SpreadsheetApp.openById(settingsSheetId);
+  const settingsData = settingsSheet.getSheetByName("Settings").getRange(2, 1, 1, 10).getValues()[0];
+  const [teacher, course, department, grade, monthName, year, duration, room, day, time] = settingsData;
+  const attendanceSheetName = `${monthName} ${year}`;
+  const attendanceSheet = settingsSheet.getSheetByName(attendanceSheetName);
+
+  if (!attendanceSheet) throw new Error(`No sheet found for: ${attendanceSheetName}`);
+
+  // 2. Get student names + totals from attendance sheet
+  const attendanceData = attendanceSheet.getDataRange().getValues().slice(5); // Skip headers
+  const studentRows = attendanceData.filter(row => row[1]); // Ensure student names exist
+  const studentsWithTotals = studentRows.map(row => ({
+    lrn: row[0],
+    name: row[1],
+    totalP: row[row.length - 4],
+    totalA: row[row.length - 3],
+    totalL: row[row.length - 2],
+    totalT: row[row.length - 1],
+  }));
+
+  // 3. Create Doc
+  const docName = `Attendance Sheet - ${attendanceSheetName}`;
+  const doc = DocumentApp.create(docName);
+  const body = doc.getBody();
+
+  // Header
+  body.appendParagraph(`TEACHER NAME: ${teacher}\t\tCOURSE NO: ${course}`).setBold(true);
+  body.appendParagraph(`DEPARTMENT: ${department}\t\tGRADE LEVEL: ${grade}`).setBold(true);
+  body.appendParagraph(`MONTH: ${monthName}\t\tYEAR: ${year}`).setBold(true);
+  body.appendParagraph(`DURATION: ${duration}\t\tROOM NO: ${room}`).setBold(true);
+  body.appendParagraph(`DAY: ${day}\t\tTIME: ${time}`).setBold(true);
+  body.appendParagraph(""); // Spacer
+
+  // Attendance Table
+  const table = body.appendTable();
+  const headers = ["LRN", "STUDENT NAME", "P", "A", "L", "T", "REMARKS"];
+  const headerRow = table.appendTableRow();
+  headers.forEach(h => headerRow.appendTableCell(h).setBold(true));
+
+  studentsWithTotals.forEach(stud => {
+    const row = table.appendTableRow();
+    row.appendTableCell(stud.lrn?.toString() || "");
+    row.appendTableCell(stud.name);
+    row.appendTableCell(stud.totalP?.toString() || "0");
+    row.appendTableCell(stud.totalA?.toString() || "0");
+    row.appendTableCell(stud.totalL?.toString() || "0");
+    row.appendTableCell(stud.totalT?.toString() || "0");
+    row.appendTableCell("");
+  });
+
+  doc.saveAndClose();
+
+  // 4. Create PDF version
+  const file = DriveApp.getFileById(doc.getId());
+  const pdf = file.getAs("application/pdf");
+  DriveApp.createFile(pdf).setName(`${docName}.pdf`);
+
+  SpreadsheetApp.getUi().alert("✅ Google Doc and PDF created successfully:\n" + doc.getUrl());
+}
+
+//############################################
+//Options thru Dialogue
+// ========= Apps Script Code.gs =========
+
+function showClassAttendanceDialog() {
+  const html = HtmlService.createHtmlOutputFromFile('ClassSectionSelector')
+    .setWidth(400)
+    .setHeight(250);
+  SpreadsheetApp.getUi().showModalDialog(html, 'Select Class for Attendance');
+}
+
+function getClassOptions() {
+  const classSheet = SpreadsheetApp.getActive().getSheetByName("ClassSections");
+  const data = classSheet.getRange(2, 1, classSheet.getLastRow() - 1, 6).getValues();
+  return data.map(row => ({
+    value: row[0],
+    label: `${row[2]} (${row[1]}) - ${row[3]}`
+  }));
+}
+
+function generateAttendanceForClass(classId) {
+  const ss = SpreadsheetApp.getActive();
+  const classSheet = ss.getSheetByName("ClassSections");
+  const classData = classSheet.getRange(2, 1, classSheet.getLastRow() - 1, 6).getValues();
+  const selectedClass = classData.find(row => row[0] === classId);
+  if (!selectedClass) throw new Error("Class not found");
+
+  const [id, subject, section, teacher, grade, courseCode] = selectedClass;
+
+  const inputSheet = ss.getSheetByName("INPUT DATA");
+  const inputData = inputSheet.getRange(2, 1, inputSheet.getLastRow() - 1, 3).getValues();
+  const students = inputData.filter(row => row[2] === classId); // filter by Class ID
+
+  const today = new Date();
+  const monthYear = Utilities.formatDate(today, ss.getSpreadsheetTimeZone(), "MMMM yyyy");
+  const docName = `Attendance Sheet - ${section} - ${monthYear}`;
+  const doc = DocumentApp.create(docName);
+  const body = doc.getBody();
+
+  body.appendParagraph(`TEACHER NAME: ${teacher}\t\tCOURSE NO: ${courseCode}`).setBold(true);
+  body.appendParagraph(`SUBJECT: ${subject}\t\tSECTION: ${section}`).setBold(true);
+  body.appendParagraph(`GRADE: ${grade}\t\tMONTH: ${monthYear}`).setBold(true);
+  body.appendParagraph("");
+
+  const table = body.appendTable();
+  const headers = ["DATE", "DAY", "LRN", "STUDENT NAME", "P", "A", "L", "T", "REMARKS"];
+  const headerRow = table.appendTableRow();
+  headers.forEach(h => headerRow.appendTableCell(h).setBold(true));
+
+  students.forEach(row => {
+    const [lrn, name] = row;
+    const studentRow = table.appendTableRow();
+    studentRow.appendTableCell("");
+    studentRow.appendTableCell("");
+    studentRow.appendTableCell(String(lrn));
+    studentRow.appendTableCell(name);
+    studentRow.appendTableCell("");
+    studentRow.appendTableCell("");
+    studentRow.appendTableCell("");
+    studentRow.appendTableCell("");
+    studentRow.appendTableCell("");
+  });
+
+  doc.saveAndClose();
+  const pdf = DriveApp.getFileById(doc.getId()).getAs("application/pdf");
+  DriveApp.createFile(pdf).setName(docName + ".pdf");
+  SpreadsheetApp.getUi().alert("✅ Attendance document created for: " + section);
+}
