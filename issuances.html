@@ -1190,10 +1190,15 @@
         });
       }
 
-      rows.sort((a, b) =>
-        String(b._sort || '').localeCompare(String(a._sort || '')) ||
-        String(b.title || '').localeCompare(String(a.title || ''))
-      );
+      rows.sort((a, b) => {
+  // Primary: date (newest first)
+  const dateCompare = String(b._sort || '').localeCompare(String(a._sort || ''));
+  if (dateCompare !== 0) return dateCompare;
+  // Secondary: series number (higher DM number = newer)
+  const numA = parseInt((String(a.series || '').match(/(\d+)/) || ['', '0'])[1], 10);
+  const numB = parseInt((String(b.series || '').match(/(\d+)/) || ['', '0'])[1], 10);
+  return numB - numA;
+});
 
       state.filtered = rows;
       state.page = 1;
