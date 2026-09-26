@@ -75,7 +75,7 @@
         <strong>Want to post a bulletin?</strong>
         <div class="bb-meta">Sign in with your school account to add, edit, or delete posts.</div>
       </div>
-      <a class="btn" href="login.html?next=%2Fbulletin.html">Sign in</a>
+      <a class="btn" id="bb-signin-link" href="login.html">Sign in</a>
     </div>
 
     <!-- Post form (signed-in users only) -->
@@ -84,7 +84,7 @@
         <h3 style="margin:0">Create a Post</h3>
         <div class="bb-row" style="margin-left:auto; gap:8px;">
           <span class="bb-meta" id="bb-current-user"></span>
-          <button id="bb-logout-btn" class="btn alt" type="button" title="Log out">Logout</button>
+          <button id="bb-logout-btn" class="btn outline" type="button" title="Log out">Logout</button>
           <button id="bb-delete-all-btn" class="btn outline" type="button" title="Delete all posts">Delete All</button>
         </div>
       </div>
@@ -489,6 +489,16 @@
     )
   );
 })();
+</script>
+
+<script>
+  (function(){
+    const a = document.getElementById('bb-signin-link');
+    if (a) {
+      const next = encodeURIComponent(location.pathname + location.search);
+      a.href = 'login.html?next=' + next;
+    }
+  })();
 </script>
 </body>
 </html>
