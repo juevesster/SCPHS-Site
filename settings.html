@@ -474,43 +474,64 @@
 
     // ---- Auth check ----
     onAuthStateChanged(auth, async (user) => {
-      if (!user) {
-        // Not signed in → redirect to login
-        location.replace("login.html?next=" + encodeURIComponent(location.pathname));
-        return;
-      }
+  // ✅ DEBUG: show progress
+  const dbg = (msg) => {
+    loadingView.innerHTML = '<div class="spinner"></div><div>' + msg + '</div>';
+    console.log("[settings]", msg);
+  };
 
-      // Load profile from Firestore to check role
-      let role = "student";
-      try {
-        const snap = await getDoc(doc(db, "users", user.uid));
-        if (snap.exists()) {
-          role = snap.data().role || "student";
-        }
-      } catch (e) {
-        console.warn("[settings] role lookup failed:", e);
-      }
+  dbg("Checking authentication…");
 
-      // Handle special case: first-ever user is promoted to admin
-      // (Only if there is a single user in the system.)
-      // Simpler rule: allow anyone signed in whose email ends with @deped.gov.ph or is juevesster@gmail.com
-      const email = (user.email || "").toLowerCase();
-      const isAdminByEmail =
-        email.endsWith("@deped.gov.ph") ||
-        email === "juevesster@gmail.com";
+  if (!user) {
+    dbg("Not signed in — redirecting…");
+    location.replace("login.html?next=" + encodeURIComponent(location.pathname));
+    return;
+  }
 
-      if (role !== "admin" && !isAdminByEmail) {
-        loadingView.hidden = true;
-        deniedView.hidden = false;
-        return;
-      }
+  dbg("Signed in as " + user.email + " — loading profile…");
 
-      // Success → load current config
-      await loadConfig();
-      fillForm();
-      loadingView.hidden = true;
-      settingsView.hidden = false;
-    });
+  let role = "student";
+  try {
+    const snap = await getDoc(doc(db, "users", user.uid));
+    if (snap.exists()) {
+      role = snap.data().role || "student";
+      dbg("Profile loaded. Role: " + role);
+    } else {
+      dbg("No profile doc found. Role defaults to student.");
+    }
+  } catch (e) {
+    dbg("Profile lookup FAILED: " + (e.code || e.message));
+    console.warn("[settings] role lookup failed:", e);
+    // Continue anyway — email check below may still allow admin
+  }
+
+  const email = (user.email || "").toLowerCase();
+  const isAdminByEmail =
+    email.endsWith("@deped.gov.ph") ||
+    email === "juevesster@gmail.com";
+
+  if (role !== "admin" && !isAdminByEmail) {
+    loadingView.hidden = true;
+    deniedView.hidden = false;
+    return;
+  }
+
+  dbg("Access granted. Loading site config…");
+
+  try {
+    await loadConfig();
+  } catch (e) {
+    dbg("Config load FAILED: " + (e.code || e.message));
+    console.warn("[settings] config load failed:", e);
+    // Continue with defaults
+  }
+
+  dbg("Populating form…");
+  fillForm();
+  loadingView.hidden = true;
+  settingsView.hidden = false;
+  console.log("[settings] Ready.");
+});
 
     // ---- Fill form from config ----
     function fillForm() {
