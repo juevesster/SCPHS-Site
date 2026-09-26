@@ -23,92 +23,145 @@
     body { background: #f6f7f9; color: #111827; }
 
     /* ---------- TOP GOVERNMENT HEADER ---------- */
-    .gov-header {
-      background: #ffffff;
-      border-bottom: 3px solid #0f4c81;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-    }
-    .gov-header-inner {
-      max-width: 1200px;
-      margin: 0 auto;
-      padding: 14px 24px;
-      display: grid;
-      grid-template-columns: 100px 1fr 100px;
-      gap: 20px;
-      align-items: center;
-    }
-    .gov-header-inner .logo-left,
-    .gov-header-inner .logo-right {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-    .gov-header-inner .logo-left img,
-    .gov-header-inner .logo-right img {
-      max-height: 72px;
-      max-width: 100%;
-      height: auto;
-      width: auto;
-      object-fit: contain;
-    }
+.gov-header {
+  background: #ffffff;
+  border-bottom: 3px solid #0f4c81;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+}
 
-    .gov-header-text {
-      text-align: center;
-      line-height: 1.35;
-      color: #0f4c81;
-    }
-    .gov-header-text .republic {
-      font-size: 13px;
-      font-weight: 600;
-      letter-spacing: 0.04em;
-      color: #4b5563;
-      margin: 0;
-      text-transform: uppercase;
-    }
-    .gov-header-text .department {
-      font-size: 15px;
-      font-weight: 800;
-      letter-spacing: 0.05em;
-      margin: 2px 0 0;
-      color: #0f4c81;
-      text-transform: uppercase;
-    }
-    .gov-header-text .region,
-    .gov-header-text .division {
-      font-size: 12.5px;
-      color: #374151;
-      margin: 2px 0 0;
-      letter-spacing: 0.02em;
-    }
-    .gov-header-text .school {
-      font-size: 18px;
-      font-weight: 900;
-      margin: 8px 0 0;
-      color: #0f4c81;
-      letter-spacing: 0.02em;
-      text-transform: uppercase;
-      text-shadow: 0 1px 0 rgba(255,255,255,0.9);
-    }
-    .gov-header-text .school-address {
-      font-size: 12px;
-      color: #6b7280;
-      margin: 2px 0 0;
-      font-style: italic;
-    }
+.gov-header-inner {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 18px 28px 16px;
+  display: grid;
+  grid-template-columns: 110px 1fr 110px;
+  gap: 24px;
+  align-items: center;
+}
 
-    @media (max-width: 720px) {
-      .gov-header-inner {
-        grid-template-columns: 60px 1fr 60px;
-        gap: 10px;
-        padding: 10px 14px;
-      }
-      .gov-header-inner .logo-left img,
-      .gov-header-inner .logo-right img { max-height: 48px; }
-      .gov-header-text .department { font-size: 12px; }
-      .gov-header-text .school { font-size: 14px; }
-      .gov-header-text .region,
-      .gov-header-text .division { font-size: 10.5px; }
-    }
+/* Left column: school logo */
+.gov-header-inner .logo-left,
+.gov-header-inner .logo-right {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.gov-header-inner .logo-left img {
+  max-height: 88px;
+  max-width: 100%;
+  height: auto;
+  width: auto;
+  object-fit: contain;
+}
+
+/* Center column: DepEd logo on top, text below */
+.gov-header-center {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.logo-center {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 8px;
+}
+.logo-center img {
+  max-height: 62px;
+  width: auto;
+  object-fit: contain;
+  filter: drop-shadow(0 2px 6px rgba(15,76,129,0.12));
+}
+
+/* Text block */
+.gov-header-text {
+  text-align: center;
+  line-height: 1.35;
+  color: #0f4c81;
+}
+.gov-header-text .republic {
+  font-size: 11.5px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  color: #6b7280;
+  margin: 0;
+  text-transform: uppercase;
+}
+.gov-header-text .department {
+  font-size: 14.5px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  margin: 3px 0 0;
+  color: #0f4c81;
+  text-transform: uppercase;
+}
+.gov-header-text .region,
+.gov-header-text .division {
+  font-size: 12px;
+  color: #4b5563;
+  margin: 2px 0 0;
+  letter-spacing: 0.02em;
+}
+.gov-header-text .school {
+  font-size: 19px;
+  font-weight: 900;
+  margin: 10px 0 0;
+  color: #0f4c81;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  position: relative;
+  padding-top: 10px;
+}
+/* Thin decorative divider above school name */
+.gov-header-text .school::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 60px;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, #c8102e, transparent);
+  border-radius: 2px;
+}
+.gov-header-text .school-address {
+  font-size: 11.5px;
+  color: #6b7280;
+  margin: 4px 0 0;
+  font-style: italic;
+  letter-spacing: 0.01em;
+}
+
+/* Mobile */
+@media (max-width: 720px) {
+  .gov-header-inner {
+    grid-template-columns: 60px 1fr 60px;
+    gap: 10px;
+    padding: 12px 14px;
+  }
+  .gov-header-inner .logo-left img { max-height: 54px; }
+  .logo-center img { max-height: 44px; }
+  .logo-center { margin-bottom: 6px; }
+  .gov-header-text .republic { font-size: 10px; }
+  .gov-header-text .department { font-size: 12px; }
+  .gov-header-text .region,
+  .gov-header-text .division { font-size: 10.5px; }
+  .gov-header-text .school { font-size: 14px; padding-top: 8px; }
+  .gov-header-text .school-address { font-size: 10px; }
+}
+
+/* Small phones */
+@media (max-width: 480px) {
+  .gov-header-inner {
+    grid-template-columns: 48px 1fr 48px;
+    padding: 10px 10px;
+  }
+  .gov-header-inner .logo-left img { max-height: 44px; }
+  .logo-center img { max-height: 36px; }
+  .gov-header-text .school { font-size: 13px; }
+}
 
     /* ---------- MAIN LAYOUT ---------- */
     .login-shell {
@@ -474,12 +527,18 @@
        GOVERNMENT HEADER (auto-filled from config)
        ══════════════════════════════════════════════════════ -->
   <header class="gov-header">
-    <div class="gov-header-inner">
+  <div class="gov-header-inner">
 
-      <div class="logo-left" aria-label="School logo">
-        <img id="cfg-logo-school" src="" alt="School Logo">
+    <!-- LEFT: School logo -->
+    <div class="logo-left" aria-label="School logo">
+      <img id="cfg-logo-school" src="" alt="School Logo">
+    </div>
+
+    <!-- CENTER: DepEd logo centered on top of text -->
+    <div class="gov-header-center">
+      <div class="logo-center" aria-label="DepEd logo">
+        <img id="cfg-logo-deped" src="" alt="Department of Education">
       </div>
-
       <div class="gov-header-text">
         <p class="republic"  id="cfg-republic">Republic of the Philippines</p>
         <p class="department" id="cfg-department">Department of Education</p>
@@ -488,13 +547,13 @@
         <h1 class="school"   id="cfg-school">School Name</h1>
         <p class="school-address" id="cfg-address">Address</p>
       </div>
-
-      <div class="logo-right" aria-label="DepEd logo">
-        <img id="cfg-logo-deped" src="" alt="DepEd Logo">
-      </div>
-
     </div>
-  </header>
+
+    <!-- RIGHT: empty spacer (keeps center truly centered) -->
+    <div class="logo-right" aria-hidden="true"></div>
+
+  </div>
+</header>
 
   <!-- ══════════════════════════════════════════════════════
        MAIN LOGIN SHELL
