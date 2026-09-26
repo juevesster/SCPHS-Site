@@ -1,0 +1,609 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Site Settings — School Portal</title>
+  <link rel="stylesheet" href="assets/css/styles.css">
+  <script type="module" src="assets/js/auth-guard.js"></script>
+
+  <style>
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+      background: #f6f7f9;
+      color: #111827;
+      min-height: 100vh;
+    }
+
+    .settings-header {
+      background: #0f4c81;
+      color: #fff;
+      padding: 18px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    .settings-header h1 {
+      margin: 0;
+      font-size: 1.25rem;
+      letter-spacing: 0.01em;
+    }
+    .settings-header .header-actions {
+      display: flex;
+      gap: 10px;
+    }
+    .settings-header a,
+    .settings-header button {
+      background: rgba(255,255,255,0.15);
+      color: #fff;
+      border: 1px solid rgba(255,255,255,0.25);
+      padding: 8px 14px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      text-decoration: none;
+      cursor: pointer;
+      font-family: inherit;
+      transition: background 0.15s;
+    }
+    .settings-header a:hover,
+    .settings-header button:hover {
+      background: rgba(255,255,255,0.25);
+    }
+    .settings-header button.signout {
+      background: #c8102e;
+      border-color: #c8102e;
+    }
+    .settings-header button.signout:hover {
+      background: #a50d25;
+    }
+
+    .wrap {
+      max-width: 920px;
+      margin: 0 auto;
+      padding: 32px 20px 64px;
+    }
+
+    .page-intro {
+      margin-bottom: 24px;
+    }
+    .page-intro h2 {
+      font-size: 1.5rem;
+      margin: 0 0 6px;
+      color: #0f4c81;
+    }
+    .page-intro p {
+      margin: 0;
+      color: #6b7280;
+      font-size: 0.92rem;
+      line-height: 1.5;
+    }
+
+    .banner {
+      padding: 12px 16px;
+      border-radius: 10px;
+      margin-bottom: 20px;
+      font-size: 0.9rem;
+      display: none;
+    }
+    .banner.show { display: block; }
+    .banner.success { background: #f0fdf4; color: #166534; border: 1px solid #bbf7d0; }
+    .banner.error   { background: #fef2f2; color: #991b1b; border: 1px solid #fecaca; }
+
+    .settings-card {
+      background: #fff;
+      border: 1px solid #e5e7eb;
+      border-radius: 14px;
+      padding: 24px;
+      margin-bottom: 20px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+    }
+    .settings-card h3 {
+      margin: 0 0 4px;
+      font-size: 1rem;
+      color: #0f4c81;
+      letter-spacing: 0.01em;
+    }
+    .settings-card .card-sub {
+      font-size: 0.82rem;
+      color: #6b7280;
+      margin: 0 0 18px;
+    }
+
+    .field-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+    @media (max-width: 700px) {
+      .field-grid { grid-template-columns: 1fr; }
+    }
+    .field { display: flex; flex-direction: column; gap: 4px; }
+    .field.full { grid-column: 1 / -1; }
+    .field label {
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: #374151;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+    .field input,
+    .field textarea {
+      padding: 10px 12px;
+      font-size: 0.92rem;
+      font-family: inherit;
+      border: 1px solid #d1d5db;
+      border-radius: 8px;
+      background: #fff;
+      color: #111827;
+      outline: none;
+      transition: border-color 0.15s, box-shadow 0.15s;
+      width: 100%;
+    }
+    .field input:focus,
+    .field textarea:focus {
+      border-color: #1e6bb8;
+      box-shadow: 0 0 0 3px rgba(30,107,184,0.15);
+    }
+    .field textarea { min-height: 80px; resize: vertical; }
+    .field .hint {
+      font-size: 0.72rem;
+      color: #6b7280;
+      margin-top: 2px;
+    }
+
+    .logo-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+    .logo-item {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      padding: 12px;
+      border: 1px solid #e5e7eb;
+      border-radius: 10px;
+      background: #fafbfc;
+    }
+    .logo-item img {
+      width: 80px;
+      height: 80px;
+      object-fit: contain;
+      background: #fff;
+      border-radius: 8px;
+      border: 1px solid #e5e7eb;
+      align-self: center;
+    }
+    .logo-item label {
+      font-size: 0.78rem;
+      font-weight: 700;
+      color: #374151;
+      text-align: center;
+    }
+    .logo-item input {
+      font-size: 0.75rem;
+      padding: 6px 8px;
+      border: 1px solid #d1d5db;
+      border-radius: 6px;
+    }
+
+    .actions {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+      margin-top: 24px;
+    }
+    .btn {
+      padding: 10px 20px;
+      font-size: 0.9rem;
+      font-weight: 700;
+      font-family: inherit;
+      border-radius: 8px;
+      cursor: pointer;
+      border: 1px solid transparent;
+      transition: all 0.15s;
+    }
+    .btn.primary {
+      background: linear-gradient(135deg, #0f4c81, #1e6bb8);
+      color: #fff;
+      box-shadow: 0 4px 12px rgba(15,76,129,0.2);
+    }
+    .btn.primary:hover:not(:disabled) {
+      transform: translateY(-1px);
+      box-shadow: 0 6px 16px rgba(15,76,129,0.28);
+    }
+    .btn.outline {
+      background: #fff;
+      color: #0f4c81;
+      border-color: #d1d5db;
+    }
+    .btn.outline:hover { background: #f3f6fa; border-color: #1e6bb8; }
+    .btn.danger {
+      background: #fff;
+      color: #b91c1c;
+      border-color: #fecaca;
+    }
+    .btn.danger:hover { background: #fef2f2; border-color: #b91c1c; }
+    .btn:disabled { opacity: 0.55; cursor: not-allowed; }
+
+    .access-denied {
+      max-width: 480px;
+      margin: 80px auto;
+      padding: 40px 30px;
+      background: #fff;
+      border: 1px solid #e5e7eb;
+      border-radius: 14px;
+      text-align: center;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+    }
+    .access-denied h2 {
+      margin: 0 0 8px;
+      color: #b91c1c;
+      font-size: 1.3rem;
+    }
+    .access-denied p {
+      margin: 0 0 20px;
+      color: #6b7280;
+      font-size: 0.9rem;
+    }
+
+    #loading-view {
+      text-align: center;
+      padding: 60px 20px;
+      color: #6b7280;
+    }
+    .spinner {
+      display: inline-block;
+      width: 30px;
+      height: 30px;
+      border: 3px solid #e5e7eb;
+      border-top-color: #0f4c81;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      margin-bottom: 12px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .preview-bar {
+      background: #eff6ff;
+      border: 1px solid #bfdbfe;
+      border-radius: 10px;
+      padding: 14px 18px;
+      font-size: 0.85rem;
+      color: #1e40af;
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .preview-bar strong { color: #0f4c81; }
+  </style>
+</head>
+<body>
+
+  <!-- Loading view -->
+  <div id="loading-view">
+    <div class="spinner"></div>
+    <div>Loading settings…</div>
+  </div>
+
+  <!-- Access denied view -->
+  <div id="denied-view" class="access-denied" hidden>
+    <h2>Access Restricted</h2>
+    <p>Only administrators can access the site settings.</p>
+    <a href="index.html" class="btn primary" style="display:inline-block; text-decoration:none;">← Return to Homepage</a>
+  </div>
+
+  <!-- Main settings view -->
+  <div id="settings-view" hidden>
+
+    <header class="settings-header">
+      <h1>⚙ Site Settings</h1>
+      <div class="header-actions">
+        <a href="index.html">← Back to Portal</a>
+        <button id="btn-logout" class="signout" type="button">Sign Out</button>
+      </div>
+    </header>
+
+    <div class="wrap">
+
+      <div class="page-intro">
+        <h2>Customize Your School Portal</h2>
+        <p>
+          Edit the fields below to change how your school appears on the portal.
+          Changes are saved to Firebase and take effect immediately for all users.
+        </p>
+      </div>
+
+      <div class="preview-bar">
+        <span>💡</span>
+        <div>
+          Changes are saved to <strong>Firebase Firestore</strong> and applied to every page.
+          You can also keep the current values as the school default by editing <code>config.js</code> in the source.
+        </div>
+      </div>
+
+      <div class="banner" id="saveBanner" role="status"></div>
+
+      <form id="settingsForm" novalidate>
+
+        <!-- Government hierarchy -->
+        <div class="settings-card">
+          <h3>Government Hierarchy</h3>
+          <p class="card-sub">These lines appear above the school name on every page.</p>
+
+          <div class="field-grid">
+            <div class="field full">
+              <label for="f-republic">Republic Line</label>
+              <input id="f-republic" type="text" placeholder="Republic of the Philippines">
+            </div>
+            <div class="field full">
+              <label for="f-department">Department</label>
+              <input id="f-department" type="text" placeholder="Department of Education">
+            </div>
+            <div class="field">
+              <label for="f-region">Region</label>
+              <input id="f-region" type="text" placeholder="Region II – Cagayan Valley">
+            </div>
+            <div class="field">
+              <label for="f-division">Division</label>
+              <input id="f-division" type="text" placeholder="Schools Division of Nueva Vizcaya">
+            </div>
+          </div>
+        </div>
+
+        <!-- School identity -->
+        <div class="settings-card">
+          <h3>School Identity</h3>
+          <p class="card-sub">The main name shown to visitors and students.</p>
+
+          <div class="field-grid">
+            <div class="field full">
+              <label for="f-schoolName">School Name</label>
+              <input id="f-schoolName" type="text" placeholder="Sta. Cruz Pingkian High School" required>
+            </div>
+            <div class="field">
+              <label for="f-schoolShortName">Short Name / Acronym</label>
+              <input id="f-schoolShortName" type="text" placeholder="SCPHS">
+              <div class="hint">Used in page titles and compact labels.</div>
+            </div>
+            <div class="field">
+              <label for="f-schoolAddress">Address</label>
+              <input id="f-schoolAddress" type="text" placeholder="Pingkian, Kayapa, Nueva Vizcaya">
+            </div>
+          </div>
+        </div>
+
+        <!-- Contact -->
+        <div class="settings-card">
+          <h3>Contact Information</h3>
+          <p class="card-sub">Shown in the footer and on the contact page.</p>
+
+          <div class="field-grid">
+            <div class="field">
+              <label for="f-contactEmail">Contact Email</label>
+              <input id="f-contactEmail" type="email" placeholder="300648@deped.gov.ph">
+            </div>
+            <div class="field">
+              <label for="f-contactPhone">Contact Phone</label>
+              <input id="f-contactPhone" type="text" placeholder="+63 967-8848989">
+            </div>
+            <div class="field full">
+              <label for="f-emailDomain">Email Domain</label>
+              <input id="f-emailDomain" type="text" placeholder="@scphs.edu.ph">
+              <div class="hint">The domain used for student/teacher email addresses.</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Branding / tagline -->
+        <div class="settings-card">
+          <h3>Branding &amp; Welcome Text</h3>
+          <p class="card-sub">Text shown in the login branding panel and portal header.</p>
+
+          <div class="field-grid">
+            <div class="field full">
+              <label for="f-tagline">Portal Tagline</label>
+              <input id="f-tagline" type="text" placeholder="School Community Portal">
+            </div>
+            <div class="field full">
+              <label for="f-welcomeBlurb">Welcome Message</label>
+              <textarea id="f-welcomeBlurb" placeholder="Welcome to the official digital portal…"></textarea>
+            </div>
+          </div>
+        </div>
+
+        <!-- Logos -->
+        <div class="settings-card">
+          <h3>Logos</h3>
+          <p class="card-sub">Paste image paths relative to the site root (e.g., assets/images/logo.png).</p>
+
+          <div class="logo-grid">
+            <div class="logo-item">
+              <img id="preview-logoSchool" src="" alt="School logo preview">
+              <label for="f-logoSchool">School Logo</label>
+              <input id="f-logoSchool" type="text" placeholder="assets/images/scphslogo.png">
+            </div>
+            <div class="logo-item">
+              <img id="preview-logoDepEd" src="" alt="DepEd logo preview">
+              <label for="f-logoDepEd">DepEd Logo</label>
+              <input id="f-logoDepEd" type="text" placeholder="assets/images/deped-logo.png">
+            </div>
+          </div>
+        </div>
+
+        <!-- Actions -->
+        <div class="actions">
+          <button type="button" id="btnReset" class="btn danger">↺ Reset to Defaults</button>
+          <button type="button" id="btnPreview" class="btn outline">👁 Reload Preview</button>
+          <button type="submit" id="btnSave" class="btn primary">💾 Save Settings</button>
+        </div>
+
+      </form>
+    </div>
+  </div>
+
+  <script type="module">
+    import { auth, db } from "./assets/js/firebase-config.js";
+    import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+    import { doc, getDoc, setDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+    import { DEFAULT_CONFIG, loadConfig, setConfig } from "./assets/js/config.js";
+
+    const $ = (id) => document.getElementById(id);
+
+    const loadingView = $("loading-view");
+    const deniedView  = $("denied-view");
+    const settingsView = $("settings-view");
+    const form = $("settingsForm");
+    const banner = $("saveBanner");
+
+    // ---- Field <-> config key mapping ----
+    const FIELDS = [
+      "republic", "department", "region", "division",
+      "schoolName", "schoolShortName", "schoolAddress",
+      "contactEmail", "contactPhone", "emailDomain",
+      "tagline", "welcomeBlurb",
+      "logoSchool", "logoDepEd"
+    ];
+
+    // ---- Auth check ----
+    onAuthStateChanged(auth, async (user) => {
+      if (!user) {
+        // Not signed in → redirect to login
+        location.replace("login.html?next=" + encodeURIComponent(location.pathname));
+        return;
+      }
+
+      // Load profile from Firestore to check role
+      let role = "student";
+      try {
+        const snap = await getDoc(doc(db, "users", user.uid));
+        if (snap.exists()) {
+          role = snap.data().role || "student";
+        }
+      } catch (e) {
+        console.warn("[settings] role lookup failed:", e);
+      }
+
+      // Handle special case: first-ever user is promoted to admin
+      // (Only if there is a single user in the system.)
+      // Simpler rule: allow anyone signed in whose email ends with @deped.gov.ph or is juevesster@gmail.com
+      const email = (user.email || "").toLowerCase();
+      const isAdminByEmail =
+        email.endsWith("@deped.gov.ph") ||
+        email === "juevesster@gmail.com";
+
+      if (role !== "admin" && !isAdminByEmail) {
+        loadingView.hidden = true;
+        deniedView.hidden = false;
+        return;
+      }
+
+      // Success → load current config
+      await loadConfig();
+      fillForm();
+      loadingView.hidden = true;
+      settingsView.hidden = false;
+    });
+
+    // ---- Fill form from config ----
+    function fillForm() {
+      FIELDS.forEach(key => {
+        const input = $("f-" + key);
+        if (input) {
+          // Use cfg() fallback if key missing
+          const value = configValue(key);
+          input.value = value || "";
+        }
+      });
+      updateLogoPreviews();
+    }
+
+    function configValue(key) {
+      // Prefer Firestore-loaded config; fallback to defaults
+      const live = window.__scphsConfig || null;
+      return (live && live[key]) || DEFAULT_CONFIG[key] || "";
+    }
+
+    // ---- Logo previews ----
+    function updateLogoPreviews() {
+      const p1 = $("preview-logoSchool");
+      const p2 = $("preview-logoDepEd");
+      const v1 = $("f-logoSchool").value.trim();
+      const v2 = $("f-logoDepEd").value.trim();
+      if (v1) p1.src = v1;
+      if (v2) p2.src = v2;
+    }
+    $("f-logoSchool").addEventListener("input", updateLogoPreviews);
+    $("f-logoDepEd").addEventListener("input", updateLogoPreviews);
+
+    // ---- Save ----
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const btn = $("btnSave");
+      btn.disabled = true;
+      btn.textContent = "Saving…";
+
+      const data = {};
+      FIELDS.forEach(key => {
+        const input = $("f-" + key);
+        if (input) data[key] = input.value.trim();
+      });
+      data.updatedAt = serverTimestamp();
+
+      try {
+        await setDoc(doc(db, "config", "site"), data, { merge: true });
+        window.__scphsConfig = data;
+        setConfig(data);
+        showBanner("✓ Settings saved successfully.", "success");
+      } catch (err) {
+        console.error("[settings] save failed:", err);
+        showBanner("✗ Failed to save settings. Check console.", "error");
+      } finally {
+        btn.disabled = false;
+        btn.textContent = "💾 Save Settings";
+      }
+    });
+
+    // ---- Reset to defaults ----
+    $("btnReset").addEventListener("click", async () => {
+      if (!confirm("Reset all fields to the default values? This does NOT save until you click Save.")) return;
+      FIELDS.forEach(key => {
+        const input = $("f-" + key);
+        if (input) input.value = DEFAULT_CONFIG[key] || "";
+      });
+      updateLogoPreviews();
+      showBanner("Fields reset to defaults. Click Save to apply.", "success");
+    });
+
+    // ---- Reload preview ----
+    $("btnPreview").addEventListener("click", () => {
+      window.open("index.html", "_blank");
+    });
+
+    // ---- Sign out ----
+    $("btn-logout").addEventListener("click", async () => {
+      if (!confirm("Sign out of the portal?")) return;
+      await signOut(auth);
+      location.replace("login.html");
+    });
+
+    // ---- Banner helper ----
+    let bannerTimer;
+    function showBanner(text, type) {
+      banner.textContent = text;
+      banner.className = "banner show " + type;
+      clearTimeout(bannerTimer);
+      bannerTimer = setTimeout(() => {
+        banner.className = "banner";
+      }, 5000);
+    }
+  </script>
+</body>
+</html>

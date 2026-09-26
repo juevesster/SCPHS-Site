@@ -2,132 +2,405 @@
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>Sign in — SCPHS Portal</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#0f4c81">
+  <title>Sign In — School Portal</title>
+  <meta name="description" content="Sign in to the school community portal.">
   <link rel="stylesheet" href="assets/css/styles.css">
 
   <style>
-    body {
-      background: linear-gradient(135deg, #0f4c81, #1e6bb8);
-      min-height: 100vh;
-      margin: 0;
+    /* =========================================================
+       PROFESSIONAL LOGIN — Configurable for any DepEd school
+       ========================================================= */
+
+    * { box-sizing: border-box; }
+
+    html, body {
+      margin: 0; padding: 0; min-height: 100vh;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      -webkit-font-smoothing: antialiased;
+    }
+    body { background: #f6f7f9; color: #111827; }
+
+    /* ---------- TOP GOVERNMENT HEADER ---------- */
+    .gov-header {
+      background: #ffffff;
+      border-bottom: 3px solid #0f4c81;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    }
+    .gov-header-inner {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 14px 24px;
+      display: grid;
+      grid-template-columns: 100px 1fr 100px;
+      gap: 20px;
+      align-items: center;
+    }
+    .gov-header-inner .logo-left,
+    .gov-header-inner .logo-right {
       display: flex;
       align-items: center;
       justify-content: center;
-      padding: 20px;
-      font-family: system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
     }
-    .auth-card {
-      background: #fff;
-      border-radius: 16px;
-      box-shadow: 0 20px 60px rgba(0,0,0,.25);
-      width: 100%;
-      max-width: 420px;
+    .gov-header-inner .logo-left img,
+    .gov-header-inner .logo-right img {
+      max-height: 72px;
+      max-width: 100%;
+      height: auto;
+      width: auto;
+      object-fit: contain;
+    }
+
+    .gov-header-text {
+      text-align: center;
+      line-height: 1.35;
+      color: #0f4c81;
+    }
+    .gov-header-text .republic {
+      font-size: 13px;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      color: #4b5563;
+      margin: 0;
+      text-transform: uppercase;
+    }
+    .gov-header-text .department {
+      font-size: 15px;
+      font-weight: 800;
+      letter-spacing: 0.05em;
+      margin: 2px 0 0;
+      color: #0f4c81;
+      text-transform: uppercase;
+    }
+    .gov-header-text .region,
+    .gov-header-text .division {
+      font-size: 12.5px;
+      color: #374151;
+      margin: 2px 0 0;
+      letter-spacing: 0.02em;
+    }
+    .gov-header-text .school {
+      font-size: 18px;
+      font-weight: 900;
+      margin: 8px 0 0;
+      color: #0f4c81;
+      letter-spacing: 0.02em;
+      text-transform: uppercase;
+      text-shadow: 0 1px 0 rgba(255,255,255,0.9);
+    }
+    .gov-header-text .school-address {
+      font-size: 12px;
+      color: #6b7280;
+      margin: 2px 0 0;
+      font-style: italic;
+    }
+
+    @media (max-width: 720px) {
+      .gov-header-inner {
+        grid-template-columns: 60px 1fr 60px;
+        gap: 10px;
+        padding: 10px 14px;
+      }
+      .gov-header-inner .logo-left img,
+      .gov-header-inner .logo-right img { max-height: 48px; }
+      .gov-header-text .department { font-size: 12px; }
+      .gov-header-text .school { font-size: 14px; }
+      .gov-header-text .region,
+      .gov-header-text .division { font-size: 10.5px; }
+    }
+
+    /* ---------- MAIN LAYOUT ---------- */
+    .login-shell {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      min-height: calc(100vh - 90px);
+    }
+
+    /* ---------- LEFT: BRANDING ---------- */
+    .login-brand {
+      position: relative;
+      background:
+        linear-gradient(135deg, rgba(15,76,129,0.95), rgba(30,107,184,0.92)),
+        url("assets/images/Slider-Welcome.png") center/cover no-repeat;
+      color: #ffffff;
+      padding: 60px 56px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
       overflow: hidden;
     }
-    .auth-header {
-      background: #0f4c81;
-      color: #fff;
-      padding: 26px 30px;
-      text-align: center;
+    .login-brand::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(circle at 20% 90%, rgba(200,16,46,0.25), transparent 45%);
+      pointer-events: none;
     }
-    .auth-header img {
-      height: 56px;
-      margin-bottom: 8px;
+    .brand-top {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      position: relative;
+      z-index: 1;
     }
-    .auth-header h1 {
-      margin: 0 0 4px;
-      font-size: 1.3rem;
-      letter-spacing: .01em;
+    .brand-top img { height: 56px; filter: drop-shadow(0 4px 12px rgba(0,0,0,0.3)); }
+
+    .brand-main {
+      position: relative;
+      z-index: 1;
+      margin: 40px 0;
     }
-    .auth-header p {
+    .brand-main h1 {
+      font-size: 2.4rem;
+      line-height: 1.15;
+      font-weight: 800;
+      margin: 0 0 16px;
+      letter-spacing: -0.01em;
+      text-shadow: 0 2px 12px rgba(0,0,0,0.25);
+    }
+    .brand-main p {
+      font-size: 1.02rem;
+      line-height: 1.6;
+      margin: 0 0 24px;
+      opacity: 0.92;
+      max-width: 480px;
+    }
+    .brand-features {
+      list-style: none;
+      padding: 0;
       margin: 0;
-      font-size: .85rem;
-      opacity: .85;
+      display: grid;
+      gap: 12px;
     }
-    .auth-body {
-      padding: 26px 30px 30px;
+    .brand-features li {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      font-size: 0.95rem;
+      line-height: 1.45;
+      opacity: 0.92;
     }
+    .brand-features .check {
+      flex: 0 0 22px;
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.18);
+      display: grid;
+      place-items: center;
+      font-size: 12px;
+      font-weight: 700;
+    }
+    .brand-foot {
+      position: relative;
+      z-index: 1;
+      font-size: 12px;
+      opacity: 0.72;
+      line-height: 1.6;
+    }
+
+    /* ---------- RIGHT: FORM ---------- */
+    .login-form-panel {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 40px 32px;
+      background: #ffffff;
+    }
+    .auth-card { width: 100%; max-width: 440px; }
+
+    .auth-heading { margin-bottom: 26px; }
+    .auth-heading h2 {
+      font-size: 1.7rem;
+      font-weight: 800;
+      color: #0f4c81;
+      margin: 0 0 6px;
+      letter-spacing: -0.01em;
+    }
+    .auth-heading p {
+      margin: 0;
+      font-size: 0.92rem;
+      color: #6b7280;
+      line-height: 1.5;
+    }
+
+    /* Tabs */
     .auth-tabs {
       display: flex;
-      gap: 4px;
-      margin-bottom: 20px;
-      border-bottom: 1px solid #e5e7eb;
+      background: #f3f4f6;
+      border-radius: 10px;
+      padding: 4px;
+      margin-bottom: 24px;
     }
     .auth-tab {
       flex: 1;
-      padding: 10px;
-      background: none;
-      border: none;
-      font-size: .95rem;
-      font-weight: 600;
-      color: #6b7280;
-      cursor: pointer;
-      border-bottom: 2px solid transparent;
-      margin-bottom: -1px;
+      padding: 10px 12px;
+      font-size: 0.9rem;
+      font-weight: 700;
       font-family: inherit;
+      color: #6b7280;
+      background: transparent;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.15s;
     }
+    .auth-tab:hover { color: #0f4c81; }
     .auth-tab.active {
+      background: #ffffff;
       color: #0f4c81;
-      border-bottom-color: #0f4c81;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.08);
     }
-    .auth-field {
-      margin-bottom: 14px;
-    }
-    .auth-field label {
+
+    /* Fields */
+    .field { margin-bottom: 16px; }
+    .field label {
       display: block;
-      font-size: .78rem;
-      font-weight: 600;
+      font-size: 0.78rem;
+      font-weight: 700;
       color: #374151;
       text-transform: uppercase;
-      letter-spacing: .02em;
-      margin-bottom: 4px;
+      letter-spacing: 0.05em;
+      margin-bottom: 6px;
     }
-    .auth-field input,
-    .auth-field select {
+    .input-wrap {
+      position: relative;
+      display: flex;
+      align-items: center;
+    }
+    .input-wrap .ico {
+      position: absolute;
+      left: 14px;
+      font-size: 15px;
+      color: #9ca3af;
+      pointer-events: none;
+    }
+    .input-wrap input {
       width: 100%;
-      padding: 10px 12px;
-      font-size: .95rem;
-      border: 1px solid #e5e7eb;
-      border-radius: 8px;
-      background: #fff;
+      padding: 12px 44px 12px 42px;
+      font-size: 0.95rem;
+      font-family: inherit;
       color: #111827;
+      background: #ffffff;
+      border: 1px solid #d1d5db;
+      border-radius: 10px;
       outline: none;
-      box-sizing: border-box;
-      font-family: inherit;
-      transition: border-color .15s, box-shadow .15s;
+      transition: border-color 0.15s, box-shadow 0.15s;
+      -webkit-appearance: none;
     }
-    .auth-field input:focus,
-    .auth-field select:focus {
+    .input-wrap input:focus {
       border-color: #1e6bb8;
-      box-shadow: 0 0 0 3px rgba(30,107,184,.15);
+      box-shadow: 0 0 0 4px rgba(30,107,184,0.12);
     }
-    .auth-btn {
-      width: 100%;
-      padding: 12px;
-      font-size: 1rem;
-      font-weight: 700;
-      color: #fff;
-      background: #0f4c81;
+    .input-wrap input::placeholder { color: #9ca3af; }
+    .input-wrap .toggle-pw {
+      position: absolute;
+      right: 10px;
+      background: none;
       border: none;
-      border-radius: 8px;
+      color: #6b7280;
+      font-size: 15px;
       cursor: pointer;
-      margin-top: 4px;
-      transition: background .15s;
-      font-family: inherit;
+      padding: 6px;
+      border-radius: 6px;
     }
-    .auth-btn:hover:not(:disabled) { background: #1e6bb8; }
-    .auth-btn:disabled { opacity: .55; cursor: not-allowed; }
+    .input-wrap .toggle-pw:hover { color: #0f4c81; background: #f3f4f6; }
+
+    /* Password strength */
+    .pw-meter { margin-top: 8px; display: none; }
+    .pw-meter.show { display: block; }
+    .pw-meter-bar { display: flex; gap: 4px; margin-bottom: 4px; }
+    .pw-meter-bar span {
+      flex: 1;
+      height: 4px;
+      border-radius: 2px;
+      background: #e5e7eb;
+      transition: background 0.2s;
+    }
+    .pw-meter-bar span.weak { background: #ef4444; }
+    .pw-meter-bar span.fair { background: #f59e0b; }
+    .pw-meter-bar span.good { background: #10b981; }
+    .pw-meter-label {
+      font-size: 11px;
+      color: #6b7280;
+      font-weight: 600;
+    }
+
+    /* Role picker */
+    .role-picker {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+    .role-option {
+      padding: 12px;
+      border: 2px solid #e5e7eb;
+      border-radius: 10px;
+      text-align: center;
+      cursor: pointer;
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: #4b5563;
+      transition: all 0.15s;
+      user-select: none;
+    }
+    .role-option:hover { border-color: #1e6bb8; background: #f8fafc; }
+    .role-option.selected {
+      border-color: #0f4c81;
+      background: #eff6ff;
+      color: #0f4c81;
+    }
+    .role-option input { display: none; }
+    .role-emoji { display: block; font-size: 20px; margin-bottom: 4px; }
+
+    /* Primary button */
+    .btn-primary {
+      width: 100%;
+      padding: 13px 16px;
+      font-size: 0.98rem;
+      font-weight: 700;
+      font-family: inherit;
+      color: #ffffff;
+      background: linear-gradient(135deg, #0f4c81, #1e6bb8);
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: all 0.15s;
+      margin-top: 8px;
+      box-shadow: 0 4px 12px rgba(15,76,129,0.25);
+    }
+    .btn-primary:hover:not(:disabled) {
+      transform: translateY(-1px);
+      box-shadow: 0 6px 16px rgba(15,76,129,0.32);
+    }
+    .btn-primary:disabled { opacity: 0.65; cursor: not-allowed; }
+    .btn-spinner {
+      display: inline-block;
+      width: 14px;
+      height: 14px;
+      border: 2px solid rgba(255,255,255,0.5);
+      border-top-color: #fff;
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+      vertical-align: middle;
+      margin-right: 6px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* Message banner */
     .auth-msg {
-      padding: 10px 12px;
-      border-radius: 8px;
-      font-size: .85rem;
-      margin-bottom: 14px;
+      padding: 12px 14px;
+      border-radius: 10px;
+      font-size: 0.88rem;
+      line-height: 1.4;
+      margin-bottom: 16px;
       display: none;
+      font-weight: 500;
     }
     .auth-msg.error {
       background: #fef2f2;
-      color: #b91c1c;
+      color: #991b1b;
       border: 1px solid #fecaca;
       display: block;
     }
@@ -137,111 +410,273 @@
       border: 1px solid #bbf7d0;
       display: block;
     }
-    .auth-footer {
+    .banner-icon { margin-right: 6px; font-weight: 700; }
+
+    .auth-footer-link {
       text-align: center;
-      font-size: .78rem;
-      color: #6b7280;
-      margin-top: 20px;
+      margin-top: 18px;
+      font-size: 0.85rem;
     }
-    .auth-footer a { color: #0f4c81; }
-    .role-picker {
-      display: flex;
-      gap: 8px;
-      margin-top: 4px;
-    }
-    .role-option {
-      flex: 1;
-      padding: 10px;
-      border: 2px solid #e5e7eb;
-      border-radius: 8px;
-      text-align: center;
-      cursor: pointer;
-      font-size: .85rem;
-      font-weight: 600;
-      color: #4b5563;
-      transition: all .15s;
-    }
-    .role-option:hover { border-color: #1e6bb8; }
-    .role-option.selected {
-      border-color: #0f4c81;
-      background: #eff6ff;
+    .auth-footer-link a {
       color: #0f4c81;
+      text-decoration: none;
+      font-weight: 600;
     }
-    .role-option input { display: none; }
+    .auth-footer-link a:hover { text-decoration: underline; }
+
+    /* Privacy notice */
+    .privacy-notice {
+      margin-top: 22px;
+      padding: 12px 14px;
+      background: #f9fafb;
+      border: 1px solid #e5e7eb;
+      border-radius: 10px;
+      font-size: 0.75rem;
+      line-height: 1.55;
+      color: #4b5563;
+    }
+    .privacy-notice strong { color: #111827; }
+
+    /* ---------- RESPONSIVE ---------- */
+    @media (max-width: 900px) {
+      .login-shell { grid-template-columns: 1fr; }
+      .login-brand { display: none; }
+      .login-form-panel { min-height: calc(100vh - 90px); }
+    }
+    @media (max-width: 480px) {
+      .login-form-panel { padding: 24px 18px; }
+      .auth-heading h2 { font-size: 1.4rem; }
+    }
+
+    /* ---------- ADMIN SETTINGS LINK ---------- */
+    .admin-settings-link {
+      position: fixed;
+      bottom: 12px;
+      right: 12px;
+      background: rgba(15,76,129,0.08);
+      color: #0f4c81;
+      padding: 6px 12px;
+      border-radius: 999px;
+      font-size: 11px;
+      text-decoration: none;
+      font-weight: 600;
+      border: 1px solid rgba(15,76,129,0.15);
+      transition: all 0.15s;
+    }
+    .admin-settings-link:hover {
+      background: rgba(15,76,129,0.15);
+    }
   </style>
 </head>
 <body>
 
-  <div class="auth-card">
-    <div class="auth-header">
-      <img src="assets/images/scphslogo.png" alt="SCPHS Logo" onerror="this.style.display='none'">
-      <h1>Sta. Cruz Pingkian High School</h1>
-      <p>School Community Portal</p>
-    </div>
+  <!-- ══════════════════════════════════════════════════════
+       GOVERNMENT HEADER (auto-filled from config)
+       ══════════════════════════════════════════════════════ -->
+  <header class="gov-header">
+    <div class="gov-header-inner">
 
-    <div class="auth-body">
-
-      <div class="auth-msg" id="authMsg"></div>
-
-      <div class="auth-tabs">
-        <button class="auth-tab active" id="tabLogin" type="button">Sign In</button>
-        <button class="auth-tab" id="tabSignup" type="button">Create Account</button>
+      <div class="logo-left" aria-label="School logo">
+        <img id="cfg-logo-school" src="" alt="School Logo">
       </div>
 
-      <!-- LOGIN FORM -->
-      <form id="formLogin">
-        <div class="auth-field">
-          <label for="loginEmail">Email</label>
-          <input id="loginEmail" type="email" required placeholder="your.name@scphs.edu.ph">
-        </div>
-        <div class="auth-field">
-          <label for="loginPassword">Password</label>
-          <input id="loginPassword" type="password" required placeholder="Your password">
-        </div>
-        <button class="auth-btn" id="btnLogin" type="submit">Sign In</button>
-        <div class="auth-footer">
-          <a href="#" id="linkForgot">Forgot password?</a>
-        </div>
-      </form>
+      <div class="gov-header-text">
+        <p class="republic"  id="cfg-republic">Republic of the Philippines</p>
+        <p class="department" id="cfg-department">Department of Education</p>
+        <p class="region"    id="cfg-region">Region</p>
+        <p class="division"  id="cfg-division">Division</p>
+        <h1 class="school"   id="cfg-school">School Name</h1>
+        <p class="school-address" id="cfg-address">Address</p>
+      </div>
 
-      <!-- SIGNUP FORM -->
-      <form id="formSignup" style="display:none;">
-        <div class="auth-field">
-          <label for="signupName">Full Name</label>
-          <input id="signupName" type="text" required placeholder="Juan Dela Cruz">
-        </div>
-        <div class="auth-field">
-          <label for="signupEmail">Email</label>
-          <input id="signupEmail" type="email" required placeholder="your.name@scphs.edu.ph">
-        </div>
-        <div class="auth-field">
-          <label for="signupPassword">Password</label>
-          <input id="signupPassword" type="password" required minlength="6" placeholder="At least 6 characters">
-        </div>
-        <div class="auth-field">
-          <label>I am a…</label>
-          <div class="role-picker">
-            <label class="role-option selected" data-role="student">
-              <input type="radio" name="role" value="student" checked>
-              🎓 Student
-            </label>
-            <label class="role-option" data-role="teacher">
-              <input type="radio" name="role" value="teacher">
-              👩‍🏫 Teacher
-            </label>
-          </div>
-        </div>
-        <button class="auth-btn" id="btnSignup" type="submit">Create Account</button>
-        <div class="auth-footer">
-          Accounts are subject to DepEd privacy rules.
-        </div>
-      </form>
+      <div class="logo-right" aria-label="DepEd logo">
+        <img id="cfg-logo-deped" src="" alt="DepEd Logo">
+      </div>
 
     </div>
+  </header>
+
+  <!-- ══════════════════════════════════════════════════════
+       MAIN LOGIN SHELL
+       ══════════════════════════════════════════════════════ -->
+  <div class="login-shell">
+
+    <!-- LEFT: Branding -->
+    <aside class="login-brand">
+      <div class="brand-top">
+        <img id="brand-logo" src="" alt="School Logo">
+        <div>
+          <div style="font-size:11px; letter-spacing:0.14em; opacity:0.75; text-transform:uppercase;">Republic of the Philippines</div>
+          <strong style="font-size:14px;" id="brand-dept">Department of Education</strong>
+        </div>
+      </div>
+
+      <div class="brand-main">
+        <h1 id="brand-tagline">School Community Portal</h1>
+        <p id="brand-blurb">Loading…</p>
+
+        <ul class="brand-features">
+          <li><span class="check">✓</span> View latest Division &amp; National issuances</li>
+          <li><span class="check">✓</span> Access school memoranda and bulletins</li>
+          <li><span class="check">✓</span> Message your class adviser securely</li>
+          <li><span class="check">✓</span> Stay updated with school announcements</li>
+        </ul>
+      </div>
+
+      <div class="brand-foot">
+        © <span id="yearNowLeft">2026</span> <span id="brand-foot-school">School Name</span><br>
+        <span id="brand-foot-region">Region</span> • <span id="brand-foot-division">Division</span>
+      </div>
+    </aside>
+
+    <!-- RIGHT: Form -->
+    <main class="login-form-panel">
+      <div class="auth-card">
+
+        <div class="auth-heading">
+          <h2>Welcome back</h2>
+          <p>Sign in to continue to your account.</p>
+        </div>
+
+        <div class="auth-msg" id="authMsg" role="alert"></div>
+
+        <div class="auth-tabs" role="tablist">
+          <button class="auth-tab active" id="tabLogin"  type="button" role="tab" aria-selected="true">Sign In</button>
+          <button class="auth-tab"        id="tabSignup" type="button" role="tab" aria-selected="false">Create Account</button>
+        </div>
+
+        <!-- LOGIN FORM -->
+        <form id="formLogin" novalidate>
+          <div class="field">
+            <label for="loginEmail">School Email</label>
+            <div class="input-wrap">
+              <span class="ico" aria-hidden="true">✉</span>
+              <input id="loginEmail" type="email" required autocomplete="username" placeholder="your.name@school.edu.ph" aria-label="Email address">
+            </div>
+          </div>
+
+          <div class="field">
+            <label for="loginPassword">Password</label>
+            <div class="input-wrap">
+              <span class="ico" aria-hidden="true">🔒</span>
+              <input id="loginPassword" type="password" required autocomplete="current-password" placeholder="Enter your password" aria-label="Password">
+              <button type="button" class="toggle-pw" data-target="loginPassword" aria-label="Show password">👁</button>
+            </div>
+          </div>
+
+          <button class="btn-primary" id="btnLogin" type="submit">Sign In</button>
+
+          <div class="auth-footer-link">
+            <a href="#" id="linkForgot">Forgot your password?</a>
+          </div>
+        </form>
+
+        <!-- SIGNUP FORM -->
+        <form id="formSignup" style="display:none;" novalidate>
+          <div class="field">
+            <label for="signupName">Full Name</label>
+            <div class="input-wrap">
+              <span class="ico" aria-hidden="true">👤</span>
+              <input id="signupName" type="text" required autocomplete="name" placeholder="Juan Dela Cruz" aria-label="Full name">
+            </div>
+          </div>
+
+          <div class="field">
+            <label for="signupEmail">School Email</label>
+            <div class="input-wrap">
+              <span class="ico" aria-hidden="true">✉</span>
+              <input id="signupEmail" type="email" required autocomplete="email" placeholder="your.name@school.edu.ph" aria-label="Email address">
+            </div>
+          </div>
+
+          <div class="field">
+            <label for="signupPassword">Password</label>
+            <div class="input-wrap">
+              <span class="ico" aria-hidden="true">🔒</span>
+              <input id="signupPassword" type="password" required minlength="8" autocomplete="new-password" placeholder="At least 8 characters" aria-label="Password">
+              <button type="button" class="toggle-pw" data-target="signupPassword" aria-label="Show password">👁</button>
+            </div>
+            <div class="pw-meter" id="pwMeter">
+              <div class="pw-meter-bar"><span></span><span></span><span></span><span></span></div>
+              <div class="pw-meter-label" id="pwLabel">Password strength</div>
+            </div>
+          </div>
+
+          <div class="field">
+            <label>I am a…</label>
+            <div class="role-picker">
+              <label class="role-option selected" data-role="student">
+                <input type="radio" name="role" value="student" checked>
+                <span class="role-emoji">🎓</span> Student
+              </label>
+              <label class="role-option" data-role="teacher">
+                <input type="radio" name="role" value="teacher">
+                <span class="role-emoji">👩‍🏫</span> Teacher
+              </label>
+            </div>
+          </div>
+
+          <button class="btn-primary" id="btnSignup" type="submit">Create Account</button>
+
+          <div class="privacy-notice">
+            <strong>Privacy Notice:</strong> By creating an account, you agree that your name, email,
+            and account activity may be stored on Google Firebase servers and accessed by authorized
+            school personnel in accordance with the <em>Data Privacy Act of 2012 (RA 10173)</em> and
+            DepEd data privacy guidelines.
+          </div>
+        </form>
+
+      </div>
+    </main>
+
   </div>
 
-  <!-- Firebase + login logic -->
-  <script type="module" src="assets/js/login.js"></script>
+  <!-- Admin settings link (bottom-right corner) -->
+  <a href="settings.html" class="admin-settings-link" title="Site settings (admin only)">⚙ Settings</a>
 
+  <!-- Load config first, then populate + login logic -->
+  <script type="module">
+  import { loadConfig, cfg } from "./assets/js/config.js";
+
+  // Load config first (from Firestore, with fallback)
+  await loadConfig();
+
+  const $ = (id) => document.getElementById(id);
+
+  // Header
+  $("cfg-republic").textContent   = cfg("republic");
+  $("cfg-department").textContent = cfg("department");
+  $("cfg-region").textContent     = cfg("region");
+  $("cfg-division").textContent   = cfg("division");
+  $("cfg-school").textContent     = cfg("schoolName");
+  $("cfg-address").textContent    = cfg("schoolAddress");
+
+  // Logos
+  $("cfg-logo-school").src = cfg("logoSchool", "assets/images/scphslogo.png");
+  $("cfg-logo-deped").src  = cfg("logoDepEd",  "assets/images/deped-logo.png");
+  $("brand-logo").src      = cfg("logoSchool", "assets/images/scphslogo.png");
+
+  // Brand panel
+  $("brand-tagline").textContent   = cfg("tagline");
+  $("brand-blurb").textContent     = cfg("welcomeBlurb");
+  $("brand-dept").textContent      = cfg("department");
+  $("brand-foot-school").textContent   = cfg("schoolName");
+  $("brand-foot-region").textContent   = cfg("region");
+  $("brand-foot-division").textContent = cfg("division");
+
+  // Title
+  document.title = "Sign In — " + cfg("schoolShortName", "SCPHS");
+
+  // Year
+  $("yearNowLeft").textContent = new Date().getFullYear();
+
+  // Graceful image fallback
+  document.querySelectorAll("img").forEach(img => {
+    img.addEventListener("error", () => { img.style.opacity = "0.3"; });
+  });
+</script>
+
+  <!-- Login logic -->
+  <script type="module" src="assets/js/login.js"></script>
 </body>
 </html>
