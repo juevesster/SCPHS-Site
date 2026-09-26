@@ -60,24 +60,52 @@
     </div>
 
     <div class="wrap">
-      <div class="brandbar">
-        <div class="logos-left" aria-label="School logo">
-          <img src="assets/images/scphslogo.png" alt="SCPHS Logo">
-        </div>
-        <div class="brandtext">
-          <h1>STA. CRUZ PINGKIAN HIGH SCHOOL</h1>
-          <p>Schools Division of Nueva Vizcaya • Region II – Cagayan Valley • Department of Education</p>
-        </div>
-        <div class="logos-right" aria-label="Government logos">
-          <img src="assets/images/foi-logo.png" alt="Freedom of Information" class="logo--gov">
-          <img src="assets/images/Bagong-Pilipinas-Logo.png" alt="Bagong Pilipinas" class="logo--gov">
-          <a href="/transparency" class="logo-link" target="_blank" rel="noopener">
-            <img src="assets/images/transparency-seal.png" alt="Transparency Seal" class="logo--seal">
-          </a>
-        </div>
-      </div>
+  <div class="brandbar">
+    <div class="logos-left" aria-label="School logo">
+      <img src="assets/images/scphslogo.png" alt="SCPHS Logo">
     </div>
-  </header>
+    <div class="brandtext">
+      <h1>STA. CRUZ PINGKIAN HIGH SCHOOL</h1>
+      <p>Schools Division of Nueva Vizcaya • Region II – Cagayan Valley • Department of Education</p>
+    </div>
+
+    <!-- ✅ NEW: User welcome + Logout button -->
+    <div id="user-area" style="
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 6px;
+      margin-right: 12px;
+    ">
+      <span id="user-welcome" style="
+        font-size: 12px;
+        color: #4b5563;
+        font-weight: 600;
+        text-align: right;
+        line-height: 1.3;
+      ">Welcome…</span>
+      <button id="btn-logout" type="button" style="
+        background: #c8102e;
+        color: #fff;
+        border: none;
+        border-radius: 6px;
+        padding: 6px 14px;
+        font-size: 12px;
+        font-weight: 700;
+        cursor: pointer;
+        letter-spacing: 0.02em;
+      ">Sign Out</button>
+    </div>
+
+    <div class="logos-right" aria-label="Government logos">
+      <img src="assets/images/foi-logo.png" alt="Freedom of Information" class="logo--gov">
+      <img src="assets/images/Bagong-Pilipinas-Logo.png" alt="Bagong Pilipinas" class="logo--gov">
+      <a href="/transparency" class="logo-link" target="_blank" rel="noopener">
+        <img src="assets/images/transparency-seal.png" alt="Transparency Seal" class="logo--seal">
+      </a>
+    </div>
+  </div>
+</div>
 
   <!-- ===================== NAVIGATION ===================== -->
   <nav aria-label="Primary">
@@ -1203,6 +1231,45 @@
       link.textContent = '🔒 Admin Upload';
     }
   })();
+</script>
+
+<script type="module">
+  import { auth } from "./assets/js/firebase-config.js";
+  import {
+    onAuthStateChanged,
+    signOut
+  } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+
+  // --- Show logged-in user's name ---
+  onAuthStateChanged(auth, (user) => {
+    const welcome = document.getElementById("user-welcome");
+    if (!welcome) return;
+
+    if (user) {
+      const name = user.displayName || user.email || "User";
+      welcome.textContent = "Signed in as " + name;
+    } else {
+      // No user — redirect to login
+      const next = encodeURIComponent(location.pathname + location.search);
+      location.replace("login.html?next=" + next);
+    }
+  });
+
+  // --- Handle Sign Out button ---
+  const btnLogout = document.getElementById("btn-logout");
+  if (btnLogout) {
+    btnLogout.addEventListener("click", async () => {
+      if (!confirm("Are you sure you want to sign out?")) return;
+
+      try {
+        await signOut(auth);
+        location.replace("login.html");
+      } catch (err) {
+        console.error("[logout] Failed:", err);
+        alert("Sign out failed. Please try again.");
+      }
+    });
+  }
 </script>
 </body>
 </html>
