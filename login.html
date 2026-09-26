@@ -1,0 +1,247 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Sign in — SCPHS Portal</title>
+  <link rel="stylesheet" href="assets/css/styles.css">
+
+  <style>
+    body {
+      background: linear-gradient(135deg, #0f4c81, #1e6bb8);
+      min-height: 100vh;
+      margin: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      font-family: system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+    }
+    .auth-card {
+      background: #fff;
+      border-radius: 16px;
+      box-shadow: 0 20px 60px rgba(0,0,0,.25);
+      width: 100%;
+      max-width: 420px;
+      overflow: hidden;
+    }
+    .auth-header {
+      background: #0f4c81;
+      color: #fff;
+      padding: 26px 30px;
+      text-align: center;
+    }
+    .auth-header img {
+      height: 56px;
+      margin-bottom: 8px;
+    }
+    .auth-header h1 {
+      margin: 0 0 4px;
+      font-size: 1.3rem;
+      letter-spacing: .01em;
+    }
+    .auth-header p {
+      margin: 0;
+      font-size: .85rem;
+      opacity: .85;
+    }
+    .auth-body {
+      padding: 26px 30px 30px;
+    }
+    .auth-tabs {
+      display: flex;
+      gap: 4px;
+      margin-bottom: 20px;
+      border-bottom: 1px solid #e5e7eb;
+    }
+    .auth-tab {
+      flex: 1;
+      padding: 10px;
+      background: none;
+      border: none;
+      font-size: .95rem;
+      font-weight: 600;
+      color: #6b7280;
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+      margin-bottom: -1px;
+      font-family: inherit;
+    }
+    .auth-tab.active {
+      color: #0f4c81;
+      border-bottom-color: #0f4c81;
+    }
+    .auth-field {
+      margin-bottom: 14px;
+    }
+    .auth-field label {
+      display: block;
+      font-size: .78rem;
+      font-weight: 600;
+      color: #374151;
+      text-transform: uppercase;
+      letter-spacing: .02em;
+      margin-bottom: 4px;
+    }
+    .auth-field input,
+    .auth-field select {
+      width: 100%;
+      padding: 10px 12px;
+      font-size: .95rem;
+      border: 1px solid #e5e7eb;
+      border-radius: 8px;
+      background: #fff;
+      color: #111827;
+      outline: none;
+      box-sizing: border-box;
+      font-family: inherit;
+      transition: border-color .15s, box-shadow .15s;
+    }
+    .auth-field input:focus,
+    .auth-field select:focus {
+      border-color: #1e6bb8;
+      box-shadow: 0 0 0 3px rgba(30,107,184,.15);
+    }
+    .auth-btn {
+      width: 100%;
+      padding: 12px;
+      font-size: 1rem;
+      font-weight: 700;
+      color: #fff;
+      background: #0f4c81;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      margin-top: 4px;
+      transition: background .15s;
+      font-family: inherit;
+    }
+    .auth-btn:hover:not(:disabled) { background: #1e6bb8; }
+    .auth-btn:disabled { opacity: .55; cursor: not-allowed; }
+    .auth-msg {
+      padding: 10px 12px;
+      border-radius: 8px;
+      font-size: .85rem;
+      margin-bottom: 14px;
+      display: none;
+    }
+    .auth-msg.error {
+      background: #fef2f2;
+      color: #b91c1c;
+      border: 1px solid #fecaca;
+      display: block;
+    }
+    .auth-msg.success {
+      background: #f0fdf4;
+      color: #166534;
+      border: 1px solid #bbf7d0;
+      display: block;
+    }
+    .auth-footer {
+      text-align: center;
+      font-size: .78rem;
+      color: #6b7280;
+      margin-top: 20px;
+    }
+    .auth-footer a { color: #0f4c81; }
+    .role-picker {
+      display: flex;
+      gap: 8px;
+      margin-top: 4px;
+    }
+    .role-option {
+      flex: 1;
+      padding: 10px;
+      border: 2px solid #e5e7eb;
+      border-radius: 8px;
+      text-align: center;
+      cursor: pointer;
+      font-size: .85rem;
+      font-weight: 600;
+      color: #4b5563;
+      transition: all .15s;
+    }
+    .role-option:hover { border-color: #1e6bb8; }
+    .role-option.selected {
+      border-color: #0f4c81;
+      background: #eff6ff;
+      color: #0f4c81;
+    }
+    .role-option input { display: none; }
+  </style>
+</head>
+<body>
+
+  <div class="auth-card">
+    <div class="auth-header">
+      <img src="assets/images/scphslogo.png" alt="SCPHS Logo" onerror="this.style.display='none'">
+      <h1>Sta. Cruz Pingkian High School</h1>
+      <p>School Community Portal</p>
+    </div>
+
+    <div class="auth-body">
+
+      <div class="auth-msg" id="authMsg"></div>
+
+      <div class="auth-tabs">
+        <button class="auth-tab active" id="tabLogin" type="button">Sign In</button>
+        <button class="auth-tab" id="tabSignup" type="button">Create Account</button>
+      </div>
+
+      <!-- LOGIN FORM -->
+      <form id="formLogin">
+        <div class="auth-field">
+          <label for="loginEmail">Email</label>
+          <input id="loginEmail" type="email" required placeholder="your.name@scphs.edu.ph">
+        </div>
+        <div class="auth-field">
+          <label for="loginPassword">Password</label>
+          <input id="loginPassword" type="password" required placeholder="Your password">
+        </div>
+        <button class="auth-btn" id="btnLogin" type="submit">Sign In</button>
+        <div class="auth-footer">
+          <a href="#" id="linkForgot">Forgot password?</a>
+        </div>
+      </form>
+
+      <!-- SIGNUP FORM -->
+      <form id="formSignup" style="display:none;">
+        <div class="auth-field">
+          <label for="signupName">Full Name</label>
+          <input id="signupName" type="text" required placeholder="Juan Dela Cruz">
+        </div>
+        <div class="auth-field">
+          <label for="signupEmail">Email</label>
+          <input id="signupEmail" type="email" required placeholder="your.name@scphs.edu.ph">
+        </div>
+        <div class="auth-field">
+          <label for="signupPassword">Password</label>
+          <input id="signupPassword" type="password" required minlength="6" placeholder="At least 6 characters">
+        </div>
+        <div class="auth-field">
+          <label>I am a…</label>
+          <div class="role-picker">
+            <label class="role-option selected" data-role="student">
+              <input type="radio" name="role" value="student" checked>
+              🎓 Student
+            </label>
+            <label class="role-option" data-role="teacher">
+              <input type="radio" name="role" value="teacher">
+              👩‍🏫 Teacher
+            </label>
+          </div>
+        </div>
+        <button class="auth-btn" id="btnSignup" type="submit">Create Account</button>
+        <div class="auth-footer">
+          Accounts are subject to DepEd privacy rules.
+        </div>
+      </form>
+
+    </div>
+  </div>
+
+  <!-- Firebase + login logic -->
+  <script type="module" src="assets/js/login.js"></script>
+
+</body>
+</html>
