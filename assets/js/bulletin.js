@@ -1,406 +1,411 @@
-(function () {
-  console.log('BB: script ready');
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>SCPHS Bulletin Board</title>
+  <link rel="stylesheet" href="assets/css/styles.css" />
 
-  // ==== Storage keys & constants ====
-  const STORAGE_KEY = 'bb_posts_v1';
-  const LOGIN_KEY   = 'bb_logged_in';
-  const ACCOUNTS    = { admin: '12345', teacher: '12345' };
+  <style>
+    .bb-container{ max-width:1160px; margin:0 auto; padding:16px }
+    .bb-header{ display:flex; gap:12px; align-items:center; justify-content:space-between; flex-wrap:wrap; margin:10px 0 14px }
+    .bb-title{ margin:0; font-weight:800; color:#0f2b4f }
+    .bb-toolbar{ display:flex; gap:8px; align-items:center; flex-wrap:wrap }
+    .bb-filters{ display:flex; gap:8px; flex-wrap:wrap }
+    .bb-filter{ padding:6px 12px; border-radius:999px; border:1px solid var(--brand); background:#fff; cursor:pointer; font-size:14px }
+    .bb-filter.active{ background:var(--brand); color:#fff }
+    .bb-search{ width:260px }
+    .bb-search input{ width:100%; padding:9px 12px; border-radius:8px; border:1px solid var(--line) }
 
-  // ==== Helpers ====
-  const $  = (sel, ctx=document) => ctx.querySelector(sel);
-  const $$ = (sel, ctx=document) => Array.from(ctx.querySelectorAll(sel));
+    .bb-postform, .bb-manage { background:#fff; border:1px solid var(--line); border-radius:14px; padding:16px; box-shadow:0 4px 12px rgba(0,0,0,.04); margin-bottom:16px }
+    .bb-postform textarea{ width:100%; min-height:90px; padding:10px; border:1px solid var(--line); border-radius:8px }
+    .bb-row{ display:flex; gap:10px; align-items:center; flex-wrap:wrap }
+    .bb-meta{ color:#6b7280; font-size:13px }
 
-  function loadPosts(){ try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]'); } catch { return []; } }
-  function savePosts(list){ localStorage.setItem(STORAGE_KEY, JSON.stringify(list)); }
+    .bb-feed{ display:grid; gap:16px; margin-top:12px }
+    .bb-card{ background:#fff; border:1px solid var(--line); border-radius:14px; padding:16px; box-shadow:0 4px 12px rgba(0,0,0,.04) }
+    .bb-card h4{ margin:0 0 6px }
+    .bb-card img{ max-width:100%; border-radius:10px; margin-top:8px }
+    .bb-tag{ display:inline-block; background:var(--brand); color:#fff; border-radius:6px; padding:3px 8px; font-size:12px; margin-right:8px }
 
-  function escapeHTML(s){ return s.replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
-  function decodeHTML(s){ const d=document.createElement('textarea'); d.innerHTML=s; return d.value; }
-  function truncate(s, n){ return s.length>n ? s.slice(0,n-1)+'…' : s; }
-  function formatDate(iso){ try{ return new Date(iso).toLocaleString(); }catch{ return ''; } }
-  function fileToDataURL(file){
-    return new Promise((resolve,reject)=>{
-      const r=new FileReader();
-      r.onload=()=>resolve(r.result);
-      r.onerror=reject;
-      r.readAsDataURL(file);
-    });
-  }
+    .bb-admin-note{ font-size:12px; color:#6b7280 }
+    .bb-actions{ display:flex; gap:8px; margin-top:10px; flex-wrap:wrap }
+    .bb-actions .btn.small{ padding:6px 10px; border-radius:8px; font-size:13px }
 
-  // ==== State ====
-  let posts = loadPosts();
-  let user  = localStorage.getItem(LOGIN_KEY) || null;
+    .btn{ padding:8px 12px; border:1px solid var(--line,#d1d5db); border-radius:8px; background:#fff; cursor:pointer }
+    .btn.alt{ background:#f3f4f6 }
+    .btn.outline{ background:#fff; border-color:var(--brand,#2563eb); color:var(--brand,#2563eb) }
+    .btn.small{ padding:6px 10px; font-size:13px }
 
-  // Option A: clear stored user if it's not a valid account
-  if (user && !['admin', 'teacher'].includes(user)) {
-    localStorage.removeItem(LOGIN_KEY);
-    user = null;
-  }
+    .bb-dialog{ position:fixed; inset:0; display:none; align-items:center; justify-content:center; background:rgba(0,0,0,.4); z-index:9999; padding:16px }
+    .bb-dialog__panel{ background:#fff; border-radius:12px; padding:16px; max-width:560px; width:100%; border:1px solid var(--line) }
+    .bb-dialog__actions{ display:flex; gap:8px; justify-content:flex-end; margin-top:12px }
 
-  // ==== DOM ====
-  const elLogin      = $('#bb-login');
-  const elPostForm   = $('#bb-postform');
-  const elManage     = $('#bb-manage');
-  const elFeed       = $('#bb-feed');
-  const elManageList = $('#bb-manage-list');
-
-  const elUser     = $('#bb-current-user');
-  const elUname    = $('#bb-username');
-  const elPass     = $('#bb-password');
-  const elLoginBtn = $('#bb-login-btn');
-  const elLoginMsg = $('#bb-login-status');
-
-  const elCat      = $('#bb-category');
-  const elText     = $('#bb-text');
-  const elImgIn    = $('#bb-image-input');
-  const elPrev     = $('#bb-preview');
-  const elPostBtn  = $('#bb-post-btn');
-  const elClearBtn = $('#bb-clear-btn');
-
-  const elSearch   = $('#bb-search');
-  const elFilters  = $('#bb-filters');
-
-  const elLogout   = $('#bb-logout-btn');
-  const elDeleteAll= $('#bb-delete-all-btn');
-
-  const dlg        = $('#bb-edit-dialog');
-  const dlgText    = $('#bb-edit-text');
-  const dlgCat     = $('#bb-edit-category');
-  const dlgCancel  = $('#bb-edit-cancel');
-  const dlgSave    = $('#bb-edit-save');
-  let editingId    = null;
-
-  // ==== Init ====
-  reflectLoginUI();
-  applyQueryParams();
-  renderFeed();
-  renderManageListIfNeeded();
-
-  // ==== Events ====
-  // Login (case-insensitive username)
-  elLoginBtn?.addEventListener('click', (e) => {
-    e.preventDefault();
-    const uRaw = (elUname?.value || '').trim();
-    const p    = (elPass?.value  || '').trim();
-    if (!uRaw || !p) { setLoginMsg('Please enter username and password.'); return; }
-    const u = uRaw.toLowerCase();
-    if (ACCOUNTS[u] && ACCOUNTS[u] === p) {
-      user = u;
-      localStorage.setItem(LOGIN_KEY, u);
-      setLoginMsg('');
-      reflectLoginUI();
-      console.log('BB: logged in as', u);
-      elPostForm?.scrollIntoView({behavior:'smooth'});
-    } else {
-      setLoginMsg('Incorrect username or password. Try: admin / 12345 or teacher / 12345');
+    .bb-signin-prompt{
+      background:#eff6ff; border:1px solid #bfdbfe; color:#1e40af;
+      padding:14px 18px; border-radius:12px; margin-bottom:16px;
+      display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap;
     }
-  });
+    .bb-signin-prompt strong{ color:#0f4c81; }
+  </style>
+</head>
+<body>
 
-  // Enter submits login
-  elPass?.addEventListener('keydown', (e)=>{ if(e.key==='Enter') elLoginBtn?.click(); });
-
-  // Logout
-  elLogout?.addEventListener('click', () => {
-    localStorage.removeItem(LOGIN_KEY);
-    user = null;
-    reflectLoginUI();
-    renderManageListIfNeeded();
-    renderFeed();
-    elLogin?.scrollIntoView({behavior:'smooth'});
-  });
-
-  // Delete all posts
-  elDeleteAll?.addEventListener('click', () => {
-    if (!user) { alert('Please login first.'); return; }
-    if (!posts.length) { alert('No posts to delete.'); return; }
-    if (confirm('Delete ALL posts? This cannot be undone.')) {
-      posts = [];
-      savePosts(posts);
-      renderManageListIfNeeded();
-      renderFeed();
-    }
-  });
-
-  // Image preview
-  elImgIn?.addEventListener('change', async (e) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    if (!file.type.startsWith('image/')) { alert('Please choose an image file.'); return; }
-    try {
-      const dataUrl = await fileToDataURL(file);
-      if (elPrev) { elPrev.src = dataUrl; elPrev.style.display = 'block'; }
-    } catch { alert('Failed to load image preview.'); }
-  });
-
-  // Create post
-  elPostBtn?.addEventListener('click', () => {
-    if (!user) { alert('Please login first.'); return; }
-    const text = (elText?.value || '').trim();
-    const cat  = elCat?.value || 'Announcements';
-    const img  = (elPrev && elPrev.src && elPrev.style.display !== 'none') ? elPrev.src : null;
-    if (!text) { alert('Write something first.'); return; }
-
-    const post = {
-      id: Date.now(),
-      text: escapeHTML(text),
-      category: cat,
-      image: img,         // dataURL string
-      author: user,
-      likes: 0,
-      dateISO: new Date().toISOString()
-    };
-    posts.unshift(post);
-    savePosts(posts);
-
-    // reset
-    if (elText) elText.value = '';
-    if (elPrev) { elPrev.src = ''; elPrev.style.display = 'none'; }
-    if (elImgIn) elImgIn.value = '';
-
-    renderFeed();
-    renderManageListIfNeeded();
-  });
-
-  // Clear form
-  elClearBtn?.addEventListener('click', () => {
-    if (elText) elText.value = '';
-    if (elPrev) { elPrev.src=''; elPrev.style.display='none'; }
-    if (elImgIn) elImgIn.value = '';
-  });
-
-  // Filters
-  elFilters?.addEventListener('click', (e) => {
-    const btn = e.target.closest?.('.bb-filter');
-    if (!btn) return;
-    $$('.bb-filter', elFilters).forEach(b=>b.classList.remove('active'));
-    btn.classList.add('active');
-    renderFeed();
-  });
-
-  // Search
-  elSearch?.addEventListener('input', () => renderFeed());
-
-  // Feed actions (like/edit/delete)
-  elFeed?.addEventListener('click', (e) => {
-    const likeBtn = e.target.closest?.('[data-like]');
-    if (likeBtn) { likePost(Number(likeBtn.dataset.like)); return; }
-    const editBtn = e.target.closest?.('[data-edit]');
-    if (editBtn) { openEditDialog(Number(editBtn.dataset.edit)); return; }
-    const delBtn = e.target.closest?.('[data-del]');
-    if (delBtn && confirm('Delete this post?')) {
-      const id = Number(delBtn.dataset.del);
-      posts = posts.filter(p => p.id !== id);
-      savePosts(posts);
-      renderFeed(); renderManageListIfNeeded();
-    }
-  });
-
-  // Manage list actions
-  elManageList?.addEventListener('click', (e) => {
-    const editBtn = e.target.closest?.('[data-edit]');
-    if (editBtn) { openEditDialog(Number(editBtn.dataset.edit)); return; }
-    const delBtn = e.target.closest?.('[data-del]');
-    if (delBtn && confirm('Delete this post?')) {
-      const id = Number(delBtn.dataset.del);
-      posts = posts.filter(p => p.id !== id);
-      savePosts(posts);
-      renderManageListIfNeeded(); renderFeed();
-    }
-  });
-
-  // Dialog
-  dlgCancel?.addEventListener('click', closeDialog);
-  dlgSave?.addEventListener('click', () => {
-    if (editingId == null) return closeDialog();
-    const idx = posts.findIndex(p => p.id === editingId);
-    if (idx === -1) return closeDialog();
-    posts[idx].text     = escapeHTML((dlgText?.value || '').trim());
-    posts[idx].category = dlgCat?.value || posts[idx].category;
-    savePosts(posts);
-    closeDialog();
-    renderFeed();
-    renderManageListIfNeeded();
-  });
-  dlg?.addEventListener('click', (e) => { if (e.target === dlg) closeDialog(); });
-
-  // ==== UI / Render ====
-  function setLoginMsg(msg){ if(elLoginMsg) elLoginMsg.textContent = msg; }
-
-  function reflectLoginUI(){
-    if (user) {
-      if (elLogin)    elLogin.style.display    = 'none';
-      if (elPostForm) elPostForm.style.display = '';
-      if (elManage)   elManage.style.display   = '';
-      if (elUser)     elUser.textContent       = `Logged in as: ${user}`;
-    } else {
-      if (elLogin)    elLogin.style.display    = '';
-      if (elPostForm) elPostForm.style.display = 'none';
-      if (elManage)   elManage.style.display   = 'none';
-      if (elUser)     elUser.textContent       = '';
-    }
-  }
-
-  function currentFilter(){
-    const active = elFilters ? $('.bb-filter.active', elFilters) : null;
-    return active ? active.getAttribute('data-filter') : 'All';
-  }
-
-  function renderFeed(){
-    if (!elFeed) return;
-    const term = (elSearch?.value || '').toLowerCase();
-    const cat  = currentFilter();
-    const data = posts.filter(p=>{
-      const okCat  = (cat === 'All') ? true : (p.category === cat);
-      const okTerm = term ? decodeHTML(p.text).toLowerCase().includes(term) : true;
-      return okCat && okTerm;
-    });
-
-    elFeed.innerHTML = '';
-    data.forEach(p=>{
-      const card = document.createElement('article');
-      card.className = 'bb-card';
-      card.innerHTML = `
-        <div class="bb-meta">
-          <span class="bb-tag">${p.category}</span>
-          <span>${formatDate(p.dateISO)}</span> • <span>by ${escapeHTML(p.author || '')}</span>
+  <main class="bb-container">
+    <div class="bb-header">
+      <h1 class="bb-title">SCPHS Bulletin Board</h1>
+      <div class="bb-toolbar">
+        <div class="bb-filters" id="bb-filters">
+          <button class="bb-filter active" data-filter="All">All</button>
+          <button class="bb-filter" data-filter="Announcements">Announcements</button>
+          <button class="bb-filter" data-filter="Events">Events</button>
+          <button class="bb-filter" data-filter="Activities">Activities</button>
+          <button class="bb-filter" data-filter="Accomplishments">Accomplishments</button>
+          <button class="bb-filter" data-filter="Sports">Sports Champions</button>
         </div>
-        <h4>${truncate(decodeHTML(p.text), 160)}</h4>
-        ${p.image ? `<div class="bb-imgbox"><img src="${p.image}" alt=""></div>` : ``}
-        <div class="bb-actions">
-          <button class="btn small" data-like="${p.id}" type="button">👍 Like <span>(${p.likes || 0})</span></button>
-          ${user ? `
-            <button class="btn small outline" data-edit="${p.id}" type="button">Edit</button>
-            <button class="btn small alt" data-del="${p.id}" type="button">Delete</button>
-          ` : ``}
+        <div class="bb-search">
+          <input id="bb-search" type="search" placeholder="Search posts…" />
         </div>
-      `;
-      elFeed.appendChild(card);
-    });
-  }
+        <a class="btn outline" href="index.html" title="Return to Home">Home</a>
+      </div>
+    </div>
 
-  function renderManageListIfNeeded(){
-    if (!user || !elManageList) return;
-    elManageList.innerHTML = '';
-    posts.forEach(p=>{
-      const row = document.createElement('div');
-      row.className = 'bb-card';
-      row.innerHTML = `
-        <div class="bb-meta">
-          <span class="bb-tag">${p.category}</span>
-          <span>${formatDate(p.dateISO)}</span> • <span>by ${escapeHTML(p.author || '')}</span>
-        </div>
-        <p style="margin:.5rem 0">${truncate(decodeHTML(p.text), 220)}</p>
-        <div class="bb-actions">
-          <button class="btn small outline" data-edit="${p.id}" type="button">Edit</button>
-          <button class="btn small alt" data-del="${p.id}" type="button">Delete</button>
-        </div>
-      `;
-      elManageList.appendChild(row);
-    });
-  }
+    <!-- Sign-in prompt (shown when signed OUT) -->
+    <div id="bb-signin-prompt" class="bb-signin-prompt" hidden>
+      <div>
+        <strong>Want to post a bulletin?</strong>
+        <div class="bb-meta">Sign in with your school account to add, edit, or delete posts.</div>
+      </div>
+      <a class="btn" href="login.html?next=%2Fbulletin.html">Sign in</a>
+    </div>
 
-  function likePost(id){
-    const idx = posts.findIndex(p=>p.id===id);
-    if (idx === -1) return;
-    posts[idx].likes = (posts[idx].likes || 0) + 1;
-    savePosts(posts);
-    renderFeed();
-  }
-
-  function openEditDialog(id){
-    const p = posts.find(x=>x.id===id);
-    if(!p || !dlg || !dlgText || !dlgCat) return;
-    editingId      = id;
-    dlgText.value  = decodeHTML(p.text);
-    dlgCat.value   = p.category;
-    dlg.style.display = 'flex';
-  }
-  function closeDialog(){
-    editingId = null;
-    if (dlg) dlg.style.display = 'none';
-  }
-
-  function applyQueryParams(){
-    const params = new URLSearchParams(location.search);
-    const cat  = params.get('cat');
-    const view = params.get('view'); // 'post' | 'manage'
-    if (cat && elFilters) {
-      const normalized = (cat === 'Sports Champions') ? 'Sports' : cat;
-      const btn = $(`.bb-filter[data-filter="${normalized}"]`, elFilters);
-      if (btn) {
-        $$('.bb-filter', elFilters).forEach(b=>b.classList.remove('active'));
-        btn.classList.add('active');
-      }
-    }
-    if (view === 'post') {
-      user ? elPostForm?.scrollIntoView({behavior:'smooth'}) : elLogin?.scrollIntoView({behavior:'smooth'});
-    }
-    if (view === 'manage' && user && elManage) {
-      elManage.style.display = '';
-      elManage.scrollIntoView({behavior:'smooth'});
-    }
-  }
-})();
-
-function renderFeed(){
-  if (!elFeed) return;
-  const term = (elSearch?.value || '').toLowerCase();
-  const cat  = currentFilter();
-  const data = posts.filter(p=>{
-    const okCat  = (cat === 'All') ? true : (p.category === cat);
-    const okTerm = term ? decodeHTML(p.text).toLowerCase().includes(term) : true;
-    return okCat && okTerm;
-  });
-
-  elFeed.innerHTML = '';
-  data.forEach((p, idx)=>{
-    const hasImg = !!p.image;
-    const card = document.createElement('article');
-
-    // Base classes: 'bb-card' plus 'media' if we have an image
-    card.className = 'bb-card' + (hasImg ? ' media' : '');
-
-    // Alternate left/right when there is an image
-    if (hasImg && idx % 2 === 1) {
-      card.classList.add('media-right');
-    }
-
-    // Build image column (if any)
-    const mediaCol = hasImg
-      ? `<div class="bb-media-box"><img src="${p.image}" alt=""></div>`
-      : '';
-
-    // Build text/actions column
-    const contentCol = `
-      <div class="bb-content">
-        <div class="bb-meta">
-          <span class="bb-tag">${p.category}</span>
-          <span>${formatDate(p.dateISO)}</span> • <span>by ${escapeHTML(p.author || '')}</span>
-        </div>
-        <h4>${truncate(decodeHTML(p.text), 160)}</h4>
-        <div class="bb-actions">
-          <button class="btn small" data-like="${p.id}" type="button">👍 Like <span>(${p.likes || 0})</span></button>
-          ${user ? `
-            <button class="btn small outline" data-edit="${p.id}" type="button">Edit</button>
-            <button class="btn small alt" data-del="${p.id}" type="button">Delete</button>
-          ` : ``}
+    <!-- Post form (signed-in users only) -->
+    <section id="bb-postform" class="bb-postform" hidden>
+      <div class="bb-row" style="justify-content:space-between; width:100%;">
+        <h3 style="margin:0">Create a Post</h3>
+        <div class="bb-row" style="margin-left:auto; gap:8px;">
+          <span class="bb-meta" id="bb-current-user"></span>
+          <button id="bb-logout-btn" class="btn alt" type="button" title="Log out">Logout</button>
+          <button id="bb-delete-all-btn" class="btn outline" type="button" title="Delete all posts">Delete All</button>
         </div>
       </div>
-    `;
 
-    // If there is an image, we emit two columns; otherwise emit one column
-    if (hasImg) {
-      // For media-right, content should come first in DOM so CSS flips visually;
-      // but we can keep a simple logic: left image when idx even, right when odd
-      if (idx % 2 === 0) {
-        card.innerHTML = `${mediaCol}${contentCol}`;
-      } else {
-        card.innerHTML = `${contentCol}${mediaCol}`;
-      }
-    } else {
-      card.innerHTML = contentCol;
+      <div class="bb-row" style="margin:8px 0;">
+        <select id="bb-category" class="bb-input">
+          <option>Announcements</option>
+          <option>Events</option>
+          <option>Activities</option>
+          <option>Accomplishments</option>
+          <option>Sports</option>
+        </select>
+        <label class="btn outline" for="bb-image-input">Attach Image</label>
+        <input id="bb-image-input" type="file" accept="image/*" style="display:none" />
+        <span class="bb-meta">Recommended image ≥ 1600×600 for hero-like banners.</span>
+      </div>
+
+      <textarea id="bb-text" placeholder="Write your content…"></textarea>
+      <img id="bb-preview" alt="" style="display:none; width:220px; margin-top:10px; border-radius:10px;" />
+
+      <div class="bb-actions">
+        <button id="bb-post-btn" class="btn">Post</button>
+        <button id="bb-clear-btn" type="button" class="btn alt">Clear</button>
+      </div>
+    </section>
+
+    <!-- Manage posts (signed-in users only) -->
+    <section id="bb-manage" class="bb-manage" hidden>
+      <h3 style="margin-top:0">Manage Posts</h3>
+      <p class="bb-meta">Edit or delete posts below.</p>
+      <div id="bb-manage-list" class="bb-feed"></div>
+    </section>
+
+    <!-- Feed -->
+    <section>
+      <div id="bb-feed" class="bb-feed"></div>
+    </section>
+  </main>
+
+  <!-- Edit dialog -->
+  <div id="bb-edit-dialog" class="bb-dialog" role="dialog" aria-modal="true" aria-labelledby="bb-edit-title">
+    <div class="bb-dialog__panel">
+      <h3 id="bb-edit-title" style="margin-top:0">Edit Post</h3>
+      <div class="bb-row" style="margin:8px 0;">
+        <select id="bb-edit-category" class="bb-input" style="flex:1">
+          <option>Announcements</option>
+          <option>Events</option>
+          <option>Activities</option>
+          <option>Accomplishments</option>
+          <option>Sports</option>
+        </select>
+      </div>
+      <textarea id="bb-edit-text" class="bb-input" style="min-height:110px"></textarea>
+      <div class="bb-dialog__actions">
+        <button id="bb-edit-cancel" class="btn alt" type="button">Cancel</button>
+        <button id="bb-edit-save" class="btn" type="button">Save</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================== LOGIC ===================== -->
+  <script type="module">
+    import { initMemoGuard, memoSignOut } from "./assets/js/memo-guard.js";
+    import "./assets/js/bulletin.js"; // registers window.Bulletin
+
+    const $  = id => document.getElementById(id);
+    const $$ = (sel, ctx=document) => Array.from(ctx.querySelectorAll(sel));
+
+    const PROMPT   = $('bb-signin-prompt');
+    const POSTFORM = $('bb-postform');
+    const MANAGE   = $('bb-manage');
+    const WHO      = $('bb-current-user');
+    const LOGOUT   = $('bb-logout-btn');
+    const DELETE_ALL = $('bb-delete-all-btn');
+
+    const FEED       = $('bb-feed');
+    const MANAGE_LIST = $('bb-manage-list');
+    const SEARCH     = $('bb-search');
+    const FILTERS    = $('bb-filters');
+
+    const CAT   = $('bb-category');
+    const TEXT  = $('bb-text');
+    const IMG_IN = $('bb-image-input');
+    const PREV  = $('bb-preview');
+    const POST_BTN = $('bb-post-btn');
+    const CLEAR_BTN = $('bb-clear-btn');
+
+    const DLG = $('bb-edit-dialog');
+    const DLG_TEXT = $('bb-edit-text');
+    const DLG_CAT  = $('bb-edit-category');
+    const DLG_CANCEL = $('bb-edit-cancel');
+    const DLG_SAVE = $('bb-edit-save');
+
+    let CURRENT_USER = null;
+    let POSTS = [];
+    let editingId = null;
+
+    // ---------- Auth gating ----------
+    function showSignedOut() {
+      CURRENT_USER = null;
+      PROMPT.hidden = false;
+      POSTFORM.hidden = true;
+      MANAGE.hidden = true;
+    }
+    async function showSignedIn(user) {
+      CURRENT_USER = user;
+      PROMPT.hidden = true;
+      POSTFORM.hidden = false;
+      MANAGE.hidden = false;
+      if (WHO) WHO.textContent = user.displayName || user.email || 'user';
+      await renderManage();
     }
 
-    elFeed.appendChild(card);
-  });
-}
+    initMemoGuard({
+      onLoading: () => { PROMPT.hidden = true; POSTFORM.hidden = true; MANAGE.hidden = true; },
+      onDenied:  () => { showSignedOut(); },
+      onAdmin:   (user) => { showSignedIn(user); },
+    });
 
+    // ---------- Feed rendering (public) ----------
+    function currentFilter() {
+      const active = FILTERS ? FILTERS.querySelector('.bb-filter.active') : null;
+      return active ? active.dataset.filter : 'All';
+    }
+    function renderFeed() {
+      if (!FEED) return;
+      const term = (SEARCH?.value || '').toLowerCase();
+      const cat = currentFilter();
+
+      const filtered = POSTS.filter(p => {
+        const okCat = (cat === 'All') ? true : (p.category === cat);
+        const plain = (p.text || '').replace(/<[^>]*>/g, '');
+        const okTerm = term ? plain.toLowerCase().includes(term) : true;
+        return okCat && okTerm;
+      });
+
+      if (!filtered.length) {
+        FEED.innerHTML = '<div class="bb-meta" style="padding:20px; text-align:center;">No posts yet.</div>';
+        return;
+      }
+
+      FEED.innerHTML = filtered.map(p => {
+        const plain = (p.text || '').replace(/<[^>]*>/g, '');
+        return `
+          <article class="bb-card">
+            <div class="bb-meta">
+              <span class="bb-tag">${window.Bulletin.escapeHTML(p.category)}</span>
+              <span>${window.Bulletin.formatDate(p.dateISO)}</span> • 
+              <span>by ${window.Bulletin.escapeHTML(p.author || '')}</span>
+            </div>
+            <h4>${window.Bulletin.escapeHTML(window.Bulletin.truncate(plain, 160))}</h4>
+            ${p.image ? `<img src="${p.image}" alt="">` : ''}
+            <div class="bb-actions">
+              <button class="btn small" data-like="${p.id}" type="button">👍 Like <span>(${p.likes || 0})</span></button>
+              ${CURRENT_USER ? `
+                <button class="btn small outline" data-edit="${p.id}" type="button">Edit</button>
+                <button class="btn small alt" data-del="${p.id}" type="button">Delete</button>
+              ` : ``}
+            </div>
+          </article>`;
+      }).join('');
+    }
+
+    async function renderManage() {
+      if (!MANAGE_LIST) return;
+      if (!CURRENT_USER) {
+        MANAGE_LIST.innerHTML = '';
+        return;
+      }
+      MANAGE_LIST.innerHTML = POSTS.map(p => {
+        const plain = (p.text || '').replace(/<[^>]*>/g, '');
+        return `
+          <div class="bb-card">
+            <div class="bb-meta">
+              <span class="bb-tag">${window.Bulletin.escapeHTML(p.category)}</span>
+              <span>${window.Bulletin.formatDate(p.dateISO)}</span> • 
+              <span>by ${window.Bulletin.escapeHTML(p.author || '')}</span>
+            </div>
+            <p style="margin:.5rem 0">${window.Bulletin.escapeHTML(window.Bulletin.truncate(plain, 220))}</p>
+            <div class="bb-actions">
+              <button class="btn small outline" data-edit="${p.id}" type="button">Edit</button>
+              <button class="btn small alt" data-del="${p.id}" type="button">Delete</button>
+            </div>
+          </div>`;
+      }).join('');
+    }
+
+    async function refreshAll() {
+      POSTS = await window.Bulletin.list();
+      renderFeed();
+      await renderManage();
+    }
+
+    // ---------- Post creation ----------
+    POST_BTN?.addEventListener('click', async () => {
+      if (!CURRENT_USER) return;
+      const text = (TEXT?.value || '').trim();
+      const cat  = CAT?.value || 'Announcements';
+      const img  = (PREV && PREV.src && PREV.style.display !== 'none') ? PREV.src : null;
+      if (!text) { alert('Write something first.'); return; }
+
+      POST_BTN.disabled = true;
+      try {
+        await window.Bulletin.add({ text, category: cat, image: img });
+        if (TEXT) TEXT.value = '';
+        if (PREV) { PREV.src = ''; PREV.style.display = 'none'; }
+        if (IMG_IN) IMG_IN.value = '';
+        await refreshAll();
+      } catch (e) {
+        alert('Error: ' + (e.message || e));
+      } finally {
+        POST_BTN.disabled = false;
+      }
+    });
+
+    CLEAR_BTN?.addEventListener('click', () => {
+      if (TEXT) TEXT.value = '';
+      if (PREV) { PREV.src = ''; PREV.style.display = 'none'; }
+      if (IMG_IN) IMG_IN.value = '';
+    });
+
+    IMG_IN?.addEventListener('change', async e => {
+      const file = e.target.files?.[0];
+      if (!file) return;
+      if (!file.type.startsWith('image/')) { alert('Please choose an image file.'); return; }
+      try {
+        const dataUrl = await window.Bulletin.fileToDataURL(file);
+        if (PREV) { PREV.src = dataUrl; PREV.style.display = 'block'; }
+      } catch { alert('Failed to load image preview.'); }
+    });
+
+    // ---------- Filters / search ----------
+    FILTERS?.addEventListener('click', e => {
+      const btn = e.target.closest?.('.bb-filter');
+      if (!btn) return;
+      FILTERS.querySelectorAll('.bb-filter').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      renderFeed();
+    });
+    SEARCH?.addEventListener('input', renderFeed);
+
+    // ---------- Feed & manage actions ----------
+    async function handleAction(e) {
+      const likeBtn = e.target.closest?.('[data-like]');
+      if (likeBtn) {
+        try { await window.Bulletin.like(likeBtn.dataset.like); await refreshAll(); }
+        catch (err) { alert('Error: ' + (err.message || err)); }
+        return;
+      }
+      const editBtn = e.target.closest?.('[data-edit]');
+      if (editBtn) { openEditDialog(editBtn.dataset.edit); return; }
+      const delBtn = e.target.closest?.('[data-del]');
+      if (delBtn && confirm('Delete this post?')) {
+        try { await window.Bulletin.remove(delBtn.dataset.del); await refreshAll(); }
+        catch (err) { alert('Error: ' + (err.message || err)); }
+      }
+    }
+    FEED?.addEventListener('click', handleAction);
+    MANAGE_LIST?.addEventListener('click', handleAction);
+
+    // ---------- Edit dialog ----------
+    function openEditDialog(id) {
+      const p = POSTS.find(x => x.id === id);
+      if (!p || !DLG) return;
+      editingId = id;
+      DLG_TEXT.value = (p.text || '').replace(/<[^>]*>/g, '');
+      DLG_CAT.value = p.category;
+      DLG.style.display = 'flex';
+    }
+    function closeDialog() {
+      editingId = null;
+      if (DLG) DLG.style.display = 'none';
+    }
+    DLG_CANCEL?.addEventListener('click', closeDialog);
+    DLG?.addEventListener('click', e => { if (e.target === DLG) closeDialog(); });
+    DLG_SAVE?.addEventListener('click', async () => {
+      if (editingId == null) return closeDialog();
+      try {
+        await window.Bulletin.updatePost(editingId, {
+          text: DLG_TEXT.value,
+          category: DLG_CAT.value,
+        });
+        closeDialog();
+        await refreshAll();
+      } catch (e) {
+        alert('Error: ' + (e.message || e));
+      }
+    });
+
+    // ---------- Delete all ----------
+    DELETE_ALL?.addEventListener('click', async () => {
+      if (!CURRENT_USER) return;
+      if (!POSTS.length) { alert('No posts to delete.'); return; }
+      if (!confirm('Delete ALL posts? This cannot be undone.')) return;
+      DELETE_ALL.disabled = true;
+      try {
+        await window.Bulletin.removeAll();
+        await refreshAll();
+      } catch (e) {
+        alert('Error: ' + (e.message || e));
+      } finally {
+        DELETE_ALL.disabled = false;
+      }
+    });
+
+    // ---------- Logout ----------
+    LOGOUT?.addEventListener('click', async () => {
+      await memoSignOut();
+      location.replace('bulletin.html');
+    });
+
+    // ---------- Boot ----------
+    (async () => {
+      try {
+        await refreshAll();
+      } catch (e) {
+        console.error('[bulletin] initial load failed:', e);
+        if (FEED) FEED.innerHTML = '<div class="bb-meta" style="color:#b91c1c;">Failed to load posts.</div>';
+      }
+    })();
+  </script>
+</body>
+</html>
