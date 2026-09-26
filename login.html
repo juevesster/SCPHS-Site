@@ -636,44 +636,50 @@
 
   <!-- Load config first, then populate + login logic -->
   <script type="module">
-  import { loadConfig, cfg } from "./assets/js/config.js";
+import { loadConfig, cfg } from "./assets/js/config.js";
 
-  // Load config first (from Firestore, with fallback)
+// Load config — never let a Firestore hiccup kill the page
+try {
   await loadConfig();
+} catch (e) {
+  console.warn("[login] loadConfig failed, using defaults:", e);
+}
 
-  const $ = (id) => document.getElementById(id);
+const $   = (id) => document.getElementById(id);
+const set = (id, val) => { const el = $(id); if (el) el.textContent = val; };
+const src = (id, val) => { const el = $(id); if (el) el.src = val; };
 
-  // Header
-  $("cfg-republic").textContent   = cfg("republic");
-  $("cfg-department").textContent = cfg("department");
-  $("cfg-region").textContent     = cfg("region");
-  $("cfg-division").textContent   = cfg("division");
-  $("cfg-school").textContent     = cfg("schoolName");
-  $("cfg-address").textContent    = cfg("schoolAddress");
+// Government header
+set("cfg-republic",   cfg("republic"));
+set("cfg-department", cfg("department"));
+set("cfg-region",     cfg("region"));
+set("cfg-division",   cfg("division"));
+set("cfg-school",     cfg("schoolName"));
+set("cfg-address",    cfg("schoolAddress"));
 
-  // Logos
-  $("cfg-logo-school").src = cfg("logoSchool", "assets/images/scphslogo.png");
-  $("cfg-logo-deped").src  = cfg("logoDepEd",  "assets/images/deped-logo.png");
-  $("brand-logo").src      = cfg("logoSchool", "assets/images/scphslogo.png");
+// Logos
+src("cfg-logo-school", cfg("logoSchool", "assets/images/scphslogo.png"));
+src("cfg-logo-deped",  cfg("logoDepEd",  "assets/images/deped-logo.png"));
+src("brand-logo",      cfg("logoSchool", "assets/images/scphslogo.png"));
 
-  // Brand panel
-  $("brand-tagline").textContent   = cfg("tagline");
-  $("brand-blurb").textContent     = cfg("welcomeBlurb");
-  $("brand-dept").textContent      = cfg("department");
-  $("brand-foot-school").textContent   = cfg("schoolName");
-  $("brand-foot-region").textContent   = cfg("region");
-  $("brand-foot-division").textContent = cfg("division");
+// Brand panel
+set("brand-tagline",       cfg("tagline"));
+set("brand-blurb",         cfg("welcomeBlurb"));
+set("brand-dept",          cfg("department"));
+set("brand-foot-school",   cfg("schoolName"));
+set("brand-foot-region",   cfg("region"));
+set("brand-foot-division", cfg("division"));
 
-  // Title
-  document.title = "Sign In — " + cfg("schoolShortName", "SCPHS");
+// Title
+document.title = "Sign In — " + cfg("schoolShortName", "SCPHS");
 
-  // Year
-  $("yearNowLeft").textContent = new Date().getFullYear();
+// Year
+set("yearNowLeft", new Date().getFullYear());
 
-  // Graceful image fallback
-  document.querySelectorAll("img").forEach(img => {
-    img.addEventListener("error", () => { img.style.opacity = "0.3"; });
-  });
+// Graceful image fallback
+document.querySelectorAll("img").forEach(img => {
+  img.addEventListener("error", () => { img.style.opacity = "0.3"; });
+});
 </script>
 
   <!-- Login logic -->

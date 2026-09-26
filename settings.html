@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>Site Settings — School Portal</title>
   <link rel="stylesheet" href="assets/css/styles.css">
-  <script type="module" src="assets/js/auth-guard.js"></script>
 
   <style>
     * { box-sizing: border-box; }
@@ -453,7 +452,7 @@
     import { auth, db } from "./assets/js/firebase-config.js";
     import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
     import { doc, getDoc, setDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
-    import { DEFAULT_CONFIG, loadConfig, setConfig } from "./assets/js/config.js";
+    import { DEFAULT_CONFIG, loadConfig, setConfig, cfg } from "./assets/js/config.js";
 
     const $ = (id) => document.getElementById(id);
 
@@ -547,10 +546,8 @@
     }
 
     function configValue(key) {
-      // Prefer Firestore-loaded config; fallback to defaults
-      const live = window.__scphsConfig || null;
-      return (live && live[key]) || DEFAULT_CONFIG[key] || "";
-    }
+  return cfg(key, DEFAULT_CONFIG[key] ?? "");
+}
 
     // ---- Logo previews ----
     function updateLogoPreviews() {
