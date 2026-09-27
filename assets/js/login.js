@@ -204,17 +204,29 @@ formSignup?.addEventListener("submit", async (e) => {
     }
 
     const cred = await createUserWithEmailAndPassword(auth, email, password);
-    await updateProfile(cred.user, { displayName: name });
+await updateProfile(cred.user, { displayName: name });
 
-    await setDoc(doc(db, "users", cred.user.uid), {
-      name,
-      email,
-      role,
-      createdAt: serverTimestamp()
-    });
+// ⚠️ SECURITY: New accounts are ALWAYS "student" — even if the user
+// selected "teacher" in the UI. Admin promotion happens in Firestore.
+await setDoc(doc(db, "users", cred.user.uid), {
+  name,
+  email,
+  role: "student",              // ← ALWAYS student, no exceptions
+  requestedRole: role,           // ← store what they WANTED (for admin review)
+  approved: false,               // ← admin flips this to true after verification
+  createdAt: serverTimestamp()
+});
 
-    showMsg("Account created successfully! Redirecting…", "success");
-    setTimeout(() => location.replace(getNextUrl()), 700);
+    if (role === "teacher") {
+  showMsg(
+    "Account created! A teacher account must be approved by an administrator. You'll receive access once approved.",
+    "success"
+  );
+  setTimeout(() => location.replace("index.html"), 3000);
+} else {
+  showMsg("Account created successfully! Redirecting…", "success");
+  setTimeout(() => location.replace(getNextUrl()), 700);
+}
   } catch (err) {
     console.error(err);
     let msg = "Sign up failed. Please try again.";
