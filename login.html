@@ -693,6 +693,17 @@
   <!-- Admin settings link (bottom-right corner) -->
   <a href="settings.html" class="admin-settings-link" title="Site settings (admin only)">⚙ Settings</a>
 
+  <!-- Visitor Counter -->
+<div id="visitor-counter" style="
+  text-align: center;
+  padding: 10px 0;
+  font-size: 13px;
+  color: #6b7280;
+  border-top: 1px solid rgba(0,0,0,0.05);
+">
+  <span id="visitor-count-value">—</span>
+</div>
+
   <!-- Load config first, then populate + login logic -->
   <script type="module">
 import { loadConfig, cfg } from "./assets/js/config.js";
@@ -739,6 +750,21 @@ set("yearNowLeft", new Date().getFullYear());
 document.querySelectorAll("img").forEach(img => {
   img.addEventListener("error", () => { img.style.opacity = "0.3"; });
 });
+</script>
+
+<script type="module">
+  import { trackVisit } from "./assets/js/visitor-counter.js";
+
+  (async () => {
+    const el = document.getElementById("visitor-count-value");
+    if (!el) return;
+    const count = await trackVisit();
+    if (count === null) {
+      el.parentElement.style.display = "none"; // hide if Firestore fails
+      return;
+    }
+    el.textContent = `👥 ${count.toLocaleString()} visits`;
+  })();
 </script>
 
   <!-- Login logic -->
