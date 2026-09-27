@@ -206,14 +206,14 @@ formSignup?.addEventListener("submit", async (e) => {
     const cred = await createUserWithEmailAndPassword(auth, email, password);
 await updateProfile(cred.user, { displayName: name });
 
-// ⚠️ SECURITY: New accounts are ALWAYS "student" — even if the user
-// selected "teacher" in the UI. Admin promotion happens in Firestore.
+// ⚠️ SECURITY: New accounts are ALWAYS "student".
+// Teacher/admin roles are granted manually by admins.
 await setDoc(doc(db, "users", cred.user.uid), {
   name,
   email,
-  role: "student",              // ← ALWAYS student, no exceptions
-  requestedRole: role,           // ← store what they WANTED (for admin review)
-  approved: false,               // ← admin flips this to true after verification
+  role: "student",           // ← forced student
+  requestedRole: role,        // ← what they wanted (for admin review)
+  approved: false,            // ← admin flips this later
   createdAt: serverTimestamp()
 });
 
