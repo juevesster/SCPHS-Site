@@ -1,20 +1,36 @@
-// assets/js/counter.js
-(function () {
-  const API_URL = '/api/counter.php'; // works once uploaded to hosting with PHP
+// counter.js — Firestore-backed visitor counter.
+// Reads the shared `site_stats/visits` doc that visitor-counter.js writes to.
+// So both `index.html` and `login.html` show the SAME number.
 
-  function setText(id, value) {
-    var el = document.getElementById(id);
-    if (el) el.textContent = value;
+import { db } from "./firebase-config.js";
+import { doc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+const STATS_REF = doc(db, "site_stats", "visits");
+
+function setText(id, value) {
+  const el = document.getElementById(id);
+  if (el) el.textContent = value;
+}
+
+function todayKey() {
+  return new Date().toISOString().slice(0, 10);
+}
+
+(async () => {
+  try {
+    // Total visits (shared doc written by visitor-counter.js)
+    const totalSnap = await getDoc(STATS_REF);
+    const total = totalSnap.exists() ? (totalSnap.data().count || 0) : 0;
+
+    // Today's visits
+    const todaySnap = await getDoc(doc(db, "site_stats", "daily_" + todayKey()));
+    const today = todaySnap.exists() ? (todaySnap.data().count || 0) : 0;
+
+    setText("views-today", today.toLocaleString());
+    setText("views-total", total.toLocaleString());
+  } catch (e) {
+    console.warn("[counter] read failed:", e?.code || e?.message);
+    setText("views-today", "—");
+    setText("views-total", "—");
   }
-
-  fetch(API_URL, { method: 'POST' })
-    .then(r => r.json())
-    .then(data => {
-      setText('views-today', data.today ?? '0');
-      setText('views-total', data.total ?? '0');
-    })
-    .catch(() => {
-      setText('views-today', '0');
-      setText('views-total', '0');
-    });
 })();
