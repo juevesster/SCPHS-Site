@@ -70,7 +70,6 @@
     }
     .bb-card:hover .bb-media img{ transform: scale(1.03) }
 
-    /* Image lazy load placeholder */
     .bb-card .bb-media img[loading="lazy"]:not([src]){
       background: linear-gradient(90deg, #f3f4f6 25%, #e5e7eb 50%, #f3f4f6 75%);
       background-size: 200% 100%;
@@ -152,7 +151,6 @@
     }
     .bb-card .bb-readmore:hover{ text-decoration: underline }
 
-    /* Actions row — hidden until hover */
     .bb-card .bb-actions{
       display: flex;
       gap: 8px;
@@ -162,7 +160,6 @@
       opacity: 1;
       transition: opacity .15s;
     }
-    /* Hide admin actions unless hovering */
     .bb-card .bb-actions .bb-admin-action{
       opacity: 0;
       pointer-events: none;
@@ -194,7 +191,7 @@
     .bb-manage .bb-actions .bb-admin-action{ opacity: 1; pointer-events: auto }
 
     /* ============================================
-       DETAIL MODAL — opens on card click
+       DETAIL MODAL
        ============================================ */
     .bb-detail{
       position: fixed;
@@ -301,6 +298,15 @@
     .btn.alt{ background:#f3f4f6 }
     .btn.outline{ background:#fff; border-color:var(--brand,#2563eb); color:var(--brand,#2563eb) }
     .btn.small{ padding:6px 10px; font-size:13px }
+    .btn.danger{
+      background: #fff;
+      color: #b91c1c;
+      border-color: #fecaca;
+    }
+    .btn.danger:hover{
+      background: #fef2f2;
+      border-color: #b91c1c;
+    }
 
     .bb-dialog{ position:fixed; inset:0; display:none; align-items:center; justify-content:center; background:rgba(0,0,0,.4); z-index:9999; padding:16px }
     .bb-dialog__panel{ background:#fff; border-radius:12px; padding:16px; max-width:560px; width:100%; border:1px solid var(--line) }
@@ -319,16 +325,6 @@
       .bb-manage .bb-card{ grid-template-columns: 1fr }
       .bb-search{ width: 100% }
     }
-
-    .btn.danger{
-  background: #fff;
-  color: #b91c1c;
-  border-color: #fecaca;
-}
-.btn.danger:hover{
-  background: #fef2f2;
-  border-color: #b91c1c;
-}
   </style>
 </head>
 <body>
@@ -427,7 +423,7 @@
     </div>
   </div>
 
-  <!-- Detail modal (opens when clicking a card) -->
+  <!-- Detail modal -->
   <div id="bb-detail" class="bb-detail" role="dialog" aria-modal="true" aria-labelledby="bb-detail-title">
     <div class="bb-detail__panel">
       <div class="bb-detail__head">
@@ -478,9 +474,7 @@
     let POSTS = [];
     let editingId = null;
 
-    // -----------------------------------------------------------
     // Category → icon map
-    // -----------------------------------------------------------
     const CATEGORY_ICONS = {
       'Announcements': '📢',
       'Events': '📅',
@@ -492,9 +486,7 @@
       return CATEGORY_ICONS[cat] || '📌';
     }
 
-    // -----------------------------------------------------------
     // Auth gating
-    // -----------------------------------------------------------
     function showSignedOut() {
       CURRENT_USER = null;
       PROMPT.hidden = false;
@@ -516,9 +508,7 @@
       onAdmin:   (user) => { showSignedIn(user); },
     });
 
-    // -----------------------------------------------------------
     // Feed rendering
-    // -----------------------------------------------------------
     function currentFilter() {
       const active = FILTERS ? FILTERS.querySelector('.bb-filter.active') : null;
       return active ? active.dataset.filter : 'All';
@@ -536,7 +526,7 @@
 
       const adminActions = CURRENT_USER
         ? `<button class="btn small outline bb-admin-action" data-edit="${p.id}" type="button">✎ Edit</button>
-           <button class="btn small danger bb-admin-action" data-del="${p.id}" type="button">✕ Delete</button>
+           <button class="btn small danger bb-admin-action" data-del="${p.id}" type="button">✕ Delete</button>`
         : '';
 
       return `
@@ -605,9 +595,7 @@
       await renderManage();
     }
 
-    // -----------------------------------------------------------
     // Detail modal
-    // -----------------------------------------------------------
     function openDetail(id) {
       const p = POSTS.find(x => x.id === id);
       if (!p || !DETAIL || !DETAIL_BODY) return;
@@ -615,7 +603,7 @@
       const plain = (p.text || '').replace(/<[^>]*>/g, '');
       const adminActions = CURRENT_USER
         ? `<button class="btn outline" data-edit="${p.id}" type="button">✎ Edit</button>
-           <button class="btn alt" data-del="${p.id}" type="button">✕ Delete</button>`
+           <button class="btn danger" data-del="${p.id}" type="button">✕ Delete</button>`
         : '';
 
       const hasImg = !!p.image;
@@ -651,9 +639,7 @@
     DETAIL?.addEventListener('click', e => { if (e.target === DETAIL) closeDetail(); });
     document.addEventListener('keydown', e => { if (e.key === 'Escape') closeDetail(); });
 
-    // -----------------------------------------------------------
     // Post form
-    // -----------------------------------------------------------
     POST_BTN?.addEventListener('click', async () => {
       if (!CURRENT_USER) return;
       const text = (TEXT?.value || '').trim();
@@ -700,11 +686,8 @@
     });
     SEARCH?.addEventListener('input', renderFeed);
 
-    // -----------------------------------------------------------
     // Card + detail action handler
-    // -----------------------------------------------------------
     async function handleAction(e) {
-      // Admin action buttons — do NOT open detail modal
       const editBtn = e.target.closest?.('[data-edit]');
       if (editBtn) {
         e.stopPropagation();
@@ -720,7 +703,6 @@
         }
         return;
       }
-      // Like button
       const likeBtn = e.target.closest?.('[data-like]');
       if (likeBtn) {
         e.stopPropagation();
@@ -728,14 +710,12 @@
         catch (err) { alert('Error: ' + (err.message || err)); }
         return;
       }
-      // "Read more" link inside card → open detail
       const readMore = e.target.closest?.('[data-readmore]');
       if (readMore) {
         e.stopPropagation();
         openDetail(readMore.dataset.readmore);
         return;
       }
-      // Card click → open detail modal (skip if clicking buttons inside)
       const card = e.target.closest?.('.bb-card');
       if (card && !e.target.closest('button')) {
         openDetail(card.dataset.id);
@@ -745,7 +725,6 @@
     FEED?.addEventListener('click', handleAction);
     MANAGE_LIST?.addEventListener('click', handleAction);
 
-    // Keyboard: Enter on focused card opens detail
     FEED?.addEventListener('keydown', e => {
       if (e.key === 'Enter') {
         const card = e.target.closest?.('.bb-card');
@@ -753,9 +732,7 @@
       }
     });
 
-    // -----------------------------------------------------------
     // Edit dialog
-    // -----------------------------------------------------------
     function openEditDialog(id) {
       const p = POSTS.find(x => x.id === id);
       if (!p || !DLG) return;
