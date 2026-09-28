@@ -97,7 +97,22 @@
       ">Sign Out</button>
     </div>
 
-    <div class="logos-right" aria-label="Government logos">
+    <div id="guest-banner" style="
+  display: none;
+  background: #eff6ff;
+  border-bottom: 1px solid #bfdbfe;
+  color: #1e40af;
+  padding: 10px 16px;
+  text-align: center;
+  font-size: 14px;
+">
+  👋 <strong>Welcome, visitor!</strong>
+  You're viewing public pages.
+  <a href="login.html" style="color: #0f4c81; font-weight: 700; text-decoration: underline;">Sign in</a>
+  to access student or staff features.
+</div>
+
+        <div class="logos-right" aria-label="Government logos">
       <img src="assets/images/foi-logo.png" alt="Freedom of Information" class="logo--gov">
       <img src="assets/images/Bagong-Pilipinas-Logo.png" alt="Bagong Pilipinas" class="logo--gov">
       <a href="/transparency" class="logo-link" target="_blank" rel="noopener">
@@ -105,6 +120,22 @@
       </a>
     </div>
   </div>
+</div>
+
+<!-- ⭐ GUEST WELCOME BANNER (visible only when signed out) ⭐ -->
+<div id="guest-banner" style="
+  display: none;
+  background: #eff6ff;
+  border-bottom: 1px solid #bfdbfe;
+  color: #1e40af;
+  padding: 10px 16px;
+  text-align: center;
+  font-size: 14px;
+">
+  👋 <strong>Welcome, visitor!</strong>
+  You're viewing public pages.
+  <a href="login.html" style="color: #0f4c81; font-weight: 700; text-decoration: underline;">Sign in</a>
+  to access student or staff features.
 </div>
 
   <!-- ===================== NAVIGATION ===================== -->
@@ -1240,30 +1271,53 @@
     signOut
   } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
-  // --- Show logged-in user's name ---
+  // --- Auth handler: works for signed-in users AND guests ---
   onAuthStateChanged(auth, (user) => {
     const welcome = document.getElementById("user-welcome");
+    const logout  = document.getElementById("btn-logout");
+    const banner  = document.getElementById("guest-banner");
+
     if (!welcome) return;
 
     if (user) {
+      // ---------- Signed-in user ----------
       const name = user.displayName || user.email || "User";
       welcome.textContent = "Signed in as " + name;
+
+      if (logout) {
+        logout.textContent = "Sign Out";
+        logout.style.background = "#c8102e"; // red
+      }
+      if (banner) banner.style.display = "none";
     } else {
-      // No user — redirect to login
-      const next = encodeURIComponent(location.pathname + location.search);
-      location.replace("login.html?next=" + next);
+      // ---------- Guest ----------
+      welcome.textContent = "Welcome, visitor!";
+
+      if (logout) {
+        logout.textContent = "Sign In";
+        logout.style.background = "#0f4c81"; // blue
+      }
+      if (banner) banner.style.display = "block";
     }
   });
 
-  // --- Handle Sign Out button ---
+  // --- Logout / Sign In button ---
   const btnLogout = document.getElementById("btn-logout");
   if (btnLogout) {
     btnLogout.addEventListener("click", async () => {
+      const user = auth.currentUser;
+
+      if (!user) {
+        // Guest → send to login page
+        location.href = "login.html";
+        return;
+      }
+
       if (!confirm("Are you sure you want to sign out?")) return;
 
       try {
         await signOut(auth);
-        location.replace("login.html");
+        location.reload();
       } catch (err) {
         console.error("[logout] Failed:", err);
         alert("Sign out failed. Please try again.");
