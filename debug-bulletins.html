@@ -1,0 +1,72 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Debug Bulletins — SCPHS</title>
+  <style>
+    body { font-family: monospace; padding: 20px; background: #f6f7f9; }
+    h1 { color: #0f4c81; }
+    pre { background: #fff; padding: 16px; border-radius: 8px; border: 1px solid #e5e7eb; white-space: pre-wrap; margin-top: 20px; font-size: 13px; line-height: 1.5; }
+    button { padding: 10px 20px; background: #0f4c81; color: #fff; border: none; border-radius: 8px; cursor: pointer; font-size: 14px; font-weight: 700; }
+    button:hover { background: #1e6bb8; }
+    .ok { color: #059669; }
+    .err { color: #b91c1c; font-weight: 700; }
+  </style>
+</head>
+<body>
+  <h1>Debug Bulletins</h1>
+  <p>This page runs the same Firestore query that bulletin.html runs and shows the result.</p>
+  <button id="go">Run Diagnostic</button>
+  <pre id="out">Click the button above.</pre>
+
+  <script type="module">
+    import { db } from "./assets/js/firebase-config.js";
+    import { collection, getDocs, orderBy, query } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+    const out = document.getElementById("out");
+    const log = (s) => { out.textContent += "\n" + s; };
+
+    document.getElementById("go").addEventListener("click", async () => {
+      out.textContent = "=== Bulletins Diagnostic ===\n";
+      log("Firebase project: " + db.app.options.projectId);
+      log("Running query on 'bulletins' collection...\n");
+
+      try {
+        const q = query(collection(db, "bulletins"), orderBy("createdAt", "desc"));
+        const snap = await getDocs(q);
+
+        if (snap.empty) {
+          log("⚠️ Collection is EMPTY — no bulletins found.");
+          log("\nIf you had bulletins before, they may have been deleted.");
+          log("Check Firebase Console → Firestore → bulletins");
+          return;
+        }
+
+        log("✅ Found " + snap.size + " bulletins:\n");
+        snap.forEach((d, i) => {
+          const data = d.data();
+          const cleanText = (data.text || '').replace(/<[^>]*>/g, '').slice(0, 80);
+          log(`[${i + 1}] id: ${d.id}`);
+          log(`    category: ${JSON.stringify(data.category)}`);
+          log(`    author:   ${JSON.stringify(data.author)}`);
+          log(`    likes:    ${data.likes || 0}`);
+          log(`    hasImage: ${!!data.image}`);
+          log(`    text:     ${cleanText}`);
+          log('');
+        });
+        log("--- Done ---");
+
+      } catch (e) {
+        log("❌ QUERY FAILED:");
+        log("    Error code: " + (e.code || '(none)'));
+        log("    Error message: " + (e.message || '(none)'));
+        log("");
+        log("Common causes:");
+        log("  - permission-denied → Firestore rules block public read");
+        log("  - failed-precondition → missing index (unlikely for single-field orderBy)");
+        log("  - unavailable → network issue");
+      }
+    });
+  </script>
+</body>
+</html>
