@@ -758,12 +758,12 @@ document.querySelectorAll("img").forEach(img => {
   (async () => {
     const el = document.getElementById("visitor-count-value");
     if (!el) return;
-    const count = await trackVisit();
-    if (count === null) {
-      el.parentElement.style.display = "none"; // hide if Firestore fails
+    const result = await trackVisit();
+    if (result === null) {
+      el.parentElement.style.display = "none";
       return;
     }
-    el.textContent = `👥 ${count.toLocaleString()} visits`;
+    el.textContent = `👥 ${result.total.toLocaleString()} visits`;
   })();
 </script>
 
