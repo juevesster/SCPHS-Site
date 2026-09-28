@@ -22,30 +22,203 @@
     .bb-row{ display:flex; gap:10px; align-items:center; flex-wrap:wrap }
     .bb-meta{ color:#6b7280; font-size:13px }
 
-    .bb-feed{ display:grid; gap:16px; margin-top:12px }
-    .bb-card{ background:#fff; border:1px solid var(--line); border-radius:14px; padding:16px; box-shadow:0 4px 12px rgba(0,0,0,.04) }
-    .bb-card h4{ margin:0 0 6px }
-    .bb-card img{ max-width:100%; border-radius:10px; margin-top:8px }
-    .bb-tag{ display:inline-block; background:var(--brand); color:#fff; border-radius:6px; padding:3px 8px; font-size:12px; margin-right:8px }
+    /* ============================================
+       FEED — two-column post cards
+       ============================================ */
+    .bb-feed{
+      display: grid;
+      gap: 18px;
+      margin-top: 12px;
+    }
 
-    .bb-actions{ display:flex; gap:8px; margin-top:10px; flex-wrap:wrap }
-    .bb-actions .btn.small{ padding:6px 10px; border-radius:8px; font-size:13px }
+    .bb-card{
+      background: #fff;
+      border: 1px solid var(--line, #e5e7eb);
+      border-radius: 14px;
+      box-shadow: 0 1px 2px rgba(16,24,40,.04), 0 4px 12px rgba(16,24,40,.06);
+      overflow: hidden;
+      transition: box-shadow .18s ease, transform .18s ease;
+    }
+    .bb-card:hover{
+      box-shadow: 0 4px 8px rgba(16,24,40,.06), 0 12px 24px rgba(16,24,40,.08);
+      transform: translateY(-1px);
+    }
 
+    /* Post with image: two-column grid */
+    .bb-card.has-media{
+      display: grid;
+      grid-template-columns: 300px 1fr;
+      gap: 0;
+      min-height: 200px;
+    }
+
+    /* Media column (left) */
+    .bb-card .bb-media{
+      background: #f3f4f6;
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .bb-card .bb-media img{
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+      transition: transform .4s ease;
+    }
+    .bb-card:hover .bb-media img{
+      transform: scale(1.03);
+    }
+
+    /* Content column (right) */
+    .bb-card .bb-content{
+      padding: 18px 20px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      gap: 12px;
+      min-width: 0;
+    }
+
+    /* Card without image: single full-width column */
+    .bb-card:not(.has-media) .bb-content{
+      padding: 18px 20px;
+    }
+
+    /* Header row inside content */
+    .bb-card .bb-card-header{
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+      font-size: 12px;
+      color: #6b7280;
+    }
+
+    .bb-card .bb-tag{
+      display: inline-block;
+      background: var(--brand, #0f4c81);
+      color: #fff;
+      border-radius: 999px;
+      padding: 3px 10px;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: .02em;
+      text-transform: uppercase;
+    }
+    .bb-card .bb-date{ font-weight: 600; color: #4b5563; }
+    .bb-card .bb-author{ color: #6b7280; }
+
+    /* Body — title + preview text */
+    .bb-card .bb-card-body{
+      flex: 1;
+      min-width: 0;
+    }
+    .bb-card .bb-card-body h4{
+      margin: 0 0 8px;
+      font-size: 1.05rem;
+      line-height: 1.4;
+      color: #0f2b4f;
+      font-weight: 700;
+      display: -webkit-box;
+      -webkit-line-clamp: 3;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+      word-break: break-word;
+    }
+    .bb-card .bb-card-body p{
+      margin: 0;
+      font-size: .92rem;
+      line-height: 1.55;
+      color: #4b5563;
+      display: -webkit-box;
+      -webkit-line-clamp: 4;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+      word-break: break-word;
+    }
+
+    /* Actions row */
+    .bb-card .bb-actions{
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      padding-top: 6px;
+      border-top: 1px solid #f3f4f6;
+    }
+    .bb-card .bb-actions .btn.small{
+      padding: 6px 12px;
+      border-radius: 8px;
+      font-size: 13px;
+    }
+
+    /* ============================================
+       MANAGE LIST — compact rows
+       ============================================ */
+    .bb-manage .bb-feed{
+      gap: 10px;
+    }
+    .bb-manage .bb-card{
+      display: grid;
+      grid-template-columns: 100px 1fr;
+      min-height: 100px;
+    }
+    .bb-manage .bb-card:not(.has-media){
+      grid-template-columns: 1fr;
+    }
+    .bb-manage .bb-media img{
+      object-fit: cover;
+    }
+    .bb-manage .bb-card-body h4{
+      -webkit-line-clamp: 2;
+      font-size: .95rem;
+    }
+    .bb-manage .bb-card-body p{
+      -webkit-line-clamp: 2;
+    }
+
+    /* ============================================
+       Buttons
+       ============================================ */
     .btn{ padding:8px 12px; border:1px solid var(--line,#d1d5db); border-radius:8px; background:#fff; cursor:pointer }
     .btn.alt{ background:#f3f4f6 }
     .btn.outline{ background:#fff; border-color:var(--brand,#2563eb); color:var(--brand,#2563eb) }
     .btn.small{ padding:6px 10px; font-size:13px }
 
+    /* ============================================
+       Dialog
+       ============================================ */
     .bb-dialog{ position:fixed; inset:0; display:none; align-items:center; justify-content:center; background:rgba(0,0,0,.4); z-index:9999; padding:16px }
     .bb-dialog__panel{ background:#fff; border-radius:12px; padding:16px; max-width:560px; width:100%; border:1px solid var(--line) }
     .bb-dialog__actions{ display:flex; gap:8px; justify-content:flex-end; margin-top:12px }
 
+    /* ============================================
+       Sign-in prompt
+       ============================================ */
     .bb-signin-prompt{
       background:#eff6ff; border:1px solid #bfdbfe; color:#1e40af;
       padding:14px 18px; border-radius:12px; margin-bottom:16px;
       display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap;
     }
     .bb-signin-prompt strong{ color:#0f4c81; }
+
+    /* ============================================
+       Responsive — stack on mobile
+       ============================================ */
+    @media (max-width: 720px){
+      .bb-card.has-media{
+        grid-template-columns: 1fr;
+      }
+      .bb-card .bb-media{
+        aspect-ratio: 16 / 9;
+      }
+      .bb-manage .bb-card{
+        grid-template-columns: 1fr;
+      }
+      .bb-search{ width: 100%; }
+    }
   </style>
 </head>
 <body>
@@ -69,7 +242,6 @@
       </div>
     </div>
 
-    <!-- Sign-in prompt (shown when signed OUT) -->
     <div id="bb-signin-prompt" class="bb-signin-prompt" hidden>
       <div>
         <strong>Want to post a bulletin?</strong>
@@ -78,7 +250,6 @@
       <a class="btn" id="bb-signin-link" href="login.html">Sign in</a>
     </div>
 
-    <!-- Post form (signed-in users only) -->
     <section id="bb-postform" class="bb-postform" hidden>
       <div class="bb-row" style="justify-content:space-between; width:100%;">
         <h3 style="margin:0">Create a Post</h3>
@@ -111,20 +282,17 @@
       </div>
     </section>
 
-    <!-- Manage posts (signed-in users only) -->
     <section id="bb-manage" class="bb-manage" hidden>
       <h3 style="margin-top:0">Manage Posts</h3>
       <p class="bb-meta">Edit or delete posts below.</p>
       <div id="bb-manage-list" class="bb-feed"></div>
     </section>
 
-    <!-- Feed -->
     <section>
       <div id="bb-feed" class="bb-feed"></div>
     </section>
   </main>
 
-  <!-- Edit dialog -->
   <div id="bb-edit-dialog" class="bb-dialog" role="dialog" aria-modal="true" aria-labelledby="bb-edit-title">
     <div class="bb-dialog__panel">
       <h3 id="bb-edit-title" style="margin-top:0">Edit Post</h3>
@@ -148,10 +316,9 @@
   <!-- ===================== LOGIC ===================== -->
   <script type="module">
     import { initMemoGuard, memoSignOut } from "./assets/js/memo-guard.js";
-    import "./assets/js/bulletin.js"; // registers window.Bulletin
+    import "./assets/js/bulletin.js";
 
     const $  = id => document.getElementById(id);
-    const $$ = (sel, ctx=document) => Array.from(ctx.querySelectorAll(sel));
 
     const PROMPT   = $('bb-signin-prompt');
     const POSTFORM = $('bb-postform');
@@ -207,6 +374,42 @@
       const active = FILTERS ? FILTERS.querySelector('.bb-filter.active') : null;
       return active ? active.dataset.filter : 'All';
     }
+
+    // Build one card's HTML
+    function buildCard(p, { compact = false } = {}) {
+      const hasImg = !!p.image;
+      const plain = (p.text || '').replace(/<[^>]*>/g, '');
+      const short = window.Bulletin.truncate(plain, 240);
+
+      const media = hasImg
+        ? `<div class="bb-media"><img src="${p.image}" alt=""></div>`
+        : '';
+
+      const adminActions = CURRENT_USER
+        ? `<button class="btn small outline" data-edit="${p.id}" type="button">✎ Edit</button>
+           <button class="btn small alt" data-del="${p.id}" type="button">✕ Delete</button>`
+        : '';
+
+      return `
+        <article class="bb-card${hasImg ? ' has-media' : ''}">
+          ${media}
+          <div class="bb-content">
+            <div class="bb-card-header">
+              <span class="bb-tag">${window.Bulletin.escapeHTML(p.category)}</span>
+              <span class="bb-date">${window.Bulletin.formatDate(p.dateISO)}</span>
+              <span class="bb-author">• by ${window.Bulletin.escapeHTML(p.author || 'Admin')}</span>
+            </div>
+            <div class="bb-card-body">
+              <h4>${window.Bulletin.escapeHTML(short)}</h4>
+            </div>
+            <div class="bb-actions">
+              <button class="btn small" data-like="${p.id}" type="button">👍 Like <span>(${p.likes || 0})</span></button>
+              ${adminActions}
+            </div>
+          </div>
+        </article>`;
+    }
+
     function renderFeed() {
       if (!FEED) return;
       const term = (SEARCH?.value || '').toLowerCase();
@@ -224,50 +427,17 @@
         return;
       }
 
-      FEED.innerHTML = filtered.map(p => {
-        const plain = (p.text || '').replace(/<[^>]*>/g, '');
-        return `
-          <article class="bb-card">
-            <div class="bb-meta">
-              <span class="bb-tag">${window.Bulletin.escapeHTML(p.category)}</span>
-              <span>${window.Bulletin.formatDate(p.dateISO)}</span> • 
-              <span>by ${window.Bulletin.escapeHTML(p.author || '')}</span>
-            </div>
-            <h4>${window.Bulletin.escapeHTML(window.Bulletin.truncate(plain, 160))}</h4>
-            ${p.image ? `<img src="${p.image}" alt="">` : ''}
-            <div class="bb-actions">
-              <button class="btn small" data-like="${p.id}" type="button">👍 Like <span>(${p.likes || 0})</span></button>
-              ${CURRENT_USER ? `
-                <button class="btn small outline" data-edit="${p.id}" type="button">Edit</button>
-                <button class="btn small alt" data-del="${p.id}" type="button">Delete</button>
-              ` : ``}
-            </div>
-          </article>`;
-      }).join('');
+      FEED.innerHTML = filtered.map(p => buildCard(p)).join('');
     }
 
     async function renderManage() {
       if (!MANAGE_LIST) return;
-      if (!CURRENT_USER) {
-        MANAGE_LIST.innerHTML = '';
+      if (!CURRENT_USER) { MANAGE_LIST.innerHTML = ''; return; }
+      if (!POSTS.length) {
+        MANAGE_LIST.innerHTML = '<div class="bb-meta">No posts to manage.</div>';
         return;
       }
-      MANAGE_LIST.innerHTML = POSTS.map(p => {
-        const plain = (p.text || '').replace(/<[^>]*>/g, '');
-        return `
-          <div class="bb-card">
-            <div class="bb-meta">
-              <span class="bb-tag">${window.Bulletin.escapeHTML(p.category)}</span>
-              <span>${window.Bulletin.formatDate(p.dateISO)}</span> • 
-              <span>by ${window.Bulletin.escapeHTML(p.author || '')}</span>
-            </div>
-            <p style="margin:.5rem 0">${window.Bulletin.escapeHTML(window.Bulletin.truncate(plain, 220))}</p>
-            <div class="bb-actions">
-              <button class="btn small outline" data-edit="${p.id}" type="button">Edit</button>
-              <button class="btn small alt" data-del="${p.id}" type="button">Delete</button>
-            </div>
-          </div>`;
-      }).join('');
+      MANAGE_LIST.innerHTML = POSTS.map(p => buildCard(p, { compact: true })).join('');
     }
 
     async function refreshAll() {
@@ -389,18 +559,14 @@
     });
 
     (async () => {
-      try {
-        await refreshAll();
-      } catch (e) {
+      try { await refreshAll(); }
+      catch (e) {
         console.error('[bulletin] initial load failed:', e);
         if (FEED) FEED.innerHTML = '<div class="bb-meta" style="color:#b91c1c;">Failed to load posts.</div>';
       }
     })();
   </script>
 
-<!-- ======================= END ABOUT SECTION ======================= -->
-
-  <!-- School Footer (SCPHS) -->
   <footer>
     <div class="wrap">
       <div class="foot-grid">
@@ -420,7 +586,6 @@
     </div>
   </footer>
 
-  <!-- ================== GOVPH FOOTER (final, official) ================== -->
   <footer class="govph-footer" role="contentinfo">
     <div class="wrap govph-footer__grid">
       <div class="govph-footer__col">
@@ -446,7 +611,6 @@
         </ul>
       </div>
     </div>
-
     <div class="govph-footer__bar">
       <div class="wrap">
         <small>© <span id="yearNow"></span> Sta. Cruz Pingkian High School • A Philippine Government Website</small>
@@ -454,50 +618,47 @@
     </div>
   </footer>
 
-   <!-- Chatbot mount -->
-<div id="scphs-chatbot-root"></div>
+  <div id="scphs-chatbot-root"></div>
 
-<!-- Chatbot auto-loader: tries absolute path, then ../, then ../../ -->
-<script>
-(function(){
-  const rootId = 'scphs-chatbot-root';
-  if (!document.getElementById(rootId)) {
-    const m = document.createElement('div');
-    m.id = rootId;
-    document.body.appendChild(m);
-  }
-
-  const tried = {};
-  function load(src, onOk, onFail){
-    if (tried[src]) return onFail && onFail();
-    tried[src] = true;
-    const s = document.createElement('script');
-    s.src = src; s.defer = true;
-    s.onload = onOk;
-    s.onerror = onFail;
-    document.body.appendChild(s);
-  }
-
-  // Try absolute (works when hosted), then step-wise relatives (works offline)
-  load('/assets/js/chatbot.js', null, () =>
-    load('assets/js/chatbot.js', null, () =>
-      load('../assets/js/chatbot.js', null, () =>
-        load('../../assets/js/chatbot.js', null, () =>
-          console.warn('SCPHS chatbot: unable to load script from any known path.')
+  <script>
+  (function(){
+    const rootId = 'scphs-chatbot-root';
+    if (!document.getElementById(rootId)) {
+      const m = document.createElement('div');
+      m.id = rootId;
+      document.body.appendChild(m);
+    }
+    const tried = {};
+    function load(src, onOk, onFail){
+      if (tried[src]) return onFail && onFail();
+      tried[src] = true;
+      const s = document.createElement('script');
+      s.src = src; s.defer = true;
+      s.onload = onOk;
+      s.onerror = onFail;
+      document.body.appendChild(s);
+    }
+    load('/assets/js/chatbot.js', null, () =>
+      load('assets/js/chatbot.js', null, () =>
+        load('../assets/js/chatbot.js', null, () =>
+          load('../../assets/js/chatbot.js', null, () =>
+            console.warn('SCPHS chatbot: unable to load script from any known path.')
+          )
         )
       )
-    )
-  );
-})();
-</script>
-
-<script>
-  (function () {
-    const a = document.getElementById('bb-signin-link');
-    if (!a) return;
-    const next = encodeURIComponent(location.pathname + location.search);
-    a.href = 'login.html?next=' + next;
+    );
   })();
-</script>
+  </script>
+
+  <script>
+    (function () {
+      const a = document.getElementById('bb-signin-link');
+      if (!a) return;
+      const next = encodeURIComponent(location.pathname + location.search);
+      a.href = 'login.html?next=' + next;
+    })();
+    const y = document.getElementById('yearNow');
+    if (y) y.textContent = new Date().getFullYear();
+  </script>
 </body>
 </html>
