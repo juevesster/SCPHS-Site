@@ -1,0 +1,82 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Debug — SCPHS Portal</title>
+  <style>
+    body { font-family: monospace; padding: 20px; background: #f6f7f9; }
+    h1 { color: #0f4c81; }
+    pre { background: #fff; padding: 16px; border-radius: 8px; border: 1px solid #e5e7eb; white-space: pre-wrap; }
+    .ok { color: #059669; font-weight: 700; }
+    .err { color: #b91c1c; font-weight: 700; }
+    .warn { color: #b45309; font-weight: 700; }
+  </style>
+</head>
+<body>
+  <h1>Debug — SCPHS Portal</h1>
+  <pre id="out">Running checks...</pre>
+
+  <script type="module">
+    import { db } from "./assets/js/firebase-config.js";
+    import { collection, getDocs, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+    const out = document.getElementById("out");
+    const log = (s) => { out.textContent += "\n" + s; };
+    out.textContent = "=== SCPHS Portal Debug ===\n";
+
+    function phDate() {
+      return new Intl.DateTimeFormat("en-CA", {
+        timeZone: "Asia/Manila",
+        year: "numeric", month: "2-digit", day: "2-digit"
+      }).format(new Date());
+    }
+
+    (async () => {
+      log("PH date key today: " + phDate());
+
+      // List all site_stats docs
+      log("\n--- site_stats collection ---");
+      try {
+        const snap = await getDocs(collection(db, "site_stats"));
+        if (snap.empty) {
+          log("  (empty — no docs exist)");
+        } else {
+          snap.forEach(d => {
+            log("  " + d.id + " = " + JSON.stringify(d.data()));
+          });
+        }
+      } catch (e) {
+        log("  ERROR reading site_stats: " + (e.code || e.message));
+      }
+
+      // Check daily doc for today
+      log("\n--- Today's daily doc: daily_" + phDate() + " ---");
+      try {
+        const snap = await getDoc(doc(db, "site_stats", "daily_" + phDate()));
+        if (snap.exists()) {
+          log("  EXISTS: " + JSON.stringify(snap.data()));
+        } else {
+          log("  DOES NOT EXIST — that's why Views Today = 0");
+        }
+      } catch (e) {
+        log("  ERROR: " + (e.code || e.message));
+      }
+
+      // Check total doc
+      log("\n--- Total doc: site_stats/visits ---");
+      try {
+        const snap = await getDoc(doc(db, "site_stats", "visits"));
+        if (snap.exists()) {
+          log("  EXISTS: " + JSON.stringify(snap.data()));
+        } else {
+          log("  DOES NOT EXIST — nothing has ever incremented");
+        }
+      } catch (e) {
+        log("  ERROR: " + (e.code || e.message));
+      }
+
+      log("\n--- Done ---");
+    })();
+  </script>
+</body>
+</html>
