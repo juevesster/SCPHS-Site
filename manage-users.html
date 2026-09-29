@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Manage Users — SCPHS</title>
+  <link rel="stylesheet" href="assets/css/styles.css" />
+  <style>
+    * { box-sizing: border-box; }
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #f6f7f9; margin: 0; }
+
+    .mu-header {
+      background: linear-gradient(135deg, #1e3c72, #2a5298);
+      color: #fff;
+      padding: 24px 0;
+    }
+    .mu-header-inner { max-width: 1100px; margin: 0 auto; padding: 0 24px; }
+    .mu-header a { color: #fff; text-decoration: none; opacity: 0.85; font-size: 0.85rem; }
+    .mu-header a:hover { opacity: 1; }
+    .mu-header h1 { margin: 6px 0 4px; font-size: 1.5rem; }
+    .mu-header p { margin: 0; opacity: 0.9; font-size: 0.9rem; }
+
+    .mu-container { max-width: 1100px; margin: 0 auto; padding: 24px; }
+
+    .mu-toolbar {
+      display: flex; gap: 12px; align-items: center;
+      margin-bottom: 20px; flex-wrap: wrap;
+    }
+    .mu-search {
+      flex: 1; min-width: 220px;
+      padding: 10px 14px;
+      border: 1px solid #d1d5db;
+      border-radius: 8px;
+      font-size: 14px;
+      font-family: inherit;
+      outline: none;
+    }
+    .mu-search:focus { border-color: #1e6bb8; box-shadow: 0 0 0 3px rgba(30,107,184,.15); }
+
+    .mu-select {
+      padding: 10px 12px;
+      border: 1px solid #d1d5db;
+      border-radius: 8px;
+      font-size: 14px;
+      font-family: inherit;
+      background: #fff;
+      cursor: pointer;
+    }
+
+    .mu-btn {
+      padding: 10px 16px; border: 1px solid transparent;
+      border-radius: 8px; font-size: 14px; font-weight: 600;
+      cursor: pointer; font-family: inherit;
+      transition: all .15s;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .mu-btn.primary { background: #1e3c72; color: #fff; }
+    .mu-btn.primary:hover { background: #2a5298; }
+    .mu-btn.outline { background: #fff; border-color: #d1d5db; color: #1e3c72; }
+    .mu-btn.outline:hover { background: #f3f6fa; border-color: #1e6bb8; }
+    .mu-btn.danger { background: #fff; color: #b91c1c; border-color: #fecaca; }
+    .mu-btn.danger:hover { background: #fef2f2; border-color: #b91c1c; }
+    .mu-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    .mu-user-card {
+      background: #fff;
+      border: 1px solid #e5e7eb;
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 14px;
+      box-shadow: 0 1px 3px rgba(0,0,0,.04);
+    }
+    .mu-user-card.hidden { display: none; }
+
+    .mu-user-header {
+      display: flex; justify-content: space-between; align-items: flex-start;
+      gap: 12px; margin-bottom: 16px; flex-wrap: wrap;
+      padding-bottom: 14px;
+      border-bottom: 1px solid #f3f4f6;
+    }
+    .mu-user-name {
+      margin: 0 0 2px; font-size: 1.1rem; color: #0f2b4f; font-weight: 700;
+    }
+    .mu-user-email {
+      margin: 0; font-size: 0.85rem; color: #6b7280; font-family: monospace;
+    }
+
+    .mu-field-row {
+      display: grid;
+      grid-template-columns: 180px 1fr;
+      gap: 12px;
+      align-items: flex-start;
+      margin-bottom: 14px;
+    }
+    .mu-field-row label {
+      font-size: 0.78rem; font-weight: 700;
+      color: #374151; text-transform: uppercase; letter-spacing: 0.02em;
+      padding-top: 10px;
+    }
+    .mu-field-row select,
+    .mu-field-row input[type="text"] {
+      padding: 9px 12px; border: 1px solid #d1d5db; border-radius: 6px;
+      font-size: 0.9rem; font-family: inherit; width: 100%; max-width: 400px;
+    }
+    .mu-field-row select:focus,
+    .mu-field-row input[type="text"]:focus {
+      outline: none; border-color: #1e6bb8; box-shadow: 0 0 0 3px rgba(30,107,184,.12);
+    }
+
+    .mu-hint {
+      font-size: 0.72rem;
+      color: #6b7280;
+      margin-top: 4px;
+    }
+
+    .mu-checkbox-group {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+      gap: 8px;
+    }
+    .mu-checkbox {
+      display: flex; align-items: center; gap: 8px;
+      padding: 8px 12px;
+      border: 1px solid #e5e7eb;
+      border-radius: 8px;
+      background: #fafbfc;
+      cursor: pointer;
+      font-size: 0.85rem;
+      transition: all .15s;
+      user-select: none;
+    }
+    .mu-checkbox:hover { background: #eff6ff; border-color: #bfdbfe; }
+    .mu-checkbox input[type="checkbox"] {
+      cursor: pointer;
+      width: 16px; height: 16px;
+      accent-color: #1e3c72;
+    }
+    .mu-checkbox.checked { background: #eff6ff; border-color: #1e6bb8; }
+
+    .mu-actions {
+      display: flex; gap: 8px; margin-top: 16px;
+      padding-top: 16px; border-top: 1px solid #f3f4f6;
+      flex-wrap: wrap;
+    }
+
+    .mu-badge {
+      display: inline-block;
+      padding: 3px 10px;
+      border-radius: 999px;
+      font-size: 11px;
+      font-weight: 700;
+      background: #eff6ff;
+      color: #1e40af;
+      margin-left: 6px;
+    }
+    .mu-badge.super-admin { background: #fef3c7; color: #92400e; }
+
+    .mu-toast {
+      position: fixed; bottom: 24px; left: 50%;
+      transform: translateX(-50%) translateY(20px);
+      background: #111827; color: #fff;
+      padding: 10px 20px; border-radius: 8px;
+      font-size: 14px; font-weight: 500;
+      box-shadow: 0 8px 24px rgba(0,0,0,.2);
+      opacity: 0; transition: all .2s;
+      z-index: 9999; pointer-events: none;
+    }
+    .mu-toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+    .mu-toast.error { background: #b91c1c; }
+    .mu-toast.success { background: #059669; }
+
+    .mu-loading, .mu-empty {
+      text-align: center;
+      padding: 60px 20px;
+      color: #6b7280;
+    }
+    .mu-spinner {
+      display: inline-block;
+      width: 32px; height: 32px;
+      border: 3px solid #e5e7eb;
+      border-top-color: #1e3c72;
+      border-radius: 50%;
+      animation: spin .8s linear infinite;
+      margin-bottom: 12px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    @media (max-width: 640px) {
+      .mu-field-row { grid-template-columns: 1fr; gap: 4px; }
+      .mu-field-row label { font-size: 0.72rem; padding-top: 0; }
+    }
+  </style>
+</head>
+<body>
+
+  <header class="mu-header">
+    <div class="mu-header-inner">
+      <a href="index.html">← Back to Portal</a>
+      <h1>👥 Manage Users</h1>
+      <p>Assign roles and permissions to staff, students, and leaders</p>
+    </div>
+  </header>
+
+  <div class="mu-container" id="main-content">
+    <div class="mu-loading" id="loading">
+      <div class="mu-spinner"></div>
+      <div>Loading users…</div>
+    </div>
+
+    <div id="content" style="display:none;">
+      <div class="mu-toolbar">
+        <input type="search" id="searchInput" class="mu-search" placeholder="🔍 Search by name or email…" />
+        <select id="roleFilter" class="mu-select">
+          <option value="">All roles</option>
+          <option value="student">Students</option>
+          <option value="teacher">Teachers</option>
+          <option value="admin">Admins</option>
+        </select>
+        <span id="userCount" style="font-size:0.85rem;color:#6b7280;margin-left:auto;"></span>
+      </div>
+
+      <div id="userList"></div>
+    </div>
+  </div>
+
+  <div id="toast" class="mu-toast"></div>
+
+  <script type="module">
+    import { auth, db } from "./assets/js/firebase-config.js";
+    import {
+      collection, getDocs, doc, updateDoc, serverTimestamp
+    } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+    import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+    import { SUPER_ADMINS, PERMISSION_TEMPLATES, getCurrentUserProfile } from "./assets/js/roles.js";
+
+    const $ = id => document.getElementById(id);
+    let CURRENT_ADMIN = null;
+    let ALL_USERS = [];
+
+    // ---------- Toast ----------
+    let toastTimer;
+    function toast(msg, type = "") {
+      const t = $("toast");
+      t.textContent = msg;
+      t.className = "mu-toast show" + (type ? " " + type : "");
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => t.className = "mu-toast", 3000);
+    }
+
+    // ---------- Escape HTML ----------
+    function esc(s) {
+      return String(s == null ? "" : s)
+        .replace(/&/g, "&amp;").replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+    }
+
+    // ---------- Auth check ----------
+    onAuthStateChanged(auth, async (user) => {
+      if (!user) {
+        location.replace("login.html?next=" + encodeURIComponent(location.pathname));
+        return;
+      }
+
+      CURRENT_ADMIN = await getCurrentUserProfile();
+      const isAdmin = CURRENT_ADMIN?.primaryRole === "admin"
+        || CURRENT_ADMIN?.isSuperAdmin
+        || CURRENT_ADMIN?.permissions?.canManageUsers === true;
+
+      if (!isAdmin) {
+        $("loading").innerHTML = `
+          <h2 style="color:#b91c1c;">🚫 Access Denied</h2>
+          <p>Only admins can access this page.</p>
+          <a href="index.html" class="mu-btn primary" style="margin-top:12px;">← Back to Portal</a>
+        `;
+        return;
+      }
+
+      await loadUsers();
+    });
+
+    // ---------- Load users ----------
+    async function loadUsers() {
+      try {
+        const snap = await getDocs(collection(db, "users"));
+        ALL_USERS = snap.docs.map(d => ({ uid: d.id, ...d.data() }));
+        ALL_USERS.sort((a, b) => (a.name || "").localeCompare(b.name || ""));
+
+        $("loading").style.display = "none";
+        $("content").style.display = "block";
+        renderUsers();
+      } catch (e) {
+        console.error(e);
+        $("loading").innerHTML = `<div style="color:#b91c1c;">Failed to load users: ${esc(e.message)}</div>`;
+      }
+    }
+
+    // ---------- Render ----------
+    function renderUsers() {
+      const term = ($("searchInput")?.value || "").toLowerCase().trim();
+      const filter = $("roleFilter")?.value || "";
+
+      const filtered = ALL_USERS.filter(u => {
+        const primary = u.primaryRole || u.role || "student";
+        const matchTerm = !term
+          || (u.name || "").toLowerCase().includes(term)
+          || (u.email || "").toLowerCase().includes(term);
+        const matchRole = !filter || primary === filter;
+        return matchTerm && matchRole;
+      });
+
+      $("userCount").textContent = `${filtered.length} user${filtered.length === 1 ? "" : "s"}`;
+
+      const host = $("userList");
+      if (!filtered.length) {
+        host.innerHTML = `<div class="mu-empty">No users match your filters.</div>`;
+        return;
+      }
+
+      host.innerHTML = filtered.map(user => renderUserCard(user)).join("");
+      attachHandlers();
+    }
+
+    function renderUserCard(user) {
+      const isSuper = SUPER_ADMINS.includes(user.email);
+      const primaryRole = user.primaryRole || user.role || "student";
+      const permissions = user.permissions || {};
+      const secondaryRoles = Array.isArray(user.secondaryRoles)
+        ? user.secondaryRoles
+        : (typeof user.secondaryRoles === "string" && user.secondaryRoles
+            ? [user.secondaryRoles]
+            : []);
+
+      // Permission checkboxes
+      const permissionList = [
+        ["canPostBulletin",    "Post Bulletins"],
+        ["canUploadMemo",      "Upload Memos"],
+        ["canManageClasses",   "Manage Classes"],
+        ["canEnterGrades",     "Enter Grades"],
+        ["canManageRoster",    "Manage Class Roster"],
+        ["canCreateExams",     "Create Exams"],
+        ["canModerateContent", "Moderate Content"],
+        ["canManageUsers",     "Manage Users"],
+      ];
+
+      const permHTML = permissionList.map(([key, label]) => {
+        const checked = permissions[key] === true;
+        return `
+          <label class="mu-checkbox${checked ? " checked" : ""}">
+            <input type="checkbox" data-perm="${key}" ${checked ? "checked" : ""} ${isSuper ? "disabled" : ""}>
+            <span>${label}</span>
+          </label>`;
+      }).join("");
+
+      // Secondary roles as badges
+      const secondaryHTML = `
+        <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px;">
+          ${secondaryRoles.length
+            ? secondaryRoles.map(r => `<span class="mu-badge">${esc(r)}</span>`).join("")
+            : '<span style="font-size:0.8rem;color:#9ca3af;">No additional roles</span>'}
+        </div>`;
+
+      return `
+        <div class="mu-user-card" data-uid="${user.uid}" data-email="${esc(user.email || "")}">
+          <div class="mu-user-header">
+            <div>
+              <h3 class="mu-user-name">
+                ${esc(user.name || "Unnamed")}
+                ${isSuper ? '<span class="mu-badge super-admin">👑 Super Admin</span>' : ''}
+              </h3>
+              <p class="mu-user-email">${esc(user.email || "")}</p>
+            </div>
+          </div>
+
+          <div class="mu-field-row">
+            <label>Primary Role</label>
+            <div>
+              <select data-field="primaryRole" ${isSuper ? "disabled" : ""}>
+                <option value="student" ${primaryRole === "student" ? "selected" : ""}>Student</option>
+                <option value="teacher" ${primaryRole === "teacher" ? "selected" : ""}>Teacher</option>
+                <option value="admin"   ${primaryRole === "admin"   ? "selected" : ""}>Admin</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="mu-field-row">
+            <label>Additional Roles</label>
+            <div>
+              <input type="text"
+                     data-field="secondaryRoles"
+                     value="${esc(secondaryRoles.join(", "))}"
+                     placeholder="e.g., SSLG President, Club Adviser, Master Teacher I"
+                     ${isSuper ? "disabled" : ""}>
+              <div class="mu-hint">Separate multiple roles with commas</div>
+              ${secondaryHTML}
+            </div>
+          </div>
+
+          <div class="mu-field-row" style="grid-template-columns:1fr;">
+            <label style="margin-bottom:8px;">Permissions</label>
+            <div class="mu-checkbox-group">${permHTML}</div>
+          </div>
+
+          <div class="mu-actions">
+            <button class="mu-btn primary" data-action="save" ${isSuper ? "disabled" : ""}>
+              💾 Save Changes
+            </button>
+            <button class="mu-btn outline" data-action="reset" ${isSuper ? "disabled" : ""}>
+              ↺ Reset
+            </button>
+            <button class="mu-btn outline" data-action="apply-admin" ${isSuper ? "disabled" : ""}>
+              👑 Apply Admin
+            </button>
+            <button class="mu-btn outline" data-action="apply-teacher" ${isSuper ? "disabled" : ""}>
+              🎓 Apply Teacher
+            </button>
+            <button class="mu-btn outline" data-action="apply-adviser" ${isSuper ? "disabled" : ""}>
+              📋 Apply Adviser
+            </button>
+            <button class="mu-btn outline" data-action="apply-student-leader" ${isSuper ? "disabled" : ""}>
+              🎯 Apply Student Leader
+            </button>
+          </div>
+        </div>
+      `;
+    }
+
+    // ---------- Handlers ----------
+    function attachHandlers() {
+      // Checkbox visual feedback
+      document.querySelectorAll(".mu-checkbox input[type='checkbox']").forEach(cb => {
+        cb.addEventListener("change", () => {
+          cb.closest(".mu-checkbox").classList.toggle("checked", cb.checked);
+        });
+      });
+
+      document.querySelectorAll(".mu-user-card").forEach(card => {
+        const uid = card.dataset.uid;
+
+        card.querySelector("[data-action='save']")?.addEventListener("click", () => saveUser(card, uid));
+        card.querySelector("[data-action='reset']")?.addEventListener("click", () => loadUsers());
+
+        card.querySelector("[data-action='apply-admin']")?.addEventListener("click", () => applyTemplate(card, "admin"));
+        card.querySelector("[data-action='apply-teacher']")?.addEventListener("click", () => applyTemplate(card, "teacher"));
+        card.querySelector("[data-action='apply-adviser']")?.addEventListener("click", () => applyTemplate(card, "adviser"));
+        card.querySelector("[data-action='apply-student-leader']")?.addEventListener("click", () => applyTemplate(card, "student-leader"));
+      });
+    }
+
+    async function saveUser(card, uid) {
+      const primaryRole = card.querySelector("[data-field='primaryRole']").value;
+      const secondaryRaw = card.querySelector("[data-field='secondaryRoles']").value;
+      const secondaryRoles = secondaryRaw
+        .split(",").map(s => s.trim()).filter(Boolean);
+
+      const permissions = {};
+      card.querySelectorAll("input[data-perm]").forEach(cb => {
+        permissions[cb.dataset.perm] = cb.checked;
+      });
+
+      try {
+        await updateDoc(doc(db, "users", uid), {
+          primaryRole,
+          secondaryRoles,
+          permissions,
+          updatedAt: serverTimestamp(),
+          updatedBy: CURRENT_ADMIN.uid,
+        });
+        toast("✓ Saved", "success");
+        await loadUsers();
+      } catch (e) {
+        console.error(e);
+        toast("⚠️ " + (e.message || "Save failed"), "error");
+      }
+    }
+
+    function applyTemplate(card, templateKey) {
+      const template = PERMISSION_TEMPLATES[templateKey];
+      if (!template) return;
+
+      card.querySelector("[data-field='primaryRole']").value = template.primaryRole;
+
+      Object.entries(template.permissions).forEach(([key, val]) => {
+        const cb = card.querySelector(`input[data-perm='${key}']`);
+        if (cb) {
+          cb.checked = val;
+          cb.closest(".mu-checkbox").classList.toggle("checked", val);
+        }
+      });
+
+      toast(`Applied: ${template.label}`, "success");
+    }
+
+    // ---------- Filters ----------
+    $("searchInput")?.addEventListener("input", renderUsers);
+    $("roleFilter")?.addEventListener("change", renderUsers);
+  </script>
+</body>
+</html>
