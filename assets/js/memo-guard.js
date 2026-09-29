@@ -10,15 +10,20 @@ import { doc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase
 // ------------------------------------------------------------
 // Admin policy — who counts as admin?
 // ------------------------------------------------------------
-const ADMIN_DOMAIN = "@deped.gov.ph";
 const ADMIN_EMAILS = [
+  "ricardo.jueves@deped.gov.ph",
   "juevesster@gmail.com",
+  // Add more admin emails here:
+  "arman.puyao@deped.gov.ph",
+  "puyaoarman@gmail.com",
+  "shereen.paraguas@deped.gov.ph",
+  // "principal.scphs@deped.gov.ph",
 ];
 
 function isAdminEmail(email) {
   if (!email) return false;
   const e = email.toLowerCase().trim();
-  return e.endsWith(ADMIN_DOMAIN) || ADMIN_EMAILS.includes(e);
+  return ADMIN_EMAILS.includes(e);
 }
 
 // ------------------------------------------------------------

@@ -1065,8 +1065,18 @@
       if (banner) banner.style.display = "none";
 
       // Determine admin status
-      let isAdmin = user.email.endsWith("@deped.gov.ph")
-        || user.email === "juevesster@gmail.com";
+      const ADMIN_EMAILS = [
+  "ricardo.jueves@deped.gov.ph",
+  "juevesster@gmail.com",
+  // Add more admin emails here:
+  "arman.puyao@deped.gov.ph",
+  "puyaoarman@gmail.com",
+  "shereen.paraguas@deped.gov.ph",
+  // "principal.scphs@deped.gov.ph",
+];
+const ADMIN_EMAILS_LOWER = ADMIN_EMAILS.map(e => e.toLowerCase());
+
+let isAdmin = ADMIN_EMAILS_LOWER.includes((user.email || "").toLowerCase());
 
       if (!isAdmin) {
         try {
