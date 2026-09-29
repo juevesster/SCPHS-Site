@@ -17,6 +17,7 @@ const ADMIN_EMAILS = [
   "arman.puyao@deped.gov.ph",
   "puyaoarman@gmail.com",
   "shereen.paraguas@deped.gov.ph",
+  "darna.bugnay@deped.gov.ph",
   // "principal.scphs@deped.gov.ph",
 ];
 
