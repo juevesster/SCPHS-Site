@@ -1,0 +1,933 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Class Program — SCPHS</title>
+  <link rel="stylesheet" href="assets/css/styles.css" />
+  <style>
+    * { box-sizing: border-box; }
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #f0f2f5; margin: 0; }
+
+    /* Header */
+    .pg-header { background: linear-gradient(135deg, #1e3c72, #2a5298); color: #fff; padding: 24px 0; }
+    .pg-header-inner { max-width: 1600px; margin: 0 auto; padding: 0 24px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px; }
+    .pg-header h1 { margin: 0 0 4px; font-size: 1.5rem; }
+    .pg-header .meta { margin: 0; opacity: 0.9; font-size: 0.9rem; display: flex; gap: 12px; flex-wrap: wrap; }
+    .pg-header a { color: #fff; text-decoration: none; padding: 8px 16px; border: 1px solid rgba(255,255,255,0.3); border-radius: 8px; font-size: 13px; }
+
+    .pg-container { max-width: 1600px; margin: 0 auto; padding: 24px; }
+
+    /* Term tabs */
+    .term-tabs { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; }
+    .term-tab { padding: 10px 24px; background: #fff; border-radius: 999px; border: 1px solid #d1d5db; color: #333; font-weight: 600; font-size: 14px; cursor: pointer; font-family: inherit; transition: all .15s; }
+    .term-tab:hover { border-color: #1e6bb8; color: #1e6bb8; }
+    .term-tab.active { background: #1e3c72; color: #fff; border-color: #1e3c72; }
+
+    /* Toolbar */
+    .toolbar { display: flex; gap: 10px; margin-bottom: 16px; flex-wrap: wrap; }
+    .btn { padding: 10px 18px; border: none; border-radius: 8px; cursor: pointer; font-family: inherit; font-size: 13px; font-weight: 700; text-decoration: none; display: inline-flex; align-items: center; gap: 6px; transition: all .15s; }
+    .btn:hover:not(:disabled) { transform: translateY(-1px); }
+    .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+    .btn.primary { background: #1e3c72; color: #fff; }
+    .btn.success { background: #059669; color: #fff; }
+    .btn.danger { background: #dc2626; color: #fff; }
+    .btn.outline { background: #fff; color: #1e3c72; border: 1px solid #1e3c72; }
+    .btn.small { padding: 6px 12px; font-size: 12px; }
+    .btn.tiny { padding: 3px 8px; font-size: 11px; }
+
+        /* Admin-only visibility */
+    .admin-only-link { display: none !important; }
+    body.is-admin .admin-only-link { display: inline-flex !important; }
+
+    /* Schedule grid */
+    .grid-wrap {
+      background: #fff;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 1px 3px rgba(0,0,0,.06);
+      overflow-x: auto;
+    }
+
+    table.schedule {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 12px;
+      min-width: 1200px;
+    }
+
+    table.schedule thead th {
+      background: #1e3c72;
+      color: #fff;
+      padding: 12px 8px;
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      text-align: center;
+      position: sticky;
+      top: 0;
+      z-index: 5;
+    }
+
+    table.schedule thead th.time-col { text-align: left; padding-left: 16px; width: 130px; }
+
+    table.schedule td {
+      border: 1px solid #e5e7eb;
+      padding: 6px;
+      vertical-align: top;
+    }
+
+    table.schedule td.time-cell {
+      background: #f9fafb;
+      font-weight: 700;
+      font-size: 11px;
+      padding: 12px 16px;
+      text-align: left;
+      width: 130px;
+      color: #0f2b4f;
+      line-height: 1.4;
+    }
+    table.schedule td.time-cell .slot-label {
+      font-weight: 500;
+      color: #6b7280;
+      font-size: 10px;
+      margin-top: 2px;
+      text-transform: uppercase;
+      letter-spacing: 0.02em;
+    }
+
+    /* Slot type row colors */
+    tr.row-ceremony td.time-cell { background: #e0e7ff; }
+    tr.row-break td.time-cell { background: #fff3cd; }
+    tr.row-homeroom td.time-cell { background: #d4edda; }
+    tr.row-aral td.time-cell { background: #e2e3e5; }
+
+    /* Break cells (span across days) */
+    td.break-cell {
+      text-align: center;
+      font-weight: 700;
+      font-size: 13px;
+      color: #856404;
+      background: #fff3cd;
+      padding: 20px;
+      letter-spacing: 0.04em;
+    }
+    td.ceremony-cell {
+      text-align: center;
+      font-weight: 700;
+      font-size: 13px;
+      color: #1e40af;
+      background: #e0e7ff;
+      padding: 20px;
+      letter-spacing: 0.04em;
+    }
+
+    /* Entry card */
+    .entry {
+      background: #fff;
+      border: 1px solid #e5e7eb;
+      border-radius: 6px;
+      padding: 6px 8px;
+      margin-bottom: 4px;
+      font-size: 11px;
+      line-height: 1.3;
+      position: relative;
+    }
+    .entry:last-child { margin-bottom: 0; }
+
+    .entry .subject {
+      font-weight: 700;
+      color: #0f2b4f;
+      font-size: 12px;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      flex-wrap: wrap;
+    }
+
+    .entry .spec-badge {
+      display: inline-block;
+      padding: 1px 6px;
+      border-radius: 3px;
+      font-size: 9px;
+      font-weight: 600;
+      background: #6f42c1;
+      color: #fff;
+      letter-spacing: 0.02em;
+      text-transform: uppercase;
+    }
+
+    .entry .teacher {
+      color: #4b5563;
+      font-size: 10px;
+      margin-top: 3px;
+    }
+
+    .entry .teacher::before { content: "👩‍🏫 "; }
+
+    .entry .room {
+      display: inline-block;
+      background: #d4edda;
+      color: #155724;
+      padding: 1px 6px;
+      border-radius: 3px;
+      font-size: 9px;
+      margin-top: 2px;
+    }
+
+    .entry .actions {
+      display: flex;
+      gap: 3px;
+      margin-top: 4px;
+    }
+    .entry .actions button {
+      border: none;
+      padding: 2px 6px;
+      border-radius: 3px;
+      font-size: 10px;
+      cursor: pointer;
+      font-family: inherit;
+    }
+    .entry .actions .edit { background: #fef3c7; color: #92400e; }
+    .entry .actions .edit:hover { background: #fde68a; }
+    .entry .actions .del { background: #fee2e2; color: #991b1b; }
+    .entry .actions .del:hover { background: #fecaca; }
+
+    /* Add button */
+    .add-btn {
+      display: block;
+      width: 100%;
+      padding: 4px;
+      border: 1px dashed #cbd5e1;
+      background: transparent;
+      color: #64748b;
+      font-size: 11px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-family: inherit;
+      transition: all .15s;
+      margin-top: 4px;
+    }
+    .add-btn:hover { border-color: #1e6bb8; color: #1e6bb8; background: #eff6ff; }
+
+    /* Empty cell */
+    .empty-cell { color: #cbd5e1; font-size: 11px; text-align: center; padding: 8px 0; }
+
+    /* Loading / empty */
+    .pg-loading, .pg-empty { padding: 60px 20px; text-align: center; color: #6b7280; background: #fff; border-radius: 12px; }
+    .pg-spinner { width: 32px; height: 32px; border: 3px solid #e5e7eb; border-top-color: #1e3c72; border-radius: 50%; animation: spin .8s linear infinite; margin: 0 auto 12px; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* Modal */
+    .modal { position: fixed; inset: 0; background: rgba(0,0,0,0.5); display: none; align-items: center; justify-content: center; z-index: 9999; padding: 20px; }
+    .modal.show { display: flex; }
+    .modal-panel { background: #fff; border-radius: 12px; max-width: 560px; width: 100%; max-height: 90vh; overflow-y: auto; box-shadow: 0 24px 48px rgba(0,0,0,.2); }
+    .modal-head { padding: 18px 22px; border-bottom: 1px solid #e5e7eb; display: flex; justify-content: space-between; align-items: center; }
+    .modal-head h3 { margin: 0; font-size: 1.05rem; color: #0f2b4f; }
+    .modal-head .close { background: none; border: none; font-size: 22px; cursor: pointer; color: #6b7280; padding: 4px 10px; border-radius: 6px; }
+    .modal-head .close:hover { background: #f3f4f6; }
+    .modal-body { padding: 20px 22px; }
+    .modal-foot { padding: 14px 22px; border-top: 1px solid #e5e7eb; display: flex; justify-content: flex-end; gap: 10px; background: #fafbfc; }
+
+    .form-group { margin-bottom: 14px; }
+    .form-group label { display: block; font-size: 12px; font-weight: 700; color: #374151; text-transform: uppercase; letter-spacing: 0.03em; margin-bottom: 6px; }
+    .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 9px 12px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 14px; font-family: inherit; outline: none; }
+    .form-group input:focus, .form-group select:focus, .form-group textarea:focus { border-color: #1e6bb8; box-shadow: 0 0 0 3px rgba(30,107,184,.12); }
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .hint { font-size: 11px; color: #6b7280; margin-top: 4px; }
+
+    /* Toast */
+    .toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(20px); background: #111827; color: #fff; padding: 12px 22px; border-radius: 8px; font-size: 14px; font-weight: 500; box-shadow: 0 8px 24px rgba(0,0,0,.2); opacity: 0; transition: all .25s; z-index: 10000; pointer-events: none; }
+    .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+    .toast.success { background: #059669; }
+    .toast.error { background: #b91c1c; }
+
+    /* Print */
+    @media print {
+      body { background: #fff; }
+      .pg-header, .term-tabs, .toolbar, .modal, .toast, .add-btn, .entry .actions { display: none !important; }
+      .pg-container { padding: 0; max-width: 100%; }
+      .grid-wrap { box-shadow: none; border: 0; }
+      table.schedule { font-size: 10px; min-width: 0; }
+      table.schedule thead th { background: #fff !important; color: #000 !important; border: 1px solid #000; }
+      table.schedule td { border: 1px solid #999; }
+      .entry { border: 1px solid #999; padding: 3px; }
+      .entry .subject { color: #000; }
+      .entry .spec-badge { background: #f3f4f6 !important; color: #000 !important; border: 1px solid #999; }
+    }
+  </style>
+</head>
+<body>
+
+  <header class="pg-header">
+    <div class="pg-header-inner">
+      <div>
+        <h1 id="pageTitle">📅 Class Program</h1>
+        <div class="meta" id="pageMeta"></div>
+      </div>
+      <a href="sf1.html">← Back to SF1</a>
+    </div>
+  </header>
+
+  <div class="pg-container" id="mainContent">
+
+    <div class="pg-loading" id="loading">
+      <div class="pg-spinner"></div>
+      <div>Loading class program…</div>
+    </div>
+
+    <div id="content" style="display:none;">
+
+      <div class="term-tabs" id="termTabs">
+        <button class="term-tab active" data-term="1">Term 1</button>
+        <button class="term-tab" data-term="2">Term 2</button>
+        <button class="term-tab" data-term="3">Term 3</button>
+      </div>
+
+      <div class="toolbar">
+  <button class="btn primary" id="btnPrint">🖨 Print Program</button>
+  <button class="btn outline" id="btnExport">📥 Export to Excel</button>
+  <button class="btn outline" id="btnRefresh">🔄 Refresh</button>
+  <button class="btn danger" id="btnClearTerm" style="display:none;">🗑 Clear Term</button>
+  <a href="schedule-config.html" class="btn outline admin-only-link" id="btnConfigSlots" style="text-decoration:none;">⚙ Configure Time Slots</a>
+  <span id="entryCount" style="margin-left:auto;font-size:13px;color:#6b7280;align-self:center;"></span>
+</div>
+
+      <div class="grid-wrap">
+        <table class="schedule" id="scheduleTable">
+          <thead>
+            <tr>
+              <th class="time-col">TIME</th>
+              <th>MONDAY</th>
+              <th>TUESDAY</th>
+              <th>WEDNESDAY</th>
+              <th>THURSDAY</th>
+              <th>FRIDAY</th>
+            </tr>
+          </thead>
+          <tbody id="scheduleBody"></tbody>
+        </table>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Edit/Add Entry Modal -->
+  <div class="modal" id="entryModal">
+    <div class="modal-panel">
+      <div class="modal-head">
+        <h3 id="modalTitle">Add Schedule Entry</h3>
+        <button class="close" data-close>✕</button>
+      </div>
+      <div class="modal-body">
+        <form id="entryForm">
+          <input type="hidden" id="f-entryId" />
+
+          <div class="form-row">
+            <div class="form-group">
+              <label>Day</label>
+              <select id="f-day" required>
+                <option value="">-- Select --</option>
+                <option value="Monday">Monday</option>
+                <option value="Tuesday">Tuesday</option>
+                <option value="Wednesday">Wednesday</option>
+                <option value="Thursday">Thursday</option>
+                <option value="Friday">Friday</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Time Slot</label>
+              <select id="f-timeSlotId" required></select>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>Subject</label>
+            <input type="text" id="f-subject" placeholder="e.g., TLE9, MATH 9, MAPEH9" required />
+            <div class="hint">Use codes like: FIL9, ENG9, MATH9, SCI9, AP9, MAPEH9, TLE9, ESP9</div>
+          </div>
+
+          <div class="form-group">
+            <label>Teacher</label>
+            <select id="f-teacherUid">
+              <option value="">— Assign later —</option>
+            </select>
+          </div>
+
+          <div class="form-group" id="specGroup">
+            <label>Specialization <span style="color:#6f42c1;font-weight:500;text-transform:none;letter-spacing:0;">(for TLE / TechPro)</span></label>
+            <select id="f-specialization">
+              <option value="">— None / Not applicable —</option>
+            </select>
+            <div class="hint">Required for TLE rotation slots. Leave empty for regular subjects.</div>
+          </div>
+
+          <div class="form-group">
+            <label>Room (optional)</label>
+            <input type="text" id="f-room" placeholder="e.g., Room 201" />
+          </div>
+
+          <div class="form-group" id="entryTypeGroup">
+            <label>Entry Type</label>
+            <select id="f-entryType">
+              <option value="primary">Primary (main entry for this slot)</option>
+              <option value="additional">Additional (extra teacher for TLE rotation)</option>
+            </select>
+            <div class="hint">Use "Additional" when adding multiple teachers to the same slot.</div>
+          </div>
+        </form>
+      </div>
+      <div class="modal-foot">
+        <button class="btn outline" data-close>Cancel</button>
+        <button class="btn success" id="btnSaveEntry">💾 Save Entry</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast" class="toast"></div>
+
+  <script type="module">
+    import { auth, db } from "./assets/js/firebase-config.js";
+    import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+    import { collection, getDocs } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+    import { getCurrentUserProfile } from "./assets/js/roles.js";
+    import { loadTimeSlots, ensureTimeSlotsExist, formatTime, slotTypeClass } from "./assets/js/schedule-config.js";
+    import { SPECIALIZATION_GROUPS, listSpecializationGroups } from "./assets/js/specializations.js";
+    import "./assets/js/program-store.js";
+
+    const $ = id => document.getElementById(id);
+    const params = new URLSearchParams(location.search);
+    const CLASS_ID = params.get("id");
+
+    let CURRENT_USER = null;
+    let CURRENT_PROFILE = null;
+    let CLASS_INFO = null;
+    let TIME_SLOTS = [];
+    let ALL_USERS = [];
+    let PROGRAM = [];     // all entries for current term
+    let SELECTED_TERM = 1;
+    let CAN_EDIT = false;
+
+    const DAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"];
+
+    // ---- Utilities ----
+    function esc(s) {
+      return String(s == null ? "" : s)
+        .replace(/&/g, "&amp;").replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+    }
+
+    let toastTimer;
+    function toast(msg, type = "") {
+      const t = $("toast");
+      t.textContent = msg;
+      t.className = "toast show " + type;
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => t.className = "toast", 3000);
+    }
+
+    // ---- Auth check ----
+    onAuthStateChanged(auth, async (user) => {
+      if (!user) {
+        location.replace("login.html?next=" + encodeURIComponent(location.pathname + location.search));
+        return;
+      }
+      CURRENT_USER = user;
+      CURRENT_PROFILE = await getCurrentUserProfile();
+
+      if (!CLASS_ID) {
+        $("loading").innerHTML = '<div style="color:#b91c1c;">Missing class ID in URL.</div>';
+        return;
+      }
+
+      try {
+        CLASS_INFO = await window.SF1.getClass(CLASS_ID);
+      } catch (e) {
+        $("loading").innerHTML = '<div style="color:#b91c1c;">Failed to load class.</div>';
+        return;
+      }
+
+      if (!CLASS_INFO) {
+        $("loading").innerHTML = '<div style="color:#b91c1c;">Class not found.</div>';
+        return;
+      }
+
+      // Determine edit permission
+      const isAdmin = CURRENT_PROFILE?.primaryRole === "admin" || CURRENT_PROFILE?.isSuperAdmin;
+      const isAdviser = CLASS_INFO.adviserUid === CURRENT_USER.uid;
+      const canManageRoster = CURRENT_PROFILE?.permissions?.canManageRoster === true;
+      CAN_EDIT = isAdmin || isAdviser || (canManageRoster && CLASS_INFO.teacherUids.includes(CURRENT_USER.uid));
+
+      if (CAN_EDIT) {
+        $("btnClearTerm").style.display = "inline-flex";
+      }
+
+        if (isAdmin) document.body.classList.add("is-admin");
+
+      // Load time slots
+      try { TIME_SLOTS = await ensureTimeSlotsExist(); }
+      catch { TIME_SLOTS = await loadTimeSlots() || []; }
+
+      // Load users
+      await loadUsers();
+
+      // Set up form dropdowns
+      populateTimeSlotDropdown();
+      populateSpecializationDropdown();
+      populateUserDropdown();
+
+      // Header
+      renderHeader();
+      attachHandlers();
+
+      // Load program
+      await loadAndRender();
+    });
+
+    async function loadUsers() {
+      try {
+        const snap = await getDocs(collection(db, "users"));
+        ALL_USERS = snap.docs.map(d => ({ uid: d.id, ...d.data() }));
+        ALL_USERS.sort((a, b) => (a.name || "").localeCompare(b.name || ""));
+      } catch (e) {
+        console.error(e);
+        ALL_USERS = [];
+      }
+    }
+
+    function renderHeader() {
+      document.title = `${CLASS_INFO.classLabel} — Class Program — SCPHS`;
+      $("pageTitle").textContent = "📅 " + CLASS_INFO.classLabel;
+
+      const parts = [];
+      if (CLASS_INFO.schoolYear) parts.push("📅 " + CLASS_INFO.schoolYear);
+      if (CLASS_INFO.curriculum) parts.push("🎓 " + CLASS_INFO.curriculum);
+      if (CLASS_INFO.adviserName) parts.push("👤 " + CLASS_INFO.adviserName);
+
+      $("pageMeta").innerHTML = parts.map(p => `<span>${esc(p)}</span>`).join("");
+    }
+
+    // ---- Dropdowns ----
+    function populateTimeSlotDropdown() {
+      const sel = $("f-timeSlotId");
+      sel.innerHTML = '<option value="">-- Select Slot --</option>';
+      const sorted = [...TIME_SLOTS].sort((a, b) => (a.orderIndex || 0) - (b.orderIndex || 0));
+      sorted.forEach(slot => {
+        const opt = document.createElement("option");
+        opt.value = slot.id;
+        opt.textContent = `${slot.label} (${formatTime(slot.start)} – ${formatTime(slot.end)})`;
+        if (slot.type === "break" || slot.type === "ceremony") {
+          opt.disabled = true;
+          opt.textContent += " — non-teaching slot";
+        }
+        sel.appendChild(opt);
+      });
+    }
+
+    function populateSpecializationDropdown() {
+      const sel = $("f-specialization");
+      sel.innerHTML = '<option value="">— None / Not applicable —</option>';
+
+      Object.entries(SPECIALIZATION_GROUPS).forEach(([key, group]) => {
+        const optgroup = document.createElement("optgroup");
+        optgroup.label = group.label;
+        group.items.forEach(item => {
+          const opt = document.createElement("option");
+          opt.value = item;
+          opt.textContent = item;
+          optgroup.appendChild(opt);
+        });
+        sel.appendChild(optgroup);
+      });
+    }
+
+    function populateUserDropdown() {
+      const sel = $("f-teacherUid");
+      sel.innerHTML = '<option value="">— Assign later —</option>';
+      ALL_USERS
+        .filter(u => {
+          const role = u.primaryRole || u.role || "student";
+          return role === "teacher" || role === "admin";
+        })
+        .forEach(u => {
+          const opt = document.createElement("option");
+          opt.value = u.uid;
+          opt.textContent = `${u.name || u.email} (${u.email})`;
+          sel.appendChild(opt);
+        });
+    }
+
+    // ---- Load & render program ----
+    async function loadAndRender() {
+      try {
+        PROGRAM = await window.ProgramStore.listProgram(CLASS_ID, SELECTED_TERM);
+      } catch (e) {
+        console.error(e);
+        PROGRAM = [];
+      }
+      $("loading").style.display = "none";
+      $("content").style.display = "block";
+      renderGrid();
+      renderCount();
+    }
+
+    function renderCount() {
+      $("entryCount").textContent = `${PROGRAM.length} entr${PROGRAM.length === 1 ? "y" : "ies"} in Term ${SELECTED_TERM}`;
+    }
+
+    function renderGrid() {
+      const tbody = $("scheduleBody");
+      const sorted = [...TIME_SLOTS].sort((a, b) => (a.orderIndex || 0) - (b.orderIndex || 0));
+
+      // Group program entries by day + slot
+      const grid = {};
+      PROGRAM.forEach(entry => {
+        const key = `${entry.day}|${entry.timeSlotId}`;
+        if (!grid[key]) grid[key] = [];
+        grid[key].push(entry);
+      });
+
+      // Sort entries within each cell: primary first, then by groupIndex
+      Object.values(grid).forEach(arr => {
+        arr.sort((a, b) => {
+          if (a.entryType === "primary" && b.entryType !== "primary") return -1;
+          if (b.entryType === "primary" && a.entryType !== "primary") return 1;
+          return (a.groupIndex || 0) - (b.groupIndex || 0);
+        });
+      });
+
+      tbody.innerHTML = sorted.map(slot => {
+        const rowClass = slotTypeClass(slot.type);
+        const isBreak = slot.type === "break";
+        const isCeremony = slot.type === "ceremony";
+
+        // Time cell
+        const timeCell = `
+          <td class="time-cell">
+            ${formatTime(slot.start)} – ${formatTime(slot.end)}
+            <div class="slot-label">${esc(slot.label)}</div>
+          </td>
+        `;
+
+        // Break/ceremony rows span all days
+        if (isBreak || isCeremony) {
+          const cellClass = isCeremony ? "ceremony-cell" : "break-cell";
+          const cellText = isCeremony ? "🇵🇭 FLAG CEREMONY" : `🍎 ${slot.label.toUpperCase()}`;
+          return `
+            <tr class="${rowClass}">
+              ${timeCell}
+              <td class="${cellClass}" colspan="5">${cellText}</td>
+            </tr>
+          `;
+        }
+
+        // Regular class rows: 5 day columns
+        const dayCells = DAYS.map(day => {
+          const key = `${day}|${slot.id}`;
+          const entries = grid[key] || [];
+          return renderCell(day, slot, entries);
+        }).join("");
+
+        return `
+          <tr class="${rowClass}">
+            ${timeCell}
+            ${dayCells}
+          </tr>
+        `;
+      }).join("");
+    }
+
+    function renderCell(day, slot, entries) {
+      const entriesHTML = entries.length
+        ? entries.map(e => renderEntry(e)).join("")
+        : `<div class="empty-cell">—</div>`;
+
+      const addBtn = CAN_EDIT
+        ? `<button class="add-btn" data-add-day="${esc(day)}" data-add-slot="${esc(slot.id)}">+ Add Entry</button>`
+        : "";
+
+      return `
+        <td data-cell-day="${esc(day)}" data-cell-slot="${esc(slot.id)}">
+          ${entriesHTML}
+          ${addBtn}
+        </td>
+      `;
+    }
+
+    function renderEntry(entry) {
+      const specBadge = entry.specialization
+        ? `<span class="spec-badge">${esc(entry.specialization)}</span>`
+        : "";
+      const roomBadge = entry.room ? `<span class="room">🏠 ${esc(entry.room)}</span>` : "";
+      const teacherLine = entry.teacherName ? `<div class="teacher">${esc(entry.teacherName)}</div>` : "";
+
+      const actions = CAN_EDIT
+        ? `
+          <div class="actions">
+            <button class="edit" data-edit="${esc(entry.id)}">✎ Edit</button>
+            <button class="del" data-del="${esc(entry.id)}">✕</button>
+          </div>
+        ` : "";
+
+      return `
+        <div class="entry" data-entry-id="${esc(entry.id)}">
+          <div class="subject">
+            <span>${esc(entry.subject)}</span>
+            ${specBadge}
+          </div>
+          ${teacherLine}
+          ${roomBadge}
+          ${actions}
+        </div>
+      `;
+    }
+
+    // ---- Handlers ----
+    function attachHandlers() {
+      // Term tabs
+      $("termTabs").addEventListener("click", e => {
+        const btn = e.target.closest(".term-tab");
+        if (!btn) return;
+        document.querySelectorAll(".term-tab").forEach(b => b.classList.remove("active"));
+        btn.classList.add("active");
+        SELECTED_TERM = parseInt(btn.dataset.term, 10);
+        loadAndRender();
+      });
+
+      // Cell buttons (add/edit/delete)
+      $("scheduleBody").addEventListener("click", async (e) => {
+        const addBtn = e.target.closest("[data-add-day]");
+        if (addBtn) {
+          openEntryModal({
+            day: addBtn.dataset.addDay,
+            timeSlotId: addBtn.dataset.addSlot,
+            term: SELECTED_TERM,
+            entryType: "additional"
+          });
+          return;
+        }
+
+        const editBtn = e.target.closest("[data-edit]");
+        if (editBtn) {
+          const entry = PROGRAM.find(p => p.id === editBtn.dataset.edit);
+          if (entry) openEntryModal(entry);
+          return;
+        }
+
+        const delBtn = e.target.closest("[data-del]");
+        if (delBtn) {
+          const entry = PROGRAM.find(p => p.id === delBtn.dataset.del);
+          if (!entry) return;
+          if (!confirm(`Delete "${entry.subject}${entry.specialization ? ' — ' + entry.specialization : ''}" on ${entry.day}?`)) return;
+          try {
+            await window.ProgramStore.deleteEntry(CLASS_ID, entry.id);
+            toast("✓ Entry deleted", "success");
+            await loadAndRender();
+          } catch (err) {
+            toast("⚠️ " + (err.message || "Delete failed"), "error");
+          }
+        }
+      });
+
+      // Save entry
+      $("btnSaveEntry").addEventListener("click", saveEntry);
+
+      // Close modals
+      document.querySelectorAll("[data-close]").forEach(btn => {
+        btn.addEventListener("click", () => {
+          $("entryModal").classList.remove("show");
+        });
+      });
+      $("entryModal").addEventListener("click", e => {
+        if (e.target === $("entryModal")) $("entryModal").classList.remove("show");
+      });
+
+      // Toolbar
+      $("btnPrint").addEventListener("click", () => window.print());
+      $("btnExport").addEventListener("click", exportToExcel);
+      $("btnRefresh").addEventListener("click", loadAndRender);
+      $("btnClearTerm").addEventListener("click", clearTerm);
+    }
+
+    // ---- Modal ----
+    function openEntryModal(entry) {
+      $("entryModal").classList.add("show");
+      $("modalTitle").textContent = entry.id ? "Edit Schedule Entry" : "Add Schedule Entry";
+
+      $("f-entryId").value = entry.id || "";
+      $("f-day").value = entry.day || "";
+      $("f-timeSlotId").value = entry.timeSlotId || "";
+      $("f-subject").value = entry.subject || "";
+      $("f-teacherUid").value = entry.teacherUid || "";
+      $("f-specialization").value = entry.specialization || "";
+      $("f-room").value = entry.room || "";
+      $("f-entryType").value = entry.entryType || "primary";
+    }
+
+    async function saveEntry() {
+      const btn = $("btnSaveEntry");
+      btn.disabled = true;
+      btn.textContent = "Saving…";
+
+      try {
+        const entryId = $("f-entryId").value;
+        const day = $("f-day").value;
+        const timeSlotId = $("f-timeSlotId").value;
+        const subject = $("f-subject").value.trim();
+        const teacherUid = $("f-teacherUid").value;
+        const specialization = $("f-specialization").value;
+        const room = $("f-room").value.trim();
+        const entryType = $("f-entryType").value;
+
+        if (!day || !timeSlotId || !subject) {
+          toast("⚠️ Day, time slot, and subject are required.", "error");
+          return;
+        }
+
+        // Look up teacher name
+        let teacherName = "";
+        if (teacherUid) {
+          const t = ALL_USERS.find(u => u.uid === teacherUid);
+          if (t) teacherName = t.name || t.email;
+        }
+
+        const data = {
+          day,
+          timeSlotId,
+          term: SELECTED_TERM,
+          subject,
+          subjectName: subject,
+          teacherUid,
+          teacherName,
+          specialization,
+          room,
+          entryType,
+        };
+
+        if (entryId) {
+          await window.ProgramStore.updateEntry(CLASS_ID, entryId, data);
+          toast("✓ Entry updated", "success");
+        } else {
+          await window.ProgramStore.addEntry(CLASS_ID, data);
+          toast("✓ Entry added", "success");
+        }
+
+        $("entryModal").classList.remove("show");
+        await loadAndRender();
+      } catch (e) {
+        console.error(e);
+        toast("⚠️ " + (e.message || "Save failed"), "error");
+      } finally {
+        btn.disabled = false;
+        btn.textContent = "💾 Save Entry";
+      }
+    }
+
+    // ---- Clear term ----
+    async function clearTerm() {
+      if (!confirm(`Delete ALL entries for Term ${SELECTED_TERM}?\n\nThis cannot be undone.`)) return;
+      try {
+        const count = await window.ProgramStore.clearProgram(CLASS_ID, SELECTED_TERM);
+        toast(`✓ Deleted ${count} entr${count === 1 ? "y" : "ies"}`, "success");
+        await loadAndRender();
+      } catch (e) {
+        toast("⚠️ " + (e.message || "Delete failed"), "error");
+      }
+    }
+
+    // ---- Export to Excel ----
+    function exportToExcel() {
+      if (!PROGRAM.length) {
+        toast("⚠️ No entries to export", "error");
+        return;
+      }
+
+      if (typeof XLSX === "undefined") {
+        toast("⚠️ Excel library not loaded — using CSV export", "error");
+        return exportCSV();
+      }
+
+      // Build a 2D array: rows = time slots, columns = days
+      const rows = [];
+      rows.push([`Class Program — ${CLASS_INFO.classLabel}`]);
+      rows.push([`School Year: ${CLASS_INFO.schoolYear}`, "", "", `Term: ${SELECTED_TERM}`]);
+      rows.push(["TIME", ...DAYS]);
+
+      const sorted = [...TIME_SLOTS].sort((a, b) => (a.orderIndex || 0) - (b.orderIndex || 0));
+      const grid = {};
+      PROGRAM.forEach(e => {
+        const k = `${e.day}|${e.timeSlotId}`;
+        if (!grid[k]) grid[k] = [];
+        grid[k].push(e);
+      });
+
+      sorted.forEach(slot => {
+        const timeLabel = `${formatTime(slot.start)} – ${formatTime(slot.end)}\n${slot.label}`;
+        const row = [timeLabel];
+
+        if (slot.type === "break" || slot.type === "ceremony") {
+          row.push(slot.label.toUpperCase());
+          // Fill remaining 4 columns with empty
+          for (let i = 1; i < 5; i++) row.push("");
+        } else {
+          DAYS.forEach(day => {
+            const key = `${day}|${slot.id}`;
+            const entries = grid[key] || [];
+            const text = entries.map(e =>
+              `${e.subject}${e.specialization ? " [" + e.specialization + "]" : ""}\n${e.teacherName || ""}`
+            ).join("\n—\n");
+            row.push(text);
+          });
+        }
+        rows.push(row);
+      });
+
+      const sheet = XLSX.utils.aoa_to_sheet(rows);
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, sheet, `Term${SELECTED_TERM}`);
+
+      const filename = `ClassProgram_${CLASS_INFO.classLabel.replace(/\s+/g, "_")}_Term${SELECTED_TERM}.xlsx`;
+      XLSX.writeFile(wb, filename);
+      toast("✓ Exported", "success");
+    }
+
+    function exportCSV() {
+      const rows = [["TIME", ...DAYS]];
+      const sorted = [...TIME_SLOTS].sort((a, b) => (a.orderIndex || 0) - (b.orderIndex || 0));
+      const grid = {};
+      PROGRAM.forEach(e => {
+        const k = `${e.day}|${e.timeSlotId}`;
+        if (!grid[k]) grid[k] = [];
+        grid[k].push(e);
+      });
+
+      sorted.forEach(slot => {
+        const row = [`${formatTime(slot.start)} - ${formatTime(slot.end)} ${slot.label}`];
+        if (slot.type === "break" || slot.type === "ceremony") {
+          row.push(slot.label.toUpperCase());
+          for (let i = 1; i < 5; i++) row.push("");
+        } else {
+          DAYS.forEach(day => {
+            const k = `${day}|${slot.id}`;
+            row.push((grid[k] || []).map(e => `${e.subject} ${e.teacherName}`.trim()).join(" | "));
+          });
+        }
+        rows.push(row);
+      });
+
+      const csv = rows.map(r => r.map(c => `"${(c || "").replace(/"/g, '""')}"`).join(",")).join("\n");
+      const blob = new Blob(["\uFEFF" + csv], { type: "text/csv;charset=utf-8;" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `ClassProgram_Term${SELECTED_TERM}.csv`;
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+  </script>
+
+  <!-- SheetJS for Excel export -->
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+</body>
+</html>

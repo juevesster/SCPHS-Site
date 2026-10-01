@@ -353,16 +353,19 @@
       </div>
 
       <!-- Students Section -->
-      <div class="sc-card">
-        <div class="sc-toolbar">
-          <button class="sc-btn primary" id="btnAddStudent" style="display:none;">
-            ➕ Add Student
-          </button>
-          <button class="sc-btn outline" id="btnExport">
-            📥 Export to Excel
-          </button>
-          <span id="studentCountLabel" style="margin-left:auto;font-size:0.85rem;color:#6b7280;"></span>
-        </div>
+<div class="sc-card">
+  <div class="sc-toolbar">
+    <a class="sc-btn primary" id="btnProgram" style="text-decoration:none;">
+      📅 Class Program
+    </a>
+    <button class="sc-btn primary" id="btnAddStudent" style="display:none;">
+      ➕ Add Student
+    </button>
+    <button class="sc-btn outline" id="btnExport">
+      📥 Export to Excel
+    </button>
+    <span id="studentCountLabel" style="margin-left:auto;font-size:0.85rem;color:#6b7280;"></span>
+  </div>
 
         <div class="stats-bar" id="statsBar"></div>
 
@@ -598,22 +601,31 @@
         $("thActions").style.display = "table-cell";
       }
 
-      renderHeader();
+        renderHeader();
+      setProgramLink();
       await loadStudents();
       attachHandlers();
     });
 
-    // ---------- Render header ----------
+        // ---------- Render header ----------
     function renderHeader() {
       document.title = `${CLASS_INFO.classLabel} — SF1 — SCPHS`;
       $("classTitle").textContent = "📚 " + CLASS_INFO.classLabel;
-
+      
       const parts = [];
       if (CLASS_INFO.schoolYear) parts.push("📅 " + CLASS_INFO.schoolYear);
       if (CLASS_INFO.curriculum) parts.push("🎓 " + CLASS_INFO.curriculum);
       if (CLASS_INFO.adviserName) parts.push("👤 " + CLASS_INFO.adviserName);
 
       $("classMeta").innerHTML = parts.map(p => `<span>${esc(p)}</span>`).join("");
+    }
+
+    // ---------- Set Class Program link ----------
+    function setProgramLink() {
+      const btn = document.getElementById("btnProgram");
+      if (btn && CLASS_ID) {
+        btn.href = "program.html?id=" + encodeURIComponent(CLASS_ID);
+      }
     }
 
     // ---------- Load students ----------
