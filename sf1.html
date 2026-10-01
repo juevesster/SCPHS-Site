@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SF1 — School Register — SCPHS</title>
+  <link rel="stylesheet" href="assets/css/styles.css" />
+  <style>
+    * { box-sizing: border-box; }
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #f6f7f9; margin: 0; }
+
+    .sf-header { background: linear-gradient(135deg, #1e3c72, #2a5298); color: #fff; padding: 24px 0; }
+    .sf-header-inner { max-width: 1200px; margin: 0 auto; padding: 0 24px; }
+    .sf-header a { color: #fff; text-decoration: none; opacity: 0.85; font-size: 0.85rem; }
+    .sf-header a:hover { opacity: 1; }
+    .sf-header h1 { margin: 6px 0 4px; font-size: 1.5rem; }
+    .sf-header p { margin: 0; opacity: 0.9; font-size: 0.9rem; }
+
+    .sf-container { max-width: 1200px; margin: 0 auto; padding: 24px; }
+
+    .sf-toolbar { display: flex; gap: 12px; align-items: center; margin-bottom: 20px; flex-wrap: wrap; }
+
+    .sf-btn {
+      padding: 10px 18px; border: 1px solid transparent;
+      border-radius: 8px; font-size: 14px; font-weight: 600;
+      cursor: pointer; font-family: inherit;
+      text-decoration: none; display: inline-flex; align-items: center; gap: 6px;
+      transition: all .15s;
+    }
+    .sf-btn.primary { background: #1e3c72; color: #fff; }
+    .sf-btn.primary:hover { background: #2a5298; }
+    .sf-btn.outline { background: #fff; border-color: #d1d5db; color: #1e3c72; }
+    .sf-btn.outline:hover { background: #f3f6fa; border-color: #1e6bb8; }
+
+    .sf-filters {
+      display: flex; gap: 8px; margin-left: auto; flex-wrap: wrap;
+    }
+    .sf-filter {
+      padding: 8px 16px; border-radius: 999px;
+      border: 1px solid #d1d5db; background: #fff;
+      font-size: 13px; font-weight: 600; cursor: pointer;
+      transition: all .15s;
+    }
+    .sf-filter:hover { border-color: #1e6bb8; color: #1e6bb8; }
+    .sf-filter.active { background: #1e3c72; color: #fff; border-color: #1e3c72; }
+
+    .sf-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+      gap: 16px;
+    }
+
+    .sf-class-card {
+      background: #fff;
+      border: 1px solid #e5e7eb;
+      border-radius: 12px;
+      padding: 20px;
+      box-shadow: 0 1px 3px rgba(0,0,0,.04);
+      transition: all .18s;
+      text-decoration: none;
+      color: inherit;
+      display: block;
+    }
+    .sf-class-card:hover {
+      box-shadow: 0 4px 12px rgba(15,76,129,.12);
+      transform: translateY(-2px);
+      border-color: #bfdbfe;
+    }
+
+    .sf-class-curriculum {
+      display: inline-block;
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      padding: 3px 8px;
+      border-radius: 4px;
+      background: #eff6ff;
+      color: #1e40af;
+      margin-bottom: 10px;
+    }
+    .sf-class-curriculum.matatag { background: #dcfce7; color: #166534; }
+    .sf-class-curriculum.k12 { background: #fef3c7; color: #92400e; }
+    .sf-class-curriculum.shs { background: #fae8ff; color: #86198f; }
+
+    .sf-class-name {
+      margin: 0 0 6px;
+      font-size: 1.15rem;
+      font-weight: 800;
+      color: #0f2b4f;
+      line-height: 1.3;
+    }
+    .sf-class-meta {
+      display: flex; gap: 12px; flex-wrap: wrap;
+      font-size: 0.82rem; color: #6b7280;
+      margin-bottom: 12px;
+    }
+    .sf-class-meta span { display: inline-flex; align-items: center; gap: 4px; }
+
+    .sf-class-adviser {
+      padding: 10px 12px;
+      background: #f9fafb;
+      border-radius: 8px;
+      font-size: 0.85rem;
+      color: #4b5563;
+      border-left: 3px solid #1e6bb8;
+    }
+    .sf-class-adviser strong { color: #0f2b4f; }
+
+    .sf-class-stats {
+      display: flex; gap: 16px;
+      margin-top: 12px;
+      padding-top: 12px;
+      border-top: 1px solid #f3f4f6;
+      font-size: 0.82rem;
+      color: #4b5563;
+    }
+    .sf-class-stats strong { color: #0f2b4f; font-size: 1rem; display: block; }
+    .sf-class-stats small { color: #9ca3af; font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.03em; }
+
+    .sf-loading, .sf-empty {
+      text-align: center; padding: 60px 20px; color: #6b7280;
+    }
+    .sf-spinner {
+      width: 32px; height: 32px;
+      border: 3px solid #e5e7eb;
+      border-top-color: #1e3c72;
+      border-radius: 50%;
+      animation: spin .8s linear infinite;
+      margin: 0 auto 12px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .sf-empty h3 { color: #374151; margin: 0 0 8px; }
+    .sf-empty p { margin: 0 0 16px; font-size: 0.9rem; }
+  </style>
+</head>
+<body>
+
+  <header class="sf-header">
+    <div class="sf-header-inner">
+      <a href="index.html">← Back to Portal</a>
+      <h1>📚 SF1 — School Register</h1>
+      <p id="pageSubtitle">Loading…</p>
+    </div>
+  </header>
+
+  <div class="sf-container" id="main-content">
+    <div class="sf-loading" id="loading">
+      <div class="sf-spinner"></div>
+      <div>Loading classes…</div>
+    </div>
+
+    <div id="content" style="display:none;">
+      <div class="sf-toolbar">
+        <a href="sf1-manage.html" class="sf-btn primary" id="manageBtn" style="display:none;">
+          ➕ Manage Classes
+        </a>
+        <div class="sf-filters" id="filters">
+          <button class="sf-filter active" data-filter="all">All Classes</button>
+          <button class="sf-filter" data-filter="mine">My Classes</button>
+        </div>
+      </div>
+
+      <div class="sf-grid" id="classGrid"></div>
+    </div>
+  </div>
+
+  <script type="module">
+    import { auth, db } from "./assets/js/firebase-config.js";
+    import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+    import { doc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+    import { getCurrentUserProfile } from "./assets/js/roles.js";
+    import "./assets/js/sf1-store.js";
+    import { curriculumLabel } from "./assets/js/curricula.js";
+
+    const $ = id => document.getElementById(id);
+    let ALL_CLASSES = [];
+    let CURRENT_USER = null;
+    let CURRENT_PROFILE = null;
+    let filterMode = "all";
+
+    function esc(s) {
+      return String(s == null ? "" : s)
+        .replace(/&/g, "&amp;").replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+    }
+
+    // Auth + role check
+    onAuthStateChanged(auth, async (user) => {
+      if (!user) {
+        location.replace("login.html?next=" + encodeURIComponent(location.pathname));
+        return;
+      }
+      CURRENT_USER = user;
+      CURRENT_PROFILE = await getCurrentUserProfile();
+
+      const isAdmin = CURRENT_PROFILE?.primaryRole === "admin"
+        || CURRENT_PROFILE?.isSuperAdmin
+        || CURRENT_PROFILE?.permissions?.canManageClasses === true;
+      const isTeacher = CURRENT_PROFILE?.primaryRole === "teacher"
+        || CURRENT_PROFILE?.permissions?.canEnterGrades === true;
+
+      if (!isAdmin && !isTeacher) {
+        $("loading").innerHTML = `
+          <h2 style="color:#b91c1c;">🚫 Access Denied</h2>
+          <p>Only teachers and admins can access SF1.</p>
+          <a href="index.html" class="sf-btn primary" style="margin-top:12px;">← Back</a>
+        `;
+        return;
+      }
+
+      // Show manage button for admins
+      if (isAdmin) {
+        $("manageBtn").style.display = "inline-flex";
+      }
+
+      // Update subtitle
+      $("pageSubtitle").textContent = isAdmin
+        ? "Admin view — all classes"
+        : "Your classes";
+
+      await loadClasses(isAdmin);
+    });
+
+    async function loadClasses(isAdmin) {
+      try {
+        // Load all classes
+        const all = await window.SF1.listClasses();
+        ALL_CLASSES = all;
+
+        // For non-admin, filter to their classes
+        if (!isAdmin) {
+          ALL_CLASSES = all.filter(c =>
+            c.adviserUid === CURRENT_USER.uid ||
+            c.teacherUids.includes(CURRENT_USER.uid)
+          );
+        }
+
+        // Load student counts for each class
+        for (const cls of ALL_CLASSES) {
+          try {
+            const students = await window.SF1.listStudents(cls.id);
+            cls.studentCount = students.length;
+            cls.maleCount = students.filter(s => s.sex === "M").length;
+            cls.femaleCount = students.filter(s => s.sex === "F").length;
+          } catch (e) {
+            cls.studentCount = 0;
+            cls.maleCount = 0;
+            cls.femaleCount = 0;
+          }
+        }
+
+        $("loading").style.display = "none";
+        $("content").style.display = "block";
+        renderClasses();
+
+      } catch (e) {
+        console.error(e);
+        $("loading").innerHTML = `<div style="color:#b91c1c;">Failed to load classes: ${esc(e.message)}</div>`;
+      }
+    }
+
+    function renderClasses() {
+      const host = $("classGrid");
+      let list = ALL_CLASSES.slice();
+
+      if (filterMode === "mine" && CURRENT_USER) {
+        list = list.filter(c =>
+          c.adviserUid === CURRENT_USER.uid ||
+          c.teacherUids.includes(CURRENT_USER.uid)
+        );
+      }
+
+      if (!list.length) {
+        host.innerHTML = `
+          <div class="sf-empty" style="grid-column: 1/-1;">
+            <h3>No classes found</h3>
+            <p>${CURRENT_PROFILE?.primaryRole === "admin"
+              ? "Create classes using the Manage Classes button above."
+              : "You haven't been assigned to any classes yet. Contact your admin."}</p>
+          </div>
+        `;
+        return;
+      }
+
+      host.innerHTML = list.map(cls => renderClassCard(cls)).join("");
+    }
+
+    function renderClassCard(cls) {
+      const curClass = cls.curriculum === "MATATAG" ? "matatag"
+                     : cls.curriculum === "K-12" ? "k12"
+                     : cls.curriculum?.startsWith("Strengthened") || cls.curriculum?.startsWith("Legacy-SHS") ? "shs"
+                     : "";
+
+      const studentCount = cls.studentCount ?? 0;
+
+      return `
+        <a class="sf-class-card" href="sf1-class.html?id=${esc(cls.id)}">
+          <span class="sf-class-curriculum ${curClass}">${esc(curriculumLabel(cls.curriculum))}</span>
+          <h3 class="sf-class-name">${esc(cls.classLabel)}</h3>
+          <div class="sf-class-meta">
+            <span>📅 ${esc(cls.schoolYear)}</span>
+            ${cls.track ? `<span>🎯 ${esc(cls.track)}</span>` : ""}
+          </div>
+          <div class="sf-class-adviser">
+            <strong>Adviser:</strong> ${esc(cls.adviserName || "Unassigned")}
+          </div>
+          <div class="sf-class-stats">
+            <div>
+              <strong>${studentCount}</strong>
+              <small>Students</small>
+            </div>
+            <div>
+              <strong>${cls.maleCount ?? 0}</strong>
+              <small>Male</small>
+            </div>
+            <div>
+              <strong>${cls.femaleCount ?? 0}</strong>
+              <small>Female</small>
+            </div>
+          </div>
+        </a>
+      `;
+    }
+
+    // Filter buttons
+    $("filters")?.addEventListener("click", e => {
+      const btn = e.target.closest(".sf-filter");
+      if (!btn) return;
+      document.querySelectorAll(".sf-filter").forEach(b => b.classList.remove("active"));
+      btn.classList.add("active");
+      filterMode = btn.dataset.filter;
+      renderClasses();
+    });
+  </script>
+</body>
+</html>

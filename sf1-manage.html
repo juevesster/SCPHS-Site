@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Manage Classes — SF1 — SCPHS</title>
+  <link rel="stylesheet" href="assets/css/styles.css" />
+  <style>
+    * { box-sizing: border-box; }
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #f6f7f9; margin: 0; }
+
+    .mc-header { background: linear-gradient(135deg, #1e3c72, #2a5298); color: #fff; padding: 24px 0; }
+    .mc-header-inner { max-width: 900px; margin: 0 auto; padding: 0 24px; }
+    .mc-header a { color: #fff; text-decoration: none; opacity: 0.85; font-size: 0.85rem; }
+    .mc-header a:hover { opacity: 1; }
+    .mc-header h1 { margin: 6px 0 4px; font-size: 1.5rem; }
+    .mc-header p { margin: 0; opacity: 0.9; font-size: 0.9rem; }
+
+    .mc-container { max-width: 900px; margin: 0 auto; padding: 24px; }
+
+    .mc-card {
+      background: #fff;
+      border: 1px solid #e5e7eb;
+      border-radius: 12px;
+      padding: 24px;
+      margin-bottom: 20px;
+      box-shadow: 0 1px 3px rgba(0,0,0,.04);
+    }
+
+    .mc-card h2 { margin: 0 0 4px; font-size: 1.15rem; color: #0f2b4f; }
+    .mc-card .sub { margin: 0 0 20px; font-size: 0.85rem; color: #6b7280; }
+
+    .field { margin-bottom: 16px; }
+    .field label {
+      display: block;
+      font-size: 0.78rem;
+      font-weight: 700;
+      color: #374151;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+      margin-bottom: 6px;
+    }
+    .field input,
+    .field select {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1px solid #d1d5db;
+      border-radius: 8px;
+      font-size: 0.92rem;
+      font-family: inherit;
+      background: #fff;
+      outline: none;
+      transition: all .15s;
+    }
+    .field input:focus,
+    .field select:focus {
+      border-color: #1e6bb8;
+      box-shadow: 0 0 0 3px rgba(30,107,184,.15);
+    }
+    .field .hint { font-size: 0.72rem; color: #9ca3af; margin-top: 4px; }
+
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    @media (max-width: 640px) { .grid-2 { grid-template-columns: 1fr; } }
+
+    .mc-btn {
+      padding: 11px 20px;
+      border: 1px solid transparent;
+      border-radius: 8px;
+      font-size: 0.92rem;
+      font-weight: 700;
+      font-family: inherit;
+      cursor: pointer;
+      transition: all .15s;
+    }
+    .mc-btn.primary { background: #1e3c72; color: #fff; }
+    .mc-btn.primary:hover:not(:disabled) { background: #2a5298; }
+    .mc-btn.primary:disabled { opacity: 0.5; cursor: not-allowed; }
+    .mc-btn.outline { background: #fff; border-color: #d1d5db; color: #1e3c72; }
+    .mc-btn.outline:hover { background: #f3f6fa; border-color: #1e6bb8; }
+    .mc-btn.danger { background: #fff; color: #b91c1c; border-color: #fecaca; }
+    .mc-btn.danger:hover { background: #fef2f2; border-color: #b91c1c; }
+
+    .mc-actions { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 16px; }
+
+    .subject-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      padding: 10px 0;
+      border-bottom: 1px solid #f3f4f6;
+    }
+    .subject-row:last-child { border-bottom: 0; }
+    .subject-row label { font-size: 0.85rem; color: #374151; font-weight: 600; align-self: center; }
+    .subject-row select { padding: 8px 10px; font-size: 0.85rem; border: 1px solid #d1d5db; border-radius: 6px; font-family: inherit; }
+
+    .mc-user-list { max-height: 300px; overflow-y: auto; border: 1px solid #e5e7eb; border-radius: 8px; }
+    .mc-user-list button {
+      display: block;
+      width: 100%;
+      text-align: left;
+      padding: 10px 14px;
+      border: 0;
+      border-bottom: 1px solid #f3f4f6;
+      background: #fff;
+      cursor: pointer;
+      font-size: 0.85rem;
+      font-family: inherit;
+    }
+    .mc-user-list button:last-child { border-bottom: 0; }
+    .mc-user-list button:hover { background: #eff6ff; }
+    .mc-user-list button.selected { background: #eff6ff; color: #1e40af; font-weight: 700; }
+    .mc-user-list .email { color: #9ca3af; font-size: 0.75rem; }
+
+    .mc-toast {
+      position: fixed;
+      bottom: 24px; left: 50%;
+      transform: translateX(-50%) translateY(20px);
+      background: #111827; color: #fff;
+      padding: 10px 20px;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 500;
+      box-shadow: 0 8px 24px rgba(0,0,0,.2);
+      opacity: 0; transition: all .2s;
+      z-index: 9999; pointer-events: none;
+    }
+    .mc-toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+    .mc-toast.success { background: #059669; }
+    .mc-toast.error { background: #b91c1c; }
+  </style>
+</head>
+<body>
+
+  <header class="mc-header">
+    <div class="mc-header-inner">
+      <a href="sf1.html">← Back to SF1</a>
+      <h1>⚙ Manage Classes</h1>
+      <p>Create, edit, and assign advisers + subject teachers</p>
+    </div>
+  </header>
+
+  <div class="mc-container">
+    <div class="mc-card">
+      <h2>Create New Class</h2>
+      <p class="sub">Set the curriculum, grade level, and section. Subjects auto-populate based on the curriculum.</p>
+
+      <div class="grid-2">
+        <div class="field">
+          <label for="f-curriculum">Curriculum</label>
+          <select id="f-curriculum"></select>
+        </div>
+        <div class="field">
+          <label for="f-gradeLevel">Grade Level</label>
+          <select id="f-gradeLevel"></select>
+        </div>
+      </div>
+
+      <div class="grid-2">
+        <div class="field">
+          <label for="f-track">Track (SHS only)</label>
+          <select id="f-track">
+            <option value="">— None —</option>
+          </select>
+          <div class="hint" id="trackHint"></div>
+        </div>
+        <div class="field">
+          <label for="f-section">Section</label>
+          <input id="f-section" type="text" placeholder="e.g., DIAMOND" />
+        </div>
+      </div>
+
+      <div class="grid-2">
+        <div class="field">
+          <label for="f-schoolYear">School Year</label>
+          <input id="f-schoolYear" type="text" placeholder="e.g., 2026-2027" value="2026-2027" />
+        </div>
+        <div class="field">
+          <label for="f-schoolId">School ID</label>
+          <input id="f-schoolId" type="text" placeholder="300648" value="300648" />
+        </div>
+      </div>
+
+      <div class="grid-2">
+        <div class="field">
+          <label for="f-schoolName">School Name</label>
+          <input id="f-schoolName" type="text" placeholder="Sta. Cruz Pingkian High School" value="Sta. Cruz Pingkian High School" />
+        </div>
+        <div class="field">
+          <label for="f-principalName">Principal Name</label>
+          <input id="f-principalName" type="text" placeholder="DOLORES CULAY-AN DODON" value="DOLORES CULAY-AN DODON" />
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="f-adviserUid">Adviser (optional)</label>
+        <select id="f-adviserUid">
+          <option value="">— Assign later —</option>
+        </select>
+        <div class="hint">Teachers with "Teacher" role appear here. You can assign or change later.</div>
+      </div>
+
+      <div class="mc-actions">
+        <button class="mc-btn primary" id="btnCreate">➕ Create Class</button>
+      </div>
+    </div>
+
+    <div class="mc-card" id="existingClassesCard">
+      <h2>Existing Classes</h2>
+      <p class="sub">Click a class to edit teachers or view its SF1</p>
+      <div id="existingList"></div>
+    </div>
+  </div>
+
+  <div id="toast" class="mc-toast"></div>
+
+  <script type="module">
+    import { auth, db } from "./assets/js/firebase-config.js";
+    import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+    import { collection, getDocs, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+    import { getCurrentUserProfile } from "./assets/js/roles.js";
+    import "./assets/js/sf1-store.js";
+    import {
+      listCurricula, listGrades, listTracks, getSubjects,
+      curriculumLabel, hasTracks
+    } from "./assets/js/curricula.js";
+
+    const $ = id => document.getElementById(id);
+    let CURRENT_PROFILE = null;
+    let ALL_USERS = [];
+
+    // ---- Toast ----
+    let toastTimer;
+    function toast(msg, type = "") {
+      const t = $("toast");
+      t.textContent = msg;
+      t.className = "mc-toast show " + type;
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => t.className = "mc-toast", 3000);
+    }
+
+    // ---- Esc ----
+    function esc(s) {
+      return String(s == null ? "" : s)
+        .replace(/&/g, "&amp;").replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+    }
+
+    // ---- Auth check ----
+    onAuthStateChanged(auth, async (user) => {
+      if (!user) {
+        location.replace("login.html?next=" + encodeURIComponent(location.pathname));
+        return;
+      }
+      CURRENT_PROFILE = await getCurrentUserProfile();
+      const isAdmin = CURRENT_PROFILE?.primaryRole === "admin"
+        || CURRENT_PROFILE?.isSuperAdmin
+        || CURRENT_PROFILE?.permissions?.canManageClasses === true;
+
+      if (!isAdmin) {
+        document.body.innerHTML = `
+          <div style="padding:60px;text-align:center;font-family:sans-serif;">
+            <h2 style="color:#b91c1c;">🚫 Access Denied</h2>
+            <p>Only admins can create classes.</p>
+            <a href="sf1.html" style="color:#1e6bb8;">← Back to SF1</a>
+          </div>`;
+        return;
+      }
+
+      await loadUsers();
+      await loadExistingClasses();
+      initForm();
+    });
+
+    // ---- Load users for adviser dropdown ----
+    async function loadUsers() {
+      const snap = await getDocs(collection(db, "users"));
+      ALL_USERS = snap.docs.map(d => ({ uid: d.id, ...d.data() }));
+
+      // Fill adviser dropdown
+      const adviserSel = $("f-adviserUid");
+      ALL_USERS
+        .filter(u => {
+          const role = u.primaryRole || u.role || "student";
+          return role === "teacher" || role === "admin";
+        })
+        .sort((a, b) => (a.name || "").localeCompare(b.name || ""))
+        .forEach(u => {
+          const opt = document.createElement("option");
+          opt.value = u.uid;
+          opt.textContent = `${u.name || u.email} (${u.email})`;
+          adviserSel.appendChild(opt);
+        });
+    }
+
+    // ---- Init form dropdowns ----
+    function initForm() {
+      // Curricula
+      const curSel = $("f-curriculum");
+      listCurricula().forEach(c => {
+        const opt = document.createElement("option");
+        opt.value = c.value;
+        opt.textContent = c.label;
+        curSel.appendChild(opt);
+      });
+      curSel.value = "MATATAG";
+
+      // Grade levels for selected curriculum
+      function refreshGrades() {
+        const curriculum = curSel.value;
+        const grades = listGrades(curriculum);
+        const gradeSel = $("f-gradeLevel");
+        gradeSel.innerHTML = "";
+        grades.forEach(g => {
+          const opt = document.createElement("option");
+          opt.value = g;
+          opt.textContent = g;
+          gradeSel.appendChild(opt);
+        });
+        refreshTracks();
+      }
+
+      // Tracks for selected grade (SHS only)
+      function refreshTracks() {
+        const curriculum = curSel.value;
+        const grade = $("f-gradeLevel").value;
+        const trackSel = $("f-track");
+        trackSel.innerHTML = '<option value="">— None —</option>';
+
+        if (hasTracks(curriculum, grade)) {
+          listTracks(curriculum, grade).forEach(t => {
+            const opt = document.createElement("option");
+            opt.value = t;
+            opt.textContent = t;
+            trackSel.appendChild(opt);
+          });
+          $("trackHint").textContent = "This grade level requires a track.";
+        } else {
+          $("trackHint").textContent = "";
+        }
+      }
+
+      curSel.addEventListener("change", refreshGrades);
+      $("f-gradeLevel").addEventListener("change", refreshTracks);
+      refreshGrades();
+
+      // Create button
+      $("btnCreate").addEventListener("click", createClass);
+    }
+
+    // ---- Create class ----
+    async function createClass() {
+      const btn = $("btnCreate");
+      const data = {
+        curriculum: $("f-curriculum").value,
+        gradeLevel: $("f-gradeLevel").value,
+        section: $("f-section").value.trim().toUpperCase(),
+        track: $("f-track").value || null,
+        schoolYear: $("f-schoolYear").value.trim(),
+        schoolId: $("f-schoolId").value.trim(),
+        schoolName: $("f-schoolName").value.trim(),
+        principalName: $("f-principalName").value.trim(),
+      };
+
+      const adviserUid = $("f-adviserUid").value;
+      let adviserName = "";
+      if (adviserUid) {
+        const u = ALL_USERS.find(x => x.uid === adviserUid);
+        if (u) adviserName = u.name || u.email;
+      }
+      data.adviserUid = adviserUid;
+      data.adviserName = adviserName;
+
+      if (!data.section) { toast("⚠️ Section is required", "error"); return; }
+      if (!data.schoolYear) { toast("⚠️ School year is required", "error"); return; }
+
+      btn.disabled = true;
+      btn.textContent = "Creating…";
+      try {
+        await window.SF1.createClass(data);
+        toast("✓ Class created successfully", "success");
+        // Reset form
+        $("f-section").value = "";
+        $("f-track").value = "";
+        $("f-adviserUid").value = "";
+        await loadExistingClasses();
+      } catch (e) {
+        console.error(e);
+        toast("⚠️ " + (e.message || "Failed to create class"), "error");
+      } finally {
+        btn.disabled = false;
+        btn.textContent = "➕ Create Class";
+      }
+    }
+
+    // ---- Existing classes list ----
+    async function loadExistingClasses() {
+      const host = $("existingList");
+      const classes = await window.SF1.listClasses();
+
+      if (!classes.length) {
+        host.innerHTML = '<p style="color:#9ca3af;font-size:0.9rem;">No classes yet. Create one above.</p>';
+        return;
+      }
+
+      // Count students for each
+      for (const c of classes) {
+        try {
+          const students = await window.SF1.listStudents(c.id);
+          c.studentCount = students.length;
+        } catch { c.studentCount = 0; }
+      }
+
+      host.innerHTML = classes.map(c => `
+        <div style="padding:14px;border:1px solid #e5e7eb;border-radius:10px;margin-bottom:10px;display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;">
+          <div style="flex:1;min-width:200px;">
+            <div style="font-weight:700;color:#0f2b4f;margin-bottom:2px;">${esc(c.classLabel)}</div>
+            <div style="font-size:0.82rem;color:#6b7280;">
+              ${esc(curriculumLabel(c.curriculum))} • ${esc(c.schoolYear)}
+              • ${c.studentCount} students
+            </div>
+          </div>
+          <div style="display:flex;gap:8px;">
+            <a href="sf1-class.html?id=${esc(c.id)}" class="mc-btn outline" style="padding:8px 14px;font-size:0.85rem;text-decoration:none;">View SF1</a>
+            <button class="mc-btn danger" data-delete="${esc(c.id)}" style="padding:8px 14px;font-size:0.85rem;">✕ Delete</button>
+          </div>
+        </div>
+      `).join("");
+
+      // Delete handlers
+      host.querySelectorAll("[data-delete]").forEach(btn => {
+        btn.addEventListener("click", async () => {
+          const id = btn.dataset.delete;
+          const cls = classes.find(c => c.id === id);
+          if (!confirm(`Delete "${cls.classLabel}"?\n\nThis will also delete all its students. Cannot be undone.`)) return;
+          try {
+            await window.SF1.deleteClass(id);
+            toast("✓ Class deleted", "success");
+            await loadExistingClasses();
+          } catch (e) {
+            toast("⚠️ " + (e.message || "Delete failed"), "error");
+          }
+        });
+      });
+    }
+  </script>
+</body>
+</html>

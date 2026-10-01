@@ -6,6 +6,27 @@
   <title>Faculty Portal – SCPHS</title>
   <meta name="description" content="SCPHS Faculty Portal for teaching personnel: JHS and SHS." />
   <link rel="stylesheet" href="../assets/css/styles.css" />
+  <style>
+    /* SF1 card highlight */
+    .sf1-card {
+      border: 2px solid #059669 !important;
+      background: linear-gradient(135deg, #f0fdf4 0%, #ffffff 100%);
+    }
+    .sf1-card h2 { color: #047857; }
+    .sf1-card .badge {
+      display: inline-block;
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      padding: 3px 8px;
+      border-radius: 4px;
+      background: #dcfce7;
+      color: #166534;
+      margin-bottom: 8px;
+    }
+    .sf1-card .links span { color: #047857; font-weight: 700; }
+  </style>
 </head>
 <body>
 
@@ -18,6 +39,15 @@
 
   <main class="wrap">
     <section class="grid-2" style="display:grid; gap:16px; grid-template-columns:repeat(auto-fit,minmax(280px,1fr))">
+
+      <!-- ⭐ SF1 — School Register (NEW) -->
+      <a class="card sf1-card" href="../sf1.html">
+        <span class="badge">🔒 Teachers & Admins</span>
+        <h2>📚 SF1 — School Register</h2>
+        <p>View and manage your class register. Upload LIS-exported SF1 files, edit student rosters, and export in the official DepEd format.</p>
+        <div class="links"><span>Open SF1</span> →</div>
+      </a>
+
       <a class="card" href="jhs.html">
         <h2>Junior High School</h2>
         <p>Grades 7–10 • Subject areas, teacher directory, sections, and loads.</p>
@@ -29,6 +59,7 @@
         <p>Grades 11–12 • Tracks & specializations, teacher directory, and schedules.</p>
         <div class="links"><span>Open SHS</span> →</div>
       </a>
+
     </section>
 
     <section class="card" style="margin-top:18px">
@@ -44,13 +75,8 @@
     <nav class="links" style="margin-top:12px">
       <a href="../index.html" class="btn-return">← Return to Home</a>
     </nav>
-    
+
   </main>
-
-</body>
-</html>
-
-<!-- ======================= END ABOUT SECTION ======================= -->
 
   <!-- School Footer (SCPHS) -->
   <footer>
@@ -72,7 +98,7 @@
     </div>
   </footer>
 
-  <!-- ================== GOVPH FOOTER (final, official) ================== -->
+  <!-- GOVPH FOOTER -->
   <footer class="govph-footer" role="contentinfo">
     <div class="wrap govph-footer__grid">
       <div class="govph-footer__col">
@@ -98,7 +124,6 @@
         </ul>
       </div>
     </div>
-
     <div class="govph-footer__bar">
       <div class="wrap">
         <small>© <span id="yearNow"></span> Sta. Cruz Pingkian High School • A Philippine Government Website</small>
@@ -106,40 +131,38 @@
     </div>
   </footer>
 
-    <!-- Chatbot mount -->
-<div id="scphs-chatbot-root"></div>
+  <!-- Chatbot mount -->
+  <div id="scphs-chatbot-root"></div>
 
-<!-- Chatbot auto-loader: tries absolute path, then ../, then ../../ -->
-<script>
-(function(){
-  const rootId = 'scphs-chatbot-root';
-  if (!document.getElementById(rootId)) {
-    const m = document.createElement('div');
-    m.id = rootId;
-    document.body.appendChild(m);
-  }
-
-  const tried = {};
-  function load(src, onOk, onFail){
-    if (tried[src]) return onFail && onFail();
-    tried[src] = true;
-    const s = document.createElement('script');
-    s.src = src; s.defer = true;
-    s.onload = onOk;
-    s.onerror = onFail;
-    document.body.appendChild(s);
-  }
-
-  // Try absolute (works when hosted), then step-wise relatives (works offline)
-  load('/assets/js/chatbot.js', null, () =>
-    load('assets/js/chatbot.js', null, () =>
-      load('../assets/js/chatbot.js', null, () =>
-        load('../../assets/js/chatbot.js', null, () =>
-          console.warn('SCPHS chatbot: unable to load script from any known path.')
+  <script>
+  (function(){
+    const rootId = 'scphs-chatbot-root';
+    if (!document.getElementById(rootId)) {
+      const m = document.createElement('div');
+      m.id = rootId;
+      document.body.appendChild(m);
+    }
+    const tried = {};
+    function load(src, onOk, onFail){
+      if (tried[src]) return onFail && onFail();
+      tried[src] = true;
+      const s = document.createElement('script');
+      s.src = src; s.defer = true;
+      s.onload = onOk;
+      s.onerror = onFail;
+      document.body.appendChild(s);
+    }
+    load('/assets/js/chatbot.js', null, () =>
+      load('assets/js/chatbot.js', null, () =>
+        load('../assets/js/chatbot.js', null, () =>
+          load('../../assets/js/chatbot.js', null, () =>
+            console.warn('SCPHS chatbot: unable to load script from any known path.')
+          )
         )
       )
-    )
-  );
-})();
-</script>
+    );
+  })();
+  </script>
 
+</body>
+</html>
