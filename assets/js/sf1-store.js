@@ -244,4 +244,55 @@ window.SF1 = {
   addStudent,
   updateStudent,
   deleteStudent,
+  importStudents,   // ← NEW
 };
+
+// ------------------------------------------------------------
+// BULK IMPORT — for LIS file uploads
+// ------------------------------------------------------------
+async function importStudents(classId, studentsList) {
+  const user = requireUser();
+  if (!classId || !studentsList?.length) {
+    throw new Error("Missing class ID or students.");
+  }
+
+  const batch = writeBatch(db);
+  const studentCol = collection(db, CLASSES, classId, "students");
+
+  // Get existing LRNs to prevent duplicates
+  const existing = await listStudents(classId);
+  const existingLRNs = new Set(existing.map(s => s.lrn));
+
+  let imported = 0;
+  let skipped = 0;
+  const errors = [];
+
+  for (const student of studentsList) {
+    if (!student.lrn) {
+      errors.push(`Missing LRN for ${student.fullName}`);
+      continue;
+    }
+    if (existingLRNs.has(student.lrn)) {
+      skipped++;
+      continue;
+    }
+
+    const docRef = doc(studentCol);
+    batch.set(docRef, {
+      ...student,
+      active: true,
+      addedAt: serverTimestamp(),
+      addedBy: user.email || "",
+    });
+    imported++;
+  }
+
+  await batch.commit();
+
+  return {
+    imported,
+    skipped,
+    errors,
+    total: studentsList.length,
+  };
+}

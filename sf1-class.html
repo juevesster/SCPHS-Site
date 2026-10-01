@@ -1,0 +1,981 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Class Register — SF1 — SCPHS</title>
+  <link rel="stylesheet" href="assets/css/styles.css" />
+
+  <!-- SheetJS — parses LIS .xls files -->
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+
+  <style>
+    * { box-sizing: border-box; }
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #f6f7f9; margin: 0; }
+
+    .sc-header { background: linear-gradient(135deg, #1e3c72, #2a5298); color: #fff; padding: 24px 0; }
+    .sc-header-inner { max-width: 1280px; margin: 0 auto; padding: 0 24px; }
+    .sc-header a { color: #fff; text-decoration: none; opacity: 0.85; font-size: 0.85rem; }
+    .sc-header a:hover { opacity: 1; }
+    .sc-header h1 { margin: 6px 0 6px; font-size: 1.5rem; }
+    .sc-header .meta { margin: 0; opacity: 0.9; font-size: 0.9rem; display: flex; gap: 12px; flex-wrap: wrap; }
+    .sc-header .meta span { display: inline-flex; align-items: center; gap: 4px; }
+
+    .sc-container { max-width: 1280px; margin: 0 auto; padding: 24px; }
+
+    .sc-card {
+      background: #fff;
+      border: 1px solid #e5e7eb;
+      border-radius: 12px;
+      padding: 24px;
+      margin-bottom: 20px;
+      box-shadow: 0 1px 3px rgba(0,0,0,.04);
+    }
+
+    .sc-card h2 { margin: 0 0 4px; font-size: 1.15rem; color: #0f2b4f; }
+    .sc-card .sub { margin: 0 0 16px; font-size: 0.85rem; color: #6b7280; }
+
+    .sc-btn {
+      padding: 10px 18px; border: 1px solid transparent;
+      border-radius: 8px; font-size: 0.9rem; font-weight: 700;
+      cursor: pointer; font-family: inherit;
+      text-decoration: none; display: inline-flex; align-items: center; gap: 6px;
+      transition: all .15s;
+    }
+    .sc-btn.primary { background: #1e3c72; color: #fff; }
+    .sc-btn.primary:hover:not(:disabled) { background: #2a5298; }
+    .sc-btn.outline { background: #fff; border-color: #d1d5db; color: #1e3c72; }
+    .sc-btn.outline:hover { background: #f3f6fa; border-color: #1e6bb8; }
+    .sc-btn.success { background: #059669; color: #fff; }
+    .sc-btn.success:hover:not(:disabled) { background: #047857; }
+    .sc-btn.danger { background: #fff; color: #b91c1c; border-color: #fecaca; }
+    .sc-btn.danger:hover { background: #fef2f2; border-color: #b91c1c; }
+    .sc-btn.small { padding: 6px 12px; font-size: 0.8rem; }
+    .sc-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    .sc-toolbar {
+      display: flex; gap: 10px; align-items: center; flex-wrap: wrap;
+      margin-bottom: 16px;
+    }
+
+    /* Upload zone */
+    .upload-zone {
+      border: 2px dashed #1e6bb8;
+      border-radius: 12px;
+      padding: 36px 24px;
+      text-align: center;
+      background: #f8fbff;
+      cursor: pointer;
+      transition: all .2s;
+    }
+    .upload-zone:hover, .upload-zone.dragover {
+      background: #eff6ff;
+      border-color: #1e3c72;
+      transform: scale(1.005);
+    }
+    .upload-zone .icon {
+      font-size: 44px;
+      color: #1e6bb8;
+      margin-bottom: 10px;
+    }
+    .upload-zone .title {
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: #0f2b4f;
+      margin-bottom: 6px;
+    }
+    .upload-zone .hint {
+      font-size: 0.85rem;
+      color: #6b7280;
+    }
+
+    /* Stats bar */
+    .stats-bar {
+      display: flex; gap: 16px; flex-wrap: wrap;
+      padding: 14px 18px;
+      background: #f9fafb;
+      border-radius: 10px;
+      margin-bottom: 16px;
+      font-size: 0.85rem;
+      color: #4b5563;
+    }
+    .stats-bar div { display: flex; align-items: center; gap: 6px; }
+    .stats-bar strong { color: #0f2b4f; font-size: 1.05rem; }
+
+    /* Table */
+    .table-wrap {
+      overflow-x: auto;
+      border: 1px solid #e5e7eb;
+      border-radius: 10px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.85rem;
+    }
+    thead {
+      background: #1e3c72;
+      color: #fff;
+    }
+    th {
+      padding: 10px 12px;
+      text-align: left;
+      font-weight: 700;
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+      white-space: nowrap;
+    }
+    td {
+      padding: 10px 12px;
+      border-bottom: 1px solid #f3f4f6;
+      vertical-align: top;
+    }
+    tbody tr:hover { background: #f9fafb; }
+    tbody tr:last-child td { border-bottom: 0; }
+    td.lrn { font-family: monospace; font-size: 0.8rem; color: #4b5563; }
+    td.name { font-weight: 600; color: #0f2b4f; min-width: 200px; }
+    td.actions { white-space: nowrap; }
+    td.actions button {
+      padding: 4px 10px;
+      font-size: 0.75rem;
+      border-radius: 5px;
+      border: 1px solid #d1d5db;
+      background: #fff;
+      cursor: pointer;
+      font-family: inherit;
+      margin-right: 4px;
+    }
+    td.actions button.edit { color: #1e6bb8; border-color: #bfdbfe; }
+    td.actions button.edit:hover { background: #eff6ff; }
+    td.actions button.delete { color: #b91c1c; border-color: #fecaca; }
+    td.actions button.delete:hover { background: #fef2f2; }
+
+    .sex-badge {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-size: 0.75rem;
+      font-weight: 700;
+    }
+    .sex-badge.m { background: #dbeafe; color: #1e40af; }
+    .sex-badge.f { background: #fce7f3; color: #9d174d; }
+
+    /* Empty state */
+    .sc-empty {
+      padding: 48px 24px;
+      text-align: center;
+      color: #6b7280;
+      font-size: 0.95rem;
+    }
+    .sc-empty h3 { color: #374151; margin: 0 0 8px; }
+
+    /* Modal */
+    .sc-modal {
+      position: fixed;
+      inset: 0;
+      background: rgba(10,15,30,.65);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+      padding: 20px;
+      animation: fadeIn .2s ease;
+    }
+    .sc-modal.show { display: flex; }
+    @keyframes fadeIn { from { opacity: 0 } to { opacity: 1 } }
+
+    .sc-modal-panel {
+      background: #fff;
+      border-radius: 14px;
+      max-width: 720px;
+      width: 100%;
+      max-height: 90vh;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 24px 48px rgba(0,0,0,.25);
+      animation: slideUp .25s ease;
+    }
+    @keyframes slideUp { from { transform: translateY(20px); opacity: 0 } to { transform: translateY(0); opacity: 1 } }
+
+    .sc-modal-head {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 16px 22px;
+      border-bottom: 1px solid #e5e7eb;
+    }
+    .sc-modal-head h3 {
+      margin: 0;
+      font-size: 1.1rem;
+      color: #0f2b4f;
+    }
+    .sc-modal-close {
+      background: none; border: none;
+      font-size: 22px; color: #6b7280;
+      cursor: pointer; padding: 4px 10px;
+      border-radius: 6px;
+    }
+    .sc-modal-close:hover { background: #f3f4f6; color: #111827 }
+
+    .sc-modal-body {
+      padding: 22px;
+      overflow-y: auto;
+    }
+
+    .sc-modal-foot {
+      padding: 14px 22px;
+      border-top: 1px solid #e5e7eb;
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+      background: #fafbfc;
+    }
+
+    /* Form fields */
+    .form-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+    }
+    @media (max-width: 640px) { .form-grid { grid-template-columns: 1fr; } }
+    .form-field { display: flex; flex-direction: column; gap: 4px; }
+    .form-field.full { grid-column: 1 / -1; }
+    .form-field label {
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: #374151;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+    }
+    .form-field input,
+    .form-field select {
+      padding: 9px 11px;
+      border: 1px solid #d1d5db;
+      border-radius: 8px;
+      font-size: 0.88rem;
+      font-family: inherit;
+      outline: none;
+      transition: all .15s;
+      width: 100%;
+    }
+    .form-field input:focus,
+    .form-field select:focus {
+      border-color: #1e6bb8;
+      box-shadow: 0 0 0 3px rgba(30,107,184,.15);
+    }
+    .form-field .hint { font-size: 0.7rem; color: #9ca3af; }
+
+    /* Preview list (during upload) */
+    .preview-list {
+      max-height: 280px;
+      overflow-y: auto;
+      border: 1px solid #e5e7eb;
+      border-radius: 8px;
+      font-size: 0.85rem;
+    }
+    .preview-list .row {
+      padding: 8px 12px;
+      border-bottom: 1px solid #f3f4f6;
+      display: flex;
+      gap: 12px;
+      align-items: center;
+    }
+    .preview-list .row:last-child { border-bottom: 0; }
+    .preview-list .row .lrn { font-family: monospace; color: #6b7280; font-size: 0.75rem; }
+    .preview-list .row .name { font-weight: 600; color: #0f2b4f; flex: 1; }
+    .preview-list .row .sex { font-weight: 700; }
+
+    /* Toast */
+    .sc-toast {
+      position: fixed;
+      bottom: 24px; left: 50%;
+      transform: translateX(-50%) translateY(20px);
+      background: #111827; color: #fff;
+      padding: 10px 20px;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 500;
+      box-shadow: 0 8px 24px rgba(0,0,0,.2);
+      opacity: 0; transition: all .2s;
+      z-index: 10001;
+      pointer-events: none;
+    }
+    .sc-toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+    .sc-toast.success { background: #059669; }
+    .sc-toast.error { background: #b91c1c; }
+
+    .sc-loading {
+      padding: 60px 20px;
+      text-align: center;
+      color: #6b7280;
+    }
+    .sc-spinner {
+      width: 32px; height: 32px;
+      border: 3px solid #e5e7eb;
+      border-top-color: #1e3c72;
+      border-radius: 50%;
+      animation: spin .8s linear infinite;
+      margin: 0 auto 12px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+  </style>
+</head>
+<body>
+
+  <header class="sc-header">
+    <div class="sc-header-inner">
+      <a href="sf1.html">← Back to SF1 List</a>
+      <h1 id="classTitle">Loading class…</h1>
+      <div class="meta" id="classMeta"></div>
+    </div>
+  </header>
+
+  <div class="sc-container" id="mainContent">
+
+    <div class="sc-loading" id="loading">
+      <div class="sc-spinner"></div>
+      <div>Loading class info…</div>
+    </div>
+
+    <div id="content" style="display:none;">
+
+      <!-- Upload Zone (adviser/admin only) -->
+      <div class="sc-card" id="uploadCard" style="display:none;">
+        <h2>📤 Import from LIS (SF1 .xls file)</h2>
+        <p class="sub">Upload the SF1 file exported from LIS. Students will be parsed automatically. Duplicates by LRN are skipped.</p>
+
+        <div class="upload-zone" id="uploadZone">
+          <div class="icon">📄</div>
+          <div class="title">Click to upload or drag & drop</div>
+          <div class="hint">Accepts .xls and .xlsx files from LIS</div>
+        </div>
+        <input type="file" id="fileInput" accept=".xls,.xlsx" style="display:none" />
+      </div>
+
+      <!-- Students Section -->
+      <div class="sc-card">
+        <div class="sc-toolbar">
+          <button class="sc-btn primary" id="btnAddStudent" style="display:none;">
+            ➕ Add Student
+          </button>
+          <button class="sc-btn outline" id="btnExport">
+            📥 Export to Excel
+          </button>
+          <span id="studentCountLabel" style="margin-left:auto;font-size:0.85rem;color:#6b7280;"></span>
+        </div>
+
+        <div class="stats-bar" id="statsBar"></div>
+
+        <div class="table-wrap">
+          <table id="studentTable">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>LRN</th>
+                <th>Name</th>
+                <th>Sex</th>
+                <th>Birth Date</th>
+                <th>Age</th>
+                <th>Barangay</th>
+                <th>Parent / Guardian</th>
+                <th>Contact</th>
+                <th class="actions" id="thActions" style="display:none;">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="studentTbody"></tbody>
+          </table>
+        </div>
+
+        <div class="sc-empty" id="emptyState">
+          <h3>No students yet</h3>
+          <p>Upload an SF1 file from LIS above, or add students manually.</p>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Add/Edit Student Modal -->
+  <div class="sc-modal" id="studentModal">
+    <div class="sc-modal-panel">
+      <div class="sc-modal-head">
+        <h3 id="studentModalTitle">Add Student</h3>
+        <button class="sc-modal-close" data-close="studentModal">✕</button>
+      </div>
+      <div class="sc-modal-body">
+        <form id="studentForm">
+          <input type="hidden" id="studentId" />
+          <div class="form-grid">
+            <div class="form-field">
+              <label>LRN (12 digits) *</label>
+              <input type="text" id="f-lrn" maxlength="12" required />
+            </div>
+            <div class="form-field">
+              <label>Sex *</label>
+              <select id="f-sex" required>
+                <option value="">— Select —</option>
+                <option value="M">Male</option>
+                <option value="F">Female</option>
+              </select>
+            </div>
+            <div class="form-field">
+              <label>Last Name *</label>
+              <input type="text" id="f-lastName" required />
+            </div>
+            <div class="form-field">
+              <label>First Name *</label>
+              <input type="text" id="f-firstName" required />
+            </div>
+            <div class="form-field">
+              <label>Middle Name</label>
+              <input type="text" id="f-middleName" />
+            </div>
+            <div class="form-field">
+              <label>Birth Date</label>
+              <input type="text" id="f-birthDate" placeholder="mm/dd/yyyy" />
+            </div>
+            <div class="form-field">
+              <label>Age</label>
+              <input type="number" id="f-age" min="1" max="100" />
+            </div>
+            <div class="form-field">
+              <label>Religion</label>
+              <input type="text" id="f-religion" />
+            </div>
+            <div class="form-field">
+              <label>Mother Tongue</label>
+              <input type="text" id="f-motherTongue" />
+            </div>
+            <div class="form-field">
+              <label>IP (Ethnic Group)</label>
+              <input type="text" id="f-ip" />
+            </div>
+            <div class="form-field full">
+              <label>Address — House/Street/Sitio</label>
+              <input type="text" id="f-addressHouse" />
+            </div>
+            <div class="form-field">
+              <label>Barangay</label>
+              <input type="text" id="f-addressBarangay" />
+            </div>
+            <div class="form-field">
+              <label>Municipality/City</label>
+              <input type="text" id="f-addressMunicipality" />
+            </div>
+            <div class="form-field full">
+              <label>Province</label>
+              <input type="text" id="f-addressProvince" />
+            </div>
+            <div class="form-field full">
+              <label>Father's Name</label>
+              <input type="text" id="f-fatherName" />
+            </div>
+            <div class="form-field full">
+              <label>Mother's Maiden Name</label>
+              <input type="text" id="f-motherName" />
+            </div>
+            <div class="form-field">
+              <label>Guardian Name</label>
+              <input type="text" id="f-guardianName" />
+            </div>
+            <div class="form-field">
+              <label>Guardian Relationship</label>
+              <input type="text" id="f-guardianRelationship" />
+            </div>
+            <div class="form-field full">
+              <label>Contact Number</label>
+              <input type="text" id="f-contactNumber" />
+            </div>
+            <div class="form-field full">
+              <label>Remarks</label>
+              <input type="text" id="f-remarks" />
+            </div>
+          </div>
+        </form>
+      </div>
+      <div class="sc-modal-foot">
+        <button class="sc-btn outline" data-close="studentModal">Cancel</button>
+        <button class="sc-btn primary" id="btnSaveStudent">💾 Save Student</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Preview Import Modal -->
+  <div class="sc-modal" id="previewModal">
+    <div class="sc-modal-panel">
+      <div class="sc-modal-head">
+        <h3>📋 Review Import</h3>
+        <button class="sc-modal-close" data-close="previewModal">✕</button>
+      </div>
+      <div class="sc-modal-body">
+        <p style="margin:0 0 12px;font-size:0.9rem;color:#4b5563;">
+          Detected <strong id="previewTotal">0</strong> students
+          (<span id="previewMale">0</span> M / <span id="previewFemale">0</span> F).
+          Review the list before saving.
+        </p>
+        <div class="preview-list" id="previewList"></div>
+      </div>
+      <div class="sc-modal-foot">
+        <button class="sc-btn outline" data-close="previewModal">Cancel</button>
+        <button class="sc-btn success" id="btnConfirmImport">✓ Confirm Import</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast" class="sc-toast"></div>
+
+  <script type="module">
+    import { auth, db } from "./assets/js/firebase-config.js";
+    import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+    import { getCurrentUserProfile } from "./assets/js/roles.js";
+    import "./assets/js/sf1-store.js";
+    import { parseLISFile } from "./assets/js/xls-parser.js";
+
+    const $ = id => document.getElementById(id);
+    const params = new URLSearchParams(location.search);
+    const CLASS_ID = params.get("id");
+
+    let CURRENT_USER = null;
+    let CURRENT_PROFILE = null;
+    let CLASS_INFO = null;
+    let STUDENTS = [];
+    let PENDING_IMPORT = null;
+    let CAN_EDIT = false;
+
+    // ---------- Utilities ----------
+    function esc(s) {
+      return String(s == null ? "" : s)
+        .replace(/&/g, "&amp;").replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+    }
+
+    let toastTimer;
+    function toast(msg, type = "") {
+      const t = $("toast");
+      t.textContent = msg;
+      t.className = "sc-toast show" + (type ? " " + type : "");
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => t.className = "sc-toast", 3000);
+    }
+
+    // ---------- Auth check ----------
+    onAuthStateChanged(auth, async (user) => {
+      if (!user) {
+        location.replace("login.html?next=" + encodeURIComponent(location.pathname + location.search));
+        return;
+      }
+      CURRENT_USER = user;
+      CURRENT_PROFILE = await getCurrentUserProfile();
+
+      if (!CLASS_ID) {
+        $("loading").innerHTML = '<div style="color:#b91c1c;">Missing class ID in URL.</div>';
+        return;
+      }
+
+      try {
+        CLASS_INFO = await window.SF1.getClass(CLASS_ID);
+      } catch (e) {
+        $("loading").innerHTML = '<div style="color:#b91c1c;">Failed to load class.</div>';
+        return;
+      }
+
+      if (!CLASS_INFO) {
+        $("loading").innerHTML = '<div style="color:#b91c1c;">Class not found.</div>';
+        return;
+      }
+
+      // Determine edit permission
+      const isAdmin = CURRENT_PROFILE?.primaryRole === "admin"
+        || CURRENT_PROFILE?.isSuperAdmin;
+      const isAdviser = CLASS_INFO.adviserUid === CURRENT_USER.uid;
+      const canManageRoster = CURRENT_PROFILE?.permissions?.canManageRoster === true;
+      CAN_EDIT = isAdmin || isAdviser || (canManageRoster && CLASS_INFO.teacherUids.includes(CURRENT_USER.uid));
+
+      // Show edit UI
+      if (CAN_EDIT) {
+        $("uploadCard").style.display = "block";
+        $("btnAddStudent").style.display = "inline-flex";
+        $("thActions").style.display = "table-cell";
+      }
+
+      renderHeader();
+      await loadStudents();
+      attachHandlers();
+    });
+
+    // ---------- Render header ----------
+    function renderHeader() {
+      document.title = `${CLASS_INFO.classLabel} — SF1 — SCPHS`;
+      $("classTitle").textContent = "📚 " + CLASS_INFO.classLabel;
+
+      const parts = [];
+      if (CLASS_INFO.schoolYear) parts.push("📅 " + CLASS_INFO.schoolYear);
+      if (CLASS_INFO.curriculum) parts.push("🎓 " + CLASS_INFO.curriculum);
+      if (CLASS_INFO.adviserName) parts.push("👤 " + CLASS_INFO.adviserName);
+
+      $("classMeta").innerHTML = parts.map(p => `<span>${esc(p)}</span>`).join("");
+    }
+
+    // ---------- Load students ----------
+    async function loadStudents() {
+      try {
+        STUDENTS = await window.SF1.listStudents(CLASS_ID);
+      } catch (e) {
+        console.error(e);
+        STUDENTS = [];
+      }
+
+      $("loading").style.display = "none";
+      $("content").style.display = "block";
+      renderStudents();
+    }
+
+    // ---------- Render students ----------
+    function renderStudents() {
+      const tbody = $("studentTbody");
+      const empty = $("emptyState");
+      const table = $("studentTable");
+
+      // Update stats
+      const male = STUDENTS.filter(s => s.sex === "M").length;
+      const female = STUDENTS.filter(s => s.sex === "F").length;
+      $("statsBar").innerHTML = `
+        <div><strong>${STUDENTS.length}</strong> Total</div>
+        <div><strong>${male}</strong> Male</div>
+        <div><strong>${female}</strong> Female</div>
+      `;
+      $("studentCountLabel").textContent = `${STUDENTS.length} student${STUDENTS.length === 1 ? "" : "s"}`;
+
+      if (!STUDENTS.length) {
+        tbody.innerHTML = "";
+        empty.style.display = "block";
+        table.style.display = "none";
+        return;
+      }
+
+      empty.style.display = "none";
+      table.style.display = "table";
+
+      tbody.innerHTML = STUDENTS.map((s, i) => {
+        const sexClass = s.sex === "M" ? "m" : s.sex === "F" ? "f" : "";
+        const sexLabel = s.sex === "M" ? "M" : s.sex === "F" ? "F" : s.sex || "—";
+        const parent = s.fatherName || s.motherName || s.guardianName || "—";
+
+        const actionsCell = CAN_EDIT ? `
+          <td class="actions">
+            <button class="edit" data-edit="${esc(s.id)}">✎ Edit</button>
+            <button class="delete" data-del="${esc(s.id)}">✕</button>
+          </td>` : "";
+
+        return `
+          <tr data-id="${esc(s.id)}">
+            <td>${i + 1}</td>
+            <td class="lrn">${esc(s.lrn)}</td>
+            <td class="name">${esc(s.fullName || (s.lastName + ", " + s.firstName))}</td>
+            <td><span class="sex-badge ${sexClass}">${sexLabel}</span></td>
+            <td>${esc(s.birthDate || "—")}</td>
+            <td>${esc(s.age ?? "—")}</td>
+            <td>${esc(s.addressBarangay || "—")}</td>
+            <td style="font-size:0.82rem;">${esc(parent)}</td>
+            <td>${esc(s.contactNumber || "—")}</td>
+            ${actionsCell}
+          </tr>
+        `;
+      }).join("");
+    }
+
+    // ---------- Attach handlers ----------
+    function attachHandlers() {
+      // Add student
+      $("btnAddStudent")?.addEventListener("click", () => openStudentModal());
+
+      // Table row actions
+      $("studentTbody")?.addEventListener("click", async (e) => {
+        const editBtn = e.target.closest("[data-edit]");
+        if (editBtn) {
+          const student = STUDENTS.find(s => s.id === editBtn.dataset.edit);
+          if (student) openStudentModal(student);
+          return;
+        }
+        const delBtn = e.target.closest("[data-del]");
+        if (delBtn) {
+          const student = STUDENTS.find(s => s.id === delBtn.dataset.del);
+          if (!student) return;
+          if (!confirm(`Delete "${student.fullName}"?`)) return;
+          try {
+            await window.SF1.deleteStudent(CLASS_ID, student.id);
+            toast("✓ Student deleted", "success");
+            await loadStudents();
+          } catch (err) {
+            toast("⚠️ " + (err.message || "Delete failed"), "error");
+          }
+        }
+      });
+
+      // Save student (from modal)
+      $("btnSaveStudent")?.addEventListener("click", saveStudent);
+
+      // Close modals
+      document.querySelectorAll("[data-close]").forEach(btn => {
+        btn.addEventListener("click", () => {
+          $(btn.dataset.close).classList.remove("show");
+        });
+      });
+      document.querySelectorAll(".sc-modal").forEach(modal => {
+        modal.addEventListener("click", (e) => {
+          if (e.target === modal) modal.classList.remove("show");
+        });
+      });
+
+      // Upload zone
+      const zone = $("uploadZone");
+      const input = $("fileInput");
+
+      zone?.addEventListener("click", () => input.click());
+
+      zone?.addEventListener("dragover", (e) => {
+        e.preventDefault();
+        zone.classList.add("dragover");
+      });
+      zone?.addEventListener("dragleave", () => zone.classList.remove("dragover"));
+      zone?.addEventListener("drop", (e) => {
+        e.preventDefault();
+        zone.classList.remove("dragover");
+        if (e.dataTransfer.files.length) {
+          handleFile(e.dataTransfer.files[0]);
+        }
+      });
+
+      input?.addEventListener("change", (e) => {
+        if (e.target.files.length) handleFile(e.target.files[0]);
+      });
+
+      // Confirm import
+      $("btnConfirmImport")?.addEventListener("click", doImport);
+
+      // Export
+      $("btnExport")?.addEventListener("click", exportToXls);
+    }
+
+    // ---------- Add/Edit student modal ----------
+    function openStudentModal(student = null) {
+      $("studentModalTitle").textContent = student ? "Edit Student" : "Add Student";
+      $("studentId").value = student?.id || "";
+
+      const fields = [
+        "lrn", "sex", "lastName", "firstName", "middleName", "birthDate",
+        "age", "religion", "motherTongue", "ip",
+        "addressHouse", "addressBarangay", "addressMunicipality", "addressProvince",
+        "fatherName", "motherName", "guardianName", "guardianRelationship",
+        "contactNumber", "remarks"
+      ];
+      fields.forEach(f => {
+        const el = $("f-" + f);
+        if (el) el.value = student?.[f] ?? "";
+      });
+
+      $("studentModal").classList.add("show");
+    }
+
+    async function saveStudent() {
+      const btn = $("btnSaveStudent");
+      btn.disabled = true;
+      btn.textContent = "Saving…";
+
+      try {
+        const studentId = $("studentId").value;
+        const lrn = $("f-lrn").value.trim();
+        const lastName = $("f-lastName").value.trim();
+        const firstName = $("f-firstName").value.trim();
+        const middleName = $("f-middleName").value.trim();
+
+        if (!lrn || !/^\d{12}$/.test(lrn)) {
+          toast("⚠️ LRN must be 12 digits", "error");
+          return;
+        }
+        if (!lastName || !firstName) {
+          toast("⚠️ First and last name are required", "error");
+          return;
+        }
+
+        const data = {
+          lrn,
+          lastName,
+          firstName,
+          middleName,
+          fullName: `${lastName}, ${firstName}${middleName ? ", " + middleName : ""}`,
+          sex: $("f-sex").value,
+          birthDate: $("f-birthDate").value.trim(),
+          age: $("f-age").value ? parseInt($("f-age").value, 10) : null,
+          religion: $("f-religion").value.trim(),
+          motherTongue: $("f-motherTongue").value.trim(),
+          ip: $("f-ip").value.trim(),
+          addressHouse: $("f-addressHouse").value.trim(),
+          addressBarangay: $("f-addressBarangay").value.trim(),
+          addressMunicipality: $("f-addressMunicipality").value.trim(),
+          addressProvince: $("f-addressProvince").value.trim(),
+          fatherName: $("f-fatherName").value.trim(),
+          motherName: $("f-motherName").value.trim(),
+          guardianName: $("f-guardianName").value.trim(),
+          guardianRelationship: $("f-guardianRelationship").value.trim(),
+          contactNumber: $("f-contactNumber").value.trim(),
+          remarks: $("f-remarks").value.trim(),
+        };
+
+        if (studentId) {
+          await window.SF1.updateStudent(CLASS_ID, studentId, data);
+          toast("✓ Student updated", "success");
+        } else {
+          await window.SF1.addStudent(CLASS_ID, data);
+          toast("✓ Student added", "success");
+        }
+
+        $("studentModal").classList.remove("show");
+        await loadStudents();
+      } catch (e) {
+        console.error(e);
+        toast("⚠️ " + (e.message || "Save failed"), "error");
+      } finally {
+        btn.disabled = false;
+        btn.textContent = "💾 Save Student";
+      }
+    }
+
+    // ---------- File upload ----------
+    async function handleFile(file) {
+      if (!file.name.match(/\.(xls|xlsx)$/i)) {
+        toast("⚠️ Please upload an .xls or .xlsx file", "error");
+        return;
+      }
+
+      try {
+        const buf = await file.arrayBuffer();
+        const parsed = parseLISFile(buf);
+
+        if (!parsed.students.length) {
+          toast("⚠️ No students found in file", "error");
+          return;
+        }
+
+        PENDING_IMPORT = parsed;
+
+        // Show preview
+        $("previewTotal").textContent = parsed.totalFound;
+        $("previewMale").textContent = parsed.maleCount;
+        $("previewFemale").textContent = parsed.femaleCount;
+
+        $("previewList").innerHTML = parsed.students.map(s => `
+          <div class="row">
+            <span class="lrn">${esc(s.lrn)}</span>
+            <span class="name">${esc(s.fullName)}</span>
+            <span class="sex ${s.sex === "M" ? "m" : "f"}">${esc(s.sex)}</span>
+          </div>
+        `).join("");
+
+        $("previewModal").classList.add("show");
+
+      } catch (e) {
+        console.error(e);
+        toast("⚠️ " + (e.message || "Failed to parse file"), "error");
+      }
+    }
+
+    async function doImport() {
+      if (!PENDING_IMPORT) return;
+      const btn = $("btnConfirmImport");
+      btn.disabled = true;
+      btn.textContent = "Importing…";
+
+      try {
+        const result = await window.SF1.importStudents(CLASS_ID, PENDING_IMPORT.students);
+        $("previewModal").classList.remove("show");
+
+        let msg = `✓ Imported ${result.imported} students`;
+        if (result.skipped) msg += `, ${result.skipped} skipped (duplicate)`;
+        toast(msg, "success");
+
+        PENDING_IMPORT = null;
+        await loadStudents();
+
+      } catch (e) {
+        console.error(e);
+        toast("⚠️ " + (e.message || "Import failed"), "error");
+      } finally {
+        btn.disabled = false;
+        btn.textContent = "✓ Confirm Import";
+      }
+    }
+
+    // ---------- Export to XLS ----------
+    function exportToXls() {
+      if (!STUDENTS.length) {
+        toast("⚠️ No students to export", "error");
+        return;
+      }
+      if (typeof XLSX === "undefined") {
+        toast("⚠️ Excel library not loaded", "error");
+        return;
+      }
+
+      // Header info
+      const header = [
+        ["School Form 1 (SF 1) School Register"],
+        [],
+        ["School ID", "", "", "", CLASS_INFO.schoolId || "", "", "", "", "Region", "", CLASS_INFO.region || ""],
+        ["School Name", "", "", "", CLASS_INFO.schoolName || "", "", "School Year", "", CLASS_INFO.schoolYear || "", "", "Grade Level", "", CLASS_INFO.gradeLevel, "", "Section", "", CLASS_INFO.section],
+        [],
+        ["LRN", "", "NAME", "", "", "", "Sex", "BIRTH DATE", "", "Age", "", "Mother Tongue", "", "IP", "Religion",
+         "House/Street/Sitio", "", "Barangay", "", "Municipality", "", "Province", "",
+         "Father's Name", "", "", "", "Mother's Maiden Name", "", "", "",
+         "Guardian Name", "", "", "", "Relationship", "", "", "",
+         "Contact Number", "", "Modality", "Remarks"]
+      ];
+
+      // Student rows
+      const rows = STUDENTS.map(s => [
+        s.lrn || "",
+        "",
+        s.fullName || `${s.lastName}, ${s.firstName}, ${s.middleName || ""}`,
+        "", "", "",
+        s.sex || "",
+        s.birthDate || "",
+        "",
+        s.age || "",
+        "",
+        s.motherTongue || "",
+        "",
+        s.ip || "",
+        s.religion || "",
+        s.addressHouse || "",
+        "",
+        s.addressBarangay || "",
+        "",
+        s.addressMunicipality || "",
+        "",
+        s.addressProvince || "",
+        "",
+        s.fatherName || "",
+        "", "", "",
+        s.motherName || "",
+        "", "", "",
+        s.guardianName || "",
+        "", "", "",
+        s.guardianRelationship || "",
+        "", "", "",
+        s.contactNumber || "",
+        "",
+        s.learningModality || "Face to Face",
+        s.remarks || "",
+      ]);
+
+      const sheet = XLSX.utils.aoa_to_sheet([...header, ...rows]);
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, sheet, "SF1");
+
+      const filename = `SF1_${CLASS_INFO.schoolYear}_${CLASS_INFO.classLabel.replace(/\s+/g, "_")}.xls`;
+      XLSX.writeFile(wb, filename);
+      toast("✓ Exported", "success");
+    }
+  </script>
+</body>
+</html>
