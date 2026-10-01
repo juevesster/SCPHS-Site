@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Time Slots Management — SCPHS</title>
+  <link rel="stylesheet" href="assets/css/styles.css" />
+  <style>
+    * { box-sizing: border-box; }
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #f0f2f5; margin: 0; }
+
+    .sc-header { background: #fff; border-bottom: 1px solid #e5e7eb; padding: 20px 0; box-shadow: 0 1px 3px rgba(0,0,0,.04); }
+    .sc-header-inner { max-width: 1400px; margin: 0 auto; padding: 0 24px; display: flex; justify-content: space-between; align-items: center; gap: 16px; flex-wrap: wrap; }
+    .sc-header h1 { margin: 0 0 4px; font-size: 1.5rem; color: #0f172a; }
+    .sc-header p { margin: 0; font-size: 0.9rem; color: #6b7280; }
+    .sc-header a { background: #1e3c72; color: #fff; padding: 10px 18px; border-radius: 8px; text-decoration: none; font-size: 13px; font-weight: 600; }
+
+    .sc-container { max-width: 1400px; margin: 0 auto; padding: 24px; }
+
+    .sc-card { background: #fff; border-radius: 12px; padding: 24px; margin-bottom: 20px; box-shadow: 0 1px 3px rgba(0,0,0,.06); }
+    .sc-card h2 { margin: 0 0 4px; font-size: 1.15rem; color: #0f2b4f; }
+    .sc-card h3 { margin: 0 0 16px; font-size: 1.05rem; color: #0f2b4f; display: flex; align-items: center; gap: 8px; }
+
+    .term-tabs { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; }
+    .term-tab { padding: 10px 24px; background: #f8f9fa; border-radius: 999px; text-decoration: none; color: #333; font-weight: 600; font-size: 14px; cursor: pointer; border: none; font-family: inherit; }
+    .term-tab.active { background: #1e3c72; color: #fff; }
+
+    .stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 20px; }
+    @media (max-width: 640px) { .stats-grid { grid-template-columns: 1fr; } }
+    .stat-card { background: #f8f9fa; border-radius: 12px; padding: 20px; text-align: center; }
+    .stat-number { font-size: 32px; font-weight: 800; color: #1e3c72; line-height: 1; }
+    .stat-label { font-size: 13px; color: #666; margin-top: 8px; }
+
+    .sc-btn { padding: 10px 18px; border: none; border-radius: 8px; cursor: pointer; font-family: inherit; font-size: 13px; font-weight: 700; text-decoration: none; display: inline-flex; align-items: center; gap: 6px; transition: all .15s; }
+    .sc-btn:hover:not(:disabled) { transform: translateY(-1px); }
+    .sc-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+    .sc-btn.primary { background: #1e3c72; color: #fff; }
+    .sc-btn.success { background: #059669; color: #fff; }
+    .sc-btn.danger { background: #dc2626; color: #fff; }
+    .sc-btn.warning { background: #d97706; color: #fff; }
+    .sc-btn.outline { background: #fff; color: #1e3c72; border: 1px solid #1e3c72; }
+    .sc-btn.small { padding: 6px 12px; font-size: 12px; }
+
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+    @media (max-width: 900px) { .grid-2 { grid-template-columns: 1fr; } }
+
+    .form-group { margin-bottom: 14px; }
+    .form-group label { display: block; font-size: 12px; font-weight: 700; color: #374151; text-transform: uppercase; letter-spacing: 0.03em; margin-bottom: 6px; }
+    .form-group input, .form-group select { width: 100%; padding: 9px 12px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 14px; font-family: inherit; outline: none; }
+    .form-group input:focus, .form-group select:focus { border-color: #1e6bb8; box-shadow: 0 0 0 3px rgba(30,107,184,.12); }
+
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+    table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    th, td { padding: 12px 10px; text-align: left; border-bottom: 1px solid #e5e7eb; }
+    th { background: #1e3c72; color: #fff; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; position: sticky; top: 0; }
+    tbody tr:hover { background: #f9fafb; }
+    td input, td select { padding: 6px 8px; border: 1px solid #d1d5db; border-radius: 4px; font-size: 13px; font-family: inherit; width: 100%; }
+    td input[type="number"] { max-width: 70px; }
+    td input[type="time"] { max-width: 130px; }
+
+    .slot-ceremony { background: #e0e7ff !important; }
+    .slot-break { background: #fff3cd !important; }
+    .slot-homeroom { background: #d4edda !important; }
+    .slot-aral { background: #e2e3e5 !important; }
+
+    .type-badge { display: inline-block; padding: 3px 10px; border-radius: 999px; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.03em; }
+    .type-ceremony { background: #17a2b8; color: #fff; }
+    .type-class { background: #28a745; color: #fff; }
+    .type-break { background: #ffc107; color: #333; }
+    .type-homeroom { background: #20c997; color: #fff; }
+    .type-aral { background: #6c757d; color: #fff; }
+
+    .sc-toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(20px); background: #111827; color: #fff; padding: 12px 22px; border-radius: 8px; font-size: 14px; font-weight: 500; box-shadow: 0 8px 24px rgba(0,0,0,.2); opacity: 0; transition: all .25s; z-index: 10000; pointer-events: none; }
+    .sc-toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+    .sc-toast.success { background: #059669; }
+    .sc-toast.error { background: #b91c1c; }
+
+    .sc-loading { padding: 60px 20px; text-align: center; color: #6b7280; }
+    .sc-spinner { width: 32px; height: 32px; border: 3px solid #e5e7eb; border-top-color: #1e3c72; border-radius: 50%; animation: spin .8s linear infinite; margin: 0 auto 12px; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .alert { padding: 14px 18px; border-radius: 8px; margin-bottom: 16px; font-size: 13px; }
+    .alert-info { background: #e8f0fe; color: #1e3c72; border-left: 4px solid #1e6bb8; }
+    .alert-success { background: #d4edda; color: #155724; border-left: 4px solid #28a745; }
+    .alert-error { background: #f8d7da; color: #721c24; border-left: 4px solid #dc3545; }
+
+    .template-row { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 16px; }
+  </style>
+</head>
+<body>
+
+  <header class="sc-header">
+    <div class="sc-header-inner">
+      <div>
+        <h1>⏰ Time Slots Management</h1>
+        <p id="headerSubtitle">MATATAG Curriculum | DO 009, s. 2026 | Configure class periods, breaks, and ceremonies</p>
+      </div>
+      <a href="index.html">← Back to Portal</a>
+    </div>
+  </header>
+
+  <div class="sc-container" id="mainContent">
+
+    <div class="sc-loading" id="loading">
+      <div class="sc-spinner"></div>
+      <div>Loading time slots…</div>
+    </div>
+
+    <div id="content" style="display:none;">
+
+      <!-- Term Tabs (Future — for now, only Term 1 active) -->
+      <div class="term-tabs">
+        <button class="term-tab active" data-term="1">Term 1</button>
+        <button class="term-tab" data-term="2" disabled title="Term 2 uses the same time slots">Term 2</button>
+        <button class="term-tab" data-term="3" disabled title="Term 3 uses the same time slots">Term 3</button>
+      </div>
+
+      <!-- Stats -->
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-number" id="statTotal">0</div>
+          <div class="stat-label">📊 Total Slots</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-number" id="statBreaks">0</div>
+          <div class="stat-label">🍎 Break Periods</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-number" id="statClasses">0</div>
+          <div class="stat-label">📚 Class Periods</div>
+        </div>
+      </div>
+
+      <div class="grid-2">
+
+        <!-- Add New Slot -->
+        <div class="sc-card">
+          <h3>➕ Add New Time Slot</h3>
+          <div class="form-group">
+            <label>Slot Name</label>
+            <input type="text" id="f-slotName" placeholder="e.g., Period 1, Health Break, Lunch" />
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Start Time</label>
+              <input type="time" id="f-startTime" />
+            </div>
+            <div class="form-group">
+              <label>End Time</label>
+              <input type="time" id="f-endTime" />
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Order</label>
+              <input type="number" id="f-orderIndex" min="1" placeholder="1" />
+            </div>
+            <div class="form-group">
+              <label>Type</label>
+              <select id="f-type">
+                <option value="class">📚 Class</option>
+                <option value="ceremony">🇵🇭 Ceremony</option>
+                <option value="break">🍎 Break</option>
+                <option value="homeroom">🏠 Homeroom</option>
+                <option value="aral">📖 ARAL Program</option>
+              </select>
+            </div>
+          </div>
+          <button class="sc-btn success" id="btnAddSlot">💾 Add Time Slot</button>
+        </div>
+
+        <!-- Edit Existing Slots -->
+        <div class="sc-card">
+          <h3>✏️ Edit Time Slots</h3>
+          <div style="max-height: 520px; overflow-y: auto; border: 1px solid #e5e7eb; border-radius: 8px;">
+            <table>
+              <thead>
+                <tr>
+                  <th style="width:60px;">Order</th>
+                  <th>Slot Name</th>
+                  <th style="width:130px;">Start</th>
+                  <th style="width:130px;">End</th>
+                  <th style="width:150px;">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="slotsTbody"></tbody>
+            </table>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Schedule Preview -->
+      <div class="sc-card">
+        <h3>📅 Schedule Preview</h3>
+        <div style="overflow-x: auto;">
+          <table>
+            <thead>
+              <tr>
+                <th style="width:60px;">Order</th>
+                <th style="width:200px;">Time</th>
+                <th>Slot Name</th>
+                <th style="width:140px;">Duration</th>
+                <th style="width:160px;">Type</th>
+              </tr>
+            </thead>
+            <tbody id="previewTbody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Templates + Actions -->
+      <div class="sc-card">
+        <h3>⚙ Actions</h3>
+        <div class="template-row">
+          <button class="sc-btn warning" id="btnResetMatatag">↺ Reset to MATATAG Default</button>
+          <button class="sc-btn outline" id="btnResetK12">↺ Reset to K-12 Default</button>
+          <button class="sc-btn outline" id="btnResetSHS">↺ Reset to SHS Default</button>
+          <a href="program.html" class="sc-btn primary" id="btnGoProgram">📅 Go to Class Program</a>
+        </div>
+        <div class="alert alert-info">
+          <strong>ℹ️ Note:</strong> Time slots are <em>school-wide</em> — all classes use the same schedule. Changing a slot here affects every class program.
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <div id="toast" class="sc-toast"></div>
+
+  <script type="module">
+    import { auth } from "./assets/js/firebase-config.js";
+    import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+    import { getCurrentUserProfile } from "./assets/js/roles.js";
+    import {
+      loadTimeSlots, saveTimeSlots, applyTemplate, ensureTimeSlotsExist,
+      formatTime, formatDuration, durationMinutes, slotTypeLabel, slotTypeClass,
+      detectSlotType
+    } from "./assets/js/schedule-config.js";
+
+    const $ = id => document.getElementById(id);
+    let SLOTS = [];
+
+    // ---- Toast ----
+    let toastTimer;
+    function toast(msg, type = "") {
+      const t = $("toast");
+      t.textContent = msg;
+      t.className = "sc-toast show " + type;
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => t.className = "sc-toast", 3000);
+    }
+
+    // ---- Escape ----
+    function esc(s) {
+      return String(s == null ? "" : s)
+        .replace(/&/g, "&amp;").replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+    }
+
+    // ---- Auth check ----
+    onAuthStateChanged(auth, async (user) => {
+      if (!user) {
+        location.replace("login.html?next=" + encodeURIComponent(location.pathname));
+        return;
+      }
+
+      const profile = await getCurrentUserProfile();
+      const isAdmin = profile?.primaryRole === "admin"
+        || profile?.isSuperAdmin
+        || profile?.permissions?.canManageClasses === true;
+
+      if (!isAdmin) {
+        $("loading").innerHTML = `
+          <h2 style="color:#b91c1c;">🚫 Access Denied</h2>
+          <p>Only admins can configure time slots.</p>
+          <a href="index.html" class="sc-btn primary" style="margin-top:12px;">← Back to Portal</a>`;
+        return;
+      }
+
+      await loadAndRender();
+    });
+
+    async function loadAndRender() {
+      try {
+        SLOTS = await ensureTimeSlotsExist();
+      } catch (e) {
+        console.error(e);
+        SLOTS = await loadTimeSlots() || [];
+      }
+
+      $("loading").style.display = "none";
+      $("content").style.display = "block";
+      renderAll();
+      attachHandlers();
+    }
+
+    // ---- Render everything ----
+    function renderAll() {
+      renderStats();
+      renderTable();
+      renderPreview();
+    }
+
+    function renderStats() {
+      const breaks = SLOTS.filter(s => s.type === "break").length;
+      const classes = SLOTS.filter(s => s.type === "class").length;
+      $("statTotal").textContent = SLOTS.length;
+      $("statBreaks").textContent = breaks;
+      $("statClasses").textContent = classes;
+    }
+
+    function renderTable() {
+      const tbody = $("slotsTbody");
+      const sorted = [...SLOTS].sort((a, b) => (a.orderIndex || 0) - (b.orderIndex || 0));
+
+      tbody.innerHTML = sorted.map(slot => {
+        const typeClass = slotTypeClass(slot.type);
+        return `
+          <tr class="${typeClass}" data-id="${esc(slot.id)}">
+            <td><input type="number" data-field="orderIndex" value="${slot.orderIndex || 0}" min="1" /></td>
+            <td><input type="text" data-field="label" value="${esc(slot.label)}" /></td>
+            <td><input type="time" data-field="start" value="${esc(slot.start)}" /></td>
+            <td><input type="time" data-field="end" value="${esc(slot.end)}" /></td>
+            <td>
+              <button class="sc-btn small success" data-action="save">💾 Save</button>
+              <button class="sc-btn small danger" data-action="delete">✕</button>
+            </td>
+          </tr>
+        `;
+      }).join("");
+    }
+
+    function renderPreview() {
+      const tbody = $("previewTbody");
+      const sorted = [...SLOTS].sort((a, b) => (a.orderIndex || 0) - (b.orderIndex || 0));
+
+      if (!sorted.length) {
+        tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;padding:40px;color:#9ca3af;">No time slots configured.</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = sorted.map(slot => {
+        const typeClass = `type-${slot.type || "class"}`;
+        const dur = formatDuration(durationMinutes(slot.start, slot.end));
+        return `
+          <tr class="${slotTypeClass(slot.type)}">
+            <td>${slot.orderIndex}</td>
+            <td>${formatTime(slot.start)} — ${formatTime(slot.end)}</td>
+            <td><strong>${esc(slot.label)}</strong></td>
+            <td>${dur}</td>
+            <td><span class="type-badge ${typeClass}">${slotTypeLabel(slot.type)}</span></td>
+          </tr>
+        `;
+      }).join("");
+    }
+
+    // ---- Handlers ----
+    function attachHandlers() {
+      // Add new slot
+      $("btnAddSlot").addEventListener("click", addNewSlot);
+
+      // Table row actions (event delegation)
+      $("slotsTbody").addEventListener("click", async (e) => {
+        const btn = e.target.closest("[data-action]");
+        if (!btn) return;
+        const row = btn.closest("tr");
+        const slotId = row.dataset.id;
+
+        if (btn.dataset.action === "save") await saveRow(row, slotId);
+        if (btn.dataset.action === "delete") await deleteSlot(slotId);
+      });
+
+      // Reset buttons
+      $("btnResetMatatag")?.addEventListener("click", () => resetTo("MATATAG"));
+      $("btnResetK12")?.addEventListener("click", () => resetTo("K-12"));
+      $("btnResetSHS")?.addEventListener("click", () => resetTo("Strengthened-SHS"));
+    }
+
+    async function addNewSlot() {
+      const label = $("f-slotName").value.trim();
+      const start = $("f-startTime").value;
+      const end = $("f-endTime").value;
+      const orderIndex = parseInt($("f-orderIndex").value, 10);
+      const type = $("f-type").value;
+
+      if (!label) { toast("⚠️ Slot name required", "error"); return; }
+      if (!start || !end) { toast("⚠️ Start and end time required", "error"); return; }
+      if (end <= start) { toast("⚠️ End time must be after start time", "error"); return; }
+
+      const id = "slot-" + Date.now();
+      const newSlot = {
+        id,
+        label,
+        start,
+        end,
+        type: type || detectSlotType(label),
+        orderIndex: orderIndex || (SLOTS.length + 1),
+      };
+
+      SLOTS.push(newSlot);
+      try {
+        await saveTimeSlots(SLOTS);
+        toast("✓ Slot added", "success");
+        // Reset form
+        $("f-slotName").value = "";
+        $("f-startTime").value = "";
+        $("f-endTime").value = "";
+        $("f-orderIndex").value = "";
+        renderAll();
+      } catch (e) {
+        toast("⚠️ " + (e.message || "Save failed"), "error");
+      }
+    }
+
+    async function saveRow(row, slotId) {
+      const idx = SLOTS.findIndex(s => s.id === slotId);
+      if (idx === -1) return;
+
+      const updated = {
+        ...SLOTS[idx],
+        orderIndex: parseInt(row.querySelector("[data-field='orderIndex']").value, 10) || 0,
+        label: row.querySelector("[data-field='label']").value.trim(),
+        start: row.querySelector("[data-field='start']").value,
+        end: row.querySelector("[data-field='end']").value,
+      };
+      updated.type = detectSlotType(updated.label);
+
+      if (!updated.label) { toast("⚠️ Slot name required", "error"); return; }
+      if (updated.end <= updated.start) { toast("⚠️ End must be after start", "error"); return; }
+
+      SLOTS[idx] = updated;
+      try {
+        await saveTimeSlots(SLOTS);
+        toast("✓ Slot updated", "success");
+        renderAll();
+      } catch (e) {
+        toast("⚠️ " + (e.message || "Save failed"), "error");
+      }
+    }
+
+    async function deleteSlot(slotId) {
+      const slot = SLOTS.find(s => s.id === slotId);
+      if (!slot) return;
+      if (!confirm(`Delete "${slot.label}"? This affects all class programs.`)) return;
+
+      SLOTS = SLOTS.filter(s => s.id !== slotId);
+      try {
+        await saveTimeSlots(SLOTS);
+        toast("✓ Slot deleted", "success");
+        renderAll();
+      } catch (e) {
+        toast("⚠️ " + (e.message || "Delete failed"), "error");
+      }
+    }
+
+    async function resetTo(templateKey) {
+      const labels = { "MATATAG": "MATATAG", "K-12": "K-12", "Strengthened-SHS": "SHS Strengthened" };
+      if (!confirm(`Reset ALL time slots to ${labels[templateKey]} default?\n\nThis will overwrite the current configuration.`)) return;
+
+      try {
+        SLOTS = await applyTemplate(templateKey);
+        toast(`✓ Reset to ${labels[templateKey]} defaults`, "success");
+        renderAll();
+      } catch (e) {
+        toast("⚠️ " + (e.message || "Reset failed"), "error");
+      }
+    }
+  </script>
+</body>
+</html>
