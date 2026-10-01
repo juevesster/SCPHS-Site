@@ -43,19 +43,26 @@
       font-size: 14px;
     }
 
-        /* ============================================================
+      /* ============================================================
        ADMIN FLOATING ACTION BUTTON STACK
+       Always visible when user is admin. Simple hover lift.
        ============================================================ */
     #admin-fab-stack {
       position: fixed;
-      bottom: 96px;           /* above chatbot */
+      bottom: 96px;
       right: 24px;
-      display: flex;
-      flex-direction: column-reverse;  /* newest at top */
+      display: none;              /* hidden by default */
+      flex-direction: column;
       gap: 8px;
       z-index: 9998;
     }
 
+    /* Show the stack only when body has .is-admin */
+    body.is-admin #admin-fab-stack {
+      display: flex;
+    }
+
+    /* FAB button styling */
     #admin-fab-stack .fab {
       width: 56px;
       height: 56px;
@@ -65,9 +72,10 @@
       justify-content: center;
       font-size: 24px;
       text-decoration: none;
-      box-shadow: 0 8px 24px rgba(0,0,0,0.15);
-      transition: transform .15s, background .15s, box-shadow .15s;
       color: #fff;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+      transition: transform .15s, box-shadow .15s;
+      cursor: pointer;
     }
 
     #admin-fab-stack .fab:hover {
@@ -75,10 +83,13 @@
       box-shadow: 0 12px 28px rgba(0,0,0,0.25);
     }
 
-    /* Ensure admin-only visibility works */
-    .admin-only-link { display: none !important; }
-    body.is-admin #admin-fab-stack { display: flex !important; }
-    body.is-admin .admin-only-link { display: inline-flex !important; }
+    /* Admin-only inline links (menu items, buttons) — separate rule */
+    .admin-only-link {
+      display: none;
+    }
+    body.is-admin .admin-only-link {
+      display: inline-flex;
+    }
 
     /* Small phones — shrink FABs */
     @media (max-width: 480px) {
@@ -213,7 +224,6 @@
         <ul id="menu-faculty" class="dropdown" role="menu" aria-label="Faculty">
           <li role="none"><a role="menuitem" href="faculty/index.html">Faculty Home</a></li>
           <li role="none"><a role="menuitem" href="sf1.html">📚 SF1 — School Register</a></li>
-          <li role="none" class="admin-only-link"><a role="menuitem" href="sf1.html">📚 SF1 — School Register</a></li>
           <li role="separator" class="menu-sep" aria-hidden="true"></li>
           <li role="none"><a role="menuitem" href="faculty/jhs.html">JHS (Grades 7–10)</a></li>
           <li role="none"><a role="menuitem" href="faculty/shs.html">SHS (Grades 11–12)</a></li>
@@ -1064,7 +1074,7 @@
        Hidden from non-admins via .admin-only-link class.
        Stacked vertically above the chatbot bubble.
        ============================================================ -->
-  <div id="admin-fab-stack" class="admin-only-link">
+  <div id="admin-fab-stack">
 
     <!-- Schedule Config (top) -->
     <a href="schedule-config.html"
