@@ -244,7 +244,7 @@ window.SF1 = {
   addStudent,
   updateStudent,
   deleteStudent,
-  importStudents,   // ← NEW
+  importStudents,   // ← ADD THIS LINE
 };
 
 // ------------------------------------------------------------
