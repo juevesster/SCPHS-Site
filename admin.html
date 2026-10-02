@@ -1,0 +1,980 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin Control Center — SCPHS</title>
+  <link rel="stylesheet" href="assets/css/styles.css" />
+  <style>
+    * { box-sizing: border-box; }
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #f0f2f5; margin: 0; }
+
+    /* Layout */
+    .ac-layout { display: flex; min-height: 100vh; }
+
+    /* Sidebar */
+    .ac-sidebar {
+      width: 240px;
+      background: linear-gradient(180deg, #0f2b4f 0%, #1e3c72 100%);
+      color: #fff;
+      padding: 20px 0;
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      overflow-y: auto;
+      flex-shrink: 0;
+    }
+
+    .ac-sidebar-header {
+      padding: 0 20px 20px;
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+      margin-bottom: 16px;
+    }
+
+    .ac-sidebar-header h1 {
+      margin: 0;
+      font-size: 1.1rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .ac-sidebar-header p {
+      margin: 6px 0 0;
+      font-size: 0.75rem;
+      opacity: 0.75;
+    }
+
+    .ac-nav { padding: 0 12px; }
+
+    .ac-nav-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 11px 14px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 0.9rem;
+      font-weight: 500;
+      color: rgba(255,255,255,0.85);
+      transition: all .15s;
+      border: none;
+      background: none;
+      width: 100%;
+      text-align: left;
+      font-family: inherit;
+      margin-bottom: 3px;
+    }
+
+    .ac-nav-item:hover {
+      background: rgba(255,255,255,0.1);
+      color: #fff;
+    }
+
+    .ac-nav-item.active {
+      background: rgba(255,255,255,0.15);
+      color: #fff;
+      font-weight: 700;
+      box-shadow: inset 3px 0 0 #7dd3fc;
+    }
+
+    .ac-nav-item .ico { font-size: 1.1rem; flex-shrink: 0; }
+
+    .ac-sidebar-footer {
+      padding: 16px 20px;
+      border-top: 1px solid rgba(255,255,255,0.1);
+      margin-top: 20px;
+      font-size: 0.75rem;
+      opacity: 0.7;
+    }
+
+    .ac-sidebar-footer a {
+      color: #fff;
+      text-decoration: none;
+      display: block;
+      padding: 6px 0;
+    }
+
+    .ac-sidebar-footer a:hover { text-decoration: underline; }
+
+    /* Main content */
+    .ac-main { flex: 1; min-width: 0; padding: 24px; }
+
+    .ac-page-header {
+      margin-bottom: 20px;
+    }
+
+    .ac-page-header h2 {
+      margin: 0 0 4px;
+      font-size: 1.5rem;
+      color: #0f2b4f;
+    }
+
+    .ac-page-header p {
+      margin: 0;
+      color: #6b7280;
+      font-size: 0.9rem;
+    }
+
+    /* Cards */
+    .ac-card {
+      background: #fff;
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 20px;
+      box-shadow: 0 1px 3px rgba(0,0,0,.06);
+    }
+
+    .ac-card h3 {
+      margin: 0 0 14px;
+      font-size: 1.05rem;
+      color: #0f2b4f;
+    }
+
+    /* Buttons */
+    .ac-btn {
+      padding: 10px 18px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-family: inherit;
+      font-size: 13px;
+      font-weight: 700;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all .15s;
+      text-decoration: none;
+    }
+
+    .ac-btn:hover:not(:disabled) { transform: translateY(-1px); }
+    .ac-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+    .ac-btn.primary { background: #1e3c72; color: #fff; }
+    .ac-btn.success { background: #059669; color: #fff; }
+    .ac-btn.warning { background: #d97706; color: #fff; }
+    .ac-btn.danger { background: #dc2626; color: #fff; }
+    .ac-btn.outline { background: #fff; color: #1e3c72; border: 1px solid #1e3c72; }
+    .ac-btn.small { padding: 6px 12px; font-size: 12px; }
+
+    /* Toolbar */
+    .ac-toolbar {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      margin-bottom: 16px;
+      flex-wrap: wrap;
+    }
+
+    .ac-search {
+      flex: 1;
+      min-width: 200px;
+      padding: 10px 14px;
+      border: 1px solid #d1d5db;
+      border-radius: 8px;
+      font-size: 14px;
+      font-family: inherit;
+      outline: none;
+    }
+    .ac-search:focus { border-color: #1e6bb8; box-shadow: 0 0 0 3px rgba(30,107,184,.12); }
+
+    .ac-select {
+      padding: 10px 12px;
+      border: 1px solid #d1d5db;
+      border-radius: 8px;
+      font-size: 14px;
+      font-family: inherit;
+      background: #fff;
+      cursor: pointer;
+    }
+
+    /* Tables */
+    .ac-table-wrap {
+      overflow-x: auto;
+      border-radius: 8px;
+      border: 1px solid #e5e7eb;
+    }
+
+    .ac-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+
+    .ac-table th {
+      background: #1e3c72;
+      color: #fff;
+      padding: 12px 14px;
+      text-align: left;
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      white-space: nowrap;
+    }
+
+    .ac-table td {
+      padding: 12px 14px;
+      border-bottom: 1px solid #f3f4f6;
+      vertical-align: middle;
+    }
+
+    .ac-table tbody tr:hover { background: #f9fafb; }
+    .ac-table tbody tr:last-child td { border-bottom: 0; }
+
+    .ac-table .col-actions { text-align: right; white-space: nowrap; }
+
+    .ac-table select,
+    .ac-table input {
+      padding: 7px 10px;
+      border: 1px solid #d1d5db;
+      border-radius: 6px;
+      font-size: 13px;
+      font-family: inherit;
+      max-width: 260px;
+    }
+
+    /* Badges */
+    .ac-badge {
+      display: inline-block;
+      padding: 3px 10px;
+      border-radius: 999px;
+      font-size: 11px;
+      font-weight: 700;
+    }
+    .ac-badge.success { background: #d1fae5; color: #065f46; }
+    .ac-badge.warning { background: #fef3c7; color: #92400e; }
+    .ac-badge.danger { background: #fee2e2; color: #991b1b; }
+    .ac-badge.info { background: #dbeafe; color: #1e40af; }
+
+    /* Bulk assign panel */
+    .ac-bulk-panel {
+      background: #eff6ff;
+      border: 1px solid #bfdbfe;
+      border-radius: 10px;
+      padding: 16px 18px;
+      margin-bottom: 18px;
+    }
+
+    .ac-bulk-panel h4 {
+      margin: 0 0 10px;
+      font-size: 0.95rem;
+      color: #1e40af;
+    }
+
+    .ac-bulk-row {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .ac-bulk-row select,
+    .ac-bulk-row input {
+      padding: 8px 12px;
+      border: 1px solid #cbd5e1;
+      border-radius: 6px;
+      font-size: 13px;
+      font-family: inherit;
+      background: #fff;
+      min-width: 160px;
+    }
+
+    /* Stats */
+    .ac-stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+
+    .ac-stat {
+      background: #f9fafb;
+      border-radius: 10px;
+      padding: 16px;
+      text-align: center;
+    }
+
+    .ac-stat-value {
+      font-size: 1.7rem;
+      font-weight: 800;
+      color: #1e3c72;
+      line-height: 1;
+    }
+
+    .ac-stat-label {
+      font-size: 11px;
+      color: #6b7280;
+      margin-top: 6px;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    /* Loading */
+    .ac-loading {
+      text-align: center;
+      padding: 60px 20px;
+      color: #6b7280;
+    }
+    .ac-spinner {
+      width: 32px;
+      height: 32px;
+      border: 3px solid #e5e7eb;
+      border-top-color: #1e3c72;
+      border-radius: 50%;
+      animation: spin .8s linear infinite;
+      margin: 0 auto 12px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* Empty state */
+    .ac-empty {
+      text-align: center;
+      padding: 40px 20px;
+      color: #6b7280;
+      font-size: 0.9rem;
+    }
+
+    /* Toast */
+    .ac-toast {
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%) translateY(20px);
+      background: #111827;
+      color: #fff;
+      padding: 12px 22px;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 500;
+      box-shadow: 0 8px 24px rgba(0,0,0,.2);
+      opacity: 0;
+      transition: all .25s;
+      z-index: 10000;
+      pointer-events: none;
+    }
+    .ac-toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+    .ac-toast.success { background: #059669; }
+    .ac-toast.error { background: #b91c1c; }
+
+    /* Mobile */
+    @media (max-width: 768px) {
+      .ac-layout { flex-direction: column; }
+      .ac-sidebar {
+        width: 100%;
+        height: auto;
+        position: relative;
+        padding: 14px;
+      }
+      .ac-sidebar-header { padding: 0 6px 12px; margin-bottom: 10px; }
+      .ac-nav {
+        display: flex;
+        gap: 6px;
+        overflow-x: auto;
+        padding: 0;
+      }
+      .ac-nav-item {
+        flex-shrink: 0;
+        padding: 9px 14px;
+        font-size: 0.82rem;
+      }
+      .ac-nav-item .ico { display: none; }
+      .ac-sidebar-footer { display: none; }
+      .ac-main { padding: 16px; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="ac-layout">
+
+    <!-- ============ SIDEBAR ============ -->
+    <aside class="ac-sidebar">
+      <div class="ac-sidebar-header">
+        <h1>⚙️ Admin Center</h1>
+        <p>Sta. Cruz Pingkian HS</p>
+      </div>
+
+      <nav class="ac-nav">
+        <button class="ac-nav-item active" data-tab="classes">
+          <span class="ico">🏫</span> Classes
+        </button>
+        <button class="ac-nav-item" data-tab="advisers">
+          <span class="ico">👤</span> Advisers
+        </button>
+        <button class="ac-nav-item" data-tab="subjects">
+          <span class="ico">📚</span> Subjects
+        </button>
+        <button class="ac-nav-item" data-tab="rooms">
+          <span class="ico">🚪</span> Rooms
+        </button>
+        <button class="ac-nav-item" data-tab="conflicts">
+          <span class="ico">⚠️</span> Conflicts
+        </button>
+      </nav>
+
+      <div class="ac-sidebar-footer">
+        <a href="index.html">← Back to Portal</a>
+        <a href="manage-users.html">👥 Users</a>
+        <a href="schedule-config.html">📅 Time Slots</a>
+      </div>
+    </aside>
+
+    <!-- ============ MAIN ============ -->
+    <main class="ac-main" id="acMain">
+      <div class="ac-loading">
+        <div class="ac-spinner"></div>
+        <div>Loading admin center…</div>
+      </div>
+    </main>
+
+  </div>
+
+  <div class="ac-toast" id="acToast"></div>
+
+  <script type="module">
+    import { auth, db } from "./assets/js/firebase-config.js";
+    import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+    import {
+      collection, getDocs, doc, updateDoc, deleteDoc, addDoc,
+      query, orderBy, serverTimestamp
+    } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+    import { getCurrentUserProfile } from "./assets/js/roles.js";
+
+    // ============================================================
+    // STATE
+    // ============================================================
+    let CURRENT_USER = null;
+    let CURRENT_PROFILE = null;
+    let ACTIVE_TAB = "classes";
+    let CLASSES = [];
+    let USERS = [];
+    let TIME_SLOTS = [];
+    let PROGRAM = {};
+
+    // ============================================================
+    // UTILITIES
+    // ============================================================
+    const $ = id => document.getElementById(id);
+    const esc = s => String(s == null ? "" : s)
+      .replace(/&/g, "&amp;").replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+
+    let toastTimer;
+    function toast(msg, type = "") {
+      const t = $("acToast");
+      t.textContent = msg;
+      t.className = "ac-toast show " + type;
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => t.className = "ac-toast", 3000);
+    }
+
+    function sortClasses(classes) {
+      const gradeOrder = [
+        "Kindergarten", "Grade 1", "Grade 2", "Grade 3",
+        "Grade 4", "Grade 5", "Grade 6",
+        "Grade 7", "Grade 8", "Grade 9", "Grade 10",
+        "Grade 11", "Grade 12"
+      ];
+      return [...classes].sort((a, b) => {
+        const aIdx = gradeOrder.indexOf(a.gradeLevel);
+        const bIdx = gradeOrder.indexOf(b.gradeLevel);
+        if (aIdx !== bIdx) return aIdx - bIdx;
+        return (a.section || "").localeCompare(b.section || "");
+      });
+    }
+
+    // ============================================================
+    // AUTH CHECK
+    // ============================================================
+    onAuthStateChanged(auth, async (user) => {
+      if (!user) {
+        location.replace("login.html?next=" + encodeURIComponent(location.pathname + location.search));
+        return;
+      }
+
+      CURRENT_USER = user;
+      CURRENT_PROFILE = await getCurrentUserProfile();
+
+      const isAdmin = CURRENT_PROFILE?.primaryRole === "admin"
+        || CURRENT_PROFILE?.isSuperAdmin
+        || CURRENT_PROFILE?.permissions?.canManageClasses === true;
+
+      if (!isAdmin) {
+        $("acMain").innerHTML = `
+          <div class="ac-card" style="text-align:center;padding:60px;">
+            <h2 style="color:#b91c1c;">🚫 Access Denied</h2>
+            <p>Only admins can access the control center.</p>
+            <a href="index.html" class="ac-btn primary" style="margin-top:14px;">← Back to Portal</a>
+          </div>`;
+        return;
+      }
+
+      await loadAllData();
+      renderActiveTab();
+      attachSidebarHandlers();
+      handleUrlHash();
+    });
+
+    // ============================================================
+    // DATA LOADING
+    // ============================================================
+    async function loadAllData() {
+      try {
+        // Load classes
+        const classSnap = await getDocs(collection(db, "classes"));
+        CLASSES = classSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+        CLASSES = sortClasses(CLASSES);
+
+        // Load users (for adviser dropdowns)
+        const userSnap = await getDocs(collection(db, "users"));
+        USERS = userSnap.docs.map(d => ({ uid: d.id, ...d.data() }))
+          .sort((a, b) => (a.name || "").localeCompare(b.name || ""));
+
+        // Load time slots (for subjects tab)
+        try {
+          const { loadTimeSlots, ensureTimeSlotsExist } = await import("./assets/js/schedule-config.js");
+          TIME_SLOTS = await ensureTimeSlotsExist() || [];
+        } catch { TIME_SLOTS = []; }
+
+        // Load student counts per class
+        for (const cls of CLASSES) {
+          try {
+            const studentsSnap = await getDocs(collection(db, "classes", cls.id, "students"));
+            cls.studentCount = studentsSnap.size;
+          } catch { cls.studentCount = 0; }
+        }
+      } catch (e) {
+        console.error("[admin] load failed:", e);
+        toast("⚠️ Failed to load data", "error");
+      }
+    }
+
+    // ============================================================
+    // SIDEBAR & ROUTING
+    // ============================================================
+    function attachSidebarHandlers() {
+      document.querySelectorAll(".ac-nav-item").forEach(btn => {
+        btn.addEventListener("click", () => {
+          const tab = btn.dataset.tab;
+          switchTab(tab);
+        });
+      });
+    }
+
+    function switchTab(tab) {
+      ACTIVE_TAB = tab;
+      document.querySelectorAll(".ac-nav-item").forEach(b => {
+        b.classList.toggle("active", b.dataset.tab === tab);
+      });
+      // Update URL hash
+      history.replaceState(null, "", "#" + tab);
+      renderActiveTab();
+    }
+
+    function handleUrlHash() {
+      const hash = location.hash.replace("#", "");
+      if (hash && ["classes", "advisers", "subjects", "rooms", "conflicts"].includes(hash)) {
+        switchTab(hash);
+      }
+    }
+
+    // ============================================================
+    // RENDER DISPATCHER
+    // ============================================================
+    function renderActiveTab() {
+      const main = $("acMain");
+      switch (ACTIVE_TAB) {
+        case "classes":  renderClassesTab(main); break;
+        case "advisers": renderAdvisersTab(main); break;
+        case "subjects": renderComingSoonTab(main, "Subjects"); break;
+        case "rooms":    renderComingSoonTab(main, "Rooms"); break;
+        case "conflicts":renderComingSoonTab(main, "Conflicts"); break;
+        default:         renderClassesTab(main);
+      }
+    }
+
+    function renderComingSoonTab(main, name) {
+      main.innerHTML = `
+        <div class="ac-page-header">
+          <h2>${name}</h2>
+          <p>This tab will be built in the next session.</p>
+        </div>
+        <div class="ac-card" style="text-align:center;padding:60px 20px;">
+          <div style="font-size:3rem;">🚧</div>
+          <h3 style="margin-top:12px;">Coming Soon</h3>
+          <p style="color:#6b7280;">The ${name} tab is on the roadmap.</p>
+        </div>
+      `;
+    }
+
+    // ============================================================
+    // TAB: CLASSES
+    // ============================================================
+    function renderClassesTab(main) {
+      const totalStudents = CLASSES.reduce((sum, c) => sum + (c.studentCount || 0), 0);
+
+      main.innerHTML = `
+        <div class="ac-page-header">
+          <h2>🏫 Classes</h2>
+          <p>All classes in the school. Create, edit, or remove classes.</p>
+        </div>
+
+        <div class="ac-stats">
+          <div class="ac-stat">
+            <div class="ac-stat-value">${CLASSES.length}</div>
+            <div class="ac-stat-label">Total Classes</div>
+          </div>
+          <div class="ac-stat">
+            <div class="ac-stat-value">${totalStudents}</div>
+            <div class="ac-stat-label">Total Students</div>
+          </div>
+          <div class="ac-stat">
+            <div class="ac-stat-value">${CLASSES.filter(c => c.adviserUid).length}</div>
+            <div class="ac-stat-label">With Adviser</div>
+          </div>
+          <div class="ac-stat">
+            <div class="ac-stat-value" style="color:#dc2626;">${CLASSES.filter(c => !c.adviserUid).length}</div>
+            <div class="ac-stat-label">Missing Adviser</div>
+          </div>
+        </div>
+
+        <div class="ac-card">
+          <div class="ac-toolbar">
+            <a href="sf1-manage.html" class="ac-btn primary">➕ Create New Class</a>
+            <input type="search" class="ac-search" id="classSearch" placeholder="🔍 Search class or adviser…">
+            <select class="ac-select" id="classGradeFilter">
+              <option value="">All Grades</option>
+              ${[...new Set(CLASSES.map(c => c.gradeLevel))].map(g =>
+                `<option value="${esc(g)}">${esc(g)}</option>`
+              ).join("")}
+            </select>
+            <span style="margin-left:auto;color:#6b7280;font-size:12px;" id="classCount"></span>
+          </div>
+
+          <div class="ac-table-wrap">
+            <table class="ac-table" id="classTable">
+              <thead>
+                <tr>
+                  <th>Class</th>
+                  <th>Curriculum</th>
+                  <th>School Year</th>
+                  <th>Adviser</th>
+                  <th>Students</th>
+                  <th class="col-actions">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="classTbody"></tbody>
+            </table>
+          </div>
+        </div>
+      `;
+
+      renderClassRows();
+      $("classSearch").addEventListener("input", renderClassRows);
+      $("classGradeFilter").addEventListener("change", renderClassRows);
+    }
+
+    function renderClassRows() {
+      const term = ($("classSearch")?.value || "").toLowerCase().trim();
+      const grade = $("classGradeFilter")?.value || "";
+
+      const filtered = CLASSES.filter(c => {
+        const matchTerm = !term
+          || (c.classLabel || "").toLowerCase().includes(term)
+          || (c.adviserName || "").toLowerCase().includes(term);
+        const matchGrade = !grade || c.gradeLevel === grade;
+        return matchTerm && matchGrade;
+      });
+
+      $("classCount").textContent = `${filtered.length} of ${CLASSES.length} classes`;
+
+      const tbody = $("classTbody");
+      if (!filtered.length) {
+        tbody.innerHTML = `<tr><td colspan="6" class="ac-empty">No classes match your filters.</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = filtered.map(c => `
+        <tr data-class-id="${esc(c.id)}">
+          <td><strong>${esc(c.classLabel)}</strong></td>
+          <td><span class="ac-badge info">${esc(c.curriculum || "—")}</span></td>
+          <td>${esc(c.schoolYear || "—")}</td>
+          <td>${c.adviserName ? esc(c.adviserName) : '<span class="ac-badge warning">Unassigned</span>'}</td>
+          <td><strong>${c.studentCount || 0}</strong></td>
+          <td class="col-actions">
+            <a href="sf1-class.html?id=${esc(c.id)}" class="ac-btn outline small">👥 Students</a>
+            <a href="program.html?id=${esc(c.id)}" class="ac-btn outline small">📅 Program</a>
+            <button class="ac-btn danger small" data-del-class="${esc(c.id)}">✕</button>
+          </td>
+        </tr>
+      `).join("");
+
+      // Delete handlers
+      tbody.querySelectorAll("[data-del-class]").forEach(btn => {
+        btn.addEventListener("click", async () => {
+          const classId = btn.dataset.delClass;
+          const cls = CLASSES.find(c => c.id === classId);
+          if (!cls) return;
+          if (!confirm(`Delete "${cls.classLabel}"?\n\nThis will also delete all its students and program entries.`)) return;
+
+          try {
+            // Delete students first
+            const students = await getDocs(collection(db, "classes", classId, "students"));
+            for (const docSnap of students.docs) {
+              await deleteDoc(docSnap.ref);
+            }
+            // Delete class
+            await deleteDoc(doc(db, "classes", classId));
+            toast("✓ Class deleted", "success");
+            await loadAllData();
+            renderActiveTab();
+          } catch (e) {
+            toast("⚠️ " + (e.message || "Delete failed"), "error");
+          }
+        });
+      });
+    }
+
+    // ============================================================
+    // TAB: ADVISERS
+    // ============================================================
+    function renderAdvisersTab(main) {
+      const assigned = CLASSES.filter(c => c.adviserUid).length;
+      const missing = CLASSES.length - assigned;
+
+      main.innerHTML = `
+        <div class="ac-page-header">
+          <h2>👤 Advisers</h2>
+          <p>Assign or change class advisers. Bulk operations supported.</p>
+        </div>
+
+        <div class="ac-stats">
+          <div class="ac-stat">
+            <div class="ac-stat-value">${CLASSES.length}</div>
+            <div class="ac-stat-label">Total Classes</div>
+          </div>
+          <div class="ac-stat">
+            <div class="ac-stat-value" style="color:#059669;">${assigned}</div>
+            <div class="ac-stat-label">With Adviser</div>
+          </div>
+          <div class="ac-stat">
+            <div class="ac-stat-value" style="color:#dc2626;">${missing}</div>
+            <div class="ac-stat-label">Missing Adviser</div>
+          </div>
+        </div>
+
+        <!-- Bulk assign -->
+        <div class="ac-card">
+          <div class="ac-bulk-panel">
+            <h4>⚡ Bulk Assign</h4>
+            <p style="margin:0 0 10px;font-size:0.82rem;color:#1e40af;">
+              Assign the same adviser to all classes of a specific grade level.
+            </p>
+            <div class="ac-bulk-row">
+              <select id="bulkGrade">
+                <option value="">-- Select Grade --</option>
+                ${[...new Set(CLASSES.map(c => c.gradeLevel))].map(g =>
+                  `<option value="${esc(g)}">${esc(g)}</option>`
+                ).join("")}
+              </select>
+              <select id="bulkAdviser">
+                <option value="">-- Select Adviser --</option>
+                ${getTeacherOptions()}
+              </select>
+              <button class="ac-btn primary" id="btnBulkAssign">Assign to All</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Individual assignments -->
+        <div class="ac-card">
+          <div class="ac-toolbar">
+            <h3 style="margin:0;">Individual Class Advisers</h3>
+            <input type="search" class="ac-search" id="adviserSearch" placeholder="🔍 Search…" style="max-width:280px;margin-left:auto;">
+            <select class="ac-select" id="adviserFilter">
+              <option value="">All Classes</option>
+              <option value="unassigned">⚠️ Unassigned Only</option>
+              <option value="assigned">✅ Assigned Only</option>
+            </select>
+          </div>
+
+          <div class="ac-table-wrap">
+            <table class="ac-table">
+              <thead>
+                <tr>
+                  <th>Class</th>
+                  <th>Current Adviser</th>
+                  <th>Assign New Adviser</th>
+                  <th class="col-actions">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="adviserTbody"></tbody>
+            </table>
+          </div>
+        </div>
+      `;
+
+      renderAdviserRows();
+      $("adviserSearch").addEventListener("input", renderAdviserRows);
+      $("adviserFilter").addEventListener("change", renderAdviserRows);
+      $("btnBulkAssign").addEventListener("click", bulkAssign);
+    }
+
+    function getTeacherOptions(selectedUid = "") {
+      return USERS
+        .filter(u => {
+          const role = u.primaryRole || u.role || "student";
+          return role === "teacher" || role === "admin";
+        })
+        .map(u => {
+          const label = `${u.name || u.email} (${u.email})`;
+          const sel = u.uid === selectedUid ? "selected" : "";
+          return `<option value="${esc(u.uid)}" data-name="${esc(u.name || u.email)}" ${sel}>${esc(label)}</option>`;
+        })
+        .join("");
+    }
+
+    function renderAdviserRows() {
+      const term = ($("adviserSearch")?.value || "").toLowerCase().trim();
+      const filter = $("adviserFilter")?.value || "";
+
+      const filtered = CLASSES.filter(c => {
+        const matchTerm = !term
+          || (c.classLabel || "").toLowerCase().includes(term)
+          || (c.adviserName || "").toLowerCase().includes(term);
+        const matchFilter =
+          !filter ||
+          (filter === "unassigned" && !c.adviserUid) ||
+          (filter === "assigned" && c.adviserUid);
+        return matchTerm && matchFilter;
+      });
+
+      const tbody = $("adviserTbody");
+      if (!filtered.length) {
+        tbody.innerHTML = `<tr><td colspan="4" class="ac-empty">No classes match your filters.</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = filtered.map(c => `
+        <tr data-class-id="${esc(c.id)}">
+          <td><strong>${esc(c.classLabel)}</strong></td>
+          <td>
+            ${c.adviserName
+              ? `<span class="ac-badge success">${esc(c.adviserName)}</span>`
+              : `<span class="ac-badge warning">Unassigned</span>`}
+          </td>
+          <td>
+            <select data-adviser-select="${esc(c.id)}">
+              <option value="">— Select Adviser —</option>
+              ${getTeacherOptions(c.adviserUid)}
+            </select>
+          </td>
+          <td class="col-actions">
+            <button class="ac-btn success small" data-save-adviser="${esc(c.id)}">💾 Save</button>
+            ${c.adviserUid ? `<button class="ac-btn danger small" data-clear-adviser="${esc(c.id)}">✕ Clear</button>` : ""}
+          </td>
+        </tr>
+      `).join("");
+
+      // Save handlers
+      tbody.querySelectorAll("[data-save-adviser]").forEach(btn => {
+        btn.addEventListener("click", async () => {
+          const classId = btn.dataset.saveAdviser;
+          const select = tbody.querySelector(`[data-adviser-select="${classId}"]`);
+          const uid = select.value;
+
+          if (!uid) {
+            toast("⚠️ Please select an adviser", "error");
+            return;
+          }
+
+          const selectedOpt = select.options[select.selectedIndex];
+          const adviserName = selectedOpt.getAttribute("data-name") || selectedOpt.textContent;
+
+          btn.disabled = true;
+          try {
+            await updateDoc(doc(db, "classes", classId), {
+              adviserUid: uid,
+              adviserName,
+              updatedAt: serverTimestamp(),
+            });
+            toast("✓ Adviser assigned", "success");
+            await loadAllData();
+            renderActiveTab();
+          } catch (e) {
+            toast("⚠️ " + (e.message || "Save failed"), "error");
+          } finally {
+            btn.disabled = false;
+          }
+        });
+      });
+
+      // Clear handlers
+      tbody.querySelectorAll("[data-clear-adviser]").forEach(btn => {
+        btn.addEventListener("click", async () => {
+          const classId = btn.dataset.clearAdviser;
+          if (!confirm("Remove the adviser from this class?")) return;
+          try {
+            await updateDoc(doc(db, "classes", classId), {
+              adviserUid: "",
+              adviserName: "",
+              updatedAt: serverTimestamp(),
+            });
+            toast("✓ Adviser removed", "success");
+            await loadAllData();
+            renderActiveTab();
+          } catch (e) {
+            toast("⚠️ " + (e.message || "Failed"), "error");
+          }
+        });
+      });
+    }
+
+    async function bulkAssign() {
+      const grade = $("bulkGrade").value;
+      const uid = $("bulkAdviser").value;
+
+      if (!grade || !uid) {
+        toast("⚠️ Select both a grade level and an adviser", "error");
+        return;
+      }
+
+      const matches = CLASSES.filter(c => c.gradeLevel === grade);
+      if (!matches.length) {
+        toast("⚠️ No classes found for this grade", "error");
+        return;
+      }
+
+      const select = $("bulkAdviser");
+      const adviserName = select.options[select.selectedIndex].getAttribute("data-name") || select.options[select.selectedIndex].textContent;
+
+      if (!confirm(`Assign ${adviserName} as adviser to all ${matches.length} classes in ${grade}?`)) return;
+
+      const btn = $("btnBulkAssign");
+      btn.disabled = true;
+      btn.textContent = "Assigning…";
+
+      try {
+        for (const cls of matches) {
+          await updateDoc(doc(db, "classes", cls.id), {
+            adviserUid: uid,
+            adviserName,
+            updatedAt: serverTimestamp(),
+          });
+        }
+        toast(`✓ Adviser assigned to ${matches.length} classes`, "success");
+        await loadAllData();
+        renderActiveTab();
+      } catch (e) {
+        toast("⚠️ " + (e.message || "Bulk assign failed"), "error");
+      } finally {
+        btn.disabled = false;
+        btn.textContent = "Assign to All";
+      }
+    }
+
+  </script>
+
+</body>
+</html>
