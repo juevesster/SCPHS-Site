@@ -1,0 +1,600 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Import Class Program — SCPHS Admin</title>
+  <link rel="stylesheet" href="assets/css/styles.css" />
+  <style>
+    * { box-sizing: border-box; }
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #f0f2f5; margin: 0; }
+
+    .ip-header { background: linear-gradient(135deg, #1e3c72, #2a5298); color: #fff; padding: 24px 0; }
+    .ip-header-inner { max-width: 1100px; margin: 0 auto; padding: 0 24px; display: flex; justify-content: space-between; align-items: center; gap: 16px; flex-wrap: wrap; }
+    .ip-header h1 { margin: 0 0 4px; font-size: 1.5rem; }
+    .ip-header p { margin: 0; opacity: 0.9; font-size: 0.9rem; }
+    .ip-header a { color: #fff; text-decoration: none; padding: 8px 16px; border: 1px solid rgba(255,255,255,0.3); border-radius: 8px; font-size: 13px; }
+
+    .ip-container { max-width: 1100px; margin: 0 auto; padding: 24px; }
+
+    .ip-card { background: #fff; border-radius: 12px; padding: 24px; margin-bottom: 20px; box-shadow: 0 1px 3px rgba(0,0,0,.06); }
+    .ip-card h2 { margin: 0 0 4px; font-size: 1.15rem; color: #0f2b4f; }
+    .ip-card .sub { margin: 0 0 18px; font-size: 0.85rem; color: #6b7280; }
+
+    .ip-field { margin-bottom: 16px; }
+    .ip-field label { display: block; font-size: 0.78rem; font-weight: 700; color: #374151; text-transform: uppercase; letter-spacing: 0.03em; margin-bottom: 6px; }
+    .ip-field select { width: 100%; max-width: 480px; padding: 10px 12px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 14px; font-family: inherit; background: #fff; }
+    .ip-field select:focus { outline: none; border-color: #1e6bb8; box-shadow: 0 0 0 3px rgba(30,107,184,.12); }
+
+    .ip-btn { padding: 12px 24px; border: none; border-radius: 8px; cursor: pointer; font-family: inherit; font-size: 14px; font-weight: 700; display: inline-flex; align-items: center; gap: 8px; transition: all .15s; }
+    .ip-btn:hover:not(:disabled) { transform: translateY(-1px); }
+    .ip-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+    .ip-btn.primary { background: #1e3c72; color: #fff; }
+    .ip-btn.success { background: #059669; color: #fff; }
+    .ip-btn.outline { background: #fff; color: #1e3c72; border: 1px solid #1e3c72; }
+
+    /* Preview */
+    .ip-preview { display: grid; gap: 8px; margin-top: 16px; max-height: 400px; overflow-y: auto; padding: 4px; }
+    .ip-preview-row {
+      display: grid;
+      grid-template-columns: 100px 130px 110px 1fr;
+      gap: 10px;
+      padding: 10px 14px;
+      background: #f9fafb;
+      border-radius: 8px;
+      font-size: 13px;
+      align-items: center;
+      border-left: 3px solid #cbd5e1;
+    }
+    .ip-preview-row .day { font-weight: 700; color: #1e3c72; }
+    .ip-preview-row .slot { color: #4b5563; font-size: 12px; }
+    .ip-preview-row .subject { font-weight: 700; color: #0f2b4f; }
+    .ip-preview-row .teacher { color: #6b7280; font-size: 12px; }
+    .ip-preview-row .spec { display: inline-block; background: #6f42c1; color: #fff; padding: 1px 6px; border-radius: 3px; font-size: 10px; margin-left: 4px; }
+
+    .ip-stats { display: flex; gap: 16px; flex-wrap: wrap; padding: 14px 18px; background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 8px; margin-bottom: 16px; }
+    .ip-stats div { font-size: 13px; color: #1e40af; }
+    .ip-stats strong { font-size: 1.1rem; }
+
+    .ip-toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(20px); background: #111827; color: #fff; padding: 12px 22px; border-radius: 8px; font-size: 14px; font-weight: 500; box-shadow: 0 8px 24px rgba(0,0,0,.2); opacity: 0; transition: all .25s; z-index: 10000; pointer-events: none; }
+    .ip-toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+    .ip-toast.success { background: #059669; }
+    .ip-toast.error { background: #b91c1c; }
+
+    .ip-loading { text-align: center; padding: 60px 20px; color: #6b7280; }
+    .ip-spinner { width: 32px; height: 32px; border: 3px solid #e5e7eb; border-top-color: #1e3c72; border-radius: 50%; animation: spin .8s linear infinite; margin: 0 auto 12px; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .ip-warn { background: #fef3c7; border: 1px solid #fcd34d; color: #92400e; padding: 12px 16px; border-radius: 8px; font-size: 13px; margin-bottom: 16px; line-height: 1.5; }
+    .ip-success-box { background: #f0fdf4; border: 1px solid #bbf7d0; color: #166534; padding: 16px 20px; border-radius: 8px; font-size: 14px; line-height: 1.6; }
+
+    @media (max-width: 768px) {
+      .ip-preview-row { grid-template-columns: 1fr 1fr; }
+      .ip-preview-row .day { grid-column: 1 / 2; }
+      .ip-preview-row .slot { grid-column: 2 / 3; }
+      .ip-preview-row .subject { grid-column: 1 / -1; }
+      .ip-preview-row .teacher { grid-column: 1 / -1; }
+    }
+  </style>
+</head>
+<body>
+
+  <header class="ip-header">
+    <div class="ip-header-inner">
+      <div>
+        <h1>📥 Import Class Program</h1>
+        <p>Bulk-insert a Term's class program from a predefined template</p>
+      </div>
+      <a href="admin.html">← Back to Admin</a>
+    </div>
+  </header>
+
+  <div class="ip-container" id="mainContent">
+    <div class="ip-loading" id="loading">
+      <div class="ip-spinner"></div>
+      <div>Loading…</div>
+    </div>
+
+    <div id="content" style="display:none;">
+
+      <!-- Step 1: Configure -->
+      <div class="ip-card" id="configCard">
+        <h2>Step 1 — Configure Import</h2>
+        <p class="sub">Pick the target class and which template to use.</p>
+
+        <div class="ip-field">
+          <label for="ipClass">Target Class</label>
+          <select id="ipClass"></select>
+        </div>
+
+        <div class="ip-field">
+          <label for="ipTemplate">Schedule Template</label>
+          <select id="ipTemplate"></select>
+        </div>
+
+        <div class="ip-field">
+          <label for="ipTerm">Term</label>
+          <select id="ipTerm">
+            <option value="1" selected>Term 1</option>
+            <option value="2">Term 2</option>
+            <option value="3">Term 3</option>
+          </select>
+        </div>
+
+        <button class="ip-btn primary" id="btnPreview">👁 Preview Import</button>
+      </div>
+
+      <!-- Step 2: Preview -->
+      <div class="ip-card" id="previewCard" style="display:none;">
+        <h2>Step 2 — Review & Confirm</h2>
+        <p class="sub">These entries will be added to the selected class. Duplicates are skipped automatically.</p>
+
+        <div class="ip-stats" id="ipStats"></div>
+
+        <div id="ipWarn" class="ip-warn" style="display:none;"></div>
+
+        <div class="ip-preview" id="ipPreview"></div>
+
+        <div style="display:flex;gap:10px;margin-top:20px;flex-wrap:wrap;">
+          <button class="ip-btn success" id="btnImport">✓ Import Program</button>
+          <button class="ip-btn outline" id="btnCancel">Cancel</button>
+        </div>
+      </div>
+
+      <!-- Step 3: Done -->
+      <div class="ip-card" id="doneCard" style="display:none;">
+        <h2>✓ Import Complete</h2>
+        <div class="ip-success-box" id="doneBox"></div>
+        <div style="margin-top:20px;display:flex;gap:10px;flex-wrap:wrap;">
+          <a class="ip-btn primary" id="btnViewProgram" href="#" style="text-decoration:none;">📅 View Class Program</a>
+          <button class="ip-btn outline" id="btnImportAnother">📥 Import Another</button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <div id="toast" class="ip-toast"></div>
+
+  <script type="module">
+    import { auth, db } from "./assets/js/firebase-config.js";
+    import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+    import {
+      collection, getDocs, addDoc, doc, serverTimestamp,
+    } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+    import { getCurrentUserProfile } from "./assets/js/roles.js";
+
+    // ============================================================
+    // TEMPLATES — Grade 7 schedules
+    // ============================================================
+    const TEMPLATES = {
+
+      "g7-diamond": {
+        label: "Grade 7 - DIAMOND (Term 1)",
+        entries: [
+          // Monday
+          { day: "Monday",    slot: "period-1", subject: "HGP",    teacher: "joandayag@deped.gov.ph",       spec: "" },
+          { day: "Monday",    slot: "period-2", subject: "TLE7",   teacher: "shallonpugong@deped.gov.ph",   spec: "Cookery" },
+          { day: "Monday",    slot: "period-3", subject: "ENG7",   teacher: "riza.sabornido001@deped.gov.ph", spec: "" },
+          { day: "Monday",    slot: "period-4", subject: "SCI7",   teacher: "glyflorencematias.22@gmail.com", spec: "" },
+          { day: "Monday",    slot: "period-5", subject: "MATH7",  teacher: "arman.puyao@deped.gov.ph",     spec: "" },
+          { day: "Monday",    slot: "period-6", subject: "FIL7",   teacher: "airishmanuel@deped.gov.ph",    spec: "" },
+          { day: "Monday",    slot: "period-7", subject: "ESP7",   teacher: "riza.sabornido001@deped.gov.ph", spec: "" },
+          { day: "Monday",    slot: "aral",     subject: "ARAL",   teacher: "joandayag@deped.gov.ph",       spec: "" },
+
+          // Tuesday
+          { day: "Tuesday",   slot: "period-1", subject: "MAPEH7", teacher: "joandayag@deped.gov.ph",       spec: "" },
+          { day: "Tuesday",   slot: "period-2", subject: "TLE7",   teacher: "shallonpugong@deped.gov.ph",   spec: "Cookery" },
+          { day: "Tuesday",   slot: "period-3", subject: "AP7",    teacher: "risahimson@deped.gov.ph",      spec: "" },
+          { day: "Tuesday",   slot: "period-4", subject: "SCI7",   teacher: "glyflorencematias.22@gmail.com", spec: "" },
+          { day: "Tuesday",   slot: "period-5", subject: "MATH7",  teacher: "arman.puyao@deped.gov.ph",     spec: "" },
+          { day: "Tuesday",   slot: "period-6", subject: "FIL7",   teacher: "airishmanuel@deped.gov.ph",    spec: "" },
+          { day: "Tuesday",   slot: "period-7", subject: "ESP7",   teacher: "riza.sabornido001@deped.gov.ph", spec: "" },
+          { day: "Tuesday",   slot: "aral",     subject: "ARAL",   teacher: "joandayag@deped.gov.ph",       spec: "" },
+
+          // Wednesday
+          { day: "Wednesday", slot: "period-1", subject: "MAPEH7", teacher: "joandayag@deped.gov.ph",       spec: "" },
+          { day: "Wednesday", slot: "period-2", subject: "AP7",    teacher: "risahimson@deped.gov.ph",      spec: "" },
+          { day: "Wednesday", slot: "period-3", subject: "ENG7",   teacher: "riza.sabornido001@deped.gov.ph", spec: "" },
+          { day: "Wednesday", slot: "period-4", subject: "SCI7",   teacher: "glyflorencematias.22@gmail.com", spec: "" },
+          { day: "Wednesday", slot: "period-5", subject: "ESP7",   teacher: "riza.sabornido001@deped.gov.ph", spec: "" },
+          { day: "Wednesday", slot: "period-6", subject: "FIL7",   teacher: "airishmanuel@deped.gov.ph",    spec: "" },
+          { day: "Wednesday", slot: "period-7", subject: "ARAL",   teacher: "joandayag@deped.gov.ph",       spec: "" },
+
+          // Thursday
+          { day: "Thursday",  slot: "period-1", subject: "MAPEH7", teacher: "joandayag@deped.gov.ph",       spec: "" },
+          { day: "Thursday",  slot: "period-2", subject: "TLE7",   teacher: "shallonpugong@deped.gov.ph",   spec: "Cookery" },
+          { day: "Thursday",  slot: "period-3", subject: "ENG7",   teacher: "riza.sabornido001@deped.gov.ph", spec: "" },
+          { day: "Thursday",  slot: "period-4", subject: "AP7",    teacher: "risahimson@deped.gov.ph",      spec: "" },
+          { day: "Thursday",  slot: "period-5", subject: "MATH7",  teacher: "arman.puyao@deped.gov.ph",     spec: "" },
+          { day: "Thursday",  slot: "period-6", subject: "FIL7",   teacher: "airishmanuel@deped.gov.ph",    spec: "" },
+          { day: "Thursday",  slot: "period-7", subject: "ARAL",   teacher: "joandayag@deped.gov.ph",       spec: "" },
+
+          // Friday
+          { day: "Friday",    slot: "period-1", subject: "MAPEH7", teacher: "joandayag@deped.gov.ph",       spec: "" },
+          { day: "Friday",    slot: "period-2", subject: "TLE7",   teacher: "shallonpugong@deped.gov.ph",   spec: "Cookery" },
+          { day: "Friday",    slot: "period-3", subject: "ENG7",   teacher: "riza.sabornido001@deped.gov.ph", spec: "" },
+          { day: "Friday",    slot: "period-4", subject: "SCI7",   teacher: "glyflorencematias.22@gmail.com", spec: "" },
+          { day: "Friday",    slot: "period-5", subject: "MATH7",  teacher: "arman.puyao@deped.gov.ph",     spec: "" },
+          { day: "Friday",    slot: "period-6", subject: "AP7",    teacher: "risahimson@deped.gov.ph",      spec: "" },
+          { day: "Friday",    slot: "period-7", subject: "ESP7",   teacher: "riza.sabornido001@deped.gov.ph", spec: "" },
+        ]
+      },
+
+      "g7-emerald": {
+        label: "Grade 7 - EMERALD (Term 1)",
+        entries: [
+          // Monday
+          { day: "Monday",    slot: "period-1", subject: "HGP",    teacher: "joelalunag@deped.gov.ph",      spec: "" },
+          { day: "Monday",    slot: "period-2", subject: "MATH7",  teacher: "arman.puyao@deped.gov.ph",     spec: "" },
+          { day: "Monday",    slot: "period-3", subject: "ESP7",   teacher: "joelalunag@deped.gov.ph",      spec: "" },
+          { day: "Monday",    slot: "period-4", subject: "ENG7",   teacher: "riza.sabornido001@deped.gov.ph", spec: "" },
+          { day: "Monday",    slot: "period-5", subject: "SCI7",   teacher: "glyflorencematias.22@gmail.com", spec: "" },
+          { day: "Monday",    slot: "period-6", subject: "TLE7",   teacher: "shallonpugong@deped.gov.ph",   spec: "Cookery" },
+          { day: "Monday",    slot: "period-7", subject: "MAPEH7", teacher: "joandayag@deped.gov.ph",       spec: "" },
+          { day: "Monday",    slot: "aral",     subject: "ARAL",   teacher: "joelalunag@deped.gov.ph",      spec: "" },
+
+          // Tuesday
+          { day: "Tuesday",   slot: "period-1", subject: "AP7",    teacher: "risahimson@deped.gov.ph",      spec: "" },
+          { day: "Tuesday",   slot: "period-2", subject: "ESP7",   teacher: "joelalunag@deped.gov.ph",      spec: "" },
+          { day: "Tuesday",   slot: "period-3", subject: "MATH7",  teacher: "arman.puyao@deped.gov.ph",     spec: "" },
+          { day: "Tuesday",   slot: "period-4", subject: "MAPEH7", teacher: "joandayag@deped.gov.ph",       spec: "" },
+          { day: "Tuesday",   slot: "period-5", subject: "ENG7",   teacher: "riza.sabornido001@deped.gov.ph", spec: "" },
+          { day: "Tuesday",   slot: "period-6", subject: "FIL7",   teacher: "airishmanuel@deped.gov.ph",    spec: "" },
+          { day: "Tuesday",   slot: "period-7", subject: "ARAL",   teacher: "joelalunag@deped.gov.ph",      spec: "" },
+          { day: "Tuesday",   slot: "aral",     subject: "ARAL",   teacher: "joelalunag@deped.gov.ph",      spec: "" },
+
+          // Wednesday
+          { day: "Wednesday", slot: "period-1", subject: "AP7",    teacher: "risahimson@deped.gov.ph",      spec: "" },
+          { day: "Wednesday", slot: "period-2", subject: "ESP7",   teacher: "joelalunag@deped.gov.ph",      spec: "" },
+          { day: "Wednesday", slot: "period-3", subject: "FIL7",   teacher: "airishmanuel@deped.gov.ph",    spec: "" },
+          { day: "Wednesday", slot: "period-4", subject: "ENG7",   teacher: "riza.sabornido001@deped.gov.ph", spec: "" },
+          { day: "Wednesday", slot: "period-5", subject: "SCI7",   teacher: "glyflorencematias.22@gmail.com", spec: "" },
+          { day: "Wednesday", slot: "period-6", subject: "TLE7",   teacher: "shallonpugong@deped.gov.ph",   spec: "Cookery" },
+          { day: "Wednesday", slot: "period-7", subject: "ARAL",   teacher: "joelalunag@deped.gov.ph",      spec: "" },
+
+          // Thursday
+          { day: "Thursday",  slot: "period-1", subject: "AP7",    teacher: "risahimson@deped.gov.ph",      spec: "" },
+          { day: "Thursday",  slot: "period-2", subject: "ESP7",   teacher: "joelalunag@deped.gov.ph",      spec: "" },
+          { day: "Thursday",  slot: "period-3", subject: "MATH7",  teacher: "arman.puyao@deped.gov.ph",     spec: "" },
+          { day: "Thursday",  slot: "period-4", subject: "MAPEH7", teacher: "joandayag@deped.gov.ph",       spec: "" },
+          { day: "Thursday",  slot: "period-5", subject: "SCI7",   teacher: "glyflorencematias.22@gmail.com", spec: "" },
+          { day: "Thursday",  slot: "period-6", subject: "TLE7",   teacher: "shallonpugong@deped.gov.ph",   spec: "Cookery" },
+          { day: "Thursday",  slot: "period-7", subject: "FIL7",   teacher: "airishmanuel@deped.gov.ph",    spec: "" },
+
+          // Friday
+          { day: "Friday",    slot: "period-1", subject: "AP7",    teacher: "risahimson@deped.gov.ph",      spec: "" },
+          { day: "Friday",    slot: "period-2", subject: "FIL7",   teacher: "airishmanuel@deped.gov.ph",    spec: "" },
+          { day: "Friday",    slot: "period-3", subject: "MATH7",  teacher: "arman.puyao@deped.gov.ph",     spec: "" },
+          { day: "Friday",    slot: "period-4", subject: "MAPEH7", teacher: "joandayag@deped.gov.ph",       spec: "" },
+          { day: "Friday",    slot: "period-5", subject: "SCI7",   teacher: "glyflorencematias.22@gmail.com", spec: "" },
+          { day: "Friday",    slot: "period-6", subject: "ENG7",   teacher: "riza.sabornido001@deped.gov.ph", spec: "" },
+        ]
+      },
+
+      "g7-ivory": {
+        label: "Grade 7 - IVORY (Term 1)",
+        entries: [
+          // Monday
+          { day: "Monday",    slot: "period-1", subject: "HGP",    teacher: "glyflorencematias.22@gmail.com", spec: "" },
+          { day: "Monday",    slot: "period-2", subject: "FIL7",   teacher: "airishmanuel@deped.gov.ph",    spec: "" },
+          { day: "Monday",    slot: "period-3", subject: "MAPEH7", teacher: "joandayag@deped.gov.ph",       spec: "" },
+          { day: "Monday",    slot: "period-4", subject: "ESP7",   teacher: "roselynfelipe@deped.gov.ph",   spec: "" },
+          { day: "Monday",    slot: "period-5", subject: "AP7",    teacher: "risahimson@deped.gov.ph",      spec: "" },
+          { day: "Monday",    slot: "period-6", subject: "SCI7",   teacher: "glyflorencematias.22@gmail.com", spec: "" },
+          { day: "Monday",    slot: "period-7", subject: "TLE7",   teacher: "shallonpugong@deped.gov.ph",   spec: "Cookery" },
+          { day: "Monday",    slot: "aral",     subject: "ARAL",   teacher: "glyflorencematias.22@gmail.com", spec: "" },
+
+          // Tuesday
+          { day: "Tuesday",   slot: "period-1", subject: "ENG7",   teacher: "riza.sabornido001@deped.gov.ph", spec: "" },
+          { day: "Tuesday",   slot: "period-2", subject: "FIL7",   teacher: "airishmanuel@deped.gov.ph",    spec: "" },
+          { day: "Tuesday",   slot: "period-3", subject: "ESP7",   teacher: "roselynfelipe@deped.gov.ph",   spec: "" },
+          { day: "Tuesday",   slot: "period-4", subject: "TLE7",   teacher: "shallonpugong@deped.gov.ph",   spec: "Cookery" },
+          { day: "Tuesday",   slot: "period-5", subject: "AP7",    teacher: "risahimson@deped.gov.ph",      spec: "" },
+          { day: "Tuesday",   slot: "period-6", subject: "SCI7",   teacher: "glyflorencematias.22@gmail.com", spec: "" },
+          { day: "Tuesday",   slot: "period-7", subject: "MATH7",  teacher: "arman.puyao@deped.gov.ph",     spec: "" },
+          { day: "Tuesday",   slot: "aral",     subject: "ARAL",   teacher: "glyflorencematias.22@gmail.com", spec: "" },
+
+          // Wednesday
+          { day: "Wednesday", slot: "period-1", subject: "ENG7",   teacher: "riza.sabornido001@deped.gov.ph", spec: "" },
+          { day: "Wednesday", slot: "period-2", subject: "FIL7",   teacher: "airishmanuel@deped.gov.ph",    spec: "" },
+          { day: "Wednesday", slot: "period-3", subject: "ESP7",   teacher: "roselynfelipe@deped.gov.ph",   spec: "" },
+          { day: "Wednesday", slot: "period-4", subject: "MAPEH7", teacher: "joandayag@deped.gov.ph",       spec: "" },
+          { day: "Wednesday", slot: "period-5", subject: "MATH7",  teacher: "arman.puyao@deped.gov.ph",     spec: "" },
+          { day: "Wednesday", slot: "period-6", subject: "AP7",    teacher: "risahimson@deped.gov.ph",      spec: "" },
+          { day: "Wednesday", slot: "period-7", subject: "ARAL",   teacher: "glyflorencematias.22@gmail.com", spec: "" },
+
+          // Thursday
+          { day: "Thursday",  slot: "period-1", subject: "ESP7",   teacher: "roselynfelipe@deped.gov.ph",   spec: "" },
+          { day: "Thursday",  slot: "period-2", subject: "MATH7",  teacher: "arman.puyao@deped.gov.ph",     spec: "" },
+          { day: "Thursday",  slot: "period-3", subject: "FIL7",   teacher: "airishmanuel@deped.gov.ph",    spec: "" },
+          { day: "Thursday",  slot: "period-4", subject: "TLE7",   teacher: "shallonpugong@deped.gov.ph",   spec: "Cookery" },
+          { day: "Thursday",  slot: "period-5", subject: "MAPEH7", teacher: "joandayag@deped.gov.ph",       spec: "" },
+          { day: "Thursday",  slot: "period-6", subject: "SCI7",   teacher: "glyflorencematias.22@gmail.com", spec: "" },
+          { day: "Thursday",  slot: "period-7", subject: "ENG7",   teacher: "riza.sabornido001@deped.gov.ph", spec: "" },
+
+          // Friday
+          { day: "Friday",    slot: "period-1", subject: "ENG7",   teacher: "riza.sabornido001@deped.gov.ph", spec: "" },
+          { day: "Friday",    slot: "period-2", subject: "MATH7",  teacher: "arman.puyao@deped.gov.ph",     spec: "" },
+          { day: "Friday",    slot: "period-3", subject: "MAPEH7", teacher: "joandayag@deped.gov.ph",       spec: "" },
+          { day: "Friday",    slot: "period-4", subject: "TLE7",   teacher: "shallonpugong@deped.gov.ph",   spec: "Cookery" },
+          { day: "Friday",    slot: "period-5", subject: "AP7",    teacher: "risahimson@deped.gov.ph",      spec: "" },
+          { day: "Friday",    slot: "period-6", subject: "SCI7",   teacher: "glyflorencematias.22@gmail.com", spec: "" },
+          { day: "Friday",    slot: "period-7", subject: "ARAL",   teacher: "glyflorencematias.22@gmail.com", spec: "" },
+        ]
+      },
+    };
+
+    // ============================================================
+    // STATE
+    // ============================================================
+    const $ = id => document.getElementById(id);
+    let CURRENT_USER = null;
+    let CLASSES = [];
+    let USERS = [];
+    let PENDING = null;
+
+    // ============================================================
+    // AUTH
+    // ============================================================
+    onAuthStateChanged(auth, async (user) => {
+      if (!user) {
+        location.replace("login.html?next=" + encodeURIComponent(location.pathname));
+        return;
+      }
+      CURRENT_USER = user;
+      const profile = await getCurrentUserProfile();
+      const isAdmin = profile?.primaryRole === "admin"
+        || profile?.isSuperAdmin
+        || profile?.permissions?.canManageClasses === true;
+
+      if (!isAdmin) {
+        $("loading").innerHTML = `
+          <h2 style="color:#b91c1c;">🚫 Access Denied</h2>
+          <p>Only admins can import class programs.</p>
+          <a href="admin.html" class="ip-btn primary" style="margin-top:12px;text-decoration:none;">← Back</a>
+        `;
+        return;
+      }
+
+      await loadClasses();
+      await loadUsers();
+      initForm();
+    });
+
+    // ============================================================
+    // LOADERS
+    // ============================================================
+    async function loadClasses() {
+      const snap = await getDocs(collection(db, "classes"));
+      CLASSES = snap.docs.map(d => ({ id: d.id, ...d.data() }))
+        .sort((a, b) => (a.classLabel || "").localeCompare(b.classLabel || ""));
+    }
+
+    async function loadUsers() {
+      const snap = await getDocs(collection(db, "users"));
+      USERS = snap.docs.map(d => ({ uid: d.id, ...d.data() }));
+    }
+
+    function userByEmail(email) {
+      const e = String(email || "").toLowerCase().trim();
+      return USERS.find(u => (u.email || "").toLowerCase().trim() === e) || null;
+    }
+
+    // ============================================================
+    // INIT FORM
+    // ============================================================
+    function initForm() {
+      // Fill class dropdown
+      const classSel = $("ipClass");
+      classSel.innerHTML = '<option value="">-- Select Class --</option>';
+      CLASSES.forEach(c => {
+        const opt = document.createElement("option");
+        opt.value = c.id;
+        opt.textContent = `${c.classLabel} (${c.schoolYear || ""})`;
+        classSel.appendChild(opt);
+      });
+
+      // Fill template dropdown
+      const tplSel = $("ipTemplate");
+      tplSel.innerHTML = '<option value="">-- Select Template --</option>';
+      Object.entries(TEMPLATES).forEach(([key, tpl]) => {
+        const opt = document.createElement("option");
+        opt.value = key;
+        opt.textContent = tpl.label;
+        tplSel.appendChild(opt);
+      });
+
+      $("btnPreview").addEventListener("click", preview);
+      $("btnImport").addEventListener("click", doImport);
+      $("btnCancel").addEventListener("click", cancelPreview);
+      $("btnImportAnother").addEventListener("click", resetAll);
+
+      $("loading").style.display = "none";
+      $("content").style.display = "block";
+    }
+
+    // ============================================================
+    // PREVIEW
+    // ============================================================
+    function preview() {
+      const classId = $("ipClass").value;
+      const tplKey = $("ipTemplate").value;
+      const term = parseInt($("ipTerm").value, 10);
+
+      if (!classId) { toast("⚠️ Select a class first", "error"); return; }
+      if (!tplKey) { toast("⚠️ Select a template first", "error"); return; }
+
+      const cls = CLASSES.find(c => c.id === classId);
+      const tpl = TEMPLATES[tplKey];
+      if (!cls || !tpl) return;
+
+      // Verify all teachers exist
+      const missingTeachers = new Set();
+      const entries = tpl.entries.map(e => {
+        const u = userByEmail(e.teacher);
+        if (!u) missingTeachers.add(e.teacher);
+        return {
+          ...e,
+          teacherUid: u ? u.uid : "",
+          teacherName: u ? (u.name || u.email) : e.teacher,
+        };
+      });
+
+      // Stats
+      const byDay = {};
+      entries.forEach(e => { byDay[e.day] = (byDay[e.day] || 0) + 1; });
+
+      $("ipStats").innerHTML = `
+        <div><strong>${entries.length}</strong> total entries</div>
+        <div><strong>${Object.keys(byDay).length}</strong> days</div>
+        ${Object.entries(byDay).map(([d, n]) => `<div><strong>${n}</strong> ${d}</div>`).join("")}
+      `;
+
+      // Warnings
+      const warn = $("ipWarn");
+      if (missingTeachers.size) {
+        warn.style.display = "block";
+        warn.innerHTML = `
+          <strong>⚠️ ${missingTeachers.size} teacher(s) not found in the system:</strong><br>
+          ${[...missingTeachers].map(t => `<code>${t}</code>`).join(", ")}<br>
+          <em>These entries will be imported but the teacher will be unassigned. Fix by registering these teachers, then re-import.</em>
+        `;
+      } else {
+        warn.style.display = "none";
+      }
+
+      // Preview list
+      const previewHost = $("ipPreview");
+      previewHost.innerHTML = entries.map(e => `
+        <div class="ip-preview-row">
+          <span class="day">${e.day}</span>
+          <span class="slot">${formatSlot(e.slot)}</span>
+          <span class="subject">${e.subject}${e.spec ? `<span class="spec">${e.spec}</span>` : ""}</span>
+          <span class="teacher">👩‍🏫 ${e.teacherName}</span>
+        </div>
+      `).join("");
+
+      PENDING = { classId, cls, entries, term };
+
+      $("configCard").style.display = "none";
+      $("previewCard").style.display = "block";
+      $("doneCard").style.display = "none";
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+
+    function formatSlot(slotId) {
+      const names = {
+        "period-1": "Period 1 · 7:45-8:45",
+        "period-2": "Period 2 · 8:45-9:45",
+        "period-3": "Period 3 · 10:00-11:00",
+        "period-4": "Period 4 · 11:00-12:00",
+        "period-5": "Period 5 · 1:00-2:00",
+        "period-6": "Period 6 · 2:00-3:00",
+        "period-7": "Period 7 · 3:00-4:00",
+        "aral":     "ARAL · 4:00-5:00",
+      };
+      return names[slotId] || slotId;
+    }
+
+    // ============================================================
+    // IMPORT
+    // ============================================================
+    async function doImport() {
+      if (!PENDING) return;
+      const btn = $("btnImport");
+      btn.disabled = true;
+      btn.textContent = "Importing…";
+
+      const { classId, entries, term } = PENDING;
+      const colRef = collection(db, "classes", classId, "program");
+
+      // Check existing
+      const existingSnap = await getDocs(colRef);
+      const existingKeys = new Set();
+      existingSnap.forEach(d => {
+        const e = d.data();
+        if (e.term === term) {
+          existingKeys.add(`${e.day}|${e.timeSlotId}|${e.subject}|${e.teacherUid}`);
+        }
+      });
+
+      let inserted = 0, skipped = 0, errors = 0;
+
+      for (const e of entries) {
+        const key = `${e.day}|${e.slot}|${e.subject}|${e.teacherUid}`;
+        if (existingKeys.has(key)) { skipped++; continue; }
+
+        try {
+          await addDoc(colRef, {
+            day: e.day,
+            timeSlotId: e.slot,
+            term: term,
+            subject: e.subject,
+            subjectName: e.subject,
+            teacherUid: e.teacherUid,
+            teacherName: e.teacherName,
+            specialization: e.spec || "",
+            room: "",
+            entryType: "primary",
+            groupIndex: 0,
+            notes: "",
+            createdAt: serverTimestamp(),
+            updatedAt: serverTimestamp(),
+            createdBy: CURRENT_USER.email || "",
+          });
+          inserted++;
+        } catch (err) {
+          console.error(err);
+          errors++;
+        }
+      }
+
+      // Show success
+      $("doneBox").innerHTML = `
+        ✓ <strong>Import complete for ${PENDING.cls.classLabel} — Term ${term}</strong><br><br>
+        ✅ Inserted: <strong>${inserted}</strong><br>
+        ⏭️  Skipped (already existed): <strong>${skipped}</strong><br>
+        ${errors ? `❌ Errors: <strong>${errors}</strong><br>` : ""}
+      `;
+      $("btnViewProgram").href = "program.html?id=" + classId;
+
+      $("configCard").style.display = "none";
+      $("previewCard").style.display = "none";
+      $("doneCard").style.display = "block";
+      btn.disabled = false;
+      btn.textContent = "✓ Import Program";
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+
+    function cancelPreview() {
+      PENDING = null;
+      $("configCard").style.display = "block";
+      $("previewCard").style.display = "none";
+      $("doneCard").style.display = "none";
+    }
+
+    function resetAll() {
+      PENDING = null;
+      $("ipClass").value = "";
+      $("ipTemplate").value = "";
+      $("ipTerm").value = "1";
+      $("configCard").style.display = "block";
+      $("previewCard").style.display = "none";
+      $("doneCard").style.display = "none";
+    }
+
+    // ============================================================
+    // TOAST
+    // ============================================================
+    let toastTimer;
+    function toast(msg, type = "") {
+      const t = $("toast");
+      t.textContent = msg;
+      t.className = "ip-toast show " + type;
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => t.className = "ip-toast", 3000);
+    }
+  </script>
+</body>
+</html>
