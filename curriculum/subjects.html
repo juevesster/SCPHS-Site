@@ -1,0 +1,1027 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Curriculum & Subjects | SCPHS</title>
+  <meta name="description" content="Browse the full DepEd K-12 curriculum offered by Sta. Cruz Pingkian High School — Kindergarten through Grade 12, including MATATAG and Strengthened SHS subjects." />
+  <meta name="theme-color" content="#0f4c81" />
+  <link rel="stylesheet" href="../assets/css/styles.css" />
+
+  <style>
+    /* ============================================================
+       PUBLIC SUBJECTS — Curated card grid
+       Reuses SCPHS design tokens from assets/css/styles.css
+       ============================================================ */
+
+    :root {
+      --sub-mathe: #2563eb;
+      --sub-sci: #059669;
+      --sub-eng: #7c3aed;
+      --sub-fil: #db2777;
+      --sub-ap: #d97706;
+      --sub-mapeh: #ea580c;
+      --sub-ve: #0891b2;
+      --sub-tle: #14b8a6;
+      --sub-hgp: #64748b;
+      --sub-aral: #94a3b8;
+      --sub-shs: #6366f1;
+      --sub-elem: #f43f5e;
+      --sub-other: #6b7280;
+    }
+
+    body { background: #f6f7f9; }
+
+    /* ---------- Hero ---------- */
+    .sub-hero {
+      background: linear-gradient(135deg, #0f4c81 0%, #1e6bb8 100%);
+      color: #fff;
+      padding: 44px 0 36px;
+      position: relative;
+      overflow: hidden;
+    }
+    .sub-hero::after {
+      content: "";
+      position: absolute;
+      top: -40%;
+      right: -10%;
+      width: 420px;
+      height: 420px;
+      background: radial-gradient(circle, rgba(255,255,255,0.10), transparent 70%);
+      border-radius: 50%;
+      pointer-events: none;
+    }
+    .sub-hero-inner {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 24px;
+      position: relative;
+      z-index: 1;
+    }
+    .sub-hero h1 {
+      margin: 0 0 8px;
+      font-size: clamp(1.6rem, 3.2vw, 2.2rem);
+      font-weight: 800;
+      letter-spacing: -0.01em;
+    }
+    .sub-hero p {
+      margin: 0;
+      font-size: 0.98rem;
+      line-height: 1.55;
+      opacity: 0.92;
+      max-width: 640px;
+    }
+    .sub-hero-crumb {
+      display: inline-block;
+      font-size: 0.78rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      opacity: 0.75;
+      margin-bottom: 10px;
+    }
+    .sub-hero-crumb a { color: #fff; text-decoration: none; }
+    .sub-hero-crumb a:hover { text-decoration: underline; }
+
+    /* ---------- Container ---------- */
+    .sub-container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 28px 24px 48px;
+    }
+
+    /* ---------- Toolbar ---------- */
+    .sub-toolbar {
+      background: #fff;
+      border-radius: 14px;
+      padding: 14px 16px;
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      align-items: center;
+      margin-bottom: 22px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+      position: sticky;
+      top: 8px;
+      z-index: 20;
+    }
+    .sub-search {
+      flex: 1;
+      min-width: 220px;
+      padding: 11px 16px;
+      border: 1px solid #d1d5db;
+      border-radius: 10px;
+      font-size: 14px;
+      font-family: inherit;
+      outline: none;
+      transition: all .15s;
+    }
+    .sub-search:focus {
+      border-color: #1e6bb8;
+      box-shadow: 0 0 0 3px rgba(30,107,184,0.12);
+    }
+    .sub-select {
+      padding: 10px 12px;
+      border: 1px solid #d1d5db;
+      border-radius: 10px;
+      font-size: 13.5px;
+      font-family: inherit;
+      background: #fff;
+      cursor: pointer;
+      outline: none;
+    }
+    .sub-select:focus { border-color: #1e6bb8; }
+
+    .sub-reset {
+      padding: 9px 14px;
+      border: 1px solid #e5e7eb;
+      border-radius: 10px;
+      background: #fafbfc;
+      font-size: 13px;
+      font-weight: 600;
+      color: #4b5563;
+      cursor: pointer;
+      font-family: inherit;
+      transition: all .15s;
+    }
+    .sub-reset:hover { border-color: #1e6bb8; color: #1e6bb8; background: #fff; }
+
+    /* ---------- Stats ---------- */
+    .sub-stats {
+      display: flex;
+      gap: 14px;
+      flex-wrap: wrap;
+      margin-bottom: 22px;
+      font-size: 13px;
+      color: #6b7280;
+    }
+    .sub-stats strong {
+      color: #0f2b4f;
+      font-weight: 800;
+      font-size: 1.15rem;
+      display: block;
+      line-height: 1.2;
+    }
+    .sub-stats > div {
+      background: #fff;
+      padding: 12px 18px;
+      border-radius: 10px;
+      border: 1px solid #e5e7eb;
+      min-width: 110px;
+      text-align: center;
+    }
+    .sub-stats small {
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      font-size: 10.5px;
+      font-weight: 700;
+    }
+
+    /* ---------- Family Section ---------- */
+    .sub-family { margin-bottom: 36px; }
+    .sub-family-head {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 14px;
+      padding-bottom: 10px;
+      border-bottom: 2px solid #f1f3f6;
+    }
+    .sub-family-emoji {
+      width: 30px;
+      height: 30px;
+      border-radius: 8px;
+      display: grid;
+      place-items: center;
+      font-size: 16px;
+      background: #eff6ff;
+      flex-shrink: 0;
+    }
+    .sub-family-name {
+      font-size: 0.95rem;
+      font-weight: 800;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      margin: 0;
+    }
+    .sub-family-count {
+      font-size: 0.78rem;
+      font-weight: 700;
+      color: #6b7280;
+      background: #f3f4f6;
+      padding: 2px 10px;
+      border-radius: 999px;
+      margin-left: auto;
+    }
+
+    /* ---------- Card Grid ---------- */
+    .sub-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+      gap: 12px;
+    }
+
+    .sub-card {
+      background: #fff;
+      border: 1px solid #e5e7eb;
+      border-radius: 12px;
+      padding: 16px 16px 14px;
+      cursor: pointer;
+      transition: all .18s;
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .sub-card::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: var(--card-accent, #6b7280);
+      opacity: 0.9;
+    }
+    .sub-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px rgba(15,76,129,0.10);
+      border-color: #bfdbfe;
+    }
+
+    .sub-code {
+      font-size: 10.5px;
+      font-weight: 800;
+      letter-spacing: 0.06em;
+      color: #9ca3af;
+      text-transform: uppercase;
+    }
+    .sub-name {
+      font-size: 1rem;
+      font-weight: 700;
+      color: #0f2b4f;
+      line-height: 1.3;
+      margin: 0;
+    }
+    .sub-badges {
+      display: flex;
+      gap: 5px;
+      flex-wrap: wrap;
+    }
+    .sub-badge {
+      font-size: 10px;
+      font-weight: 700;
+      padding: 2px 8px;
+      border-radius: 999px;
+      letter-spacing: 0.03em;
+      text-transform: uppercase;
+    }
+    .sub-badge.level { background: #eff6ff; color: #1e40af; }
+    .sub-badge.curric { background: #f0fdf4; color: #166534; }
+    .sub-badge.type { background: #fef3c7; color: #92400e; }
+
+    .sub-usage {
+      display: flex;
+      gap: 12px;
+      font-size: 11.5px;
+      color: #6b7280;
+      border-top: 1px solid #f3f4f6;
+      padding-top: 10px;
+      margin-top: auto;
+    }
+    .sub-usage span {
+      display: inline-flex;
+      align-items: center;
+      gap: 3px;
+    }
+    .sub-usage strong { color: #0f2b4f; font-weight: 700; }
+
+    /* ---------- Drawer / Modal ---------- */
+    .sub-drawer {
+      position: fixed;
+      inset: 0;
+      background: rgba(15,23,42,0.55);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+      padding: 20px;
+      backdrop-filter: blur(2px);
+    }
+    .sub-drawer.show { display: flex; }
+    .sub-drawer-panel {
+      background: #fff;
+      border-radius: 14px;
+      width: 100%;
+      max-width: 640px;
+      max-height: 88vh;
+      overflow-y: auto;
+      box-shadow: 0 24px 48px rgba(0,0,0,0.25);
+      animation: slideUp .25s ease-out;
+    }
+    @keyframes slideUp {
+      from { transform: translateY(20px); opacity: 0; }
+      to   { transform: translateY(0); opacity: 1; }
+    }
+    .sub-drawer-head {
+      padding: 18px 22px;
+      border-bottom: 1px solid #e5e7eb;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 12px;
+      position: sticky;
+      top: 0;
+      background: #fff;
+      z-index: 2;
+      border-radius: 14px 14px 0 0;
+    }
+    .sub-drawer-head h3 {
+      margin: 0 0 4px;
+      font-size: 1.15rem;
+      color: #0f2b4f;
+    }
+    .sub-drawer-head .sub-code { margin-bottom: 4px; }
+    .sub-drawer-body { padding: 20px 22px 24px; }
+    .sub-drawer-close {
+      background: #f3f4f6;
+      border: none;
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 16px;
+      color: #6b7280;
+      font-family: inherit;
+      transition: all .15s;
+      flex-shrink: 0;
+    }
+    .sub-drawer-close:hover { background: #e5e7eb; color: #111827; }
+
+    .sub-drawer-meta {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+      margin-bottom: 14px;
+    }
+    .sub-drawer-desc {
+      font-size: 14px;
+      color: #4b5563;
+      line-height: 1.6;
+      margin: 0 0 18px;
+    }
+
+    .sub-section-label {
+      font-size: 0.78rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: #374151;
+      margin: 18px 0 10px;
+    }
+
+    .sub-chip-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+    .sub-chip {
+      font-size: 12px;
+      padding: 4px 12px;
+      background: #eff6ff;
+      color: #1e40af;
+      border-radius: 999px;
+      font-weight: 600;
+    }
+
+    .sub-class-list {
+      border: 1px solid #e5e7eb;
+      border-radius: 10px;
+      overflow: hidden;
+    }
+    .sub-class-row {
+      padding: 12px 14px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      border-bottom: 1px solid #f3f4f6;
+      font-size: 13.5px;
+      flex-wrap: wrap;
+    }
+    .sub-class-row:last-child { border-bottom: 0; }
+    .sub-class-row strong { color: #0f2b4f; }
+    .sub-class-row .level-tag {
+      font-size: 11px;
+      color: #6b7280;
+      background: #f3f4f6;
+      padding: 2px 8px;
+      border-radius: 999px;
+      font-weight: 700;
+    }
+    .sub-class-link {
+      font-size: 12px;
+      font-weight: 700;
+      padding: 6px 12px;
+      border: 1px solid #1e3c72;
+      border-radius: 6px;
+      color: #1e3c72;
+      text-decoration: none;
+      background: #fff;
+      white-space: nowrap;
+    }
+    .sub-class-link:hover { background: #1e3c72; color: #fff; }
+
+    /* ---------- Empty / Loading ---------- */
+    .sub-loading, .sub-empty {
+      text-align: center;
+      padding: 60px 20px;
+      color: #6b7280;
+      background: #fff;
+      border-radius: 14px;
+      border: 1px solid #e5e7eb;
+    }
+    .sub-spinner {
+      width: 32px;
+      height: 32px;
+      border: 3px solid #e5e7eb;
+      border-top-color: #0f4c81;
+      border-radius: 50%;
+      animation: subSpin .8s linear infinite;
+      margin: 0 auto 12px;
+    }
+    @keyframes subSpin { to { transform: rotate(360deg); } }
+    .sub-empty h3 { margin: 0 0 6px; color: #374151; }
+
+    /* ---------- Print ---------- */
+    @media print {
+      .sub-toolbar, .sub-hero-crumb, .sub-drawer { display: none !important; }
+      .sub-hero { background: #fff !important; color: #000 !important; }
+      .sub-card { break-inside: avoid; }
+    }
+
+    /* ---------- Mobile ---------- */
+    @media (max-width: 640px) {
+      .sub-hero { padding: 28px 0 22px; }
+      .sub-container { padding: 18px 14px 36px; }
+      .sub-toolbar { position: static; padding: 12px; }
+      .sub-search { min-width: 100%; }
+      .sub-select { flex: 1; min-width: 0; }
+      .sub-grid { grid-template-columns: 1fr 1fr; gap: 10px; }
+      .sub-card { padding: 13px 13px 11px; }
+      .sub-name { font-size: 0.92rem; }
+      .sub-stats > div { min-width: 90px; padding: 10px 12px; }
+    }
+    @media (max-width: 420px) {
+      .sub-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ===================== HEADER (matches SCPHS style) ===================== -->
+  <section class="sub-hero">
+    <div class="sub-hero-inner">
+      <div class="sub-hero-crumb">
+        <a href="../index.html">← Home</a>
+        <span aria-hidden="true"> / </span>
+        <a href="../students/index.html">Students</a>
+        <span aria-hidden="true"> / </span>
+        <span>Curriculum & Subjects</span>
+      </div>
+      <h1>📚 Curriculum &amp; Subjects</h1>
+      <p>Explore the full DepEd K-12 curriculum offered by Sta. Cruz Pingkian High School — from Kindergarten to Grade 12, including MATATAG and Strengthened SHS.</p>
+    </div>
+  </section>
+
+  <main class="sub-container">
+
+    <!-- Toolbar -->
+    <div class="sub-toolbar" role="search">
+      <input
+        type="search"
+        id="subSearch"
+        class="sub-search"
+        placeholder="🔍 Search subjects by code, name, or family…"
+        aria-label="Search subjects"
+      />
+      <select id="subLevel" class="sub-select" aria-label="Filter by level">
+        <option value="">All Levels</option>
+      </select>
+      <select id="subCurriculum" class="sub-select" aria-label="Filter by curriculum">
+        <option value="">All Curricula</option>
+        <option value="MATATAG">MATATAG</option>
+        <option value="Strengthened-SHS">Strengthened SHS</option>
+        <option value="K-12">K-12 (Legacy)</option>
+      </select>
+      <select id="subType" class="sub-select" aria-label="Filter by type">
+        <option value="">All Types</option>
+        <option value="core">Core</option>
+        <option value="tle">TLE</option>
+        <option value="techpro">TechPro</option>
+        <option value="elective">Elective</option>
+        <option value="shs-core">SHS Core</option>
+        <option value="shs-elective">SHS Elective</option>
+        <option value="hgp">HGP</option>
+        <option value="aral">ARAL</option>
+      </select>
+      <button class="sub-reset" id="subReset" type="button">↺ Reset</button>
+    </div>
+
+    <!-- Stats -->
+    <div class="sub-stats" id="subStats" style="display:none;">
+      <div><strong id="statTotal">—</strong><small>Subjects</small></div>
+      <div><strong id="statFamilies">—</strong><small>Families</small></div>
+      <div><strong id="statInPrograms">—</strong><small>Offered</small></div>
+    </div>
+
+    <!-- Results -->
+    <div id="subResults">
+      <div class="sub-loading">
+        <div class="sub-spinner"></div>
+        <div>Loading curriculum…</div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Drawer -->
+  <div class="sub-drawer" id="subDrawer" role="dialog" aria-modal="true" aria-labelledby="drawerTitle">
+    <div class="sub-drawer-panel">
+      <div class="sub-drawer-head">
+        <div>
+          <div class="sub-code" id="drawerCode"></div>
+          <h3 id="drawerTitle">—</h3>
+        </div>
+        <button class="sub-drawer-close" id="drawerClose" aria-label="Close">✕</button>
+      </div>
+      <div class="sub-drawer-body" id="drawerBody"></div>
+    </div>
+  </div>
+
+  <!-- ===================== FOOTER (matches SCPHS) ===================== -->
+  <footer>
+    <div class="wrap">
+      <div class="foot-grid">
+        <div>
+          <strong>Sta. Cruz Pingkian High School</strong><br/>
+          Brgy. Sta. Cruz, Pingkian • Nueva Vizcaya • Philippines<br/>
+          Email: 300648@deped.gov.ph • Phone: +63 967-8848989
+        </div>
+        <div>
+          <a href="#privacy">Privacy Notice</a> •
+          <a href="#foi">FOI</a> •
+          <a href="#sitemap">Sitemap</a> •
+          <a href="https://www.facebook.com/p/Santa-Cruz-Pingkian-High-School-Official-61554495084090/" target="_blank" rel="noopener">Facebook</a>
+        </div>
+      </div>
+      <div class="copy">© <span id="yearCopy">2026</span> SCPHS. All rights reserved.</div>
+    </div>
+  </footer>
+
+  <footer class="govph-footer" role="contentinfo">
+    <div class="wrap govph-footer__grid">
+      <div class="govph-footer__col">
+        <h4>Republic of the Philippines</h4>
+        <p>All content is in the public domain unless otherwise stated.</p>
+      </div>
+      <div class="govph-footer__col">
+        <h4>About GOVPH</h4>
+        <ul class="govph-footer__links">
+          <li><a href="https://www.gov.ph/" target="_blank" rel="noopener">GOV.PH</a></li>
+          <li><a href="https://data.gov.ph/" target="_blank" rel="noopener">Open Data Portal</a></li>
+          <li><a href="https://www.officialgazette.gov.ph/" target="_blank" rel="noopener">Official Gazette</a></li>
+        </ul>
+      </div>
+      <div class="govph-footer__col">
+        <h4>Government Links</h4>
+        <ul class="govph-footer__links">
+          <li><a href="https://op-proper.gov.ph/" target="_blank" rel="noopener">Office of the President</a></li>
+          <li><a href="https://ovp.gov.ph/" target="_blank" rel="noopener">Office of the Vice President</a></li>
+          <li><a href="https://www.senate.gov.ph/" target="_blank" rel="noopener">Senate of the Philippines</a></li>
+          <li><a href="https://www.congress.gov.ph/" target="_blank" rel="noopener">House of Representatives</a></li>
+          <li><a href="https://sc.judiciary.gov.ph/" target="_blank" rel="noopener">Supreme Court</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="govph-footer__bar">
+      <div class="wrap">
+        <small>© <span id="yearNow">2026</span> Sta. Cruz Pingkian High School • A Philippine Government Website</small>
+      </div>
+    </div>
+  </footer>
+
+  <!-- ===================== SCRIPT ===================== -->
+  <script type="module">
+    import { db } from "../assets/js/firebase-config.js";
+    import {
+      collection, getDocs
+    } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+    const $ = id => document.getElementById(id);
+    const esc = s => String(s == null ? "" : s)
+      .replace(/&/g, "&amp;").replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+
+    // ---------- Family styling ----------
+    const FAMILY_META = {
+      "Mathematics":                   { emoji: "🧮", color: "#2563eb" },
+      "English":                       { emoji: "📖", color: "#7c3aed" },
+      "Science":                       { emoji: "🔬", color: "#059669" },
+      "Filipino":                      { emoji: "🇵🇭", color: "#db2777" },
+      "Araling Panlipunan":            { emoji: "🌏", color: "#d97706" },
+      "MAPEH":                         { emoji: "🎨", color: "#ea580c" },
+      "Values Education":              { emoji: "💛", color: "#0891b2" },
+      "GMRC":                          { emoji: "💛", color: "#0891b2" },
+      "TLE":                           { emoji: "🛠️", color: "#14b8a6" },
+      "EPP":                           { emoji: "🛠️", color: "#14b8a6" },
+      "TechPro":                       { emoji: "⚙️", color: "#7c3aed" },
+      "STEM":                          { emoji: "🧪", color: "#0ea5e9" },
+      "ABM":                           { emoji: "💼", color: "#eab308" },
+      "HUMSS":                         { emoji: "🎭", color: "#a855f7" },
+      "Sports":                        { emoji: "🏀", color: "#ef4444" },
+      "Homeroom Guidance":             { emoji: "🏠", color: "#64748b" },
+      "ARAL":                          { emoji: "📘", color: "#94a3b8" },
+      "Languages":                     { emoji: "🗣️", color: "#f43f5e" },
+      "Reading & Literacy":            { emoji: "📚", color: "#f43f5e" },
+      "Makabansa":                     { emoji: "🇵🇭", color: "#dc2626" },
+      "Physical & Natural Environment":{ emoji: "🌱", color: "#10b981" },
+      "SHS Core":                      { emoji: "🎓", color: "#6366f1" },
+      "SHS Academic":                  { emoji: "🎓", color: "#6366f1" },
+    };
+
+    function familyMeta(family) {
+      return FAMILY_META[family] || { emoji: "📘", color: "#6b7280" };
+    }
+
+    // ---------- State ----------
+    let SUBJECTS = [];
+    let USAGE = {};
+    let CURRENT_TERM = 1;
+
+    // ---------- Load ----------
+    async function loadData() {
+      try {
+        // 1. Metadata from subjects collection
+        try {
+          const snap = await getDocs(collection(db, "subjects"));
+          SUBJECTS = snap.docs.map(d => ({ code: d.id, ...d.data() }));
+        } catch (e) {
+          console.warn("[public subjects] metadata load failed:", e);
+          SUBJECTS = [];
+        }
+
+        // 2. Usage from class programs (Term 1)
+        USAGE = {};
+        try {
+          const classesSnap = await getDocs(collection(db, "classes"));
+          for (const clsDoc of classesSnap.docs) {
+            const cls = { id: clsDoc.id, ...clsDoc.data() };
+            try {
+              const progSnap = await getDocs(collection(db, "classes", cls.id, "program"));
+              progSnap.docs
+                .map(d => d.data())
+                .filter(e => Number(e.term) === CURRENT_TERM)
+                .forEach(e => {
+                  const code = String(e.subject || e.subjectName || "").trim();
+                  if (!code) return;
+                  if (!USAGE[code]) USAGE[code] = { classes: [], teachers: new Set() };
+                  USAGE[code].classes.push({
+                    classId: cls.id,
+                    className: cls.classLabel || "(unnamed)",
+                    gradeLevel: cls.gradeLevel || "",
+                  });
+                  if (e.teacherName) USAGE[code].teachers.add(e.teacherName);
+                });
+            } catch {}
+          }
+          Object.values(USAGE).forEach(u => {
+            u.teachers = Array.from(u.teachers);
+            u.classes = u.classes.filter((c, i, a) => a.findIndex(x => x.classId === c.classId) === i);
+          });
+        } catch (e) {
+          console.warn("[public subjects] usage scan failed:", e);
+        }
+
+        render();
+        renderStats();
+      } catch (e) {
+        console.error("[public subjects] load failed:", e);
+        $("subResults").innerHTML = `
+          <div class="sub-empty">
+            <h3>⚠️ Unable to load curriculum</h3>
+            <p>Please try refreshing the page.</p>
+          </div>
+        `;
+      }
+    }
+
+    // ---------- Merge metadata + usage ----------
+    function getAllRecords() {
+      const byCode = {};
+
+      SUBJECTS.forEach(s => {
+        if (s.active === false) return;
+        byCode[s.code] = {
+          code: s.code,
+          displayName: s.displayName || s.code,
+          family: s.family || "Other",
+          level: s.level || "",
+          type: s.type || "",
+          curriculum: s.curriculum || "",
+          description: s.description || "",
+          usage: USAGE[s.code] || { classes: [], teachers: [] },
+        };
+      });
+
+      // Auto-detect subjects in usage but not in metadata
+      Object.keys(USAGE).forEach(code => {
+        if (byCode[code]) return;
+        byCode[code] = {
+          code,
+          displayName: code,
+          family: guessFamily(code),
+          level: guessLevel(code),
+          type: "core",
+          curriculum: "MATATAG",
+          description: "",
+          usage: USAGE[code],
+        };
+      });
+
+      return Object.values(byCode);
+    }
+
+    function guessFamily(code) {
+      const c = String(code).toUpperCase();
+      if (c.startsWith("MATH")) return "Mathematics";
+      if (c.startsWith("ENG")) return "English";
+      if (c.startsWith("SCI")) return "Science";
+      if (c.startsWith("FIL")) return "Filipino";
+      if (c.startsWith("AP")) return "Araling Panlipunan";
+      if (c.startsWith("MAPEH")) return "MAPEH";
+      if (c.startsWith("ESP") || c.startsWith("VE")) return "Values Education";
+      if (c.startsWith("TLE")) return "TLE";
+      if (c.startsWith("HGP")) return "Homeroom Guidance";
+      if (c.startsWith("ARAL")) return "ARAL";
+      if (c.startsWith("K-MAKABANSA")) return "Makabansa";
+      if (c.startsWith("K-LANG")) return "Languages";
+      if (c.startsWith("K-PNE")) return "Physical & Natural Environment";
+      if (c.startsWith("K-GMRC")) return "GMRC";
+      if (c.startsWith("SHS-")) return "SHS Core";
+      return "Other";
+    }
+
+    function guessLevel(code) {
+      const c = String(code).toUpperCase();
+      if (c.startsWith("K-")) return "K";
+      const m = c.match(/(\d{1,2})/);
+      return m ? m[1] : "";
+    }
+
+    // ---------- Stats ----------
+    function renderStats() {
+      const all = getAllRecords();
+      const fams = new Set(all.map(s => s.family).filter(Boolean));
+      const offered = all.filter(s => (s.usage?.classes?.length || 0) > 0).length;
+
+      $("statTotal").textContent = all.length;
+      $("statFamilies").textContent = fams.size;
+      $("statInPrograms").textContent = offered;
+      $("subStats").style.display = "flex";
+
+      // Populate Level dropdown
+      const levels = new Set();
+      all.forEach(s => { if (s.level) levels.add(String(s.level)); });
+      const sorted = Array.from(levels).sort((a, b) => {
+        if (a === "K") return -1;
+        if (b === "K") return 1;
+        return parseInt(a) - parseInt(b);
+      });
+
+      const levelSel = $("subLevel");
+      const currentVal = levelSel.value;
+      levelSel.innerHTML = '<option value="">All Levels</option>' +
+        sorted.map(l => `<option value="${esc(l)}">${l === "K" ? "Kindergarten" : "Grade " + l}</option>`).join("");
+      levelSel.value = currentVal;
+    }
+
+    // ---------- Render ----------
+    function render() {
+      const search = ($("subSearch")?.value || "").toLowerCase().trim();
+      const levelFilter = $("subLevel")?.value || "";
+      const curricFilter = $("subCurriculum")?.value || "";
+      const typeFilter = $("subType")?.value || "";
+
+      let list = getAllRecords();
+
+      if (search) {
+        list = list.filter(s =>
+          s.code.toLowerCase().includes(search) ||
+          (s.displayName || "").toLowerCase().includes(search) ||
+          (s.family || "").toLowerCase().includes(search)
+        );
+      }
+      if (levelFilter) list = list.filter(s => String(s.level) === levelFilter);
+      if (curricFilter) list = list.filter(s => s.curriculum === curricFilter);
+      if (typeFilter) list = list.filter(s => s.type === typeFilter);
+
+      // Sort by level then code
+      list.sort((a, b) => {
+        const la = a.level === "K" ? -1 : parseInt(a.level) || 999;
+        const lb = b.level === "K" ? -1 : parseInt(b.level) || 999;
+        if (la !== lb) return la - lb;
+        return a.code.localeCompare(b.code);
+      });
+
+      const host = $("subResults");
+
+      if (!list.length) {
+        host.innerHTML = `
+          <div class="sub-empty">
+            <h3>📭 No subjects match your filters</h3>
+            <p>Try adjusting the search or filters above.</p>
+          </div>
+        `;
+        return;
+      }
+
+      // Group by family
+      const grouped = {};
+      list.forEach(s => {
+        const fam = s.family || "Other";
+        if (!grouped[fam]) grouped[fam] = [];
+        grouped[fam].push(s);
+      });
+
+      // Order families: known first, then alphabetical
+      const familyOrder = [
+        "Mathematics", "English", "Science", "Filipino",
+        "Araling Panlipunan", "MAPEH", "Values Education", "GMRC",
+        "TLE", "EPP", "TechPro", "STEM", "ABM", "HUMSS", "Sports",
+        "Homeroom Guidance", "ARAL",
+        "Languages", "Reading & Literacy", "Makabansa", "Physical & Natural Environment",
+        "SHS Core", "SHS Academic",
+      ];
+      const sortedFamilies = Object.keys(grouped).sort((a, b) => {
+        const ia = familyOrder.indexOf(a);
+        const ib = familyOrder.indexOf(b);
+        if (ia === -1 && ib === -1) return a.localeCompare(b);
+        if (ia === -1) return 1;
+        if (ib === -1) return -1;
+        return ia - ib;
+      });
+
+      host.innerHTML = sortedFamilies.map(fam => {
+        const meta = familyMeta(fam);
+        const items = grouped[fam];
+        return `
+          <section class="sub-family">
+            <div class="sub-family-head" style="border-bottom-color:${meta.color}33;">
+              <div class="sub-family-emoji" style="background:${meta.color}18;">${meta.emoji}</div>
+              <h2 class="sub-family-name" style="color:${meta.color};">${esc(fam)}</h2>
+              <span class="sub-family-count">${items.length}</span>
+            </div>
+            <div class="sub-grid">
+              ${items.map(s => renderCard(s, meta.color)).join("")}
+            </div>
+          </section>
+        `;
+      }).join("");
+
+      // Card click handlers
+      host.querySelectorAll("[data-code]").forEach(card => {
+        card.addEventListener("click", () => openDrawer(card.dataset.code));
+      });
+    }
+
+    function renderCard(s, accent) {
+      const classesCount = s.usage?.classes?.length || 0;
+      const teachersCount = s.usage?.teachers?.length || 0;
+
+      const levelLabel = s.level === "K" ? "Kinder" : (s.level ? "Grade " + s.level : "");
+      const typeLabel = {
+        core: "Core", tle: "TLE", techpro: "TechPro", elective: "Elective",
+        "shs-core": "SHS Core", "shs-elective": "SHS Elective",
+        hgp: "HGP", aral: "ARAL",
+      }[s.type] || "";
+
+      const curricShort = {
+        "MATATAG": "MATATAG",
+        "Strengthened-SHS": "SHS",
+        "K-12": "K-12",
+      }[s.curriculum] || "";
+
+      return `
+        <article class="sub-card" data-code="${esc(s.code)}" style="--card-accent:${accent};" tabindex="0" role="button">
+          <div class="sub-code">${esc(s.code)}</div>
+          <h3 class="sub-name">${esc(s.displayName || s.code)}</h3>
+          <div class="sub-badges">
+            ${levelLabel ? `<span class="sub-badge level">${esc(levelLabel)}</span>` : ""}
+            ${curricShort ? `<span class="sub-badge curric">${esc(curricShort)}</span>` : ""}
+            ${typeLabel ? `<span class="sub-badge type">${esc(typeLabel)}</span>` : ""}
+          </div>
+          ${(classesCount || teachersCount) ? `
+            <div class="sub-usage">
+              <span>📊 <strong>${classesCount}</strong> ${classesCount === 1 ? "class" : "classes"}</span>
+              <span>👩‍🏫 <strong>${teachersCount}</strong> ${teachersCount === 1 ? "teacher" : "teachers"}</span>
+            </div>
+          ` : `<div class="sub-usage" style="color:#9ca3af;">Not currently offered</div>`}
+        </article>
+      `;
+    }
+
+    // ---------- Drawer ----------
+    function openDrawer(code) {
+      const s = getAllRecords().find(x => x.code === code);
+      if (!s) return;
+
+      $("drawerCode").textContent = s.code;
+      $("drawerTitle").textContent = s.displayName || s.code;
+
+      const levelLabel = s.level === "K" ? "Kindergarten" : (s.level ? "Grade " + s.level : "");
+      const typeLabel = {
+        core: "Core", tle: "TLE", techpro: "TechPro", elective: "Elective",
+        "shs-core": "SHS Core", "shs-elective": "SHS Elective",
+        hgp: "HGP", aral: "ARAL",
+      }[s.type] || "";
+
+      let body = `
+        <div class="sub-drawer-meta">
+          ${levelLabel ? `<span class="sub-badge level">${esc(levelLabel)}</span>` : ""}
+          ${s.curriculum ? `<span class="sub-badge curric">${esc(s.curriculum)}</span>` : ""}
+          ${typeLabel ? `<span class="sub-badge type">${esc(typeLabel)}</span>` : ""}
+        </div>
+      `;
+
+      if (s.description) {
+        body += `<p class="sub-drawer-desc">${esc(s.description)}</p>`;
+      }
+
+      if (s.usage?.teachers?.length) {
+        body += `
+          <div class="sub-section-label">👩‍🏫 Teachers (${s.usage.teachers.length})</div>
+          <div class="sub-chip-row">
+            ${s.usage.teachers.map(t => `<span class="sub-chip">${esc(t)}</span>`).join("")}
+          </div>
+        `;
+      }
+
+      if (s.usage?.classes?.length) {
+        body += `
+          <div class="sub-section-label">🏫 Offered in ${s.usage.classes.length} class${s.usage.classes.length > 1 ? "es" : ""}</div>
+          <div class="sub-class-list">
+            ${s.usage.classes.map(c => `
+              <div class="sub-class-row">
+                <div>
+                  <strong>${esc(c.className)}</strong>
+                  ${c.gradeLevel ? ` <span class="level-tag">${esc(c.gradeLevel)}</span>` : ""}
+                </div>
+                <a class="sub-class-link" href="../program.html?id=${esc(c.classId)}" target="_blank" rel="noopener">📅 View Program</a>
+              </div>
+            `).join("")}
+          </div>
+        `;
+      } else {
+        body += `<p style="color:#9ca3af;font-size:13px;">Not currently offered in Term ${CURRENT_TERM}.</p>`;
+      }
+
+      $("drawerBody").innerHTML = body;
+      $("subDrawer").classList.add("show");
+      document.body.style.overflow = "hidden";
+    }
+
+    function closeDrawer() {
+      $("subDrawer").classList.remove("show");
+      document.body.style.overflow = "";
+    }
+
+    // ---------- Wire up ----------
+    $("subSearch").addEventListener("input", render);
+    $("subLevel").addEventListener("change", render);
+    $("subCurriculum").addEventListener("change", render);
+    $("subType").addEventListener("change", render);
+    $("subReset").addEventListener("click", () => {
+      $("subSearch").value = "";
+      $("subLevel").value = "";
+      $("subCurriculum").value = "";
+      $("subType").value = "";
+      render();
+    });
+    $("drawerClose").addEventListener("click", closeDrawer);
+    $("subDrawer").addEventListener("click", e => {
+      if (e.target === $("subDrawer")) closeDrawer();
+    });
+    document.addEventListener("keydown", e => {
+      if (e.key === "Escape") closeDrawer();
+    });
+
+    // Footer year
+    const y = new Date().getFullYear();
+    $("yearCopy").textContent = y;
+    $("yearNow").textContent = y;
+
+    // Boot
+    loadData();
+  </script>
+</body>
+</html>
