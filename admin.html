@@ -382,6 +382,241 @@
       .ac-sidebar-footer { display: none; }
       .ac-main { padding: 16px; }
     }
+
+        /* ============================================================
+       BoW Viewer (Session F2 Part 2)
+       ============================================================ */
+    .bow-modal {
+      position: fixed;
+      inset: 0;
+      background: rgba(15,23,42,0.6);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+      padding: 20px;
+      backdrop-filter: blur(2px);
+    }
+    .bow-modal.show { display: flex; }
+    .bow-modal-panel {
+      background: #fff;
+      border-radius: 14px;
+      width: 100%;
+      max-width: 1100px;
+      max-height: 92vh;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 24px 48px rgba(0,0,0,.25);
+      overflow: hidden;
+    }
+    .bow-modal-head {
+      padding: 18px 22px;
+      border-bottom: 1px solid #e5e7eb;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 12px;
+      background: #fff;
+      flex-shrink: 0;
+      flex-wrap: wrap;
+    }
+    .bow-modal-head h3 { margin: 0 0 4px; font-size: 1.15rem; color: #0f2b4f; }
+    .bow-modal-head .sub { margin: 0; font-size: 12px; color: #6b7280; }
+    .bow-modal-body {
+      padding: 20px 22px;
+      overflow-y: auto;
+      flex: 1;
+    }
+    .bow-modal-foot {
+      padding: 14px 22px;
+      border-top: 1px solid #e5e7eb;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      background: #fafbfc;
+      flex-wrap: wrap;
+    }
+
+    /* BoW topic section */
+    .bow-topic-section {
+      margin-bottom: 22px;
+      border: 1px solid #e5e7eb;
+      border-radius: 10px;
+      overflow: hidden;
+    }
+    .bow-topic-head {
+      background: linear-gradient(90deg, #eff6ff, #dbeafe);
+      padding: 10px 14px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      cursor: pointer;
+      user-select: none;
+    }
+    .bow-topic-head:hover { background: linear-gradient(90deg, #dbeafe, #bfdbfe); }
+    .bow-topic-label {
+      font-weight: 800;
+      color: #1e3c72;
+      font-size: 13.5px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .bow-topic-count {
+      font-size: 11px;
+      font-weight: 700;
+      background: #1e3c72;
+      color: #fff;
+      padding: 2px 10px;
+      border-radius: 999px;
+    }
+    .bow-topic-body {
+      padding: 12px 14px;
+      background: #fff;
+    }
+    .bow-topic-body.collapsed { display: none; }
+
+    /* Competency row */
+    .bow-comp-row {
+      display: flex;
+      gap: 10px;
+      align-items: flex-start;
+      padding: 10px 12px;
+      border-radius: 8px;
+      margin-bottom: 6px;
+      background: #f9fafb;
+      border: 1px solid #f3f4f6;
+      transition: all .15s;
+    }
+    .bow-comp-row:hover {
+      background: #fff;
+      border-color: #bfdbfe;
+      box-shadow: 0 1px 3px rgba(0,0,0,.04);
+    }
+    .bow-comp-main { flex: 1; min-width: 0; }
+    .bow-comp-code {
+      font-family: ui-monospace, "SF Mono", monospace;
+      font-size: 11px;
+      color: #1e40af;
+      font-weight: 700;
+      background: #eff6ff;
+      padding: 1px 8px;
+      border-radius: 4px;
+      margin-right: 6px;
+      display: inline-block;
+    }
+    .bow-comp-recurring {
+      color: #f59e0b;
+      font-weight: 900;
+      margin-right: 4px;
+    }
+    .bow-comp-text {
+      font-size: 13.5px;
+      color: #111827;
+      line-height: 1.55;
+      margin-top: 5px;
+    }
+    .bow-comp-actions {
+      display: flex;
+      gap: 4px;
+      flex-shrink: 0;
+      opacity: 0.3;
+      transition: opacity .15s;
+    }
+    .bow-comp-row:hover .bow-comp-actions { opacity: 1; }
+    .bow-comp-actions button {
+      border: none;
+      background: #fff;
+      border: 1px solid #e5e7eb;
+      padding: 5px 9px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-family: inherit;
+      font-size: 11px;
+      font-weight: 700;
+      transition: all .15s;
+    }
+    .bow-comp-actions .edit:hover { background: #eff6ff; border-color: #1e6bb8; color: #1e40af; }
+    .bow-comp-actions .del:hover { background: #fef2f2; border-color: #dc2626; color: #b91c1c; }
+    .bow-comp-actions .copy:hover { background: #f0fdf4; border-color: #059669; color: #059669; }
+
+    /* Standards blocks */
+    .bow-standard-block {
+      border-left: 4px solid #1e40af;
+      background: #eff6ff;
+      border-radius: 8px;
+      padding: 12px 14px;
+      margin-bottom: 12px;
+      position: relative;
+    }
+    .bow-standard-block.perf { border-left-color: #166534; background: #f0fdf4; }
+    .bow-standard-block .lbl {
+      font-size: 10.5px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: .04em;
+      margin-bottom: 4px;
+    }
+    .bow-standard-block .txt {
+      font-size: 13px;
+      line-height: 1.55;
+      white-space: pre-wrap;
+    }
+    .bow-standard-block .edit-link {
+      position: absolute;
+      top: 8px;
+      right: 10px;
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 11px;
+      color: #6b7280;
+      font-family: inherit;
+      opacity: 0;
+      transition: opacity .15s;
+    }
+    .bow-standard-block:hover .edit-link { opacity: 1; }
+    .bow-standard-block .edit-link:hover { color: #1e40af; }
+
+    /* BoW stats row */
+    .bow-stats-row {
+      display: flex;
+      gap: 14px;
+      flex-wrap: wrap;
+      margin-bottom: 14px;
+      font-size: 12px;
+      color: #6b7280;
+    }
+    .bow-stats-row strong { color: #0f2b4f; font-weight: 800; }
+
+    /* Empty state */
+    .bow-empty {
+      text-align: center;
+      padding: 40px 20px;
+      color: #6b7280;
+    }
+
+    /* Competency pill in table */
+    .bow-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      background: #eff6ff;
+      color: #1e40af;
+      padding: 3px 10px;
+      border-radius: 999px;
+      font-size: 11.5px;
+      font-weight: 700;
+      cursor: pointer;
+      border: 1px solid #bfdbfe;
+      transition: all .15s;
+    }
+    .bow-pill:hover { background: #dbeafe; }
+    .bow-pill.empty { background: #f3f4f6; color: #9ca3af; border-color: #e5e7eb; }
+    .bow-pill.empty:hover { background: #e5e7eb; }
   </style>
 </head>
 <body>
@@ -1840,7 +2075,7 @@
     // ------------------------------------------------------------
     // LOAD SUBJECTS METADATA
     // ------------------------------------------------------------
-    async function loadSubjects() {
+        async function loadSubjects() {
       try {
         const snap = await getDocs(collection(db, "subjects"));
         SUBJECTS = snap.docs.map(d => ({ id: d.id, ...d.data() }));
@@ -1849,6 +2084,10 @@
         SUBJECTS = [];
       }
       renderSubjectStats();
+      // Load BoW counts in background
+      loadBoWCounts().then(() => {
+        if (SUBJECT_SCAN_DONE) renderSubjectList();
+      }).catch(() => {});
     }
 
     // ------------------------------------------------------------
@@ -2052,12 +2291,13 @@
             <div class="ac-table-wrap">
               <table class="ac-table">
                 <thead>
-                  <tr>
+                    <tr>
                     <th style="width:100px;">Code</th>
                     <th>Display Name</th>
                     <th style="width:60px;">Level</th>
                     <th style="width:90px;">Type</th>
                     <th style="width:100px;">Curriculum</th>
+                    <th style="width:100px;">BoW</th>
                     <th style="width:70px;">Classes</th>
                     <th style="width:70px;">Teachers</th>
                     <th class="col-actions">Actions</th>
@@ -2072,7 +2312,7 @@
         `;
       }).join("");
 
-            // Handlers
+                  // Handlers
       host.querySelectorAll("[data-detail-subject]").forEach(btn => {
         btn.addEventListener("click", () => showSubjectDetail(btn.dataset.detailSubject));
       });
@@ -2087,9 +2327,14 @@
           openBoWUploadModal(btn.dataset.bowUpload, btn.dataset.bowName);
         });
       });
+      host.querySelectorAll("[data-bow-view]").forEach(btn => {
+        btn.addEventListener("click", () => {
+          openBoWViewer(btn.dataset.bowView, SUBJECT_TERM);
+        });
+      });
     }
 
-        function renderSubjectRow(s) {
+            function renderSubjectRow(s) {
       const statusDot = s.managed
         ? '<span style="color:#059669;font-weight:900;">●</span>'
         : (s.usage?.count ? '<span style="color:#d97706;font-weight:900;">●</span>' : '<span style="color:#dc2626;font-weight:900;">●</span>');
@@ -2120,12 +2365,13 @@
           <td>${esc(s.level || "—")}</td>
           <td>${typeBadge}</td>
           <td>${curricBadge}</td>
+          <td>${renderBoWPill(s.code)}</td>
           <td>${classes}</td>
           <td>${teachers}</td>
           <td class="col-actions">
             <button class="ac-btn outline small" data-detail-subject="${esc(s.code)}">🔍</button>
             ${isAdminViewer ? `
-              <button class="ac-btn warning small" data-bow-upload="${esc(s.code)}" data-bow-name="${esc(s.displayName || s.code)}" title="Upload Budget of Work">📤 BoW</button>
+              <button class="ac-btn warning small" data-bow-upload="${esc(s.code)}" data-bow-name="${esc(s.displayName || s.code)}" title="Upload Budget of Work">📤</button>
               <button class="ac-btn primary small" data-edit-subject="${esc(s.code)}">✏️</button>
             ` : ""}
           </td>
@@ -2783,6 +3029,677 @@
         toast("⚠️ " + (e.message || "Import failed"), "error");
         btn.disabled = false;
         btn.textContent = "💾 Import";
+      }
+    }
+
+        // ============================================================
+    // BoW VIEWER (Session F2 Part 2)
+    // ============================================================
+    let BOW_COUNTS = {};            // { subjectCode: totalComps }
+    let BOW_VIEWER_STATE = {        // current viewer session
+      subjectCode: null,
+      term: 1,
+      data: null,
+      competencies: [],
+      filter: { search: "", topic: "", recurringOnly: false },
+    };
+
+    // ------------------------------------------------------------
+    // Load BoW counts for all visible subjects
+    // ------------------------------------------------------------
+    async function loadBoWCounts() {
+      BOW_COUNTS = {};
+      const codes = getAllSubjectRecords().map(s => s.code);
+      for (const code of codes) {
+        try {
+          const terms = await window.BoW.listBoWTerms(code);
+          const total = terms.reduce((s, t) => s + (t.totalCompetencies || 0), 0);
+          BOW_COUNTS[code] = total;
+        } catch (e) {
+          BOW_COUNTS[code] = 0;
+        }
+      }
+    }
+
+    // ------------------------------------------------------------
+    // BoW Pill (rendered in table row)
+    // ------------------------------------------------------------
+    function renderBoWPill(subjectCode) {
+      const count = BOW_COUNTS[subjectCode] || 0;
+      if (count === 0) {
+        const isAdminViewer = CURRENT_PROFILE?.isSuperAdmin
+          || CURRENT_PROFILE?.primaryRole === "admin"
+          || CURRENT_PROFILE?.primaryRole === "teacher";
+        return isAdminViewer
+          ? `<span class="bow-pill empty" data-bow-view="${esc(subjectCode)}" title="No BoW yet — click to upload">—</span>`
+          : `<span class="bow-pill empty">—</span>`;
+      }
+      return `<span class="bow-pill" data-bow-view="${esc(subjectCode)}" title="View Budget of Work">
+        📘 ${count}
+      </span>`;
+    }
+
+    // ------------------------------------------------------------
+    // Open BoW Viewer Modal
+    // ------------------------------------------------------------
+    async function openBoWViewer(subjectCode, term = 1) {
+      BOW_VIEWER_STATE.subjectCode = subjectCode;
+      BOW_VIEWER_STATE.term = term;
+      BOW_VIEWER_STATE.filter = { search: "", topic: "", recurringOnly: false };
+
+      // Show modal with loading
+      let modal = document.getElementById("bowViewerModal");
+      if (!modal) {
+        modal = document.createElement("div");
+        modal.id = "bowViewerModal";
+        modal.className = "bow-modal";
+        document.body.appendChild(modal);
+      }
+      modal.classList.add("show");
+
+      const subject = getAllSubjectRecords().find(s => s.code === subjectCode);
+      const subjectName = subject?.displayName || subjectCode;
+
+      modal.innerHTML = `
+        <div class="bow-modal-panel">
+          <div class="bow-modal-head">
+            <div>
+              <h3>📘 Budget of Work — ${esc(subjectName)}</h3>
+              <p class="sub">Loading Term ${term}...</p>
+            </div>
+            <button class="ac-btn outline small" data-close-bow-viewer>✕</button>
+          </div>
+          <div class="bow-modal-body">
+            <div class="ac-loading">
+              <div class="ac-spinner"></div>
+              <div>Loading BoW...</div>
+            </div>
+          </div>
+        </div>
+      `;
+
+      modal.querySelector("[data-close-bow-viewer]").addEventListener("click", closeBoWViewer);
+      modal.addEventListener("click", e => { if (e.target === modal) closeBoWViewer(); });
+
+      // Load data
+      try {
+        const termDoc = await window.BoW.getBoWTerm(subjectCode, term);
+
+        if (!termDoc) {
+          modal.querySelector(".bow-modal-body").innerHTML = renderBoWEmptyState(subjectCode, subjectName);
+          const uploadBtn = modal.querySelector("[data-bow-upload-in-viewer]");
+          if (uploadBtn) {
+            uploadBtn.addEventListener("click", () => {
+              closeBoWViewer();
+              openBoWUploadModal(subjectCode, subjectName);
+            });
+          }
+          return;
+        }
+
+        const comps = await window.BoW.listCompetencies(subjectCode, term);
+        BOW_VIEWER_STATE.data = termDoc;
+        BOW_VIEWER_STATE.competencies = comps;
+
+        modal.querySelector(".bow-modal-head").innerHTML = renderBoWViewerHead(subjectName, termDoc, term);
+        modal.querySelector(".bow-modal-body").innerHTML = renderBoWViewerBody(termDoc, comps);
+
+        // Wire handlers
+        attachBoWViewerHandlers(modal);
+
+      } catch (e) {
+        console.error("[bow-viewer] load failed:", e);
+        modal.querySelector(".bow-modal-body").innerHTML = `
+          <div class="bow-empty">
+            <div style="font-size:2.5rem;">⚠️</div>
+            <p style="margin-top:8px;">Failed to load BoW: ${esc(e.message)}</p>
+          </div>
+        `;
+      }
+    }
+
+    function closeBoWViewer() {
+      const modal = document.getElementById("bowViewerModal");
+      if (modal) modal.classList.remove("show");
+      BOW_VIEWER_STATE = { subjectCode: null, term: 1, data: null, competencies: [], filter: { search: "", topic: "", recurringOnly: false } };
+    }
+
+    // ------------------------------------------------------------
+    // Viewer: Empty state
+    // ------------------------------------------------------------
+    function renderBoWEmptyState(subjectCode, subjectName) {
+      const isStaff = CURRENT_PROFILE?.isSuperAdmin
+        || CURRENT_PROFILE?.primaryRole === "admin"
+        || CURRENT_PROFILE?.primaryRole === "teacher";
+
+      return `
+        <div class="bow-empty">
+          <div style="font-size:3rem;">📭</div>
+          <h3 style="color:#374151;margin:12px 0 6px;">No BoW uploaded yet</h3>
+          <p>This subject has no Budget of Work for Term ${BOW_VIEWER_STATE.term}.</p>
+          ${isStaff ? `
+            <button class="ac-btn success" data-bow-upload-in-viewer style="margin-top:14px;">
+              📤 Upload BoW Now
+            </button>
+          ` : ""}
+        </div>
+      `;
+    }
+
+    // ------------------------------------------------------------
+    // Viewer: Header (with role-aware buttons)
+    // ------------------------------------------------------------
+    function renderBoWViewerHead(subjectName, termDoc, term) {
+      const isStaff = CURRENT_PROFILE?.isSuperAdmin
+        || CURRENT_PROFILE?.primaryRole === "admin"
+        || CURRENT_PROFILE?.primaryRole === "teacher";
+
+      const totalComps = termDoc.totalCompetencies || 0;
+      const totalTopics = termDoc.totalTopics || 0;
+
+      return `
+        <div>
+          <h3>📘 Budget of Work — ${esc(subjectName)}</h3>
+          <p class="sub">
+            ${esc(termDoc.termLabel || "Term " + term)}
+            · ${totalComps} competencies
+            · ${totalTopics} topics
+            ${termDoc.schoolYear ? " · " + esc(termDoc.schoolYear) : ""}
+          </p>
+        </div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
+          ${isStaff ? `
+            <button class="ac-btn success small" data-bow-add>➕ Add Competency</button>
+            <button class="ac-btn outline small" data-bow-reupload>📤 Re-upload</button>
+          ` : ""}
+          <button class="ac-btn outline small" data-close-bow-viewer>✕ Close</button>
+        </div>
+      `;
+    }
+
+    // ------------------------------------------------------------
+    // Viewer: Body (standards + filters + topics + competencies)
+    // ------------------------------------------------------------
+    function renderBoWViewerBody(termDoc, comps) {
+      const isStaff = CURRENT_PROFILE?.isSuperAdmin
+        || CURRENT_PROFILE?.primaryRole === "admin"
+        || CURRENT_PROFILE?.primaryRole === "teacher";
+
+      // Get unique topics
+      const topics = [...new Set(comps.map(c => c.topicLabel))].filter(Boolean).sort();
+
+      let html = "";
+
+      // Content Standard
+      if (termDoc.contentStandard) {
+        html += `
+          <div class="bow-standard-block" data-standard="content">
+            <div class="lbl" style="color:#1e40af;">📘 Content Standard</div>
+            <div class="txt" style="color:#1e3a8a;">${esc(termDoc.contentStandard)}</div>
+            ${isStaff ? `<button class="edit-link" data-edit-standard="content">✏️ Edit</button>` : ""}
+          </div>
+        `;
+      }
+
+      // Performance Standard
+      if (termDoc.performanceStandard) {
+        html += `
+          <div class="bow-standard-block perf" data-standard="performance">
+            <div class="lbl" style="color:#166534;">⭐ Performance Standard</div>
+            <div class="txt" style="color:#14532d;">${esc(termDoc.performanceStandard)}</div>
+            ${isStaff ? `<button class="edit-link" data-edit-standard="performance">✏️ Edit</button>` : ""}
+          </div>
+        `;
+      }
+
+      // Filters
+      html += `
+        <div class="bow-stats-row" style="margin-top:18px;">
+          <span>🔍 <strong>${comps.length}</strong> total competencies</span>
+          <span>📂 <strong>${topics.length}</strong> topics</span>
+          <span>🔁 <strong>${comps.filter(c => c.isRecurring).length}</strong> recurring</span>
+        </div>
+
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px;">
+          <input type="search" class="ac-search" id="bowSearch" placeholder="🔍 Search competencies..." style="flex:1;min-width:200px;">
+          <select class="ac-select" id="bowTopicFilter">
+            <option value="">All Topics</option>
+            ${topics.map(t => `<option value="${esc(t)}">${esc(t)}</option>`).join("")}
+          </select>
+          <label style="display:inline-flex;align-items:center;gap:6px;font-size:13px;color:#4b5563;padding:0 8px;cursor:pointer;">
+            <input type="checkbox" id="bowRecurringFilter"> 🔁 Recurring only
+          </label>
+        </div>
+
+        <div id="bowTopicList"></div>
+      `;
+
+      // Insert handler that renders topics after DOM is ready
+      setTimeout(() => {
+        renderBoWTopics(comps);
+        wireBoWFilters(comps);
+      }, 0);
+
+      return html;
+    }
+
+    // ------------------------------------------------------------
+    // Render topics + competencies list
+    // ------------------------------------------------------------
+    function renderBoWTopics(comps) {
+      const host = document.getElementById("bowTopicList");
+      if (!host) return;
+
+      const { search, topic, recurringOnly } = BOW_VIEWER_STATE.filter;
+      const isStaff = CURRENT_PROFILE?.isSuperAdmin
+        || CURRENT_PROFILE?.primaryRole === "admin"
+        || CURRENT_PROFILE?.primaryRole === "teacher";
+
+      // Apply filters
+      let filtered = comps.slice();
+      if (search) {
+        const s = search.toLowerCase();
+        filtered = filtered.filter(c =>
+          (c.code || "").toLowerCase().includes(s) ||
+          (c.text || "").toLowerCase().includes(s)
+        );
+      }
+      if (topic) filtered = filtered.filter(c => c.topicLabel === topic);
+      if (recurringOnly) filtered = filtered.filter(c => c.isRecurring);
+
+      if (!filtered.length) {
+        host.innerHTML = `
+          <div class="bow-empty">
+            <div style="font-size:2rem;">🔍</div>
+            <p style="margin-top:8px;">No competencies match the current filters.</p>
+          </div>
+        `;
+        return;
+      }
+
+      // Group by topic
+      const grouped = {};
+      filtered.forEach(c => {
+        const key = c.topicLabel || "(untitled)";
+        if (!grouped[key]) {
+          grouped[key] = {
+            label: key,
+            orderIndex: c.topicOrderIndex || 999,
+            isCrossTerm: c.isCrossTerm,
+            items: [],
+          };
+        }
+        grouped[key].items.push(c);
+      });
+
+      // Sort topics by orderIndex
+      const sortedTopics = Object.values(grouped).sort((a, b) => a.orderIndex - b.orderIndex);
+
+      // Sort items within each topic by orderIndex
+      sortedTopics.forEach(t => t.items.sort((a, b) => (a.orderIndex || 0) - (b.orderIndex || 0)));
+
+      host.innerHTML = sortedTopics.map(topic => {
+        const crossTag = topic.isCrossTerm
+          ? '<span style="background:#fef3c7;color:#92400e;font-size:10px;font-weight:700;padding:2px 8px;border-radius:999px;">CROSS-TERM</span>'
+          : "";
+
+        return `
+          <div class="bow-topic-section" data-topic="${esc(topic.label)}">
+            <div class="bow-topic-head">
+              <div class="bow-topic-label">
+                ${esc(topic.label)}
+                ${crossTag}
+              </div>
+              <span class="bow-topic-count">${topic.items.length}</span>
+            </div>
+            <div class="bow-topic-body">
+              ${topic.items.map(c => renderBoWCompetencyRow(c, isStaff)).join("")}
+            </div>
+          </div>
+        `;
+      }).join("");
+
+      // Attach handlers
+      host.querySelectorAll(".bow-topic-head").forEach(head => {
+        head.addEventListener("click", (e) => {
+          if (e.target.closest("button")) return;
+          const body = head.nextElementSibling;
+          body.classList.toggle("collapsed");
+        });
+      });
+
+      host.querySelectorAll("[data-bow-comp-edit]").forEach(btn => {
+        btn.addEventListener("click", () => {
+          const id = btn.dataset.bowCompEdit;
+          const comp = BOW_VIEWER_STATE.competencies.find(c => c.id === id);
+          if (comp) openCompetencyEditor(comp);
+        });
+      });
+
+      host.querySelectorAll("[data-bow-comp-del]").forEach(btn => {
+        btn.addEventListener("click", async () => {
+          const id = btn.dataset.bowCompDel;
+          if (!confirm("Delete this competency?\n\nThis cannot be undone.")) return;
+          await deleteCompetency(id);
+        });
+      });
+
+      host.querySelectorAll("[data-bow-comp-copy]").forEach(btn => {
+        btn.addEventListener("click", () => {
+          const id = btn.dataset.bowCompCopy;
+          const comp = BOW_VIEWER_STATE.competencies.find(c => c.id === id);
+          if (comp && navigator.clipboard) {
+            navigator.clipboard.writeText(comp.text).then(() => {
+              toast("✓ Copied to clipboard", "success");
+            });
+          }
+        });
+      });
+    }
+
+    function renderBoWCompetencyRow(c, isStaff) {
+      const recurring = c.isRecurring
+        ? `<span class="bow-comp-recurring" title="Recurring competency">*</span>`
+        : "";
+
+      return `
+        <div class="bow-comp-row">
+          <div class="bow-comp-main">
+            <span class="bow-comp-code">${esc(c.code || "")}${recurring}</span>
+            <div class="bow-comp-text">${esc(c.text)}</div>
+          </div>
+          ${isStaff ? `
+            <div class="bow-comp-actions">
+              <button class="copy" data-bow-comp-copy="${esc(c.id)}" title="Copy text">📋</button>
+              <button class="edit" data-bow-comp-edit="${esc(c.id)}" title="Edit">✏️</button>
+              <button class="del" data-bow-comp-del="${esc(c.id)}" title="Delete">🗑️</button>
+            </div>
+          ` : ""}
+        </div>
+      `;
+    }
+
+    // ------------------------------------------------------------
+    // Filter wiring
+    // ------------------------------------------------------------
+    function wireBoWFilters(comps) {
+      const search = document.getElementById("bowSearch");
+      const topicSel = document.getElementById("bowTopicFilter");
+      const recurring = document.getElementById("bowRecurringFilter");
+
+      if (search) {
+        search.addEventListener("input", () => {
+          BOW_VIEWER_STATE.filter.search = search.value.trim();
+          renderBoWTopics(comps);
+        });
+      }
+      if (topicSel) {
+        topicSel.addEventListener("change", () => {
+          BOW_VIEWER_STATE.filter.topic = topicSel.value;
+          renderBoWTopics(comps);
+        });
+      }
+      if (recurring) {
+        recurring.addEventListener("change", () => {
+          BOW_VIEWER_STATE.filter.recurringOnly = recurring.checked;
+          renderBoWTopics(comps);
+        });
+      }
+    }
+
+    // ------------------------------------------------------------
+    // Viewer: main handler attachment
+    // ------------------------------------------------------------
+    function attachBoWViewerHandlers(modal) {
+      // Close
+      modal.querySelectorAll("[data-close-bow-viewer]").forEach(b => {
+        b.addEventListener("click", closeBoWViewer);
+      });
+
+      // Re-upload
+      modal.querySelectorAll("[data-bow-reupload]").forEach(b => {
+        b.addEventListener("click", () => {
+          const { subjectCode } = BOW_VIEWER_STATE;
+          const subj = getAllSubjectRecords().find(s => s.code === subjectCode);
+          closeBoWViewer();
+          openBoWUploadModal(subjectCode, subj?.displayName || subjectCode);
+        });
+      });
+
+      // Add competency
+      modal.querySelectorAll("[data-bow-add]").forEach(b => {
+        b.addEventListener("click", () => {
+          openCompetencyEditor(null);
+        });
+      });
+
+      // Edit standards
+      modal.querySelectorAll("[data-edit-standard]").forEach(b => {
+        b.addEventListener("click", () => {
+          const which = b.dataset.editStandard;
+          editStandard(which);
+        });
+      });
+    }
+
+    // ------------------------------------------------------------
+    // Competency editor (add/edit)
+    // ------------------------------------------------------------
+    function openCompetencyEditor(existing) {
+      const isNew = !existing;
+      const { subjectCode, term, competencies } = BOW_VIEWER_STATE;
+
+      // Get unique topics for dropdown
+      const topics = [...new Set(competencies.map(c => c.topicLabel))].filter(Boolean);
+      const currentTopic = existing?.topicLabel || topics[0] || "1. General";
+
+      // Build modal
+      const modal = document.createElement("div");
+      modal.className = "modal show";
+      modal.style.cssText = "position:fixed;inset:0;background:rgba(0,0,0,0.55);display:flex;align-items:center;justify-content:center;z-index:10000;padding:20px;";
+      modal.innerHTML = `
+        <div style="background:#fff;border-radius:12px;max-width:640px;width:100%;max-height:90vh;overflow-y:auto;box-shadow:0 24px 48px rgba(0,0,0,.25);">
+          <div style="padding:18px 22px;border-bottom:1px solid #e5e7eb;display:flex;justify-content:space-between;align-items:center;">
+            <h3 style="margin:0;font-size:1.05rem;color:#0f2b4f;">
+              ${isNew ? "➕ Add Competency" : "✏️ Edit Competency"}
+            </h3>
+            <button class="ac-btn outline small" data-close>✕</button>
+          </div>
+          <div style="padding:20px 22px;">
+            <div style="margin-bottom:14px;">
+              <label style="display:block;font-size:11px;font-weight:700;color:#374151;text-transform:uppercase;letter-spacing:.03em;margin-bottom:6px;">Topic</label>
+              <input id="edc-topic" type="text" list="edc-topic-list" value="${esc(currentTopic)}"
+                     style="width:100%;padding:9px 12px;border:1px solid #d1d5db;border-radius:6px;font-size:14px;font-family:inherit;" />
+              <datalist id="edc-topic-list">
+                ${topics.map(t => `<option value="${esc(t)}"></option>`).join("")}
+              </datalist>
+              <div style="font-size:11px;color:#6b7280;margin-top:4px;">Pick an existing topic or type a new one.</div>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px;">
+              <div>
+                <label style="display:block;font-size:11px;font-weight:700;color:#374151;text-transform:uppercase;letter-spacing:.03em;margin-bottom:6px;">Code</label>
+                <input id="edc-code" type="text" value="${esc(existing?.code || "")}"
+                       style="width:100%;padding:9px 12px;border:1px solid #d1d5db;border-radius:6px;font-size:14px;font-family:monospace;" />
+              </div>
+              <div>
+                <label style="display:block;font-size:11px;font-weight:700;color:#374151;text-transform:uppercase;letter-spacing:.03em;margin-bottom:6px;">Duration (days)</label>
+                <input id="edc-days" type="number" value="${existing?.durationDays || 5}" min="1"
+                       style="width:100%;padding:9px 12px;border:1px solid #d1d5db;border-radius:6px;font-size:14px;font-family:inherit;" />
+              </div>
+            </div>
+            <div style="margin-bottom:14px;">
+              <label style="display:block;font-size:11px;font-weight:700;color:#374151;text-transform:uppercase;letter-spacing:.03em;margin-bottom:6px;">Competency Text</label>
+              <textarea id="edc-text" rows="5"
+                        style="width:100%;padding:9px 12px;border:1px solid #d1d5db;border-radius:6px;font-size:14px;font-family:inherit;resize:vertical;"
+                        placeholder="e.g., Express oneself through music, arts, and movement">${esc(existing?.text || "")}</textarea>
+            </div>
+            <div>
+              <label style="display:inline-flex;align-items:center;gap:6px;font-size:13px;color:#374151;cursor:pointer;">
+                <input id="edc-recurring" type="checkbox" ${existing?.isRecurring ? "checked" : ""} />
+                🔁 Recurring competency (integrated across terms)
+              </label>
+            </div>
+          </div>
+          <div style="padding:14px 22px;border-top:1px solid #e5e7eb;display:flex;justify-content:flex-end;gap:10px;background:#fafbfc;">
+            <button class="ac-btn outline" data-close>Cancel</button>
+            <button class="ac-btn success" data-save>💾 Save</button>
+          </div>
+        </div>
+      `;
+
+      document.body.appendChild(modal);
+
+      // Close
+      modal.querySelectorAll("[data-close]").forEach(b => {
+        b.addEventListener("click", () => modal.remove());
+      });
+      modal.addEventListener("click", e => {
+        if (e.target === modal) modal.remove();
+      });
+
+      // Save
+      modal.querySelector("[data-save]").addEventListener("click", async () => {
+        const topicLabel = document.getElementById("edc-topic").value.trim();
+        const code = document.getElementById("edc-code").value.trim();
+        const text = document.getElementById("edc-text").value.trim();
+        const days = parseInt(document.getElementById("edc-days").value, 10) || 5;
+        const isRecurring = document.getElementById("edc-recurring").checked;
+
+        if (!text) {
+          toast("⚠️ Competency text is required", "error");
+          return;
+        }
+
+        const btn = modal.querySelector("[data-save]");
+        btn.disabled = true;
+        btn.textContent = "Saving...";
+
+        try {
+          if (isNew) {
+            await window.BoW.addCompetency(subjectCode, term, {
+              topicLabel,
+              code: code || autoGenerateCode(topicLabel),
+              text,
+              durationDays: days,
+              isRecurring,
+            });
+            toast("✓ Competency added", "success");
+          } else {
+            await window.BoW.updateCompetency(subjectCode, term, existing.id, {
+              topicLabel,
+              code,
+              text,
+              durationDays: days,
+              isRecurring,
+            });
+            toast("✓ Competency updated", "success");
+          }
+
+          modal.remove();
+          await refreshBoWViewer();
+        } catch (e) {
+          console.error(e);
+          toast("⚠️ " + (e.message || "Save failed"), "error");
+          btn.disabled = false;
+          btn.textContent = "💾 Save";
+        }
+      });
+    }
+
+    function autoGenerateCode(topicLabel) {
+      const { term } = BOW_VIEWER_STATE;
+      const idx = (BOW_VIEWER_STATE.competencies.length + 1).toString().padStart(3, "0");
+      return `T${term}-NEW-${idx}`;
+    }
+
+    // ------------------------------------------------------------
+    // Delete competency
+    // ------------------------------------------------------------
+    async function deleteCompetency(compId) {
+      const { subjectCode, term } = BOW_VIEWER_STATE;
+      try {
+        await window.BoW.deleteCompetency(subjectCode, term, compId);
+        toast("✓ Deleted", "success");
+        await refreshBoWViewer();
+      } catch (e) {
+        console.error(e);
+        toast("⚠️ " + (e.message || "Delete failed"), "error");
+      }
+    }
+
+    // ------------------------------------------------------------
+    // Edit standard (Content / Performance)
+    // ------------------------------------------------------------
+    function editStandard(which) {
+      const { subjectCode, term, data } = BOW_VIEWER_STATE;
+      const field = which === "content" ? "contentStandard" : "performanceStandard";
+      const label = which === "content" ? "Content Standard" : "Performance Standard";
+      const value = data[field] || "";
+
+      const modal = document.createElement("div");
+      modal.className = "modal show";
+      modal.style.cssText = "position:fixed;inset:0;background:rgba(0,0,0,0.55);display:flex;align-items:center;justify-content:center;z-index:10000;padding:20px;";
+      modal.innerHTML = `
+        <div style="background:#fff;border-radius:12px;max-width:640px;width:100%;box-shadow:0 24px 48px rgba(0,0,0,.25);">
+          <div style="padding:18px 22px;border-bottom:1px solid #e5e7eb;display:flex;justify-content:space-between;align-items:center;">
+            <h3 style="margin:0;font-size:1.05rem;color:#0f2b4f;">✏️ Edit ${label}</h3>
+            <button class="ac-btn outline small" data-close>✕</button>
+          </div>
+          <div style="padding:20px 22px;">
+            <textarea id="eds-value" rows="8"
+                      style="width:100%;padding:10px 12px;border:1px solid #d1d5db;border-radius:6px;font-size:14px;font-family:inherit;resize:vertical;"
+                      >${esc(value)}</textarea>
+          </div>
+          <div style="padding:14px 22px;border-top:1px solid #e5e7eb;display:flex;justify-content:flex-end;gap:10px;background:#fafbfc;">
+            <button class="ac-btn outline" data-close>Cancel</button>
+            <button class="ac-btn success" data-save>💾 Save</button>
+          </div>
+        </div>
+      `;
+      document.body.appendChild(modal);
+
+      modal.querySelectorAll("[data-close]").forEach(b => b.addEventListener("click", () => modal.remove()));
+      modal.addEventListener("click", e => { if (e.target === modal) modal.remove(); });
+
+      modal.querySelector("[data-save]").addEventListener("click", async () => {
+        const newValue = document.getElementById("eds-value").value.trim();
+        try {
+          await window.BoW.updateTermMeta(subjectCode, term, { [field]: newValue });
+          toast(`✓ ${label} updated`, "success");
+          modal.remove();
+          await refreshBoWViewer();
+        } catch (e) {
+          toast("⚠️ " + (e.message || "Update failed"), "error");
+        }
+      });
+    }
+
+    // ------------------------------------------------------------
+    // Refresh viewer (after edits)
+    // ------------------------------------------------------------
+    async function refreshBoWViewer() {
+      const { subjectCode, term } = BOW_VIEWER_STATE;
+      if (!subjectCode) return;
+
+      try {
+        const termDoc = await window.BoW.getBoWTerm(subjectCode, term);
+        const comps = await window.BoW.listCompetencies(subjectCode, term);
+        BOW_VIEWER_STATE.data = termDoc;
+        BOW_VIEWER_STATE.competencies = comps;
+
+        const modal = document.getElementById("bowViewerModal");
+        const subject = getAllSubjectRecords().find(s => s.code === subjectCode);
+        const subjectName = subject?.displayName || subjectCode;
+
+        modal.querySelector(".bow-modal-head").innerHTML = renderBoWViewerHead(subjectName, termDoc, term);
+        modal.querySelector(".bow-modal-body").innerHTML = renderBoWViewerBody(termDoc, comps);
+        attachBoWViewerHandlers(modal);
+
+        // Refresh count in table
+        await loadBoWCounts();
+        renderSubjectList();
+      } catch (e) {
+        console.error("[bow-viewer] refresh failed:", e);
       }
     }
   </script>

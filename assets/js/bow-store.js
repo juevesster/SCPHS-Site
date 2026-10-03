@@ -134,6 +134,57 @@ async function deleteBoWTerm(subjectCode, term) {
   await deleteDoc(doc(db, "subjects", subjectCode, "bow_terms", String(term)));
 }
 
+// ------------------------------------------------------------
+// Edit operations
+// ------------------------------------------------------------
+async function updateTermMeta(subjectCode, term, updates) {
+  const ref = doc(db, "subjects", subjectCode, "bow_terms", String(term));
+  await updateDoc(ref, {
+    ...updates,
+    updatedAt: serverTimestamp(),
+  });
+}
+
+async function addCompetency(subjectCode, term, data) {
+  const ref = collection(db, "subjects", subjectCode, "bow_terms", String(term), "competencies");
+  // Find max orderIndex within this topic
+  const existing = await listCompetencies(subjectCode, term);
+  const sameTopic = existing.filter(c => c.topicLabel === data.topicLabel);
+  const maxOrder = sameTopic.reduce((m, c) => Math.max(m, c.orderIndex || 0), 0);
+
+  await addDoc(ref, {
+    ...data,
+    topicOrderIndex: data.topicOrderIndex || (existing.length + 1),
+    orderIndex: maxOrder + 1,
+    createdAt: serverTimestamp(),
+  });
+
+  // Update term total count
+  const newTotal = existing.length + 1;
+  await updateDoc(doc(db, "subjects", subjectCode, "bow_terms", String(term)), {
+    totalCompetencies: newTotal,
+  });
+}
+
+async function updateCompetency(subjectCode, term, compId, updates) {
+  const ref = doc(db, "subjects", subjectCode, "bow_terms", String(term), "competencies", compId);
+  await updateDoc(ref, {
+    ...updates,
+    updatedAt: serverTimestamp(),
+  });
+}
+
+async function deleteCompetency(subjectCode, term, compId) {
+  const ref = doc(db, "subjects", subjectCode, "bow_terms", String(term), "competencies", compId);
+  await deleteDoc(ref);
+
+  // Update term total count
+  const remaining = await listCompetencies(subjectCode, term);
+  await updateDoc(doc(db, "subjects", subjectCode, "bow_terms", String(term)), {
+    totalCompetencies: remaining.length,
+  });
+}
+
 // ---------- Export to window ----------
 window.BoW = {
   saveBoWTerm,
@@ -142,4 +193,9 @@ window.BoW = {
   listCompetencies,
   groupByTopic,
   deleteBoWTerm,
+  // NEW:
+  updateTermMeta,
+  addCompetency,
+  updateCompetency,
+  deleteCompetency,
 };
