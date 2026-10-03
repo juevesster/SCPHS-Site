@@ -1,0 +1,773 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ILAW Lesson Planner — SCPHS</title>
+  <link rel="stylesheet" href="assets/css/styles.css" />
+  <style>
+    * { box-sizing: border-box; }
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #f0f2f5; margin: 0; }
+
+    /* Layout */
+    .ilaw-header { background: linear-gradient(135deg, #1e3c72, #2a5298); color: #fff; padding: 20px 0; position: sticky; top: 0; z-index: 100; box-shadow: 0 2px 8px rgba(0,0,0,.1); }
+    .ilaw-header-inner { max-width: 1400px; margin: 0 auto; padding: 0 24px; display: flex; justify-content: space-between; align-items: center; gap: 16px; flex-wrap: wrap; }
+    .ilaw-header h1 { margin: 0 0 4px; font-size: 1.3rem; }
+    .ilaw-header .sub { margin: 0; opacity: 0.85; font-size: 0.85rem; }
+    .ilaw-header-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+
+    .ilaw-container { max-width: 1400px; margin: 0 auto; padding: 24px; }
+
+    /* Buttons */
+    .btn { padding: 9px 16px; border: none; border-radius: 8px; cursor: pointer; font-family: inherit; font-size: 13px; font-weight: 700; display: inline-flex; align-items: center; gap: 6px; transition: all .15s; text-decoration: none; }
+    .btn:hover:not(:disabled) { transform: translateY(-1px); }
+    .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+    .btn-primary { background: #1e3c72; color: #fff; }
+    .btn-success { background: #059669; color: #fff; }
+    .btn-warning { background: #d97706; color: #fff; }
+    .btn-danger { background: #dc2626; color: #fff; }
+    .btn-outline { background: #fff; color: #1e3c72; border: 1px solid #1e3c72; }
+    .btn-outline-white { background: rgba(255,255,255,0.15); color: #fff; border: 1px solid rgba(255,255,255,0.3); }
+    .btn-outline-white:hover { background: rgba(255,255,255,0.25); }
+    .btn.small { padding: 6px 12px; font-size: 12px; }
+
+    /* Context picker */
+    .context-bar {
+      background: #fff;
+      border-radius: 12px;
+      padding: 16px 20px;
+      margin-bottom: 20px;
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      align-items: center;
+      box-shadow: 0 1px 3px rgba(0,0,0,.06);
+    }
+    .context-bar label { font-size: 11px; font-weight: 700; color: #374151; text-transform: uppercase; letter-spacing: .03em; display: block; margin-bottom: 4px; }
+    .context-bar select { padding: 9px 12px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 13px; font-family: inherit; background: #fff; min-width: 160px; }
+
+    /* Card */
+    .card { background: #fff; border-radius: 12px; padding: 20px; margin-bottom: 18px; box-shadow: 0 1px 3px rgba(0,0,0,.06); }
+
+    /* BoW info panel */
+    .bow-info { background: #eff6ff; border: 1px solid #bfdbfe; border-left: 4px solid #1e40af; border-radius: 8px; padding: 14px 16px; margin-bottom: 18px; }
+    .bow-info .lbl { font-size: 11px; font-weight: 800; color: #1e40af; text-transform: uppercase; letter-spacing: .04em; margin-bottom: 4px; }
+    .bow-info .txt { font-size: 13px; color: #1e3a8a; line-height: 1.55; }
+    .bow-info.perf { border-left-color: #166534; background: #f0fdf4; }
+    .bow-info.perf .lbl { color: #166534; }
+    .bow-info.perf .txt { color: #14532d; }
+
+    /* Section */
+    .section { background: #fff; border-radius: 12px; margin-bottom: 18px; box-shadow: 0 1px 3px rgba(0,0,0,.06); overflow: hidden; }
+    .section-head { padding: 14px 20px; background: linear-gradient(90deg, #1e3c72, #2a5298); color: #fff; display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; }
+    .section-head h2 { margin: 0; font-size: 15px; font-weight: 800; letter-spacing: .03em; }
+    .section-head .hint { font-size: 11px; opacity: 0.85; margin-top: 2px; }
+    .section-body { padding: 18px 20px; }
+
+    /* Field */
+    .field { margin-bottom: 16px; }
+    .field:last-child { margin-bottom: 0; }
+    .field-label { font-size: 11.5px; font-weight: 800; color: #374151; text-transform: uppercase; letter-spacing: .04em; margin-bottom: 6px; display: block; }
+    .field textarea, .field input[type="text"] { width: 100%; padding: 10px 12px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 13.5px; font-family: inherit; resize: vertical; line-height: 1.55; }
+    .field textarea { min-height: 80px; }
+    .field textarea:focus, .field input[type="text"]:focus { outline: none; border-color: #1e6bb8; box-shadow: 0 0 0 3px rgba(30,107,184,.12); }
+
+    /* Competencies picker */
+    .comp-picker { display: flex; flex-direction: column; gap: 8px; max-height: 300px; overflow-y: auto; padding: 4px; }
+    .comp-check { display: flex; align-items: flex-start; gap: 10px; padding: 10px 12px; border: 1px solid #e5e7eb; border-radius: 8px; background: #f9fafb; cursor: pointer; transition: all .15s; }
+    .comp-check:hover { background: #fff; border-color: #bfdbfe; }
+    .comp-check input { margin-top: 3px; flex-shrink: 0; }
+    .comp-check.checked { background: #eff6ff; border-color: #1e40af; }
+    .comp-check .code { font-family: monospace; font-size: 11px; color: #1e40af; font-weight: 700; margin-bottom: 3px; }
+    .comp-check .text { font-size: 12.5px; color: #111827; line-height: 1.5; }
+
+    /* Status badge */
+    .status-badge { display: inline-block; padding: 3px 10px; border-radius: 999px; font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: .03em; }
+    .status-badge.draft { background: #fef3c7; color: #92400e; }
+    .status-badge.final { background: #d1fae5; color: #065f46; }
+
+    /* Footer actions */
+    .action-bar { position: sticky; bottom: 0; background: #fff; border-top: 1px solid #e5e7eb; padding: 14px 20px; display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin: 0 -24px -24px; box-shadow: 0 -4px 12px rgba(0,0,0,.05); }
+
+    /* Loading/empty */
+    .loading { text-align: center; padding: 60px 20px; color: #6b7280; }
+    .spinner { width: 32px; height: 32px; border: 3px solid #e5e7eb; border-top-color: #1e3c72; border-radius: 50%; animation: spin .8s linear infinite; margin: 0 auto 12px; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* Toast */
+    .toast { position: fixed; bottom: 90px; left: 50%; transform: translateX(-50%) translateY(20px); background: #111827; color: #fff; padding: 12px 22px; border-radius: 8px; font-size: 14px; font-weight: 500; box-shadow: 0 8px 24px rgba(0,0,0,.2); opacity: 0; transition: all .25s; z-index: 10000; pointer-events: none; }
+    .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+    .toast.success { background: #059669; }
+    .toast.error { background: #b91c1c; }
+
+    /* Print */
+    @media print {
+      .ilaw-header, .context-bar, .action-bar, .toast, .section-head button, .comp-picker input[type="checkbox"] { display: none !important; }
+      body { background: #fff; }
+      .ilaw-container { padding: 0; max-width: 100%; }
+      .section { box-shadow: none; border: 1px solid #000; page-break-inside: avoid; margin-bottom: 12px; }
+      .section-head { background: #fff !important; color: #000 !important; border-bottom: 2px solid #000; }
+      .card { box-shadow: none; border: 1px solid #000; }
+      .bow-info { background: #f5f5f5 !important; border: 1px solid #999 !important; }
+      .field textarea, .field input { border: 1px solid #999; background: #fff !important; color: #000 !important; }
+    }
+
+    @media (max-width: 768px) {
+      .ilaw-header-inner, .ilaw-container { padding: 0 14px; }
+      .context-bar select { min-width: 100%; }
+      .comp-picker { max-height: 240px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Header -->
+  <header class="ilaw-header">
+    <div class="ilaw-header-inner">
+      <div>
+        <h1>📝 ILAW Lesson Planner</h1>
+        <p class="sub" id="headerSub">Loading…</p>
+      </div>
+      <div class="ilaw-header-actions">
+        <span id="statusBadge"></span>
+        <a href="admin.html" class="btn btn-outline-white small">← Back to Portal</a>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main -->
+  <main class="ilaw-container" id="mainContent">
+    <div class="loading" id="loading">
+      <div class="spinner"></div>
+      <div>Loading ILAW planner…</div>
+    </div>
+
+    <div id="content" style="display:none;">
+
+      <!-- Context picker -->
+      <div class="context-bar">
+        <div>
+          <label>Grade Level</label>
+          <select id="pickGrade"><option value="">— Select —</option></select>
+        </div>
+        <div>
+          <label>Subject</label>
+          <select id="pickSubject"><option value="">— Select —</option></select>
+        </div>
+        <div>
+          <label>Term</label>
+          <select id="pickTerm">
+            <option value="1" selected>Term 1</option>
+            <option value="2">Term 2</option>
+            <option value="3">Term 3</option>
+            <option value="4">Term 4 (Legacy)</option>
+          </select>
+        </div>
+        <div>
+          <label>Week</label>
+          <select id="pickWeek">
+            ${Array.from({length: 13}, (_, i) => `<option value="${i+1}">Week ${i+1}</option>`).join("")}
+          </select>
+        </div>
+        <div>
+          <label>School Year</label>
+          <select id="pickYear">
+            <option value="2026-2027" selected>2026-2027</option>
+            <option value="2025-2026">2025-2026</option>
+            <option value="2027-2028">2027-2028</option>
+          </select>
+        </div>
+        <div style="margin-left:auto;">
+          <button class="btn btn-primary" id="btnLoadContext" disabled>📖 Load BoW</button>
+        </div>
+      </div>
+
+      <!-- Content area -->
+      <div id="editorArea"></div>
+
+    </div>
+  </main>
+
+  <div class="toast" id="toast"></div>
+
+  <script type="module">
+    import { auth, db } from "./assets/js/firebase-config.js";
+    import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+    import { collection, getDocs } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+    import { getCurrentUserProfile } from "./assets/js/roles.js";
+    import "./assets/js/bow-store.js";
+    import "./assets/js/ilaw-store.js";
+
+    // ============================================================
+    // STATE
+    // ============================================================
+    let CURRENT_USER = null;
+    let CURRENT_PROFILE = null;
+    let SUBJECTS = [];
+    let ALL_CLASSES = [];
+    let CURRENT_BOW = null;      // { termDoc, competencies }
+    let CURRENT_LESSON_ID = null; // existing lesson ID (if any)
+    let DIRTY = false;
+
+    const $ = id => document.getElementById(id);
+    const esc = s => String(s == null ? "" : s)
+      .replace(/&/g, "&amp;").replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+
+    let toastTimer;
+    function toast(msg, type = "") {
+      const t = $("toast");
+      t.textContent = msg;
+      t.className = "toast show " + type;
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => t.className = "toast", 3000);
+    }
+
+    // ============================================================
+    // AUTH
+    // ============================================================
+    onAuthStateChanged(auth, async (user) => {
+      if (!user) {
+        location.replace("login.html?next=" + encodeURIComponent(location.pathname + location.search));
+        return;
+      }
+      CURRENT_USER = user;
+      CURRENT_PROFILE = await getCurrentUserProfile();
+
+      const isStaff = CURRENT_PROFILE?.primaryRole === "teacher"
+        || CURRENT_PROFILE?.primaryRole === "admin"
+        || CURRENT_PROFILE?.isSuperAdmin;
+
+      if (!isStaff) {
+        $("loading").innerHTML = `
+          <h2 style="color:#b91c1c;">🚫 Access Denied</h2>
+          <p>Only teachers and admins can create ILAW lesson plans.</p>
+          <a href="index.html" class="btn btn-primary" style="margin-top:12px;">← Back to Portal</a>
+        `;
+        return;
+      }
+
+      await loadSubjects();
+      initContextPicker();
+      attachHandlers();
+
+      $("loading").style.display = "none";
+      $("content").style.display = "block";
+      $("headerSub").textContent = `Signed in as ${CURRENT_PROFILE?.name || user.email}`;
+    });
+
+    // ============================================================
+    // LOAD SUBJECTS
+    // ============================================================
+    async function loadSubjects() {
+      try {
+        const snap = await getDocs(collection(db, "subjects"));
+        SUBJECTS = snap.docs
+          .map(d => ({ id: d.id, ...d.data() }))
+          .filter(s => s.active !== false);
+      } catch (e) {
+        console.warn("[ilaw] subjects load failed:", e);
+        SUBJECTS = [];
+      }
+    }
+
+    // ============================================================
+    // CONTEXT PICKER
+    // ============================================================
+    function initContextPicker() {
+      // Grades
+      const grades = [...new Set(SUBJECTS.map(s => s.level).filter(Boolean))]
+        .sort((a, b) => {
+          if (a === "K") return -1;
+          if (b === "K") return 1;
+          return (parseInt(a) || 999) - (parseInt(b) || 999);
+        });
+      $("pickGrade").innerHTML = '<option value="">— Select —</option>' +
+        grades.map(g => `<option value="${esc(g)}">${g === "K" ? "Kindergarten" : "Grade " + g}</option>`).join("");
+
+      // Subject dropdown populated when grade is selected
+      $("pickGrade").addEventListener("change", populateSubjectPicker);
+      $("pickSubject").addEventListener("change", checkContextReady);
+      $("pickTerm").addEventListener("change", checkContextReady);
+      $("pickWeek").addEventListener("change", checkContextReady);
+    }
+
+    function populateSubjectPicker() {
+      const grade = $("pickGrade").value;
+      const list = SUBJECTS.filter(s => String(s.level) === String(grade));
+      $("pickSubject").innerHTML = '<option value="">— Select —</option>' +
+        list.map(s => `<option value="${esc(s.id)}">${esc(s.displayName || s.id)}</option>`).join("");
+      checkContextReady();
+    }
+
+    function checkContextReady() {
+      const ready = !!$("pickGrade").value && !!$("pickSubject").value &&
+                    !!$("pickTerm").value && !!$("pickWeek").value;
+      $("btnLoadContext").disabled = !ready;
+    }
+
+    // ============================================================
+    // HANDLERS
+    // ============================================================
+    function attachHandlers() {
+      $("btnLoadContext").addEventListener("click", loadContext);
+    }
+
+    // ============================================================
+    // LOAD CONTEXT (BoW + existing lesson)
+    // ============================================================
+    async function loadContext() {
+      const grade = $("pickGrade").value;
+      const subjectCode = $("pickSubject").value;
+      const term = parseInt($("pickTerm").value, 10);
+      const week = parseInt($("pickWeek").value, 10);
+      const schoolYear = $("pickYear").value;
+
+      if (!subjectCode) { toast("⚠️ Please select a subject", "error"); return; }
+
+      $("editorArea").innerHTML = `
+        <div class="loading">
+          <div class="spinner"></div>
+          <div>Loading BoW and lesson...</div>
+        </div>
+      `;
+
+      try {
+        // 1. Load BoW term
+        const termDoc = await window.BoW.getBoWTerm(subjectCode, term);
+        const competencies = termDoc ? await window.BoW.listCompetencies(subjectCode, term) : [];
+        CURRENT_BOW = { termDoc, competencies };
+
+        // 2. Check for existing lesson by this teacher
+        const existing = await window.ILAW.findLesson(
+          CURRENT_USER.uid, subjectCode, term, week, schoolYear
+        );
+        CURRENT_LESSON_ID = existing?.id || null;
+
+        renderEditor(existing);
+      } catch (e) {
+        console.error(e);
+        $("editorArea").innerHTML = `
+          <div class="card" style="text-align:center;padding:40px;">
+            <div style="font-size:2.5rem;">⚠️</div>
+            <h3 style="color:#b91c1c;margin:8px 0 4px;">Load failed</h3>
+            <p style="color:#6b7280;font-size:13px;">${esc(e.message || "Unknown error")}</p>
+          </div>
+        `;
+      }
+    }
+
+    // ============================================================
+    // RENDER EDITOR
+    // ============================================================
+    function renderEditor(existing) {
+      const grade = $("pickGrade").value;
+      const subjectCode = $("pickSubject").value;
+      const subjectName = $("pickSubject").selectedOptions[0].textContent;
+      const term = parseInt($("pickTerm").value, 10);
+      const week = parseInt($("pickWeek").value, 10);
+      const schoolYear = $("pickYear").value;
+
+      const bow = CURRENT_BOW;
+      const comps = bow.competencies || [];
+      const contentStd = bow.termDoc?.contentStandard || "";
+      const perfStd = bow.termDoc?.performanceStandard || "";
+
+      // Which competencies were previously selected?
+      const selectedCodes = new Set(existing?.competencyCodes || []);
+
+      // Group competencies by topic
+      const byTopic = {};
+      comps.forEach(c => {
+        const t = c.topicLabel || "(untitled)";
+        if (!byTopic[t]) byTopic[t] = { items: [], orderIndex: c.topicOrderIndex || 999 };
+        byTopic[t].items.push(c);
+      });
+      const topicList = Object.entries(byTopic)
+        .sort((a, b) => a[1].orderIndex - b[1].orderIndex);
+
+      const e = existing || {};
+      const status = e.status || "draft";
+
+      $("editorArea").innerHTML = `
+        <!-- BoW panel -->
+        ${contentStd ? `
+          <div class="bow-info">
+            <div class="lbl">📘 Content Standard</div>
+            <div class="txt">${esc(contentStd)}</div>
+          </div>` : ""}
+        ${perfStd ? `
+          <div class="bow-info perf">
+            <div class="lbl">⭐ Performance Standard</div>
+            <div class="txt">${esc(perfStd)}</div>
+          </div>` : ""}
+
+        ${!comps.length ? `
+          <div class="card" style="text-align:center;padding:24px;background:#fef3c7;border-left:4px solid #f59e0b;">
+            <strong style="color:#92400e;">⚠️ No BoW competencies found for this term</strong>
+            <p style="color:#92400e;font-size:13px;margin:6px 0 0;">You can still build a lesson and type competencies manually below.</p>
+          </div>
+        ` : ""}
+
+        <!-- I — INTENTIONS -->
+        <div class="section">
+          <div class="section-head">
+            <div>
+              <h2>🎯 I — INTENTIONS</h2>
+              <div class="hint">What should learners know and be able to do?</div>
+            </div>
+          </div>
+          <div class="section-body">
+
+            <div class="field">
+              <label class="field-label">Learning Competencies (pick from BoW)</label>
+              ${topicList.length ? `
+                <div class="comp-picker" id="compPicker">
+                  ${topicList.map(([topicLabel, group]) => `
+                    <div style="font-size:11px;font-weight:800;color:#1e3c72;text-transform:uppercase;letter-spacing:.04em;margin:10px 0 4px;">
+                      📂 ${esc(topicLabel)}
+                    </div>
+                    ${group.items.map(c => `
+                      <label class="comp-check ${selectedCodes.has(c.code) ? "checked" : ""}">
+                        <input type="checkbox" data-comp-code="${esc(c.code)}"
+                               data-comp-text="${esc(c.text)}"
+                               ${selectedCodes.has(c.code) ? "checked" : ""} />
+                        <div>
+                          <div class="code">${esc(c.code)}${c.isRecurring ? " *" : ""}</div>
+                          <div class="text">${esc(c.text)}</div>
+                        </div>
+                      </label>
+                    `).join("")}
+                  `).join("")}
+                </div>
+                <div style="font-size:11px;color:#6b7280;margin-top:8px;">
+                  Selected: <strong id="compCount">${selectedCodes.size}</strong>
+                </div>
+              ` : `
+                <textarea id="manualComps" rows="4" placeholder="Type competencies manually if no BoW available...">${esc((e.competencyTexts || []).join("\n"))}</textarea>
+              `}
+            </div>
+
+            <div class="field">
+              <label class="field-label">Learner Context</label>
+              <textarea id="f-learnerContext" rows="4" placeholder="Describe your learners: prior knowledge, needs, strengths...">${esc(e.learnerContext || "")}</textarea>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- L — LEARNING EXPERIENCE -->
+        <div class="section">
+          <div class="section-head">
+            <div>
+              <h2>📖 L — LEARNING EXPERIENCE</h2>
+              <div class="hint">How will learners get there?</div>
+            </div>
+          </div>
+          <div class="section-body">
+
+            <div class="field">
+              <label class="field-label">Pre-Lesson</label>
+              <textarea id="f-preLesson" rows="3" placeholder="Opening activities, review, motivation...">${esc(e.preLesson || "")}</textarea>
+            </div>
+
+            <div class="field">
+              <label class="field-label">Lesson Flow</label>
+              <textarea id="f-lessonFlow" rows="8" placeholder="Day-by-day activities, teaching strategies, learner tasks...">${esc(e.lessonFlow || "")}</textarea>
+            </div>
+
+            <div class="field">
+              <label class="field-label">Materials / Resources</label>
+              <textarea id="f-materialsText" rows="3" placeholder="Charts, handouts, videos, tools...">${esc(e.materialsText || "")}</textarea>
+            </div>
+
+            <div class="field">
+              <label class="field-label">Integration Opportunities</label>
+              <textarea id="f-integration" rows="2" placeholder="Cross-curricular connections...">${esc(e.integration || "")}</textarea>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- A — ASSESSMENT -->
+        <div class="section">
+          <div class="section-head">
+            <div>
+              <h2>📊 A — ASSESSMENT</h2>
+              <div class="hint">How will you know they learned?</div>
+            </div>
+          </div>
+          <div class="section-body">
+            <div class="field">
+              <textarea id="f-assessment" rows="5" placeholder="Formative and summative assessments, rubrics, performance tasks...">${esc(e.assessment || "")}</textarea>
+            </div>
+          </div>
+        </div>
+
+        <!-- W — WAYS FORWARD -->
+        <div class="section">
+          <div class="section-head">
+            <div>
+              <h2>🛣️ W — WAYS FORWARD</h2>
+              <div class="hint">What's next for learners who need support or enrichment?</div>
+            </div>
+          </div>
+          <div class="section-body">
+
+            <div class="field">
+              <label class="field-label">Extended Learning</label>
+              <textarea id="f-extendedLearning" rows="3" placeholder="Enrichment activities, homework, projects...">${esc(e.extendedLearning || "")}</textarea>
+            </div>
+
+            <div class="field">
+              <label class="field-label">Ways Forward / ARAL</label>
+              <textarea id="f-waysForward" rows="3" placeholder="Remediation, ARAL strategies, interventions...">${esc(e.waysForward || "")}</textarea>
+            </div>
+
+            <div class="field">
+              <label class="field-label">Teacher Reflections</label>
+              <textarea id="f-teacherReflections" rows="3" placeholder="What worked? What needs adjustment?">${esc(e.teacherReflections || "")}</textarea>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- AI DECLARATION -->
+        <div class="section">
+          <div class="section-head">
+            <div>
+              <h2>📜 AI DECLARATION</h2>
+              <div class="hint">DepEd DO 3, s. 2026 — disclose AI use in lesson planning</div>
+            </div>
+          </div>
+          <div class="section-body">
+            <div class="field">
+              <label style="display:flex;align-items:center;gap:6px;font-size:13px;margin-bottom:8px;">
+                <input type="radio" name="aiDecl" value="not-used" ${(e.aiDeclaration || "not-used") === "not-used" ? "checked" : ""} />
+                🚫 Not used
+              </label>
+              <label style="display:flex;align-items:center;gap:6px;font-size:13px;margin-bottom:8px;">
+                <input type="radio" name="aiDecl" value="draft-generation" ${e.aiDeclaration === "draft-generation" ? "checked" : ""} />
+                🤖 AI-generated draft, teacher revised
+              </label>
+              <label style="display:flex;align-items:center;gap:6px;font-size:13px;margin-bottom:8px;">
+                <input type="radio" name="aiDecl" value="grammar-only" ${e.aiDeclaration === "grammar-only" ? "checked" : ""} />
+                ✏️ Grammar/style editing only
+              </label>
+              <label style="display:flex;align-items:center;gap:6px;font-size:13px;margin-bottom:12px;">
+                <input type="radio" name="aiDecl" value="other" ${e.aiDeclaration === "other" ? "checked" : ""} />
+                📝 Other (specify below)
+              </label>
+              <input type="text" id="f-aiDeclarationNotes" placeholder="Notes (optional)" value="${esc(e.aiDeclarationNotes || "")}" />
+            </div>
+          </div>
+        </div>
+
+        <!-- Action bar -->
+        <div class="action-bar">
+          <span class="status-badge ${status}" id="statusBadgeBody">${status}</span>
+          <span style="color:#6b7280;font-size:12px;" id="dirtyIndicator"></span>
+          <div style="margin-left:auto;display:flex;gap:8px;flex-wrap:wrap;">
+            <button class="btn btn-outline" id="btnDuplicate">📋 Duplicate</button>
+            <button class="btn btn-outline" id="btnPrint">🖨️ Print</button>
+            ${CURRENT_LESSON_ID ? `<button class="btn btn-danger" id="btnDelete">🗑️ Delete</button>` : ""}
+            <button class="btn btn-primary" id="btnSaveDraft">💾 Save as Draft</button>
+            <button class="btn btn-success" id="btnSaveFinal">✅ Mark as Final</button>
+          </div>
+        </div>
+      `;
+
+      // Update header badge
+      $("statusBadge").innerHTML = `<span class="status-badge ${status}">${status}</span>`;
+
+      // Wire competency checkboxes
+      document.querySelectorAll("[data-comp-code]").forEach(cb => {
+        cb.addEventListener("change", () => {
+          cb.closest(".comp-check").classList.toggle("checked", cb.checked);
+          $("compCount").textContent = document.querySelectorAll("[data-comp-code]:checked").length;
+          DIRTY = true;
+          updateDirtyIndicator();
+        });
+      });
+
+      // Wire all textareas/inputs → mark dirty
+      document.querySelectorAll("textarea, input[type='text'], input[type='radio']").forEach(el => {
+        el.addEventListener("input", () => {
+          DIRTY = true;
+          updateDirtyIndicator();
+        });
+      });
+
+      // Buttons
+      $("btnSaveDraft").addEventListener("click", () => saveLesson("draft"));
+      $("btnSaveFinal").addEventListener("click", () => saveLesson("final"));
+      $("btnPrint").addEventListener("click", () => window.print());
+      $("btnDuplicate")?.addEventListener("click", duplicateCurrent);
+      $("btnDelete")?.addEventListener("click", deleteCurrent);
+    }
+
+    function updateDirtyIndicator() {
+      const el = $("dirtyIndicator");
+      if (!el) return;
+      el.textContent = DIRTY ? "• Unsaved changes" : "";
+      el.style.color = DIRTY ? "#d97706" : "#6b7280";
+    }
+
+    // ============================================================
+    // SAVE
+    // ============================================================
+    async function saveLesson(status) {
+      const subjectCode = $("pickSubject").value;
+      const subjectName = $("pickSubject").selectedOptions[0].textContent;
+      const gradeLevel = $("pickGrade").value;
+      const term = parseInt($("pickTerm").value, 10);
+      const week = parseInt($("pickWeek").value, 10);
+      const schoolYear = $("pickYear").value;
+
+      // Collect competencies
+      const checked = Array.from(document.querySelectorAll("[data-comp-code]:checked"));
+      let competencyCodes = checked.map(cb => cb.dataset.compCode);
+      let competencyTexts = checked.map(cb => cb.dataset.compText);
+
+      // Manual competencies (no BoW case)
+      const manualComps = document.getElementById("manualComps");
+      if (manualComps && manualComps.value.trim()) {
+        const lines = manualComps.value.split("\n").map(l => l.trim()).filter(Boolean);
+        lines.forEach((line, idx) => {
+          const code = `T${term}-M${idx + 1}`;
+          competencyCodes.push(code);
+          competencyTexts.push(line);
+        });
+      }
+
+      // AI declaration
+      const aiDecl = document.querySelector('input[name="aiDecl"]:checked')?.value || "not-used";
+
+      const data = {
+        teacherUid: CURRENT_USER.uid,
+        teacherName: CURRENT_PROFILE?.name || CURRENT_USER.email,
+        subjectCode,
+        subjectName,
+        gradeLevel,
+        term,
+        week,
+        schoolYear,
+        title: `${subjectName} — Term ${term} Week ${week}`,
+        status,
+
+        // Intentions
+        competencyCodes,
+        competencyTexts,
+        contentStandard: CURRENT_BOW?.termDoc?.contentStandard || "",
+        performanceStandard: CURRENT_BOW?.termDoc?.performanceStandard || "",
+        learnerContext: ($("f-learnerContext")?.value || "").trim(),
+
+        // Learning Experience
+        preLesson: ($("f-preLesson")?.value || "").trim(),
+        lessonFlow: ($("f-lessonFlow")?.value || "").trim(),
+        materialsText: ($("f-materialsText")?.value || "").trim(),
+        integration: ($("f-integration")?.value || "").trim(),
+
+        // Assessment
+        assessment: ($("f-assessment")?.value || "").trim(),
+
+        // Ways Forward
+        extendedLearning: ($("f-extendedLearning")?.value || "").trim(),
+        waysForward: ($("f-waysForward")?.value || "").trim(),
+        teacherReflections: ($("f-teacherReflections")?.value || "").trim(),
+
+        // Compliance
+        aiDeclaration: aiDecl,
+        aiDeclarationNotes: ($("f-aiDeclarationNotes")?.value || "").trim(),
+
+        lastSavedBy: CURRENT_USER.email || "",
+      };
+
+      try {
+        const id = await window.ILAW.saveLesson(CURRENT_LESSON_ID, data);
+        CURRENT_LESSON_ID = id;
+        DIRTY = false;
+        updateDirtyIndicator();
+        toast(`✓ Lesson saved (${status})`, "success");
+        $("statusBadge").innerHTML = `<span class="status-badge ${status}">${status}</span>`;
+        $("statusBadgeBody").textContent = status;
+        $("statusBadgeBody").className = `status-badge ${status}`;
+      } catch (e) {
+        console.error(e);
+        toast("⚠️ " + (e.message || "Save failed"), "error");
+      }
+    }
+
+    // ============================================================
+    // DUPLICATE CURRENT
+    // ============================================================
+    async function duplicateCurrent() {
+      if (!CURRENT_LESSON_ID) {
+        toast("⚠️ Save first, then duplicate", "error");
+        return;
+      }
+      const newWeek = prompt("Duplicate to which week? (1-13)", "1");
+      if (!newWeek) return;
+      const wk = parseInt(newWeek, 10);
+      if (!wk || wk < 1 || wk > 13) { toast("⚠️ Invalid week", "error"); return; }
+      try {
+        const newId = await window.ILAW.duplicateLesson(CURRENT_LESSON_ID, { week: wk });
+        toast("✓ Duplicated", "success");
+        location.href = `ilaw.html?lesson=${newId}`;
+      } catch (e) {
+        toast("⚠️ " + (e.message || "Duplicate failed"), "error");
+      }
+    }
+
+    // ============================================================
+    // DELETE CURRENT
+    // ============================================================
+    async function deleteCurrent() {
+      if (!CURRENT_LESSON_ID) return;
+      if (!confirm("Delete this lesson plan? This cannot be undone.")) return;
+      try {
+        await window.ILAW.deleteLesson(CURRENT_LESSON_ID);
+        toast("✓ Deleted", "success");
+        setTimeout(() => location.href = "ilaw.html", 500);
+      } catch (e) {
+        toast("⚠️ " + (e.message || "Delete failed"), "error");
+      }
+    }
+
+    // ============================================================
+    // LOAD EXISTING LESSON FROM URL (?lesson=xxx)
+    // ============================================================
+    async function loadFromUrl() {
+      const params = new URLSearchParams(location.search);
+      const lessonId = params.get("lesson");
+      if (!lessonId) return;
+
+      const lesson = await window.ILAW.getLesson(lessonId);
+      if (!lesson) { toast("⚠️ Lesson not found", "error"); return; }
+      if (lesson.teacherUid !== CURRENT_USER.uid && CURRENT_PROFILE?.primaryRole !== "admin" && !CURRENT_PROFILE?.isSuperAdmin) {
+        toast("⚠️ You don't have permission to view this lesson", "error");
+        return;
+      }
+
+      // Populate pickers
+      $("pickGrade").value = lesson.gradeLevel;
+      populateSubjectPicker();
+      $("pickSubject").value = lesson.subjectCode;
+      $("pickTerm").value = lesson.term;
+      $("pickWeek").value = lesson.week;
+      $("pickYear").value = lesson.schoolYear || "2026-2027";
+
+      // Trigger load
+      setTimeout(() => loadContext(), 100);
+    }
+
+    // Call after auth ready
+    // (we call loadFromUrl once the editor is ready)
+    window.__loadFromUrl = loadFromUrl;
+
+    // Auto-load from URL after user signs in
+    // (hook into the auth flow above)
+    document.addEventListener("ilaw:ready", loadFromUrl);
+  </script>
+</body>
+</html>
