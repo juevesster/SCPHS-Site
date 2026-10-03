@@ -10,25 +10,9 @@
 
   <style>
     /* ============================================================
-       PUBLIC SUBJECTS — Curated card grid
+       PUBLIC SUBJECTS — Curated card grid (catalog-only view)
        Reuses SCPHS design tokens from assets/css/styles.css
        ============================================================ */
-
-    :root {
-      --sub-mathe: #2563eb;
-      --sub-sci: #059669;
-      --sub-eng: #7c3aed;
-      --sub-fil: #db2777;
-      --sub-ap: #d97706;
-      --sub-mapeh: #ea580c;
-      --sub-ve: #0891b2;
-      --sub-tle: #14b8a6;
-      --sub-hgp: #64748b;
-      --sub-aral: #94a3b8;
-      --sub-shs: #6366f1;
-      --sub-elem: #f43f5e;
-      --sub-other: #6b7280;
-    }
 
     body { background: #f6f7f9; }
 
@@ -232,6 +216,7 @@
       display: flex;
       flex-direction: column;
       gap: 8px;
+      text-align: left;
     }
     .sub-card::before {
       content: "";
@@ -247,6 +232,10 @@
       transform: translateY(-2px);
       box-shadow: 0 8px 20px rgba(15,76,129,0.10);
       border-color: #bfdbfe;
+    }
+    .sub-card:focus-visible {
+      outline: 3px solid #1e6bb8;
+      outline-offset: 2px;
     }
 
     .sub-code {
@@ -280,21 +269,16 @@
     .sub-badge.curric { background: #f0fdf4; color: #166534; }
     .sub-badge.type { background: #fef3c7; color: #92400e; }
 
-    .sub-usage {
-      display: flex;
-      gap: 12px;
-      font-size: 11.5px;
-      color: #6b7280;
+    .sub-footer-note {
+      font-size: 11px;
+      color: #9ca3af;
       border-top: 1px solid #f3f4f6;
-      padding-top: 10px;
+      padding-top: 9px;
       margin-top: auto;
-    }
-    .sub-usage span {
-      display: inline-flex;
+      display: flex;
       align-items: center;
-      gap: 3px;
+      gap: 4px;
     }
-    .sub-usage strong { color: #0f2b4f; font-weight: 700; }
 
     /* ---------- Drawer / Modal ---------- */
     .sub-drawer {
@@ -313,7 +297,7 @@
       background: #fff;
       border-radius: 14px;
       width: 100%;
-      max-width: 640px;
+      max-width: 560px;
       max-height: 88vh;
       overflow-y: auto;
       box-shadow: 0 24px 48px rgba(0,0,0,0.25);
@@ -368,69 +352,33 @@
       font-size: 14px;
       color: #4b5563;
       line-height: 1.6;
-      margin: 0 0 18px;
+      margin: 0 0 8px;
     }
 
-    .sub-section-label {
-      font-size: 0.78rem;
-      font-weight: 800;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-      color: #374151;
-      margin: 18px 0 10px;
-    }
-
-    .sub-chip-row {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 6px;
-    }
-    .sub-chip {
-      font-size: 12px;
-      padding: 4px 12px;
+    .sub-info-box {
+      margin-top: 14px;
+      padding: 14px 16px;
+      border-radius: 10px;
       background: #eff6ff;
+      border: 1px solid #bfdbfe;
+    }
+    .sub-info-box strong {
       color: #1e40af;
-      border-radius: 999px;
+      font-size: 0.85rem;
+      display: block;
+      margin-bottom: 4px;
+    }
+    .sub-info-box p {
+      color: #1e40af;
+      font-size: 0.82rem;
+      margin: 0;
+      line-height: 1.5;
+    }
+    .sub-info-box a {
+      color: #1e40af;
+      text-decoration: underline;
       font-weight: 600;
     }
-
-    .sub-class-list {
-      border: 1px solid #e5e7eb;
-      border-radius: 10px;
-      overflow: hidden;
-    }
-    .sub-class-row {
-      padding: 12px 14px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 12px;
-      border-bottom: 1px solid #f3f4f6;
-      font-size: 13.5px;
-      flex-wrap: wrap;
-    }
-    .sub-class-row:last-child { border-bottom: 0; }
-    .sub-class-row strong { color: #0f2b4f; }
-    .sub-class-row .level-tag {
-      font-size: 11px;
-      color: #6b7280;
-      background: #f3f4f6;
-      padding: 2px 8px;
-      border-radius: 999px;
-      font-weight: 700;
-    }
-    .sub-class-link {
-      font-size: 12px;
-      font-weight: 700;
-      padding: 6px 12px;
-      border: 1px solid #1e3c72;
-      border-radius: 6px;
-      color: #1e3c72;
-      text-decoration: none;
-      background: #fff;
-      white-space: nowrap;
-    }
-    .sub-class-link:hover { background: #1e3c72; color: #fff; }
 
     /* ---------- Empty / Loading ---------- */
     .sub-loading, .sub-empty {
@@ -457,7 +405,7 @@
     @media print {
       .sub-toolbar, .sub-hero-crumb, .sub-drawer { display: none !important; }
       .sub-hero { background: #fff !important; color: #000 !important; }
-      .sub-card { break-inside: avoid; }
+      .sub-card { break-inside: avoid; box-shadow: none; }
     }
 
     /* ---------- Mobile ---------- */
@@ -479,7 +427,7 @@
 </head>
 <body>
 
-  <!-- ===================== HEADER (matches SCPHS style) ===================== -->
+  <!-- ===================== HERO ===================== -->
   <section class="sub-hero">
     <div class="sub-hero-inner">
       <div class="sub-hero-crumb">
@@ -487,7 +435,7 @@
         <span aria-hidden="true"> / </span>
         <a href="../students/index.html">Students</a>
         <span aria-hidden="true"> / </span>
-        <span>Curriculum & Subjects</span>
+        <span>Curriculum &amp; Subjects</span>
       </div>
       <h1>📚 Curriculum &amp; Subjects</h1>
       <p>Explore the full DepEd K-12 curriculum offered by Sta. Cruz Pingkian High School — from Kindergarten to Grade 12, including MATATAG and Strengthened SHS.</p>
@@ -532,7 +480,7 @@
     <div class="sub-stats" id="subStats" style="display:none;">
       <div><strong id="statTotal">—</strong><small>Subjects</small></div>
       <div><strong id="statFamilies">—</strong><small>Families</small></div>
-      <div><strong id="statInPrograms">—</strong><small>Offered</small></div>
+      <div><strong id="statLevels">—</strong><small>Levels</small></div>
     </div>
 
     <!-- Results -->
@@ -558,7 +506,7 @@
     </div>
   </div>
 
-  <!-- ===================== FOOTER (matches SCPHS) ===================== -->
+  <!-- ===================== FOOTERS ===================== -->
   <footer>
     <div class="wrap">
       <div class="foot-grid">
@@ -613,9 +561,7 @@
   <!-- ===================== SCRIPT ===================== -->
   <script type="module">
     import { db } from "../assets/js/firebase-config.js";
-    import {
-      collection, getDocs
-    } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+    import { collection, getDocs } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
     const $ = id => document.getElementById(id);
     const esc = s => String(s == null ? "" : s)
@@ -655,55 +601,17 @@
 
     // ---------- State ----------
     let SUBJECTS = [];
-    let USAGE = {};
-    let CURRENT_TERM = 1;
 
-    // ---------- Load ----------
+    // ---------- Load catalog only (public-safe) ----------
     async function loadData() {
       try {
-        // 1. Metadata from subjects collection
-        try {
-          const snap = await getDocs(collection(db, "subjects"));
-          SUBJECTS = snap.docs.map(d => ({ code: d.id, ...d.data() }));
-        } catch (e) {
-          console.warn("[public subjects] metadata load failed:", e);
-          SUBJECTS = [];
-        }
+        const snap = await getDocs(collection(db, "subjects"));
+        SUBJECTS = snap.docs
+          .map(d => ({ code: d.id, ...d.data() }))
+          .filter(s => s.active !== false);
 
-        // 2. Usage from class programs (Term 1)
-        USAGE = {};
-        try {
-          const classesSnap = await getDocs(collection(db, "classes"));
-          for (const clsDoc of classesSnap.docs) {
-            const cls = { id: clsDoc.id, ...clsDoc.data() };
-            try {
-              const progSnap = await getDocs(collection(db, "classes", cls.id, "program"));
-              progSnap.docs
-                .map(d => d.data())
-                .filter(e => Number(e.term) === CURRENT_TERM)
-                .forEach(e => {
-                  const code = String(e.subject || e.subjectName || "").trim();
-                  if (!code) return;
-                  if (!USAGE[code]) USAGE[code] = { classes: [], teachers: new Set() };
-                  USAGE[code].classes.push({
-                    classId: cls.id,
-                    className: cls.classLabel || "(unnamed)",
-                    gradeLevel: cls.gradeLevel || "",
-                  });
-                  if (e.teacherName) USAGE[code].teachers.add(e.teacherName);
-                });
-            } catch {}
-          }
-          Object.values(USAGE).forEach(u => {
-            u.teachers = Array.from(u.teachers);
-            u.classes = u.classes.filter((c, i, a) => a.findIndex(x => x.classId === c.classId) === i);
-          });
-        } catch (e) {
-          console.warn("[public subjects] usage scan failed:", e);
-        }
-
-        render();
         renderStats();
+        render();
       } catch (e) {
         console.error("[public subjects] load failed:", e);
         $("subResults").innerHTML = `
@@ -715,87 +623,21 @@
       }
     }
 
-    // ---------- Merge metadata + usage ----------
-    function getAllRecords() {
-      const byCode = {};
-
-      SUBJECTS.forEach(s => {
-        if (s.active === false) return;
-        byCode[s.code] = {
-          code: s.code,
-          displayName: s.displayName || s.code,
-          family: s.family || "Other",
-          level: s.level || "",
-          type: s.type || "",
-          curriculum: s.curriculum || "",
-          description: s.description || "",
-          usage: USAGE[s.code] || { classes: [], teachers: [] },
-        };
-      });
-
-      // Auto-detect subjects in usage but not in metadata
-      Object.keys(USAGE).forEach(code => {
-        if (byCode[code]) return;
-        byCode[code] = {
-          code,
-          displayName: code,
-          family: guessFamily(code),
-          level: guessLevel(code),
-          type: "core",
-          curriculum: "MATATAG",
-          description: "",
-          usage: USAGE[code],
-        };
-      });
-
-      return Object.values(byCode);
-    }
-
-    function guessFamily(code) {
-      const c = String(code).toUpperCase();
-      if (c.startsWith("MATH")) return "Mathematics";
-      if (c.startsWith("ENG")) return "English";
-      if (c.startsWith("SCI")) return "Science";
-      if (c.startsWith("FIL")) return "Filipino";
-      if (c.startsWith("AP")) return "Araling Panlipunan";
-      if (c.startsWith("MAPEH")) return "MAPEH";
-      if (c.startsWith("ESP") || c.startsWith("VE")) return "Values Education";
-      if (c.startsWith("TLE")) return "TLE";
-      if (c.startsWith("HGP")) return "Homeroom Guidance";
-      if (c.startsWith("ARAL")) return "ARAL";
-      if (c.startsWith("K-MAKABANSA")) return "Makabansa";
-      if (c.startsWith("K-LANG")) return "Languages";
-      if (c.startsWith("K-PNE")) return "Physical & Natural Environment";
-      if (c.startsWith("K-GMRC")) return "GMRC";
-      if (c.startsWith("SHS-")) return "SHS Core";
-      return "Other";
-    }
-
-    function guessLevel(code) {
-      const c = String(code).toUpperCase();
-      if (c.startsWith("K-")) return "K";
-      const m = c.match(/(\d{1,2})/);
-      return m ? m[1] : "";
-    }
-
     // ---------- Stats ----------
     function renderStats() {
-      const all = getAllRecords();
-      const fams = new Set(all.map(s => s.family).filter(Boolean));
-      const offered = all.filter(s => (s.usage?.classes?.length || 0) > 0).length;
+      const families = new Set(SUBJECTS.map(s => s.family).filter(Boolean));
+      const levels = new Set(SUBJECTS.map(s => s.level).filter(Boolean));
 
-      $("statTotal").textContent = all.length;
-      $("statFamilies").textContent = fams.size;
-      $("statInPrograms").textContent = offered;
+      $("statTotal").textContent = SUBJECTS.length;
+      $("statFamilies").textContent = families.size;
+      $("statLevels").textContent = levels.size;
       $("subStats").style.display = "flex";
 
       // Populate Level dropdown
-      const levels = new Set();
-      all.forEach(s => { if (s.level) levels.add(String(s.level)); });
       const sorted = Array.from(levels).sort((a, b) => {
         if (a === "K") return -1;
         if (b === "K") return 1;
-        return parseInt(a) - parseInt(b);
+        return (parseInt(a) || 999) - (parseInt(b) || 999);
       });
 
       const levelSel = $("subLevel");
@@ -812,7 +654,7 @@
       const curricFilter = $("subCurriculum")?.value || "";
       const typeFilter = $("subType")?.value || "";
 
-      let list = getAllRecords();
+      let list = SUBJECTS.slice();
 
       if (search) {
         list = list.filter(s =>
@@ -825,10 +667,10 @@
       if (curricFilter) list = list.filter(s => s.curriculum === curricFilter);
       if (typeFilter) list = list.filter(s => s.type === typeFilter);
 
-      // Sort by level then code
+      // Sort by level, then code
       list.sort((a, b) => {
-        const la = a.level === "K" ? -1 : parseInt(a.level) || 999;
-        const lb = b.level === "K" ? -1 : parseInt(b.level) || 999;
+        const la = a.level === "K" ? -1 : (parseInt(a.level) || 999);
+        const lb = b.level === "K" ? -1 : (parseInt(b.level) || 999);
         if (la !== lb) return la - lb;
         return a.code.localeCompare(b.code);
       });
@@ -853,7 +695,7 @@
         grouped[fam].push(s);
       });
 
-      // Order families: known first, then alphabetical
+      // Preferred family order
       const familyOrder = [
         "Mathematics", "English", "Science", "Filipino",
         "Araling Panlipunan", "MAPEH", "Values Education", "GMRC",
@@ -891,13 +733,16 @@
       // Card click handlers
       host.querySelectorAll("[data-code]").forEach(card => {
         card.addEventListener("click", () => openDrawer(card.dataset.code));
+        card.addEventListener("keydown", e => {
+          if (e.key === "Enter" || e.key === " ") {
+            e.preventDefault();
+            openDrawer(card.dataset.code);
+          }
+        });
       });
     }
 
     function renderCard(s, accent) {
-      const classesCount = s.usage?.classes?.length || 0;
-      const teachersCount = s.usage?.teachers?.length || 0;
-
       const levelLabel = s.level === "K" ? "Kinder" : (s.level ? "Grade " + s.level : "");
       const typeLabel = {
         core: "Core", tle: "TLE", techpro: "TechPro", elective: "Elective",
@@ -912,7 +757,7 @@
       }[s.curriculum] || "";
 
       return `
-        <article class="sub-card" data-code="${esc(s.code)}" style="--card-accent:${accent};" tabindex="0" role="button">
+        <article class="sub-card" data-code="${esc(s.code)}" style="--card-accent:${accent};" tabindex="0" role="button" aria-label="View ${esc(s.displayName || s.code)}">
           <div class="sub-code">${esc(s.code)}</div>
           <h3 class="sub-name">${esc(s.displayName || s.code)}</h3>
           <div class="sub-badges">
@@ -920,19 +765,14 @@
             ${curricShort ? `<span class="sub-badge curric">${esc(curricShort)}</span>` : ""}
             ${typeLabel ? `<span class="sub-badge type">${esc(typeLabel)}</span>` : ""}
           </div>
-          ${(classesCount || teachersCount) ? `
-            <div class="sub-usage">
-              <span>📊 <strong>${classesCount}</strong> ${classesCount === 1 ? "class" : "classes"}</span>
-              <span>👩‍🏫 <strong>${teachersCount}</strong> ${teachersCount === 1 ? "teacher" : "teachers"}</span>
-            </div>
-          ` : `<div class="sub-usage" style="color:#9ca3af;">Not currently offered</div>`}
+          <div class="sub-footer-note">👁️ View details</div>
         </article>
       `;
     }
 
     // ---------- Drawer ----------
     function openDrawer(code) {
-      const s = getAllRecords().find(x => x.code === code);
+      const s = SUBJECTS.find(x => x.code === code);
       if (!s) return;
 
       $("drawerCode").textContent = s.code;
@@ -957,33 +797,17 @@
         body += `<p class="sub-drawer-desc">${esc(s.description)}</p>`;
       }
 
-      if (s.usage?.teachers?.length) {
-        body += `
-          <div class="sub-section-label">👩‍🏫 Teachers (${s.usage.teachers.length})</div>
-          <div class="sub-chip-row">
-            ${s.usage.teachers.map(t => `<span class="sub-chip">${esc(t)}</span>`).join("")}
-          </div>
-        `;
-      }
-
-      if (s.usage?.classes?.length) {
-        body += `
-          <div class="sub-section-label">🏫 Offered in ${s.usage.classes.length} class${s.usage.classes.length > 1 ? "es" : ""}</div>
-          <div class="sub-class-list">
-            ${s.usage.classes.map(c => `
-              <div class="sub-class-row">
-                <div>
-                  <strong>${esc(c.className)}</strong>
-                  ${c.gradeLevel ? ` <span class="level-tag">${esc(c.gradeLevel)}</span>` : ""}
-                </div>
-                <a class="sub-class-link" href="../program.html?id=${esc(c.classId)}" target="_blank" rel="noopener">📅 View Program</a>
-              </div>
-            `).join("")}
-          </div>
-        `;
-      } else {
-        body += `<p style="color:#9ca3af;font-size:13px;">Not currently offered in Term ${CURRENT_TERM}.</p>`;
-      }
+      // Info note — sign in for schedules
+      body += `
+        <div class="sub-info-box">
+          <strong>📘 Need more info?</strong>
+          <p>
+            For class schedules, teachers, or section offerings, please
+            <a href="../login.html">sign in to the portal</a>. Students,
+            teachers, and advisers can view their program details there.
+          </p>
+        </div>
+      `;
 
       $("drawerBody").innerHTML = body;
       $("subDrawer").classList.add("show");
