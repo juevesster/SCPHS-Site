@@ -343,3 +343,163 @@ export function findSpecializationGroup(specName) {
 export function getGroupLabel(groupKey) {
   return SPECIALIZATION_GROUPS[groupKey]?.label || groupKey;
 }
+
+// ============================================================
+// SUBJECT GROUPS — used by program.html subject dropdown
+// ============================================================
+
+export const SUBJECT_GROUPS = {
+
+  "Core Subjects": {
+    label: "📚 Core Subjects",
+    items: [
+      // Filipino
+      "FIL7", "FIL8", "FIL9", "FIL10",
+      // English
+      "ENG7", "ENG8", "ENG9", "ENG10",
+      // Mathematics
+      "MATH7", "MATH8", "MATH9", "MATH10",
+      // Science
+      "SCI7", "SCI8", "SCI9", "SCI10",
+      // Araling Panlipunan
+      "AP7", "AP8", "AP9", "AP10",
+      // MAPEH
+      "MAPEH7", "MAPEH8", "MAPEH9", "MAPEH10",
+      // Edukasyon sa Pagpapakatao
+      "ESP7", "ESP8", "ESP9", "ESP10",
+    ]
+  },
+
+  "Junior High TLE": {
+    label: "🔧 Junior High TLE",
+    items: [
+      "TLE7", "TLE8", "TLE9", "TLE10",
+    ]
+  },
+
+  "TLE with Specialization": {
+    label: "🎯 TLE with Specialization",
+    items: [
+      "TLE-ELECTRONICS",
+      "TLE-COOKERY",
+      "TLE-DRESSMAKING",
+      "TLE-CARPENTRY",
+      "TLE-ICT",
+      "TLE-AUTOMOTIVE",
+      "TLE-EIM",
+      "TLE-WELDING",
+      "TLE-PLUMBING",
+      "TLE-ANIMATION",
+      "TLE-CSS",
+      "TLE-PROGRAMMING",
+      "TLE-CROP-PRODUCTION",
+      "TLE-ANIMAL-PRODUCTION",
+      "TLE-BREAD-PASTRY",
+      "TLE-BEAUTY-CARE",
+    ]
+  },
+
+  "SHS TechPro (NC Levels)": {
+    label: "🎓 SHS TechPro (NC Levels)",
+    items: [
+      "Automotive Servicing NC I",
+      "Automotive Servicing NC II",
+      "Automotive Servicing NC III",
+      "Computer Systems Servicing NC II",
+      "Programming (.NET) NC III",
+      "Programming (Java) NC III",
+      "Web Development NC III",
+      "Animation NC II",
+      "Cookery NC II",
+      "Bread and Pastry Production NC II",
+      "Food and Beverage Services NC II",
+      "EIM NC II",
+      "SMAW NC I",
+      "SMAW NC II",
+      "Carpentry NC II",
+      "Dressmaking NC II",
+      "Caregiving NC II",
+      "Crop Production NC II",
+    ]
+  },
+
+  "Special Programs": {
+    label: "⭐ Special Programs",
+    items: [
+      "HGP",
+      "ARAL",
+      "Homeroom Guidance Program",
+    ]
+  },
+
+  "SHS Core Subjects": {
+    label: "📖 SHS Core",
+    items: [
+      "Oral Communication",
+      "Reading and Writing",
+      "Komunikasyon at Pananaliksik",
+      "Pagbasa at Pagsusuri",
+      "21st Century Literature",
+      "General Mathematics",
+      "Statistics and Probability",
+      "Earth and Life Science",
+      "Physical Science",
+      "Personal Development",
+      "UCSP",
+      "PEH",
+      "MIL",
+      "Contemporary Philippine Arts",
+      "Empowerment Technologies",
+      "Practical Research 1",
+      "Practical Research 2",
+    ]
+  },
+
+  "Custom": {
+    label: "✏️ Custom (type your own)",
+    items: [
+      "__CUSTOM__",  // sentinel for custom input
+    ]
+  }
+};
+
+// ------------------------------------------------------------
+// Get subject list for a specific group
+// ------------------------------------------------------------
+export function getSubjectsForGroup(groupKey) {
+  return SUBJECT_GROUPS[groupKey]?.items || [];
+}
+
+// ------------------------------------------------------------
+// Get flat list of all subjects (deduplicated)
+// ------------------------------------------------------------
+export function getAllSubjects() {
+  const set = new Set();
+  Object.values(SUBJECT_GROUPS).forEach(g => {
+    g.items.forEach(item => {
+      if (item !== "__CUSTOM__") set.add(item);
+    });
+  });
+  return Array.from(set).sort();
+}
+
+// ------------------------------------------------------------
+// Get the icon/color for a specialization
+// ------------------------------------------------------------
+export function getSpecializationColor(spec) {
+  const s = String(spec || "").toLowerCase();
+  if (s.includes("electronic"))  return { bg: "#ede9fe", border: "#8b5cf6", text: "#5b21b6" };
+  if (s.includes("cookery"))     return { bg: "#fef3c7", border: "#f59e0b", text: "#92400e" };
+  if (s.includes("dressmaking")) return { bg: "#fce7f3", border: "#ec4899", text: "#9d174d" };
+  if (s.includes("carpentry"))   return { bg: "#d1fae5", border: "#10b981", text: "#065f46" };
+  if (s.includes("ict") || s.includes("css")) return { bg: "#dbeafe", border: "#3b82f6", text: "#1e40af" };
+  if (s.includes("automotive"))  return { bg: "#fed7aa", border: "#f97316", text: "#9a3412" };
+  if (s.includes("weld") || s.includes("smaw")) return { bg: "#fee2e2", border: "#ef4444", text: "#991b1b" };
+  if (s.includes("plumb"))       return { bg: "#cffafe", border: "#06b6d4", text: "#155e75" };
+  if (s.includes("animation"))   return { bg: "#e0e7ff", border: "#6366f1", text: "#3730a3" };
+  if (s.includes("electrical") || s.includes("eim")) return { bg: "#fef9c3", border: "#eab308", text: "#854d0e" };
+  if (s.includes("agri") || s.includes("crop"))      return { bg: "#ecfccb", border: "#84cc16", text: "#3f6212" };
+  if (s.includes("bread") || s.includes("pastry"))   return { bg: "#fef3c7", border: "#f59e0b", text: "#92400e" };
+  if (s.includes("beauty") || s.includes("care"))    return { bg: "#fce7f3", border: "#ec4899", text: "#9d174d" };
+  return { bg: "#f9fafb", border: "#cbd5e1", text: "#475569" };
+}
