@@ -102,9 +102,17 @@ async function getBoWTerm(subjectCode, term) {
 async function listCompetencies(subjectCode, term) {
   try {
     const ref = collection(db, "subjects", subjectCode, "bow_terms", String(term), "competencies");
-    const q = query(ref, orderBy("topicOrderIndex"), orderBy("orderIndex"));
-    const snap = await getDocs(q);
-    return snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    // Single orderBy only — avoids compound index requirement
+    const snap = await getDocs(ref);
+    const items = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    // Sort in JavaScript instead
+    items.sort((a, b) => {
+      const tA = a.topicOrderIndex || 0;
+      const tB = b.topicOrderIndex || 0;
+      if (tA !== tB) return tA - tB;
+      return (a.orderIndex || 0) - (b.orderIndex || 0);
+    });
+    return items;
   } catch (e) {
     console.warn("[bow-store] listCompetencies failed:", e);
     return [];
