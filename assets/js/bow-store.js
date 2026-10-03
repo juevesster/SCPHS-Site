@@ -31,14 +31,19 @@ async function saveBoWTerm(subjectCode, term, parsed, meta = {}) {
     uploadedBy: meta.uploadedBy || "",
   }, { merge: true });
 
-  // 2. Wipe existing competencies for this term (replace strategy)
-  const compsRef = collection(db, "subjects", subjectCode, "bow_terms", String(term), "competencies");
+  // 2. Wipe existing competencies (batched in case there are many)
+  const compsPath = ["subjects", subjectCode, "bow_terms", String(term), "competencies"];
+  const compsRef = collection(db, ...compsPath);
   const existing = await getDocs(compsRef);
-  const batch1 = writeBatch(db);
-  existing.docs.forEach(d => batch1.delete(d.ref));
-  await batch1.commit();
+  if (existing.docs.length > 0) {
+    for (let i = 0; i < existing.docs.length; i += 450) {
+      const batch = writeBatch(db);
+      existing.docs.slice(i, i + 450).forEach(d => batch.delete(d.ref));
+      await batch.commit();
+    }
+  }
 
-  // 3. Write new competencies (batched in 500s)
+  // 3. Flatten all competencies
   const allComps = [];
   parsed.topics.forEach((topic, tIdx) => {
     topic.competencies.forEach((c, cIdx) => {
@@ -57,11 +62,14 @@ async function saveBoWTerm(subjectCode, term, parsed, meta = {}) {
     });
   });
 
+  // 4. Write new competencies (batched, with FRESH doc refs)
   for (let i = 0; i < allComps.length; i += 450) {
     const batch = writeBatch(db);
-    allComps.slice(i, i + 450).forEach(c => {
-      const ref = doc(compsRef);
-      batch.set(ref, { ...c, createdAt: serverTimestamp() });
+    const slice = allComps.slice(i, i + 450);
+    slice.forEach(c => {
+      // ✅ FIX: explicitly get a fresh doc ref from the collection path
+      const docRef = doc(collection(db, "subjects", subjectCode, "bow_terms", String(term), "competencies"));
+      batch.set(docRef, { ...c, createdAt: serverTimestamp() });
     });
     await batch.commit();
   }
