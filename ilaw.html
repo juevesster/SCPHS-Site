@@ -14,7 +14,7 @@
     .ilaw-header-inner { max-width: 1400px; margin: 0 auto; padding: 0 24px; display: flex; justify-content: space-between; align-items: center; gap: 16px; flex-wrap: wrap; }
     .ilaw-header h1 { margin: 0 0 4px; font-size: 1.3rem; }
     .ilaw-header .sub { margin: 0; opacity: 0.85; font-size: 0.85rem; }
-    .ilaw-header-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+    .ilaw-header-actions { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
 
     .ilaw-container { max-width: 1400px; margin: 0 auto; padding: 24px; }
 
@@ -40,7 +40,7 @@
       display: flex;
       gap: 12px;
       flex-wrap: wrap;
-      align-items: center;
+      align-items: flex-end;
       box-shadow: 0 1px 3px rgba(0,0,0,.06);
     }
     .context-bar label { font-size: 11px; font-weight: 700; color: #374151; text-transform: uppercase; letter-spacing: .03em; display: block; margin-bottom: 4px; }
@@ -68,9 +68,9 @@
     .field { margin-bottom: 16px; }
     .field:last-child { margin-bottom: 0; }
     .field-label { font-size: 11.5px; font-weight: 800; color: #374151; text-transform: uppercase; letter-spacing: .04em; margin-bottom: 6px; display: block; }
-    .field textarea, .field input[type="text"] { width: 100%; padding: 10px 12px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 13.5px; font-family: inherit; resize: vertical; line-height: 1.55; }
+    .field textarea, .field input[type="text"], .field input[type="number"], .field select { width: 100%; padding: 10px 12px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 13.5px; font-family: inherit; resize: vertical; line-height: 1.55; }
     .field textarea { min-height: 80px; }
-    .field textarea:focus, .field input[type="text"]:focus { outline: none; border-color: #1e6bb8; box-shadow: 0 0 0 3px rgba(30,107,184,.12); }
+    .field textarea:focus, .field input:focus, .field select:focus { outline: none; border-color: #1e6bb8; box-shadow: 0 0 0 3px rgba(30,107,184,.12); }
 
     /* Competencies picker */
     .comp-picker { display: flex; flex-direction: column; gap: 8px; max-height: 300px; overflow-y: auto; padding: 4px; }
@@ -80,6 +80,12 @@
     .comp-check.checked { background: #eff6ff; border-color: #1e40af; }
     .comp-check .code { font-family: monospace; font-size: 11px; color: #1e40af; font-weight: 700; margin-bottom: 3px; }
     .comp-check .text { font-size: 12.5px; color: #111827; line-height: 1.5; }
+
+    /* Rubric table */
+    .rubric-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    .rubric-table th { text-align: left; padding: 10px 14px; border-bottom: 1px solid #e5e7eb; font-size: 11px; text-transform: uppercase; letter-spacing: .03em; color: #374151; background: #f9fafb; }
+    .rubric-table td { padding: 10px 14px; border-bottom: 1px solid #f3f4f6; }
+    .rubric-table input[type="radio"] { transform: scale(1.2); }
 
     /* Status badge */
     .status-badge { display: inline-block; padding: 3px 10px; border-radius: 999px; font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: .03em; }
@@ -100,16 +106,38 @@
     .toast.success { background: #059669; }
     .toast.error { background: #b91c1c; }
 
+    /* Signatories block — hidden on screen, visible in print */
+    .print-signatories { display: none; }
+
     /* Print */
     @media print {
-      .ilaw-header, .context-bar, .action-bar, .toast, .section-head button, .comp-picker input[type="checkbox"] { display: none !important; }
-      body { background: #fff; }
+      .ilaw-header, .context-bar, .action-bar, .toast, .section-head button,
+      .comp-picker input[type="checkbox"], .btn, .status-badge { display: none !important; }
+      body { background: #fff; font-size: 11pt; }
       .ilaw-container { padding: 0; max-width: 100%; }
-      .section { box-shadow: none; border: 1px solid #000; page-break-inside: avoid; margin-bottom: 12px; }
-      .section-head { background: #fff !important; color: #000 !important; border-bottom: 2px solid #000; }
-      .card { box-shadow: none; border: 1px solid #000; }
-      .bow-info { background: #f5f5f5 !important; border: 1px solid #999 !important; }
-      .field textarea, .field input { border: 1px solid #999; background: #fff !important; color: #000 !important; }
+      .section { box-shadow: none; border: 1px solid #000; page-break-inside: avoid; margin-bottom: 10px; border-radius: 0; }
+      .section-head { background: #fff !important; color: #000 !important; border-bottom: 2px solid #000; padding: 8px 12px; }
+      .section-head h2 { font-size: 13pt !important; }
+      .section-head .hint { display: none !important; }
+      .section-body { padding: 10px 12px; }
+      .field textarea, .field input, .field select {
+        border: 1px solid #999 !important;
+        background: #fff !important;
+        color: #000 !important;
+        font-size: 10.5pt !important;
+        min-height: auto !important;
+      }
+      .bow-info { background: #f5f5f5 !important; border: 1px solid #999 !important; padding: 8px 12px; }
+      .bow-info .lbl { font-size: 9pt !important; }
+      .bow-info .txt { font-size: 10pt !important; }
+      .comp-check { border: 1px solid #999; background: #fff; }
+      .comp-check.checked { background: #f0f0f0; }
+      .rubric-table { page-break-inside: avoid; }
+      .print-signatories { display: block !important; page-break-before: always; padding: 40px 0; }
+      .print-signatories .row { display: flex; justify-content: space-around; margin-top: 40px; }
+      .print-signatories .col { text-align: center; }
+      .print-signatories .col .line { border-top: 1px solid #000; width: 220px; margin: 4px auto; }
+      .print-signatories .col .role { font-size: 9pt; color: #666; }
     }
 
     @media (max-width: 768px) {
@@ -121,7 +149,6 @@
 </head>
 <body>
 
-  <!-- Header -->
   <header class="ilaw-header">
     <div class="ilaw-header-inner">
       <div>
@@ -135,7 +162,6 @@
     </div>
   </header>
 
-  <!-- Main -->
   <main class="ilaw-container" id="mainContent">
     <div class="loading" id="loading">
       <div class="spinner"></div>
@@ -143,8 +169,6 @@
     </div>
 
     <div id="content" style="display:none;">
-
-      <!-- Context picker -->
       <div class="context-bar">
         <div>
           <label>Grade Level</label>
@@ -165,9 +189,7 @@
         </div>
         <div>
           <label>Week</label>
-          <select id="pickWeek">
-            ${Array.from({length: 13}, (_, i) => `<option value="${i+1}">Week ${i+1}</option>`).join("")}
-          </select>
+          <select id="pickWeek"></select>
         </div>
         <div>
           <label>School Year</label>
@@ -182,11 +204,33 @@
         </div>
       </div>
 
-      <!-- Content area -->
       <div id="editorArea"></div>
-
     </div>
   </main>
+
+  <!-- Print-only signatories -->
+  <div class="print-signatories">
+    <div style="text-align:center;margin-bottom:20px;">
+      <div style="font-size:14pt;font-weight:700;">Prepared by</div>
+    </div>
+    <div class="row">
+      <div class="col">
+        <div style="font-weight:700;min-height:20px;" id="print-preparedBy">—</div>
+        <div class="line"></div>
+        <div class="role">Teacher</div>
+      </div>
+      <div class="col">
+        <div style="font-weight:700;min-height:20px;" id="print-checkedBy">—</div>
+        <div class="line"></div>
+        <div class="role">Department Head / Master Teacher</div>
+      </div>
+      <div class="col">
+        <div style="font-weight:700;min-height:20px;" id="print-notedBy">—</div>
+        <div class="line"></div>
+        <div class="role">Principal</div>
+      </div>
+    </div>
+  </div>
 
   <div class="toast" id="toast"></div>
 
@@ -204,9 +248,8 @@
     let CURRENT_USER = null;
     let CURRENT_PROFILE = null;
     let SUBJECTS = [];
-    let ALL_CLASSES = [];
-    let CURRENT_BOW = null;      // { termDoc, competencies }
-    let CURRENT_LESSON_ID = null; // existing lesson ID (if any)
+    let CURRENT_BOW = null;
+    let CURRENT_LESSON_ID = null;
     let DIRTY = false;
 
     const $ = id => document.getElementById(id);
@@ -247,6 +290,10 @@
         return;
       }
 
+      // Populate week dropdown
+      $("pickWeek").innerHTML = Array.from({length: 13}, (_, i) =>
+        `<option value="${i+1}">Week ${i+1}</option>`).join("");
+
       await loadSubjects();
       initContextPicker();
       attachHandlers();
@@ -254,6 +301,9 @@
       $("loading").style.display = "none";
       $("content").style.display = "block";
       $("headerSub").textContent = `Signed in as ${CURRENT_PROFILE?.name || user.email}`;
+
+      // Auto-load from URL
+      loadFromUrl();
     });
 
     // ============================================================
@@ -275,7 +325,6 @@
     // CONTEXT PICKER
     // ============================================================
     function initContextPicker() {
-      // Grades
       const grades = [...new Set(SUBJECTS.map(s => s.level).filter(Boolean))]
         .sort((a, b) => {
           if (a === "K") return -1;
@@ -285,7 +334,6 @@
       $("pickGrade").innerHTML = '<option value="">— Select —</option>' +
         grades.map(g => `<option value="${esc(g)}">${g === "K" ? "Kindergarten" : "Grade " + g}</option>`).join("");
 
-      // Subject dropdown populated when grade is selected
       $("pickGrade").addEventListener("change", populateSubjectPicker);
       $("pickSubject").addEventListener("change", checkContextReady);
       $("pickTerm").addEventListener("change", checkContextReady);
@@ -306,18 +354,14 @@
       $("btnLoadContext").disabled = !ready;
     }
 
-    // ============================================================
-    // HANDLERS
-    // ============================================================
     function attachHandlers() {
       $("btnLoadContext").addEventListener("click", loadContext);
     }
 
     // ============================================================
-    // LOAD CONTEXT (BoW + existing lesson)
+    // LOAD CONTEXT
     // ============================================================
     async function loadContext() {
-      const grade = $("pickGrade").value;
       const subjectCode = $("pickSubject").value;
       const term = parseInt($("pickTerm").value, 10);
       const week = parseInt($("pickWeek").value, 10);
@@ -333,12 +377,10 @@
       `;
 
       try {
-        // 1. Load BoW term
         const termDoc = await window.BoW.getBoWTerm(subjectCode, term);
         const competencies = termDoc ? await window.BoW.listCompetencies(subjectCode, term) : [];
         CURRENT_BOW = { termDoc, competencies };
 
-        // 2. Check for existing lesson by this teacher
         const existing = await window.ILAW.findLesson(
           CURRENT_USER.uid, subjectCode, term, week, schoolYear
         );
@@ -373,10 +415,10 @@
       const contentStd = bow.termDoc?.contentStandard || "";
       const perfStd = bow.termDoc?.performanceStandard || "";
 
-      // Which competencies were previously selected?
       const selectedCodes = new Set(existing?.competencyCodes || []);
+      const e = existing || {};
+      const status = e.status || "draft";
 
-      // Group competencies by topic
       const byTopic = {};
       comps.forEach(c => {
         const t = c.topicLabel || "(untitled)";
@@ -386,11 +428,56 @@
       const topicList = Object.entries(byTopic)
         .sort((a, b) => a[1].orderIndex - b[1].orderIndex);
 
-      const e = existing || {};
-      const status = e.status || "draft";
+      const RUBRIC = [
+        ["intentions_clear", "Intentions are clearly stated, with appropriate learning competencies articulated."],
+        ["intentions_coherent", "Intentions are evident across all sections, there is coherence."],
+        ["learning_clear", "Learning experience is clear — another teacher can implement this lesson."],
+        ["learning_designed", "Learning experience is well-designed, with embedded Learning Design Principles."],
+        ["integration_maximized", "Learning experience maximizes opportunities for integration."],
+        ["inclusive", "Learning experience is inclusive, supports learners with disabilities and unique contexts."],
+        ["assessment_integrated", "Assessment strategies are integrated throughout the session."],
+        ["assessment_evidence", "Assessment strategies generate evidence of learning."],
+        ["interventions_actionable", "Interventions are actionable, providing ways to extend or adjust learning."],
+      ];
+      const rubric = e.rubric || {};
+
+      const sectionOptions = e.section ? [e.section] : [];
 
       $("editorArea").innerHTML = `
-        <!-- BoW panel -->
+        <!-- HEADER FIELDS -->
+        <div class="section">
+          <div class="section-head">
+            <div>
+              <h2>📋 LESSON INFORMATION</h2>
+              <div class="hint">Basic details for this lesson plan</div>
+            </div>
+          </div>
+          <div class="section-body">
+            <div style="display:grid;grid-template-columns:2fr 1fr 2fr 1fr;gap:12px;margin-bottom:14px;">
+              <div class="field" style="margin:0;">
+                <label class="field-label">Lesson Title</label>
+                <input type="text" id="f-lessonTitle" value="${esc(e.lessonTitle || `${subjectName} — Term ${term} Week ${week}`)}" />
+              </div>
+              <div class="field" style="margin:0;">
+                <label class="field-label">No. of Sessions</label>
+                <input type="number" id="f-noOfSessions" min="1" max="10" value="${e.noOfSessions || 5}" />
+              </div>
+              <div class="field" style="margin:0;">
+                <label class="field-label">Teacher Name</label>
+                <input type="text" id="f-teacherName" value="${esc(e.teacherName || CURRENT_PROFILE?.name || CURRENT_USER.email)}" />
+              </div>
+              <div class="field" style="margin:0;">
+                <label class="field-label">Section</label>
+                <select id="f-section">
+                  <option value="">— Select —</option>
+                  ${sectionOptions.map(s => `<option value="${esc(s)}" ${e.section === s ? "selected" : ""}>${esc(s)}</option>`).join("")}
+                </select>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- BoW panels -->
         ${contentStd ? `
           <div class="bow-info">
             <div class="lbl">📘 Content Standard</div>
@@ -409,6 +496,21 @@
           </div>
         ` : ""}
 
+        <!-- REFERENCES -->
+        <div class="section">
+          <div class="section-head">
+            <div>
+              <h2>📚 REFERENCES</h2>
+              <div class="hint">Curriculum guides, textbooks, LR Portal links</div>
+            </div>
+          </div>
+          <div class="section-body">
+            <div class="field">
+              <textarea id="f-references" rows="5" placeholder="1. Curriculum Guide: ...&#10;2. Teacher's Guide: ...&#10;3. Learner's Material: ...&#10;4. LR Portal: https://lrmds.deped.gov.ph">${esc(e.references || "")}</textarea>
+            </div>
+          </div>
+        </div>
+
         <!-- I — INTENTIONS -->
         <div class="section">
           <div class="section-head">
@@ -418,7 +520,6 @@
             </div>
           </div>
           <div class="section-body">
-
             <div class="field">
               <label class="field-label">Learning Competencies (pick from BoW)</label>
               ${topicList.length ? `
@@ -449,10 +550,19 @@
             </div>
 
             <div class="field">
+              <label class="field-label">Content Standard</label>
+              <textarea id="f-contentStandard" rows="3">${esc(e.contentStandard || contentStd)}</textarea>
+            </div>
+
+            <div class="field">
+              <label class="field-label">Performance Standard</label>
+              <textarea id="f-performanceStandard" rows="3">${esc(e.performanceStandard || perfStd)}</textarea>
+            </div>
+
+            <div class="field">
               <label class="field-label">Learner Context</label>
               <textarea id="f-learnerContext" rows="4" placeholder="Describe your learners: prior knowledge, needs, strengths...">${esc(e.learnerContext || "")}</textarea>
             </div>
-
           </div>
         </div>
 
@@ -465,27 +575,22 @@
             </div>
           </div>
           <div class="section-body">
-
             <div class="field">
               <label class="field-label">Pre-Lesson</label>
               <textarea id="f-preLesson" rows="3" placeholder="Opening activities, review, motivation...">${esc(e.preLesson || "")}</textarea>
             </div>
-
             <div class="field">
               <label class="field-label">Lesson Flow</label>
               <textarea id="f-lessonFlow" rows="8" placeholder="Day-by-day activities, teaching strategies, learner tasks...">${esc(e.lessonFlow || "")}</textarea>
             </div>
-
             <div class="field">
               <label class="field-label">Materials / Resources</label>
               <textarea id="f-materialsText" rows="3" placeholder="Charts, handouts, videos, tools...">${esc(e.materialsText || "")}</textarea>
             </div>
-
             <div class="field">
               <label class="field-label">Integration Opportunities</label>
               <textarea id="f-integration" rows="2" placeholder="Cross-curricular connections...">${esc(e.integration || "")}</textarea>
             </div>
-
           </div>
         </div>
 
@@ -509,26 +614,76 @@
           <div class="section-head">
             <div>
               <h2>🛣️ W — WAYS FORWARD</h2>
-              <div class="hint">What's next for learners who need support or enrichment?</div>
+              <div class="hint">What's next for learners?</div>
             </div>
           </div>
           <div class="section-body">
-
             <div class="field">
               <label class="field-label">Extended Learning</label>
               <textarea id="f-extendedLearning" rows="3" placeholder="Enrichment activities, homework, projects...">${esc(e.extendedLearning || "")}</textarea>
             </div>
-
             <div class="field">
               <label class="field-label">Ways Forward / ARAL</label>
               <textarea id="f-waysForward" rows="3" placeholder="Remediation, ARAL strategies, interventions...">${esc(e.waysForward || "")}</textarea>
             </div>
-
             <div class="field">
               <label class="field-label">Teacher Reflections</label>
               <textarea id="f-teacherReflections" rows="3" placeholder="What worked? What needs adjustment?">${esc(e.teacherReflections || "")}</textarea>
             </div>
+          </div>
+        </div>
 
+        <!-- SELF-CHECK RUBRIC -->
+        <div class="section">
+          <div class="section-head">
+            <div>
+              <h2>✅ RUBRIC FOR LESSON PLANNING SELF-CHECK</h2>
+              <div class="hint">Reflect on your lesson plan</div>
+            </div>
+          </div>
+          <div class="section-body" style="padding:0;">
+            <table class="rubric-table">
+              <thead>
+                <tr>
+                  <th>I can say that in my lesson plan…</th>
+                  <th style="width:70px;text-align:center;color:#059669;">Yes</th>
+                  <th style="width:70px;text-align:center;color:#dc2626;">Not Yet</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${RUBRIC.map(([key, label]) => `
+                  <tr>
+                    <td>${esc(label)}</td>
+                    <td style="text-align:center;">
+                      <input type="radio" name="rubric_${key}" value="yes" ${rubric[key] === "yes" ? "checked" : ""} />
+                    </td>
+                    <td style="text-align:center;">
+                      <input type="radio" name="rubric_${key}" value="not_yet" ${(rubric[key] || "not_yet") === "not_yet" ? "checked" : ""} />
+                    </td>
+                  </tr>
+                `).join("")}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- COACHING NOTES -->
+        <div class="section">
+          <div class="section-head">
+            <div>
+              <h2>👨‍🏫 COACHING NOTES</h2>
+              <div class="hint">For your instructional coaching session</div>
+            </div>
+          </div>
+          <div class="section-body">
+            <div class="field">
+              <label class="field-label">What I want help with...</label>
+              <textarea id="f-coachingNotes" rows="4" placeholder="Notes for your coach...">${esc(e.coaching?.notes || "")}</textarea>
+            </div>
+            <div class="field">
+              <label class="field-label">Coach's Name</label>
+              <input type="text" id="f-coachName" value="${esc(e.coaching?.coachName || "")}" style="max-width:300px;" />
+            </div>
           </div>
         </div>
 
@@ -537,29 +692,27 @@
           <div class="section-head">
             <div>
               <h2>📜 AI DECLARATION</h2>
-              <div class="hint">DepEd DO 3, s. 2026 — disclose AI use in lesson planning</div>
+              <div class="hint">DepEd DO 3, s. 2026 — disclose AI use</div>
             </div>
           </div>
           <div class="section-body">
-            <div class="field">
-              <label style="display:flex;align-items:center;gap:6px;font-size:13px;margin-bottom:8px;">
-                <input type="radio" name="aiDecl" value="not-used" ${(e.aiDeclaration || "not-used") === "not-used" ? "checked" : ""} />
-                🚫 Not used
-              </label>
-              <label style="display:flex;align-items:center;gap:6px;font-size:13px;margin-bottom:8px;">
-                <input type="radio" name="aiDecl" value="draft-generation" ${e.aiDeclaration === "draft-generation" ? "checked" : ""} />
-                🤖 AI-generated draft, teacher revised
-              </label>
-              <label style="display:flex;align-items:center;gap:6px;font-size:13px;margin-bottom:8px;">
-                <input type="radio" name="aiDecl" value="grammar-only" ${e.aiDeclaration === "grammar-only" ? "checked" : ""} />
-                ✏️ Grammar/style editing only
-              </label>
-              <label style="display:flex;align-items:center;gap:6px;font-size:13px;margin-bottom:12px;">
-                <input type="radio" name="aiDecl" value="other" ${e.aiDeclaration === "other" ? "checked" : ""} />
-                📝 Other (specify below)
-              </label>
-              <input type="text" id="f-aiDeclarationNotes" placeholder="Notes (optional)" value="${esc(e.aiDeclarationNotes || "")}" />
-            </div>
+            <label style="display:flex;align-items:center;gap:6px;font-size:13px;margin-bottom:8px;">
+              <input type="radio" name="aiDecl" value="not-used" ${(e.aiDeclaration || "not-used") === "not-used" ? "checked" : ""} />
+              🚫 Not used
+            </label>
+            <label style="display:flex;align-items:center;gap:6px;font-size:13px;margin-bottom:8px;">
+              <input type="radio" name="aiDecl" value="draft-generation" ${e.aiDeclaration === "draft-generation" ? "checked" : ""} />
+              🤖 AI-generated draft, teacher revised
+            </label>
+            <label style="display:flex;align-items:center;gap:6px;font-size:13px;margin-bottom:8px;">
+              <input type="radio" name="aiDecl" value="grammar-only" ${e.aiDeclaration === "grammar-only" ? "checked" : ""} />
+              ✏️ Grammar/style editing only
+            </label>
+            <label style="display:flex;align-items:center;gap:6px;font-size:13px;margin-bottom:12px;">
+              <input type="radio" name="aiDecl" value="other" ${e.aiDeclaration === "other" ? "checked" : ""} />
+              📝 Other (specify below)
+            </label>
+            <input type="text" id="f-aiDeclarationNotes" placeholder="Notes (optional)" value="${esc(e.aiDeclarationNotes || "")}" style="width:100%;padding:10px 12px;border:1px solid #d1d5db;border-radius:8px;font-size:13.5px;font-family:inherit;" />
           </div>
         </div>
 
@@ -577,10 +730,10 @@
         </div>
       `;
 
-      // Update header badge
       $("statusBadge").innerHTML = `<span class="status-badge ${status}">${status}</span>`;
 
-      // Wire competency checkboxes
+      loadSectionsForTeacher(subjectCode, e.section);
+
       document.querySelectorAll("[data-comp-code]").forEach(cb => {
         cb.addEventListener("change", () => {
           cb.closest(".comp-check").classList.toggle("checked", cb.checked);
@@ -590,20 +743,58 @@
         });
       });
 
-      // Wire all textareas/inputs → mark dirty
-      document.querySelectorAll("textarea, input[type='text'], input[type='radio']").forEach(el => {
-        el.addEventListener("input", () => {
-          DIRTY = true;
-          updateDirtyIndicator();
-        });
+      document.querySelectorAll("textarea, input[type='text'], input[type='number'], input[type='radio'], select").forEach(el => {
+        el.addEventListener("input", () => { DIRTY = true; updateDirtyIndicator(); });
+        el.addEventListener("change", () => { DIRTY = true; updateDirtyIndicator(); });
       });
 
-      // Buttons
       $("btnSaveDraft").addEventListener("click", () => saveLesson("draft"));
       $("btnSaveFinal").addEventListener("click", () => saveLesson("final"));
       $("btnPrint").addEventListener("click", () => window.print());
       $("btnDuplicate")?.addEventListener("click", duplicateCurrent);
       $("btnDelete")?.addEventListener("click", deleteCurrent);
+    }
+
+    // ============================================================
+    // LOAD SECTIONS FROM CLASS PROGRAMS
+    // ============================================================
+    async function loadSectionsForTeacher(subjectCode, currentSection) {
+      try {
+        const select = document.getElementById("f-section");
+        if (!select) return;
+
+        const classesSnap = await getDocs(collection(db, "classes"));
+        const myClasses = [];
+        for (const classDoc of classesSnap.docs) {
+          const cls = { id: classDoc.id, ...classDoc.data() };
+          const isAdviser = cls.adviserUid === CURRENT_USER.uid;
+          let hasSubject = false;
+          if (!isAdviser) {
+            try {
+              const progSnap = await getDocs(collection(db, "classes", cls.id, "program"));
+              hasSubject = progSnap.docs.some(d => {
+                const e = d.data();
+                return e.teacherUid === CURRENT_USER.uid &&
+                       (e.subject || e.subjectName) === subjectCode;
+              });
+            } catch {}
+          }
+          if (isAdviser || hasSubject) {
+            myClasses.push(cls.classLabel || "(unnamed class)");
+          }
+        }
+
+        const sections = [...new Set(myClasses)].sort();
+
+        if (sections.length) {
+          select.innerHTML = '<option value="">— Select —</option>' +
+            sections.map(s => `<option value="${esc(s)}" ${currentSection === s ? "selected" : ""}>${esc(s)}</option>`).join("");
+        } else {
+          select.outerHTML = `<input type="text" id="f-section" value="${esc(currentSection || "")}" placeholder="e.g., Grade 7 - DIAMOND" style="width:100%;padding:10px 12px;border:1px solid #d1d5db;border-radius:8px;font-size:13.5px;font-family:inherit;" />`;
+        }
+      } catch (e) {
+        console.warn("[ilaw] sections load failed:", e);
+      }
     }
 
     function updateDirtyIndicator() {
@@ -624,62 +815,67 @@
       const week = parseInt($("pickWeek").value, 10);
       const schoolYear = $("pickYear").value;
 
-      // Collect competencies
       const checked = Array.from(document.querySelectorAll("[data-comp-code]:checked"));
       let competencyCodes = checked.map(cb => cb.dataset.compCode);
       let competencyTexts = checked.map(cb => cb.dataset.compText);
 
-      // Manual competencies (no BoW case)
       const manualComps = document.getElementById("manualComps");
       if (manualComps && manualComps.value.trim()) {
         const lines = manualComps.value.split("\n").map(l => l.trim()).filter(Boolean);
         lines.forEach((line, idx) => {
-          const code = `T${term}-M${idx + 1}`;
-          competencyCodes.push(code);
+          competencyCodes.push(`T${term}-M${idx + 1}`);
           competencyTexts.push(line);
         });
       }
 
-      // AI declaration
+      const rubric = {};
+      ["intentions_clear","intentions_coherent","learning_clear","learning_designed",
+       "integration_maximized","inclusive","assessment_integrated","assessment_evidence",
+       "interventions_actionable"].forEach(key => {
+        const radio = document.querySelector(`input[name="rubric_${key}"]:checked`);
+        rubric[key] = radio?.value || "not_yet";
+      });
+
       const aiDecl = document.querySelector('input[name="aiDecl"]:checked')?.value || "not-used";
+      const sectionEl = document.getElementById("f-section");
+      const section = sectionEl?.value?.trim() || "";
 
       const data = {
         teacherUid: CURRENT_USER.uid,
-        teacherName: CURRENT_PROFILE?.name || CURRENT_USER.email,
+        teacherName: ($("f-teacherName")?.value || "").trim() || CURRENT_PROFILE?.name || CURRENT_USER.email,
         subjectCode,
         subjectName,
         gradeLevel,
         term,
         week,
         schoolYear,
-        title: `${subjectName} — Term ${term} Week ${week}`,
+        title: ($("f-lessonTitle")?.value || "").trim() || `${subjectName} — Term ${term} Week ${week}`,
+        lessonTitle: ($("f-lessonTitle")?.value || "").trim(),
+        noOfSessions: parseInt($("f-noOfSessions")?.value, 10) || 5,
+        section,
         status,
 
-        // Intentions
+        references: ($("f-references")?.value || "").trim(),
         competencyCodes,
         competencyTexts,
-        contentStandard: CURRENT_BOW?.termDoc?.contentStandard || "",
-        performanceStandard: CURRENT_BOW?.termDoc?.performanceStandard || "",
+        contentStandard: ($("f-contentStandard")?.value || "").trim() || CURRENT_BOW?.termDoc?.contentStandard || "",
+        performanceStandard: ($("f-performanceStandard")?.value || "").trim() || CURRENT_BOW?.termDoc?.performanceStandard || "",
         learnerContext: ($("f-learnerContext")?.value || "").trim(),
-
-        // Learning Experience
         preLesson: ($("f-preLesson")?.value || "").trim(),
         lessonFlow: ($("f-lessonFlow")?.value || "").trim(),
         materialsText: ($("f-materialsText")?.value || "").trim(),
         integration: ($("f-integration")?.value || "").trim(),
-
-        // Assessment
         assessment: ($("f-assessment")?.value || "").trim(),
-
-        // Ways Forward
         extendedLearning: ($("f-extendedLearning")?.value || "").trim(),
         waysForward: ($("f-waysForward")?.value || "").trim(),
         teacherReflections: ($("f-teacherReflections")?.value || "").trim(),
-
-        // Compliance
+        rubric,
+        coaching: {
+          notes: ($("f-coachingNotes")?.value || "").trim(),
+          coachName: ($("f-coachName")?.value || "").trim(),
+        },
         aiDeclaration: aiDecl,
         aiDeclarationNotes: ($("f-aiDeclarationNotes")?.value || "").trim(),
-
         lastSavedBy: CURRENT_USER.email || "",
       };
 
@@ -692,14 +888,14 @@
         $("statusBadge").innerHTML = `<span class="status-badge ${status}">${status}</span>`;
         $("statusBadgeBody").textContent = status;
         $("statusBadgeBody").className = `status-badge ${status}`;
-      } catch (e) {
-        console.error(e);
-        toast("⚠️ " + (e.message || "Save failed"), "error");
+      } catch (err) {
+        console.error(err);
+        toast("⚠️ " + (err.message || "Save failed"), "error");
       }
     }
 
     // ============================================================
-    // DUPLICATE CURRENT
+    // DUPLICATE / DELETE
     // ============================================================
     async function duplicateCurrent() {
       if (!CURRENT_LESSON_ID) {
@@ -719,9 +915,6 @@
       }
     }
 
-    // ============================================================
-    // DELETE CURRENT
-    // ============================================================
     async function deleteCurrent() {
       if (!CURRENT_LESSON_ID) return;
       if (!confirm("Delete this lesson plan? This cannot be undone.")) return;
@@ -735,7 +928,7 @@
     }
 
     // ============================================================
-    // LOAD EXISTING LESSON FROM URL (?lesson=xxx)
+    // LOAD FROM URL (?lesson=xxx)
     // ============================================================
     async function loadFromUrl() {
       const params = new URLSearchParams(location.search);
@@ -744,12 +937,13 @@
 
       const lesson = await window.ILAW.getLesson(lessonId);
       if (!lesson) { toast("⚠️ Lesson not found", "error"); return; }
-      if (lesson.teacherUid !== CURRENT_USER.uid && CURRENT_PROFILE?.primaryRole !== "admin" && !CURRENT_PROFILE?.isSuperAdmin) {
+      if (lesson.teacherUid !== CURRENT_USER.uid
+          && CURRENT_PROFILE?.primaryRole !== "admin"
+          && !CURRENT_PROFILE?.isSuperAdmin) {
         toast("⚠️ You don't have permission to view this lesson", "error");
         return;
       }
 
-      // Populate pickers
       $("pickGrade").value = lesson.gradeLevel;
       populateSubjectPicker();
       $("pickSubject").value = lesson.subjectCode;
@@ -757,17 +951,17 @@
       $("pickWeek").value = lesson.week;
       $("pickYear").value = lesson.schoolYear || "2026-2027";
 
-      // Trigger load
       setTimeout(() => loadContext(), 100);
     }
 
-    // Call after auth ready
-    // (we call loadFromUrl once the editor is ready)
-    window.__loadFromUrl = loadFromUrl;
-
-    // Auto-load from URL after user signs in
-    // (hook into the auth flow above)
-    document.addEventListener("ilaw:ready", loadFromUrl);
+    // Populate signatories before print
+    window.addEventListener("beforeprint", () => {
+      const teacher = document.getElementById("f-teacherName")?.value || "—";
+      const coach = document.getElementById("f-coachName")?.value || "—";
+      document.getElementById("print-preparedBy").textContent = teacher;
+      document.getElementById("print-checkedBy").textContent = coach;
+      document.getElementById("print-notedBy").textContent = "—";
+    });
   </script>
 </body>
 </html>
