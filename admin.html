@@ -442,6 +442,11 @@
     } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
     import { getCurrentUserProfile } from "./assets/js/roles.js";
 
+    // ⬇️ ADD THESE 3 LINES
+    import "./assets/js/bow-parser.js";
+    import "./assets/js/bow-store.js";
+    import "./assets/js/bow-viewer.js";
+
     // ============================================================
     // STATE
     // ============================================================
@@ -2067,7 +2072,7 @@
         `;
       }).join("");
 
-      // Handlers
+            // Handlers
       host.querySelectorAll("[data-detail-subject]").forEach(btn => {
         btn.addEventListener("click", () => showSubjectDetail(btn.dataset.detailSubject));
       });
@@ -2077,9 +2082,14 @@
           if (s) openSubjectModal(s);
         });
       });
+      host.querySelectorAll("[data-bow-upload]").forEach(btn => {
+        btn.addEventListener("click", () => {
+          openBoWUploadModal(btn.dataset.bowUpload, btn.dataset.bowName);
+        });
+      });
     }
 
-    function renderSubjectRow(s) {
+        function renderSubjectRow(s) {
       const statusDot = s.managed
         ? '<span style="color:#059669;font-weight:900;">●</span>'
         : (s.usage?.count ? '<span style="color:#d97706;font-weight:900;">●</span>' : '<span style="color:#dc2626;font-weight:900;">●</span>');
@@ -2096,13 +2106,17 @@
         ? `<span class="ac-badge" style="background:#e0e7ff;color:#3730a3;">${esc(s.curriculum)}</span>`
         : "—";
 
+      const specHtml = s.usage?.specializations?.length
+        ? `<div style="color:#6b7280;font-size:11px;margin-top:2px;">Spec: ${s.usage.specializations.join(", ")}</div>`
+        : "";
+
       const isAdminViewer = CURRENT_PROFILE?.isSuperAdmin
         || CURRENT_PROFILE?.primaryRole === "admin";
 
       return `
         <tr>
           <td>${statusDot} <strong>${esc(s.code)}</strong></td>
-          <td>${esc(s.displayName || s.code)}${s.specializations?.length ? `<div style="color:#6b7280;font-size:11px;margin-top:2px;">Spec: ${s.usage.specializations.join(", ")}</div>` : ""}</td>
+          <td>${esc(s.displayName || s.code)}${specHtml}</td>
           <td>${esc(s.level || "—")}</td>
           <td>${typeBadge}</td>
           <td>${curricBadge}</td>
@@ -2110,7 +2124,10 @@
           <td>${teachers}</td>
           <td class="col-actions">
             <button class="ac-btn outline small" data-detail-subject="${esc(s.code)}">🔍</button>
-            ${isAdminViewer ? `<button class="ac-btn primary small" data-edit-subject="${esc(s.code)}">✏️</button>` : ""}
+            ${isAdminViewer ? `
+              <button class="ac-btn warning small" data-bow-upload="${esc(s.code)}" data-bow-name="${esc(s.displayName || s.code)}" title="Upload Budget of Work">📤 BoW</button>
+              <button class="ac-btn primary small" data-edit-subject="${esc(s.code)}">✏️</button>
+            ` : ""}
           </td>
         </tr>
       `;
@@ -2544,6 +2561,238 @@
       const m = c.match(/(\d{1,2})/);
       if (m) return m[1];
       return "";
+    }
+
+    // ============================================================
+    // BoW UPLOAD (Session F2)
+    // ============================================================
+    let BOW_UPLOAD_STATE = null;
+
+    function openBoWUploadModal(subjectCode, subjectDisplayName) {
+      const existing = document.getElementById("bowUploadModal");
+      if (existing) existing.remove();
+
+      const modal = document.createElement("div");
+      modal.id = "bowUploadModal";
+      modal.className = "modal show";
+      modal.style.cssText = "position:fixed;inset:0;background:rgba(0,0,0,0.55);display:flex;align-items:center;justify-content:center;z-index:9999;padding:20px;";
+      modal.innerHTML = `
+        <div style="background:#fff;border-radius:14px;max-width:900px;width:100%;max-height:92vh;overflow-y:auto;box-shadow:0 24px 48px rgba(0,0,0,.25);">
+          <div style="padding:18px 22px;border-bottom:1px solid #e5e7eb;display:flex;justify-content:space-between;align-items:center;">
+            <div>
+              <h3 style="margin:0;font-size:1.1rem;color:#0f2b4f;">📤 Upload BoW — ${esc(subjectDisplayName || subjectCode)}</h3>
+              <p style="margin:4px 0 0;font-size:12px;color:#6b7280;">Upload PDF, Excel, CSV, or paste text. Parser auto-detects Terms, Standards, Topics, and Competencies.</p>
+            </div>
+            <button class="ac-btn outline small" data-close-bow>✕</button>
+          </div>
+
+          <div style="padding:20px 22px;">
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px;">
+              <div>
+                <label style="display:block;font-size:11px;font-weight:700;color:#374151;text-transform:uppercase;letter-spacing:.03em;margin-bottom:6px;">Term</label>
+                <select id="bowTerm" class="ac-select" style="width:100%;">
+                  <option value="1" selected>Term 1</option>
+                  <option value="2">Term 2</option>
+                  <option value="3">Term 3</option>
+                  <option value="4">Term 4 (legacy)</option>
+                </select>
+              </div>
+              <div>
+                <label style="display:block;font-size:11px;font-weight:700;color:#374151;text-transform:uppercase;letter-spacing:.03em;margin-bottom:6px;">School Year</label>
+                <select id="bowSchoolYear" class="ac-select" style="width:100%;">
+                  <option value="2026-2027" selected>2026-2027 (MATATAG)</option>
+                  <option value="2025-2026">2025-2026</option>
+                  <option value="2027-2028">2027-2028</option>
+                </select>
+              </div>
+            </div>
+
+            <div id="bowDropZone" style="border:2px dashed #cbd5e1;background:#f9fafb;border-radius:12px;padding:32px 20px;text-align:center;cursor:pointer;transition:all .15s;">
+              <div style="font-size:2.5rem;margin-bottom:8px;">📄</div>
+              <div style="font-weight:700;color:#0f2b4f;">Drop PDF, Excel, CSV, or TXT here</div>
+              <div style="font-size:12px;color:#6b7280;margin-top:4px;">or click to browse</div>
+              <input type="file" id="bowFileInput" accept=".pdf,.xlsx,.xls,.csv,.txt" style="display:none;">
+            </div>
+
+            <div style="margin-top:12px;text-align:center;">
+              <span style="font-size:11px;color:#9ca3af;">— or —</span>
+              <button class="ac-btn outline small" id="bowPasteToggle" style="margin-left:8px;">📋 Paste text instead</button>
+            </div>
+
+            <div id="bowPasteArea" style="display:none;margin-top:12px;">
+              <textarea id="bowPasteText" rows="8" placeholder="Paste BoW text here…" style="width:100%;padding:10px 12px;border:1px solid #d1d5db;border-radius:8px;font-size:13px;font-family:inherit;resize:vertical;"></textarea>
+              <button class="ac-btn primary small" id="bowParsePaste" style="margin-top:8px;">🔍 Parse Pasted Text</button>
+            </div>
+
+            <div id="bowPreview" style="margin-top:16px;display:none;"></div>
+
+            <div id="bowStatus" style="margin-top:12px;display:none;"></div>
+          </div>
+
+          <div style="padding:14px 22px;border-top:1px solid #e5e7eb;display:flex;justify-content:flex-end;gap:10px;background:#fafbfc;">
+            <button class="ac-btn outline" data-close-bow>Cancel</button>
+            <button class="ac-btn success" id="bowImportBtn" style="display:none;">💾 Import</button>
+          </div>
+        </div>
+      `;
+      document.body.appendChild(modal);
+
+      // Close handlers
+      modal.querySelectorAll("[data-close-bow]").forEach(b => b.addEventListener("click", () => modal.remove()));
+      modal.addEventListener("click", e => { if (e.target === modal) modal.remove(); });
+
+      // Drop zone
+      const dropZone = document.getElementById("bowDropZone");
+      const fileInput = document.getElementById("bowFileInput");
+
+      dropZone.addEventListener("click", () => fileInput.click());
+      dropZone.addEventListener("dragover", e => {
+        e.preventDefault();
+        dropZone.style.borderColor = "#1e6bb8";
+        dropZone.style.background = "#eff6ff";
+      });
+      dropZone.addEventListener("dragleave", () => {
+        dropZone.style.borderColor = "#cbd5e1";
+        dropZone.style.background = "#f9fafb";
+      });
+      dropZone.addEventListener("drop", e => {
+        e.preventDefault();
+        dropZone.style.borderColor = "#cbd5e1";
+        dropZone.style.background = "#f9fafb";
+        const file = e.dataTransfer.files[0];
+        if (file) handleBoWFile(file, subjectCode);
+      });
+
+      fileInput.addEventListener("change", e => {
+        const file = e.target.files[0];
+        if (file) handleBoWFile(file, subjectCode);
+      });
+
+      // Paste toggle
+      document.getElementById("bowPasteToggle").addEventListener("click", () => {
+        const area = document.getElementById("bowPasteArea");
+        area.style.display = area.style.display === "none" ? "block" : "none";
+      });
+      document.getElementById("bowParsePaste").addEventListener("click", () => {
+        const text = document.getElementById("bowPasteText").value;
+        if (!text.trim()) { toast("⚠️ Paste some text first", "error"); return; }
+        const parsed = window.BoWParser.parseText(text, { term: parseInt(document.getElementById("bowTerm").value, 10) });
+        renderBoWPreview(parsed, subjectCode);
+      });
+    }
+
+    async function handleBoWFile(file, subjectCode) {
+      const status = document.getElementById("bowStatus");
+      status.style.display = "block";
+      status.innerHTML = `<div style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:8px;padding:12px;font-size:13px;color:#1e40af;">📄 Parsing <strong>${esc(file.name)}</strong>…</div>`;
+
+      try {
+        const term = parseInt(document.getElementById("bowTerm").value, 10);
+        const parsed = await window.BoWParser.parse(file, { term });
+        renderBoWPreview(parsed, subjectCode, file.name);
+        status.style.display = "none";
+      } catch (e) {
+        console.error(e);
+        status.innerHTML = `<div style="background:#fef2f2;border:1px solid #fecaca;border-radius:8px;padding:12px;font-size:13px;color:#991b1b;">⚠️ ${esc(e.message || "Parse failed")}</div>`;
+      }
+    }
+
+    function renderBoWPreview(parsed, subjectCode, fileName) {
+      BOW_UPLOAD_STATE = { parsed, subjectCode, fileName };
+
+      const preview = document.getElementById("bowPreview");
+      preview.style.display = "block";
+
+      const totalComps = parsed.stats.competenciesFound;
+
+      preview.innerHTML = `
+        <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:10px;padding:14px 16px;margin-bottom:14px;">
+          <div style="font-weight:800;color:#166534;font-size:14px;">✅ Parsed successfully</div>
+          <div style="display:flex;gap:16px;flex-wrap:wrap;margin-top:8px;font-size:12px;color:#14532d;">
+            <span>📅 Term: <strong>${parsed.term}</strong></span>
+            <span>📂 Topics: <strong>${parsed.stats.topicsFound}</strong></span>
+            <span>📌 Competencies: <strong>${totalComps}</strong></span>
+            ${parsed.theme ? `<span>🎯 Theme: <strong>${esc(parsed.theme)}</strong></span>` : ""}
+          </div>
+        </div>
+
+        ${parsed.contentStandard ? `
+          <div style="background:#eff6ff;border-left:4px solid #1e40af;border-radius:8px;padding:10px 14px;margin-bottom:10px;font-size:12.5px;color:#1e3a8a;">
+            <strong>📘 Content Standard:</strong> ${esc(parsed.contentStandard.slice(0, 200))}${parsed.contentStandard.length > 200 ? "…" : ""}
+          </div>` : ""}
+
+        ${parsed.performanceStandard ? `
+          <div style="background:#f0fdf4;border-left:4px solid #166534;border-radius:8px;padding:10px 14px;margin-bottom:12px;font-size:12.5px;color:#14532d;">
+            <strong>⭐ Performance Standard:</strong> ${esc(parsed.performanceStandard.slice(0, 200))}${parsed.performanceStandard.length > 200 ? "…" : ""}
+          </div>` : ""}
+
+        <div style="max-height:340px;overflow-y:auto;border:1px solid #e5e7eb;border-radius:8px;">
+          <table style="width:100%;border-collapse:collapse;font-size:12px;">
+            <thead>
+              <tr style="background:#f9fafb;">
+                <th style="text-align:left;padding:8px 10px;border-bottom:1px solid #e5e7eb;font-size:10.5px;text-transform:uppercase;letter-spacing:.04em;color:#6b7280;">Topic</th>
+                <th style="text-align:left;padding:8px 10px;border-bottom:1px solid #e5e7eb;font-size:10.5px;text-transform:uppercase;letter-spacing:.04em;color:#6b7280;">Code</th>
+                <th style="text-align:left;padding:8px 10px;border-bottom:1px solid #e5e7eb;font-size:10.5px;text-transform:uppercase;letter-spacing:.04em;color:#6b7280;">Competency</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${parsed.topics.flatMap(t => t.competencies.map(c => `
+                <tr style="border-bottom:1px solid #f3f4f6;">
+                  <td style="padding:8px 10px;color:#6b7280;font-size:11px;">${esc(t.label)}</td>
+                  <td style="padding:8px 10px;font-family:monospace;color:#1e40af;font-weight:700;white-space:nowrap;">${esc(c.code)}${c.isRecurring ? ' <span title="Recurring">*</span>' : ""}</td>
+                  <td style="padding:8px 10px;color:#111827;">${esc(c.text)}</td>
+                </tr>
+              `)).join("")}
+            </tbody>
+          </table>
+        </div>
+      `;
+
+      const importBtn = document.getElementById("bowImportBtn");
+      importBtn.style.display = "inline-flex";
+      importBtn.textContent = `💾 Import ${totalComps} Competencies`;
+      importBtn.onclick = () => doImportBoW();
+    }
+
+    async function doImportBoW() {
+      if (!BOW_UPLOAD_STATE) return;
+      const btn = document.getElementById("bowImportBtn");
+      btn.disabled = true;
+      btn.textContent = "Importing…";
+
+      const { parsed, subjectCode, fileName } = BOW_UPLOAD_STATE;
+      const term = parseInt(document.getElementById("bowTerm").value, 10);
+      const schoolYear = document.getElementById("bowSchoolYear").value;
+
+      try {
+        const result = await window.BoW.saveBoWTerm(subjectCode, term, parsed, {
+          schoolYear,
+          fileName: fileName || "pasted-text",
+          uploadedBy: CURRENT_USER?.email || "",
+          curriculum: "MATATAG",
+        });
+
+        toast(`✓ Imported ${result.competencies} competencies across ${result.topics} topics`, "success");
+        document.getElementById("bowUploadModal").remove();
+        BOW_UPLOAD_STATE = null;
+
+        // Refresh view if we're on Subjects tab
+        if (typeof renderSubjectList === "function") renderSubjectList();
+      } catch (e) {
+        console.error(e);
+        toast("⚠️ " + (e.message || "Import failed"), "error");
+        btn.disabled = false;
+        btn.textContent = "💾 Import";
+      }
+    }
+  </script>
+
+  <!-- ============ PDF.js (loaded AFTER the module, but doesn't matter here) ============ -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+  <script>
+    if (window.pdfjsLib) {
+      window.pdfjsLib.GlobalWorkerOptions.workerSrc =
+        "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
     }
   </script>
 
