@@ -590,7 +590,7 @@
         case "advisers": renderAdvisersTab(main); break;
         case "subjects": renderComingSoonTab(main, "Subjects"); break;
         case "rooms":    renderComingSoonTab(main, "Rooms"); break;
-        case "conflicts":renderComingSoonTab(main, "Conflicts"); break;
+        case "conflicts":renderConflictsTab(main); break;
         default:         renderClassesTab(main);
       }
     }
@@ -975,6 +975,703 @@
       }
     }
 
+        // ============================================================
+    // TAB: CONFLICTS
+    // ============================================================
+    let CONFLICTS = [];
+    let CONFLICT_TERM = 1;
+    let CONFLICT_RESOLUTIONS = {}; // { hash: { resolvedAt, resolvedBy } }
+    let CONFLICT_SCAN_DONE = false;
+
+    function renderConflictsTab(main) {
+      main.innerHTML = `
+        <div class="ac-page-header">
+          <h2>⚠️ Conflicts</h2>
+          <p>Detect scheduling conflicts across all class programs. TLE/TechPro rotation is handled automatically.</p>
+        </div>
+
+        <div class="ac-stats">
+          <div class="ac-stat">
+            <div class="ac-stat-value" id="statTotalConflicts">—</div>
+            <div class="ac-stat-label">Total</div>
+          </div>
+          <div class="ac-stat">
+            <div class="ac-stat-value" style="color:#dc2626;" id="statTeacherConflicts">—</div>
+            <div class="ac-stat-label">👤 Teacher</div>
+          </div>
+          <div class="ac-stat">
+            <div class="ac-stat-value" style="color:#d97706;" id="statRoomConflicts">—</div>
+            <div class="ac-stat-label">🚪 Room</div>
+          </div>
+          <div class="ac-stat">
+            <div class="ac-stat-value" style="color:#6b7280;" id="statOtherConflicts">—</div>
+            <div class="ac-stat-label">📋 Other</div>
+          </div>
+        </div>
+
+        <div class="ac-card">
+          <div class="ac-toolbar">
+            <select class="ac-select" id="conflictTerm" style="min-width:130px;">
+              <option value="1" selected>📅 Term 1</option>
+              <option value="2">📅 Term 2</option>
+              <option value="3">📅 Term 3</option>
+            </select>
+            <button class="ac-btn primary" id="btnScanConflicts">🔍 Scan for Conflicts</button>
+            <select class="ac-select" id="conflictTypeFilter">
+              <option value="">All Types</option>
+              <option value="teacher">👤 Teacher Clashes</option>
+              <option value="teacher-dup">👤 Duplicate Teacher</option>
+              <option value="room">🚪 Room Clashes</option>
+              <option value="orphan">📋 Orphaned TLE</option>
+              <option value="dup-primary">📋 Duplicate Primary</option>
+            </select>
+            <select class="ac-select" id="conflictSeverityFilter">
+              <option value="">All Severities</option>
+              <option value="high">🔴 High</option>
+              <option value="medium">🟡 Medium</option>
+              <option value="low">🟢 Low</option>
+            </select>
+            <label style="display:inline-flex;align-items:center;gap:6px;font-size:13px;color:#4b5563;margin-left:auto;cursor:pointer;">
+              <input type="checkbox" id="conflictHideResolved" checked />
+              Hide resolved
+            </label>
+          </div>
+
+          <div id="conflictResults">
+            <div class="ac-empty">
+              <div style="font-size:2.5rem;margin-bottom:8px;">🔍</div>
+              <p>Click <strong>Scan for Conflicts</strong> to analyze the selected term.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="ac-card" id="conflictDetailCard" style="display:none;">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;gap:12px;flex-wrap:wrap;">
+            <h3 id="conflictDetailTitle" style="margin:0;">Conflict Details</h3>
+            <button class="ac-btn outline small" data-close-detail>✕ Close</button>
+          </div>
+          <div id="conflictDetailBody"></div>
+        </div>
+      `;
+
+      $("btnScanConflicts").addEventListener("click", () => scanForConflicts(CONFLICT_TERM));
+      $("conflictTerm").addEventListener("change", e => {
+        CONFLICT_TERM = parseInt(e.target.value, 10) || 1;
+        CONFLICT_SCAN_DONE = false;
+        CONFLICTS = [];
+        renderConflictStats();
+        $("conflictResults").innerHTML = `
+          <div class="ac-empty">
+            <div style="font-size:2.5rem;margin-bottom:8px;">📅</div>
+            <p>Term switched to <strong>Term ${CONFLICT_TERM}</strong>. Click <strong>Scan</strong> to analyze.</p>
+          </div>
+        `;
+        $("conflictDetailCard").style.display = "none";
+      });
+      $("conflictTypeFilter").addEventListener("change", renderConflictList);
+      $("conflictSeverityFilter").addEventListener("change", renderConflictList);
+      $("conflictHideResolved").addEventListener("change", renderConflictList);
+      main.querySelector("[data-close-detail]")?.addEventListener("click", () => {
+        $("conflictDetailCard").style.display = "none";
+      });
+
+      renderConflictStats();
+      loadResolutions().then(() => {
+        if (CONFLICT_SCAN_DONE) renderConflictList();
+      });
+    }
+
+    // ============================================================
+    // RESOLUTIONS — persisted in Firestore
+    // ============================================================
+    async function loadResolutions() {
+      try {
+        const snap = await getDocs(collection(db, "conflict_resolutions"));
+        CONFLICT_RESOLUTIONS = {};
+        snap.docs.forEach(d => {
+          CONFLICT_RESOLUTIONS[d.id] = d.data();
+        });
+      } catch {
+        CONFLICT_RESOLUTIONS = {};
+      }
+    }
+
+    async function markResolved(conflictId) {
+      const key = resolveKey(conflictId);
+      try {
+        const docRef = doc(db, "conflict_resolutions", key);
+        await updateDoc(docRef, {
+          resolvedAt: serverTimestamp(),
+          resolvedBy: CURRENT_USER?.email || "",
+          conflictId,
+        }).catch(async () => {
+          await addDoc(collection(db, "conflict_resolutions"), {
+            conflictId,
+            resolvedAt: serverTimestamp(),
+            resolvedBy: CURRENT_USER?.email || "",
+          });
+        });
+        CONFLICT_RESOLUTIONS[key] = { resolvedAt: new Date() };
+        return true;
+      } catch (e) {
+        // Fallback: just track locally
+        CONFLICT_RESOLUTIONS[key] = { resolvedAt: new Date() };
+        return true;
+      }
+    }
+
+    function resolveKey(conflictId) {
+      // Firestore doc IDs can't contain "/", so replace with "_"
+      return "res_" + conflictId.replace(/\//g, "_").replace(/\s+/g, "_").slice(0, 400);
+    }
+
+    function isResolved(conflictId) {
+      return !!CONFLICT_RESOLUTIONS[resolveKey(conflictId)];
+    }
+
+    // ============================================================
+    // SCAN FOR CONFLICTS
+    // ============================================================
+    async function scanForConflicts(term) {
+      const btn = $("btnScanConflicts");
+      btn.disabled = true;
+      btn.textContent = "Scanning…";
+
+      $("conflictResults").innerHTML = `
+        <div class="ac-loading">
+          <div class="ac-spinner"></div>
+          <div>Loading programs for Term ${term}…</div>
+        </div>
+      `;
+
+      try {
+        await loadResolutions();
+
+        // ---- 1. Load all class programs for this term ----
+        const allPrograms = []; // { classId, className, gradeLevel, entries: [...] }
+        for (const cls of CLASSES) {
+          try {
+            const snap = await getDocs(collection(db, "classes", cls.id, "program"));
+            const entries = snap.docs
+              .map(d => ({ id: d.id, ...d.data() }))
+              .filter(e => Number(e.term) === term);
+
+            if (entries.length) {
+              allPrograms.push({
+                classId: cls.id,
+                className: cls.classLabel || "(unnamed)",
+                gradeLevel: cls.gradeLevel || "",
+                section: cls.section || "",
+                entries,
+              });
+            }
+          } catch {
+            // Skip classes that fail
+          }
+        }
+
+        // ---- 2. Run detectors ----
+        const teacherConflicts = detectTeacherClashes(allPrograms);
+        const roomConflicts = detectRoomClashes(allPrograms);
+        const orphanConflicts = detectOrphanedSlots(allPrograms);
+        const dupPrimaryConflicts = detectDuplicatePrimaries(allPrograms);
+
+        CONFLICTS = [
+          ...teacherConflicts,
+          ...roomConflicts,
+          ...orphanConflicts,
+          ...dupPrimaryConflicts,
+        ];
+
+        CONFLICT_SCAN_DONE = true;
+        renderConflictStats();
+        renderConflictList();
+
+        const totalActive = CONFLICTS.filter(c => !isResolved(c.id)).length;
+        toast(
+          totalActive === 0
+            ? `✓ Scan complete — no conflicts in Term ${term}`
+            : `⚠️ Scan complete — ${totalActive} conflict(s) in Term ${term}`,
+          totalActive === 0 ? "success" : "error"
+        );
+      } catch (e) {
+        console.error("[conflicts] scan failed:", e);
+        $("conflictResults").innerHTML = `
+          <div class="ac-empty">
+            <div style="font-size:2.5rem;margin-bottom:8px;">⚠️</div>
+            <h3 style="color:#b91c1c;margin:0 0 6px;">Scan Failed</h3>
+            <p>${esc(e.message || "Unknown error")}</p>
+          </div>
+        `;
+        toast("⚠️ " + (e.message || "Scan failed"), "error");
+      } finally {
+        btn.disabled = false;
+        btn.textContent = "🔍 Scan for Conflicts";
+      }
+    }
+
+    // ============================================================
+    // DETECTOR: Teacher double-booking (across classes)
+    // ============================================================
+    function detectTeacherClashes(allPrograms) {
+      // teacherUid+day+timeSlotId → [ { classId, className, subject, entryId } ]
+      const map = {};
+      for (const prog of allPrograms) {
+        for (const e of prog.entries) {
+          if (!e.teacherUid) continue;
+          const key = `${e.teacherUid}|${e.day}|${e.timeSlotId}|${e.term}`;
+          if (!map[key]) {
+            map[key] = {
+              teacherUid: e.teacherUid,
+              teacherName: e.teacherName || e.teacherUid,
+              day: e.day,
+              timeSlotId: e.timeSlotId,
+              term: e.term,
+              hits: [],
+            };
+          }
+          map[key].hits.push({
+            classId: prog.classId,
+            className: prog.className,
+            gradeLevel: prog.gradeLevel,
+            subject: e.subject || e.subjectName || "—",
+            specialization: e.specialization || "",
+            entryId: e.id,
+            entryType: e.entryType || "primary",
+          });
+        }
+      }
+
+      const conflicts = [];
+      for (const [key, g] of Object.entries(map)) {
+        // Only flag if 2+ DISTINCT classes are involved
+        const distinctClasses = new Set(g.hits.map(h => h.classId));
+        if (distinctClasses.size >= 2) {
+          conflicts.push({
+            id: `teacher|${g.teacherUid}|${g.day}|${g.timeSlotId}|T${g.term}`,
+            type: "teacher",
+            severity: "high",
+            title: `Teacher double-booked: ${g.teacherName}`,
+            description: `${g.teacherName} is scheduled in ${distinctClasses.size} classes at the same time.`,
+            day: g.day,
+            timeSlotId: g.timeSlotId,
+            term: g.term,
+            hits: g.hits,
+          });
+        }
+      }
+      return conflicts;
+    }
+
+    // ============================================================
+    // DETECTOR: Duplicate teacher in the SAME class+slot
+    // (ignores legitimate TLE rotation with distinct specs)
+    // ============================================================
+    function detectDuplicatePrimaries(allPrograms) {
+      const conflicts = [];
+      for (const prog of allPrograms) {
+        // Group by day+timeSlotId
+        const slotMap = {};
+        for (const e of prog.entries) {
+          const k = `${e.day}|${e.timeSlotId}`;
+          if (!slotMap[k]) slotMap[k] = [];
+          slotMap[k].push(e);
+        }
+
+        for (const [k, entries] of Object.entries(slotMap)) {
+          const [day, timeSlotId] = k.split("|");
+
+          // Rule A: More than one PRIMARY entry
+          const primaries = entries.filter(e => (e.entryType || "primary") === "primary");
+          if (primaries.length >= 2) {
+            conflicts.push({
+              id: `dup-primary|${prog.classId}|${day}|${timeSlotId}|T${prog.entries[0].term}`,
+              type: "dup-primary",
+              severity: "low",
+              title: `Multiple primary entries in ${prog.className}`,
+              description: `${primaries.length} "primary" entries in the same slot — only one should be primary.`,
+              day,
+              timeSlotId,
+              term: prog.entries[0].term,
+              hits: primaries.map(e => ({
+                classId: prog.classId,
+                className: prog.className,
+                gradeLevel: prog.gradeLevel,
+                subject: e.subject || e.subjectName || "—",
+                specialization: e.specialization || "",
+                teacherName: e.teacherName || "",
+                entryId: e.id,
+                entryType: e.entryType || "primary",
+              })),
+            });
+          }
+
+          // Rule B: Same teacher appearing twice with matching/empty specs
+          const byTeacher = {};
+          for (const e of entries) {
+            if (!e.teacherUid) continue;
+            if (!byTeacher[e.teacherUid]) byTeacher[e.teacherUid] = [];
+            byTeacher[e.teacherUid].push(e);
+          }
+          for (const [uid, list] of Object.entries(byTeacher)) {
+            if (list.length < 2) continue;
+            const specs = new Set(list.map(e => e.specialization || "__EMPTY__"));
+            // If all have the SAME spec (or all empty) → likely a duplicate, not rotation
+            if (specs.size === 1) {
+              conflicts.push({
+                id: `dup-teacher|${prog.classId}|${uid}|${day}|${timeSlotId}|T${prog.entries[0].term}`,
+                type: "teacher-dup",
+                severity: "high",
+                title: `Teacher repeated in same slot: ${list[0].teacherName || uid}`,
+                description: `${list[0].teacherName || uid} appears ${list.length} times in ${prog.className} at the same day/slot.`,
+                day,
+                timeSlotId,
+                term: prog.entries[0].term,
+                hits: list.map(e => ({
+                  classId: prog.classId,
+                  className: prog.className,
+                  gradeLevel: prog.gradeLevel,
+                  subject: e.subject || e.subjectName || "—",
+                  specialization: e.specialization || "",
+                  teacherName: e.teacherName || "",
+                  entryId: e.id,
+                  entryType: e.entryType || "primary",
+                })),
+              });
+            }
+          }
+        }
+      }
+      return conflicts;
+    }
+
+    // ============================================================
+    // DETECTOR: Room double-booking (across classes)
+    // ============================================================
+    function detectRoomClashes(allPrograms) {
+      const map = {}; // room|day|timeSlotId|term → hits
+      for (const prog of allPrograms) {
+        for (const e of prog.entries) {
+          const room = String(e.room || "").trim();
+          if (!room) continue;
+          const key = `${room}|${e.day}|${e.timeSlotId}|${e.term}`;
+          if (!map[key]) {
+            map[key] = {
+              room, day: e.day, timeSlotId: e.timeSlotId, term: e.term, hits: [],
+            };
+          }
+          map[key].hits.push({
+            classId: prog.classId,
+            className: prog.className,
+            gradeLevel: prog.gradeLevel,
+            subject: e.subject || e.subjectName || "—",
+            teacherName: e.teacherName || "",
+            entryId: e.id,
+          });
+        }
+      }
+
+      const conflicts = [];
+      for (const [key, g] of Object.entries(map)) {
+        const distinctClasses = new Set(g.hits.map(h => h.classId));
+        if (distinctClasses.size >= 2) {
+          conflicts.push({
+            id: `room|${g.room}|${g.day}|${g.timeSlotId}|T${g.term}`,
+            type: "room",
+            severity: "medium",
+            title: `Room double-booked: ${g.room}`,
+            description: `${g.room} is used by ${distinctClasses.size} classes at the same time.`,
+            day: g.day,
+            timeSlotId: g.timeSlotId,
+            term: g.term,
+            hits: g.hits,
+          });
+        }
+      }
+      return conflicts;
+    }
+
+    // ============================================================
+    // DETECTOR: Orphaned TLE slot (has "additional" but no "primary")
+    // ============================================================
+    function detectOrphanedSlots(allPrograms) {
+      const conflicts = [];
+      for (const prog of allPrograms) {
+        const slotMap = {};
+        for (const e of prog.entries) {
+          const k = `${e.day}|${e.timeSlotId}`;
+          if (!slotMap[k]) slotMap[k] = [];
+          slotMap[k].push(e);
+        }
+
+        for (const [k, entries] of Object.entries(slotMap)) {
+          if (entries.length < 2) continue;
+          const hasPrimary = entries.some(e => (e.entryType || "primary") === "primary");
+          const hasAdditional = entries.some(e => e.entryType === "additional");
+          if (hasAdditional && !hasPrimary) {
+            const [day, timeSlotId] = k.split("|");
+            conflicts.push({
+              id: `orphan|${prog.classId}|${day}|${timeSlotId}|T${entries[0].term}`,
+              type: "orphan",
+              severity: "low",
+              title: `Orphaned TLE slot in ${prog.className}`,
+              description: `${entries.length} "additional" entries but no "primary" entry for this slot.`,
+              day,
+              timeSlotId,
+              term: entries[0].term,
+              hits: entries.map(e => ({
+                classId: prog.classId,
+                className: prog.className,
+                subject: e.subject || e.subjectName || "—",
+                specialization: e.specialization || "",
+                teacherName: e.teacherName || "",
+                entryId: e.id,
+                entryType: e.entryType,
+              })),
+            });
+          }
+        }
+      }
+      return conflicts;
+    }
+
+    // ============================================================
+    // STATS
+    // ============================================================
+    function renderConflictStats() {
+      const total = CONFLICTS.length;
+      const teacher = CONFLICTS.filter(c => c.type === "teacher" || c.type === "teacher-dup").length;
+      const room = CONFLICTS.filter(c => c.type === "room").length;
+      const other = CONFLICTS.filter(c => c.type === "orphan" || c.type === "dup-primary").length;
+
+      $("statTotalConflicts").textContent = total || "—";
+      $("statTeacherConflicts").textContent = total ? teacher : "—";
+      $("statRoomConflicts").textContent = total ? room : "—";
+      $("statOtherConflicts").textContent = total ? other : "—";
+    }
+
+    // ============================================================
+    // LIST
+    // ============================================================
+    function renderConflictList() {
+      if (!CONFLICT_SCAN_DONE) return;
+
+      const typeFilter = $("conflictTypeFilter")?.value || "";
+      const sevFilter = $("conflictSeverityFilter")?.value || "";
+      const hideResolved = $("conflictHideResolved")?.checked !== false;
+
+      const filtered = CONFLICTS.filter(c => {
+        if (typeFilter && c.type !== typeFilter) return false;
+        if (sevFilter && c.severity !== sevFilter) return false;
+        if (hideResolved && isResolved(c.id)) return false;
+        return true;
+      });
+
+      if (!CONFLICTS.length) {
+        $("conflictResults").innerHTML = `
+          <div class="ac-empty">
+            <div style="font-size:2.5rem;margin-bottom:8px;">✅</div>
+            <h3 style="color:#059669;margin:0 0 6px;">No Conflicts Found</h3>
+            <p>Term ${CONFLICT_TERM} programs are clean. Great job!</p>
+          </div>
+        `;
+        return;
+      }
+
+      if (!filtered.length) {
+        $("conflictResults").innerHTML = `
+          <div class="ac-empty">
+            <p>No conflicts match the current filters.</p>
+          </div>
+        `;
+        return;
+      }
+
+      // Group by type
+      const typeLabels = {
+        "teacher": "👤 Teacher Clashes",
+        "teacher-dup": "👤 Duplicate Teacher",
+        "room": "🚪 Room Clashes",
+        "orphan": "📋 Orphaned TLE Slots",
+        "dup-primary": "📋 Duplicate Primary Entries",
+      };
+
+      const grouped = {};
+      for (const c of filtered) {
+        if (!grouped[c.type]) grouped[c.type] = [];
+        grouped[c.type].push(c);
+      }
+
+      let html = "";
+      for (const [type, items] of Object.entries(grouped)) {
+        html += `
+          <div style="margin-bottom:24px;">
+            <h4 style="margin:0 0 10px;font-size:0.9rem;color:#1e3c72;text-transform:uppercase;letter-spacing:0.04em;">
+              ${typeLabels[type] || type} (${items.length})
+            </h4>
+            <div class="ac-table-wrap">
+              <table class="ac-table">
+                <thead>
+                  <tr>
+                    <th style="width:90px;">Severity</th>
+                    <th>Conflict</th>
+                    <th style="width:180px;">When</th>
+                    <th style="width:100px;">Classes</th>
+                    <th class="col-actions">Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  ${items.map(c => renderConflictRow(c)).join("")}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        `;
+      }
+
+      $("conflictResults").innerHTML = html;
+
+      $("conflictResults").querySelectorAll("[data-detail]").forEach(btn => {
+        btn.addEventListener("click", () => showConflictDetail(btn.dataset.detail));
+      });
+      $("conflictResults").querySelectorAll("[data-resolve]").forEach(btn => {
+        btn.addEventListener("click", async () => {
+          const id = btn.dataset.resolve;
+          await markResolved(id);
+          renderConflictStats();
+          renderConflictList();
+          toast("✓ Conflict marked as resolved", "success");
+        });
+      });
+    }
+
+    function renderConflictRow(c) {
+      const badge = {
+        high: '<span class="ac-badge danger">🔴 High</span>',
+        medium: '<span class="ac-badge warning">🟡 Medium</span>',
+        low: '<span class="ac-badge info">🟢 Low</span>',
+      }[c.severity] || "";
+
+      const when = c.day
+        ? `<strong>${esc(c.day)}</strong><br><span style="color:#6b7280;font-size:11px;">${esc(shortSlot(c.timeSlotId))}</span>`
+        : "—";
+
+      const distinctClasses = new Set(c.hits.map(h => h.classId)).size;
+      const resolved = isResolved(c.id);
+
+      return `
+        <tr style="${resolved ? "opacity:0.5;" : ""}">
+          <td>${badge}</td>
+          <td>
+            <strong>${esc(c.title)}</strong>
+            ${resolved ? '<span class="ac-badge success" style="margin-left:6px;">✓ Resolved</span>' : ""}
+            <div style="color:#6b7280;font-size:11px;margin-top:2px;">${esc(c.description)}</div>
+          </td>
+          <td style="font-size:12px;">${when}</td>
+          <td><span class="ac-badge info">${distinctClasses}</span></td>
+          <td class="col-actions">
+            <button class="ac-btn outline small" data-detail="${esc(c.id)}">🔍 Details</button>
+            ${!resolved ? `<button class="ac-btn success small" data-resolve="${esc(c.id)}">✓</button>` : ""}
+          </td>
+        </tr>
+      `;
+    }
+
+    function shortSlot(slotId) {
+      // Beautify common slot IDs; fallback to raw
+      const map = {
+        "period-1": "Period 1",
+        "period-2": "Period 2",
+        "period-3": "Period 3",
+        "period-4": "Period 4",
+        "period-5": "Period 5",
+        "period-6": "Period 6",
+        "period-7": "Period 7",
+        "aral": "ARAL",
+      };
+      return map[slotId] || slotId || "—";
+    }
+
+    // ============================================================
+    // DETAIL
+    // ============================================================
+    function showConflictDetail(conflictId) {
+      const c = CONFLICTS.find(x => x.id === conflictId);
+      if (!c) return;
+
+      const card = $("conflictDetailCard");
+      card.style.display = "block";
+      $("conflictDetailTitle").textContent = c.title;
+
+      const badge = {
+        high: '<span class="ac-badge danger">🔴 High Severity</span>',
+        medium: '<span class="ac-badge warning">🟡 Medium Severity</span>',
+        low: '<span class="ac-badge info">🟢 Low Severity</span>',
+      }[c.severity] || "";
+
+      const when = c.day ? `${esc(c.day)} · ${esc(shortSlot(c.timeSlotId))}` : "—";
+
+      let bodyHtml = `
+        <div style="margin-bottom:14px;display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+          ${badge}
+          <span class="ac-badge info">Term ${c.term}</span>
+          <span style="color:#6b7280;font-size:13px;">${when}</span>
+        </div>
+        <p style="margin:0 0 14px;color:#4b5563;font-size:14px;">${esc(c.description)}</p>
+        <div class="ac-table-wrap">
+          <table class="ac-table">
+            <thead>
+              <tr>
+                <th>Class</th>
+                <th>Subject</th>
+                ${c.hits.some(h => h.specialization) ? "<th>Specialization</th>" : ""}
+                <th>Teacher</th>
+                <th class="col-actions">Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${c.hits.map(h => `
+                <tr>
+                  <td><strong>${esc(h.className)}</strong>${h.gradeLevel ? `<div style="color:#6b7280;font-size:11px;">${esc(h.gradeLevel)}</div>` : ""}</td>
+                  <td>${esc(h.subject)}</td>
+                  ${c.hits.some(x => x.specialization) ? `<td>${h.specialization ? `<span class="ac-badge info">${esc(h.specialization)}</span>` : "—"}</td>` : ""}
+                  <td>${esc(h.teacherName || "—")}</td>
+                  <td class="col-actions">
+                    <a href="program.html?id=${esc(h.classId)}" class="ac-btn outline small" target="_blank">📅 Open Program</a>
+                  </td>
+                </tr>
+              `).join("")}
+            </tbody>
+          </table>
+        </div>
+      `;
+
+      const resolved = isResolved(c.id);
+      if (resolved) {
+        bodyHtml += `<div class="ac-badge success" style="margin-top:14px;padding:8px 14px;">✓ Already marked as resolved</div>`;
+      } else {
+        bodyHtml += `
+          <div style="margin-top:16px;">
+            <button class="ac-btn success" data-resolve-detail="${esc(c.id)}">✓ Mark as Resolved</button>
+          </div>
+        `;
+      }
+
+      $("conflictDetailBody").innerHTML = bodyHtml;
+
+      const resolveBtn = $("conflictDetailBody").querySelector("[data-resolve-detail]");
+      if (resolveBtn) {
+        resolveBtn.addEventListener("click", async () => {
+          await markResolved(c.id);
+          renderConflictStats();
+          renderConflictList();
+          showConflictDetail(c.id);
+          toast("✓ Conflict marked as resolved", "success");
+        });
+      }
+
+      card.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
   </script>
 
 </body>
