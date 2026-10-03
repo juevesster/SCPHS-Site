@@ -640,6 +640,9 @@
         <button class="ac-nav-item" data-tab="subjects">
           <span class="ico">📚</span> Subjects
         </button>
+          <button class="ac-nav-item" data-tab="ilaw-settings">
+          <span class="ico">📝</span> ILAW Settings
+        </button>
         <button class="ac-nav-item" onclick="location.href='ilaw.html'">
           <span class="ico">📝</span> ILAW Lessons
         </button>
@@ -684,6 +687,7 @@
     import "./assets/js/bow-parser.js";
     import "./assets/js/bow-store.js";
     import "./assets/js/bow-viewer.js";
+    import "./assets/js/ilaw-config.js";
 
     // ============================================================
     // STATE
@@ -832,6 +836,7 @@
         case "classes":  renderClassesTab(main); break;
         case "advisers": renderAdvisersTab(main); break;
         case "subjects": renderSubjectsTab(main); break;
+        case "ilaw-settings": renderILAWSettingsTab(main); break;
         case "rooms":    renderComingSoonTab(main, "Rooms"); break;
         case "conflicts":renderConflictsTab(main); break;
         default:         renderClassesTab(main);
@@ -3705,6 +3710,163 @@
         console.error("[bow-viewer] refresh failed:", e);
       }
     }
+
+        // ============================================================
+    // TAB: ILAW SETTINGS
+    // ============================================================
+    async function renderILAWSettingsTab(main) {
+      const isAdmin = CURRENT_PROFILE?.isSuperAdmin || CURRENT_PROFILE?.primaryRole === "admin";
+      if (!isAdmin) {
+        main.innerHTML = `<div class="ac-card" style="text-align:center;padding:60px;">
+          <h2 style="color:#b91c1c;">🚫 Admin only</h2>
+          <p>Only admins can edit ILAW settings.</p>
+        </div>`;
+        return;
+      }
+
+      const cfg = await window.ILAWConfig.load();
+
+      main.innerHTML = `
+        <div class="ac-page-header">
+          <h2>📝 ILAW Settings</h2>
+          <p>Customize the header, signatories, and footer of all ILAW prints. These defaults apply to every teacher.</p>
+        </div>
+
+        <div class="ac-card">
+          <h3>🏛️ DepEd Header</h3>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+            <div>
+              <label style="display:block;font-size:11px;font-weight:700;color:#374151;text-transform:uppercase;margin-bottom:6px;">DepEd Logo URL</label>
+              <input type="text" id="cfg-depedLogo" value="${esc(cfg.depedLogo)}" style="width:100%;padding:10px 12px;border:1px solid #d1d5db;border-radius:8px;font-size:14px;font-family:inherit;" />
+            </div>
+            <div>
+              <label style="display:block;font-size:11px;font-weight:700;color:#374151;text-transform:uppercase;margin-bottom:6px;">Header Line 1</label>
+              <input type="text" id="cfg-headerLine1" value="${esc(cfg.headerLine1)}" style="width:100%;padding:10px 12px;border:1px solid #d1d5db;border-radius:8px;font-size:14px;font-family:inherit;" />
+            </div>
+            <div>
+              <label style="display:block;font-size:11px;font-weight:700;color:#374151;text-transform:uppercase;margin-bottom:6px;">Header Line 2</label>
+              <input type="text" id="cfg-headerLine2" value="${esc(cfg.headerLine2)}" style="width:100%;padding:10px 12px;border:1px solid #d1d5db;border-radius:8px;font-size:14px;font-family:inherit;" />
+            </div>
+            <div>
+              <label style="display:block;font-size:11px;font-weight:700;color:#374151;text-transform:uppercase;margin-bottom:6px;">Region</label>
+              <input type="text" id="cfg-region" value="${esc(cfg.region)}" style="width:100%;padding:10px 12px;border:1px solid #d1d5db;border-radius:8px;font-size:14px;font-family:inherit;" />
+            </div>
+            <div style="grid-column:1/-1;">
+              <label style="display:block;font-size:11px;font-weight:700;color:#374151;text-transform:uppercase;margin-bottom:6px;">Division</label>
+              <input type="text" id="cfg-division" value="${esc(cfg.division)}" style="width:100%;padding:10px 12px;border:1px solid #d1d5db;border-radius:8px;font-size:14px;font-family:inherit;" />
+            </div>
+          </div>
+        </div>
+
+        <div class="ac-card">
+          <h3>🏫 School Identity</h3>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+            <div>
+              <label style="display:block;font-size:11px;font-weight:700;color:#374151;text-transform:uppercase;margin-bottom:6px;">School Logo URL</label>
+              <input type="text" id="cfg-schoolLogo" value="${esc(cfg.schoolLogo)}" style="width:100%;padding:10px 12px;border:1px solid #d1d5db;border-radius:8px;font-size:14px;font-family:inherit;" />
+            </div>
+            <div>
+              <label style="display:block;font-size:11px;font-weight:700;color:#374151;text-transform:uppercase;margin-bottom:6px;">Right Logo URL</label>
+              <input type="text" id="cfg-rightLogo" value="${esc(cfg.rightLogo)}" style="width:100%;padding:10px 12px;border:1px solid #d1d5db;border-radius:8px;font-size:14px;font-family:inherit;" />
+            </div>
+            <div>
+              <label style="display:block;font-size:11px;font-weight:700;color:#374151;text-transform:uppercase;margin-bottom:6px;">School Name</label>
+              <input type="text" id="cfg-schoolName" value="${esc(cfg.schoolName)}" style="width:100%;padding:10px 12px;border:1px solid #d1d5db;border-radius:8px;font-size:14px;font-family:inherit;" />
+            </div>
+            <div>
+              <label style="display:block;font-size:11px;font-weight:700;color:#374151;text-transform:uppercase;margin-bottom:6px;">School Address</label>
+              <input type="text" id="cfg-schoolAddress" value="${esc(cfg.schoolAddress)}" style="width:100%;padding:10px 12px;border:1px solid #d1d5db;border-radius:8px;font-size:14px;font-family:inherit;" />
+            </div>
+            <div style="grid-column:1/-1;">
+              <label style="display:block;font-size:11px;font-weight:700;color:#374151;text-transform:uppercase;margin-bottom:6px;">Document Title Label</label>
+              <input type="text" id="cfg-titleLabel" value="${esc(cfg.titleLabel)}" style="width:100%;padding:10px 12px;border:1px solid #d1d5db;border-radius:8px;font-size:14px;font-family:inherit;" />
+            </div>
+          </div>
+        </div>
+
+        <div class="ac-card">
+          <h3>✍️ Default Signatories</h3>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+            <div>
+              <label style="display:block;font-size:11px;font-weight:700;color:#374151;text-transform:uppercase;margin-bottom:6px;">Prepared by Label</label>
+              <input type="text" id="cfg-preparedByLabel" value="${esc(cfg.preparedByLabel)}" style="width:100%;padding:10px 12px;border:1px solid #d1d5db;border-radius:8px;font-size:14px;font-family:inherit;" />
+            </div>
+            <div>
+              <label style="display:block;font-size:11px;font-weight:700;color:#374151;text-transform:uppercase;margin-bottom:6px;">Checked by Label</label>
+              <input type="text" id="cfg-checkedByLabel" value="${esc(cfg.checkedByLabel)}" style="width:100%;padding:10px 12px;border:1px solid #d1d5db;border-radius:8px;font-size:14px;font-family:inherit;" />
+            </div>
+            <div>
+              <label style="display:block;font-size:11px;font-weight:700;color:#374151;text-transform:uppercase;margin-bottom:6px;">Noted by Label</label>
+              <input type="text" id="cfg-notedByLabel" value="${esc(cfg.notedByLabel)}" style="width:100%;padding:10px 12px;border:1px solid #d1d5db;border-radius:8px;font-size:14px;font-family:inherit;" />
+            </div>
+            <div>
+              <label style="display:block;font-size:11px;font-weight:700;color:#374151;text-transform:uppercase;margin-bottom:6px;">Default Principal Name</label>
+              <input type="text" id="cfg-defaultPrincipalName" value="${esc(cfg.defaultPrincipalName)}" style="width:100%;padding:10px 12px;border:1px solid #d1d5db;border-radius:8px;font-size:14px;font-family:inherit;" />
+            </div>
+            <div>
+              <label style="display:block;font-size:11px;font-weight:700;color:#374151;text-transform:uppercase;margin-bottom:6px;">Principal Position</label>
+              <input type="text" id="cfg-defaultPrincipalPosition" value="${esc(cfg.defaultPrincipalPosition)}" style="width:100%;padding:10px 12px;border:1px solid #d1d5db;border-radius:8px;font-size:14px;font-family:inherit;" />
+            </div>
+          </div>
+        </div>
+
+        <div class="ac-card">
+          <h3>📎 Footer</h3>
+          <div style="display:grid;grid-template-columns:1fr;gap:14px;">
+            <div>
+              <label style="display:block;font-size:11px;font-weight:700;color:#374151;text-transform:uppercase;margin-bottom:6px;">Footer Line 1</label>
+              <input type="text" id="cfg-footerLine1" value="${esc(cfg.footerLine1)}" style="width:100%;padding:10px 12px;border:1px solid #d1d5db;border-radius:8px;font-size:14px;font-family:inherit;" />
+            </div>
+            <div>
+              <label style="display:block;font-size:11px;font-weight:700;color:#374151;text-transform:uppercase;margin-bottom:6px;">Footer Line 2</label>
+              <input type="text" id="cfg-footerLine2" value="${esc(cfg.footerLine2 || "")}" style="width:100%;padding:10px 12px;border:1px solid #d1d5db;border-radius:8px;font-size:14px;font-family:inherit;" />
+            </div>
+            <div>
+              <label style="display:inline-flex;align-items:center;gap:6px;font-size:13px;color:#374151;margin-right:14px;">
+                <input type="checkbox" id="cfg-showPageNumbers" ${cfg.showPageNumbers ? "checked" : ""} />
+                Show page numbers
+              </label>
+              <label style="display:inline-flex;align-items:center;gap:6px;font-size:13px;color:#374151;">
+                <input type="checkbox" id="cfg-showGeneratedDate" ${cfg.showGeneratedDate ? "checked" : ""} />
+                Show generated date
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <div class="ac-card" style="display:flex;gap:10px;flex-wrap:wrap;">
+          <button class="ac-btn success" id="btnSaveILAWSettings">💾 Save Settings</button>
+          <button class="ac-btn outline" id="btnResetILAWSettings">🔄 Reset to Defaults</button>
+        </div>
+      `;
+
+      $("btnSaveILAWSettings").addEventListener("click", async () => {
+        const cfg = {};
+        ["depedLogo","headerLine1","headerLine2","region","division","schoolLogo","schoolName","schoolAddress","rightLogo","titleLabel","preparedByLabel","checkedByLabel","notedByLabel","defaultPrincipalName","defaultPrincipalPosition","footerLine1","footerLine2"].forEach(key => {
+          cfg[key] = $("cfg-" + key)?.value?.trim() || "";
+        });
+        cfg.showPageNumbers = $("cfg-showPageNumbers")?.checked ?? true;
+        cfg.showGeneratedDate = $("cfg-showGeneratedDate")?.checked ?? true;
+        try {
+          await window.ILAWConfig.save(cfg);
+          toast("✓ ILAW settings saved", "success");
+        } catch (e) {
+          toast("⚠️ " + (e.message || "Save failed"), "error");
+        }
+      });
+
+      $("btnResetILAWSettings").addEventListener("click", async () => {
+        if (!confirm("Reset all ILAW settings to SCPHS defaults?")) return;
+        try {
+          await window.ILAWConfig.reset();
+          toast("✓ Reset to defaults", "success");
+          renderILAWSettingsTab(main);
+        } catch (e) {
+          toast("⚠️ " + (e.message || "Reset failed"), "error");
+        }
+      });
+    }
+    
   </script>
 
   <!-- ============ PDF.js (loaded AFTER the module, but doesn't matter here) ============ -->
