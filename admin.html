@@ -588,7 +588,7 @@
       switch (ACTIVE_TAB) {
         case "classes":  renderClassesTab(main); break;
         case "advisers": renderAdvisersTab(main); break;
-        case "subjects": renderComingSoonTab(main, "Subjects"); break;
+        case "subjects": renderSubjectsTab(main); break;
         case "rooms":    renderComingSoonTab(main, "Rooms"); break;
         case "conflicts":renderConflictsTab(main); break;
         default:         renderClassesTab(main);
@@ -1671,6 +1671,879 @@
       }
 
       card.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+
+        // ============================================================
+    // TAB: SUBJECTS (Session F)
+    // Public-readable curriculum catalog + admin editor
+    // ============================================================
+    let SUBJECTS = [];              // metadata from subjects collection
+    let SUBJECT_USAGE = {};         // { code: { classes:[], teachers:Set, count } }
+    let SUBJECT_TERM = 1;
+    let SUBJECT_SCAN_DONE = false;
+    let FAMILY_FILTER = "";
+    let LEVEL_FILTER = "";
+    let CURRICULUM_FILTER = "";
+    let TYPE_FILTER = "";
+
+    const SUBJECT_FAMILY_COLORS = {
+      "Mathematics": "#3b82f6",
+      "English": "#8b5cf6",
+      "Science": "#10b981",
+      "Filipino": "#ec4899",
+      "Araling Panlipunan": "#f59e0b",
+      "MAPEH": "#f97316",
+      "Values Education": "#06b6d4",
+      "GMRC": "#06b6d4",
+      "TLE": "#14b8a6",
+      "EPP": "#14b8a6",
+      "TechPro": "#7c3aed",
+      "STEM": "#0ea5e9",
+      "ABM": "#eab308",
+      "HUMSS": "#a855f7",
+      "Sports": "#ef4444",
+      "Homeroom Guidance": "#64748b",
+      "ARAL": "#94a3b8",
+      "Languages": "#f43f5e",
+      "Reading & Literacy": "#f43f5e",
+      "Makabansa": "#dc2626",
+      "Physical & Natural Environment": "#10b981",
+    };
+
+    function familyColor(family) {
+      return SUBJECT_FAMILY_COLORS[family] || "#6b7280";
+    }
+
+    // ------------------------------------------------------------
+    // DISPATCHER
+    // ------------------------------------------------------------
+    function renderSubjectsTab(main) {
+      const isAdminViewer = CURRENT_PROFILE?.isSuperAdmin
+        || CURRENT_PROFILE?.primaryRole === "admin";
+
+      main.innerHTML = `
+        <div class="ac-page-header">
+          <h2>📚 Curriculum & Subjects</h2>
+          <p>Browse DepEd K-12 subject catalog for SCPHS. ${isAdminViewer ? "Admins can edit metadata and seed the official catalog." : "Anyone can browse; only admins can edit."}</p>
+        </div>
+
+        <div class="ac-stats">
+          <div class="ac-stat">
+            <div class="ac-stat-value" id="statTotalSubjects">—</div>
+            <div class="ac-stat-label">Total Subjects</div>
+          </div>
+          <div class="ac-stat">
+            <div class="ac-stat-value" id="statFamilies">—</div>
+            <div class="ac-stat-label">Families</div>
+          </div>
+          <div class="ac-stat">
+            <div class="ac-stat-value" style="color:#059669;" id="statManaged">—</div>
+            <div class="ac-stat-label">Managed</div>
+          </div>
+          <div class="ac-stat">
+            <div class="ac-stat-value" style="color:#d97706;" id="statInPrograms">—</div>
+            <div class="ac-stat-label">In Programs</div>
+          </div>
+        </div>
+
+        <div class="ac-card">
+          <div class="ac-toolbar">
+            <select class="ac-select" id="subjectTerm" style="min-width:130px;">
+              <option value="1" selected>📅 Term 1</option>
+              <option value="2">📅 Term 2</option>
+              <option value="3">📅 Term 3</option>
+            </select>
+            <input type="search" class="ac-search" id="subjectSearch" placeholder="🔍 Search code, name, or family…">
+            <select class="ac-select" id="subjectLevelFilter">
+              <option value="">All Levels</option>
+              <option value="K">Kindergarten</option>
+              ${[1,2,3,4,5,6,7,8,9,10,11,12].map(n => `<option value="${n}">Grade ${n}</option>`).join("")}
+            </select>
+            <select class="ac-select" id="subjectCurriculumFilter">
+              <option value="">All Curricula</option>
+              <option value="MATATAG">MATATAG</option>
+              <option value="Strengthened-SHS">Strengthened SHS</option>
+              <option value="K-12">K-12 (Legacy)</option>
+            </select>
+            <select class="ac-select" id="subjectTypeFilter">
+              <option value="">All Types</option>
+              <option value="core">Core</option>
+              <option value="tle">TLE</option>
+              <option value="techpro">TechPro</option>
+              <option value="elective">Elective</option>
+              <option value="shs-core">SHS Core</option>
+              <option value="shs-elective">SHS Elective</option>
+              <option value="hgp">HGP</option>
+              <option value="aral">ARAL</option>
+            </select>
+            ${isAdminViewer ? `
+              <button class="ac-btn primary" id="btnScanSubjects">🔄 Scan Programs</button>
+              <button class="ac-btn success" id="btnSeedSubjects" style="margin-left:auto;">🌱 Seed Official Catalog</button>
+              <button class="ac-btn outline" id="btnNewSubject">➕ New</button>
+            ` : `
+              <button class="ac-btn primary" id="btnScanSubjects">🔄 Refresh</button>
+            `}
+          </div>
+
+          <div id="subjectResults">
+            <div class="ac-loading">
+              <div class="ac-spinner"></div>
+              <div>Loading subjects…</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="ac-card" id="subjectDetailCard" style="display:none;">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;gap:12px;flex-wrap:wrap;">
+            <h3 id="subjectDetailTitle" style="margin:0;">Subject Details</h3>
+            <button class="ac-btn outline small" data-close-subject-detail>✕ Close</button>
+          </div>
+          <div id="subjectDetailBody"></div>
+        </div>
+      `;
+
+      // Handlers
+      $("btnScanSubjects").addEventListener("click", () => scanProgramsForSubjects(SUBJECT_TERM));
+      $("subjectTerm").addEventListener("change", e => {
+        SUBJECT_TERM = parseInt(e.target.value, 10) || 1;
+        SUBJECT_SCAN_DONE = false;
+        scanProgramsForSubjects(SUBJECT_TERM);
+      });
+      $("subjectSearch").addEventListener("input", renderSubjectList);
+      $("subjectLevelFilter").addEventListener("change", e => {
+        LEVEL_FILTER = e.target.value; renderSubjectList();
+      });
+      $("subjectCurriculumFilter").addEventListener("change", e => {
+        CURRICULUM_FILTER = e.target.value; renderSubjectList();
+      });
+      $("subjectTypeFilter").addEventListener("change", e => {
+        TYPE_FILTER = e.target.value; renderSubjectList();
+      });
+      main.querySelector("[data-close-subject-detail]")?.addEventListener("click", () => {
+        $("subjectDetailCard").style.display = "none";
+      });
+
+      if (isAdminViewer) {
+        $("btnSeedSubjects")?.addEventListener("click", seedOfficialSubjects);
+        $("btnNewSubject")?.addEventListener("click", () => openSubjectModal());
+      }
+
+      // Initial load
+      loadSubjects().then(() => scanProgramsForSubjects(SUBJECT_TERM));
+    }
+
+    // ------------------------------------------------------------
+    // LOAD SUBJECTS METADATA
+    // ------------------------------------------------------------
+    async function loadSubjects() {
+      try {
+        const snap = await getDocs(collection(db, "subjects"));
+        SUBJECTS = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+      } catch (e) {
+        console.warn("[subjects] load failed:", e);
+        SUBJECTS = [];
+      }
+      renderSubjectStats();
+    }
+
+    // ------------------------------------------------------------
+    // SCAN PROGRAMS FOR USAGE
+    // ------------------------------------------------------------
+    async function scanProgramsForSubjects(term) {
+      const host = $("subjectResults");
+      host.innerHTML = `
+        <div class="ac-loading">
+          <div class="ac-spinner"></div>
+          <div>Scanning Term ${term} programs…</div>
+        </div>
+      `;
+
+      try {
+        SUBJECT_USAGE = {};
+
+        // Iterate all classes
+        for (const cls of CLASSES) {
+          try {
+            const snap = await getDocs(collection(db, "classes", cls.id, "program"));
+            snap.docs
+              .map(d => d.data())
+              .filter(e => Number(e.term) === term)
+              .forEach(e => {
+                const code = (e.subject || e.subjectName || "").trim();
+                if (!code) return;
+                if (!SUBJECT_USAGE[code]) {
+                  SUBJECT_USAGE[code] = {
+                    code,
+                    classes: [],
+                    teachers: new Set(),
+                    specializations: new Set(),
+                    count: 0,
+                  };
+                }
+                const u = SUBJECT_USAGE[code];
+                u.count++;
+                u.classes.push({
+                  classId: cls.id,
+                  className: cls.classLabel || "(unnamed)",
+                  gradeLevel: cls.gradeLevel || "",
+                });
+                if (e.teacherName) u.teachers.add(e.teacherName);
+                if (e.specialization) u.specializations.add(e.specialization);
+              });
+          } catch {
+            // Skip classes that fail
+          }
+        }
+
+        // Convert Sets to Arrays for rendering
+        Object.values(SUBJECT_USAGE).forEach(u => {
+          u.teachers = Array.from(u.teachers);
+          u.specializations = Array.from(u.specializations);
+        });
+
+        SUBJECT_SCAN_DONE = true;
+        renderSubjectStats();
+        renderSubjectList();
+      } catch (e) {
+        console.error("[subjects] scan failed:", e);
+        host.innerHTML = `
+          <div class="ac-empty">
+            <div style="font-size:2.5rem;margin-bottom:8px;">⚠️</div>
+            <h3 style="color:#b91c1c;margin:0 0 6px;">Scan Failed</h3>
+            <p>${esc(e.message || "Unknown error")}</p>
+          </div>
+        `;
+      }
+    }
+
+    // ------------------------------------------------------------
+    // MERGE METADATA + USAGE
+    // ------------------------------------------------------------
+    function getAllSubjectRecords() {
+      const byCode = {};
+
+      // 1. From saved metadata
+      SUBJECTS.forEach(s => {
+        byCode[s.id] = {
+          code: s.id,
+          displayName: s.displayName || s.id,
+          shortName: s.shortName || "",
+          family: s.family || "",
+          type: s.type || "",
+          level: s.level || "",
+          curriculum: s.curriculum || "",
+          cluster: s.cluster || "",
+          requiredFor: s.requiredFor || [],
+          description: s.description || "",
+          active: s.active !== false,
+          colorTag: s.colorTag || "",
+          managed: true,
+          seedSource: s.seedSource || "",
+          usage: SUBJECT_USAGE[s.id] || { classes: [], teachers: [], specializations: [], count: 0 },
+        };
+      });
+
+      // 2. From program usage (if not already in metadata)
+      Object.values(SUBJECT_USAGE).forEach(u => {
+        if (!byCode[u.code]) {
+          byCode[u.code] = {
+            code: u.code,
+            displayName: u.code,
+            shortName: "",
+            family: detectFamily(u.code),
+            type: "core",
+            level: detectLevel(u.code),
+            curriculum: "MATATAG",
+            cluster: "",
+            requiredFor: [],
+            description: "",
+            active: true,
+            colorTag: "",
+            managed: false,
+            seedSource: "auto-detected",
+            usage: u,
+          };
+        } else {
+          // Enrich metadata-only entries with usage
+          byCode[u.code].usage = u;
+        }
+      });
+
+      return Object.values(byCode).sort((a, b) => {
+        // Sort: managed first, then by level, then code
+        if (a.managed !== b.managed) return a.managed ? -1 : 1;
+        const la = String(a.level).padStart(3, "0");
+        const lb = String(b.level).padStart(3, "0");
+        if (la !== lb) return la.localeCompare(lb);
+        return a.code.localeCompare(b.code);
+      });
+    }
+
+    // ------------------------------------------------------------
+    // STATS
+    // ------------------------------------------------------------
+    function renderSubjectStats() {
+      const all = getAllSubjectRecords();
+      const families = new Set(all.map(s => s.family).filter(Boolean));
+      const managed = all.filter(s => s.managed).length;
+      const inPrograms = all.filter(s => (s.usage?.count || 0) > 0).length;
+
+      $("statTotalSubjects").textContent = all.length || "—";
+      $("statFamilies").textContent = families.size || "—";
+      $("statManaged").textContent = managed;
+      $("statInPrograms").textContent = inPrograms;
+    }
+
+    // ------------------------------------------------------------
+    // LIST
+    // ------------------------------------------------------------
+    function renderSubjectList() {
+      if (!SUBJECT_SCAN_DONE && !SUBJECTS.length) return;
+
+      const host = $("subjectResults");
+      const term = ($("subjectSearch")?.value || "").toLowerCase().trim();
+
+      let list = getAllSubjectRecords();
+
+      // Filters
+      if (term) {
+        list = list.filter(s =>
+          s.code.toLowerCase().includes(term) ||
+          (s.displayName || "").toLowerCase().includes(term) ||
+          (s.family || "").toLowerCase().includes(term)
+        );
+      }
+      if (LEVEL_FILTER) list = list.filter(s => String(s.level) === LEVEL_FILTER);
+      if (CURRICULUM_FILTER) list = list.filter(s => s.curriculum === CURRICULUM_FILTER);
+      if (TYPE_FILTER) list = list.filter(s => s.type === TYPE_FILTER);
+
+      if (!list.length) {
+        host.innerHTML = `
+          <div class="ac-empty">
+            <div style="font-size:2.5rem;margin-bottom:8px;">📭</div>
+            <p>No subjects match the current filters.</p>
+          </div>
+        `;
+        return;
+      }
+
+      // Group by family
+      const grouped = {};
+      for (const s of list) {
+        const fam = s.family || "(uncategorized)";
+        if (!grouped[fam]) grouped[fam] = [];
+        grouped[fam].push(s);
+      }
+
+      const sortedFamilies = Object.keys(grouped).sort();
+
+      host.innerHTML = sortedFamilies.map(family => {
+        const color = familyColor(family);
+        return `
+          <div style="margin-bottom:24px;">
+            <h4 style="margin:0 0 10px;font-size:0.85rem;letter-spacing:0.06em;text-transform:uppercase;color:${color};border-left:3px solid ${color};padding-left:10px;">
+              ${esc(family)} <span style="color:#6b7280;font-weight:500;">(${grouped[family].length})</span>
+            </h4>
+            <div class="ac-table-wrap">
+              <table class="ac-table">
+                <thead>
+                  <tr>
+                    <th style="width:100px;">Code</th>
+                    <th>Display Name</th>
+                    <th style="width:60px;">Level</th>
+                    <th style="width:90px;">Type</th>
+                    <th style="width:100px;">Curriculum</th>
+                    <th style="width:70px;">Classes</th>
+                    <th style="width:70px;">Teachers</th>
+                    <th class="col-actions">Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  ${grouped[family].map(s => renderSubjectRow(s)).join("")}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        `;
+      }).join("");
+
+      // Handlers
+      host.querySelectorAll("[data-detail-subject]").forEach(btn => {
+        btn.addEventListener("click", () => showSubjectDetail(btn.dataset.detailSubject));
+      });
+      host.querySelectorAll("[data-edit-subject]").forEach(btn => {
+        btn.addEventListener("click", () => {
+          const s = getAllSubjectRecords().find(x => x.code === btn.dataset.editSubject);
+          if (s) openSubjectModal(s);
+        });
+      });
+    }
+
+    function renderSubjectRow(s) {
+      const statusDot = s.managed
+        ? '<span style="color:#059669;font-weight:900;">●</span>'
+        : (s.usage?.count ? '<span style="color:#d97706;font-weight:900;">●</span>' : '<span style="color:#dc2626;font-weight:900;">●</span>');
+
+      const classes = s.usage?.classes?.length
+        ? new Set(s.usage.classes.map(c => c.classId)).size
+        : 0;
+      const teachers = s.usage?.teachers?.length || 0;
+
+      const typeBadge = s.type
+        ? `<span class="ac-badge info">${esc(s.type)}</span>`
+        : "—";
+      const curricBadge = s.curriculum
+        ? `<span class="ac-badge" style="background:#e0e7ff;color:#3730a3;">${esc(s.curriculum)}</span>`
+        : "—";
+
+      const isAdminViewer = CURRENT_PROFILE?.isSuperAdmin
+        || CURRENT_PROFILE?.primaryRole === "admin";
+
+      return `
+        <tr>
+          <td>${statusDot} <strong>${esc(s.code)}</strong></td>
+          <td>${esc(s.displayName || s.code)}${s.specializations?.length ? `<div style="color:#6b7280;font-size:11px;margin-top:2px;">Spec: ${s.usage.specializations.join(", ")}</div>` : ""}</td>
+          <td>${esc(s.level || "—")}</td>
+          <td>${typeBadge}</td>
+          <td>${curricBadge}</td>
+          <td>${classes}</td>
+          <td>${teachers}</td>
+          <td class="col-actions">
+            <button class="ac-btn outline small" data-detail-subject="${esc(s.code)}">🔍</button>
+            ${isAdminViewer ? `<button class="ac-btn primary small" data-edit-subject="${esc(s.code)}">✏️</button>` : ""}
+          </td>
+        </tr>
+      `;
+    }
+
+    // ------------------------------------------------------------
+    // DETAIL
+    // ------------------------------------------------------------
+    function showSubjectDetail(code) {
+      const all = getAllSubjectRecords();
+      const s = all.find(x => x.code === code);
+      if (!s) return;
+
+      const isStaffViewer = CURRENT_PROFILE?.primaryRole === "teacher"
+        || CURRENT_PROFILE?.primaryRole === "admin"
+        || CURRENT_PROFILE?.isSuperAdmin;
+
+      const card = $("subjectDetailCard");
+      card.style.display = "block";
+      $("subjectDetailTitle").textContent = `${s.code} — ${s.displayName || s.code}`;
+
+      let bodyHtml = `
+        <div style="margin-bottom:14px;display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
+          ${s.family ? `<span class="ac-badge" style="background:${familyColor(s.family)}22;color:${familyColor(s.family)};">${esc(s.family)}</span>` : ""}
+          ${s.level ? `<span class="ac-badge info">Level ${esc(s.level)}</span>` : ""}
+          ${s.type ? `<span class="ac-badge warning">${esc(s.type)}</span>` : ""}
+          ${s.curriculum ? `<span class="ac-badge" style="background:#e0e7ff;color:#3730a3;">${esc(s.curriculum)}</span>` : ""}
+          ${s.managed ? `<span class="ac-badge success">✓ Managed</span>` : `<span class="ac-badge warning">Auto-detected</span>`}
+        </div>
+        ${s.description ? `<p style="color:#4b5563;font-size:14px;margin:0 0 14px;">${esc(s.description)}</p>` : ""}
+      `;
+
+      // Teachers
+      if (s.usage?.teachers?.length) {
+        bodyHtml += `
+          <h4 style="margin:14px 0 8px;font-size:0.85rem;text-transform:uppercase;letter-spacing:0.05em;color:#374151;">👩‍🏫 Teachers (${s.usage.teachers.length})</h4>
+          <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:16px;">
+            ${s.usage.teachers.map(t => `<span class="ac-badge info">${esc(t)}</span>`).join("")}
+          </div>
+        `;
+      }
+
+      // Classes
+      if (s.usage?.classes?.length) {
+        const uniqueClasses = {};
+        s.usage.classes.forEach(c => {
+          if (!uniqueClasses[c.classId]) uniqueClasses[c.classId] = c;
+        });
+        const classList = Object.values(uniqueClasses);
+
+        bodyHtml += `
+          <h4 style="margin:14px 0 8px;font-size:0.85rem;text-transform:uppercase;letter-spacing:0.05em;color:#374151;">🏫 Offered in ${classList.length} class${classList.length > 1 ? "es" : ""}</h4>
+          <div class="ac-table-wrap" style="margin-bottom:16px;">
+            <table class="ac-table">
+              <thead>
+                <tr>
+                  <th>Class</th>
+                  <th>Grade Level</th>
+                  ${isStaffViewer ? `<th class="col-actions">Action</th>` : ""}
+                </tr>
+              </thead>
+              <tbody>
+                ${classList.map(c => `
+                  <tr>
+                    <td><strong>${esc(c.className)}</strong></td>
+                    <td>${esc(c.gradeLevel || "—")}</td>
+                    ${isStaffViewer ? `<td class="col-actions"><a href="program.html?id=${esc(c.classId)}" class="ac-btn outline small" target="_blank">📅 Open Program</a></td>` : ""}
+                  </tr>
+                `).join("")}
+              </tbody>
+            </table>
+          </div>
+        `;
+      } else {
+        bodyHtml += `<p style="color:#6b7280;font-size:13px;">No classes currently offer this subject in Term ${SUBJECT_TERM}.</p>`;
+      }
+
+      // BoW placeholder
+      bodyHtml += `
+        <div style="margin-top:16px;padding:14px;border-radius:10px;background:#eff6ff;border:1px solid #bfdbfe;">
+          <strong style="color:#1e40af;font-size:0.85rem;">📘 Budget of Work (BoW)</strong>
+          <p style="color:#1e40af;font-size:0.82rem;margin:4px 0 0;">BoW integration — coming in Session F2. Once loaded, competency codes here will feed ILAW Lesson Plans and Exam Creator.</p>
+        </div>
+      `;
+
+      $("subjectDetailBody").innerHTML = bodyHtml;
+      card.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+
+    // ------------------------------------------------------------
+    // EDIT MODAL
+    // ------------------------------------------------------------
+    function openSubjectModal(existing) {
+      const isNew = !existing;
+
+      // Build modal dynamically (reuses .modal classes from admin.html if present; else inline)
+      const modal = document.createElement("div");
+      modal.className = "modal show";
+      modal.style.cssText = "position:fixed;inset:0;background:rgba(0,0,0,0.5);display:flex;align-items:center;justify-content:center;z-index:9999;padding:20px;";
+      modal.innerHTML = `
+        <div style="background:#fff;border-radius:12px;max-width:620px;width:100%;max-height:90vh;overflow-y:auto;box-shadow:0 24px 48px rgba(0,0,0,.2);">
+          <div style="padding:18px 22px;border-bottom:1px solid #e5e7eb;display:flex;justify-content:space-between;align-items:center;">
+            <h3 style="margin:0;font-size:1.05rem;color:#0f2b4f;">${isNew ? "➕ New Subject" : "✏️ Edit Subject: " + esc(existing.code)}</h3>
+            <button class="ac-btn outline small" data-close>✕</button>
+          </div>
+          <div style="padding:20px 22px;">
+            <div style="margin-bottom:14px;">
+              <label style="display:block;font-size:11px;font-weight:700;color:#374151;text-transform:uppercase;letter-spacing:0.03em;margin-bottom:6px;">Code ${isNew ? "" : "(read-only)"}</label>
+              <input id="ed-code" type="text" value="${isNew ? "" : esc(existing.code)}" ${isNew ? "" : "readonly"}
+                     style="width:100%;padding:9px 12px;border:1px solid #d1d5db;border-radius:6px;font-size:14px;font-family:inherit;${isNew ? "" : "background:#f3f4f6;"}"
+                     placeholder="e.g., MATH7" />
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px;">
+              <div>
+                <label style="display:block;font-size:11px;font-weight:700;color:#374151;text-transform:uppercase;letter-spacing:0.03em;margin-bottom:6px;">Display Name</label>
+                <input id="ed-displayName" type="text" value="${esc(existing?.displayName || "")}"
+                       style="width:100%;padding:9px 12px;border:1px solid #d1d5db;border-radius:6px;font-size:14px;font-family:inherit;"
+                       placeholder="e.g., Mathematics 7" />
+              </div>
+              <div>
+                <label style="display:block;font-size:11px;font-weight:700;color:#374151;text-transform:uppercase;letter-spacing:0.03em;margin-bottom:6px;">Short Name</label>
+                <input id="ed-shortName" type="text" value="${esc(existing?.shortName || "")}"
+                       style="width:100%;padding:9px 12px;border:1px solid #d1d5db;border-radius:6px;font-size:14px;font-family:inherit;"
+                       placeholder="Math 7" />
+              </div>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px;">
+              <div>
+                <label style="display:block;font-size:11px;font-weight:700;color:#374151;text-transform:uppercase;letter-spacing:0.03em;margin-bottom:6px;">Family</label>
+                <input id="ed-family" type="text" value="${esc(existing?.family || "")}"
+                       style="width:100%;padding:9px 12px;border:1px solid #d1d5db;border-radius:6px;font-size:14px;font-family:inherit;"
+                       placeholder="Mathematics" />
+              </div>
+              <div>
+                <label style="display:block;font-size:11px;font-weight:700;color:#374151;text-transform:uppercase;letter-spacing:0.03em;margin-bottom:6px;">Level</label>
+                <select id="ed-level" style="width:100%;padding:9px 12px;border:1px solid #d1d5db;border-radius:6px;font-size:14px;font-family:inherit;">
+                  <option value="">—</option>
+                  <option value="K">Kindergarten</option>
+                  ${[1,2,3,4,5,6,7,8,9,10,11,12].map(n => `<option value="${n}" ${existing?.level === String(n) ? "selected" : ""}>Grade ${n}</option>`).join("")}
+                </select>
+              </div>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px;">
+              <div>
+                <label style="display:block;font-size:11px;font-weight:700;color:#374151;text-transform:uppercase;letter-spacing:0.03em;margin-bottom:6px;">Type</label>
+                <select id="ed-type" style="width:100%;padding:9px 12px;border:1px solid #d1d5db;border-radius:6px;font-size:14px;font-family:inherit;">
+                  <option value="">—</option>
+                  <option value="core" ${existing?.type === "core" ? "selected" : ""}>Core</option>
+                  <option value="tle" ${existing?.type === "tle" ? "selected" : ""}>TLE</option>
+                  <option value="techpro" ${existing?.type === "techpro" ? "selected" : ""}>TechPro</option>
+                  <option value="elective" ${existing?.type === "elective" ? "selected" : ""}>Elective</option>
+                  <option value="shs-core" ${existing?.type === "shs-core" ? "selected" : ""}>SHS Core</option>
+                  <option value="shs-elective" ${existing?.type === "shs-elective" ? "selected" : ""}>SHS Elective</option>
+                  <option value="hgp" ${existing?.type === "hgp" ? "selected" : ""}>HGP</option>
+                  <option value="aral" ${existing?.type === "aral" ? "selected" : ""}>ARAL</option>
+                </select>
+              </div>
+              <div>
+                <label style="display:block;font-size:11px;font-weight:700;color:#374151;text-transform:uppercase;letter-spacing:0.03em;margin-bottom:6px;">Curriculum</label>
+                <select id="ed-curriculum" style="width:100%;padding:9px 12px;border:1px solid #d1d5db;border-radius:6px;font-size:14px;font-family:inherit;">
+                  <option value="">—</option>
+                  <option value="MATATAG" ${existing?.curriculum === "MATATAG" ? "selected" : ""}>MATATAG</option>
+                  <option value="Strengthened-SHS" ${existing?.curriculum === "Strengthened-SHS" ? "selected" : ""}>Strengthened SHS</option>
+                  <option value="K-12" ${existing?.curriculum === "K-12" ? "selected" : ""}>K-12 (Legacy)</option>
+                </select>
+              </div>
+            </div>
+            <div style="margin-bottom:14px;">
+              <label style="display:block;font-size:11px;font-weight:700;color:#374151;text-transform:uppercase;letter-spacing:0.03em;margin-bottom:6px;">Description</label>
+              <textarea id="ed-description" rows="3"
+                        style="width:100%;padding:9px 12px;border:1px solid #d1d5db;border-radius:6px;font-size:14px;font-family:inherit;resize:vertical;"
+                        placeholder="Brief public-facing summary">${esc(existing?.description || "")}</textarea>
+            </div>
+            <div style="display:flex;gap:12px;align-items:center;">
+              <label style="display:inline-flex;align-items:center;gap:6px;font-size:13px;color:#374151;">
+                <input id="ed-active" type="checkbox" ${existing?.active !== false ? "checked" : ""} />
+                Active (visible publicly)
+              </label>
+            </div>
+          </div>
+          <div style="padding:14px 22px;border-top:1px solid #e5e7eb;display:flex;justify-content:flex-end;gap:10px;background:#fafbfc;">
+            <button class="ac-btn outline" data-close>Cancel</button>
+            <button class="ac-btn success" data-save>💾 Save</button>
+          </div>
+        </div>
+      `;
+
+      document.body.appendChild(modal);
+
+      // Close
+      modal.querySelectorAll("[data-close]").forEach(b => {
+        b.addEventListener("click", () => modal.remove());
+      });
+      modal.addEventListener("click", e => {
+        if (e.target === modal) modal.remove();
+      });
+
+      // Save
+      modal.querySelector("[data-save]").addEventListener("click", async () => {
+        const code = $("ed-code").value.trim().toUpperCase();
+        const displayName = $("ed-displayName").value.trim();
+        const shortName = $("ed-shortName").value.trim();
+        const family = $("ed-family").value.trim();
+        const level = $("ed-level").value;
+        const type = $("ed-type").value;
+        const curriculum = $("ed-curriculum").value;
+        const description = $("ed-description").value.trim();
+        const active = $("ed-active").checked;
+
+        if (!code || !displayName) {
+          toast("⚠️ Code and Display Name are required", "error");
+          return;
+        }
+
+        const btn = modal.querySelector("[data-save]");
+        btn.disabled = true;
+        btn.textContent = "Saving…";
+
+        try {
+          const data = {
+            displayName,
+            shortName,
+            family,
+            level,
+            type,
+            curriculum,
+            description,
+            active,
+            updatedAt: serverTimestamp(),
+            updatedBy: CURRENT_USER?.email || "",
+          };
+
+          if (isNew) {
+            data.createdAt = serverTimestamp();
+            // Use code as doc ID
+            const docRef = doc(db, "subjects", code);
+            await updateDoc(docRef, data).catch(async () => {
+              const { setDoc } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js");
+              await setDoc(docRef, data);
+            });
+          } else {
+            await updateDoc(doc(db, "subjects", code), data);
+          }
+
+          toast("✓ Saved", "success");
+          modal.remove();
+          await loadSubjects();
+          renderSubjectList();
+        } catch (e) {
+          toast("⚠️ " + (e.message || "Save failed"), "error");
+          btn.disabled = false;
+          btn.textContent = "💾 Save";
+        }
+      });
+    }
+
+    // ------------------------------------------------------------
+    // SEED OFFICIAL CATALOG
+    // ------------------------------------------------------------
+    async function seedOfficialSubjects() {
+      if (!confirm("Seed the official DepEd K-12 catalog?\n\nThis will ADD missing subjects. Existing entries will be preserved.")) return;
+
+      const btn = $("btnSeedSubjects");
+      btn.disabled = true;
+      btn.textContent = "Seeding…";
+
+      const OFFICIAL = getOfficialCatalog();
+      let inserted = 0, skipped = 0, errors = 0;
+
+      try {
+        for (const s of OFFICIAL) {
+          try {
+            const existing = SUBJECTS.find(x => x.id === s.code);
+            if (existing) { skipped++; continue; }
+
+            const docRef = doc(db, "subjects", s.code);
+            const { setDoc } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js");
+            await setDoc(docRef, {
+              ...s,
+              active: true,
+              createdAt: serverTimestamp(),
+              updatedAt: serverTimestamp(),
+              updatedBy: CURRENT_USER?.email || "",
+              seedSource: "DO-009-s-2026",
+            });
+            inserted++;
+          } catch (err) {
+            console.error("Seed error:", s.code, err);
+            errors++;
+          }
+        }
+
+        toast(`✓ Seeded ${inserted} · Skipped ${skipped}${errors ? " · Errors " + errors : ""}`, "success");
+        await loadSubjects();
+        renderSubjectList();
+      } catch (e) {
+        toast("⚠️ " + (e.message || "Seed failed"), "error");
+      } finally {
+        btn.disabled = false;
+        btn.textContent = "🌱 Seed Official Catalog";
+      }
+    }
+
+    // ------------------------------------------------------------
+    // OFFICIAL DEPED CATALOG (MATATAG K-10 + Strengthened SHS + Legacy K-12)
+    // ------------------------------------------------------------
+    function getOfficialCatalog() {
+      const list = [];
+
+      const push = (code, displayName, family, level, type, curriculum, cluster = "", requiredFor = []) => {
+        list.push({ code, displayName, family, level, type, curriculum, cluster, requiredFor, description: "" });
+      };
+
+      // ===== KINDERGARTEN (MATATAG) =====
+      push("K-MAKABANSA", "Makabansa", "Makabansa", "K", "core", "MATATAG");
+      push("K-LANG", "Language", "Languages", "K", "core", "MATATAG");
+      push("K-PNE", "Physical and Natural Environment", "Physical & Natural Environment", "K", "core", "MATATAG");
+      push("K-MATH", "Mathematics", "Mathematics", "K", "core", "MATATAG");
+      push("K-GMRC", "Good Manners and Right Conduct", "GMRC", "K", "core", "MATATAG");
+
+      // ===== GRADES 1-3 (MATATAG — Key Stage 1) =====
+      ["1","2","3"].forEach(g => {
+        push(`G${g}-LANG`, `Language ${g}`, "Languages", g, "core", "MATATAG", "", [`Grade ${g}`]);
+        push(`G${g}-RL`, `Reading and Literacy ${g}`, "Reading & Literacy", g, "core", "MATATAG", "", [`Grade ${g}`]);
+        push(`G${g}-MATH`, `Mathematics ${g}`, "Mathematics", g, "core", "MATATAG", "", [`Grade ${g}`]);
+        push(`G${g}-MAKABANSA`, `Makabansa ${g}`, "Makabansa", g, "core", "MATATAG", "", [`Grade ${g}`]);
+        push(`G${g}-GMRC`, `Good Manners and Right Conduct ${g}`, "GMRC", g, "core", "MATATAG", "", [`Grade ${g}`]);
+      });
+
+      // ===== GRADES 4-6 (MATATAG — Key Stage 2) =====
+      ["4","5","6"].forEach(g => {
+        push(`G${g}-FIL`, `Filipino ${g}`, "Filipino", g, "core", "MATATAG", "", [`Grade ${g}`]);
+        push(`G${g}-ENG`, `English ${g}`, "English", g, "core", "MATATAG", "", [`Grade ${g}`]);
+        push(`G${g}-MATH`, `Mathematics ${g}`, "Mathematics", g, "core", "MATATAG", "", [`Grade ${g}`]);
+        push(`G${g}-SCI`, `Science ${g}`, "Science", g, "core", "MATATAG", "", [`Grade ${g}`]);
+        push(`G${g}-AP`, `Araling Panlipunan ${g}`, "Araling Panlipunan", g, "core", "MATATAG", "", [`Grade ${g}`]);
+        push(`G${g}-MAPEH`, `MAPEH ${g}`, "MAPEH", g, "core", "MATATAG", "", [`Grade ${g}`]);
+        push(`G${g}-VE`, `Values Education ${g}`, "Values Education", g, "core", "MATATAG", "", [`Grade ${g}`]);
+        push(`G${g}-EPP`, `EPP/TLE ${g}`, "EPP", g, "core", "MATATAG", "", [`Grade ${g}`]);
+      });
+
+      // ===== GRADES 7-10 (MATATAG — Key Stage 3) =====
+      ["7","8","9","10"].forEach(g => {
+        push(`FIL${g}`, `Filipino ${g}`, "Filipino", g, "core", "MATATAG", "", [`Grade ${g}`]);
+        push(`ENG${g}`, `English ${g}`, "English", g, "core", "MATATAG", "", [`Grade ${g}`]);
+        push(`MATH${g}`, `Mathematics ${g}`, "Mathematics", g, "core", "MATATAG", "", [`Grade ${g}`]);
+        push(`SCI${g}`, `Science ${g}`, "Science", g, "core", "MATATAG", "", [`Grade ${g}`]);
+        push(`AP${g}`, `Araling Panlipunan ${g}`, "Araling Panlipunan", g, "core", "MATATAG", "", [`Grade ${g}`]);
+        push(`MAPEH${g}`, `MAPEH ${g}`, "MAPEH", g, "core", "MATATAG", "", [`Grade ${g}`]);
+        push(`ESP${g}`, `Edukasyon sa Pagpapakatao ${g}`, "Values Education", g, "core", "MATATAG", "", [`Grade ${g}`]);
+        push(`TLE${g}`, `TLE ${g}`, "TLE", g, "tle", "MATATAG", "", [`Grade ${g}`]);
+        push(`HGP${g}`, `Homeroom Guidance Program ${g}`, "Homeroom Guidance", g, "hgp", "MATATAG", "", [`Grade ${g}`]);
+        push(`ARAL${g}`, `ARAL Program ${g}`, "ARAL", g, "aral", "MATATAG", "", [`Grade ${g}`]);
+      });
+
+      // ===== STRENGTHENED SHS (Grades 11-12) — DO 009 s.2026 =====
+      // 5 Core Subjects (whole-year)
+      push("SHS-EFFCOMM", "Effective Communication / Mabisang Komunikasyon", "English", "11", "shs-core", "Strengthened-SHS", "Core", ["Grade 11", "Grade 12"]);
+      push("SHS-GENMATH", "General Mathematics", "Mathematics", "11", "shs-core", "Strengthened-SHS", "Core", ["Grade 11", "Grade 12"]);
+      push("SHS-GENSCI", "General Science", "Science", "11", "shs-core", "Strengthened-SHS", "Core", ["Grade 11", "Grade 12"]);
+      push("SHS-LIFECAREER", "Life and Career Skills", "Values Education", "11", "shs-core", "Strengthened-SHS", "Core", ["Grade 11", "Grade 12"]);
+      push("SHS-KASAYSAYAN", "Pag-aaral ng Kasaysayan at Lipunang Pilipino", "Araling Panlipunan", "11", "shs-core", "Strengthened-SHS", "Core", ["Grade 11", "Grade 12"]);
+
+      // Academic Track — 5 Clusters
+      const academicClusters = {
+        "STEM": { family: "STEM", label: "Science, Technology, Engineering, Mathematics" },
+        "ABM": { family: "ABM", label: "Business and Entrepreneurship" },
+        "HUMSS": { family: "HUMSS", label: "Arts, Social Sciences, and Humanities" },
+        "SPORTS": { family: "Sports", label: "Sports, Health, and Wellness" },
+        "FIELD-EXP": { family: "HUMSS", label: "Field Experience" },
+      };
+      Object.entries(academicClusters).forEach(([cluster, meta]) => {
+        push(`SHS-ACAD-${cluster}`, `${cluster} — ${meta.label}`, meta.family, "11", "shs-elective", "Strengthened-SHS", cluster);
+      });
+
+      // TechPro Track — 12 Clusters
+      const techProClusters = [
+        ["AESTHETIC", "Aesthetic, Wellness, and Human Care"],
+        ["AGRI", "Agri-Fishery"],
+        ["FOOD-INNOV", "Business and Food Innovation"],
+        ["ARTISAN", "Artisany and Creative Enterprise"],
+        ["AUTOMOTIVE", "Automotive and Small Engine Technologies"],
+        ["CONSTRUCTION", "Construction and Building Technologies"],
+        ["CREATIVE-ARTS", "Creative Arts and Design Technologies"],
+        ["HOSPITALITY", "Hospitality and Tourism"],
+        ["ICT", "ICT Support and Computer Programming Technologies"],
+        ["INDUSTRIAL", "Industrial Technologies"],
+        ["MARITIME", "Maritime Transport"],
+        ["TECH-PRO", "General TechPro"],
+      ];
+      techProClusters.forEach(([key, label]) => {
+        push(`SHS-TECH-${key}`, `${key} — ${label}`, "TechPro", "11", "techpro", "Strengthened-SHS", `TechPro-${key}`);
+      });
+
+      // ===== LEGACY K-12 (backward compatibility) =====
+      // Keep as needed — shown in catalog for older cohorts
+      push("G7-8-ARAL", "ARAL Program (K-12 Legacy)", "ARAL", "7", "aral", "K-12");
+      push("G9-10-ARAL", "ARAL Program (K-12 Legacy)", "ARAL", "9", "aral", "K-12");
+
+      return list;
+    }
+
+    // ------------------------------------------------------------
+    // FAMILY / LEVEL DETECTION
+    // ------------------------------------------------------------
+    function detectFamily(code) {
+      const c = String(code || "").toUpperCase();
+      if (c.startsWith("MATH") || c.startsWith("G") && c.includes("-MATH")) return "Mathematics";
+      if (c.startsWith("ENG") || c.startsWith("G") && c.includes("-ENG")) return "English";
+      if (c.startsWith("SCI") || c.startsWith("G") && c.includes("-SCI")) return "Science";
+      if (c.startsWith("FIL") || c.startsWith("G") && c.includes("-FIL")) return "Filipino";
+      if (c.startsWith("AP") || c.startsWith("G") && c.includes("-AP")) return "Araling Panlipunan";
+      if (c.startsWith("MAPEH") || c.startsWith("G") && c.includes("-MAPEH")) return "MAPEH";
+      if (c.startsWith("ESP") || c.startsWith("VE") || c.startsWith("G") && c.includes("-VE")) return "Values Education";
+      if (c.startsWith("TLE")) return "TLE";
+      if (c.startsWith("EPP")) return "EPP";
+      if (c.startsWith("HGP")) return "Homeroom Guidance";
+      if (c.startsWith("ARAL")) return "ARAL";
+      if (c.startsWith("K-MAKABANSA")) return "Makabansa";
+      if (c.startsWith("K-LANG")) return "Languages";
+      if (c.startsWith("K-PNE")) return "Physical & Natural Environment";
+      if (c.startsWith("K-GMRC")) return "GMRC";
+      if (c.startsWith("SHS-ACAD") || c.startsWith("SHS-TECH")) return c.startsWith("SHS-TECH") ? "TechPro" : "SHS Academic";
+      if (c.startsWith("SHS-")) return "SHS Core";
+      return "";
+    }
+
+    function detectLevel(code) {
+      const c = String(code || "").toUpperCase();
+      if (c.startsWith("K-")) return "K";
+      const m = c.match(/(\d{1,2})/);
+      if (m) return m[1];
+      return "";
     }
   </script>
 
