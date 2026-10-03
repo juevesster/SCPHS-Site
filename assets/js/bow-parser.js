@@ -1,9 +1,9 @@
 // ============================================================
-// bow-parser.js — Universal Budget of Work parser
+// bow-parser.js — Universal Budget of Work parser v2
 // Supports: PDF (via PDF.js), Excel (via XLSX.js), CSV, plain text
 // Auto-detects: Terms, Content/Performance Standards, Topics/Weeks,
 //               Learning Competencies, Recurring flags
-// Output: Universal schema (works for K-12, all curricula)
+// v2: Smart line-merging for fragmented competencies
 // ============================================================
 
 (function () {
@@ -11,35 +11,27 @@
 
   // ---------- Regex patterns (universal) ----------
   const RX = {
-    // Term markers
     term: /^(first|second|third|1st|2nd|3rd|term\s*[123]|q[1-4]|quarter\s*[1-4])[\s:.\-]*(term|quarter)?$/i,
-
-    // Structural labels
     contentStandard: /^content\s*standard[\s:]*$/i,
     performanceStandard: /^performance\s*standard[\s:]*$/i,
     performanceTask: /^performance\s*task/i,
     theme: /^theme[\s:]/i,
-
-    // Topic markers (week or subtheme)
     weekNumbered: /^week\s*(\d+)[\s:.\-]*(.*)$/i,
     numberedTopic: /^(\d{1,2})[\.\)]\s*(.+)$/,
-
-    // Competency markers
     bullet: /^[\*\-•●○▪]\s*(.+)$/,
     competencyCode: /\b([A-Z]{1,5}\d{0,3}[A-Z]*[\-–][IVX]+[a-z]?[\-–]?\d*)\b/i,
-
-    // Recurring flag
     recurring: /^\s*\*/,
-
-    // Cross-term section
     crossTerm: /^(literacy\s*and\s*numeracy|across\s*terms|contents?\s*that\s*should)/i,
+    // NEW: detect incomplete sentences (no ending punctuation)
+    // A "complete" competency typically ends with a period, or has 40+ chars
+    pageFooter: /^page\s+\d+\s+of\s+\d+/i,
   };
 
   // ---------- Text cleaning ----------
   function cleanLine(line) {
     return String(line || "")
-      .replace(/\u00A0/g, " ")              // non-breaking space
-      .replace(/[\u2018\u2019]/g, "'")       // smart quotes
+      .replace(/\u00A0/g, " ")
+      .replace(/[\u2018\u2019]/g, "'")
       .replace(/[\u201C\u201D]/g, '"')
       .replace(/[\u2013\u2014]/g, "–")
       .replace(/\s+/g, " ")
@@ -49,13 +41,44 @@
   function isPageFooter(line) {
     return /^page\s+\d+\s+of\s+\d+/i.test(line) ||
            /^last\s+updated/i.test(line) ||
-           /^budget\s+of\s+work/i.test(line) && line.length < 40 ||
+           (/^budget\s+of\s+work/i.test(line) && line.length < 60) ||
            /^\d+\s*$/.test(line);
   }
 
-  // ---------- Extract text from different formats ----------
+  // ---------- Line-merge helper ----------
+  // Determines if a line looks like a continuation of the previous one
+  function looksIncomplete(line) {
+    if (!line) return false;
+    const s = line.trim();
+    if (s.length === 0) return false;
 
-  // PDF via PDF.js
+    // Ends with sentence punctuation → complete
+    if (/[.!?;:]\s*$/.test(s)) return false;
+
+    // Ends with a closing paren → complete
+    if (/\)\s*$/.test(s)) return false;
+
+    // Very short lines (like "feelings.") — likely NOT continuation
+    if (s.length < 20 && /[a-z]\s*$/i.test(s) && !/[,(]$/.test(s)) {
+      // Check if previous ended mid-sentence
+      return false;
+    }
+
+    // Ends with comma, "and", "or", "the", "a", "in", "of", etc. → incomplete
+    if (/[,\-–]\s*$/.test(s)) return true;
+    if (/\b(and|or|the|a|an|in|of|to|for|with|by|on|at|that|which|where|when|how|is|are|was|were|be|been|being|this|these|those)\s*$/i.test(s)) return true;
+
+    // Ends without punctuation but has lowercase last char (mid-sentence)
+    if (/[a-z]\s*$/.test(s)) {
+      // Only treat as incomplete if reasonably long (likely wrapped)
+      return s.length > 25;
+    }
+
+    return false;
+  }
+
+  // ---------- Extract text from formats ----------
+
   async function extractPdfText(file) {
     if (typeof pdfjsLib === "undefined") {
       throw new Error("PDF.js not loaded. Add the script tag before using this parser.");
@@ -66,7 +89,6 @@
     for (let i = 1; i <= pdf.numPages; i++) {
       const page = await pdf.getPage(i);
       const content = await page.getTextContent();
-      // Reconstruct lines by grouping items with similar Y
       let lastY = null;
       let line = "";
       const lines = [];
@@ -85,7 +107,6 @@
     return pages.flat().map(cleanLine).filter(Boolean);
   }
 
-  // Excel via XLSX.js
   async function extractExcelText(file) {
     if (typeof XLSX === "undefined") {
       throw new Error("XLSX library not loaded.");
@@ -104,13 +125,11 @@
     return lines.map(cleanLine).filter(Boolean);
   }
 
-  // Plain text / CSV
   async function extractPlainText(file) {
     const text = await file.text();
     return text.split(/\r?\n/).map(cleanLine).filter(Boolean);
   }
 
-  // Auto-detect format
   async function extractLines(file) {
     const name = (file.name || "").toLowerCase();
     if (name.endsWith(".pdf")) return extractPdfText(file);
@@ -119,7 +138,6 @@
   }
 
   // ---------- Core parser ----------
-  // Takes an array of cleaned lines, returns universal schema
   function parseLines(lines, meta = {}) {
     const result = {
       term: null,
@@ -127,16 +145,26 @@
       theme: null,
       contentStandard: "",
       performanceStandard: "",
-      topics: [],       // { label, orderIndex, isCrossTerm, suggestedContent, competencies: [] }
+      topics: [],
       stats: { linesRead: lines.length, topicsFound: 0, competenciesFound: 0 },
     };
 
-    let mode = "idle";     // idle | contentStd | perfStd | inTopic | crossTerm
+    let mode = "idle";
     let currentTopic = null;
     let currentTerm = null;
     let bufferStd = [];
 
+    // Pending competency buffer for line-merging
+    let pendingComp = null;
+    const flushPending = () => {
+      if (pendingComp && currentTopic && pendingComp.text.trim().length > 3) {
+        currentTopic.competencies.push(pendingComp);
+      }
+      pendingComp = null;
+    };
+
     const pushTopic = () => {
+      flushPending();
       if (currentTopic && (currentTopic.competencies.length || currentTopic.label)) {
         result.topics.push(currentTopic);
       }
@@ -151,10 +179,7 @@
       const termMatch = raw.match(RX.term);
       if (termMatch && raw.length < 40) {
         pushTopic();
-        currentTerm = {
-          label: raw,
-          num: normalizeTermNumber(termMatch[1]),
-        };
+        currentTerm = { label: raw, num: normalizeTermNumber(termMatch[1]) };
         if (result.term == null) {
           result.term = currentTerm.num;
           result.termLabel = raw;
@@ -187,15 +212,8 @@
         continue;
       }
 
-      // ---------- Theme fallback ----------
-      if (/^theme[\s:]/i.test(raw) && !result.theme) {
-        result.theme = raw.replace(/^theme[\s:]*/i, "").trim();
-        continue;
-      }
-
       // ---------- Performance Task ----------
       if (RX.performanceTask.test(raw) && raw.length < 60) {
-        // Capture line as a topic
         pushTopic();
         currentTopic = {
           label: raw,
@@ -239,8 +257,9 @@
         continue;
       }
 
+      // Numbered topic — but ONLY if it's short and doesn't look like a competency
       const numMatch = raw.match(RX.numberedTopic);
-      if (numMatch && numMatch[2].length < 80 && !RX.competencyCode.test(raw)) {
+      if (numMatch && numMatch[2].length < 80 && !RX.competencyCode.test(raw) && numMatch[2].split(" ").length < 10) {
         pushTopic();
         currentTopic = {
           label: `${numMatch[1]}. ${numMatch[2]}`,
@@ -253,7 +272,7 @@
         continue;
       }
 
-      // ---------- Content / Performance standard body ----------
+      // ---------- Standard body ----------
       if (mode === "contentStd") {
         if (raw.length > 20) bufferStd.push(raw);
         continue;
@@ -263,52 +282,70 @@
         continue;
       }
 
-      // ---------- Competency lines (bullets or plain) ----------
+      // ---------- Competency lines ----------
       const bulletMatch = raw.match(RX.bullet);
+      const isBullet = !!bulletMatch;
       const lineText = bulletMatch ? bulletMatch[1].trim() : raw;
-      const isRecurring = RX.recurring.test(raw);
+      const isRecurring = RX.recurring.test(raw) || (isBullet && /^\*\s/.test(raw));
 
       if (currentTopic) {
-        // If it looks like a competency (reasonable length, not a header)
-        if (lineText.length > 8 && lineText.length < 500 &&
-            !RX.contentStandard.test(lineText) &&
-            !RX.performanceStandard.test(lineText)) {
+        // Detect if this is a NEW competency start vs continuation
+        const startsNew = isBullet ||
+          /^[A-Z]/.test(lineText) ||
+          lineText.length > 60 ||
+          /[.!?]\s*$/.test(lineText);
 
-          // Extract competency code if present
-          const codeMatch = lineText.match(RX.competencyCode);
-          const code = codeMatch ? codeMatch[1] : generateCode(result, currentTopic);
+        // Skip if too short and not a start (likely noise)
+        if (lineText.length < 6 && !startsNew) continue;
 
-          // Remove code from text if it's duplicated
-          const text = codeMatch
-            ? lineText.replace(codeMatch[1], "").replace(/^[\s\-–:]+/, "").trim()
-            : lineText;
+        // Skip obvious headers
+        if (RX.contentStandard.test(lineText) || RX.performanceStandard.test(lineText)) continue;
 
-          if (text.length > 5) {
-            currentTopic.competencies.push({
-              code,
-              text,
-              isRecurring,
-              orderIndex: currentTopic.competencies.length + 1,
-            });
+        // Handle pending from previous line
+        if (pendingComp) {
+          // If this line looks incomplete and short → merge
+          if (looksIncomplete(pendingComp.text) && lineText.length < 80 && !isBullet) {
+            // Merge continuation
+            pendingComp.text = (pendingComp.text + " " + lineText).replace(/\s+/g, " ").trim();
+            // If merged text now looks complete → flush
+            if (!looksIncomplete(pendingComp.text)) {
+              flushPending();
+            }
+            continue;
+          } else {
+            // Previous is complete enough or this is a new bullet → flush and start fresh
+            flushPending();
           }
-        } else if (mode === "inTopic" && lineText.length > 3 && lineText.length < 120) {
-          // Short line — likely suggested content
-          currentTopic.suggestedContent = (currentTopic.suggestedContent
-            ? currentTopic.suggestedContent + " · "
-            : "") + lineText;
+        }
+
+        // Start a new pending competency
+        const codeMatch = lineText.match(RX.competencyCode);
+        const code = codeMatch ? codeMatch[1] : generateCode(result, currentTopic, isRecurring);
+        const text = codeMatch
+          ? lineText.replace(codeMatch[1], "").replace(/^[\s\-–:]+/, "").trim()
+          : lineText;
+
+        pendingComp = {
+          code,
+          text,
+          isRecurring,
+          orderIndex: currentTopic.competencies.length + 1,
+        };
+
+        // If this line already looks complete, flush immediately
+        if (!looksIncomplete(text) && text.length > 15) {
+          flushPending();
         }
       }
     }
 
-    // Flush trailing
+    // Final flush
     if (mode === "contentStd") result.contentStandard = bufferStd.join(" ").trim();
     if (mode === "perfStd") result.performanceStandard = bufferStd.join(" ").trim();
     pushTopic();
 
-    // If no explicit term was found, assume Term 1
     if (result.term == null) result.term = meta.term || 1;
 
-    // Stats
     result.stats.topicsFound = result.topics.length;
     result.stats.competenciesFound = result.topics.reduce((s, t) => s + t.competencies.length, 0);
 
@@ -324,10 +361,10 @@
     return 1;
   }
 
-  function generateCode(result, topic) {
+  function generateCode(result, topic, isRecurring) {
     const t = result.term || 1;
     const sIdx = topic.orderIndex || 1;
-    const cIdx = topic.competencies.length + 1;
+    const cIdx = topic.competencies.length + (topic._pendingIndex || 0) + 1;
     return `T${t}-S${String(sIdx).padStart(2, "0")}-C${String(cIdx).padStart(2, "0")}`;
   }
 
@@ -337,8 +374,6 @@
       const lines = await extractLines(file);
       return parseLines(lines, meta);
     },
-
-    // For pasting raw text directly (no file)
     parseText(text, meta = {}) {
       const lines = String(text).split(/\r?\n/).map(cleanLine).filter(Boolean);
       return parseLines(lines, meta);
