@@ -3073,12 +3073,11 @@
     // ------------------------------------------------------------
     // BoW Pill (rendered in table row)
     // ------------------------------------------------------------
-    function renderBoWPill(subjectCode) {
+        function renderBoWPill(subjectCode) {
       const count = BOW_COUNTS[subjectCode] || 0;
       if (count === 0) {
         const isAdminViewer = CURRENT_PROFILE?.isSuperAdmin
-          || CURRENT_PROFILE?.primaryRole === "admin"
-          || CURRENT_PROFILE?.primaryRole === "teacher";
+          || CURRENT_PROFILE?.primaryRole === "admin";
         return isAdminViewer
           ? `<span class="bow-pill empty" data-bow-view="${esc(subjectCode)}" title="No BoW yet — click to upload">—</span>`
           : `<span class="bow-pill empty">—</span>`;
@@ -3176,17 +3175,17 @@
     // ------------------------------------------------------------
     // Viewer: Empty state
     // ------------------------------------------------------------
-    function renderBoWEmptyState(subjectCode, subjectName) {
-      const isStaff = CURRENT_PROFILE?.isSuperAdmin
-        || CURRENT_PROFILE?.primaryRole === "admin"
-        || CURRENT_PROFILE?.primaryRole === "teacher";
+        function renderBoWEmptyState(subjectCode, subjectName) {
+      const isAdmin = CURRENT_PROFILE?.isSuperAdmin
+        || CURRENT_PROFILE?.primaryRole === "admin";
 
       return `
         <div class="bow-empty">
           <div style="font-size:3rem;">📭</div>
           <h3 style="color:#374151;margin:12px 0 6px;">No BoW uploaded yet</h3>
           <p>This subject has no Budget of Work for Term ${BOW_VIEWER_STATE.term}.</p>
-          ${isStaff ? `
+          ${isAdmin ? `
+                      ${isAdmin ? `
             <button class="ac-btn success" data-bow-upload-in-viewer style="margin-top:14px;">
               📤 Upload BoW Now
             </button>
@@ -3198,10 +3197,9 @@
     // ------------------------------------------------------------
     // Viewer: Header (with role-aware buttons)
     // ------------------------------------------------------------
-    function renderBoWViewerHead(subjectName, termDoc, term) {
-      const isStaff = CURRENT_PROFILE?.isSuperAdmin
-        || CURRENT_PROFILE?.primaryRole === "admin"
-        || CURRENT_PROFILE?.primaryRole === "teacher";
+        function renderBoWViewerHead(subjectName, termDoc, term) {
+      const isAdmin = CURRENT_PROFILE?.isSuperAdmin
+        || CURRENT_PROFILE?.primaryRole === "admin";
 
       const totalComps = termDoc.totalCompetencies || 0;
       const totalTopics = termDoc.totalTopics || 0;
@@ -3217,7 +3215,7 @@
           </p>
         </div>
         <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
-          ${isStaff ? `
+            ${isAdmin ? `
             <button class="ac-btn success small" data-bow-add>➕ Add Competency</button>
             <button class="ac-btn outline small" data-bow-reupload>📤 Re-upload</button>
           ` : ""}
@@ -3229,10 +3227,9 @@
     // ------------------------------------------------------------
     // Viewer: Body (standards + filters + topics + competencies)
     // ------------------------------------------------------------
-    function renderBoWViewerBody(termDoc, comps) {
-      const isStaff = CURRENT_PROFILE?.isSuperAdmin
-        || CURRENT_PROFILE?.primaryRole === "admin"
-        || CURRENT_PROFILE?.primaryRole === "teacher";
+        function renderBoWViewerBody(termDoc, comps) {
+      const isAdmin = CURRENT_PROFILE?.isSuperAdmin
+        || CURRENT_PROFILE?.primaryRole === "admin";
 
       // Get unique topics
       const topics = [...new Set(comps.map(c => c.topicLabel))].filter(Boolean).sort();
@@ -3245,7 +3242,7 @@
           <div class="bow-standard-block" data-standard="content">
             <div class="lbl" style="color:#1e40af;">📘 Content Standard</div>
             <div class="txt" style="color:#1e3a8a;">${esc(termDoc.contentStandard)}</div>
-            ${isStaff ? `<button class="edit-link" data-edit-standard="content">✏️ Edit</button>` : ""}
+            ${isAdmin ? `<button class="edit-link" data-edit-standard="content">✏️ Edit</button>` : ""}
           </div>
         `;
       }
@@ -3256,7 +3253,7 @@
           <div class="bow-standard-block perf" data-standard="performance">
             <div class="lbl" style="color:#166534;">⭐ Performance Standard</div>
             <div class="txt" style="color:#14532d;">${esc(termDoc.performanceStandard)}</div>
-            ${isStaff ? `<button class="edit-link" data-edit-standard="performance">✏️ Edit</button>` : ""}
+            ${isAdmin ? `<button class="edit-link" data-edit-standard="performance">✏️ Edit</button>` : ""}
           </div>
         `;
       }
@@ -3295,14 +3292,13 @@
     // ------------------------------------------------------------
     // Render topics + competencies list
     // ------------------------------------------------------------
-    function renderBoWTopics(comps) {
+        function renderBoWTopics(comps) {
       const host = document.getElementById("bowTopicList");
       if (!host) return;
 
       const { search, topic, recurringOnly } = BOW_VIEWER_STATE.filter;
-      const isStaff = CURRENT_PROFILE?.isSuperAdmin
-        || CURRENT_PROFILE?.primaryRole === "admin"
-        || CURRENT_PROFILE?.primaryRole === "teacher";
+      const isAdmin = CURRENT_PROFILE?.isSuperAdmin
+        || CURRENT_PROFILE?.primaryRole === "admin";
 
       // Apply filters
       let filtered = comps.slice();
@@ -3362,7 +3358,7 @@
               <span class="bow-topic-count">${topic.items.length}</span>
             </div>
             <div class="bow-topic-body">
-              ${topic.items.map(c => renderBoWCompetencyRow(c, isStaff)).join("")}
+            ${topic.items.map(c => renderBoWCompetencyRow(c, isAdmin)).join("")}
             </div>
           </div>
         `;
@@ -3406,7 +3402,7 @@
       });
     }
 
-    function renderBoWCompetencyRow(c, isStaff) {
+        function renderBoWCompetencyRow(c, isAdmin) {
       const recurring = c.isRecurring
         ? `<span class="bow-comp-recurring" title="Recurring competency">*</span>`
         : "";
@@ -3417,7 +3413,7 @@
             <span class="bow-comp-code">${esc(c.code || "")}${recurring}</span>
             <div class="bow-comp-text">${esc(c.text)}</div>
           </div>
-          ${isStaff ? `
+          ${isAdmin ? `
             <div class="bow-comp-actions">
               <button class="copy" data-bow-comp-copy="${esc(c.id)}" title="Copy text">📋</button>
               <button class="edit" data-bow-comp-edit="${esc(c.id)}" title="Edit">✏️</button>
