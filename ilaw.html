@@ -271,7 +271,10 @@
           </select>
         </div>
         <div style="margin-left:auto;">
+          <div style="margin-left:auto;display:flex;gap:8px;">
+          <button class="btn btn-success" id="btnUploadDoc" disabled>📤 Upload Lesson Plan</button>
           <button class="btn btn-primary" id="btnLoadContext" disabled>📖 Load BoW</button>
+        </div>
         </div>
       </div>
 
@@ -290,6 +293,7 @@
     import "./assets/js/bow-store.js";
     import "./assets/js/ilaw-store.js";
     import "./assets/js/ilaw-config.js";
+    import "./assets/js/doc-parser.js";
 
     let CURRENT_USER = null;
     let CURRENT_PROFILE = null;
@@ -389,14 +393,24 @@
       checkContextReady();
     }
 
-    function checkContextReady() {
+        function checkContextReady() {
       const ready = !!$("pickGrade").value && !!$("pickSubject").value &&
                     !!$("pickTerm").value && !!$("pickWeek").value;
       $("btnLoadContext").disabled = !ready;
+      const uploadBtn = $("btnUploadDoc");
+      if (uploadBtn) uploadBtn.disabled = !ready;
     }
 
-    function attachHandlers() {
+        function attachHandlers() {
       $("btnLoadContext").addEventListener("click", loadContext);
+      $("btnUploadDoc").addEventListener("click", () => {
+        // Load context first (so we have an editor area to fill)
+        if (!$("editorArea").querySelector(".section")) {
+          loadContext().then(() => openUploadModal());
+        } else {
+          openUploadModal();
+        }
+      });
     }
 
     async function loadContext() {
@@ -1058,6 +1072,305 @@
       $("pickYear").value = lesson.schoolYear || "2026-2027";
       setTimeout(() => loadContext(), 100);
     }
+
+        // ============================================================
+    // UPLOAD LESSON PLAN (Session F4)
+    // ============================================================
+    let UPLOAD_STATE = null;
+
+    function openUploadModal() {
+      const existing = document.getElementById("uploadModal");
+      if (existing) existing.remove();
+
+      const modal = document.createElement("div");
+      modal.id = "uploadModal";
+      modal.className = "modal show";
+      modal.style.cssText = "position:fixed;inset:0;background:rgba(0,0,0,0.6);display:flex;align-items:center;justify-content:center;z-index:10000;padding:20px;";
+      modal.innerHTML = `
+        <div style="background:#fff;border-radius:14px;max-width:900px;width:100%;max-height:92vh;overflow-y:auto;box-shadow:0 24px 48px rgba(0,0,0,.25);">
+          <div style="padding:18px 22px;border-bottom:1px solid #e5e7eb;display:flex;justify-content:space-between;align-items:center;">
+            <div>
+              <h3 style="margin:0;font-size:1.1rem;color:#0f2b4f;">📤 Upload Existing Lesson Plan</h3>
+              <p style="margin:4px 0 0;font-size:12px;color:#6b7280;">
+                Drop a <strong>.docx</strong>, <strong>.pdf</strong>, or <strong>.txt</strong> file.
+                We auto-detect ILAW, DLL, and MATATAG formats.
+              </p>
+            </div>
+            <button class="btn btn-outline small" data-close>✕</button>
+          </div>
+
+          <div style="padding:20px 22px;">
+            <div id="uploadDropZone" style="border:2px dashed #cbd5e1;background:#f9fafb;border-radius:12px;padding:36px 20px;text-align:center;cursor:pointer;transition:all .15s;">
+              <div style="font-size:3rem;margin-bottom:10px;">📄</div>
+              <div style="font-weight:700;color:#0f2b4f;font-size:15px;">Drop your lesson plan here</div>
+              <div style="font-size:12px;color:#6b7280;margin-top:6px;">or click to browse</div>
+              <div style="font-size:11px;color:#9ca3af;margin-top:8px;">
+                Accepts: .docx · .pdf · .txt · or paste below
+              </div>
+              <input type="file" id="uploadFileInput" accept=".docx,.pdf,.txt,.doc" style="display:none;">
+            </div>
+
+            <div style="margin-top:12px;text-align:center;">
+              <span style="font-size:11px;color:#9ca3af;">— or —</span>
+              <button class="btn btn-outline small" id="uploadPasteToggle" style="margin-left:8px;">📋 Paste Text Instead</button>
+            </div>
+
+            <div id="uploadPasteArea" style="display:none;margin-top:12px;">
+              <textarea id="uploadPasteText" rows="8" placeholder="Paste the contents of your lesson plan here…"
+                        style="width:100%;padding:10px 12px;border:1px solid #d1d5db;border-radius:8px;font-size:13px;font-family:inherit;resize:vertical;"></textarea>
+              <button class="btn btn-primary small" id="uploadParsePaste" style="margin-top:8px;">🔍 Parse Pasted Text</button>
+            </div>
+
+            <div id="uploadStatus" style="margin-top:16px;"></div>
+
+            <div id="uploadPreview" style="margin-top:16px;"></div>
+          </div>
+        </div>
+      `;
+      document.body.appendChild(modal);
+
+      // Close
+      modal.querySelectorAll("[data-close]").forEach(b => {
+        b.addEventListener("click", () => modal.remove());
+      });
+      modal.addEventListener("click", e => {
+        if (e.target === modal) modal.remove();
+      });
+
+      // Drop zone
+      const dropZone = modal.querySelector("#uploadDropZone");
+      const fileInput = modal.querySelector("#uploadFileInput");
+
+      dropZone.addEventListener("click", () => fileInput.click());
+      dropZone.addEventListener("dragover", e => {
+        e.preventDefault();
+        dropZone.style.borderColor = "#1e6bb8";
+        dropZone.style.background = "#eff6ff";
+      });
+      dropZone.addEventListener("dragleave", () => {
+        dropZone.style.borderColor = "#cbd5e1";
+        dropZone.style.background = "#f9fafb";
+      });
+      dropZone.addEventListener("drop", e => {
+        e.preventDefault();
+        dropZone.style.borderColor = "#cbd5e1";
+        dropZone.style.background = "#f9fafb";
+        const file = e.dataTransfer.files[0];
+        if (file) handleUploadFile(file, modal);
+      });
+      fileInput.addEventListener("change", e => {
+        const file = e.target.files[0];
+        if (file) handleUploadFile(file, modal);
+      });
+
+      // Paste toggle
+      modal.querySelector("#uploadPasteToggle").addEventListener("click", () => {
+        const area = modal.querySelector("#uploadPasteArea");
+        area.style.display = area.style.display === "none" ? "block" : "none";
+      });
+      modal.querySelector("#uploadParsePaste").addEventListener("click", () => {
+        const text = modal.querySelector("#uploadPasteText").value;
+        if (!text.trim()) { toast("⚠️ Paste some text first", "error"); return; }
+        try {
+          const parsed = window.DocParser.parseText(text);
+          showUploadPreview(parsed, modal);
+        } catch (e) {
+          toast("⚠️ " + e.message, "error");
+        }
+      });
+    }
+
+    async function handleUploadFile(file, modal) {
+      const status = modal.querySelector("#uploadStatus");
+      const preview = modal.querySelector("#uploadPreview");
+      preview.innerHTML = "";
+      status.innerHTML = `
+        <div style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:8px;padding:14px;font-size:13px;color:#1e40af;">
+          📄 Reading <strong>${esc(file.name)}</strong> (${(file.size/1024).toFixed(1)} KB)…
+        </div>
+      `;
+
+      try {
+        const parsed = await window.DocParser.parse(file);
+        status.innerHTML = "";
+        showUploadPreview(parsed, modal, file.name);
+      } catch (e) {
+        console.error(e);
+        status.innerHTML = `
+          <div style="background:#fef2f2;border:1px solid #fecaca;border-radius:8px;padding:14px;font-size:13px;color:#991b1b;">
+            ⚠️ ${esc(e.message || "Failed to parse file")}
+          </div>
+        `;
+      }
+    }
+
+    function showUploadPreview(parsed, modal, fileName) {
+      UPLOAD_STATE = parsed;
+      const preview = modal.querySelector("#uploadPreview");
+
+      // Count non-empty fields
+      const fields = [
+        ["Lesson Title", parsed.lessonTitle],
+        ["Learning Area", parsed.learningArea],
+        ["Teacher", parsed.teacherName],
+        ["Grade Level", parsed.gradeLevel],
+        ["No. of Sessions", parsed.noOfSessions],
+        ["References", parsed.references],
+        ["Content Standard", parsed.contentStandard],
+        ["Performance Standard", parsed.performanceStandard],
+        ["Learning Objectives", parsed.learningObjectives.length ? parsed.learningObjectives.length + " items" : ""],
+        ["Competencies", parsed.competencies.length ? parsed.competencies.length + " items" : ""],
+        ["Learner Context", parsed.learnerContext],
+        ["Pre-Lesson", parsed.preLesson],
+        ["Lesson Flow", parsed.lessonFlow],
+        ["Materials", parsed.materials],
+        ["Integration", parsed.integration],
+        ["Assessment", parsed.assessment],
+        ["Extended Learning", parsed.extendedLearning],
+        ["Ways Forward", parsed.waysForward],
+        ["Teacher Reflections", parsed.teacherReflections],
+      ];
+
+      const found = fields.filter(([_, v]) => v && String(v).trim().length > 3);
+      const missing = fields.filter(([_, v]) => !v || String(v).trim().length <= 3);
+
+      const formatBadge = {
+        ILAW: '<span class="ac-badge success" style="background:#d1fae5;color:#065f46;">ILAW Format</span>',
+        DLL: '<span class="ac-badge info" style="background:#dbeafe;color:#1e40af;">DLL Format</span>',
+        MATATAG: '<span class="ac-badge warning" style="background:#fef3c7;color:#92400e;">MATATAG Format</span>',
+        GENERIC: '<span class="ac-badge" style="background:#f3f4f6;color:#4b5563;">Generic Format</span>',
+      }[parsed.format] || "";
+
+      preview.innerHTML = `
+        <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:10px;padding:14px 16px;margin-bottom:14px;">
+          <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;">
+            <div>
+              <div style="font-weight:800;color:#166534;font-size:14px;">✅ Parsed successfully</div>
+              <div style="font-size:12px;color:#14532d;margin-top:4px;">
+                Detected: ${formatBadge} · ${parsed._stats.charsRead.toLocaleString()} chars read
+              </div>
+            </div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;">
+              <button class="btn btn-outline small" id="previewClose">Cancel</button>
+              <button class="btn btn-success" id="previewApply">✨ Apply to ILAW</button>
+            </div>
+          </div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px;">
+          <div style="background:#eff6ff;border-radius:8px;padding:12px 14px;">
+            <div style="font-size:11px;font-weight:800;color:#1e40af;text-transform:uppercase;letter-spacing:.04em;margin-bottom:6px;">
+              ✓ Found (${found.length})
+            </div>
+            <div style="display:flex;flex-direction:column;gap:3px;font-size:12px;color:#1e3a8a;">
+              ${found.map(([k, v]) => `<div>• <strong>${esc(k)}</strong>: ${esc(String(v).slice(0, 60))}${String(v).length > 60 ? "…" : ""}</div>`).join("")}
+            </div>
+          </div>
+          ${missing.length ? `
+            <div style="background:#fef3c7;border-radius:8px;padding:12px 14px;">
+              <div style="font-size:11px;font-weight:800;color:#92400e;text-transform:uppercase;letter-spacing:.04em;margin-bottom:6px;">
+                ⚠️ Not Detected (${missing.length})
+              </div>
+              <div style="display:flex;flex-direction:column;gap:3px;font-size:12px;color:#92400e;">
+                ${missing.map(([k]) => `<div>• ${esc(k)}</div>`).join("")}
+              </div>
+              <div style="font-size:11px;color:#92400e;margin-top:8px;opacity:0.8;">
+                You can fill these manually after applying.
+              </div>
+            </div>
+          ` : ""}
+        </div>
+
+        <details style="background:#f9fafb;border-radius:8px;padding:12px;font-size:12px;color:#4b5563;">
+          <summary style="cursor:pointer;font-weight:700;color:#0f2b4f;">📄 View raw extracted content</summary>
+          <div style="margin-top:10px;max-height:300px;overflow-y:auto;white-space:pre-wrap;font-family:monospace;font-size:11px;line-height:1.5;">
+${esc(JSON.stringify(parsed, null, 2))}
+          </div>
+        </details>
+      `;
+
+      // Apply button
+      preview.querySelector("#previewApply").addEventListener("click", () => {
+        applyParsedToILAW(parsed);
+        modal.remove();
+        toast("✓ Applied to ILAW editor", "success");
+      });
+
+      // Cancel button
+      preview.querySelector("#previewClose").addEventListener("click", () => {
+        preview.innerHTML = "";
+        UPLOAD_STATE = null;
+      });
+    }
+
+    // ============================================================
+    // APPLY PARSED DATA TO ILAW EDITOR
+    // ============================================================
+    function applyParsedToILAW(parsed) {
+      const setVal = (id, val) => {
+        const el = document.getElementById(id);
+        if (el && val) el.value = val;
+      };
+
+      // Header fields
+      setVal("f-lessonTitle", parsed.lessonTitle);
+      if (parsed.noOfSessions) {
+        const num = String(parsed.noOfSessions).match(/\d+/);
+        if (num) setVal("f-noOfSessions", num[0]);
+      }
+      setVal("f-teacherName", parsed.teacherName);
+      setVal("f-section", parsed.gradeLevel || parsed.section);
+
+      // References
+      setVal("f-references", parsed.references);
+
+      // Intentions
+      setVal("f-contentStandard", parsed.contentStandard);
+      setVal("f-performanceStandard", parsed.performanceStandard);
+      setVal("f-learnerContext", parsed.learnerContext);
+
+      // Learning Experience
+      setVal("f-preLesson", parsed.preLesson);
+      setVal("f-lessonFlow", parsed.lessonFlow);
+      setVal("f-materialsText", parsed.materials);
+      setVal("f-integration", parsed.integration);
+
+      // Assessment
+      setVal("f-assessment", parsed.assessment);
+
+      // Ways Forward
+      setVal("f-extendedLearning", parsed.extendedLearning);
+      setVal("f-waysForward", parsed.waysForward || parsed.waysForward);
+      setVal("f-teacherReflections", parsed.teacherReflections);
+
+      // If competencies exist but no BoW, add them as manual comps
+      if (parsed.competencies && parsed.competencies.length) {
+        const manualTextarea = document.getElementById("manualComps");
+        if (manualTextarea) {
+          manualTextarea.value = parsed.competencies
+            .map(c => typeof c === "string" ? c : (c.text || c.code || ""))
+            .filter(Boolean)
+            .join("\n");
+        }
+      }
+
+      // Signatories
+      if (parsed.signatories) {
+        setVal("f-sig-preparedName", parsed.signatories.preparedByName);
+        setVal("f-sig-checkedName", parsed.signatories.checkedByName);
+        setVal("f-sig-notedName", parsed.signatories.notedByName);
+      }
+
+      // Mark dirty
+      DIRTY = true;
+      updateDirtyIndicator();
+
+      // Scroll to top of editor
+      const editorArea = document.getElementById("editorArea");
+      if (editorArea) editorArea.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
   </script>
 </body>
+  <!-- Mammoth.js for .docx parsing -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
 </html>
