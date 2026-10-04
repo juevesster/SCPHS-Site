@@ -49,7 +49,7 @@
         /* Hide admin-only tabs when NOT admin */
     .admin-only-tab { display: none !important; }
     body.is-admin-role .admin-only-tab { display: flex !important; }
-    
+
     .ac-nav { padding: 0 12px; }
 
     .ac-nav-item {
@@ -811,9 +811,21 @@
         }
 
         // Load users (for adviser dropdowns)
-        const userSnap = await getDocs(collection(db, "users"));
-        USERS = userSnap.docs.map(d => ({ uid: d.id, ...d.data() }))
-          .sort((a, b) => (a.name || "").localeCompare(b.name || ""));
+                // Load users (for adviser dropdowns) — ADMIN ONLY
+        const isAdminUser = CURRENT_PROFILE?.primaryRole === "admin"
+          || CURRENT_PROFILE?.isSuperAdmin;
+        if (isAdminUser) {
+          try {
+            const userSnap = await getDocs(collection(db, "users"));
+            USERS = userSnap.docs.map(d => ({ uid: d.id, ...d.data() }))
+              .sort((a, b) => (a.name || "").localeCompare(b.name || ""));
+          } catch (e) {
+            console.warn("[admin] users load skipped:", e);
+            USERS = [];
+          }
+        } else {
+          USERS = [];
+        }
 
         // Load time slots (for subjects tab)
         try {
