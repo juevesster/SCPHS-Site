@@ -195,27 +195,36 @@
   // ============================================================
   // ILAW EXTRACTION
   // ============================================================
-  function parseILAW(text) {
+    function parseILAW(text) {
     const result = baseSchema("ILAW");
 
-    // Header — extract from table row: "Lesson Title | <content> | Learning Area/s | <content>"
-    const titleM = text.match(/Lesson\s*Title\s*\|\s*([^|]+?)\s*\|/i);
-    if (titleM) result.lessonTitle = titleM[1].trim();
+    // Universal header extractor — works with table `Label | Value` AND inline `Label:\nValue`
+    const extractHeader = (labels) => {
+      for (const label of labels) {
+        // Pattern 1: table cell — "Label | Value" or "Label   Value   |"
+        let m = text.match(new RegExp(`${label}\\s*\\|\\s*([^|\\n]+?)\\s*(?:\\||\\n)`, "i"));
+        if (m && m[1].trim().length > 0) return m[1].trim();
 
-    const areaM = text.match(/Learning\s*Area\/?s?\s*\|\s*([^|]+?)\s*(?:\||$)/i);
-    if (areaM) result.learningArea = areaM[1].trim();
+        // Pattern 2: inline after colon — "Label:\nValue" or "Label: Value"
+        m = text.match(new RegExp(`${label}\\s*:?\\s*\\n\\s*([^\\n]+)`, "i"));
+        if (m && m[1].trim().length > 0 && m[1].length < 200) return m[1].trim();
 
-    const teacherM = text.match(/Name\s*of\s*Teacher\/?s?\s*\|\s*([^|]+?)\s*(?:\||$)/i);
-    if (teacherM) result.teacherName = teacherM[1].trim();
+        // Pattern 3: same line after colon — "Label: Value"
+        m = text.match(new RegExp(`${label}\\s*:\\s*(.+)`, "i"));
+        if (m && m[1].trim().length > 0 && m[1].length < 200) return m[1].trim();
+      }
+      return "";
+    };
 
-    const gradeM = text.match(/Grade\s*Level\s*(?:and\s*Section)?\s*\|\s*([^|]+?)\s*(?:\||$)/i);
-    if (gradeM) result.gradeLevel = gradeM[1].trim();
+    result.lessonTitle = extractHeader(["Lesson\\s*Title"]);
+    result.learningArea = extractHeader(["Learning\\s*Area\\/?s?"]);
+    result.teacherName = extractHeader(["Name\\s*of\\s*Teacher\\/?s?", "Teacher"]);
+    result.gradeLevel = extractHeader(["Grade\\s*Level\\s*(?:and\\s*Section)?"]);
+    result.noOfSessions = extractHeader(["No\\.\\s*of\\s*Sessions"]);
 
-    const sessionM = text.match(/No\.\s*of\s*Sessions\s*\|\s*([^|]+?)\s*(?:\||$)/i);
-    if (sessionM) result.noOfSessions = sessionM[1].trim();
-
-    const refM = text.match(/References[\s\S]{0,50}?\|\s*([\s\S]+?)(?:\||$|Intentions)/i);
-    if (refM) result.references = refM[1].trim();
+    // References — multi-line, may span several lines
+    const refM = text.match(/References\s*\|?\s*\n?([\s\S]{10,600}?)(?:\n\n|Intentions|Declaration)/i);
+    if (refM) result.references = refM[1].trim().replace(/\n+/g, "\n");
 
     // Declaration of AI
     result.aiDeclarationText = extractSection(
@@ -225,11 +234,25 @@
     );
 
     // Intentions
-    result.contentStandard = extractSection(
+        result.contentStandard = extractSection(
       text,
       [/Content\s*Standard\s*:?/i],
       [/Performance\s*Standard\s*:?/i, /Learning\s*Objectives\s*:?/i]
     );
+
+    // 🎯 Competencies fallback — extract from Learning Objectives if no explicit comps
+    const compPattern = extractSection(
+      text,
+      [/Learning\s*Competenc(?:y|ies)\s*(?:and\s*Curriculum\s*Standards)?\s*:?/i],
+      [/Content\s*Standard/i, /Performance\s*Standard/i]
+    );
+    if (compPattern) {
+      result.competencies = toList(compPattern).slice(0, 20);
+    } else if (result.learningObjectives && result.learningObjectives.length) {
+      // Use first few Learning Objectives as competencies (common when teachers list them together)
+      result.competencies = result.learningObjectives.slice(0, 10);
+    }
+
     result.performanceStandard = extractSection(
       text,
       [/Performance\s*Standard\s*:?/i],
@@ -237,8 +260,8 @@
     );
     const learningObj = extractSection(
       text,
-      [/Learning\s*Objectives\s*:?/i],
-      [/Learner\s*Context/i, /II\.\s*Learning/i, /Learning\s*Experiences?/i]
+      [/Learning\s*Objectives\s*:?/i, /Objectives\s*:?/i],
+      [/Learner\s*Context/i, /II\.\s*Learning/i, /Learning\s*Experiences?/i, /Assessment/i]
     );
     result.learningObjectives = toList(learningObj);
 
