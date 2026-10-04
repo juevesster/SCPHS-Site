@@ -369,15 +369,11 @@
       }
     }
 
-    function initContextPicker() {
-      const grades = [...new Set(SUBJECTS.map(s => s.level).filter(Boolean))]
-        .sort((a, b) => {
-          if (a === "K") return -1;
-          if (b === "K") return 1;
-          return (parseInt(a) || 999) - (parseInt(b) || 999);
-        });
+            function initContextPicker() {
+      // 🎯 Show K-11 only — Grade 12 will appear next year when SSHS reaches it
+      const ALL_GRADES = ["K", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11"];
       $("pickGrade").innerHTML = '<option value="">— Select —</option>' +
-        grades.map(g => `<option value="${esc(g)}">${g === "K" ? "Kindergarten" : "Grade " + g}</option>`).join("");
+        ALL_GRADES.map(g => `<option value="${esc(g)}">${g === "K" ? "Kindergarten" : "Grade " + g}</option>`).join("");
 
       $("pickGrade").addEventListener("change", populateSubjectPicker);
       $("pickSubject").addEventListener("change", checkContextReady);
@@ -393,7 +389,7 @@
       checkContextReady();
     }
 
-        function checkContextReady() {
+    function checkContextReady() {
       const ready = !!$("pickGrade").value && !!$("pickSubject").value &&
                     !!$("pickTerm").value && !!$("pickWeek").value;
       $("btnLoadContext").disabled = !ready;
@@ -401,7 +397,7 @@
       if (uploadBtn) uploadBtn.disabled = !ready;
     }
 
-        function attachHandlers() {
+    function attachHandlers() {
       $("btnLoadContext").addEventListener("click", loadContext);
       $("btnUploadDoc").addEventListener("click", () => {
         // Load context first (so we have an editor area to fill)
