@@ -235,22 +235,39 @@
       .filter(l => l.length > 3 && l.length < 500);
   }
 
-  function extractHeaderField(text, labels, opts = {}) {
+    function extractHeaderField(text, labels, opts = {}) {
     const maxLen = opts.maxLen || Infinity;
+
+    const sanitize = (s) =>
+      String(s || "")
+        .replace(/^\s*[|:;,/\\-]+\s*/g, "")   // strip leading | : ; , / \ -
+        .replace(/^\s*s\s+/i, "")              // strip stray "/s " leftovers
+        .replace(/\s*\|\s*$/g, "")             // strip trailing |
+        .replace(/\s{2,}/g, " ")
+        .trim();
+
     for (const label of labels) {
+      // A — table cell: "Label | Value"
       let m = text.match(
         new RegExp(`${label}\\s*\\|\\s*([^|\\n]+?)\\s*(?:\\||\\n|$)`, "i")
       );
-      if (m && m[1].trim().length > 0 && m[1].length <= maxLen) {
-        return m[1].trim();
+      if (m) {
+        const v = sanitize(m[1]);
+        if (v.length > 0 && v.length <= maxLen) return v;
       }
+
+      // B — same line colon: "Label: Value"
       m = text.match(new RegExp(`${label}\\s*:\\s*([^\\n]+)`, "i"));
-      if (m && m[1].trim().length > 0 && m[1].length <= maxLen) {
-        return m[1].trim();
+      if (m) {
+        const v = sanitize(m[1]);
+        if (v.length > 0 && v.length <= maxLen) return v;
       }
+
+      // C — next line: "Label\nValue"
       m = text.match(new RegExp(`${label}\\s*:?\\s*\\n\\s*([^\\n]+)`, "i"));
-      if (m && m[1].trim().length > 0 && m[1].length <= maxLen) {
-        return m[1].trim();
+      if (m) {
+        const v = sanitize(m[1]);
+        if (v.length > 0 && v.length <= maxLen) return v;
       }
     }
     return "";
@@ -296,18 +313,27 @@
       block = block.slice(cueMatch.index + cueMatch[0].length);
     }
 
-    // 4) Extract numbered items — handles multi-line wrapping and
-    //    ignores sub-headers like "Knowledge", "Skills", "Values/Attitudes"
+        // 4) Extract numbered items — handles pipe-separated DOCX cells,
+    //    multi-line wrapping, and sub-headers
     const items = [];
+
+    // Normalize: replace pipe separators with newlines so numbered
+    // items in table cells become their own lines
+    const normalized = block
+      .replace(/\s*\|\s*/g, "\n")
+      .replace(/[ \t]{2,}/g, " ");
+
     const numberedRe =
-      /(\d{1,2})\.\s+([\s\S]*?)(?=\s*\d{1,2}\.\s+|\s*(?:Knowledge|Skills?|Values?|Attitudes?)\s*:?\s*$|$)/gi;
+      /(\d{1,2})\.\s+([\s\S]*?)(?=\s*\d{1,2}\.\s+|\n\s*(?:Knowledge|Skills?|Values?|Attitudes?)\s*:?\s*$|$)/gi;
+
     let m;
-    while ((m = numberedRe.exec(block)) !== null) {
+    while ((m = numberedRe.exec(normalized)) !== null) {
       let item = m[2]
         .replace(/\s*\n\s*/g, " ")
         .replace(/\s{2,}/g, " ")
         .replace(/^(?:Knowledge|Skills?|Values?|Attitudes?)\s*:?\s*/i, "")
         .trim();
+
       if (/^(?:Knowledge|Skills?|Values?|Attitudes?)$/i.test(item)) continue;
       if (item.length > 3) items.push(item);
     }
@@ -378,15 +404,16 @@
     result.learningObjectives = extractLearningObjectives(text);
 
     // Competencies — try explicit field first, else inherit objectives
-    const compPattern = extractSection(
+        // Competencies — try explicit field first, else inherit objectives
+    const compRaw = extractSection(
       text,
-      [
-        /Learning\s*Competenc(?:y|ies)\s*(?:and\s*Curriculum\s*Standards)?\s*:?/i,
-      ],
+      [/Learning\s*Competenc(?:y|ies)\s*(?:and\s*Curriculum\s*Standards)?\s*:?/i],
       [/Content\s*Standard/i, /Performance\s*Standard/i, /Learner\s*Context/i]
     );
-    if (compPattern) {
-      result.competencies = toList(compPattern).slice(0, 20);
+
+    if (compRaw) {
+      // Split on newlines OR pipes OR numbered markers
+      result.competencies = toList(compRaw.replace(/\s*\|\s*/g, "\n")).slice(0, 20);
     } else if (result.learningObjectives.length) {
       result.competencies = result.learningObjectives.slice(0, 10);
     }
