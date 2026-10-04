@@ -1,14 +1,12 @@
 // ============================================================
-// doc-parser.js — Universal Lesson Plan Parser (v5)
+// doc-parser.js — Universal Lesson Plan Parser (v3)
 // Supports: ILAW, DLL (DO 42), MATATAG Lesson Exemplar
 // Input formats: .docx (mammoth), .pdf (PDF.js), .txt, plain text
 // Output: Universal schema that maps to ILAW editor fields
 //
-// v5 changes:
-//   - parseDocument: collapse pipe separators to newlines so DOCX
-//     behaves identically to pasted text (fixes 5→10 objectives)
-//   - Extended Learning / Ways Forward: strip leading ": . |" junk
-//   - Materials: strip checkbox glyphs (☐ ☑ ☒ □ ■)
+// v3 adds:
+//   - extractLearningObjectives() — handles instruction paragraphs,
+//     Knowledge/Skills/Values sub-headers, and multi-line numbered items
 // ============================================================
 
 (function () {
@@ -237,7 +235,7 @@
       .filter(l => l.length > 3 && l.length < 500);
   }
 
-  function extractHeaderField(text, labels, opts = {}) {
+    function extractHeaderField(text, labels, opts = {}) {
     const maxLen = opts.maxLen || Infinity;
 
     const sanitize = (s) =>
@@ -276,17 +274,19 @@
   }
 
   // ============================================================
-  // DEDICATED LEARNING OBJECTIVES EXTRACTOR
+  // 🆕 v3 — DEDICATED LEARNING OBJECTIVES EXTRACTOR
   // Handles: instruction paragraph + Knowledge/Skills/Values
   // sub-headers + numbered items that span multiple lines
   // ============================================================
   function extractLearningObjectives(text) {
+    // 1) Find the label
     const labelMatch = text.match(/Learning\s*Objectives?\s*:?\s*\|?\s*\n?/i);
     if (!labelMatch) return [];
 
     const start = labelMatch.index + labelMatch[0].length;
     const tail = text.slice(start);
 
+    // 2) Cut off at the next major section
     const stopPatterns = [
       /Learner\s*Context\s*:?/i,
       /II\.\s*Learning\s*Experiences?/i,
@@ -304,7 +304,8 @@
     }
     let block = tail.slice(0, stop).trim();
 
-    // Skip the "At the end of the ... shall be able to:" cue
+    // 3) Skip the descriptive instruction paragraph if present.
+    //    Typical cue: "At the end of the ... shall be able to:"
     const cueMatch = block.match(
       /(At\s*the\s*end\s*of[\s\S]{0,300}?able\s*to\s*:?)/i
     );
@@ -312,8 +313,12 @@
       block = block.slice(cueMatch.index + cueMatch[0].length);
     }
 
-    // Extract numbered items — pipe-separated cells, multi-line, sub-headers
+        // 4) Extract numbered items — handles pipe-separated DOCX cells,
+    //    multi-line wrapping, and sub-headers
     const items = [];
+
+    // Normalize: replace pipe separators with newlines so numbered
+    // items in table cells become their own lines
     const normalized = block
       .replace(/\s*\|\s*/g, "\n")
       .replace(/[ \t]{2,}/g, " ");
@@ -333,11 +338,14 @@
       if (item.length > 3) items.push(item);
     }
 
-    if (!items.length) return toList(block);
+    // 5) Fallback — if no numbered items, split on newlines
+    if (!items.length) {
+      return toList(block);
+    }
     return items;
   }
 
-  // ============================================================
+    // ============================================================
   // ILAW EXTRACTION
   // ============================================================
   function parseILAW(text) {
@@ -392,15 +400,19 @@
       );
     }
 
+    // 🆕 v3 — use the dedicated extractor
     result.learningObjectives = extractLearningObjectives(text);
 
     // Competencies — try explicit field first, else inherit objectives
+        // Competencies — try explicit field first, else inherit objectives
     const compRaw = extractSection(
       text,
       [/Learning\s*Competenc(?:y|ies)\s*(?:and\s*Curriculum\s*Standards)?\s*:?/i],
       [/Content\s*Standard/i, /Performance\s*Standard/i, /Learner\s*Context/i]
     );
+
     if (compRaw) {
+      // Split on newlines OR pipes OR numbered markers
       result.competencies = toList(compRaw.replace(/\s*\|\s*/g, "\n")).slice(0, 20);
     } else if (result.learningObjectives.length) {
       result.competencies = result.learningObjectives.slice(0, 10);
@@ -427,14 +439,6 @@
       [/Materials\s*(?:\/?\s*Resources)?\s*:?/i, /List\s*of\s*Learning\s*Resources/i],
       [/Integration/i, /Opportunities\s*for\s*integration/i, /Assessment/i]
     );
-    // Strip checkbox glyphs from materials
-    if (result.materials) {
-      result.materials = result.materials
-        .replace(/[\u2610\u2611\u2612\u25A1\u25A0]/g, "")
-        .replace(/\s{2,}/g, " ")
-        .trim();
-    }
-
     result.integration = extractSection(
       text,
       [/Integration\s*Opportunit/i, /Opportunities\s*for\s*integration/i],
@@ -453,6 +457,7 @@
     // =========================================================
     let extLearning = "";
 
+    // Prefer the capitalized "Extended Learning Opportunities:" list
     let mExt = text.match(
       /Extended\s*Learning\s*Opportunit(?:y|ies)\s*:\s*([\s\S]*?)(?=\n\s*(?:Reflections?|Teacher\s*Reflection|Prepared\s*by|Ways\s*Forward|Next\s*Steps)\b|$)/i
     );
@@ -460,6 +465,7 @@
       extLearning = mExt[1].trim();
     }
 
+    // Fallback — grab everything under "Ways Forward." if no labeled list
     if (!extLearning) {
       const mWays = text.match(
         /Ways\s*Forward\.?\s*([\s\S]*?)(?=\n\s*(?:Reflections?|Teacher\s*Reflection|Prepared\s*by)\b|$)/i
@@ -469,6 +475,7 @@
       }
     }
 
+    // Ways Forward — keep the intro/reflection text
     let waysFwd = extractSection(
       text,
       [/Ways\s*Forward\.?\s*:?/i],
@@ -484,27 +491,13 @@
     result.extendedLearning = extLearning;
     result.waysForward = waysFwd;
 
-    // Normalize bullets into newline-separated items
+    // Normalize bullets into newline-separated items for the textarea
     if (result.extendedLearning) {
       result.extendedLearning = result.extendedLearning
         .split(/\s*[•●▪‣·]\s*/)
         .map(s => s.trim())
         .filter(Boolean)
         .join("\n");
-    }
-
-    // Final sanitize for extendedLearning / waysForward
-    if (result.extendedLearning) {
-      result.extendedLearning = result.extendedLearning
-        .replace(/^[\s:.|•●▪‣·\-]+/, "")
-        .replace(/\s*\|\s*/g, " ")
-        .trim();
-    }
-    if (result.waysForward) {
-      result.waysForward = result.waysForward
-        .replace(/^[\s:.|•●▪‣·\-]+/, "")
-        .replace(/\s*\|\s*/g, " ")
-        .trim();
     }
 
     // Teacher Reflections
@@ -764,9 +757,6 @@
     let text;
     if (read.html) {
       text = htmlToStructuredText(read.html);
-      // 🔧 v5 — collapse remaining pipe separators to newlines so
-      //     DOCX behaves identically to pasted text downstream
-      text = text.replace(/\s*\|\s*/g, "\n");
     } else {
       text = read.text;
     }
@@ -810,6 +800,6 @@
     detectFormat: (rawText) => detectFormat(cleanArtifacts(rawText)),
     cleanArtifacts,
     normalizePastedHeaders,
-    extractLearningObjectives,
+    extractLearningObjectives, // exposed for debugging
   };
 })();
