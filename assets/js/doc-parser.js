@@ -1,19 +1,19 @@
 // ============================================================
-// doc-parser.js — Universal Lesson Plan Parser (v2)
+// doc-parser.js — Universal Lesson Plan Parser (v3)
 // Supports: ILAW, DLL (DO 42), MATATAG Lesson Exemplar
 // Input formats: .docx (mammoth), .pdf (PDF.js), .txt, plain text
 // Output: Universal schema that maps to ILAW editor fields
-// v2 fixes:
-//   1. Pasted-text header normalization (label/value on separate lines)
-//   2. Table-cell list splitting (inline 1. 2. 3. / bullets)
-//   3. Long standard fields no longer truncated (< 200 guard removed)
+//
+// v3 adds:
+//   - extractLearningObjectives() — handles instruction paragraphs,
+//     Knowledge/Skills/Values sub-headers, and multi-line numbered items
 // ============================================================
 
 (function () {
   "use strict";
 
   // ============================================================
-  // FORMAT MARKERS — detect which DepEd format the file uses
+  // FORMAT MARKERS
   // ============================================================
   const FORMAT_MARKERS = {
     ILAW: [
@@ -37,35 +37,23 @@
   };
 
   // ============================================================
-  // ARTIFACT CLEANUP — strip PDF-extraction garbage
+  // ARTIFACT CLEANUP
   // ============================================================
   function cleanArtifacts(text) {
     return String(text || "")
-      // Page markers
       .replace(/=====\s*Page\s+\d+\s*=====/gi, "\n")
-      // Runs of "1 1 1 1 1..."
       .replace(/(\b\d+\b\s+){10,}/g, " ")
-      // Runs of "FLOW FLOW FLOW..."
       .replace(/(\bFLOW\b\s*\.?\s*){5,}/gi, " ")
-      // Runs of "1. FLOW 2. FLOW..."
       .replace(/(\d+\.\s*FLOW\s*){5,}/gi, " ")
-      // Header repetition
       .replace(/Republic of the Philippines[\s\S]{0,300}?Nueva Vizcaya/gi, " ")
-      // Year runs
       .replace(/(\b20\d\d[-–]\s*){5,}/g, " ")
-      // Multiple blank lines
       .replace(/\n{3,}/g, "\n\n")
-      // Multiple spaces
       .replace(/[ \t]{2,}/g, " ")
       .trim();
   }
 
   // ============================================================
-  // 🔧 FIX 1 — Normalize pasted-text headers
-  // When users paste from Word/PDF, table cells collapse into
-  // single lines like: "Lesson Title Overview of driving..."
-  // This forces a newline before/after each known header label
-  // so the extractors can find the value on its own line.
+  // FIX 1 — Normalize pasted-text headers
   // ============================================================
   function normalizePastedHeaders(text) {
     const headers = [
@@ -103,7 +91,6 @@
       "Noted",
     ];
 
-    // Step A: insert newline BEFORE each label if not already preceded by one
     for (const h of headers) {
       text = text.replace(
         new RegExp(`(?<![\\n])\\s*(${h})\\s*:?\\s*`, "gi"),
@@ -111,9 +98,7 @@
       );
     }
 
-    // Step B: collapse the double-newlines we may have introduced
     text = text.replace(/\n{3,}/g, "\n\n");
-
     return text;
   }
 
@@ -169,21 +154,19 @@
   }
 
   // ============================================================
-  // HTML → TEXT — flatten but keep table row structure
+  // HTML → TEXT
   // ============================================================
   function htmlToStructuredText(html) {
     const container = document.createElement("div");
     container.innerHTML = html;
 
-    // Convert each <tr> to a line with cell separators
     container.querySelectorAll("tr").forEach(tr => {
       const cells = Array.from(tr.querySelectorAll("td, th"))
         .map(c => (c.innerText || c.textContent || "").trim())
         .filter(Boolean);
       if (cells.length) {
-        // 🔧 FIX 2a — Keep newlines INSIDE cells so multiline tables survive
         const joined = cells
-          .map(c => c.replace(/\s*\n\s*/g, " \u2028 ")) // soft separator inside cell
+          .map(c => c.replace(/\s*\n\s*/g, " \u2028 "))
           .join(" | ");
         const marker = document.createTextNode("\n" + joined + "\n");
         tr.parentNode.replaceChild(marker, tr);
@@ -195,7 +178,6 @@
     });
 
     return (container.innerText || container.textContent || "")
-      // Restore soft separators as newlines so list splitting works
       .replace(/\s*\u2028\s*/g, "\n")
       .trim();
   }
@@ -240,14 +222,9 @@
     return remainder.slice(0, stopIdx).trim();
   }
 
-  // ============================================================
-  // 🔧 FIX 2 — toList splits on newlines AND inline list markers
-  // so table-cell content ("1. A 2. B 3. C") becomes 3 items
-  // ============================================================
   function toList(text) {
     if (!text) return [];
     return String(text)
-      // newlines OR "1." / "2." at word boundary OR bullet chars
       .split(/\n+|(?=\s+\d+\.\s)|\s*[•●▪‣·]\s+/g)
       .map(l =>
         l
@@ -258,34 +235,88 @@
       .filter(l => l.length > 3 && l.length < 500);
   }
 
-  // ============================================================
-  // 🔧 FIX 3 — dedicated header extractor with NO length cap
-  // (Standards/References/Objectives are legitimately long)
-  // ============================================================
   function extractHeaderField(text, labels, opts = {}) {
     const maxLen = opts.maxLen || Infinity;
     for (const label of labels) {
-      // Pattern A: table cell — "Label | Value"
       let m = text.match(
         new RegExp(`${label}\\s*\\|\\s*([^|\\n]+?)\\s*(?:\\||\\n|$)`, "i")
       );
       if (m && m[1].trim().length > 0 && m[1].length <= maxLen) {
         return m[1].trim();
       }
-
-      // Pattern B: "Label: value" on same line
       m = text.match(new RegExp(`${label}\\s*:\\s*([^\\n]+)`, "i"));
       if (m && m[1].trim().length > 0 && m[1].length <= maxLen) {
         return m[1].trim();
       }
-
-      // Pattern C: "Label\nvalue" on next line
       m = text.match(new RegExp(`${label}\\s*:?\\s*\\n\\s*([^\\n]+)`, "i"));
       if (m && m[1].trim().length > 0 && m[1].length <= maxLen) {
         return m[1].trim();
       }
     }
     return "";
+  }
+
+  // ============================================================
+  // 🆕 v3 — DEDICATED LEARNING OBJECTIVES EXTRACTOR
+  // Handles: instruction paragraph + Knowledge/Skills/Values
+  // sub-headers + numbered items that span multiple lines
+  // ============================================================
+  function extractLearningObjectives(text) {
+    // 1) Find the label
+    const labelMatch = text.match(/Learning\s*Objectives?\s*:?\s*\|?\s*\n?/i);
+    if (!labelMatch) return [];
+
+    const start = labelMatch.index + labelMatch[0].length;
+    const tail = text.slice(start);
+
+    // 2) Cut off at the next major section
+    const stopPatterns = [
+      /Learner\s*Context\s*:?/i,
+      /II\.\s*Learning\s*Experiences?/i,
+      /Learning\s*Experiences?\s*:?/i,
+      /Pre-?\s*Lesson\s*:?/i,
+      /Lesson\s*Flow\s*:?/i,
+      /Materials\s*:?/i,
+      /Assessment\s*:?/i,
+      /References\s*:?/i,
+    ];
+    let stop = tail.length;
+    for (const re of stopPatterns) {
+      const m = tail.match(re);
+      if (m && m.index > 0 && m.index < stop) stop = m.index;
+    }
+    let block = tail.slice(0, stop).trim();
+
+    // 3) Skip the descriptive instruction paragraph if present.
+    //    Typical cue: "At the end of the ... shall be able to:"
+    const cueMatch = block.match(
+      /(At\s*the\s*end\s*of[\s\S]{0,300}?able\s*to\s*:?)/i
+    );
+    if (cueMatch) {
+      block = block.slice(cueMatch.index + cueMatch[0].length);
+    }
+
+    // 4) Extract numbered items — handles multi-line wrapping and
+    //    ignores sub-headers like "Knowledge", "Skills", "Values/Attitudes"
+    const items = [];
+    const numberedRe =
+      /(\d{1,2})\.\s+([\s\S]*?)(?=\s*\d{1,2}\.\s+|\s*(?:Knowledge|Skills?|Values?|Attitudes?)\s*:?\s*$|$)/gi;
+    let m;
+    while ((m = numberedRe.exec(block)) !== null) {
+      let item = m[2]
+        .replace(/\s*\n\s*/g, " ")
+        .replace(/\s{2,}/g, " ")
+        .replace(/^(?:Knowledge|Skills?|Values?|Attitudes?)\s*:?\s*/i, "")
+        .trim();
+      if (/^(?:Knowledge|Skills?|Values?|Attitudes?)$/i.test(item)) continue;
+      if (item.length > 3) items.push(item);
+    }
+
+    // 5) Fallback — if no numbered items, split on newlines
+    if (!items.length) {
+      return toList(block);
+    }
+    return items;
   }
 
   // ============================================================
@@ -306,20 +337,17 @@
     ]);
     result.noOfSessions = extractHeaderField(text, ["No\\.\\s*of\\s*Sessions"]);
 
-    // References — multi-line, allow up to 800 chars
     const refM = text.match(
       /References\s*\|?\s*\n?([\s\S]{10,800}?)(?:\n\n|Intentions|Declaration|Content\s*Standard)/i
     );
     if (refM) result.references = refM[1].trim().replace(/\n+/g, "\n");
 
-    // Declaration of AI
     result.aiDeclarationText = extractSection(
       text,
       [/Declaration\s*of\s*AI\s*use/i],
       [/Intentions\./i, /I\.\s*Intentions/i]
     );
 
-    // Content Standard — no length cap
     result.contentStandard = extractHeaderField(
       text,
       ["Content\\s*Standard"],
@@ -333,7 +361,6 @@
       );
     }
 
-    // Performance Standard — no length cap
     result.performanceStandard = extractHeaderField(
       text,
       ["Performance\\s*Standard"],
@@ -347,25 +374,10 @@
       );
     }
 
-    // Learning Objectives — try multiple label variants
-    const learningObj = extractSection(
-      text,
-      [
-        /Learning\s*Objectives\s*:?/i,
-        /Objectives\s*:?/i,
-        /At\s*the\s*end\s*of\s*(?:the|this)\s*lesson/i,
-      ],
-      [
-        /Learner\s*Context/i,
-        /II\.\s*Learning/i,
-        /Learning\s*Experiences?/i,
-        /Assessment/i,
-        /Pre-?\s*Lesson/i,
-      ]
-    );
-    result.learningObjectives = toList(learningObj);
+    // 🆕 v3 — use the dedicated extractor
+    result.learningObjectives = extractLearningObjectives(text);
 
-    // Competencies — try explicit field, else fall back to objectives
+    // Competencies — try explicit field first, else inherit objectives
     const compPattern = extractSection(
       text,
       [
@@ -385,7 +397,6 @@
       [/Learning\s*Experiences?/i, /II\./i, /Assessment/i, /Pre-?\s*Lesson/i]
     );
 
-    // Learning Experience
     result.preLesson = extractSection(
       text,
       [/Pre-?\s*Lesson\s*:?/i, /Introduction\s*:?/i],
@@ -407,14 +418,12 @@
       [/Assessment/i, /Formative/i]
     );
 
-    // Assessment
     result.assessment = extractSection(
       text,
       [/Assessment\.?/i, /Formative\s*Assessment\s*:?/i],
       [/Ways\s*Forward/i, /Extended\s*Learning/i]
     );
 
-    // Ways Forward
     result.extendedLearning = extractSection(
       text,
       [/Extended\s*Learning\s*Opportunit/i],
@@ -519,7 +528,7 @@
   }
 
   // ============================================================
-  // MATATAG LESSON EXEMPLAR EXTRACTION
+  // MATATAG EXTRACTION
   // ============================================================
   function parseMATATAG(text) {
     const result = baseSchema("MATATAG");
@@ -685,9 +694,7 @@
       text = read.text;
     }
 
-    // 🔧 FIX 1 applied here too — good for PDF extraction
     const cleaned = normalizePastedHeaders(cleanArtifacts(text));
-
     const format = detectFormat(cleaned);
 
     let result;
@@ -725,6 +732,7 @@
     },
     detectFormat: (rawText) => detectFormat(cleanArtifacts(rawText)),
     cleanArtifacts,
-    normalizePastedHeaders, // exposed for debugging
+    normalizePastedHeaders,
+    extractLearningObjectives, // exposed for debugging
   };
 })();
