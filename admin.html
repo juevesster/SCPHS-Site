@@ -46,6 +46,10 @@
       opacity: 0.75;
     }
 
+        /* Hide admin-only tabs when NOT admin */
+    .admin-only-tab { display: none !important; }
+    body.is-admin-role .admin-only-tab { display: flex !important; }
+    
     .ac-nav { padding: 0 12px; }
 
     .ac-nav-item {
@@ -630,23 +634,23 @@
         <p>Sta. Cruz Pingkian HS</p>
       </div>
 
-      <nav class="ac-nav">
+        <nav class="ac-nav">
         <button class="ac-nav-item active" data-tab="classes">
           <span class="ico">🏫</span> Classes
         </button>
-        <button class="ac-nav-item" data-tab="advisers">
+        <button class="ac-nav-item admin-only-tab" data-tab="advisers">
           <span class="ico">👤</span> Advisers
         </button>
         <button class="ac-nav-item" data-tab="subjects">
           <span class="ico">📚</span> Subjects
         </button>
-          <button class="ac-nav-item" data-tab="ilaw-settings">
+        <button class="ac-nav-item admin-only-tab" data-tab="ilaw-settings">
           <span class="ico">📝</span> ILAW Settings
         </button>
         <button class="ac-nav-item" onclick="location.href='ilaw.html'">
           <span class="ico">📝</span> ILAW Lessons
         </button>
-        <button class="ac-nav-item" data-tab="rooms">
+        <button class="ac-nav-item admin-only-tab" data-tab="rooms">
           <span class="ico">🚪</span> Rooms
         </button>
         <button class="ac-nav-item" data-tab="conflicts">
@@ -736,34 +740,54 @@
     // ============================================================
     // AUTH CHECK
     // ============================================================
-    onAuthStateChanged(auth, async (user) => {
+        onAuthStateChanged(auth, async (user) => {
       if (!user) {
         location.replace("login.html?next=" + encodeURIComponent(location.pathname + location.search));
         return;
       }
 
-      CURRENT_USER = user;
-      CURRENT_PROFILE = await getCurrentUserProfile();
+            CURRENT_USER = user;
 
-      const isAdmin = CURRENT_PROFILE?.primaryRole === "admin"
-        || CURRENT_PROFILE?.isSuperAdmin
-        || CURRENT_PROFILE?.permissions?.canManageClasses === true;
-
-      if (!isAdmin) {
+      try {
+        CURRENT_PROFILE = await getCurrentUserProfile();
+      } catch (e) {
+        console.error("[admin] profile load failed:", e);
         $("acMain").innerHTML = `
           <div class="ac-card" style="text-align:center;padding:60px;">
-            <h2 style="color:#b91c1c;">🚫 Access Denied</h2>
-            <p>Only admins can access the control center.</p>
+            <h2 style="color:#b91c1c;">⚠️ Profile Error</h2>
+            <p>Could not load your profile.</p>
+            <p style="font-size:12px;color:#6b7280;">${e.message || ""}</p>
             <a href="index.html" class="ac-btn primary" style="margin-top:14px;">← Back to Portal</a>
           </div>`;
         return;
       }
 
+      const isAdmin = CURRENT_PROFILE?.primaryRole === "admin"
+        || CURRENT_PROFILE?.isSuperAdmin
+        || CURRENT_PROFILE?.permissions?.canManageClasses === true;
+
+      const isTeacher = CURRENT_PROFILE?.primaryRole === "teacher"
+        || CURRENT_PROFILE?.permissions?.canEnterGrades === true;
+
+      const isStaff = isAdmin || isTeacher;
+
+      if (!isStaff) {
+        $("acMain").innerHTML = `
+          <div class="ac-card" style="text-align:center;padding:60px;">
+            <h2 style="color:#b91c1c;">🚫 Access Denied</h2>
+            <p>Only teachers and admins can access this page.</p>
+            <a href="index.html" class="ac-btn primary" style="margin-top:14px;">← Back to Portal</a>
+          </div>`;
+        return;
+      }
+
+      // 🎯 Role-aware body class
+      document.body.classList.add(isAdmin ? "is-admin-role" : "is-teacher-role");
+
       await loadAllData();
       renderActiveTab();
       attachSidebarHandlers();
       handleUrlHash();
-    });
 
     // ============================================================
     // DATA LOADING
@@ -771,9 +795,20 @@
     async function loadAllData() {
       try {
         // Load classes
+                // Load classes
         const classSnap = await getDocs(collection(db, "classes"));
         CLASSES = classSnap.docs.map(d => ({ id: d.id, ...d.data() }));
         CLASSES = sortClasses(CLASSES);
+
+        // 🎯 Teachers see only their own classes
+        const isAdmin = CURRENT_PROFILE?.primaryRole === "admin"
+          || CURRENT_PROFILE?.isSuperAdmin;
+        if (!isAdmin) {
+          CLASSES = CLASSES.filter(c =>
+            c.adviserUid === CURRENT_USER.uid ||
+            (c.teacherUids || []).includes(CURRENT_USER.uid)
+          );
+        }
 
         // Load users (for adviser dropdowns)
         const userSnap = await getDocs(collection(db, "users"));
@@ -1420,10 +1455,20 @@
         }
 
         // ---- 2. Run detectors ----
-        const teacherConflicts = detectTeacherClashes(allPrograms);
-        const roomConflicts = detectRoomClashes(allPrograms);
-        const orphanConflicts = detectOrphanedSlots(allPrograms);
-        const dupPrimaryConflicts = detectDuplicatePrimaries(allPrograms);
+                // 🎯 Teachers see only their own class conflicts
+        const isAdmin = CURRENT_PROFILE?.primaryRole === "admin"
+          || CURRENT_PROFILE?.isSuperAdmin;
+        let scopedPrograms = allPrograms;
+        if (!isAdmin) {
+          const myClassIds = new Set(CLASSES.map(c => c.id));
+          scopedPrograms = allPrograms.filter(p => myClassIds.has(p.classId));
+        }
+
+        // ---- 2. Run detectors ----
+        const teacherConflicts = detectTeacherClashes(scopedPrograms);
+        const roomConflicts = detectRoomClashes(scopedPrograms);
+        const orphanConflicts = detectOrphanedSlots(scopedPrograms);
+        const dupPrimaryConflicts = detectDuplicatePrimaries(scopedPrograms);
 
         CONFLICTS = [
           ...teacherConflicts,
