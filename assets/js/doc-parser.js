@@ -319,7 +319,7 @@
     return items;
   }
 
-  // ============================================================
+    // ============================================================
   // ILAW EXTRACTION
   // ============================================================
   function parseILAW(text) {
@@ -424,20 +424,60 @@
       [/Ways\s*Forward/i, /Extended\s*Learning/i]
     );
 
-    result.extendedLearning = extractSection(
-      text,
-      [/Extended\s*Learning\s*Opportunit/i],
-      [/Reflection/i, /Ways\s*Forward/i]
+    // =========================================================
+    // Extended Learning — picks the LABELED list, skips the
+    // instruction paragraph under "Ways Forward."
+    // =========================================================
+    let extLearning = "";
+
+    // Prefer the capitalized "Extended Learning Opportunities:" list
+    let mExt = text.match(
+      /Extended\s*Learning\s*Opportunit(?:y|ies)\s*:\s*([\s\S]*?)(?=\n\s*(?:Reflections?|Teacher\s*Reflection|Prepared\s*by|Ways\s*Forward|Next\s*Steps)\b|$)/i
     );
+    if (mExt && mExt[1].trim().length > 10) {
+      extLearning = mExt[1].trim();
+    }
+
+    // Fallback — grab everything under "Ways Forward." if no labeled list
+    if (!extLearning) {
+      const mWays = text.match(
+        /Ways\s*Forward\.?\s*([\s\S]*?)(?=\n\s*(?:Reflections?|Teacher\s*Reflection|Prepared\s*by)\b|$)/i
+      );
+      if (mWays && mWays[1].trim().length > 10) {
+        extLearning = mWays[1].trim();
+      }
+    }
+
+    // Ways Forward — keep the intro/reflection text
+    let waysFwd = extractSection(
+      text,
+      [/Ways\s*Forward\.?\s*:?/i],
+      [
+        /Extended\s*Learning\s*Opportunit/i,
+        /Reflections?/i,
+        /Teacher\s*Reflection/i,
+        /Prepared\s*by/i,
+      ]
+    );
+    if (!waysFwd && extLearning) waysFwd = extLearning;
+
+    result.extendedLearning = extLearning;
+    result.waysForward = waysFwd;
+
+    // Normalize bullets into newline-separated items for the textarea
+    if (result.extendedLearning) {
+      result.extendedLearning = result.extendedLearning
+        .split(/\s*[•●▪‣·]\s*/)
+        .map(s => s.trim())
+        .filter(Boolean)
+        .join("\n");
+    }
+
+    // Teacher Reflections
     result.teacherReflections = extractSection(
       text,
       [/Reflections?\s*:?/i, /Teacher\s*Reflection\s*:?/i],
-      [/Next\s*Steps/i, /Prepared\s*by/i]
-    );
-    result.waysForward = extractSection(
-      text,
-      [/Next\s*Steps\s*:?/i, /Ways\s*Forward\s*:?/i],
-      [/Prepared\s*by/i]
+      [/Next\s*Steps/i, /Ways\s*Forward/i, /Prepared\s*by/i]
     );
 
     extractSignatories(text, result);
