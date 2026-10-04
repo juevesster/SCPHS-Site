@@ -519,6 +519,113 @@
     .admin-settings-link:hover {
       background: rgba(15,76,129,0.15);
     }
+
+        /* ============================================================
+       SYSTEM PROPONENTS (bottom of branding panel)
+       ============================================================ */
+    .proponents-section {
+      margin-top: 32px;
+      padding-top: 24px;
+      border-top: 1px solid rgba(255,255,255,0.2);
+      position: relative;
+      z-index: 1;
+    }
+
+    .proponents-title {
+      font-size: 12px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.14em;
+      color: rgba(255,255,255,0.9);
+      margin-bottom: 18px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .proponents-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+
+    .proponent-card {
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.15);
+      border-radius: 12px;
+      padding: 14px 12px;
+      text-align: center;
+      transition: all 0.2s;
+      backdrop-filter: blur(6px);
+    }
+    .proponent-card:hover {
+      background: rgba(255,255,255,0.14);
+      transform: translateY(-2px);
+    }
+    .proponent-card.lead {
+      background: rgba(255,255,255,0.16);
+      border-color: rgba(255,255,255,0.4);
+      box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+    }
+
+    .proponent-avatar {
+      font-size: 28px;
+      margin-bottom: 6px;
+      line-height: 1;
+    }
+
+    .proponent-name {
+      font-size: 10.5px;
+      font-weight: 800;
+      color: #ffffff;
+      line-height: 1.25;
+      margin-bottom: 4px;
+      text-transform: uppercase;
+      letter-spacing: 0.02em;
+    }
+
+    .proponent-role {
+      font-size: 10px;
+      color: rgba(255,255,255,0.75);
+      line-height: 1.3;
+      margin-bottom: 6px;
+    }
+
+    .proponent-badge {
+      display: inline-block;
+      background: rgba(255,255,255,0.95);
+      color: #0f4c81;
+      font-size: 9px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      padding: 2px 8px;
+      border-radius: 999px;
+      margin-top: 2px;
+    }
+
+    .proponents-footer {
+      text-align: center;
+      padding-top: 12px;
+    }
+    .powered-by {
+      font-size: 10.5px;
+      font-weight: 700;
+      color: rgba(255,255,255,0.85);
+      letter-spacing: 0.04em;
+      margin-bottom: 4px;
+    }
+    .copyright {
+      font-size: 10px;
+      color: rgba(255,255,255,0.6);
+      letter-spacing: 0.02em;
+    }
+
+    /* Mobile — proponents section hidden when brand panel is hidden */
+    @media (max-width: 900px) {
+      .proponents-section { display: none; }
+    }
   </style>
 </head>
 <body>
@@ -580,6 +687,10 @@
           <li><span class="check">✓</span> Message your class adviser securely</li>
           <li><span class="check">✓</span> Stay updated with school announcements</li>
         </ul>
+      </div>
+
+            <div class="proponents-section" id="proponentsSection">
+        <!-- Populated by JS -->
       </div>
 
       <div class="brand-foot">
@@ -705,14 +816,24 @@
 </div>
 
   <!-- Load config first, then populate + login logic -->
-  <script type="module">
+    <script type="module">
 import { loadConfig, cfg } from "./assets/js/config.js";
+import { loadProponents, renderProponents } from "./assets/js/proponents-config.js";
 
 // Load config — never let a Firestore hiccup kill the page
 try {
   await loadConfig();
 } catch (e) {
   console.warn("[login] loadConfig failed, using defaults:", e);
+}
+
+// Load proponents (falls back to defaults if unavailable)
+let PROPONENTS = null;
+try {
+  PROPONENTS = await loadProponents();
+} catch (e) {
+  console.warn("[login] loadProponents failed, using defaults:", e);
+  PROPONENTS = window.Proponents.DEFAULTS;
 }
 
 const $   = (id) => document.getElementById(id);
@@ -739,6 +860,12 @@ set("brand-dept",          cfg("department"));
 set("brand-foot-school",   cfg("schoolName"));
 set("brand-foot-region",   cfg("region"));
 set("brand-foot-division", cfg("division"));
+
+// Proponents section
+const propsHost = document.getElementById("proponentsSection");
+if (propsHost && PROPONENTS) {
+  renderProponents(propsHost, PROPONENTS);
+}
 
 // Title
 document.title = "Sign In — " + cfg("schoolShortName", "SCPHS");

@@ -688,6 +688,7 @@
     import "./assets/js/bow-store.js";
     import "./assets/js/bow-viewer.js";
     import "./assets/js/ilaw-config.js";
+    import "./assets/js/proponents-config.js";
 
     // ============================================================
     // STATE
@@ -3834,22 +3835,105 @@
           </div>
         </div>
 
+                <!-- PROPONENTS SECTION -->
+        <div class="ac-card">
+          <h3>💡 System Proponents</h3>
+          <p style="color:#6b7280;font-size:13px;margin:0 0 14px;">Names shown in the login page's branding panel.</p>
+          <div id="proponentsList" style="display:flex;flex-direction:column;gap:10px;margin-bottom:14px;"></div>
+          <button class="ac-btn outline" id="btnAddProponent" style="margin-bottom:14px;">➕ Add Proponent</button>
+
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:16px;">
+            <div>
+              <label style="display:block;font-size:11px;font-weight:700;color:#374151;text-transform:uppercase;margin-bottom:6px;">Powered by</label>
+              <input type="text" id="cfg-poweredBy" value="" style="width:100%;padding:10px 12px;border:1px solid #d1d5db;border-radius:8px;font-size:14px;font-family:inherit;" />
+            </div>
+            <div>
+              <label style="display:block;font-size:11px;font-weight:700;color:#374151;text-transform:uppercase;margin-bottom:6px;">Copyright</label>
+              <input type="text" id="cfg-copyright" value="" style="width:100%;padding:10px 12px;border:1px solid #d1d5db;border-radius:8px;font-size:14px;font-family:inherit;" />
+            </div>
+          </div>
+        </div>
+
         <div class="ac-card" style="display:flex;gap:10px;flex-wrap:wrap;">
           <button class="ac-btn success" id="btnSaveILAWSettings">💾 Save Settings</button>
           <button class="ac-btn outline" id="btnResetILAWSettings">🔄 Reset to Defaults</button>
         </div>
       `;
 
-      $("btnSaveILAWSettings").addEventListener("click", async () => {
+            // ---- Proponents editor ----
+      let PROPONENTS_STATE = [];
+      try {
+        const propCfg = await window.Proponents.load();
+        PROPONENTS_STATE = propCfg.list || [];
+        if ($("cfg-poweredBy")) $("cfg-poweredBy").value = propCfg.poweredBy || "";
+        if ($("cfg-copyright")) $("cfg-copyright").value = propCfg.copyright || "";
+      } catch (e) {
+        PROPONENTS_STATE = window.Proponents.DEFAULTS.list.slice();
+      }
+
+      function renderProponentsList() {
+        const host = $("proponentsList");
+        if (!host) return;
+        host.innerHTML = PROPONENTS_STATE.map((p, idx) => `
+          <div style="background:#f9fafb;border:1px solid #e5e7eb;border-radius:10px;padding:12px 14px;display:grid;grid-template-columns:auto 1fr 1fr 1fr auto;gap:10px;align-items:center;">
+            <input type="text" data-prop-emoji="${idx}" value="${esc(p.emoji || "")}" placeholder="👤" style="width:50px;padding:8px;border:1px solid #d1d5db;border-radius:6px;font-size:18px;text-align:center;font-family:inherit;" />
+            <input type="text" data-prop-name="${idx}" value="${esc(p.name || "")}" placeholder="Full Name" style="padding:8px 10px;border:1px solid #d1d5db;border-radius:6px;font-size:13px;font-family:inherit;" />
+            <input type="text" data-prop-role="${idx}" value="${esc(p.role || "")}" placeholder="Role" style="padding:8px 10px;border:1px solid #d1d5db;border-radius:6px;font-size:13px;font-family:inherit;" />
+            <input type="text" data-prop-badge="${idx}" value="${esc(p.badge || "")}" placeholder="Badge (optional)" style="padding:8px 10px;border:1px solid #d1d5db;border-radius:6px;font-size:13px;font-family:inherit;" />
+            <button class="ac-btn danger small" data-prop-delete="${idx}">✕</button>
+          </div>
+        `).join("");
+
+        // Wire change handlers
+        host.querySelectorAll("[data-prop-emoji]").forEach(el => {
+          el.addEventListener("input", () => { PROPONENTS_STATE[el.dataset.propEmoji].emoji = el.value; });
+        });
+        host.querySelectorAll("[data-prop-name]").forEach(el => {
+          el.addEventListener("input", () => { PROPONENTS_STATE[el.dataset.propName].name = el.value; });
+        });
+        host.querySelectorAll("[data-prop-role]").forEach(el => {
+          el.addEventListener("input", () => { PROPONENTS_STATE[el.dataset.propRole].role = el.value; });
+        });
+        host.querySelectorAll("[data-prop-badge]").forEach(el => {
+          el.addEventListener("input", () => { PROPONENTS_STATE[el.dataset.propBadge].badge = el.value; });
+        });
+        host.querySelectorAll("[data-prop-delete]").forEach(btn => {
+          btn.addEventListener("click", () => {
+            const idx = parseInt(btn.dataset.propDelete, 10);
+            PROPONENTS_STATE.splice(idx, 1);
+            renderProponentsList();
+          });
+        });
+      }
+
+      renderProponentsList();
+
+      $("btnAddProponent")?.addEventListener("click", () => {
+        PROPONENTS_STATE.push({ emoji: "👤", name: "", role: "Proponent", badge: "", isLead: false });
+        renderProponentsList();
+      });
+
+            $("btnSaveILAWSettings").addEventListener("click", async () => {
+        // Save ILAW settings
         const cfg = {};
         ["depedLogo","headerLine1","headerLine2","region","division","schoolLogo","schoolName","schoolAddress","rightLogo","titleLabel","preparedByLabel","checkedByLabel","notedByLabel","defaultPrincipalName","defaultPrincipalPosition","footerLine1","footerLine2"].forEach(key => {
           cfg[key] = $("cfg-" + key)?.value?.trim() || "";
         });
         cfg.showPageNumbers = $("cfg-showPageNumbers")?.checked ?? true;
         cfg.showGeneratedDate = $("cfg-showGeneratedDate")?.checked ?? true;
+
         try {
           await window.ILAWConfig.save(cfg);
-          toast("✓ ILAW settings saved", "success");
+
+          // Save proponents too
+          const propData = {
+            list: PROPONENTS_STATE,
+            poweredBy: $("cfg-poweredBy")?.value?.trim() || "",
+            copyright: $("cfg-copyright")?.value?.trim() || "",
+          };
+          await window.Proponents.save(propData);
+
+          toast("✓ Settings + Proponents saved", "success");
         } catch (e) {
           toast("⚠️ " + (e.message || "Save failed"), "error");
         }
