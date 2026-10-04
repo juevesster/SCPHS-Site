@@ -294,6 +294,7 @@
     import "./assets/js/ilaw-store.js";
     import "./assets/js/ilaw-config.js";
     import "./assets/js/doc-parser.js";
+    import { enrichILAW } from "./assets/js/ai-enricher.js";
 
     let CURRENT_USER = null;
     let CURRENT_PROFILE = null;
@@ -1249,6 +1250,7 @@
             <div style="display:flex;gap:8px;flex-wrap:wrap;">
               <button class="btn btn-outline small" id="previewClose">Cancel</button>
               <button class="btn btn-success" id="previewApply">✨ Apply to ILAW</button>
+              <button class="btn btn-primary" id="previewEnrich" style="background:#4f46e5;color:#fff;">🤖 Apply + Enrich with AI</button>
             </div>
           </div>
         </div>
@@ -1285,11 +1287,88 @@ ${esc(JSON.stringify(parsed, null, 2))}
         </details>
       `;
 
-      // Apply button
+            // Apply button
       preview.querySelector("#previewApply").addEventListener("click", () => {
         applyParsedToILAW(parsed);
         modal.remove();
         toast("✓ Applied to ILAW editor", "success");
+      });
+
+      // Apply + Enrich button
+      preview.querySelector("#previewEnrich").addEventListener("click", async () => {
+        const btn = preview.querySelector("#previewEnrich");
+        btn.disabled = true;
+        btn.textContent = "⏳ Enriching...";
+
+        // First dump raw parsed values so teacher sees the source
+        applyParsedToILAW(parsed);
+
+        const ctx = {
+          subjectCode: $("pickSubject").value,
+          subjectName: $("pickSubject").selectedOptions[0]?.textContent || "",
+          gradeLevel:  $("pickGrade").value,
+          term:        $("pickTerm").value,
+          week:        $("pickWeek").value,
+        };
+
+        try {
+          const enriched = await enrichILAW(parsed, ctx, (pct, msg) => {
+            btn.textContent = `⏳ ${msg || pct + "%"}`;
+          });
+
+          const map = {
+            content_standard:          "f-contentStandard",
+            performance_standard:      "f-performanceStandard",
+            learner_context:           "f-learnerContext",
+            pre_lesson:                "f-preLesson",
+            lesson_flow:               "f-lessonFlow",
+            materials_text:            "f-materialsText",
+            integration_opportunities: "f-integration",
+            assessment:                "f-assessment",
+            extended_learning:         "f-extendedLearning",
+            ways_forward:              "f-waysForward",
+            teacher_reflections:       "f-teacherReflections",
+            references_text:           "f-references",
+          };
+
+          let applied = 0;
+          for (const [key, id] of Object.entries(map)) {
+            const val = enriched[key];
+            if (!val) continue;
+            const el = document.getElementById(id);
+            if (!el) continue;
+            el.value = val;
+            el.dispatchEvent(new Event("input",  { bubbles: true }));
+            el.dispatchEvent(new Event("change", { bubbles: true }));
+            el.style.border = "2px solid #4f46e5";
+            setTimeout(() => { el.style.border = ""; }, 2500);
+            applied++;
+          }
+
+          // Competencies — send to manual textarea (if BoW picker isn't used)
+          if (enriched.competencies) {
+            const manual = document.getElementById("manualComps");
+            if (manual) {
+              manual.value = enriched.competencies;
+              manual.dispatchEvent(new Event("input", { bubbles: true }));
+              applied++;
+            }
+          }
+
+          DIRTY = true;
+          updateDirtyIndicator();
+          modal.remove();
+          toast(`✓ AI enriched ${applied} field(s) — review and save`, "success");
+
+          const ed = document.getElementById("editorArea");
+          if (ed) ed.scrollIntoView({ behavior: "smooth", block: "start" });
+
+        } catch (err) {
+          console.error(err);
+          toast("⚠️ AI failed: " + err.message, "error");
+          btn.disabled = false;
+          btn.textContent = "🤖 Apply + Enrich with AI";
+        }
       });
 
       // Cancel button
