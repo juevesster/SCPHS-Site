@@ -1,8 +1,12 @@
 // ============================================================
-// doc-parser.js — Universal Lesson Plan Parser
+// doc-parser.js — Universal Lesson Plan Parser (v2)
 // Supports: ILAW, DLL (DO 42), MATATAG Lesson Exemplar
 // Input formats: .docx (mammoth), .pdf (PDF.js), .txt, plain text
 // Output: Universal schema that maps to ILAW editor fields
+// v2 fixes:
+//   1. Pasted-text header normalization (label/value on separate lines)
+//   2. Table-cell list splitting (inline 1. 2. 3. / bullets)
+//   3. Long standard fields no longer truncated (< 200 guard removed)
 // ============================================================
 
 (function () {
@@ -57,20 +61,74 @@
   }
 
   // ============================================================
+  // 🔧 FIX 1 — Normalize pasted-text headers
+  // When users paste from Word/PDF, table cells collapse into
+  // single lines like: "Lesson Title Overview of driving..."
+  // This forces a newline before/after each known header label
+  // so the extractors can find the value on its own line.
+  // ============================================================
+  function normalizePastedHeaders(text) {
+    const headers = [
+      "Lesson\\s*Title",
+      "Learning\\s*Area(?:s)?",
+      "Name\\s*of\\s*Teacher(?:s)?",
+      "Teacher(?:'s)?\\s*Name",
+      "Teacher",
+      "Grade\\s*Level(?:\\s*and\\s*Section)?",
+      "Grade\\s*(?:&|and)\\s*Section",
+      "No\\.\\s*of\\s*Sessions",
+      "No\\.\\s*of\\s*Days",
+      "Section",
+      "Quarter",
+      "School",
+      "References",
+      "Content\\s*Standard",
+      "Performance\\s*Standard",
+      "Learning\\s*Objectives",
+      "Learning\\s*Competenc(?:y|ies)",
+      "Learner\\s*Context",
+      "Pre-?\\s*Lesson",
+      "Lesson\\s*Flow",
+      "Materials(?:\\s*/?\\s*Resources)?",
+      "Integration",
+      "Assessment",
+      "Extended\\s*Learning",
+      "Ways\\s*Forward",
+      "Reflections?",
+      "Declaration\\s*of\\s*AI\\s*use",
+      "Intentions",
+      "Meaningful",
+      "Prepared\\s*by",
+      "Checked\\s*by",
+      "Noted",
+    ];
+
+    // Step A: insert newline BEFORE each label if not already preceded by one
+    for (const h of headers) {
+      text = text.replace(
+        new RegExp(`(?<![\\n])\\s*(${h})\\s*:?\\s*`, "gi"),
+        "\n$1: "
+      );
+    }
+
+    // Step B: collapse the double-newlines we may have introduced
+    text = text.replace(/\n{3,}/g, "\n\n");
+
+    return text;
+  }
+
+  // ============================================================
   // FILE READERS
   // ============================================================
-
-  // Read .docx — preserves table structure as HTML
   async function readDocx(file) {
     if (typeof mammoth === "undefined") {
       throw new Error("mammoth.js not loaded. Add the script tag.");
     }
     const arrayBuffer = await file.arrayBuffer();
     const result = await mammoth.convertToHtml({ arrayBuffer });
-    return result.value; // HTML string with <table>, <p>, etc.
+    return result.value;
   }
 
-  // Read .pdf via PDF.js
   async function readPdf(file) {
     if (typeof pdfjsLib === "undefined") {
       throw new Error("PDF.js not loaded.");
@@ -99,12 +157,10 @@
     return pages.join("\n\n");
   }
 
-  // Read plain text
   async function readTxt(file) {
     return await file.text();
   }
 
-  // Universal reader
   async function readFile(file) {
     const name = (file.name || "").toLowerCase();
     if (name.endsWith(".docx")) return { html: await readDocx(file), type: "docx" };
@@ -116,7 +172,6 @@
   // HTML → TEXT — flatten but keep table row structure
   // ============================================================
   function htmlToStructuredText(html) {
-    // Replace table rows with pipes to preserve cell boundaries
     const container = document.createElement("div");
     container.innerHTML = html;
 
@@ -126,17 +181,23 @@
         .map(c => (c.innerText || c.textContent || "").trim())
         .filter(Boolean);
       if (cells.length) {
-        const marker = document.createTextNode("\n" + cells.join(" | ") + "\n");
+        // 🔧 FIX 2a — Keep newlines INSIDE cells so multiline tables survive
+        const joined = cells
+          .map(c => c.replace(/\s*\n\s*/g, " \u2028 ")) // soft separator inside cell
+          .join(" | ");
+        const marker = document.createTextNode("\n" + joined + "\n");
         tr.parentNode.replaceChild(marker, tr);
       }
     });
 
-    // Convert <p> and headings to newlines
     container.querySelectorAll("p, h1, h2, h3, h4").forEach(el => {
       el.innerText = "\n" + (el.innerText || "") + "\n";
     });
 
-    return (container.innerText || container.textContent || "").trim();
+    return (container.innerText || container.textContent || "")
+      // Restore soft separators as newlines so list splitting works
+      .replace(/\s*\u2028\s*/g, "\n")
+      .trim();
   }
 
   // ============================================================
@@ -150,23 +211,19 @@
       }
     }
     const best = Object.entries(scores).sort((a, b) => b[1] - a[1])[0];
-    return best[1] >= 2 ? best[0] : (best[1] >= 1 ? best[0] : "GENERIC");
+    return best[1] >= 1 ? best[0] : "GENERIC";
   }
 
   // ============================================================
-  // SECTION EXTRACTORS — pull fields from cleaned text
+  // SECTION EXTRACTORS
   // ============================================================
-
-  // Extract text following a label up to the next known label
   function extractSection(text, startPatterns, stopPatterns) {
     const startRe = Array.isArray(startPatterns) ? startPatterns : [startPatterns];
     let startIdx = -1;
-    let matchedPattern = null;
     for (const re of startRe) {
       const m = text.match(re);
       if (m) {
         startIdx = m.index + m[0].length;
-        matchedPattern = re;
         break;
       }
     }
@@ -183,47 +240,76 @@
     return remainder.slice(0, stopIdx).trim();
   }
 
-  // Convert a paragraph of text into an array of list items
+  // ============================================================
+  // 🔧 FIX 2 — toList splits on newlines AND inline list markers
+  // so table-cell content ("1. A 2. B 3. C") becomes 3 items
+  // ============================================================
   function toList(text) {
     if (!text) return [];
-    return text
-      .split(/\n+/)
-      .map(l => l.replace(/^[\-\*\u2022\d.)\s]+/, "").trim())
+    return String(text)
+      // newlines OR "1." / "2." at word boundary OR bullet chars
+      .split(/\n+|(?=\s+\d+\.\s)|\s*[•●▪‣·]\s+/g)
+      .map(l =>
+        l
+          .replace(/^[\-\*\u2022\u25CF\u25AA\u2023\u00B7\d.)\s]+/, "")
+          .replace(/\s*\|\s*$/, "")
+          .trim()
+      )
       .filter(l => l.length > 3 && l.length < 500);
+  }
+
+  // ============================================================
+  // 🔧 FIX 3 — dedicated header extractor with NO length cap
+  // (Standards/References/Objectives are legitimately long)
+  // ============================================================
+  function extractHeaderField(text, labels, opts = {}) {
+    const maxLen = opts.maxLen || Infinity;
+    for (const label of labels) {
+      // Pattern A: table cell — "Label | Value"
+      let m = text.match(
+        new RegExp(`${label}\\s*\\|\\s*([^|\\n]+?)\\s*(?:\\||\\n|$)`, "i")
+      );
+      if (m && m[1].trim().length > 0 && m[1].length <= maxLen) {
+        return m[1].trim();
+      }
+
+      // Pattern B: "Label: value" on same line
+      m = text.match(new RegExp(`${label}\\s*:\\s*([^\\n]+)`, "i"));
+      if (m && m[1].trim().length > 0 && m[1].length <= maxLen) {
+        return m[1].trim();
+      }
+
+      // Pattern C: "Label\nvalue" on next line
+      m = text.match(new RegExp(`${label}\\s*:?\\s*\\n\\s*([^\\n]+)`, "i"));
+      if (m && m[1].trim().length > 0 && m[1].length <= maxLen) {
+        return m[1].trim();
+      }
+    }
+    return "";
   }
 
   // ============================================================
   // ILAW EXTRACTION
   // ============================================================
-    function parseILAW(text) {
+  function parseILAW(text) {
     const result = baseSchema("ILAW");
 
-    // Universal header extractor — works with table `Label | Value` AND inline `Label:\nValue`
-    const extractHeader = (labels) => {
-      for (const label of labels) {
-        // Pattern 1: table cell — "Label | Value" or "Label   Value   |"
-        let m = text.match(new RegExp(`${label}\\s*\\|\\s*([^|\\n]+?)\\s*(?:\\||\\n)`, "i"));
-        if (m && m[1].trim().length > 0) return m[1].trim();
+    result.lessonTitle = extractHeaderField(text, ["Lesson\\s*Title"]);
+    result.learningArea = extractHeaderField(text, ["Learning\\s*Area(?:s)?"]);
+    result.teacherName = extractHeaderField(text, [
+      "Name\\s*of\\s*Teacher(?:s)?",
+      "Teacher(?:'s)?\\s*Name",
+      "Teacher",
+    ]);
+    result.gradeLevel = extractHeaderField(text, [
+      "Grade\\s*Level(?:\\s*and\\s*Section)?",
+    ]);
+    result.noOfSessions = extractHeaderField(text, ["No\\.\\s*of\\s*Sessions"]);
 
-        // Pattern 2: inline after colon — "Label:\nValue" or "Label: Value"
-        m = text.match(new RegExp(`${label}\\s*:?\\s*\\n\\s*([^\\n]+)`, "i"));
-        if (m && m[1].trim().length > 0 && m[1].length < 200) return m[1].trim();
-
-        // Pattern 3: same line after colon — "Label: Value"
-        m = text.match(new RegExp(`${label}\\s*:\\s*(.+)`, "i"));
-        if (m && m[1].trim().length > 0 && m[1].length < 200) return m[1].trim();
-      }
-      return "";
-    };
-
-    result.lessonTitle = extractHeader(["Lesson\\s*Title"]);
-    result.learningArea = extractHeader(["Learning\\s*Area\\/?s?"]);
-    result.teacherName = extractHeader(["Name\\s*of\\s*Teacher\\/?s?", "Teacher"]);
-    result.gradeLevel = extractHeader(["Grade\\s*Level\\s*(?:and\\s*Section)?"]);
-    result.noOfSessions = extractHeader(["No\\.\\s*of\\s*Sessions"]);
-
-    // References — multi-line, may span several lines
-    const refM = text.match(/References\s*\|?\s*\n?([\s\S]{10,600}?)(?:\n\n|Intentions|Declaration)/i);
+    // References — multi-line, allow up to 800 chars
+    const refM = text.match(
+      /References\s*\|?\s*\n?([\s\S]{10,800}?)(?:\n\n|Intentions|Declaration|Content\s*Standard)/i
+    );
     if (refM) result.references = refM[1].trim().replace(/\n+/g, "\n");
 
     // Declaration of AI
@@ -233,42 +319,70 @@
       [/Intentions\./i, /I\.\s*Intentions/i]
     );
 
-    // Intentions
-        result.contentStandard = extractSection(
+    // Content Standard — no length cap
+    result.contentStandard = extractHeaderField(
       text,
-      [/Content\s*Standard\s*:?/i],
-      [/Performance\s*Standard\s*:?/i, /Learning\s*Objectives\s*:?/i]
+      ["Content\\s*Standard"],
+      { maxLen: 2000 }
     );
+    if (!result.contentStandard) {
+      result.contentStandard = extractSection(
+        text,
+        [/Content\s*Standard\s*:?/i],
+        [/Performance\s*Standard\s*:?/i, /Learning\s*Objectives\s*:?/i]
+      );
+    }
 
-    // 🎯 Competencies fallback — extract from Learning Objectives if no explicit comps
+    // Performance Standard — no length cap
+    result.performanceStandard = extractHeaderField(
+      text,
+      ["Performance\\s*Standard"],
+      { maxLen: 2000 }
+    );
+    if (!result.performanceStandard) {
+      result.performanceStandard = extractSection(
+        text,
+        [/Performance\s*Standard\s*:?/i],
+        [/Learning\s*Objectives\s*:?/i, /Learner\s*Context/i]
+      );
+    }
+
+    // Learning Objectives — try multiple label variants
+    const learningObj = extractSection(
+      text,
+      [
+        /Learning\s*Objectives\s*:?/i,
+        /Objectives\s*:?/i,
+        /At\s*the\s*end\s*of\s*(?:the|this)\s*lesson/i,
+      ],
+      [
+        /Learner\s*Context/i,
+        /II\.\s*Learning/i,
+        /Learning\s*Experiences?/i,
+        /Assessment/i,
+        /Pre-?\s*Lesson/i,
+      ]
+    );
+    result.learningObjectives = toList(learningObj);
+
+    // Competencies — try explicit field, else fall back to objectives
     const compPattern = extractSection(
       text,
-      [/Learning\s*Competenc(?:y|ies)\s*(?:and\s*Curriculum\s*Standards)?\s*:?/i],
-      [/Content\s*Standard/i, /Performance\s*Standard/i]
+      [
+        /Learning\s*Competenc(?:y|ies)\s*(?:and\s*Curriculum\s*Standards)?\s*:?/i,
+      ],
+      [/Content\s*Standard/i, /Performance\s*Standard/i, /Learner\s*Context/i]
     );
     if (compPattern) {
       result.competencies = toList(compPattern).slice(0, 20);
-    } else if (result.learningObjectives && result.learningObjectives.length) {
-      // Use first few Learning Objectives as competencies (common when teachers list them together)
+    } else if (result.learningObjectives.length) {
       result.competencies = result.learningObjectives.slice(0, 10);
     }
-
-    result.performanceStandard = extractSection(
-      text,
-      [/Performance\s*Standard\s*:?/i],
-      [/Learning\s*Objectives\s*:?/i, /Learner\s*Context/i]
-    );
-    const learningObj = extractSection(
-      text,
-      [/Learning\s*Objectives\s*:?/i, /Objectives\s*:?/i],
-      [/Learner\s*Context/i, /II\.\s*Learning/i, /Learning\s*Experiences?/i, /Assessment/i]
-    );
-    result.learningObjectives = toList(learningObj);
 
     result.learnerContext = extractSection(
       text,
       [/Learner\s*Context\s*:?/i],
-      [/Learning\s*Experiences?/i, /II\./i, /Assessment/i]
+      [/Learning\s*Experiences?/i, /II\./i, /Assessment/i, /Pre-?\s*Lesson/i]
     );
 
     // Learning Experience
@@ -296,7 +410,7 @@
     // Assessment
     result.assessment = extractSection(
       text,
-      [/Assessment\./i, /Formative\s*Assessment\s*:?/i],
+      [/Assessment\.?/i, /Formative\s*Assessment\s*:?/i],
       [/Ways\s*Forward/i, /Extended\s*Learning/i]
     );
 
@@ -317,9 +431,7 @@
       [/Prepared\s*by/i]
     );
 
-    // Signatories
     extractSignatories(text, result);
-
     return result;
   }
 
@@ -329,23 +441,14 @@
   function parseDLL(text) {
     const result = baseSchema("DLL");
 
-    // Header table
-    const teacherM = text.match(/Teacher\s*\|\s*([^|]+)/i);
-    if (teacherM) result.teacherName = teacherM[1].trim();
+    result.teacherName = extractHeaderField(text, ["Teacher"]);
+    result.gradeLevel = extractHeaderField(text, ["Grade\\s*Level"]);
+    result.learningArea = extractHeaderField(text, ["Learning\\s*Area"]);
+    result.quarter = extractHeaderField(text, ["Quarter"]);
+    result.teachingDates = extractHeaderField(text, [
+      "Teaching\\s*Dates\\s*and\\s*Times?",
+    ]);
 
-    const gradeM = text.match(/Grade\s*Level\s*\|\s*([^|]+)/i);
-    if (gradeM) result.gradeLevel = gradeM[1].trim();
-
-    const areaM = text.match(/Learning\s*Area\s*\|\s*([^|]+)/i);
-    if (areaM) result.learningArea = areaM[1].trim();
-
-    const quarterM = text.match(/Quarter\s*\|\s*([^|]+)/i);
-    if (quarterM) result.quarter = quarterM[1].trim();
-
-    const datesM = text.match(/(?:Teaching\s*Dates\s*and\s*Times?)\s*\|\s*([^|]+)/i);
-    if (datesM) result.teachingDates = datesM[1].trim();
-
-    // I. OBJECTIVES → Content Standards, Performance, Learning Competencies
     const objSec = extractSection(
       text,
       [/I\.\s*OBJECTIVES/i],
@@ -369,14 +472,12 @@
     );
     result.competencies = toList(comps);
 
-    // II. CONTENT
     result.content = extractSection(
       text,
       [/II\.\s*CONTENT\s*:?/i],
       [/III\.\s*LEARNING/i]
     );
 
-    // III. LEARNING RESOURCES
     result.references = extractSection(
       text,
       [/III\.\s*LEARNING\s*RESOURCES[\s\S]{0,100}?A\.?\s*References\s*:?/i],
@@ -388,7 +489,6 @@
       [/IV\.\s*PROCEDURES/i]
     );
 
-    // IV. PROCEDURES → Lesson Flow
     const procedures = extractSection(
       text,
       [/IV\.\s*PROCEDURES/i],
@@ -396,21 +496,18 @@
     );
     result.lessonFlow = procedures;
 
-    // Split procedures into pre-lesson (A-C) and main (D-J)
     result.preLesson = extractSection(
       procedures,
       [/A\.?\s*Reviewing\s*previous/i],
       [/D\.?\s*Discussing\s*new\s*concepts\s*#?1/i]
     );
 
-    // V. REMARKS
     result.remarks = extractSection(
       text,
       [/V\.\s*REMARKS\s*:?/i],
       [/VI\.\s*REFLECTION/i]
     );
 
-    // VI. REFLECTION
     result.teacherReflections = extractSection(
       text,
       [/VI\.\s*REFLECTION\s*:?/i],
@@ -427,23 +524,12 @@
   function parseMATATAG(text) {
     const result = baseSchema("MATATAG");
 
-    // Header table
-    const teacherM = text.match(/Teacher\s*\|\s*([^|]+)/i);
-    if (teacherM) result.teacherName = teacherM[1].trim();
+    result.teacherName = extractHeaderField(text, ["Teacher"]);
+    result.gradeLevel = extractHeaderField(text, ["Grade\\s*Level"]);
+    result.learningArea = extractHeaderField(text, ["Learning\\s*Area"]);
+    result.quarter = extractHeaderField(text, ["Quarter"]);
+    result.noOfSessions = extractHeaderField(text, ["No\\.\\s*of\\s*Days"]);
 
-    const gradeM = text.match(/Grade\s*Level\s*\|\s*([^|]+)/i);
-    if (gradeM) result.gradeLevel = gradeM[1].trim();
-
-    const areaM = text.match(/Learning\s*Area\s*\|\s*([^|]+)/i);
-    if (areaM) result.learningArea = areaM[1].trim();
-
-    const quarterM = text.match(/Quarter\s*\|\s*([^|]+)/i);
-    if (quarterM) result.quarter = quarterM[1].trim();
-
-    const daysM = text.match(/No\.\s*of\s*Days\s*\|\s*([^|]+)/i);
-    if (daysM) result.noOfSessions = daysM[1].trim();
-
-    // I. OBJECTIVES
     const objSec = extractSection(
       text,
       [/I\.\s*OBJECTIVES/i],
@@ -466,20 +552,20 @@
       [/$/]
     );
     result.competencies = toList(melc);
-    result.learningObjectives = toList(extractSection(
-      objSec,
-      [/At\s*the\s*end\s*of\s*the\s*lesson/i],
-      [/A\.?\s*Content\s*Standards?/i]
-    ));
+    result.learningObjectives = toList(
+      extractSection(
+        objSec,
+        [/At\s*the\s*end\s*of\s*the\s*lesson/i],
+        [/A\.?\s*Content\s*Standards?/i]
+      )
+    );
 
-    // II. CONTENT
     result.content = extractSection(
       text,
       [/II\.\s*CONTENT\s*:?/i],
       [/III\.\s*LEARNING/i]
     );
 
-    // III. LEARNING RESOURCES
     result.references = extractSection(
       text,
       [/III\.\s*LEARNING\s*RESOURCES[\s\S]{0,100}?A\.?\s*References\s*:?/i],
@@ -487,11 +573,13 @@
     );
     result.materials = extractSection(
       text,
-      [/B\.?\s*List\s*of\s*Learning\s*Resources\s*:?/i, /B\.?\s*Other\s*Learning\s*Resources\s*:?/i],
+      [
+        /B\.?\s*List\s*of\s*Learning\s*Resources\s*:?/i,
+        /B\.?\s*Other\s*Learning\s*Resources\s*:?/i,
+      ],
       [/IV\.\s*PROCEDURES/i]
     );
 
-    // IV. PROCEDURES
     const procedures = extractSection(
       text,
       [/IV\.\s*PROCEDURES/i],
@@ -504,14 +592,12 @@
     );
     result.lessonFlow = procedures;
 
-    // V. ASSESSMENT
     result.assessment = extractSection(
       text,
       [/V\.\s*ASSESSMENT\s*:?/i, /PRE\/POSTEST-?ASSESSMENT/i],
       [/VI\.\s*REFLECTION/i, /Prepared\s*by/i]
     );
 
-    // VI. REFLECTION
     result.teacherReflections = extractSection(
       text,
       [/VI\.\s*REFLECTION\s*:?/i],
@@ -523,16 +609,22 @@
   }
 
   // ============================================================
-  // SIGNATORIES — common across all 3 formats
+  // SIGNATORIES
   // ============================================================
   function extractSignatories(text, result) {
-    const prepM = text.match(/Prepared\s*by\s*:?\s*\n?\s*([A-Z][A-Za-z\s.,'\-]+?)(?:\n|$)/i);
+    const prepM = text.match(
+      /Prepared\s*by\s*:?\s*\n?\s*([A-Z][A-Za-z\s.,'\-]+?)(?:\n|$)/i
+    );
     if (prepM) result.signatories.preparedByName = prepM[1].trim();
 
-    const checkM = text.match(/Checked\s*by\s*:?\s*\n?\s*([A-Z][A-Za-z\s.,'\-]+?)(?:\n|$)/i);
+    const checkM = text.match(
+      /Checked\s*by\s*:?\s*\n?\s*([A-Z][A-Za-z\s.,'\-]+?)(?:\n|$)/i
+    );
     if (checkM) result.signatories.checkedByName = checkM[1].trim();
 
-    const noteM = text.match(/Noted\s*:?\s*\n?\s*([A-Z][A-Za-z\s.,'\-]+?)(?:\n|$)/i);
+    const noteM = text.match(
+      /Noted\s*:?\s*\n?\s*([A-Z][A-Za-z\s.,'\-]+?)(?:\n|$)/i
+    );
     if (noteM) result.signatories.notedByName = noteM[1].trim();
   }
 
@@ -584,10 +676,8 @@
   // MAIN PARSE FUNCTION
   // ============================================================
   async function parseDocument(file) {
-    // 1. Read file (returns { html } or { text })
     const read = await readFile(file);
 
-    // 2. Convert to structured text
     let text;
     if (read.html) {
       text = htmlToStructuredText(read.html);
@@ -595,24 +685,21 @@
       text = read.text;
     }
 
-    // 3. Clean artifacts
-    const cleaned = cleanArtifacts(text);
+    // 🔧 FIX 1 applied here too — good for PDF extraction
+    const cleaned = normalizePastedHeaders(cleanArtifacts(text));
 
-    // 4. Detect format
     const format = detectFormat(cleaned);
 
-    // 5. Parse accordingly
     let result;
     if (format === "ILAW") result = parseILAW(cleaned);
     else if (format === "DLL") result = parseDLL(cleaned);
     else if (format === "MATATAG") result = parseMATATAG(cleaned);
-    else result = parseILAW(cleaned); // default
+    else result = parseILAW(cleaned);
 
-    // 6. Stats
     result._stats.charsRead = cleaned.length;
-    result._stats.fieldsFound = Object.entries(result)
-      .filter(([k, v]) => !k.startsWith("_") && v && String(v).trim().length > 3)
-      .length;
+    result._stats.fieldsFound = Object.entries(result).filter(
+      ([k, v]) => !k.startsWith("_") && v && String(v).trim().length > 3
+    ).length;
 
     return result;
   }
@@ -623,7 +710,7 @@
   window.DocParser = {
     parse: parseDocument,
     parseText: (rawText) => {
-      const cleaned = cleanArtifacts(rawText);
+      const cleaned = normalizePastedHeaders(cleanArtifacts(rawText));
       const format = detectFormat(cleaned);
       let result;
       if (format === "ILAW") result = parseILAW(cleaned);
@@ -631,9 +718,13 @@
       else if (format === "MATATAG") result = parseMATATAG(cleaned);
       else result = parseILAW(cleaned);
       result._stats.charsRead = cleaned.length;
+      result._stats.fieldsFound = Object.entries(result).filter(
+        ([k, v]) => !k.startsWith("_") && v && String(v).trim().length > 3
+      ).length;
       return result;
     },
     detectFormat: (rawText) => detectFormat(cleanArtifacts(rawText)),
     cleanArtifacts,
+    normalizePastedHeaders, // exposed for debugging
   };
 })();
