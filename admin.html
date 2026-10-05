@@ -1877,9 +1877,13 @@
           </td>
           <td style="font-size:12px;">${when}</td>
           <td><span class="ac-badge info">${distinctClasses}</span></td>
-          <td class="col-actions">
-            <button class="ac-btn outline small" data-detail="${esc(c.id)}">🔍 Details</button>
-            ${!resolved ? `<button class="ac-btn success small" data-resolve="${esc(c.id)}">✓</button>` : ""}
+            <td class="col-actions">
+            <button class="ac-btn outline small" data-detail-subject="${esc(s.code)}">🔍</button>
+            ${isAdminViewer ? `
+              <button class="ac-btn warning small" data-bow-upload="${esc(s.code)}" data-bow-name="${esc(s.displayName || s.code)}" title="Upload Budget of Work">📤</button>
+              <button class="ac-btn primary small" data-edit-subject="${esc(s.code)}">✏️</button>
+              <button class="ac-btn danger small" data-delete-subject="${esc(s.code)}" data-subject-name="${esc(s.displayName || s.code)}" title="Delete subject">🗑️</button>
+            ` : ""}
           </td>
         </tr>
       `;
@@ -2399,6 +2403,42 @@
       host.querySelectorAll("[data-bow-view]").forEach(btn => {
         btn.addEventListener("click", () => {
           openBoWViewer(btn.dataset.bowView, SUBJECT_TERM);
+        });
+      });
+      // ✅ NEW: Delete subject handler
+      host.querySelectorAll("[data-delete-subject]").forEach(btn => {
+        btn.addEventListener("click", async () => {
+          const code = btn.dataset.deleteSubject;
+          const name = btn.dataset.subjectName;
+          if (!confirm(`Delete subject "${name}" (${code})?\n\nThis will also delete all its BoW terms and competencies.`)) return;
+
+          btn.disabled = true;
+          btn.textContent = "⏳";
+          try {
+            // 1. Delete all BoW terms and their competencies
+            const termsRef = collection(db, "subjects", code, "bow_terms");
+            const termsSnap = await getDocs(termsRef);
+            for (const termDoc of termsSnap.docs) {
+              const compsRef = collection(db, "subjects", code, "bow_terms", termDoc.id, "competencies");
+              const compsSnap = await getDocs(compsRef);
+              for (const comp of compsSnap.docs) {
+                await deleteDoc(comp.ref);
+              }
+              await deleteDoc(termDoc.ref);
+            }
+
+            // 2. Delete the subject doc itself
+            await deleteDoc(doc(db, "subjects", code));
+
+            toast(`✓ Deleted "${name}"`, "success");
+            await loadSubjects();
+            renderSubjectList();
+          } catch (e) {
+            console.error("Delete failed:", e);
+            toast("⚠️ " + (e.message || "Delete failed"), "error");
+            btn.disabled = false;
+            btn.textContent = "🗑️";
+          }
         });
       });
     }
