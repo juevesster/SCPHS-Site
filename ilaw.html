@@ -874,10 +874,11 @@
     }
 
         // ============================================================
-    // PRINT — Landscape A4, DepEd ILAW format
+    // PURE HTML BUILDER — returns the print-ready HTML string
+    // No side effects: does not touch the DOM, does not call print
     // ============================================================
-    function printLesson() {
-      if (!ILAW_CONFIG) { toast("⚠️ Config not loaded", "error"); return; }
+    function buildILAWPrintHTML() {
+      if (!ILAW_CONFIG) return "";
 
       const cfg = ILAW_CONFIG;
       const subjectName = $("pickSubject").selectedOptions[0].textContent;
@@ -886,15 +887,12 @@
       const week = $("pickWeek").value;
       const year = $("pickYear").value;
 
-      // Selected competencies
       const checked = Array.from(document.querySelectorAll("[data-comp-code]:checked"));
       const selectedComps = checked.map(cb => ({ code: cb.dataset.compCode, text: cb.dataset.compText }));
 
-      // Fallback: manual competencies textarea
       const manualCompsEl = document.getElementById("manualComps");
       const manualComps = manualCompsEl?.value?.trim() || "";
 
-      // Rubric
       const rubric = [];
       const RUBRIC_LABELS = {
         intentions_clear: "Intentions are clearly stated, with appropriate learning competencies articulated.",
@@ -922,7 +920,6 @@
         notedByPosition: val("f-sig-notedPos"),
       };
 
-      // AI Declaration
       const aiDeclValue = document.querySelector('input[name="aiDecl"]:checked')?.value || "not-used";
       const aiDeclNotes = val("f-aiDeclarationNotes");
       const aiDeclLabel = {
@@ -935,14 +932,13 @@
 
       const generatedDate = new Date().toLocaleDateString("en-PH", { year: "numeric", month: "long", day: "numeric" });
 
-      // Competency display
       const competencyHTML = selectedComps.length
         ? `<ol class="print-competency-list">${selectedComps.map(c => `<li>${esc(c.text)}</li>`).join("")}</ol>`
         : (manualComps
             ? `<div class="print-sub-body">${esc(manualComps)}</div>`
             : `<div class="print-sub-body">—</div>`);
 
-      const html = `
+      return `
         <!-- ============ DEPED HEADER ============ -->
         <div class="print-header">
           <img src="${cfg.depedLogo}" alt="DepEd" class="print-deped-logo" />
@@ -952,7 +948,7 @@
           <div class="print-header-division">${esc(cfg.division)}</div>
         </div>
 
-          <div class="print-school-row">
+        <div class="print-school-row">
           <div class="print-school-name">${esc(cfg.schoolName)}</div>
           <div class="print-school-address">${esc(cfg.schoolAddress)}</div>
         </div>
@@ -994,22 +990,18 @@
         <!-- ============ I. INTENTIONS ============ -->
         <div class="print-section">
           <div class="print-section-title">I. Intentions</div>
-
           <div class="print-sub">
             <div class="print-sub-label">Learning Competency and Curriculum Standards:</div>
             ${competencyHTML}
           </div>
-
           <div class="print-sub">
             <div class="print-sub-label">Content Standard:</div>
             <div class="print-sub-body">${esc(val("f-contentStandard")) || "—"}</div>
           </div>
-
           <div class="print-sub">
             <div class="print-sub-label">Performance Standard:</div>
             <div class="print-sub-body">${esc(val("f-performanceStandard")) || "—"}</div>
           </div>
-
           <div class="print-sub">
             <div class="print-sub-label">Learner Context:</div>
             <div class="print-sub-body">${esc(val("f-learnerContext")) || "—"}</div>
@@ -1019,22 +1011,18 @@
         <!-- ============ II. LEARNING EXPERIENCE ============ -->
         <div class="print-section">
           <div class="print-section-title">II. Learning Experience</div>
-
           <div class="print-sub">
             <div class="print-sub-label">Pre-Lesson:</div>
             <div class="print-sub-body">${esc(val("f-preLesson")) || "—"}</div>
           </div>
-
           <div class="print-sub">
             <div class="print-sub-label">Lesson Flow:</div>
             <div class="print-sub-body">${esc(val("f-lessonFlow")) || "—"}</div>
           </div>
-
           <div class="print-sub">
             <div class="print-sub-label">Materials/Resources:</div>
             <div class="print-sub-body">${esc(val("f-materialsText")) || "—"}</div>
           </div>
-
           <div class="print-sub">
             <div class="print-sub-label">Opportunities for Integration:</div>
             <div class="print-sub-body">${esc(val("f-integration")) || "—"}</div>
@@ -1050,17 +1038,14 @@
         <!-- ============ IV. WAYS FORWARD ============ -->
         <div class="print-section">
           <div class="print-section-title">IV. Ways Forward</div>
-
           <div class="print-sub">
             <div class="print-sub-label">Extended Learning Opportunities:</div>
             <div class="print-sub-body">${esc(val("f-extendedLearning")) || "—"}</div>
           </div>
-
           <div class="print-sub">
             <div class="print-sub-label">Reflections (Teacher):</div>
             <div class="print-sub-body">${esc(val("f-teacherReflections")) || "—"}</div>
           </div>
-
           <div class="print-sub">
             <div class="print-sub-label">Next Steps (Ways Forward / ARAL):</div>
             <div class="print-sub-body">${esc(val("f-waysForward")) || "—"}</div>
@@ -1125,6 +1110,14 @@
           ${cfg.showGeneratedDate ? `<div>Generated: ${generatedDate}</div>` : ""}
         </div>
       `;
+    }
+        // ============================================================
+    // PRINT — Landscape A4, DepEd ILAW format
+    // ============================================================
+        function printLesson() {
+      if (!ILAW_CONFIG) { toast("⚠️ Config not loaded", "error"); return; }
+      const html = buildILAWPrintHTML();
+      if (!html) { toast("⚠️ Could not build print HTML", "error"); return; }
 
       $("printDoc").innerHTML = html;
       setTimeout(() => {
@@ -1251,7 +1244,10 @@
     }
 
     // Helper: extracts the print HTML without triggering window.print()
+        // Helper: extracts the print HTML without side effects
     function buildPrintHTML() {
+      return buildILAWPrintHTML();
+    }
       // Save current printDoc content, rebuild it, grab the HTML, restore
       const printDocEl = $("printDoc");
       const original = printDocEl.innerHTML;
