@@ -112,7 +112,7 @@
       .ilaw-container { padding: 0; max-width: 100%; }
       .print-doc { display: block !important; width: 100%; }
 
-      /* ---------- DepEd Header ---------- */
+            /* ---------- DepEd Header ---------- */
       .print-header { text-align: center; margin-bottom: 2mm; line-height: 1.25; }
       .print-deped-logo { display: block; margin: 0 auto 1.5mm; max-height: 15mm; }
       .print-header-line1 { font-size: 10pt; font-weight: 400; }
@@ -121,14 +121,19 @@
       .print-header-division { font-size: 9.5pt; }
 
       .print-school-row {
-        display: flex; align-items: center; justify-content: space-between;
-        gap: 3mm; margin-top: 2mm; padding-bottom: 1.5mm;
+        text-align: center;
+        margin-top: 3mm;
+        padding-bottom: 1.5mm;
         border-bottom: 1.5px solid #000;
       }
-      .print-school-logo { max-height: 13mm; }
-      .print-school-center { text-align: center; flex: 1; }
-      .print-school-name { font-size: 12pt; font-weight: 800; text-transform: uppercase; letter-spacing: .02em; line-height: 1.15; }
-      .print-school-address { font-size: 9pt; line-height: 1.2; margin-top: 0.3mm; }
+      .print-school-name {
+        font-size: 12pt; font-weight: 800;
+        text-transform: uppercase; letter-spacing: .02em;
+        line-height: 1.15;
+      }
+      .print-school-address {
+        font-size: 9pt; line-height: 1.2; margin-top: 0.5mm;
+      }
 
       .print-title {
         text-align: center; font-size: 12.5pt; font-weight: 800;
@@ -860,272 +865,268 @@
       }
     }
 
-    // ============================================================
-    // PRINT — Landscape A4 with DepEd header
+        // ============================================================
+    // PRINT — Landscape A4, DepEd ILAW format
     // ============================================================
     function printLesson() {
-  if (!ILAW_CONFIG) { toast("⚠️ Config not loaded", "error"); return; }
+      if (!ILAW_CONFIG) { toast("⚠️ Config not loaded", "error"); return; }
 
-  const cfg = ILAW_CONFIG;
-  const subjectName = $("pickSubject").selectedOptions[0].textContent;
-  const gradeLevel = $("pickGrade").value;
-  const term = $("pickTerm").value;
-  const week = $("pickWeek").value;
-  const year = $("pickYear").value;
+      const cfg = ILAW_CONFIG;
+      const subjectName = $("pickSubject").selectedOptions[0].textContent;
+      const gradeLevel = $("pickGrade").value;
+      const term = $("pickTerm").value;
+      const week = $("pickWeek").value;
+      const year = $("pickYear").value;
 
-  // Collect selected competencies
-  const checked = Array.from(document.querySelectorAll("[data-comp-code]:checked"));
-  const selectedComps = checked.map(cb => ({ code: cb.dataset.compCode, text: cb.dataset.compText }));
+      // Selected competencies
+      const checked = Array.from(document.querySelectorAll("[data-comp-code]:checked"));
+      const selectedComps = checked.map(cb => ({ code: cb.dataset.compCode, text: cb.dataset.compText }));
 
-  // Fallback: if manual competencies textarea exists and has content
-  const manualCompsEl = document.getElementById("manualComps");
-  const manualComps = manualCompsEl?.value?.trim() || "";
+      // Fallback: manual competencies textarea
+      const manualCompsEl = document.getElementById("manualComps");
+      const manualComps = manualCompsEl?.value?.trim() || "";
 
-  // Rubric
-  const rubric = [];
-  const RUBRIC_LABELS = {
-    intentions_clear: "Intentions are clearly stated, with appropriate learning competencies articulated.",
-    intentions_coherent: "Intentions are evident across all sections, there is coherence.",
-    learning_clear: "Learning experience is clear — another teacher can implement this lesson.",
-    learning_designed: "Learning experience is well-designed, with embedded Learning Design Principles.",
-    integration_maximized: "Learning experience maximizes opportunities for integration.",
-    inclusive: "Learning experience is inclusive, supports learners with disabilities and unique contexts.",
-    assessment_integrated: "Assessment strategies are integrated throughout the session.",
-    assessment_evidence: "Assessment strategies generate evidence of learning.",
-    interventions_actionable: "Interventions are actionable, providing ways to extend or adjust learning.",
-  };
-  Object.entries(RUBRIC_LABELS).forEach(([key, label]) => {
-    const r = document.querySelector(`input[name="rubric_${key}"]:checked`);
-    rubric.push({ label, value: r?.value || "not_yet" });
-  });
+      // Rubric
+      const rubric = [];
+      const RUBRIC_LABELS = {
+        intentions_clear: "Intentions are clearly stated, with appropriate learning competencies articulated.",
+        intentions_coherent: "Intentions are evident across all sections, there is coherence.",
+        learning_clear: "Learning experience is clear — another teacher can implement this lesson.",
+        learning_designed: "Learning experience is well-designed, with embedded Learning Design Principles.",
+        integration_maximized: "Learning experience maximizes opportunities for integration.",
+        inclusive: "Learning experience is inclusive, supports learners with disabilities and unique contexts.",
+        assessment_integrated: "Assessment strategies are integrated throughout the session.",
+        assessment_evidence: "Assessment strategies generate evidence of learning.",
+        interventions_actionable: "Interventions are actionable, providing ways to extend or adjust learning.",
+      };
+      Object.entries(RUBRIC_LABELS).forEach(([key, label]) => {
+        const r = document.querySelector(`input[name="rubric_${key}"]:checked`);
+        rubric.push({ label, value: r?.value || "not_yet" });
+      });
 
-  const val = id => $(id)?.value || "";
-  const sig = {
-    preparedByName: val("f-sig-preparedName"),
-    preparedByPosition: val("f-sig-preparedPos"),
-    checkedByName: val("f-sig-checkedName"),
-    checkedByPosition: val("f-sig-checkedPos"),
-    notedByName: val("f-sig-notedName"),
-    notedByPosition: val("f-sig-notedPos"),
-  };
+      const val = id => $(id)?.value || "";
+      const sig = {
+        preparedByName: val("f-sig-preparedName"),
+        preparedByPosition: val("f-sig-preparedPos"),
+        checkedByName: val("f-sig-checkedName"),
+        checkedByPosition: val("f-sig-checkedPos"),
+        notedByName: val("f-sig-notedName"),
+        notedByPosition: val("f-sig-notedPos"),
+      };
 
-  // AI Declaration — read radio value and notes
-  const aiDeclValue = document.querySelector('input[name="aiDecl"]:checked')?.value || "not-used";
-  const aiDeclNotes = val("f-aiDeclarationNotes");
-  const aiDeclLabel = {
-    "not-used": "🚫 Not used.",
-    "draft-generation": "🤖 AI-generated draft, teacher revised.",
-    "grammar-only": "✏️ Grammar/style editing only.",
-    "other": "📝 Other."
-  }[aiDeclValue] || "";
-  const aiDeclarationFull = [aiDeclLabel, aiDeclNotes].filter(Boolean).join(" ");
+      // AI Declaration
+      const aiDeclValue = document.querySelector('input[name="aiDecl"]:checked')?.value || "not-used";
+      const aiDeclNotes = val("f-aiDeclarationNotes");
+      const aiDeclLabel = {
+        "not-used": "🚫 Not used.",
+        "draft-generation": "🤖 AI-generated draft, teacher revised.",
+        "grammar-only": "✏️ Grammar/style editing only.",
+        "other": "📝 Other."
+      }[aiDeclValue] || "";
+      const aiDeclarationFull = [aiDeclLabel, aiDeclNotes].filter(Boolean).join(" ");
 
-  const generatedDate = new Date().toLocaleDateString("en-PH", { year: "numeric", month: "long", day: "numeric" });
+      const generatedDate = new Date().toLocaleDateString("en-PH", { year: "numeric", month: "long", day: "numeric" });
 
-  // Competency display — prefer checkbox selections; fall back to manual textarea
-  const competencyHTML = selectedComps.length
-    ? `<ol class="print-competency-list">${selectedComps.map(c => `<li>${esc(c.text)}</li>`).join("")}</ol>`
-    : (manualComps
-        ? `<div class="print-sub-body">${esc(manualComps)}</div>`
-        : `<div class="print-sub-body">—</div>`);
+      // Competency display
+      const competencyHTML = selectedComps.length
+        ? `<ol class="print-competency-list">${selectedComps.map(c => `<li>${esc(c.text)}</li>`).join("")}</ol>`
+        : (manualComps
+            ? `<div class="print-sub-body">${esc(manualComps)}</div>`
+            : `<div class="print-sub-body">—</div>`);
 
-  const html = `
-    <!-- ============ DEPED HEADER ============ -->
-    <div class="print-header">
-      <img src="${cfg.depedLogo}" alt="DepEd" class="print-deped-logo" />
-      <div class="print-header-line1">${esc(cfg.headerLine1)}</div>
-      <div class="print-header-line2">${esc(cfg.headerLine2)}</div>
-      <div class="print-header-region">${esc(cfg.region)}</div>
-      <div class="print-header-division">${esc(cfg.division)}</div>
-    </div>
+      const html = `
+        <!-- ============ DEPED HEADER ============ -->
+        <div class="print-header">
+          <img src="${cfg.depedLogo}" alt="DepEd" class="print-deped-logo" />
+          <div class="print-header-line1">${esc(cfg.headerLine1)}</div>
+          <div class="print-header-line2">${esc(cfg.headerLine2)}</div>
+          <div class="print-header-region">${esc(cfg.region)}</div>
+          <div class="print-header-division">${esc(cfg.division)}</div>
+        </div>
 
-    <div class="print-school-row">
-      <img src="${cfg.schoolLogo}" alt="School" class="print-school-logo" />
-      <div class="print-school-center">
-        <div class="print-school-name">${esc(cfg.schoolName)}</div>
-        <div class="print-school-address">${esc(cfg.schoolAddress)}</div>
-      </div>
-      ${cfg.rightLogo ? `<img src="${cfg.rightLogo}" alt="" class="print-school-logo" />` : "<div></div>"}
-    </div>
+        <div class="print-school-row">
+          <div class="print-school-name">${esc(cfg.schoolName)}</div>
+          <div class="print-school-address">${esc(cfg.schoolAddress)}</div>
+        </div>
 
-    <div class="print-title">${esc(cfg.titleLabel)}</div>
+        <div class="print-title">${esc(cfg.titleLabel)}</div>
 
-    <!-- ============ LESSON INFO TABLE ============ -->
-    <table class="print-info-table">
-      <tr>
-        <td class="lbl">Lesson Title:</td>
-        <td>${esc(val("f-lessonTitle"))}</td>
-        <td class="lbl">Learning Area/s:</td>
-        <td>${esc(subjectName)}</td>
-      </tr>
-      <tr>
-        <td class="lbl">Name of Teacher/s:</td>
-        <td>${esc(val("f-teacherName"))}</td>
-        <td class="lbl">Grade Level & Section:</td>
-        <td>${esc(gradeLevel === "K" ? "Kindergarten" : "Grade " + gradeLevel)} — ${esc(val("f-section"))}</td>
-      </tr>
-      <tr>
-        <td class="lbl">No. of Sessions:</td>
-        <td>${esc(val("f-noOfSessions"))}</td>
-        <td class="lbl">School Year / Term / Week:</td>
-        <td>${esc(year)} · Term ${esc(term)} · Week ${esc(week)}</td>
-      </tr>
-      <tr>
-        <td class="lbl">References:</td>
-        <td colspan="3">${esc(val("f-references")) || "—"}</td>
-      </tr>
-    </table>
-
-    <!-- ============ DECLARATION OF AI USE ============ -->
-    <div class="print-section">
-      <div class="print-section-title">Declaration of AI Use</div>
-      <div class="print-sub-body">${esc(aiDeclarationFull) || "—"}</div>
-    </div>
-
-    <!-- ============ I. INTENTIONS ============ -->
-    <div class="print-section">
-      <div class="print-section-title">I. Intentions</div>
-
-      <div class="print-sub">
-        <div class="print-sub-label">Learning Competency and Curriculum Standards:</div>
-        ${competencyHTML}
-      </div>
-
-      <div class="print-sub">
-        <div class="print-sub-label">Content Standard:</div>
-        <div class="print-sub-body">${esc(val("f-contentStandard")) || "—"}</div>
-      </div>
-
-      <div class="print-sub">
-        <div class="print-sub-label">Performance Standard:</div>
-        <div class="print-sub-body">${esc(val("f-performanceStandard")) || "—"}</div>
-      </div>
-
-      <div class="print-sub">
-        <div class="print-sub-label">Learner Context:</div>
-        <div class="print-sub-body">${esc(val("f-learnerContext")) || "—"}</div>
-      </div>
-    </div>
-
-    <!-- ============ II. LEARNING EXPERIENCE ============ -->
-    <div class="print-section">
-      <div class="print-section-title">II. Learning Experience</div>
-
-      <div class="print-sub">
-        <div class="print-sub-label">Pre-Lesson:</div>
-        <div class="print-sub-body">${esc(val("f-preLesson")) || "—"}</div>
-      </div>
-
-      <div class="print-sub">
-        <div class="print-sub-label">Lesson Flow:</div>
-        <div class="print-sub-body">${esc(val("f-lessonFlow")) || "—"}</div>
-      </div>
-
-      <div class="print-sub">
-        <div class="print-sub-label">Materials/Resources:</div>
-        <div class="print-sub-body">${esc(val("f-materialsText")) || "—"}</div>
-      </div>
-
-      <div class="print-sub">
-        <div class="print-sub-label">Opportunities for Integration:</div>
-        <div class="print-sub-body">${esc(val("f-integration")) || "—"}</div>
-      </div>
-    </div>
-
-    <!-- ============ III. ASSESSMENT ============ -->
-    <div class="print-section">
-      <div class="print-section-title">III. Assessment</div>
-      <div class="print-sub-body">${esc(val("f-assessment")) || "—"}</div>
-    </div>
-
-    <!-- ============ IV. WAYS FORWARD ============ -->
-    <div class="print-section">
-      <div class="print-section-title">IV. Ways Forward</div>
-
-      <div class="print-sub">
-        <div class="print-sub-label">Extended Learning Opportunities:</div>
-        <div class="print-sub-body">${esc(val("f-extendedLearning")) || "—"}</div>
-      </div>
-
-      <div class="print-sub">
-        <div class="print-sub-label">Reflections (Teacher):</div>
-        <div class="print-sub-body">${esc(val("f-teacherReflections")) || "—"}</div>
-      </div>
-
-      <div class="print-sub">
-        <div class="print-sub-label">Next Steps (Ways Forward / ARAL):</div>
-        <div class="print-sub-body">${esc(val("f-waysForward")) || "—"}</div>
-      </div>
-    </div>
-
-    <!-- ============ COACHING NOTES ============ -->
-    <div class="print-section">
-      <div class="print-section-title">Notes for Instructional Coaching Session</div>
-      <div class="print-sub-body">${esc(val("f-coachingNotes")) || "—"}</div>
-      ${val("f-coachName") ? `<div style="margin-top:1.5mm;font-size:9.5pt;"><strong>Coach Name:</strong> ${esc(val("f-coachName"))}</div>` : ""}
-    </div>
-
-    <!-- ============ SELF-CHECK RUBRIC ============ -->
-    <div class="print-section">
-      <div class="print-section-title">Self-Check Rubric for Lesson Planning</div>
-      <table class="print-rubric-table">
-        <thead>
+        <!-- ============ LESSON INFO TABLE ============ -->
+        <table class="print-info-table">
           <tr>
-            <th>I can say that in my lesson plan…</th>
-            <th class="center">Yes</th>
-            <th class="center">Not Yet</th>
+            <td class="lbl">Lesson Title:</td>
+            <td>${esc(val("f-lessonTitle"))}</td>
+            <td class="lbl">Learning Area/s:</td>
+            <td>${esc(subjectName)}</td>
           </tr>
-        </thead>
-        <tbody>
-          ${rubric.map(r => `
-            <tr>
-              <td>${esc(r.label)}</td>
-              <td class="center">${r.value === "yes" ? "☑" : "☐"}</td>
-              <td class="center">${r.value === "not_yet" ? "☑" : "☐"}</td>
-            </tr>
-          `).join("")}
-        </tbody>
-      </table>
-    </div>
+          <tr>
+            <td class="lbl">Name of Teacher/s:</td>
+            <td>${esc(val("f-teacherName"))}</td>
+            <td class="lbl">Grade Level & Section:</td>
+            <td>${esc(gradeLevel === "K" ? "Kindergarten" : "Grade " + gradeLevel)} — ${esc(val("f-section"))}</td>
+          </tr>
+          <tr>
+            <td class="lbl">No. of Sessions:</td>
+            <td>${esc(val("f-noOfSessions"))}</td>
+            <td class="lbl">School Year · Term · Week:</td>
+            <td>${esc(year)} · Term ${esc(term)} · Week ${esc(week)}</td>
+          </tr>
+          <tr>
+            <td class="lbl">References:</td>
+            <td colspan="3">${esc(val("f-references")) || "—"}</td>
+          </tr>
+        </table>
 
-    <!-- ============ SIGNATORIES ============ -->
-    <div class="print-section" style="border:none;padding:0;">
-      <div class="print-signatories">
-        <div class="print-sig-col">
-          <div class="print-sig-label">${esc(cfg.preparedByLabel)}</div>
-          <div class="print-sig-name">${esc(sig.preparedByName || "—")}</div>
-          <div class="print-sig-position">${esc(sig.preparedByPosition || "")}</div>
+        <!-- ============ DECLARATION OF AI USE ============ -->
+        <div class="print-section">
+          <div class="print-section-title">Declaration of AI Use</div>
+          <div class="print-sub-body">${esc(aiDeclarationFull) || "—"}</div>
         </div>
-        <div class="print-sig-col">
-          <div class="print-sig-label">${esc(cfg.checkedByLabel)}</div>
-          <div class="print-sig-name">${esc(sig.checkedByName || "—")}</div>
-          <div class="print-sig-position">${esc(sig.checkedByPosition || "")}</div>
-        </div>
-        <div class="print-sig-col">
-          <div class="print-sig-label">${esc(cfg.notedByLabel)}</div>
-          <div class="print-sig-name">${esc(sig.notedByName || "—")}</div>
-          <div class="print-sig-position">${esc(sig.notedByPosition || "")}</div>
-        </div>
-      </div>
-    </div>
 
-    <!-- ============ FOOTER ============ -->
-    <div class="print-footer">
-      ${cfg.footerLine1 ? `<div>${esc(cfg.footerLine1)}</div>` : ""}
-      ${cfg.footerLine2 ? `<div>${esc(cfg.footerLine2)}</div>` : ""}
-      ${cfg.showGeneratedDate ? `<div>Generated: ${generatedDate}</div>` : ""}
-    </div>
-  `;
+        <!-- ============ I. INTENTIONS ============ -->
+        <div class="print-section">
+          <div class="print-section-title">I. Intentions</div>
 
-  $("printDoc").innerHTML = html;
-  setTimeout(() => {
-    window.print();
-    setTimeout(() => {
-      const pd = $("printDoc");
-      if (pd) pd.innerHTML = "";
-    }, 500);
-  }, 150);
-}
+          <div class="print-sub">
+            <div class="print-sub-label">Learning Competency and Curriculum Standards:</div>
+            ${competencyHTML}
+          </div>
+
+          <div class="print-sub">
+            <div class="print-sub-label">Content Standard:</div>
+            <div class="print-sub-body">${esc(val("f-contentStandard")) || "—"}</div>
+          </div>
+
+          <div class="print-sub">
+            <div class="print-sub-label">Performance Standard:</div>
+            <div class="print-sub-body">${esc(val("f-performanceStandard")) || "—"}</div>
+          </div>
+
+          <div class="print-sub">
+            <div class="print-sub-label">Learner Context:</div>
+            <div class="print-sub-body">${esc(val("f-learnerContext")) || "—"}</div>
+          </div>
+        </div>
+
+        <!-- ============ II. LEARNING EXPERIENCE ============ -->
+        <div class="print-section">
+          <div class="print-section-title">II. Learning Experience</div>
+
+          <div class="print-sub">
+            <div class="print-sub-label">Pre-Lesson:</div>
+            <div class="print-sub-body">${esc(val("f-preLesson")) || "—"}</div>
+          </div>
+
+          <div class="print-sub">
+            <div class="print-sub-label">Lesson Flow:</div>
+            <div class="print-sub-body">${esc(val("f-lessonFlow")) || "—"}</div>
+          </div>
+
+          <div class="print-sub">
+            <div class="print-sub-label">Materials/Resources:</div>
+            <div class="print-sub-body">${esc(val("f-materialsText")) || "—"}</div>
+          </div>
+
+          <div class="print-sub">
+            <div class="print-sub-label">Opportunities for Integration:</div>
+            <div class="print-sub-body">${esc(val("f-integration")) || "—"}</div>
+          </div>
+        </div>
+
+        <!-- ============ III. ASSESSMENT ============ -->
+        <div class="print-section">
+          <div class="print-section-title">III. Assessment</div>
+          <div class="print-sub-body">${esc(val("f-assessment")) || "—"}</div>
+        </div>
+
+        <!-- ============ IV. WAYS FORWARD ============ -->
+        <div class="print-section">
+          <div class="print-section-title">IV. Ways Forward</div>
+
+          <div class="print-sub">
+            <div class="print-sub-label">Extended Learning Opportunities:</div>
+            <div class="print-sub-body">${esc(val("f-extendedLearning")) || "—"}</div>
+          </div>
+
+          <div class="print-sub">
+            <div class="print-sub-label">Reflections (Teacher):</div>
+            <div class="print-sub-body">${esc(val("f-teacherReflections")) || "—"}</div>
+          </div>
+
+          <div class="print-sub">
+            <div class="print-sub-label">Next Steps (Ways Forward / ARAL):</div>
+            <div class="print-sub-body">${esc(val("f-waysForward")) || "—"}</div>
+          </div>
+        </div>
+
+        <!-- ============ COACHING NOTES ============ -->
+        <div class="print-section">
+          <div class="print-section-title">Notes for Instructional Coaching Session</div>
+          <div class="print-sub-body">${esc(val("f-coachingNotes")) || "—"}</div>
+          ${val("f-coachName") ? `<div style="margin-top:1.5mm;font-size:9.5pt;"><strong>Coach Name:</strong> ${esc(val("f-coachName"))}</div>` : ""}
+        </div>
+
+        <!-- ============ SELF-CHECK RUBRIC ============ -->
+        <div class="print-section">
+          <div class="print-section-title">Self-Check Rubric for Lesson Planning</div>
+          <table class="print-rubric-table">
+            <thead>
+              <tr>
+                <th>I can say that in my lesson plan…</th>
+                <th class="center">Yes</th>
+                <th class="center">Not Yet</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${rubric.map(r => `
+                <tr>
+                  <td>${esc(r.label)}</td>
+                  <td class="center">${r.value === "yes" ? "☑" : "☐"}</td>
+                  <td class="center">${r.value === "not_yet" ? "☑" : "☐"}</td>
+                </tr>
+              `).join("")}
+            </tbody>
+          </table>
+        </div>
+
+        <!-- ============ SIGNATORIES ============ -->
+        <div class="print-section" style="border:none;padding:0;">
+          <div class="print-signatories">
+            <div class="print-sig-col">
+              <div class="print-sig-label">${esc(cfg.preparedByLabel)}</div>
+              <div class="print-sig-name">${esc(sig.preparedByName || "—")}</div>
+              <div class="print-sig-position">${esc(sig.preparedByPosition || "")}</div>
+            </div>
+            <div class="print-sig-col">
+              <div class="print-sig-label">${esc(cfg.checkedByLabel)}</div>
+              <div class="print-sig-name">${esc(sig.checkedByName || "—")}</div>
+              <div class="print-sig-position">${esc(sig.checkedByPosition || "")}</div>
+            </div>
+            <div class="print-sig-col">
+              <div class="print-sig-label">${esc(cfg.notedByLabel)}</div>
+              <div class="print-sig-name">${esc(sig.notedByName || "—")}</div>
+              <div class="print-sig-position">${esc(sig.notedByPosition || "")}</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ============ FOOTER ============ -->
+        <div class="print-footer">
+          ${cfg.footerLine1 ? `<div>${esc(cfg.footerLine1)}</div>` : ""}
+          ${cfg.footerLine2 ? `<div>${esc(cfg.footerLine2)}</div>` : ""}
+          ${cfg.showGeneratedDate ? `<div>Generated: ${generatedDate}</div>` : ""}
+        </div>
+      `;
+
+      $("printDoc").innerHTML = html;
+      setTimeout(() => {
+        window.print();
+        setTimeout(() => {
+          const pd = $("printDoc");
+          if (pd) pd.innerHTML = "";
+        }, 500);
+      }, 150);
+    }
 
     async function duplicateCurrent() {
       if (!CURRENT_LESSON_ID) { toast("⚠️ Save first, then duplicate", "error"); return; }
