@@ -16,7 +16,7 @@
     performanceStandard: /^performance\s*standard[\s:]*$/i,
     performanceTask: /^performance\s*task/i,
     theme: /^theme[\s:]/i,
-    weekNumbered: /^week\s*(\d+)[\s:.\-]*(.*)$/i,
+    weekNumbered: /^(?:week|linggo)\s*(\d+)[\s:.\-]*(.*)$/i,
     numberedTopic: /^(\d{1,2})[\.\)]\s*(.+)$/,
     bullet: /^[\*\-•●○▪]\s*(.+)$/,
     competencyCode: /\b([A-Z]{1,5}\d{0,3}[A-Z]*[\-–][IVX]+[a-z]?[\-–]?\d*)\b/i,
