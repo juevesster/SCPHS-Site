@@ -1213,8 +1213,24 @@
 
       try {
         // Wait for fonts and images to load
+                // Wait for fonts
         await document.fonts.ready;
-        await new Promise(r => setTimeout(r, 400));
+        
+        // ✅ Wait for all images (DepEd logo!) to fully load before capture
+        const imgs = container.querySelectorAll("img");
+        console.log("Waiting for " + imgs.length + " images...");
+        await Promise.all(Array.from(imgs).map(img => {
+          if (img.complete && img.naturalWidth > 0) return Promise.resolve();
+          return new Promise(res => {
+            img.addEventListener("load", res, { once: true });
+            img.addEventListener("error", res, { once: true });
+            // Safety timeout: max 3 seconds per image
+            setTimeout(res, 3000);
+          });
+        }));
+        
+        // Small extra delay to make sure the browser has painted
+        await new Promise(r => setTimeout(r, 800));
 
         // Filename: Subject_Grade_Term_Week.pdf
         const subjectCode = $("pickSubject").value || "ILAW";
