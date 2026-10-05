@@ -352,6 +352,18 @@
       }
 
       ILAW_CONFIG = await window.ILAWConfig.load();
+            // ✅ Preload the DepEd logo so print/PDF don't miss it on first try
+      if (ILAW_CONFIG?.depedLogo) {
+        const preloadImg = new Image();
+        preloadImg.src = ILAW_CONFIG.depedLogo;
+        // Also wait for it to actually finish loading before continuing
+        await new Promise(res => {
+          if (preloadImg.complete) return res();
+          preloadImg.addEventListener("load", res, { once: true });
+          preloadImg.addEventListener("error", res, { once: true });
+          setTimeout(res, 3000);
+        });
+      }
 
       $("pickWeek").innerHTML = Array.from({length: 13}, (_, i) =>
         `<option value="${i+1}">Week ${i+1}</option>`).join("");
