@@ -1245,28 +1245,9 @@
 
     // Helper: extracts the print HTML without triggering window.print()
         // Helper: extracts the print HTML without side effects
+        // Helper: extracts the print HTML without side effects
     function buildPrintHTML() {
       return buildILAWPrintHTML();
-    }
-      // Save current printDoc content, rebuild it, grab the HTML, restore
-      const printDocEl = $("printDoc");
-      const original = printDocEl.innerHTML;
-
-      // Re-run printLesson's HTML builder without printing
-      const temp = document.createElement("div");
-      const currentPrintDoc = printDocEl.innerHTML;
-      // Trick: temporarily override window.print to no-op
-      const realPrint = window.print;
-      window.print = () => {};
-      try {
-        printLesson();
-      } finally {
-        window.print = realPrint;
-      }
-      const builtHTML = printDocEl.innerHTML;
-      printDocEl.innerHTML = original || currentPrintDoc;
-
-      return builtHTML;
     }
 
     async function duplicateCurrent() {
