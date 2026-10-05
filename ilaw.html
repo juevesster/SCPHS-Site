@@ -1142,13 +1142,12 @@
     }
 
             // ============================================================
-    // DOWNLOAD AS PDF — uses the browser's native "Save as PDF"
-    // (same engine as Print, but labeled for saving)
+    // DOWNLOAD AS PDF — uses the browser's native Save-as-PDF
     // ============================================================
     async function downloadLessonPDF() {
       if (!ILAW_CONFIG) { toast("⚠️ Config not loaded", "error"); return; }
 
-      // Friendly instructions — shown only once per click
+      // Friendly guidance (once per click)
       const ok = confirm(
         "📥 Save Lesson Plan as PDF\n\n" +
         "How to save:\n" +
@@ -1165,10 +1164,10 @@
       const html = buildILAWPrintHTML();
       if (!html) { toast("⚠️ Could not build print HTML", "error"); return; }
 
-      // Inject into #printDoc — identical to what Print does
+      // Inject into #printDoc — same as Print button
       $("printDoc").innerHTML = html;
 
-      // Wait for images (DepEd logo) to actually load
+      // Wait for images (DepEd logo) to fully load
       const imgs = $("printDoc").querySelectorAll("img");
       await Promise.all(Array.from(imgs).map(img => {
         if (img.complete && img.naturalWidth > 0) return Promise.resolve();
@@ -1179,7 +1178,7 @@
         });
       }));
 
-      // Give the browser a beat to paint, then open the print dialog
+      // Give the browser a beat, then open the print dialog
       setTimeout(() => {
         window.print();
         setTimeout(() => {
@@ -1189,9 +1188,51 @@
       }, 200);
     }
 
-    // Helper: extracts the print HTML without side effects
+        // Helper: extracts the print HTML without side effects
     function buildPrintHTML() {
       return buildILAWPrintHTML();
+    }
+
+    async function duplicateCurrent() {
+      if (!CURRENT_LESSON_ID) { toast("⚠️ Save first, then duplicate", "error"); return; }
+      const newWeek = prompt("Duplicate to which week? (1-13)", "1");
+      if (!newWeek) return;
+      const wk = parseInt(newWeek, 10);
+      if (!wk || wk < 1 || wk > 13) { toast("⚠️ Invalid week", "error"); return; }
+      try {
+        const newId = await window.ILAW.duplicateLesson(CURRENT_LESSON_ID, { week: wk });
+        toast("✓ Duplicated", "success");
+        location.href = `ilaw.html?lesson=${newId}`;
+      } catch (e) { toast("⚠️ Duplicate failed", "error"); }
+    }
+
+    async function deleteCurrent() {
+      if (!CURRENT_LESSON_ID) return;
+      if (!confirm("Delete this lesson plan?")) return;
+      try {
+        await window.ILAW.deleteLesson(CURRENT_LESSON_ID);
+        toast("✓ Deleted", "success");
+        setTimeout(() => location.href = "ilaw.html", 500);
+      } catch (e) { toast("⚠️ Delete failed", "error"); }
+    }
+
+    async function loadFromUrl() {
+      const params = new URLSearchParams(location.search);
+      const lessonId = params.get("lesson");
+      if (!lessonId) return;
+      const lesson = await window.ILAW.getLesson(lessonId);
+      if (!lesson) { toast("⚠️ Lesson not found", "error"); return; }
+      if (lesson.teacherUid !== CURRENT_USER.uid && CURRENT_PROFILE?.primaryRole !== "admin" && !CURRENT_PROFILE?.isSuperAdmin) {
+        toast("⚠️ No permission", "error");
+        return;
+      }
+      $("pickGrade").value = lesson.gradeLevel;
+      populateSubjectPicker();
+      $("pickSubject").value = lesson.subjectCode;
+      $("pickTerm").value = lesson.term;
+      $("pickWeek").value = lesson.week;
+      $("pickYear").value = lesson.schoolYear || "2026-2027";
+      setTimeout(() => loadContext(), 100);
     }
 
     // ============================================================
@@ -1650,9 +1691,7 @@ ${esc(JSON.stringify(parsed, null, 2))}
       const editorArea = document.getElementById("editorArea");
       if (editorArea) editorArea.scrollIntoView({ behavior: "smooth", block: "start" });
     }
-  </script>
-</body>
+    </script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
-  <!-- PDF generation library -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
-  </html>
+</body>
+</html>
