@@ -222,4 +222,71 @@ window.ProgramStore = {
   clearProgram,
   bulkAddEntries,
   listAssignedTeachers,
+  copyTerm,   // ← ADD THIS
 };
+
+// ------------------------------------------------------------
+// COPY TERM — Duplicate all entries from one term to another
+// ------------------------------------------------------------
+async function copyTerm(classId, fromTerm, toTerm) {
+  requireUser();
+  if (!classId) throw new Error("Missing class ID.");
+  if (Number(fromTerm) === Number(toTerm)) {
+    throw new Error("Cannot copy a term into itself.");
+  }
+
+  const colRef = collection(db, CLASSES, classId, PROGRAM);
+
+  // 1. Load all entries
+  const allSnap = await getDocs(colRef);
+  const all = allSnap.docs.map(entryToObj);
+
+  const sourceEntries = all.filter(e => Number(e.term) === Number(fromTerm));
+  const targetEntries = all.filter(e => Number(e.term) === Number(toTerm));
+
+  if (!sourceEntries.length) {
+    return { copied: 0, skipped: 0, sourceCount: 0 };
+  }
+
+  // 2. Build dedupe set from existing target entries
+  const targetKeys = new Set();
+  targetEntries.forEach(e => {
+    targetKeys.add(`${e.day}|${e.timeSlotId}|${e.subject}|${e.teacherUid || ""}`);
+  });
+
+  // 3. Copy each source entry
+  let copied = 0, skipped = 0, errors = 0;
+
+  for (const e of sourceEntries) {
+    const key = `${e.day}|${e.timeSlotId}|${e.subject}|${e.teacherUid || ""}`;
+    if (targetKeys.has(key)) { skipped++; continue; }
+
+    try {
+      await addDoc(colRef, {
+        day: e.day,
+        timeSlotId: e.timeSlotId,
+        term: Number(toTerm),
+        subject: e.subject || "",
+        subjectName: e.subjectName || e.subject || "",
+        teacherUid: e.teacherUid || "",
+        teacherName: e.teacherName || "",
+        specialization: e.specialization || "",
+        room: e.room || "",
+        entryType: e.entryType || "primary",
+        groupIndex: e.groupIndex || 0,
+        notes: e.notes || "",
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp(),
+        createdBy: e.createdBy || "",
+        copiedFromTerm: Number(fromTerm),
+      });
+      copied++;
+      targetKeys.add(key);
+    } catch (err) {
+      console.error("[copyTerm] failed to copy entry:", err);
+      errors++;
+    }
+  }
+
+  return { copied, skipped, errors, sourceCount: sourceEntries.length };
+}
