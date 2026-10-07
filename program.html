@@ -347,14 +347,14 @@
       </div>
 
       <div class="form-group">
-        <label>Copy TO</label>
-        <select id="copyToTerm" disabled>
-          <option value="1">Term 1</option>
-          <option value="2">Term 2</option>
-          <option value="3">Term 3</option>
-        </select>
-        <div class="hint">You can only copy into the currently selected term.</div>
-      </div>
+  <label>Copy TO</label>
+  <select id="copyToTerm">
+    <option value="1">Term 1</option>
+    <option value="2">Term 2</option>
+    <option value="3">Term 3</option>
+  </select>
+  <div class="hint">Pick any term — duplicates are skipped automatically.</div>
+</div>
 
       <div class="form-group">
         <label>Options</label>
@@ -920,38 +920,52 @@ function openCopyTermModal() {
   const modal = $("copyTermModal");
   modal.classList.add("show");
 
-  // Set default FROM (all terms except current)
   const fromSel = $("copyFromTerm");
   const toSel = $("copyToTerm");
 
-  // FROM options — everything except current
-  Array.from(fromSel.options).forEach(opt => {
-    opt.disabled = parseInt(opt.value, 10) === SELECTED_TERM;
-  });
+  // Enable all options in both dropdowns
+  Array.from(fromSel.options).forEach(opt => opt.disabled = false);
+  Array.from(toSel.options).forEach(opt => opt.disabled = false);
 
-  // Default to first non-current term
-  const firstAvailable = Array.from(fromSel.options).find(o => !o.disabled);
-  if (firstAvailable) fromSel.value = firstAvailable.value;
+  // Default: FROM = currently selected term, TO = first different term
+  fromSel.value = String(SELECTED_TERM);
+  const otherTerm = [1, 2, 3].find(t => t !== SELECTED_TERM);
+  toSel.value = String(otherTerm || 2);
 
-  // TO is locked to current term
-  toSel.value = String(SELECTED_TERM);
+  // Remove the "disabled" attribute on TO
+  toSel.disabled = false;
 
-  // Update preview text
+  // Update preview + wire changes
   updateCopyPreview();
-
   fromSel.onchange = updateCopyPreview;
+  toSel.onchange = updateCopyPreview;
   $("copyToOtherTerms").onchange = updateCopyPreview;
 }
 
 function updateCopyPreview() {
   const fromTerm = parseInt($("copyFromTerm").value, 10);
-  const sourceCount = PROGRAM.filter(e => Number(e.term) === fromTerm).length;
+  const toTerm = parseInt($("copyToTerm").value, 10);
   const toOther = $("copyToOtherTerms").checked;
 
+  // Count entries in the FROM term (from any source — we'll fetch fresh)
+  const sourceCount = PROGRAM.filter(e => Number(e.term) === fromTerm).length;
+
   const info = $("copyPreviewInfo");
+  if (fromTerm === toTerm) {
+    info.innerHTML = `⚠️ <strong>Source and target are the same term.</strong> Pick different terms.`;
+    info.style.background = "#fef2f2";
+    info.style.borderColor = "#fecaca";
+    info.style.color = "#991b1b";
+    return;
+  }
+
+  info.style.background = "#eff6ff";
+  info.style.borderColor = "#bfdbfe";
+  info.style.color = "#1e40af";
+
   info.innerHTML = `
     <strong>Will copy:</strong> ${sourceCount} entries from <strong>Term ${fromTerm}</strong> 
-    into <strong>Term ${SELECTED_TERM}</strong>${toOther ? " and other empty terms" : ""}.
+    into <strong>Term ${toTerm}</strong>${toOther ? " and all other terms" : ""}.
     <br><span style="color:#6b7280;font-size:12px;">Duplicates will be skipped automatically.</span>
   `;
 }
@@ -959,20 +973,21 @@ function updateCopyPreview() {
 async function doCopyTerm() {
   const btn = $("btnConfirmCopy");
   const fromTerm = parseInt($("copyFromTerm").value, 10);
+  const toTerm = parseInt($("copyToTerm").value, 10);
   const toOther = $("copyToOtherTerms").checked;
 
-  if (fromTerm === SELECTED_TERM) {
-    toast("⚠️ Cannot copy a term into itself", "error");
+  if (fromTerm === toTerm) {
+    toast("⚠️ Source and target terms must be different", "error");
     return;
   }
 
   btn.disabled = true;
   btn.textContent = "Copying…";
 
-  const targets = [SELECTED_TERM];
+  const targets = [toTerm];
   if (toOther) {
     [1, 2, 3].forEach(t => {
-      if (t !== SELECTED_TERM && t !== fromTerm) targets.push(t);
+      if (t !== toTerm && t !== fromTerm) targets.push(t);
     });
   }
 
@@ -981,8 +996,8 @@ async function doCopyTerm() {
   let totalErrors = 0;
 
   try {
-    for (const toTerm of targets) {
-      const result = await window.ProgramStore.copyTerm(CLASS_ID, fromTerm, toTerm);
+    for (const t of targets) {
+      const result = await window.ProgramStore.copyTerm(CLASS_ID, fromTerm, t);
       totalCopied += result.copied;
       totalSkipped += result.skipped;
       totalErrors += result.errors || 0;
