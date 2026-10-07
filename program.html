@@ -213,12 +213,13 @@
       </div>
 
       <div class="toolbar">
-        <button class="btn primary" id="btnPrint">🖨 Print Program</button>
-        <button class="btn outline" id="btnExport">📥 Export to Excel</button>
-        <button class="btn outline" id="btnRefresh">🔄 Refresh</button>
-        <button class="btn danger admin-only" id="btnClearTerm">🗑 Clear Term</button>
-        <span id="entryCount" style="margin-left:auto;font-size:13px;color:#6b7280;align-self:center;"></span>
-      </div>
+  <button class="btn primary" id="btnPrint">🖨 Print Program</button>
+  <button class="btn outline" id="btnExport">📥 Export to Excel</button>
+  <button class="btn outline" id="btnRefresh">🔄 Refresh</button>
+  <button class="btn warning admin-only" id="btnCopyTerm">📋 Copy from Term</button>
+  <button class="btn danger admin-only" id="btnClearTerm">🗑 Clear Term</button>
+  <span id="entryCount" style="margin-left:auto;font-size:13px;color:#6b7280;align-self:center;"></span>
+</div>
 
       <div class="grid-wrap">
         <table class="schedule" id="scheduleTable">
@@ -322,6 +323,57 @@
       </div>
     </div>
   </div>
+
+<!-- Copy Term Modal -->
+<div class="modal" id="copyTermModal">
+  <div class="modal-panel" style="max-width:520px;">
+    <div class="modal-head">
+      <h3>📋 Copy Term</h3>
+      <button class="close" data-close-copy>✕</button>
+    </div>
+    <div class="modal-body">
+      <p style="margin:0 0 16px;color:#4b5563;font-size:14px;">
+        Duplicate all entries from a source term into the current term.
+        Existing entries with the same day, slot, subject, and teacher will be skipped.
+      </p>
+
+      <div class="form-group">
+        <label>Copy FROM</label>
+        <select id="copyFromTerm">
+          <option value="1">Term 1</option>
+          <option value="2">Term 2</option>
+          <option value="3">Term 3</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>Copy TO</label>
+        <select id="copyToTerm" disabled>
+          <option value="1">Term 1</option>
+          <option value="2">Term 2</option>
+          <option value="3">Term 3</option>
+        </select>
+        <div class="hint">You can only copy into the currently selected term.</div>
+      </div>
+
+      <div class="form-group">
+        <label>Options</label>
+        <label style="display:flex;align-items:center;gap:8px;font-size:13px;color:#374151;text-transform:none;letter-spacing:0;font-weight:500;margin-bottom:6px;">
+          <input type="checkbox" id="copyToOtherTerms" />
+          Also copy to <strong>all other empty terms</strong> (skips non-empty terms)
+        </label>
+      </div>
+
+      <div id="copyPreviewInfo" style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:8px;padding:10px 14px;font-size:13px;color:#1e40af;">
+        Ready to copy.
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn outline" data-close-copy>Cancel</button>
+      <button class="btn success" id="btnConfirmCopy">📋 Copy Entries</button>
+    </div>
+  </div>
+</div>
 
   <div id="toast" class="toast"></div>
 
@@ -692,6 +744,15 @@
       $("btnExport").addEventListener("click", exportToExcel);
       $("btnRefresh").addEventListener("click", loadAndRender);
       $("btnClearTerm").addEventListener("click", clearTerm);
+        // ---- Copy Term ----
+  $("btnCopyTerm").addEventListener("click", openCopyTermModal);
+  $("btnConfirmCopy").addEventListener("click", doCopyTerm);
+  document.querySelectorAll("[data-close-copy]").forEach(b => {
+    b.addEventListener("click", () => $("copyTermModal").classList.remove("show"));
+  });
+  $("copyTermModal").addEventListener("click", e => {
+    if (e.target === $("copyTermModal")) $("copyTermModal").classList.remove("show");
+  });
     }
 
     function openEntryModal(entry) {
@@ -851,6 +912,94 @@
         toast("⚠️ " + (e.message || "Delete failed"), "error");
       }
     }
+
+    // ============================================================
+// COPY TERM
+// ============================================================
+function openCopyTermModal() {
+  const modal = $("copyTermModal");
+  modal.classList.add("show");
+
+  // Set default FROM (all terms except current)
+  const fromSel = $("copyFromTerm");
+  const toSel = $("copyToTerm");
+
+  // FROM options — everything except current
+  Array.from(fromSel.options).forEach(opt => {
+    opt.disabled = parseInt(opt.value, 10) === SELECTED_TERM;
+  });
+
+  // Default to first non-current term
+  const firstAvailable = Array.from(fromSel.options).find(o => !o.disabled);
+  if (firstAvailable) fromSel.value = firstAvailable.value;
+
+  // TO is locked to current term
+  toSel.value = String(SELECTED_TERM);
+
+  // Update preview text
+  updateCopyPreview();
+
+  fromSel.onchange = updateCopyPreview;
+  $("copyToOtherTerms").onchange = updateCopyPreview;
+}
+
+function updateCopyPreview() {
+  const fromTerm = parseInt($("copyFromTerm").value, 10);
+  const sourceCount = PROGRAM.filter(e => Number(e.term) === fromTerm).length;
+  const toOther = $("copyToOtherTerms").checked;
+
+  const info = $("copyPreviewInfo");
+  info.innerHTML = `
+    <strong>Will copy:</strong> ${sourceCount} entries from <strong>Term ${fromTerm}</strong> 
+    into <strong>Term ${SELECTED_TERM}</strong>${toOther ? " and other empty terms" : ""}.
+    <br><span style="color:#6b7280;font-size:12px;">Duplicates will be skipped automatically.</span>
+  `;
+}
+
+async function doCopyTerm() {
+  const btn = $("btnConfirmCopy");
+  const fromTerm = parseInt($("copyFromTerm").value, 10);
+  const toOther = $("copyToOtherTerms").checked;
+
+  if (fromTerm === SELECTED_TERM) {
+    toast("⚠️ Cannot copy a term into itself", "error");
+    return;
+  }
+
+  btn.disabled = true;
+  btn.textContent = "Copying…";
+
+  const targets = [SELECTED_TERM];
+  if (toOther) {
+    [1, 2, 3].forEach(t => {
+      if (t !== SELECTED_TERM && t !== fromTerm) targets.push(t);
+    });
+  }
+
+  let totalCopied = 0;
+  let totalSkipped = 0;
+  let totalErrors = 0;
+
+  try {
+    for (const toTerm of targets) {
+      const result = await window.ProgramStore.copyTerm(CLASS_ID, fromTerm, toTerm);
+      totalCopied += result.copied;
+      totalSkipped += result.skipped;
+      totalErrors += result.errors || 0;
+    }
+
+    toast(`✓ Copied ${totalCopied} entries${totalSkipped ? ` (${totalSkipped} skipped)` : ""}`, "success");
+
+    $("copyTermModal").classList.remove("show");
+    await loadAndRender();
+  } catch (e) {
+    console.error(e);
+    toast("⚠️ " + (e.message || "Copy failed"), "error");
+  } finally {
+    btn.disabled = false;
+    btn.textContent = "📋 Copy Entries";
+  }
+}
 
     function exportToExcel() {
       if (!PROGRAM.length) {
