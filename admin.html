@@ -1854,40 +1854,36 @@
     }
 
     function renderConflictRow(c) {
-      const badge = {
-        high: '<span class="ac-badge danger">🔴 High</span>',
-        medium: '<span class="ac-badge warning">🟡 Medium</span>',
-        low: '<span class="ac-badge info">🟢 Low</span>',
-      }[c.severity] || "";
+  const badge = {
+    high: '<span class="ac-badge danger">🔴 High</span>',
+    medium: '<span class="ac-badge warning">🟡 Medium</span>',
+    low: '<span class="ac-badge info">🟢 Low</span>',
+  }[c.severity] || "";
 
-      const when = c.day
-        ? `<strong>${esc(c.day)}</strong><br><span style="color:#6b7280;font-size:11px;">${esc(shortSlot(c.timeSlotId))}</span>`
-        : "—";
+  const when = c.day
+    ? `<strong>${esc(c.day)}</strong><br><span style="color:#6b7280;font-size:11px;">${esc(shortSlot(c.timeSlotId))}</span>`
+    : "—";
 
-      const distinctClasses = new Set(c.hits.map(h => h.classId)).size;
-      const resolved = isResolved(c.id);
+  const distinctClasses = new Set(c.hits.map(h => h.classId)).size;
+  const resolved = isResolved(c.id);
 
-      return `
-        <tr style="${resolved ? "opacity:0.5;" : ""}">
-          <td>${badge}</td>
-          <td>
-            <strong>${esc(c.title)}</strong>
-            ${resolved ? '<span class="ac-badge success" style="margin-left:6px;">✓ Resolved</span>' : ""}
-            <div style="color:#6b7280;font-size:11px;margin-top:2px;">${esc(c.description)}</div>
-          </td>
-          <td style="font-size:12px;">${when}</td>
-          <td><span class="ac-badge info">${distinctClasses}</span></td>
-            <td class="col-actions">
-            <button class="ac-btn outline small" data-detail-subject="${esc(s.code)}">🔍</button>
-            ${isAdminViewer ? `
-              <button class="ac-btn warning small" data-bow-upload="${esc(s.code)}" data-bow-name="${esc(s.displayName || s.code)}" title="Upload Budget of Work">📤</button>
-              <button class="ac-btn primary small" data-edit-subject="${esc(s.code)}">✏️</button>
-              <button class="ac-btn danger small" data-delete-subject="${esc(s.code)}" data-subject-name="${esc(s.displayName || s.code)}" title="Delete subject">🗑️</button>
-            ` : ""}
-          </td>
-        </tr>
-      `;
-    }
+  return `
+    <tr style="${resolved ? "opacity:0.5;" : ""}">
+      <td>${badge}</td>
+      <td>
+        <strong>${esc(c.title)}</strong>
+        ${resolved ? '<span class="ac-badge success" style="margin-left:6px;">✓ Resolved</span>' : ""}
+        <div style="color:#6b7280;font-size:11px;margin-top:2px;">${esc(c.description)}</div>
+      </td>
+      <td style="font-size:12px;">${when}</td>
+      <td><span class="ac-badge info">${distinctClasses}</span></td>
+      <td class="col-actions">
+        <button class="ac-btn outline small" data-detail="${esc(c.id)}">🔍 Details</button>
+        ${!resolved ? `<button class="ac-btn success small" data-resolve="${esc(c.id)}">✓ Resolve</button>` : ""}
+      </td>
+    </tr>
+  `;
+}
 
     function shortSlot(slotId) {
       // Beautify common slot IDs; fallback to raw
