@@ -66,6 +66,7 @@
     @keyframes spin { to { transform: rotate(360deg); } }
 
     .ip-warn { background: #fef3c7; border: 1px solid #fcd34d; color: #92400e; padding: 12px 16px; border-radius: 8px; font-size: 13px; margin-bottom: 16px; line-height: 1.5; }
+    .ip-info { background: #eff6ff; border: 1px solid #bfdbfe; color: #1e40af; padding: 12px 16px; border-radius: 8px; font-size: 13px; margin-bottom: 16px; line-height: 1.5; }
     .ip-success-box { background: #f0fdf4; border: 1px solid #bbf7d0; color: #166534; padding: 16px 20px; border-radius: 8px; font-size: 14px; line-height: 1.6; }
 
     @media (max-width: 768px) {
@@ -83,7 +84,7 @@
     <div class="ip-header-inner">
       <div>
         <h1>📥 Import Class Program</h1>
-        <p>Bulk-insert a Term's class program from a predefined template</p>
+        <p>Select a DepEd template or SCPHS template — auto-populates the schedule</p>
       </div>
       <a href="admin.html">← Back to Admin</a>
     </div>
@@ -100,7 +101,7 @@
       <!-- Step 1: Configure -->
       <div class="ip-card" id="configCard">
         <h2>Step 1 — Configure Import</h2>
-        <p class="sub">Pick the target class and which template to use.</p>
+        <p class="sub">Pick the target class, template, and term.</p>
 
         <div class="ip-field">
           <label for="ipClass">Target Class</label>
@@ -131,6 +132,7 @@
 
         <div class="ip-stats" id="ipStats"></div>
 
+        <div id="ipSlotCheck" class="ip-info" style="display:none;"></div>
         <div id="ipWarn" class="ip-warn" style="display:none;"></div>
 
         <div class="ip-preview" id="ipPreview"></div>
@@ -163,800 +165,9 @@
       collection, getDocs, addDoc, doc, serverTimestamp,
     } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
     import { getCurrentUserProfile } from "./assets/js/roles.js";
-
-    // ============================================================
-    // TEMPLATES — Grade 7 schedules
-    // ============================================================
-    const TEMPLATES = {
-
-      "g7-diamond": {
-        label: "Grade 7 - DIAMOND (Term 1)",
-        entries: [
-          // Monday
-          { day: "Monday",    slot: "period-1", subject: "HGP",    teacher: "joandayag@deped.gov.ph",       spec: "" },
-          { day: "Monday",    slot: "period-2", subject: "TLE7",   teacher: "shallonpugong@deped.gov.ph",   spec: "Cookery" },
-          { day: "Monday",    slot: "period-3", subject: "ENG7",   teacher: "riza.sabornido001@deped.gov.ph", spec: "" },
-          { day: "Monday",    slot: "period-4", subject: "SCI7",   teacher: "glyflorencematias.22@gmail.com", spec: "" },
-          { day: "Monday",    slot: "period-5", subject: "MATH7",  teacher: "arman.puyao@deped.gov.ph",     spec: "" },
-          { day: "Monday",    slot: "period-6", subject: "FIL7",   teacher: "airishmanuel@deped.gov.ph",    spec: "" },
-          { day: "Monday",    slot: "period-7", subject: "ESP7",   teacher: "riza.sabornido001@deped.gov.ph", spec: "" },
-          { day: "Monday",    slot: "aral",     subject: "ARAL",   teacher: "joandayag@deped.gov.ph",       spec: "" },
-
-          // Tuesday
-          { day: "Tuesday",   slot: "period-1", subject: "MAPEH7", teacher: "joandayag@deped.gov.ph",       spec: "" },
-          { day: "Tuesday",   slot: "period-2", subject: "TLE7",   teacher: "shallonpugong@deped.gov.ph",   spec: "Cookery" },
-          { day: "Tuesday",   slot: "period-3", subject: "AP7",    teacher: "risahimson@deped.gov.ph",      spec: "" },
-          { day: "Tuesday",   slot: "period-4", subject: "SCI7",   teacher: "glyflorencematias.22@gmail.com", spec: "" },
-          { day: "Tuesday",   slot: "period-5", subject: "MATH7",  teacher: "arman.puyao@deped.gov.ph",     spec: "" },
-          { day: "Tuesday",   slot: "period-6", subject: "FIL7",   teacher: "airishmanuel@deped.gov.ph",    spec: "" },
-          { day: "Tuesday",   slot: "period-7", subject: "ESP7",   teacher: "riza.sabornido001@deped.gov.ph", spec: "" },
-          { day: "Tuesday",   slot: "aral",     subject: "ARAL",   teacher: "joandayag@deped.gov.ph",       spec: "" },
-
-          // Wednesday
-          { day: "Wednesday", slot: "period-1", subject: "MAPEH7", teacher: "joandayag@deped.gov.ph",       spec: "" },
-          { day: "Wednesday", slot: "period-2", subject: "AP7",    teacher: "risahimson@deped.gov.ph",      spec: "" },
-          { day: "Wednesday", slot: "period-3", subject: "ENG7",   teacher: "riza.sabornido001@deped.gov.ph", spec: "" },
-          { day: "Wednesday", slot: "period-4", subject: "SCI7",   teacher: "glyflorencematias.22@gmail.com", spec: "" },
-          { day: "Wednesday", slot: "period-5", subject: "ESP7",   teacher: "riza.sabornido001@deped.gov.ph", spec: "" },
-          { day: "Wednesday", slot: "period-6", subject: "FIL7",   teacher: "airishmanuel@deped.gov.ph",    spec: "" },
-          { day: "Wednesday", slot: "period-7", subject: "ARAL",   teacher: "joandayag@deped.gov.ph",       spec: "" },
-
-          // Thursday
-          { day: "Thursday",  slot: "period-1", subject: "MAPEH7", teacher: "joandayag@deped.gov.ph",       spec: "" },
-          { day: "Thursday",  slot: "period-2", subject: "TLE7",   teacher: "shallonpugong@deped.gov.ph",   spec: "Cookery" },
-          { day: "Thursday",  slot: "period-3", subject: "ENG7",   teacher: "riza.sabornido001@deped.gov.ph", spec: "" },
-          { day: "Thursday",  slot: "period-4", subject: "AP7",    teacher: "risahimson@deped.gov.ph",      spec: "" },
-          { day: "Thursday",  slot: "period-5", subject: "MATH7",  teacher: "arman.puyao@deped.gov.ph",     spec: "" },
-          { day: "Thursday",  slot: "period-6", subject: "FIL7",   teacher: "airishmanuel@deped.gov.ph",    spec: "" },
-          { day: "Thursday",  slot: "period-7", subject: "ARAL",   teacher: "joandayag@deped.gov.ph",       spec: "" },
-
-          // Friday
-          { day: "Friday",    slot: "period-1", subject: "MAPEH7", teacher: "joandayag@deped.gov.ph",       spec: "" },
-          { day: "Friday",    slot: "period-2", subject: "TLE7",   teacher: "shallonpugong@deped.gov.ph",   spec: "Cookery" },
-          { day: "Friday",    slot: "period-3", subject: "ENG7",   teacher: "riza.sabornido001@deped.gov.ph", spec: "" },
-          { day: "Friday",    slot: "period-4", subject: "SCI7",   teacher: "glyflorencematias.22@gmail.com", spec: "" },
-          { day: "Friday",    slot: "period-5", subject: "MATH7",  teacher: "arman.puyao@deped.gov.ph",     spec: "" },
-          { day: "Friday",    slot: "period-6", subject: "AP7",    teacher: "risahimson@deped.gov.ph",      spec: "" },
-          { day: "Friday",    slot: "period-7", subject: "ESP7",   teacher: "riza.sabornido001@deped.gov.ph", spec: "" },
-        ]
-      },
-
-      "g7-emerald": {
-        label: "Grade 7 - EMERALD (Term 1)",
-        entries: [
-          // Monday
-          { day: "Monday",    slot: "period-1", subject: "HGP",    teacher: "joelalunag@deped.gov.ph",      spec: "" },
-          { day: "Monday",    slot: "period-2", subject: "MATH7",  teacher: "arman.puyao@deped.gov.ph",     spec: "" },
-          { day: "Monday",    slot: "period-3", subject: "ESP7",   teacher: "joelalunag@deped.gov.ph",      spec: "" },
-          { day: "Monday",    slot: "period-4", subject: "ENG7",   teacher: "riza.sabornido001@deped.gov.ph", spec: "" },
-          { day: "Monday",    slot: "period-5", subject: "SCI7",   teacher: "glyflorencematias.22@gmail.com", spec: "" },
-          { day: "Monday",    slot: "period-6", subject: "TLE7",   teacher: "shallonpugong@deped.gov.ph",   spec: "Cookery" },
-          { day: "Monday",    slot: "period-7", subject: "MAPEH7", teacher: "joandayag@deped.gov.ph",       spec: "" },
-          { day: "Monday",    slot: "aral",     subject: "ARAL",   teacher: "joelalunag@deped.gov.ph",      spec: "" },
-
-          // Tuesday
-          { day: "Tuesday",   slot: "period-1", subject: "AP7",    teacher: "risahimson@deped.gov.ph",      spec: "" },
-          { day: "Tuesday",   slot: "period-2", subject: "ESP7",   teacher: "joelalunag@deped.gov.ph",      spec: "" },
-          { day: "Tuesday",   slot: "period-3", subject: "MATH7",  teacher: "arman.puyao@deped.gov.ph",     spec: "" },
-          { day: "Tuesday",   slot: "period-4", subject: "MAPEH7", teacher: "joandayag@deped.gov.ph",       spec: "" },
-          { day: "Tuesday",   slot: "period-5", subject: "ENG7",   teacher: "riza.sabornido001@deped.gov.ph", spec: "" },
-          { day: "Tuesday",   slot: "period-6", subject: "FIL7",   teacher: "airishmanuel@deped.gov.ph",    spec: "" },
-          { day: "Tuesday",   slot: "period-7", subject: "ARAL",   teacher: "joelalunag@deped.gov.ph",      spec: "" },
-          { day: "Tuesday",   slot: "aral",     subject: "ARAL",   teacher: "joelalunag@deped.gov.ph",      spec: "" },
-
-          // Wednesday
-          { day: "Wednesday", slot: "period-1", subject: "AP7",    teacher: "risahimson@deped.gov.ph",      spec: "" },
-          { day: "Wednesday", slot: "period-2", subject: "ESP7",   teacher: "joelalunag@deped.gov.ph",      spec: "" },
-          { day: "Wednesday", slot: "period-3", subject: "FIL7",   teacher: "airishmanuel@deped.gov.ph",    spec: "" },
-          { day: "Wednesday", slot: "period-4", subject: "ENG7",   teacher: "riza.sabornido001@deped.gov.ph", spec: "" },
-          { day: "Wednesday", slot: "period-5", subject: "SCI7",   teacher: "glyflorencematias.22@gmail.com", spec: "" },
-          { day: "Wednesday", slot: "period-6", subject: "TLE7",   teacher: "shallonpugong@deped.gov.ph",   spec: "Cookery" },
-          { day: "Wednesday", slot: "period-7", subject: "ARAL",   teacher: "joelalunag@deped.gov.ph",      spec: "" },
-
-          // Thursday
-          { day: "Thursday",  slot: "period-1", subject: "AP7",    teacher: "risahimson@deped.gov.ph",      spec: "" },
-          { day: "Thursday",  slot: "period-2", subject: "ESP7",   teacher: "joelalunag@deped.gov.ph",      spec: "" },
-          { day: "Thursday",  slot: "period-3", subject: "MATH7",  teacher: "arman.puyao@deped.gov.ph",     spec: "" },
-          { day: "Thursday",  slot: "period-4", subject: "MAPEH7", teacher: "joandayag@deped.gov.ph",       spec: "" },
-          { day: "Thursday",  slot: "period-5", subject: "SCI7",   teacher: "glyflorencematias.22@gmail.com", spec: "" },
-          { day: "Thursday",  slot: "period-6", subject: "TLE7",   teacher: "shallonpugong@deped.gov.ph",   spec: "Cookery" },
-          { day: "Thursday",  slot: "period-7", subject: "FIL7",   teacher: "airishmanuel@deped.gov.ph",    spec: "" },
-
-          // Friday
-          { day: "Friday",    slot: "period-1", subject: "AP7",    teacher: "risahimson@deped.gov.ph",      spec: "" },
-          { day: "Friday",    slot: "period-2", subject: "FIL7",   teacher: "airishmanuel@deped.gov.ph",    spec: "" },
-          { day: "Friday",    slot: "period-3", subject: "MATH7",  teacher: "arman.puyao@deped.gov.ph",     spec: "" },
-          { day: "Friday",    slot: "period-4", subject: "MAPEH7", teacher: "joandayag@deped.gov.ph",       spec: "" },
-          { day: "Friday",    slot: "period-5", subject: "SCI7",   teacher: "glyflorencematias.22@gmail.com", spec: "" },
-          { day: "Friday",    slot: "period-6", subject: "ENG7",   teacher: "riza.sabornido001@deped.gov.ph", spec: "" },
-        ]
-      },
-
-      "g7-ivory": {
-        label: "Grade 7 - IVORY (Term 1)",
-        entries: [
-          // Monday
-          { day: "Monday",    slot: "period-1", subject: "HGP",    teacher: "glyflorencematias.22@gmail.com", spec: "" },
-          { day: "Monday",    slot: "period-2", subject: "FIL7",   teacher: "airishmanuel@deped.gov.ph",    spec: "" },
-          { day: "Monday",    slot: "period-3", subject: "MAPEH7", teacher: "joandayag@deped.gov.ph",       spec: "" },
-          { day: "Monday",    slot: "period-4", subject: "ESP7",   teacher: "roselynfelipe@deped.gov.ph",   spec: "" },
-          { day: "Monday",    slot: "period-5", subject: "AP7",    teacher: "risahimson@deped.gov.ph",      spec: "" },
-          { day: "Monday",    slot: "period-6", subject: "SCI7",   teacher: "glyflorencematias.22@gmail.com", spec: "" },
-          { day: "Monday",    slot: "period-7", subject: "TLE7",   teacher: "shallonpugong@deped.gov.ph",   spec: "Cookery" },
-          { day: "Monday",    slot: "aral",     subject: "ARAL",   teacher: "glyflorencematias.22@gmail.com", spec: "" },
-
-          // Tuesday
-          { day: "Tuesday",   slot: "period-1", subject: "ENG7",   teacher: "riza.sabornido001@deped.gov.ph", spec: "" },
-          { day: "Tuesday",   slot: "period-2", subject: "FIL7",   teacher: "airishmanuel@deped.gov.ph",    spec: "" },
-          { day: "Tuesday",   slot: "period-3", subject: "ESP7",   teacher: "roselynfelipe@deped.gov.ph",   spec: "" },
-          { day: "Tuesday",   slot: "period-4", subject: "TLE7",   teacher: "shallonpugong@deped.gov.ph",   spec: "Cookery" },
-          { day: "Tuesday",   slot: "period-5", subject: "AP7",    teacher: "risahimson@deped.gov.ph",      spec: "" },
-          { day: "Tuesday",   slot: "period-6", subject: "SCI7",   teacher: "glyflorencematias.22@gmail.com", spec: "" },
-          { day: "Tuesday",   slot: "period-7", subject: "MATH7",  teacher: "arman.puyao@deped.gov.ph",     spec: "" },
-          { day: "Tuesday",   slot: "aral",     subject: "ARAL",   teacher: "glyflorencematias.22@gmail.com", spec: "" },
-
-          // Wednesday
-          { day: "Wednesday", slot: "period-1", subject: "ENG7",   teacher: "riza.sabornido001@deped.gov.ph", spec: "" },
-          { day: "Wednesday", slot: "period-2", subject: "FIL7",   teacher: "airishmanuel@deped.gov.ph",    spec: "" },
-          { day: "Wednesday", slot: "period-3", subject: "ESP7",   teacher: "roselynfelipe@deped.gov.ph",   spec: "" },
-          { day: "Wednesday", slot: "period-4", subject: "MAPEH7", teacher: "joandayag@deped.gov.ph",       spec: "" },
-          { day: "Wednesday", slot: "period-5", subject: "MATH7",  teacher: "arman.puyao@deped.gov.ph",     spec: "" },
-          { day: "Wednesday", slot: "period-6", subject: "AP7",    teacher: "risahimson@deped.gov.ph",      spec: "" },
-          { day: "Wednesday", slot: "period-7", subject: "ARAL",   teacher: "glyflorencematias.22@gmail.com", spec: "" },
-
-          // Thursday
-          { day: "Thursday",  slot: "period-1", subject: "ESP7",   teacher: "roselynfelipe@deped.gov.ph",   spec: "" },
-          { day: "Thursday",  slot: "period-2", subject: "MATH7",  teacher: "arman.puyao@deped.gov.ph",     spec: "" },
-          { day: "Thursday",  slot: "period-3", subject: "FIL7",   teacher: "airishmanuel@deped.gov.ph",    spec: "" },
-          { day: "Thursday",  slot: "period-4", subject: "TLE7",   teacher: "shallonpugong@deped.gov.ph",   spec: "Cookery" },
-          { day: "Thursday",  slot: "period-5", subject: "MAPEH7", teacher: "joandayag@deped.gov.ph",       spec: "" },
-          { day: "Thursday",  slot: "period-6", subject: "SCI7",   teacher: "glyflorencematias.22@gmail.com", spec: "" },
-          { day: "Thursday",  slot: "period-7", subject: "ENG7",   teacher: "riza.sabornido001@deped.gov.ph", spec: "" },
-
-          // Friday
-          { day: "Friday",    slot: "period-1", subject: "ENG7",   teacher: "riza.sabornido001@deped.gov.ph", spec: "" },
-          { day: "Friday",    slot: "period-2", subject: "MATH7",  teacher: "arman.puyao@deped.gov.ph",     spec: "" },
-          { day: "Friday",    slot: "period-3", subject: "MAPEH7", teacher: "joandayag@deped.gov.ph",       spec: "" },
-          { day: "Friday",    slot: "period-4", subject: "TLE7",   teacher: "shallonpugong@deped.gov.ph",   spec: "Cookery" },
-          { day: "Friday",    slot: "period-5", subject: "AP7",    teacher: "risahimson@deped.gov.ph",      spec: "" },
-          { day: "Friday",    slot: "period-6", subject: "SCI7",   teacher: "glyflorencematias.22@gmail.com", spec: "" },
-          { day: "Friday",    slot: "period-7", subject: "ARAL",   teacher: "glyflorencematias.22@gmail.com", spec: "" },
-        ]
-      },
-
-            "g8-amethyst": {
-        label: "Grade 8 - AMETHYST (Term 1)",
-        entries: [
-          // Monday
-          { day: "Monday",    slot: "period-1", subject: "HGP",    teacher: "risahimson@deped.gov.ph",         spec: "" },
-          { day: "Monday",    slot: "period-2", subject: "AP8",    teacher: "risahimson@deped.gov.ph",         spec: "" },
-          { day: "Monday",    slot: "period-3", subject: "ENG8",   teacher: "lovimergracenening@deped.gov.ph", spec: "" },
-          { day: "Monday",    slot: "period-4", subject: "FIL8",   teacher: "kathlyndanghale@deped.gov.ph",    spec: "" },
-          { day: "Monday",    slot: "period-5", subject: "TLE8",   teacher: "shallonpugong@deped.gov.ph",      spec: "Cookery" },
-          { day: "Monday",    slot: "period-6", subject: "MAPEH8", teacher: "margelineselmo@deped.gov.ph",     spec: "" },
-          { day: "Monday",    slot: "period-7", subject: "SCI8",   teacher: "merylenemarquez@deped.gov.ph",    spec: "" },
-          { day: "Monday",    slot: "aral",     subject: "ARAL",   teacher: "risahimson@deped.gov.ph",         spec: "" },
-
-          // Tuesday
-          { day: "Tuesday",   slot: "period-1", subject: "MATH8",  teacher: "dominaosorio@deped.gov.ph",       spec: "" },
-          { day: "Tuesday",   slot: "period-2", subject: "AP8",    teacher: "risahimson@deped.gov.ph",         spec: "" },
-          { day: "Tuesday",   slot: "period-3", subject: "ESP8",   teacher: "arlynpaclit@deped.gov.ph",        spec: "" },
-          { day: "Tuesday",   slot: "period-4", subject: "ENG8",   teacher: "lovimergracenening@deped.gov.ph", spec: "" },
-          { day: "Tuesday",   slot: "period-5", subject: "TLE8",   teacher: "shallonpugong@deped.gov.ph",      spec: "Cookery" },
-          { day: "Tuesday",   slot: "period-6", subject: "MAPEH8", teacher: "margelineselmo@deped.gov.ph",     spec: "" },
-          { day: "Tuesday",   slot: "period-7", subject: "SCI8",   teacher: "merylenemarquez@deped.gov.ph",    spec: "" },
-          { day: "Tuesday",   slot: "aral",     subject: "ARAL",   teacher: "risahimson@deped.gov.ph",         spec: "" },
-
-          // Wednesday
-          { day: "Wednesday", slot: "period-1", subject: "MATH8",  teacher: "dominaosorio@deped.gov.ph",       spec: "" },
-          { day: "Wednesday", slot: "period-2", subject: "ENG8",   teacher: "lovimergracenening@deped.gov.ph", spec: "" },
-          { day: "Wednesday", slot: "period-3", subject: "ESP8",   teacher: "arlynpaclit@deped.gov.ph",        spec: "" },
-          { day: "Wednesday", slot: "period-4", subject: "FIL8",   teacher: "kathlyndanghale@deped.gov.ph",    spec: "" },
-          { day: "Wednesday", slot: "period-5", subject: "AP8",    teacher: "risahimson@deped.gov.ph",         spec: "" },
-          { day: "Wednesday", slot: "period-6", subject: "MAPEH8", teacher: "margelineselmo@deped.gov.ph",     spec: "" },
-          { day: "Wednesday", slot: "period-7", subject: "ARAL",   teacher: "risahimson@deped.gov.ph",         spec: "" },
-
-          // Thursday
-          { day: "Thursday",  slot: "period-1", subject: "MATH8",  teacher: "dominaosorio@deped.gov.ph",       spec: "" },
-          { day: "Thursday",  slot: "period-2", subject: "AP8",    teacher: "risahimson@deped.gov.ph",         spec: "" },
-          { day: "Thursday",  slot: "period-3", subject: "ESP8",   teacher: "arlynpaclit@deped.gov.ph",        spec: "" },
-          { day: "Thursday",  slot: "period-4", subject: "FIL8",   teacher: "kathlyndanghale@deped.gov.ph",    spec: "" },
-          { day: "Thursday",  slot: "period-5", subject: "TLE8",   teacher: "shallonpugong@deped.gov.ph",      spec: "Cookery" },
-          { day: "Thursday",  slot: "period-6", subject: "MAPEH8", teacher: "margelineselmo@deped.gov.ph",     spec: "" },
-          { day: "Thursday",  slot: "period-7", subject: "SCI8",   teacher: "merylenemarquez@deped.gov.ph",    spec: "" },
-
-          // Friday
-          { day: "Friday",    slot: "period-1", subject: "MATH8",  teacher: "dominaosorio@deped.gov.ph",       spec: "" },
-          { day: "Friday",    slot: "period-2", subject: "ENG8",   teacher: "lovimergracenening@deped.gov.ph", spec: "" },
-          { day: "Friday",    slot: "period-3", subject: "ESP8",   teacher: "arlynpaclit@deped.gov.ph",        spec: "" },
-          { day: "Friday",    slot: "period-4", subject: "FIL8",   teacher: "kathlyndanghale@deped.gov.ph",    spec: "" },
-          { day: "Friday",    slot: "period-5", subject: "TLE8",   teacher: "shallonpugong@deped.gov.ph",      spec: "Cookery" },
-          { day: "Friday",    slot: "period-6", subject: "MAPEH8", teacher: "margelineselmo@deped.gov.ph",     spec: "" },
-          { day: "Friday",    slot: "period-7", subject: "ARAL",   teacher: "risahimson@deped.gov.ph",         spec: "" },
-        ]
-      },
-
-      "g8-garnet": {
-        label: "Grade 8 - GARNET (Term 1)",
-        entries: [
-          // Monday
-          { day: "Monday",    slot: "period-1", subject: "HGP",    teacher: "margelineselmo@deped.gov.ph",     spec: "" },
-          { day: "Monday",    slot: "period-2", subject: "FIL8",   teacher: "kathlyndanghale@deped.gov.ph",    spec: "" },
-          { day: "Monday",    slot: "period-3", subject: "MATH8",  teacher: "dominaosorio@deped.gov.ph",       spec: "" },
-          { day: "Monday",    slot: "period-4", subject: "AP8",    teacher: "ephraimcarino@deped.gov.ph",      spec: "" },
-          { day: "Monday",    slot: "period-5", subject: "SCI8",   teacher: "merylenemarquez@deped.gov.ph",    spec: "" },
-          { day: "Monday",    slot: "period-6", subject: "ENG8",   teacher: "lovimergracenening@deped.gov.ph", spec: "" },
-          { day: "Monday",    slot: "period-7", subject: "MAPEH8", teacher: "margelineselmo@deped.gov.ph",     spec: "" },
-          { day: "Monday",    slot: "aral",     subject: "ARAL",   teacher: "margelineselmo@deped.gov.ph",     spec: "" },
-
-          // Tuesday
-          { day: "Tuesday",   slot: "period-1", subject: "TLE8",   teacher: "johnbasilang@deped.gov.ph",       spec: "Electronics" },
-          { day: "Tuesday",   slot: "period-2", subject: "ESP8",   teacher: "emmariedapig@deped.gov.ph",       spec: "" },
-          { day: "Tuesday",   slot: "period-3", subject: "ENG8",   teacher: "lovimergracenening@deped.gov.ph", spec: "" },
-          { day: "Tuesday",   slot: "period-4", subject: "MATH8",  teacher: "dominaosorio@deped.gov.ph",       spec: "" },
-          { day: "Tuesday",   slot: "period-5", subject: "AP8",    teacher: "ephraimcarino@deped.gov.ph",      spec: "" },
-          { day: "Tuesday",   slot: "period-6", subject: "FIL8",   teacher: "kathlyndanghale@deped.gov.ph",    spec: "" },
-          { day: "Tuesday",   slot: "period-7", subject: "MAPEH8", teacher: "margelineselmo@deped.gov.ph",     spec: "" },
-          { day: "Tuesday",   slot: "aral",     subject: "ARAL",   teacher: "margelineselmo@deped.gov.ph",     spec: "" },
-
-          // Wednesday
-          { day: "Wednesday", slot: "period-1", subject: "ESP8",   teacher: "emmariedapig@deped.gov.ph",       spec: "" },
-          { day: "Wednesday", slot: "period-2", subject: "TLE8",   teacher: "johnbasilang@deped.gov.ph",       spec: "Electronics" },
-          { day: "Wednesday", slot: "period-3", subject: "ENG8",   teacher: "lovimergracenening@deped.gov.ph", spec: "" },
-          { day: "Wednesday", slot: "period-4", subject: "AP8",    teacher: "ephraimcarino@deped.gov.ph",      spec: "" },
-          { day: "Wednesday", slot: "period-5", subject: "SCI8",   teacher: "merylenemarquez@deped.gov.ph",    spec: "" },
-          { day: "Wednesday", slot: "period-6", subject: "TLE8",   teacher: "johnbasilang@deped.gov.ph",       spec: "Electronics" },
-          { day: "Wednesday", slot: "period-7", subject: "MAPEH8", teacher: "margelineselmo@deped.gov.ph",     spec: "" },
-
-          // Thursday
-          { day: "Thursday",  slot: "period-1", subject: "TLE8",   teacher: "johnbasilang@deped.gov.ph",       spec: "Electronics" },
-          { day: "Thursday",  slot: "period-2", subject: "FIL8",   teacher: "kathlyndanghale@deped.gov.ph",    spec: "" },
-          { day: "Thursday",  slot: "period-3", subject: "ESP8",   teacher: "emmariedapig@deped.gov.ph",       spec: "" },
-          { day: "Thursday",  slot: "period-4", subject: "MATH8",  teacher: "dominaosorio@deped.gov.ph",       spec: "" },
-          { day: "Thursday",  slot: "period-5", subject: "SCI8",   teacher: "merylenemarquez@deped.gov.ph",    spec: "" },
-          { day: "Thursday",  slot: "period-6", subject: "AP8",    teacher: "ephraimcarino@deped.gov.ph",      spec: "" },
-          { day: "Thursday",  slot: "period-7", subject: "ARAL",   teacher: "margelineselmo@deped.gov.ph",     spec: "" },
-
-          // Friday
-          { day: "Friday",    slot: "period-1", subject: "ESP8",   teacher: "emmariedapig@deped.gov.ph",       spec: "" },
-          { day: "Friday",    slot: "period-2", subject: "FIL8",   teacher: "kathlyndanghale@deped.gov.ph",    spec: "" },
-          { day: "Friday",    slot: "period-3", subject: "ENG8",   teacher: "lovimergracenening@deped.gov.ph", spec: "" },
-          { day: "Friday",    slot: "period-4", subject: "MATH8",  teacher: "dominaosorio@deped.gov.ph",       spec: "" },
-          { day: "Friday",    slot: "period-5", subject: "SCI8",   teacher: "merylenemarquez@deped.gov.ph",    spec: "" },
-          { day: "Friday",    slot: "period-6", subject: "MAPEH8", teacher: "margelineselmo@deped.gov.ph",     spec: "" },
-          { day: "Friday",    slot: "period-7", subject: "ARAL",   teacher: "margelineselmo@deped.gov.ph",     spec: "" },
-        ]
-      },
-
-      "g8-jade": {
-        label: "Grade 8 - JADE (Term 1)",
-        entries: [
-          // Monday
-          { day: "Monday",    slot: "period-1", subject: "HGP",    teacher: "lovimergracenening@deped.gov.ph", spec: "" },
-          { day: "Monday",    slot: "period-2", subject: "ENG8",   teacher: "lovimergracenening@deped.gov.ph", spec: "" },
-          { day: "Monday",    slot: "period-3", subject: "AP8",    teacher: "risahimson@deped.gov.ph",         spec: "" },
-          { day: "Monday",    slot: "period-4", subject: "SCI8",   teacher: "merylenemarquez@deped.gov.ph",    spec: "" },
-          { day: "Monday",    slot: "period-5", subject: "MAPEH8", teacher: "margelineselmo@deped.gov.ph",     spec: "" },
-          { day: "Monday",    slot: "period-6", subject: "TLE8",   teacher: "johnbasilang@deped.gov.ph",       spec: "Electronics" },
-          { day: "Monday",    slot: "period-7", subject: "ARAL",   teacher: "lovimergracenening@deped.gov.ph", spec: "" },
-          { day: "Monday",    slot: "aral",     subject: "ARAL",   teacher: "lovimergracenening@deped.gov.ph", spec: "" },
-
-          // Tuesday
-          { day: "Tuesday",   slot: "period-1", subject: "FIL8",   teacher: "kathlyndanghale@deped.gov.ph",    spec: "" },
-          { day: "Tuesday",   slot: "period-2", subject: "ENG8",   teacher: "lovimergracenening@deped.gov.ph", spec: "" },
-          { day: "Tuesday",   slot: "period-3", subject: "MATH8",  teacher: "dominaosorio@deped.gov.ph",       spec: "" },
-          { day: "Tuesday",   slot: "period-4", subject: "AP8",    teacher: "risahimson@deped.gov.ph",         spec: "" },
-          { day: "Tuesday",   slot: "period-5", subject: "MAPEH8", teacher: "margelineselmo@deped.gov.ph",     spec: "" },
-          { day: "Tuesday",   slot: "period-6", subject: "TLE8",   teacher: "johnbasilang@deped.gov.ph",       spec: "Electronics" },
-          { day: "Tuesday",   slot: "period-7", subject: "ESP8",   teacher: "shallonpugong@deped.gov.ph",      spec: "" },
-          { day: "Tuesday",   slot: "aral",     subject: "ARAL",   teacher: "lovimergracenening@deped.gov.ph", spec: "" },
-
-          // Wednesday
-          { day: "Wednesday", slot: "period-1", subject: "FIL8",   teacher: "kathlyndanghale@deped.gov.ph",    spec: "" },
-          { day: "Wednesday", slot: "period-2", subject: "ESP8",   teacher: "shallonpugong@deped.gov.ph",      spec: "" },
-          { day: "Wednesday", slot: "period-3", subject: "MATH8",  teacher: "dominaosorio@deped.gov.ph",       spec: "" },
-          { day: "Wednesday", slot: "period-4", subject: "SCI8",   teacher: "merylenemarquez@deped.gov.ph",    spec: "" },
-          { day: "Wednesday", slot: "period-5", subject: "MAPEH8", teacher: "margelineselmo@deped.gov.ph",     spec: "" },
-          { day: "Wednesday", slot: "period-6", subject: "ENG8",   teacher: "lovimergracenening@deped.gov.ph", spec: "" },
-          { day: "Wednesday", slot: "period-7", subject: "AP8",    teacher: "risahimson@deped.gov.ph",         spec: "" },
-
-          // Thursday
-          { day: "Thursday",  slot: "period-1", subject: "FIL8",   teacher: "kathlyndanghale@deped.gov.ph",    spec: "" },
-          { day: "Thursday",  slot: "period-2", subject: "MATH8",  teacher: "dominaosorio@deped.gov.ph",       spec: "" },
-          { day: "Thursday",  slot: "period-3", subject: "ESP8",   teacher: "shallonpugong@deped.gov.ph",      spec: "" },
-          { day: "Thursday",  slot: "period-4", subject: "SCI8",   teacher: "merylenemarquez@deped.gov.ph",    spec: "" },
-          { day: "Thursday",  slot: "period-5", subject: "AP8",    teacher: "risahimson@deped.gov.ph",         spec: "" },
-          { day: "Thursday",  slot: "period-6", subject: "TLE8",   teacher: "johnbasilang@deped.gov.ph",       spec: "Electronics" },
-          { day: "Thursday",  slot: "period-7", subject: "ARAL",   teacher: "lovimergracenening@deped.gov.ph", spec: "" },
-
-          // Friday
-          { day: "Friday",    slot: "period-1", subject: "FIL8",   teacher: "kathlyndanghale@deped.gov.ph",    spec: "" },
-          { day: "Friday",    slot: "period-2", subject: "MATH8",  teacher: "dominaosorio@deped.gov.ph",       spec: "" },
-          { day: "Friday",    slot: "period-3", subject: "ESP8",   teacher: "shallonpugong@deped.gov.ph",      spec: "" },
-          { day: "Friday",    slot: "period-4", subject: "SCI8",   teacher: "merylenemarquez@deped.gov.ph",    spec: "" },
-          { day: "Friday",    slot: "period-5", subject: "MAPEH8", teacher: "margelineselmo@deped.gov.ph",     spec: "" },
-          { day: "Friday",    slot: "period-6", subject: "TLE8",   teacher: "johnbasilang@deped.gov.ph",       spec: "Electronics" },
-          { day: "Friday",    slot: "period-7", subject: "ENG8",   teacher: "lovimergracenening@deped.gov.ph", spec: "" },
-        ]
-      },
-
-      "g8-jasper": {
-        label: "Grade 8 - JASPER (Term 1)",
-        entries: [
-          // Monday
-          { day: "Monday",    slot: "period-1", subject: "HGP",    teacher: "johnbasilang@deped.gov.ph",       spec: "" },
-          { day: "Monday",    slot: "period-2", subject: "MATH8",  teacher: "dominaosorio@deped.gov.ph",       spec: "" },
-          { day: "Monday",    slot: "period-3", subject: "AP8",    teacher: "ephraimcarino@deped.gov.ph",      spec: "" },
-          { day: "Monday",    slot: "period-4", subject: "MAPEH8", teacher: "merlypido@deped.gov.ph",          spec: "" },
-          { day: "Monday",    slot: "period-5", subject: "ENG8",   teacher: "lovimergracenening@deped.gov.ph", spec: "" },
-          { day: "Monday",    slot: "period-6", subject: "FIL8",   teacher: "kathlyndanghale@deped.gov.ph",    spec: "" },
-          { day: "Monday",    slot: "period-7", subject: "TLE8",   teacher: "johnbasilang@deped.gov.ph",       spec: "Electronics" },
-          { day: "Monday",    slot: "aral",     subject: "ARAL",   teacher: "johnbasilang@deped.gov.ph",       spec: "" },
-
-          // Tuesday
-          { day: "Tuesday",   slot: "period-1", subject: "ESP8",   teacher: "shallonpugong@deped.gov.ph",      spec: "" },
-          { day: "Tuesday",   slot: "period-2", subject: "MAPEH8", teacher: "merlypido@deped.gov.ph",          spec: "" },
-          { day: "Tuesday",   slot: "period-3", subject: "SCI8",   teacher: "merylenemarquez@deped.gov.ph",    spec: "" },
-          { day: "Tuesday",   slot: "period-4", subject: "AP8",    teacher: "ephraimcarino@deped.gov.ph",      spec: "" },
-          { day: "Tuesday",   slot: "period-5", subject: "ENG8",   teacher: "lovimergracenening@deped.gov.ph", spec: "" },
-          { day: "Tuesday",   slot: "period-6", subject: "MAPEH8", teacher: "merlypido@deped.gov.ph",          spec: "" },
-          { day: "Tuesday",   slot: "period-7", subject: "TLE8",   teacher: "johnbasilang@deped.gov.ph",       spec: "Electronics" },
-          { day: "Tuesday",   slot: "aral",     subject: "ARAL",   teacher: "johnbasilang@deped.gov.ph",       spec: "" },
-
-          // Wednesday
-          { day: "Wednesday", slot: "period-1", subject: "ESP8",   teacher: "shallonpugong@deped.gov.ph",      spec: "" },
-          { day: "Wednesday", slot: "period-2", subject: "MATH8",  teacher: "dominaosorio@deped.gov.ph",       spec: "" },
-          { day: "Wednesday", slot: "period-3", subject: "SCI8",   teacher: "merylenemarquez@deped.gov.ph",    spec: "" },
-          { day: "Wednesday", slot: "period-4", subject: "ENG8",   teacher: "lovimergracenening@deped.gov.ph", spec: "" },
-          { day: "Wednesday", slot: "period-5", subject: "FIL8",   teacher: "kathlyndanghale@deped.gov.ph",    spec: "" },
-          { day: "Wednesday", slot: "period-6", subject: "MAPEH8", teacher: "merlypido@deped.gov.ph",          spec: "" },
-          { day: "Wednesday", slot: "period-7", subject: "TLE8",   teacher: "johnbasilang@deped.gov.ph",       spec: "Electronics" },
-
-          // Thursday
-          { day: "Thursday",  slot: "period-1", subject: "ESP8",   teacher: "shallonpugong@deped.gov.ph",      spec: "" },
-          { day: "Thursday",  slot: "period-2", subject: "ENG8",   teacher: "lovimergracenening@deped.gov.ph", spec: "" },
-          { day: "Thursday",  slot: "period-3", subject: "SCI8",   teacher: "merylenemarquez@deped.gov.ph",    spec: "" },
-          { day: "Thursday",  slot: "period-4", subject: "AP8",    teacher: "ephraimcarino@deped.gov.ph",      spec: "" },
-          { day: "Thursday",  slot: "period-5", subject: "FIL8",   teacher: "kathlyndanghale@deped.gov.ph",    spec: "" },
-          { day: "Thursday",  slot: "period-6", subject: "MATH8",  teacher: "dominaosorio@deped.gov.ph",       spec: "" },
-          { day: "Thursday",  slot: "period-7", subject: "ARAL",   teacher: "johnbasilang@deped.gov.ph",       spec: "" },
-
-          // Friday
-          { day: "Friday",    slot: "period-1", subject: "ESP8",   teacher: "shallonpugong@deped.gov.ph",      spec: "" },
-          { day: "Friday",    slot: "period-2", subject: "SCI8",   teacher: "merylenemarquez@deped.gov.ph",    spec: "" },
-          { day: "Friday",    slot: "period-3", subject: "MATH8",  teacher: "dominaosorio@deped.gov.ph",       spec: "" },
-          { day: "Friday",    slot: "period-4", subject: "AP8",    teacher: "ephraimcarino@deped.gov.ph",      spec: "" },
-          { day: "Friday",    slot: "period-5", subject: "TLE8",   teacher: "johnbasilang@deped.gov.ph",       spec: "Electronics" },
-          { day: "Friday",    slot: "period-6", subject: "FIL8",   teacher: "kathlyndanghale@deped.gov.ph",    spec: "" },
-          { day: "Friday",    slot: "period-7", subject: "ARAL",   teacher: "johnbasilang@deped.gov.ph",       spec: "" },
-        ]
-      },
-
-            "g9-aquamarine": {
-        label: "Grade 9 - AQUAMARINE (Term 1)",
-        entries: [
-          // Monday
-          { day: "Monday",    slot: "period-1", subject: "HGP",    teacher: "emmariedapig@deped.gov.ph",      spec: "" },
-          { day: "Monday",    slot: "period-2", subject: "TLE9",   teacher: "johnbasilang@deped.gov.ph",      spec: "Electronics" },
-          { day: "Monday",    slot: "period-2", subject: "TLE9",   teacher: "efrenatiago@deped.gov.ph",       spec: "Cookery" },
-          { day: "Monday",    slot: "period-2", subject: "TLE9",   teacher: "norbertajomocan@deped.gov.ph",   spec: "Cookery" },
-          { day: "Monday",    slot: "period-2", subject: "TLE9",   teacher: "margelineselmo@deped.gov.ph",    spec: "Dressmaking" },
-          { day: "Monday",    slot: "period-2", subject: "TLE9",   teacher: "wilfredligmayo@deped.gov.ph",    spec: "Carpentry" },
-          { day: "Monday",    slot: "period-2", subject: "TLE9",   teacher: "rodeliodelacruz@deped.gov.ph",   spec: "ICT" },
-          { day: "Monday",    slot: "period-3", subject: "MAPEH9", teacher: "norbincangsan@deped.gov.ph",     spec: "" },
-          { day: "Monday",    slot: "period-4", subject: "AP9",    teacher: "timluyaman@deped.gov.ph",        spec: "" },
-          { day: "Monday",    slot: "period-5", subject: "FIL9",   teacher: "airishmanuel@deped.gov.ph",      spec: "" },
-          { day: "Monday",    slot: "period-6", subject: "ESP9",   teacher: "norbertajomocan@deped.gov.ph",   spec: "" },
-          { day: "Monday",    slot: "period-7", subject: "ENG9",   teacher: "emmariedapig@deped.gov.ph",      spec: "" },
-          { day: "Monday",    slot: "aral",     subject: "ARAL",   teacher: "emmariedapig@deped.gov.ph",      spec: "" },
-
-          // Tuesday
-          { day: "Tuesday",   slot: "period-1", subject: "SCI9",   teacher: "applevelasco@deped.gov.ph",      spec: "" },
-          { day: "Tuesday",   slot: "period-2", subject: "TLE9",   teacher: "johnbasilang@deped.gov.ph",      spec: "Electronics" },
-          { day: "Tuesday",   slot: "period-2", subject: "TLE9",   teacher: "efrenatiago@deped.gov.ph",       spec: "Cookery" },
-          { day: "Tuesday",   slot: "period-2", subject: "TLE9",   teacher: "norbertajomocan@deped.gov.ph",   spec: "Cookery" },
-          { day: "Tuesday",   slot: "period-2", subject: "TLE9",   teacher: "margelineselmo@deped.gov.ph",    spec: "Dressmaking" },
-          { day: "Tuesday",   slot: "period-2", subject: "TLE9",   teacher: "rodeliodelacruz@deped.gov.ph",   spec: "ICT" },
-          { day: "Tuesday",   slot: "period-2", subject: "TLE9",   teacher: "wilfredligmayo@deped.gov.ph",    spec: "Carpentry" },
-          { day: "Tuesday",   slot: "period-3", subject: "MATH9",  teacher: "noverpaclit@deped.gov.ph",       spec: "" },
-          { day: "Tuesday",   slot: "period-4", subject: "AP9",    teacher: "timluyaman@deped.gov.ph",        spec: "" },
-          { day: "Tuesday",   slot: "period-5", subject: "MAPEH9", teacher: "norbincangsan@deped.gov.ph",     spec: "" },
-          { day: "Tuesday",   slot: "period-6", subject: "ENG9",   teacher: "emmariedapig@deped.gov.ph",      spec: "" },
-          { day: "Tuesday",   slot: "period-7", subject: "ESP9",   teacher: "norbertajomocan@deped.gov.ph",   spec: "" },
-          { day: "Tuesday",   slot: "aral",     subject: "ARAL",   teacher: "emmariedapig@deped.gov.ph",      spec: "" },
-
-          // Wednesday
-          { day: "Wednesday", slot: "period-1", subject: "SCI9",   teacher: "applevelasco@deped.gov.ph",      spec: "" },
-          { day: "Wednesday", slot: "period-2", subject: "MAPEH9", teacher: "norbincangsan@deped.gov.ph",     spec: "" },
-          { day: "Wednesday", slot: "period-3", subject: "MATH9",  teacher: "noverpaclit@deped.gov.ph",       spec: "" },
-          { day: "Wednesday", slot: "period-4", subject: "AP9",    teacher: "timluyaman@deped.gov.ph",        spec: "" },
-          { day: "Wednesday", slot: "period-5", subject: "FIL9",   teacher: "airishmanuel@deped.gov.ph",      spec: "" },
-          { day: "Wednesday", slot: "period-6", subject: "ESP9",   teacher: "norbertajomocan@deped.gov.ph",   spec: "" },
-          { day: "Wednesday", slot: "period-7", subject: "ARAL",   teacher: "emmariedapig@deped.gov.ph",      spec: "" },
-
-          // Thursday
-          { day: "Thursday",  slot: "period-1", subject: "SCI9",   teacher: "applevelasco@deped.gov.ph",      spec: "" },
-          { day: "Thursday",  slot: "period-2", subject: "TLE9",   teacher: "johnbasilang@deped.gov.ph",      spec: "Electronics" },
-          { day: "Thursday",  slot: "period-2", subject: "TLE9",   teacher: "efrenatiago@deped.gov.ph",       spec: "Cookery" },
-          { day: "Thursday",  slot: "period-2", subject: "TLE9",   teacher: "norbertajomocan@deped.gov.ph",   spec: "Cookery" },
-          { day: "Thursday",  slot: "period-2", subject: "TLE9",   teacher: "margelineselmo@deped.gov.ph",    spec: "Dressmaking" },
-          { day: "Thursday",  slot: "period-2", subject: "TLE9",   teacher: "wilfredligmayo@deped.gov.ph",    spec: "Carpentry" },
-          { day: "Thursday",  slot: "period-2", subject: "TLE9",   teacher: "rodeliodelacruz@deped.gov.ph",   spec: "ICT" },
-          { day: "Thursday",  slot: "period-3", subject: "MATH9",  teacher: "noverpaclit@deped.gov.ph",       spec: "" },
-          { day: "Thursday",  slot: "period-4", subject: "FIL9",   teacher: "airishmanuel@deped.gov.ph",      spec: "" },
-          { day: "Thursday",  slot: "period-5", subject: "MAPEH9", teacher: "norbincangsan@deped.gov.ph",     spec: "" },
-          { day: "Thursday",  slot: "period-6", subject: "ENG9",   teacher: "emmariedapig@deped.gov.ph",      spec: "" },
-          { day: "Thursday",  slot: "period-7", subject: "ARAL",   teacher: "emmariedapig@deped.gov.ph",      spec: "" },
-
-          // Friday
-          { day: "Friday",    slot: "period-1", subject: "SCI9",   teacher: "applevelasco@deped.gov.ph",      spec: "" },
-          { day: "Friday",    slot: "period-2", subject: "TLE9",   teacher: "johnbasilang@deped.gov.ph",      spec: "Electronics" },
-          { day: "Friday",    slot: "period-2", subject: "TLE9",   teacher: "norbertajomocan@deped.gov.ph",   spec: "Cookery" },
-          { day: "Friday",    slot: "period-2", subject: "TLE9",   teacher: "margelineselmo@deped.gov.ph",    spec: "Dressmaking" },
-          { day: "Friday",    slot: "period-2", subject: "TLE9",   teacher: "wilfredligmayo@deped.gov.ph",    spec: "Carpentry" },
-          { day: "Friday",    slot: "period-2", subject: "TLE9",   teacher: "rodeliodelacruz@deped.gov.ph",   spec: "ICT" },
-          { day: "Friday",    slot: "period-2", subject: "TLE9",   teacher: "johnbasilang@deped.gov.ph",      spec: "Cookery" },
-          { day: "Friday",    slot: "period-3", subject: "MATH9",  teacher: "noverpaclit@deped.gov.ph",       spec: "" },
-          { day: "Friday",    slot: "period-4", subject: "AP9",    teacher: "timluyaman@deped.gov.ph",        spec: "" },
-          { day: "Friday",    slot: "period-5", subject: "FIL9",   teacher: "airishmanuel@deped.gov.ph",      spec: "" },
-          { day: "Friday",    slot: "period-6", subject: "ESP9",   teacher: "norbertajomocan@deped.gov.ph",   spec: "" },
-          { day: "Friday",    slot: "period-7", subject: "ENG9",   teacher: "emmariedapig@deped.gov.ph",      spec: "" },
-        ]
-      },
-
-      "g9-pearl": {
-        label: "Grade 9 - PEARL (Term 1)",
-        entries: [
-          // Monday
-          { day: "Monday",    slot: "period-1", subject: "HGP",    teacher: "airishmanuel@deped.gov.ph",      spec: "" },
-          { day: "Monday",    slot: "period-2", subject: "TLE9",   teacher: "johnbasilang@deped.gov.ph",      spec: "Electronics" },
-          { day: "Monday",    slot: "period-2", subject: "TLE9",   teacher: "efrenatiago@deped.gov.ph",       spec: "Cookery" },
-          { day: "Monday",    slot: "period-2", subject: "TLE9",   teacher: "norbertajomocan@deped.gov.ph",   spec: "Cookery" },
-          { day: "Monday",    slot: "period-2", subject: "TLE9",   teacher: "margelineselmo@deped.gov.ph",    spec: "Dressmaking" },
-          { day: "Monday",    slot: "period-2", subject: "TLE9",   teacher: "wilfredligmayo@deped.gov.ph",    spec: "Carpentry" },
-          { day: "Monday",    slot: "period-2", subject: "TLE9",   teacher: "rodeliodelacruz@deped.gov.ph",   spec: "ICT" },
-          { day: "Monday",    slot: "period-3", subject: "MATH9",  teacher: "noverpaclit@deped.gov.ph",       spec: "" },
-          { day: "Monday",    slot: "period-4", subject: "ENG9",   teacher: "emmariedapig@deped.gov.ph",      spec: "" },
-          { day: "Monday",    slot: "period-5", subject: "SCI9",   teacher: "applevelasco@deped.gov.ph",      spec: "" },
-          { day: "Monday",    slot: "period-6", subject: "AP9",    teacher: "timluyaman@deped.gov.ph",        spec: "" },
-          { day: "Monday",    slot: "period-7", subject: "MAPEH9", teacher: "norbincangsan@deped.gov.ph",     spec: "" },
-          { day: "Monday",    slot: "aral",     subject: "ARAL",   teacher: "airishmanuel@deped.gov.ph",      spec: "" },
-
-          // Tuesday
-          { day: "Tuesday",   slot: "period-1", subject: "FIL9",   teacher: "airishmanuel@deped.gov.ph",      spec: "" },
-          { day: "Tuesday",   slot: "period-2", subject: "TLE9",   teacher: "johnbasilang@deped.gov.ph",      spec: "Electronics" },
-          { day: "Tuesday",   slot: "period-2", subject: "TLE9",   teacher: "efrenatiago@deped.gov.ph",       spec: "Cookery" },
-          { day: "Tuesday",   slot: "period-2", subject: "TLE9",   teacher: "norbertajomocan@deped.gov.ph",   spec: "Cookery" },
-          { day: "Tuesday",   slot: "period-2", subject: "TLE9",   teacher: "margelineselmo@deped.gov.ph",    spec: "Dressmaking" },
-          { day: "Tuesday",   slot: "period-2", subject: "TLE9",   teacher: "wilfredligmayo@deped.gov.ph",    spec: "Carpentry" },
-          { day: "Tuesday",   slot: "period-2", subject: "TLE9",   teacher: "rodeliodelacruz@deped.gov.ph",   spec: "ICT" },
-          { day: "Tuesday",   slot: "period-3", subject: "MAPEH9", teacher: "norbincangsan@deped.gov.ph",     spec: "" },
-          { day: "Tuesday",   slot: "period-4", subject: "ENG9",   teacher: "emmariedapig@deped.gov.ph",      spec: "" },
-          { day: "Tuesday",   slot: "period-5", subject: "MATH9",  teacher: "noverpaclit@deped.gov.ph",       spec: "" },
-          { day: "Tuesday",   slot: "period-6", subject: "AP9",    teacher: "timluyaman@deped.gov.ph",        spec: "" },
-          { day: "Tuesday",   slot: "period-7", subject: "ARAL",   teacher: "airishmanuel@deped.gov.ph",      spec: "" },
-          { day: "Tuesday",   slot: "aral",     subject: "ARAL",   teacher: "airishmanuel@deped.gov.ph",      spec: "" },
-
-          // Wednesday
-          { day: "Wednesday", slot: "period-1", subject: "FIL9",   teacher: "airishmanuel@deped.gov.ph",      spec: "" },
-          { day: "Wednesday", slot: "period-2", subject: "MATH9",  teacher: "noverpaclit@deped.gov.ph",       spec: "" },
-          { day: "Wednesday", slot: "period-3", subject: "ESP9",   teacher: "norbertajomocan@deped.gov.ph",   spec: "" },
-          { day: "Wednesday", slot: "period-4", subject: "SCI9",   teacher: "applevelasco@deped.gov.ph",      spec: "" },
-          { day: "Wednesday", slot: "period-5", subject: "MAPEH9", teacher: "norbincangsan@deped.gov.ph",     spec: "" },
-          { day: "Wednesday", slot: "period-6", subject: "AP9",    teacher: "timluyaman@deped.gov.ph",        spec: "" },
-          { day: "Wednesday", slot: "period-7", subject: "ESP9",   teacher: "norbertajomocan@deped.gov.ph",   spec: "" },
-
-          // Thursday
-          { day: "Thursday",  slot: "period-1", subject: "FIL9",   teacher: "airishmanuel@deped.gov.ph",      spec: "" },
-          { day: "Thursday",  slot: "period-2", subject: "TLE9",   teacher: "johnbasilang@deped.gov.ph",      spec: "Electronics" },
-          { day: "Thursday",  slot: "period-2", subject: "TLE9",   teacher: "efrenatiago@deped.gov.ph",       spec: "Cookery" },
-          { day: "Thursday",  slot: "period-2", subject: "TLE9",   teacher: "norbertajomocan@deped.gov.ph",   spec: "Cookery" },
-          { day: "Thursday",  slot: "period-2", subject: "TLE9",   teacher: "margelineselmo@deped.gov.ph",    spec: "Dressmaking" },
-          { day: "Thursday",  slot: "period-2", subject: "TLE9",   teacher: "wilfredligmayo@deped.gov.ph",    spec: "Carpentry" },
-          { day: "Thursday",  slot: "period-2", subject: "TLE9",   teacher: "rodeliodelacruz@deped.gov.ph",   spec: "ICT" },
-          { day: "Thursday",  slot: "period-3", subject: "ESP9",   teacher: "norbertajomocan@deped.gov.ph",   spec: "" },
-          { day: "Thursday",  slot: "period-4", subject: "ENG9",   teacher: "emmariedapig@deped.gov.ph",      spec: "" },
-          { day: "Thursday",  slot: "period-5", subject: "SCI9",   teacher: "applevelasco@deped.gov.ph",      spec: "" },
-          { day: "Thursday",  slot: "period-6", subject: "MATH9",  teacher: "noverpaclit@deped.gov.ph",       spec: "" },
-          { day: "Thursday",  slot: "period-7", subject: "ARAL",   teacher: "airishmanuel@deped.gov.ph",      spec: "" },
-
-          // Friday
-          { day: "Friday",    slot: "period-1", subject: "MAPEH9", teacher: "norbincangsan@deped.gov.ph",     spec: "" },
-          { day: "Friday",    slot: "period-2", subject: "TLE9",   teacher: "johnbasilang@deped.gov.ph",      spec: "Electronics" },
-          { day: "Friday",    slot: "period-2", subject: "TLE9",   teacher: "efrenatiago@deped.gov.ph",       spec: "Cookery" },
-          { day: "Friday",    slot: "period-2", subject: "TLE9",   teacher: "norbertajomocan@deped.gov.ph",   spec: "Cookery" },
-          { day: "Friday",    slot: "period-2", subject: "TLE9",   teacher: "margelineselmo@deped.gov.ph",    spec: "Dressmaking" },
-          { day: "Friday",    slot: "period-2", subject: "TLE9",   teacher: "wilfredligmayo@deped.gov.ph",    spec: "Carpentry" },
-          { day: "Friday",    slot: "period-2", subject: "TLE9",   teacher: "rodeliodelacruz@deped.gov.ph",   spec: "ICT" },
-          { day: "Friday",    slot: "period-3", subject: "ESP9",   teacher: "norbertajomocan@deped.gov.ph",   spec: "" },
-          { day: "Friday",    slot: "period-4", subject: "ENG9",   teacher: "emmariedapig@deped.gov.ph",      spec: "" },
-          { day: "Friday",    slot: "period-5", subject: "SCI9",   teacher: "applevelasco@deped.gov.ph",      spec: "" },
-          { day: "Friday",    slot: "period-6", subject: "AP9",    teacher: "timluyaman@deped.gov.ph",        spec: "" },
-          { day: "Friday",    slot: "period-7", subject: "FIL9",   teacher: "airishmanuel@deped.gov.ph",      spec: "" },
-        ]
-      },
-
-      "g9-ruby": {
-        label: "Grade 9 - RUBY (Term 1)",
-        entries: [
-          // Monday
-          { day: "Monday",    slot: "period-1", subject: "HGP",    teacher: "norbertajomocan@deped.gov.ph",   spec: "" },
-          { day: "Monday",    slot: "period-2", subject: "TLE9",   teacher: "johnbasilang@deped.gov.ph",      spec: "Electronics" },
-          { day: "Monday",    slot: "period-2", subject: "TLE9",   teacher: "efrenatiago@deped.gov.ph",       spec: "Cookery" },
-          { day: "Monday",    slot: "period-2", subject: "TLE9",   teacher: "norbertajomocan@deped.gov.ph",   spec: "Cookery" },
-          { day: "Monday",    slot: "period-2", subject: "TLE9",   teacher: "margelineselmo@deped.gov.ph",    spec: "Dressmaking" },
-          { day: "Monday",    slot: "period-2", subject: "TLE9",   teacher: "wilfredligmayo@deped.gov.ph",    spec: "Carpentry" },
-          { day: "Monday",    slot: "period-2", subject: "TLE9",   teacher: "rodeliodelacruz@deped.gov.ph",   spec: "ICT" },
-          { day: "Monday",    slot: "period-3", subject: "ENG9",   teacher: "emmariedapig@deped.gov.ph",      spec: "" },
-          { day: "Monday",    slot: "period-4", subject: "MAPEH9", teacher: "norbincangsan@deped.gov.ph",     spec: "" },
-          { day: "Monday",    slot: "period-5", subject: "AP9",    teacher: "timluyaman@deped.gov.ph",        spec: "" },
-          { day: "Monday",    slot: "period-6", subject: "MATH9",  teacher: "noverpaclit@deped.gov.ph",       spec: "" },
-          { day: "Monday",    slot: "period-7", subject: "FIL9",   teacher: "kathlyndanghale@deped.gov.ph",   spec: "" },
-          { day: "Monday",    slot: "aral",     subject: "ARAL",   teacher: "norbertajomocan@deped.gov.ph",   spec: "" },
-
-          // Tuesday
-          { day: "Tuesday",   slot: "period-1", subject: "MAPEH9", teacher: "norbincangsan@deped.gov.ph",     spec: "" },
-          { day: "Tuesday",   slot: "period-2", subject: "TLE9",   teacher: "johnbasilang@deped.gov.ph",      spec: "Electronics" },
-          { day: "Tuesday",   slot: "period-2", subject: "TLE9",   teacher: "efrenatiago@deped.gov.ph",       spec: "Cookery" },
-          { day: "Tuesday",   slot: "period-2", subject: "TLE9",   teacher: "norbertajomocan@deped.gov.ph",   spec: "Cookery" },
-          { day: "Tuesday",   slot: "period-2", subject: "TLE9",   teacher: "margelineselmo@deped.gov.ph",    spec: "Dressmaking" },
-          { day: "Tuesday",   slot: "period-2", subject: "TLE9",   teacher: "wilfredligmayo@deped.gov.ph",    spec: "Carpentry" },
-          { day: "Tuesday",   slot: "period-2", subject: "TLE9",   teacher: "rodeliodelacruz@deped.gov.ph",   spec: "ICT" },
-          { day: "Tuesday",   slot: "period-3", subject: "ENG9",   teacher: "emmariedapig@deped.gov.ph",      spec: "" },
-          { day: "Tuesday",   slot: "period-4", subject: "SCI9",   teacher: "applevelasco@deped.gov.ph",      spec: "" },
-          { day: "Tuesday",   slot: "period-5", subject: "FIL9",   teacher: "kathlyndanghale@deped.gov.ph",   spec: "" },
-          { day: "Tuesday",   slot: "period-6", subject: "ESP9",   teacher: "norbertajomocan@deped.gov.ph",   spec: "" },
-          { day: "Tuesday",   slot: "period-7", subject: "ARAL",   teacher: "norbertajomocan@deped.gov.ph",   spec: "" },
-          { day: "Tuesday",   slot: "aral",     subject: "ARAL",   teacher: "norbertajomocan@deped.gov.ph",   spec: "" },
-
-          // Wednesday
-          { day: "Wednesday", slot: "period-1", subject: "ESP9",   teacher: "norbertajomocan@deped.gov.ph",   spec: "" },
-          { day: "Wednesday", slot: "period-2", subject: "SCI9",   teacher: "applevelasco@deped.gov.ph",      spec: "" },
-          { day: "Wednesday", slot: "period-3", subject: "FIL9",   teacher: "kathlyndanghale@deped.gov.ph",   spec: "" },
-          { day: "Wednesday", slot: "period-4", subject: "MATH9",  teacher: "noverpaclit@deped.gov.ph",       spec: "" },
-          { day: "Wednesday", slot: "period-5", subject: "AP9",    teacher: "timluyaman@deped.gov.ph",        spec: "" },
-          { day: "Wednesday", slot: "period-6", subject: "ENG9",   teacher: "emmariedapig@deped.gov.ph",      spec: "" },
-          { day: "Wednesday", slot: "period-7", subject: "ARAL",   teacher: "norbertajomocan@deped.gov.ph",   spec: "" },
-
-          // Thursday
-          { day: "Thursday",  slot: "period-1", subject: "ESP9",   teacher: "norbertajomocan@deped.gov.ph",   spec: "" },
-          { day: "Thursday",  slot: "period-2", subject: "TLE9",   teacher: "johnbasilang@deped.gov.ph",      spec: "Electronics" },
-          { day: "Thursday",  slot: "period-2", subject: "TLE9",   teacher: "efrenatiago@deped.gov.ph",       spec: "Cookery" },
-          { day: "Thursday",  slot: "period-2", subject: "TLE9",   teacher: "norbertajomocan@deped.gov.ph",   spec: "Cookery" },
-          { day: "Thursday",  slot: "period-2", subject: "TLE9",   teacher: "margelineselmo@deped.gov.ph",    spec: "Dressmaking" },
-          { day: "Thursday",  slot: "period-2", subject: "TLE9",   teacher: "wilfredligmayo@deped.gov.ph",    spec: "Carpentry" },
-          { day: "Thursday",  slot: "period-2", subject: "TLE9",   teacher: "rodeliodelacruz@deped.gov.ph",   spec: "ICT" },
-          { day: "Thursday",  slot: "period-3", subject: "SCI9",   teacher: "applevelasco@deped.gov.ph",      spec: "" },
-          { day: "Thursday",  slot: "period-4", subject: "MATH9",  teacher: "noverpaclit@deped.gov.ph",       spec: "" },
-          { day: "Thursday",  slot: "period-5", subject: "AP9",    teacher: "timluyaman@deped.gov.ph",        spec: "" },
-          { day: "Thursday",  slot: "period-6", subject: "MAPEH9", teacher: "norbincangsan@deped.gov.ph",     spec: "" },
-          { day: "Thursday",  slot: "period-7", subject: "FIL9",   teacher: "kathlyndanghale@deped.gov.ph",   spec: "" },
-
-          // Friday
-          { day: "Friday",    slot: "period-1", subject: "MAPEH9", teacher: "noverpaclit@deped.gov.ph",       spec: "" },
-          { day: "Friday",    slot: "period-2", subject: "TLE9",   teacher: "johnbasilang@deped.gov.ph",      spec: "Electronics" },
-          { day: "Friday",    slot: "period-2", subject: "TLE9",   teacher: "efrenatiago@deped.gov.ph",       spec: "Cookery" },
-          { day: "Friday",    slot: "period-2", subject: "TLE9",   teacher: "norbertajomocan@deped.gov.ph",   spec: "Cookery" },
-          { day: "Friday",    slot: "period-2", subject: "TLE9",   teacher: "margelineselmo@deped.gov.ph",    spec: "Dressmaking" },
-          { day: "Friday",    slot: "period-2", subject: "TLE9",   teacher: "wilfredligmayo@deped.gov.ph",    spec: "Carpentry" },
-          { day: "Friday",    slot: "period-2", subject: "TLE9",   teacher: "rodeliodelacruz@deped.gov.ph",   spec: "ICT" },
-          { day: "Friday",    slot: "period-3", subject: "ENG9",   teacher: "emmariedapig@deped.gov.ph",      spec: "" },
-          { day: "Friday",    slot: "period-4", subject: "SCI9",   teacher: "applevelasco@deped.gov.ph",      spec: "" },
-          { day: "Friday",    slot: "period-5", subject: "AP9",    teacher: "timluyaman@deped.gov.ph",        spec: "" },
-          { day: "Friday",    slot: "period-6", subject: "MAPEH9", teacher: "norbincangsan@deped.gov.ph",     spec: "" },
-          { day: "Friday",    slot: "period-7", subject: "ESP9",   teacher: "norbertajomocan@deped.gov.ph",   spec: "" },
-        ]
-      },
-
-      "g10-alexandrite": {
-        label: "Grade 10 - ALEXANDRITE (Term 1)",
-        entries: [
-          // Monday
-          { day: "Monday",    slot: "period-1", subject: "HGP",    teacher: "arlynpaclit@deped.gov.ph",       spec: "" },
-          { day: "Monday",    slot: "period-2", subject: "MAPEH10", teacher: "merlypido@deped.gov.ph",        spec: "" },
-          { day: "Monday",    slot: "period-3", subject: "ENG10",  teacher: "emmariedapig@deped.gov.ph",      spec: "" },
-          { day: "Monday",    slot: "period-4", subject: "TLE10",  teacher: "johnbasilang@deped.gov.ph",      spec: "Electronics" },
-          { day: "Monday",    slot: "period-4", subject: "TLE10",  teacher: "efrenatiago@deped.gov.ph",       spec: "Cookery" },
-          { day: "Monday",    slot: "period-4", subject: "TLE10",  teacher: "norbertajomocan@deped.gov.ph",   spec: "Cookery" },
-          { day: "Monday",    slot: "period-4", subject: "TLE10",  teacher: "margelineselmo@deped.gov.ph",    spec: "Dressmaking" },
-          { day: "Monday",    slot: "period-4", subject: "TLE10",  teacher: "arman.puyao@deped.gov.ph",       spec: "ICT" },
-          { day: "Monday",    slot: "period-4", subject: "TLE10",  teacher: "rashunpearlcoyao@deped.gov.ph",  spec: "Carpentry" },
-          { day: "Monday",    slot: "period-5", subject: "ESP10",  teacher: "efrenatiago@deped.gov.ph",       spec: "" },
-          { day: "Monday",    slot: "period-6", subject: "SCI10",  teacher: "shereenchipo@deped.gov.ph",      spec: "" },
-          { day: "Monday",    slot: "period-7", subject: "AP10",   teacher: "timluyaman@deped.gov.ph",        spec: "" },
-          { day: "Monday",    slot: "aral",     subject: "ARAL",   teacher: "arlynpaclit@deped.gov.ph",       spec: "" },
-
-          // Tuesday
-          { day: "Tuesday",   slot: "period-1", subject: "MATH10", teacher: "eldizlopez@deped.gov.ph",        spec: "" },
-          { day: "Tuesday",   slot: "period-2", subject: "ENG10",  teacher: "arlynpaclit@deped.gov.ph",       spec: "" },
-          { day: "Tuesday",   slot: "period-3", subject: "AP10",   teacher: "timluyaman@deped.gov.ph",        spec: "" },
-          { day: "Tuesday",   slot: "period-4", subject: "TLE10",  teacher: "johnbasilang@deped.gov.ph",      spec: "Electronics" },
-          { day: "Tuesday",   slot: "period-4", subject: "TLE10",  teacher: "efrenatiago@deped.gov.ph",       spec: "Cookery" },
-          { day: "Tuesday",   slot: "period-4", subject: "TLE10",  teacher: "norbertajomocan@deped.gov.ph",   spec: "Cookery" },
-          { day: "Tuesday",   slot: "period-4", subject: "TLE10",  teacher: "margelineselmo@deped.gov.ph",    spec: "Dressmaking" },
-          { day: "Tuesday",   slot: "period-4", subject: "TLE10",  teacher: "arman.puyao@deped.gov.ph",       spec: "ICT" },
-          { day: "Tuesday",   slot: "period-4", subject: "TLE10",  teacher: "rashunpearlcoyao@deped.gov.ph",  spec: "Carpentry" },
-          { day: "Tuesday",   slot: "period-5", subject: "FIL10",  teacher: "roselynfelipe@deped.gov.ph",     spec: "" },
-          { day: "Tuesday",   slot: "period-6", subject: "ESP10",  teacher: "efrenatiago@deped.gov.ph",       spec: "" },
-          { day: "Tuesday",   slot: "period-7", subject: "ARAL",   teacher: "arlynpaclit@deped.gov.ph",       spec: "" },
-          { day: "Tuesday",   slot: "aral",     subject: "ARAL",   teacher: "arlynpaclit@deped.gov.ph",       spec: "" },
-
-          // Wednesday
-          { day: "Wednesday", slot: "period-1", subject: "MATH10", teacher: "eldizlopez@deped.gov.ph",        spec: "" },
-          { day: "Wednesday", slot: "period-2", subject: "MAPEH10", teacher: "merlypido@deped.gov.ph",        spec: "" },
-          { day: "Wednesday", slot: "period-3", subject: "SCI10",  teacher: "shereenchipo@deped.gov.ph",      spec: "" },
-          { day: "Wednesday", slot: "period-4", subject: "FIL10",  teacher: "roselynfelipe@deped.gov.ph",     spec: "" },
-          { day: "Wednesday", slot: "period-5", subject: "ENG10",  teacher: "arlynpaclit@deped.gov.ph",       spec: "" },
-          { day: "Wednesday", slot: "period-6", subject: "ESP10",  teacher: "efrenatiago@deped.gov.ph",       spec: "" },
-          { day: "Wednesday", slot: "period-7", subject: "ARAL",   teacher: "arlynpaclit@deped.gov.ph",       spec: "" },
-
-          // Thursday
-          { day: "Thursday",  slot: "period-1", subject: "MATH10", teacher: "eldizlopez@deped.gov.ph",        spec: "" },
-          { day: "Thursday",  slot: "period-2", subject: "MAPEH10", teacher: "merlypido@deped.gov.ph",        spec: "" },
-          { day: "Thursday",  slot: "period-3", subject: "FIL10",  teacher: "roselynfelipe@deped.gov.ph",     spec: "" },
-          { day: "Thursday",  slot: "period-4", subject: "TLE10",  teacher: "johnbasilang@deped.gov.ph",      spec: "Electronics" },
-          { day: "Thursday",  slot: "period-4", subject: "TLE10",  teacher: "efrenatiago@deped.gov.ph",       spec: "Cookery" },
-          { day: "Thursday",  slot: "period-4", subject: "TLE10",  teacher: "norbertajomocan@deped.gov.ph",   spec: "Cookery" },
-          { day: "Thursday",  slot: "period-4", subject: "TLE10",  teacher: "margelineselmo@deped.gov.ph",    spec: "Dressmaking" },
-          { day: "Thursday",  slot: "period-4", subject: "TLE10",  teacher: "arman.puyao@deped.gov.ph",       spec: "ICT" },
-          { day: "Thursday",  slot: "period-4", subject: "TLE10",  teacher: "rashunpearlcoyao@deped.gov.ph",  spec: "Carpentry" },
-          { day: "Thursday",  slot: "period-5", subject: "SCI10",  teacher: "shereenchipo@deped.gov.ph",      spec: "" },
-          { day: "Thursday",  slot: "period-6", subject: "AP10",   teacher: "timluyaman@deped.gov.ph",        spec: "" },
-          { day: "Thursday",  slot: "period-7", subject: "ENG10",  teacher: "arlynpaclit@deped.gov.ph",       spec: "" },
-
-          // Friday
-          { day: "Friday",    slot: "period-1", subject: "MATH10", teacher: "eldizlopez@deped.gov.ph",        spec: "" },
-          { day: "Friday",    slot: "period-2", subject: "AP10",   teacher: "timluyaman@deped.gov.ph",        spec: "" },
-          { day: "Friday",    slot: "period-3", subject: "SCI10",  teacher: "shereenchipo@deped.gov.ph",      spec: "" },
-          { day: "Friday",    slot: "period-4", subject: "TLE10",  teacher: "johnbasilang@deped.gov.ph",      spec: "Electronics" },
-          { day: "Friday",    slot: "period-4", subject: "TLE10",  teacher: "efrenatiago@deped.gov.ph",       spec: "Cookery" },
-          { day: "Friday",    slot: "period-4", subject: "TLE10",  teacher: "norbertajomocan@deped.gov.ph",   spec: "Cookery" },
-          { day: "Friday",    slot: "period-4", subject: "TLE10",  teacher: "margelineselmo@deped.gov.ph",    spec: "Dressmaking" },
-          { day: "Friday",    slot: "period-4", subject: "TLE10",  teacher: "arman.puyao@deped.gov.ph",       spec: "ICT" },
-          { day: "Friday",    slot: "period-4", subject: "TLE10",  teacher: "rashunpearlcoyao@deped.gov.ph",  spec: "Carpentry" },
-          { day: "Friday",    slot: "period-5", subject: "FIL10",  teacher: "roselynfelipe@deped.gov.ph",     spec: "" },
-          { day: "Friday",    slot: "period-6", subject: "ESP10",  teacher: "efrenatiago@deped.gov.ph",       spec: "" },
-          { day: "Friday",    slot: "period-7", subject: "MAPEH10", teacher: "merlypido@deped.gov.ph",        spec: "" },
-        ]
-      },
-
-      "g10-topaz": {
-        label: "Grade 10 - TOPAZ (Term 1)",
-        entries: [
-          // Monday
-          { day: "Monday",    slot: "period-1", subject: "HGP",    teacher: "eldizlopez@deped.gov.ph",        spec: "" },
-          { day: "Monday",    slot: "period-2", subject: "SCI10",  teacher: "shereenchipo@deped.gov.ph",      spec: "" },
-          { day: "Monday",    slot: "period-3", subject: "MATH10", teacher: "eldizlopez@deped.gov.ph",        spec: "" },
-          { day: "Monday",    slot: "period-4", subject: "TLE-ELECTRONICS", teacher: "johnbasilang@deped.gov.ph", spec: "Electronics" },
-          { day: "Monday",    slot: "period-4", subject: "TLE-COOKERY",     teacher: "efrenatiago@deped.gov.ph",  spec: "Cookery" },
-          { day: "Monday",    slot: "period-4", subject: "TLE-COOKERY",     teacher: "norbertajomocan@deped.gov.ph", spec: "Cookery" },
-          { day: "Monday",    slot: "period-4", subject: "TLE-DRESSMAKING", teacher: "margelineselmo@deped.gov.ph",  spec: "Dressmaking" },
-          { day: "Monday",    slot: "period-4", subject: "TLE-CARPENTRY",   teacher: "rashunpearlcoyao@deped.gov.ph", spec: "Carpentry" },
-          { day: "Monday",    slot: "period-5", subject: "ENG10",  teacher: "arlynpaclit@deped.gov.ph",       spec: "" },
-          { day: "Monday",    slot: "period-6", subject: "FIL10",  teacher: "roselynfelipe@deped.gov.ph",     spec: "" },
-          { day: "Monday",    slot: "period-7", subject: "ARAL",   teacher: "eldizlopez@deped.gov.ph",        spec: "" },
-          { day: "Monday",    slot: "aral",     subject: "ARAL",   teacher: "eldizlopez@deped.gov.ph",        spec: "" },
-
-          // Tuesday
-          { day: "Tuesday",   slot: "period-1", subject: "MAPEH10", teacher: "merlypido@deped.gov.ph",        spec: "" },
-          { day: "Tuesday",   slot: "period-2", subject: "AP10",   teacher: "timluyaman@deped.gov.ph",        spec: "" },
-          { day: "Tuesday",   slot: "period-3", subject: "ESP10",  teacher: "eldizlopez@deped.gov.ph",        spec: "" },
-          { day: "Tuesday",   slot: "period-4", subject: "TLE-ELECTRONICS", teacher: "johnbasilang@deped.gov.ph", spec: "Electronics" },
-          { day: "Tuesday",   slot: "period-4", subject: "TLE-COOKERY",     teacher: "efrenatiago@deped.gov.ph",  spec: "Cookery" },
-          { day: "Tuesday",   slot: "period-4", subject: "TLE-COOKERY",     teacher: "norbertajomocan@deped.gov.ph", spec: "Cookery" },
-          { day: "Tuesday",   slot: "period-4", subject: "TLE-DRESSMAKING", teacher: "margelineselmo@deped.gov.ph",  spec: "Dressmaking" },
-          { day: "Tuesday",   slot: "period-4", subject: "TLE-CARPENTRY",   teacher: "rashunpearlcoyao@deped.gov.ph", spec: "Carpentry" },
-          { day: "Tuesday",   slot: "period-5", subject: "ENG10",  teacher: "arlynpaclit@deped.gov.ph",       spec: "" },
-          { day: "Tuesday",   slot: "period-6", subject: "FIL10",  teacher: "roselynfelipe@deped.gov.ph",     spec: "" },
-          { day: "Tuesday",   slot: "period-7", subject: "MATH10", teacher: "eldizlopez@deped.gov.ph",        spec: "" },
-          { day: "Tuesday",   slot: "aral",     subject: "ARAL",   teacher: "eldizlopez@deped.gov.ph",        spec: "" },
-
-          // Wednesday
-          { day: "Wednesday", slot: "period-1", subject: "MAPEH10", teacher: "merlypido@deped.gov.ph",        spec: "" },
-          { day: "Wednesday", slot: "period-2", subject: "AP10",   teacher: "timluyaman@deped.gov.ph",        spec: "" },
-          { day: "Wednesday", slot: "period-3", subject: "ESP10",  teacher: "eldizlopez@deped.gov.ph",        spec: "" },
-          { day: "Wednesday", slot: "period-4", subject: "ENG10",  teacher: "arlynpaclit@deped.gov.ph",       spec: "" },
-          { day: "Wednesday", slot: "period-5", subject: "SCI10",  teacher: "shereenchipo@deped.gov.ph",      spec: "" },
-          { day: "Wednesday", slot: "period-6", subject: "FIL10",  teacher: "roselynfelipe@deped.gov.ph",     spec: "" },
-          { day: "Wednesday", slot: "period-7", subject: "ESP10",  teacher: "eldizlopez@deped.gov.ph",        spec: "" },
-
-          // Thursday
-          { day: "Thursday",  slot: "period-1", subject: "MAPEH10", teacher: "merlypido@deped.gov.ph",        spec: "" },
-          { day: "Thursday",  slot: "period-2", subject: "AP10",   teacher: "timluyaman@deped.gov.ph",        spec: "" },
-          { day: "Thursday",  slot: "period-3", subject: "MATH10", teacher: "eldizlopez@deped.gov.ph",        spec: "" },
-          { day: "Thursday",  slot: "period-4", subject: "TLE-ELECTRONICS", teacher: "johnbasilang@deped.gov.ph", spec: "Electronics" },
-          { day: "Thursday",  slot: "period-4", subject: "TLE-COOKERY",     teacher: "efrenatiago@deped.gov.ph",  spec: "Cookery" },
-          { day: "Thursday",  slot: "period-4", subject: "TLE-COOKERY",     teacher: "norbertajomocan@deped.gov.ph", spec: "Cookery" },
-          { day: "Thursday",  slot: "period-4", subject: "TLE-DRESSMAKING", teacher: "margelineselmo@deped.gov.ph",  spec: "Dressmaking" },
-          { day: "Thursday",  slot: "period-4", subject: "TLE-CARPENTRY",   teacher: "rashunpearlcoyao@deped.gov.ph", spec: "Carpentry" },
-          { day: "Thursday",  slot: "period-5", subject: "ENG10",  teacher: "arlynpaclit@deped.gov.ph",       spec: "" },
-          { day: "Thursday",  slot: "period-6", subject: "SCI10",  teacher: "shereenchipo@deped.gov.ph",      spec: "" },
-          { day: "Thursday",  slot: "period-7", subject: "ARAL",   teacher: "eldizlopez@deped.gov.ph",        spec: "" },
-
-          // Friday
-          { day: "Friday",    slot: "period-1", subject: "AP10",   teacher: "timluyaman@deped.gov.ph",        spec: "" },
-          { day: "Friday",    slot: "period-2", subject: "SCI10",  teacher: "shereenchipo@deped.gov.ph",      spec: "" },
-          { day: "Friday",    slot: "period-3", subject: "MATH10", teacher: "eldizlopez@deped.gov.ph",        spec: "" },
-          { day: "Friday",    slot: "period-4", subject: "TLE-ELECTRONICS", teacher: "johnbasilang@deped.gov.ph", spec: "Electronics" },
-          { day: "Friday",    slot: "period-4", subject: "TLE-COOKERY",     teacher: "efrenatiago@deped.gov.ph",  spec: "Cookery" },
-          { day: "Friday",    slot: "period-4", subject: "TLE-COOKERY",     teacher: "norbertajomocan@deped.gov.ph", spec: "Cookery" },
-          { day: "Friday",    slot: "period-4", subject: "TLE-DRESSMAKING", teacher: "margelineselmo@deped.gov.ph",  spec: "Dressmaking" },
-          { day: "Friday",    slot: "period-4", subject: "TLE-CARPENTRY",   teacher: "rashunpearlcoyao@deped.gov.ph", spec: "Carpentry" },
-          { day: "Friday",    slot: "period-5", subject: "MAPEH10", teacher: "merlypido@deped.gov.ph",        spec: "" },
-          { day: "Friday",    slot: "period-6", subject: "FIL10",  teacher: "roselynfelipe@deped.gov.ph",     spec: "" },
-          { day: "Friday",    slot: "period-7", subject: "ESP10",  teacher: "eldizlopez@deped.gov.ph",        spec: "" },
-        ]
-      },
-
-      "g10-zircon": {
-        label: "Grade 10 - ZIRCON (Term 1)",
-        entries: [
-          // Monday
-          { day: "Monday",    slot: "period-1", subject: "HGP",    teacher: "roselynfelipe@deped.gov.ph",     spec: "" },
-          { day: "Monday",    slot: "period-2", subject: "AP10",   teacher: "timluyaman@deped.gov.ph",        spec: "" },
-          { day: "Monday",    slot: "period-3", subject: "ESP10",  teacher: "efrenatiago@deped.gov.ph",       spec: "" },
-          { day: "Monday",    slot: "period-4", subject: "TLE-ELECTRONICS", teacher: "johnbasilang@deped.gov.ph", spec: "Electronics" },
-          { day: "Monday",    slot: "period-4", subject: "TLE-COOKERY",     teacher: "efrenatiago@deped.gov.ph",  spec: "Cookery" },
-          { day: "Monday",    slot: "period-4", subject: "TLE-COOKERY",     teacher: "norbertajomocan@deped.gov.ph", spec: "Cookery" },
-          { day: "Monday",    slot: "period-4", subject: "TLE-DRESSMAKING", teacher: "margelineselmo@deped.gov.ph",  spec: "Dressmaking" },
-          { day: "Monday",    slot: "period-4", subject: "TLE-CARPENTRY",   teacher: "rashunpearlcoyao@deped.gov.ph", spec: "Carpentry" },
-          { day: "Monday",    slot: "period-5", subject: "MAPEH10", teacher: "merlypido@deped.gov.ph",        spec: "" },
-          { day: "Monday",    slot: "period-6", subject: "ENG10",  teacher: "arlynpaclit@deped.gov.ph",       spec: "" },
-          { day: "Monday",    slot: "period-7", subject: "FIL10",  teacher: "roselynfelipe@deped.gov.ph",     spec: "" },
-          { day: "Monday",    slot: "aral",     subject: "ARAL",   teacher: "roselynfelipe@deped.gov.ph",     spec: "" },
-
-          // Tuesday
-          { day: "Tuesday",   slot: "period-1", subject: "SCI10",  teacher: "shereenchipo@deped.gov.ph",      spec: "" },
-          { day: "Tuesday",   slot: "period-2", subject: "MATH10", teacher: "eldizlopez@deped.gov.ph",        spec: "" },
-          { day: "Tuesday",   slot: "period-3", subject: "ESP10",  teacher: "efrenatiago@deped.gov.ph",       spec: "" },
-          { day: "Tuesday",   slot: "period-4", subject: "TLE-ELECTRONICS", teacher: "johnbasilang@deped.gov.ph", spec: "Electronics" },
-          { day: "Tuesday",   slot: "period-4", subject: "TLE-COOKERY",     teacher: "efrenatiago@deped.gov.ph",  spec: "Cookery" },
-          { day: "Tuesday",   slot: "period-4", subject: "TLE-COOKERY",     teacher: "norbertajomocan@deped.gov.ph", spec: "Cookery" },
-          { day: "Tuesday",   slot: "period-4", subject: "TLE-DRESSMAKING", teacher: "margelineselmo@deped.gov.ph",  spec: "Dressmaking" },
-          { day: "Tuesday",   slot: "period-4", subject: "TLE-CARPENTRY",   teacher: "rashunpearlcoyao@deped.gov.ph", spec: "Carpentry" },
-          { day: "Tuesday",   slot: "period-5", subject: "MAPEH10", teacher: "merlypido@deped.gov.ph",        spec: "" },
-          { day: "Tuesday",   slot: "period-6", subject: "ENG10",  teacher: "arlynpaclit@deped.gov.ph",       spec: "" },
-          { day: "Tuesday",   slot: "period-7", subject: "FIL10",  teacher: "roselynfelipe@deped.gov.ph",     spec: "" },
-          { day: "Tuesday",   slot: "aral",     subject: "ARAL",   teacher: "roselynfelipe@deped.gov.ph",     spec: "" },
-
-          // Wednesday
-          { day: "Wednesday", slot: "period-1", subject: "ESP10",  teacher: "efrenatiago@deped.gov.ph",       spec: "" },
-          { day: "Wednesday", slot: "period-2", subject: "MATH10", teacher: "eldizlopez@deped.gov.ph",        spec: "" },
-          { day: "Wednesday", slot: "period-3", subject: "AP10",   teacher: "timluyaman@deped.gov.ph",        spec: "" },
-          { day: "Wednesday", slot: "period-4", subject: "SCI10",  teacher: "shereenchipo@deped.gov.ph",      spec: "" },
-          { day: "Wednesday", slot: "period-5", subject: "MAPEH10", teacher: "merlypido@deped.gov.ph",        spec: "" },
-          { day: "Wednesday", slot: "period-6", subject: "ENG10",  teacher: "arlynpaclit@deped.gov.ph",       spec: "" },
-          { day: "Wednesday", slot: "period-7", subject: "ARAL",   teacher: "roselynfelipe@deped.gov.ph",     spec: "" },
-
-          // Thursday
-          { day: "Thursday",  slot: "period-1", subject: "SCI10",  teacher: "shereenchipo@deped.gov.ph",      spec: "" },
-          { day: "Thursday",  slot: "period-2", subject: "MATH10", teacher: "eldizlopez@deped.gov.ph",        spec: "" },
-          { day: "Thursday",  slot: "period-3", subject: "AP10",   teacher: "timluyaman@deped.gov.ph",        spec: "" },
-          { day: "Thursday",  slot: "period-4", subject: "TLE-ELECTRONICS", teacher: "johnbasilang@deped.gov.ph", spec: "Electronics" },
-          { day: "Thursday",  slot: "period-4", subject: "TLE-COOKERY",     teacher: "efrenatiago@deped.gov.ph",  spec: "Cookery" },
-          { day: "Thursday",  slot: "period-4", subject: "TLE-COOKERY",     teacher: "norbertajomocan@deped.gov.ph", spec: "Cookery" },
-          { day: "Thursday",  slot: "period-4", subject: "TLE-DRESSMAKING", teacher: "margelineselmo@deped.gov.ph",  spec: "Dressmaking" },
-          { day: "Thursday",  slot: "period-4", subject: "TLE-CARPENTRY",   teacher: "rashunpearlcoyao@deped.gov.ph", spec: "Carpentry" },
-          { day: "Thursday",  slot: "period-5", subject: "MAPEH10", teacher: "merlypido@deped.gov.ph",        spec: "" },
-          { day: "Thursday",  slot: "period-6", subject: "FIL10",  teacher: "roselynfelipe@deped.gov.ph",     spec: "" },
-          { day: "Thursday",  slot: "period-7", subject: "ARAL",   teacher: "roselynfelipe@deped.gov.ph",     spec: "" },
-
-          // Friday
-          { day: "Friday",    slot: "period-1", subject: "SCI10",  teacher: "shereenchipo@deped.gov.ph",      spec: "" },
-          { day: "Friday",    slot: "period-2", subject: "MATH10", teacher: "eldizlopez@deped.gov.ph",        spec: "" },
-          { day: "Friday",    slot: "period-3", subject: "AP10",   teacher: "timluyaman@deped.gov.ph",        spec: "" },
-          { day: "Friday",    slot: "period-4", subject: "TLE-ELECTRONICS", teacher: "johnbasilang@deped.gov.ph", spec: "Electronics" },
-          { day: "Friday",    slot: "period-4", subject: "TLE-COOKERY",     teacher: "efrenatiago@deped.gov.ph",  spec: "Cookery" },
-          { day: "Friday",    slot: "period-4", subject: "TLE-COOKERY",     teacher: "norbertajomocan@deped.gov.ph", spec: "Cookery" },
-          { day: "Friday",    slot: "period-4", subject: "TLE-DRESSMAKING", teacher: "margelineselmo@deped.gov.ph",  spec: "Dressmaking" },
-          { day: "Friday",    slot: "period-4", subject: "TLE-CARPENTRY",   teacher: "rashunpearlcoyao@deped.gov.ph", spec: "Carpentry" },
-          { day: "Friday",    slot: "period-5", subject: "ESP10",  teacher: "efrenatiago@deped.gov.ph",       spec: "" },
-          { day: "Friday",    slot: "period-6", subject: "ENG10",  teacher: "arlynpaclit@deped.gov.ph",       spec: "" },
-          { day: "Friday",    slot: "period-7", subject: "FIL10",  teacher: "roselynfelipe@deped.gov.ph",     spec: "" },
-        ]
-      },
-    };
-
+    import "./assets/js/program-templates.js";
+    import "./assets/js/schedule-presets.js";
+    import { saveTimeSlots as saveSlots, loadTimeSlots, ensureTimeSlotsExist } from "./assets/js/schedule-config.js";
 
     // ============================================================
     // STATE
@@ -966,6 +177,7 @@
     let CLASSES = [];
     let USERS = [];
     let PENDING = null;
+    let CURRENT_SLOTS = [];
 
     // ============================================================
     // AUTH
@@ -988,6 +200,12 @@
           <a href="admin.html" class="ip-btn primary" style="margin-top:12px;text-decoration:none;">← Back</a>
         `;
         return;
+      }
+
+      try {
+        CURRENT_SLOTS = await ensureTimeSlotsExist();
+      } catch {
+        CURRENT_SLOTS = await loadTimeSlots() || [];
       }
 
       await loadClasses();
@@ -1028,14 +246,21 @@
         classSel.appendChild(opt);
       });
 
-      // Fill template dropdown
+      // Fill template dropdown — grouped by category
       const tplSel = $("ipTemplate");
       tplSel.innerHTML = '<option value="">-- Select Template --</option>';
-      Object.entries(TEMPLATES).forEach(([key, tpl]) => {
-        const opt = document.createElement("option");
-        opt.value = key;
-        opt.textContent = tpl.label;
-        tplSel.appendChild(opt);
+
+      const grouped = window.ProgramTemplates.getGrouped();
+      Object.entries(grouped).forEach(([category, list]) => {
+        const optgroup = document.createElement("optgroup");
+        optgroup.label = category;
+        list.forEach(tpl => {
+          const opt = document.createElement("option");
+          opt.value = tpl.key;
+          opt.textContent = tpl.label;
+          optgroup.appendChild(opt);
+        });
+        tplSel.appendChild(optgroup);
       });
 
       $("btnPreview").addEventListener("click", preview);
@@ -1059,12 +284,15 @@
       if (!tplKey) { toast("⚠️ Select a template first", "error"); return; }
 
       const cls = CLASSES.find(c => c.id === classId);
-      const tpl = TEMPLATES[tplKey];
+      const tpl = window.ProgramTemplates.get(tplKey);
       if (!cls || !tpl) return;
 
-      // Verify all teachers exist
+      // Verify teachers exist (this template may have empty teacher field initially)
       const missingTeachers = new Set();
       const entries = tpl.entries.map(e => {
+        if (!e.teacher) {
+          return { ...e, teacherUid: "", teacherName: "" };
+        }
         const u = userByEmail(e.teacher);
         if (!u) missingTeachers.add(e.teacher);
         return {
@@ -1084,50 +312,54 @@
         ${Object.entries(byDay).map(([d, n]) => `<div><strong>${n}</strong> ${d}</div>`).join("")}
       `;
 
-      // Warnings
+      // Slot preset check
+      const slotCheck = $("ipSlotCheck");
+      if (tpl.slotPreset) {
+        const missing = window.SchedulePresets.missingCount(tpl.slotPreset, CURRENT_SLOTS);
+        if (missing > 0) {
+          slotCheck.style.display = "block";
+          slotCheck.innerHTML = `
+            ℹ️ This template uses <strong>${missing} new time slot${missing > 1 ? "s" : ""}</strong> not currently in your schedule.<br>
+            They will be auto-added on import.
+          `;
+        } else {
+          slotCheck.style.display = "none";
+        }
+      } else {
+        slotCheck.style.display = "none";
+      }
+
+      // Teacher warnings
       const warn = $("ipWarn");
       if (missingTeachers.size) {
         warn.style.display = "block";
         warn.innerHTML = `
-          <strong>⚠️ ${missingTeachers.size} teacher(s) not found in the system:</strong><br>
+          <strong>⚠️ ${missingTeachers.size} teacher(s) not found:</strong><br>
           ${[...missingTeachers].map(t => `<code>${t}</code>`).join(", ")}<br>
-          <em>These entries will be imported but the teacher will be unassigned. Fix by registering these teachers, then re-import.</em>
+          <em>Entries with missing teachers will import with no teacher assigned. Fix after import.</em>
         `;
       } else {
         warn.style.display = "none";
       }
 
-      // Preview list
+      // Preview list (first 60 to keep it fast)
       const previewHost = $("ipPreview");
-      previewHost.innerHTML = entries.map(e => `
+      const shown = entries.slice(0, 60);
+      previewHost.innerHTML = shown.map(e => `
         <div class="ip-preview-row">
           <span class="day">${e.day}</span>
-          <span class="slot">${formatSlot(e.slot)}</span>
+          <span class="slot">${e.slot}</span>
           <span class="subject">${e.subject}${e.spec ? `<span class="spec">${e.spec}</span>` : ""}</span>
-          <span class="teacher">👩‍🏫 ${e.teacherName}</span>
+          <span class="teacher">${e.teacherName ? "👩‍🏫 " + e.teacherName : "<em>— no teacher —</em>"}</span>
         </div>
-      `).join("");
+      `).join("") + (entries.length > 60 ? `<div style="text-align:center;color:#6b7280;font-size:12px;padding:8px;">… and ${entries.length - 60} more</div>` : "");
 
-      PENDING = { classId, cls, entries, term };
+      PENDING = { classId, cls, tplKey, tpl, entries, term };
 
       $("configCard").style.display = "none";
       $("previewCard").style.display = "block";
       $("doneCard").style.display = "none";
       window.scrollTo({ top: 0, behavior: "smooth" });
-    }
-
-    function formatSlot(slotId) {
-      const names = {
-        "period-1": "Period 1 · 7:45-8:45",
-        "period-2": "Period 2 · 8:45-9:45",
-        "period-3": "Period 3 · 10:00-11:00",
-        "period-4": "Period 4 · 11:00-12:00",
-        "period-5": "Period 5 · 1:00-2:00",
-        "period-6": "Period 6 · 2:00-3:00",
-        "period-7": "Period 7 · 3:00-4:00",
-        "aral":     "ARAL · 4:00-5:00",
-      };
-      return names[slotId] || slotId;
     }
 
     // ============================================================
@@ -1139,65 +371,83 @@
       btn.disabled = true;
       btn.textContent = "Importing…";
 
-      const { classId, entries, term } = PENDING;
-      const colRef = collection(db, "classes", classId, "program");
+      const { classId, tpl, entries, term } = PENDING;
 
-      // Check existing
-      const existingSnap = await getDocs(colRef);
-      const existingKeys = new Set();
-      existingSnap.forEach(d => {
-        const e = d.data();
-        if (e.term === term) {
-          existingKeys.add(`${e.day}|${e.timeSlotId}|${e.subject}|${e.teacherUid}`);
+      try {
+        // ---- 1. Ensure slot preset exists ----
+        if (tpl.slotPreset) {
+          const result = await window.SchedulePresets.ensurePreset(
+            tpl.slotPreset,
+            CURRENT_SLOTS,
+            saveSlots
+          );
+          if (result.added > 0) {
+            toast(`✓ Added ${result.added} new time slot${result.added > 1 ? "s" : ""}`, "success");
+            CURRENT_SLOTS = await loadTimeSlots() || [];
+          }
         }
-      });
 
-      let inserted = 0, skipped = 0, errors = 0;
+        // ---- 2. Import entries ----
+        const colRef = collection(db, "classes", classId, "program");
+        const existingSnap = await getDocs(colRef);
+        const existingKeys = new Set();
+        existingSnap.forEach(d => {
+          const e = d.data();
+          if (e.term === term) {
+            existingKeys.add(`${e.day}|${e.timeSlotId}|${e.subject}|${e.teacherUid}`);
+          }
+        });
 
-      for (const e of entries) {
-        const key = `${e.day}|${e.slot}|${e.subject}|${e.teacherUid}`;
-        if (existingKeys.has(key)) { skipped++; continue; }
+        let inserted = 0, skipped = 0, errors = 0;
 
-        try {
-          await addDoc(colRef, {
-            day: e.day,
-            timeSlotId: e.slot,
-            term: term,
-            subject: e.subject,
-            subjectName: e.subject,
-            teacherUid: e.teacherUid,
-            teacherName: e.teacherName,
-            specialization: e.spec || "",
-            room: "",
-            entryType: "primary",
-            groupIndex: 0,
-            notes: "",
-            createdAt: serverTimestamp(),
-            updatedAt: serverTimestamp(),
-            createdBy: CURRENT_USER.email || "",
-          });
-          inserted++;
-        } catch (err) {
-          console.error(err);
-          errors++;
+        for (const e of entries) {
+          const key = `${e.day}|${e.slot}|${e.subject}|${e.teacherUid}`;
+          if (existingKeys.has(key)) { skipped++; continue; }
+
+          try {
+            await addDoc(colRef, {
+              day: e.day,
+              timeSlotId: e.slot,
+              term: term,
+              subject: e.subject,
+              subjectName: e.subject,
+              teacherUid: e.teacherUid,
+              teacherName: e.teacherName,
+              specialization: e.spec || "",
+              room: "",
+              entryType: "primary",
+              groupIndex: 0,
+              notes: "",
+              createdAt: serverTimestamp(),
+              updatedAt: serverTimestamp(),
+              createdBy: CURRENT_USER.email || "",
+            });
+            inserted++;
+          } catch (err) {
+            console.error(err);
+            errors++;
+          }
         }
+
+        $("doneBox").innerHTML = `
+          ✓ <strong>Import complete for ${PENDING.cls.classLabel} — Term ${term}</strong><br><br>
+          📋 Template: <strong>${tpl.label}</strong><br>
+          ✅ Inserted: <strong>${inserted}</strong><br>
+          ⏭️ Skipped (already existed): <strong>${skipped}</strong><br>
+          ${errors ? `❌ Errors: <strong>${errors}</strong><br>` : ""}
+        `;
+        $("btnViewProgram").href = "program.html?id=" + classId;
+
+        $("configCard").style.display = "none";
+        $("previewCard").style.display = "none";
+        $("doneCard").style.display = "block";
+      } catch (e) {
+        console.error(e);
+        toast("⚠️ " + (e.message || "Import failed"), "error");
+      } finally {
+        btn.disabled = false;
+        btn.textContent = "✓ Import Program";
       }
-
-      // Show success
-      $("doneBox").innerHTML = `
-        ✓ <strong>Import complete for ${PENDING.cls.classLabel} — Term ${term}</strong><br><br>
-        ✅ Inserted: <strong>${inserted}</strong><br>
-        ⏭️  Skipped (already existed): <strong>${skipped}</strong><br>
-        ${errors ? `❌ Errors: <strong>${errors}</strong><br>` : ""}
-      `;
-      $("btnViewProgram").href = "program.html?id=" + classId;
-
-      $("configCard").style.display = "none";
-      $("previewCard").style.display = "none";
-      $("doneCard").style.display = "block";
-      btn.disabled = false;
-      btn.textContent = "✓ Import Program";
-      window.scrollTo({ top: 0, behavior: "smooth" });
     }
 
     function cancelPreview() {
