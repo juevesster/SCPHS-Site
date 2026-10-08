@@ -1756,6 +1756,51 @@
     }
     // ⬆️ END OF INSERT ⬆️
 
+
+        // ============================================================
+    // DETECTOR: Orphaned TLE slot (has "additional" but no "primary")
+    // ============================================================
+    function detectOrphanedSlots(allPrograms) {
+      const conflicts = [];
+      for (const prog of allPrograms) {
+        const slotMap = {};
+        for (const e of prog.entries) {
+          const k = `${e.day}|${e.timeSlotId}`;
+          if (!slotMap[k]) slotMap[k] = [];
+          slotMap[k].push(e);
+        }
+
+        for (const [k, entries] of Object.entries(slotMap)) {
+          if (entries.length < 2) continue;
+          const hasPrimary = entries.some(e => (e.entryType || "primary") === "primary");
+          const hasAdditional = entries.some(e => e.entryType === "additional");
+          if (hasAdditional && !hasPrimary) {
+            const [day, timeSlotId] = k.split("|");
+            conflicts.push({
+              id: `orphan|${prog.classId}|${day}|${timeSlotId}|T${entries[0].term}`,
+              type: "orphan",
+              severity: "low",
+              title: `Orphaned TLE slot in ${prog.className}`,
+              description: `${entries.length} "additional" entries but no "primary" entry for this slot.`,
+              day,
+              timeSlotId,
+              term: entries[0].term,
+              hits: entries.map(e => ({
+                classId: prog.classId,
+                className: prog.className,
+                subject: e.subject || e.subjectName || "—",
+                specialization: e.specialization || "",
+                teacherName: e.teacherName || "",
+                entryId: e.id,
+                entryType: e.entryType,
+              })),
+            });
+          }
+        }
+      }
+      return conflicts;
+    }
+
     // ============================================================
     // STATS
     // ============================================================
