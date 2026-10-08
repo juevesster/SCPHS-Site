@@ -604,6 +604,91 @@
   </div>
 </div>
 
+<!-- Print Options Modal -->
+<div class="modal" id="printModal">
+  <div class="modal-panel" style="max-width:680px;">
+    <div class="modal-head">
+      <h3>🖨 Print Options</h3>
+      <button class="close" data-close-print>✕</button>
+    </div>
+    <div class="modal-body">
+      <p style="margin:0 0 16px;color:#4b5563;font-size:13px;">
+        Fine-tune the signatories for <strong>this print only</strong>. Your Admin → ILAW Settings defaults are untouched.
+      </p>
+
+      <div style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:10px;padding:14px 16px;margin-bottom:16px;">
+        <div style="font-size:11px;font-weight:800;color:#1e40af;text-transform:uppercase;letter-spacing:.05em;margin-bottom:10px;">✍️ Prepared by</div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Label</label>
+            <input type="text" id="p-preparedLabel" placeholder="Prepared by:" />
+          </div>
+          <div class="form-group">
+            <label>Name</label>
+            <input type="text" id="p-preparedName" placeholder="Adviser name" />
+          </div>
+        </div>
+        <div class="form-group" style="margin-bottom:0;">
+          <label>Position</label>
+          <input type="text" id="p-preparedPosition" placeholder="Class Adviser" />
+        </div>
+      </div>
+
+      <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:10px;padding:14px 16px;margin-bottom:16px;">
+        <div style="font-size:11px;font-weight:800;color:#166534;text-transform:uppercase;letter-spacing:.05em;margin-bottom:10px;">✅ Reviewed by</div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Label</label>
+            <input type="text" id="p-reviewedLabel" placeholder="Reviewed by:" />
+          </div>
+          <div class="form-group">
+            <label>Name</label>
+            <input type="text" id="p-reviewedName" placeholder="Principal / DIC name" />
+          </div>
+        </div>
+        <div class="form-group" style="margin-bottom:0;">
+          <label>Position</label>
+          <input type="text" id="p-reviewedPosition" placeholder="School Principal" />
+        </div>
+      </div>
+
+      <div style="background:#fef3c7;border:1px solid #fcd34d;border-radius:10px;padding:14px 16px;margin-bottom:16px;">
+        <div style="font-size:11px;font-weight:800;color:#92400e;text-transform:uppercase;letter-spacing:.05em;margin-bottom:10px;">🏛️ Approved by</div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Label</label>
+            <input type="text" id="p-approvedLabel" placeholder="Approved:" />
+          </div>
+          <div class="form-group">
+            <label>Name</label>
+            <input type="text" id="p-approvedName" placeholder="Approver name" />
+          </div>
+        </div>
+        <div class="form-group" style="margin-bottom:0;">
+          <label>Position</label>
+          <input type="text" id="p-approvedPosition" placeholder="Approving Authority" />
+        </div>
+      </div>
+
+      <div class="form-group" style="margin-bottom:0;">
+        <label>Display Options</label>
+        <label style="display:inline-flex;align-items:center;gap:8px;font-size:13px;color:#374151;text-transform:none;letter-spacing:0;font-weight:500;margin-right:16px;cursor:pointer;">
+          <input type="checkbox" id="p-showSignatories" checked />
+          Show signatories
+        </label>
+        <label style="display:inline-flex;align-items:center;gap:8px;font-size:13px;color:#374151;text-transform:none;letter-spacing:0;font-weight:500;cursor:pointer;">
+          <input type="checkbox" id="p-showPageNumbers" checked />
+          Show page numbers
+        </label>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn outline" data-close-print>Cancel</button>
+      <button class="btn primary" id="btnPrintNow">🖨 Print Now</button>
+    </div>
+  </div>
+</div>
+
 <div id="printRoot"></div>
   <div id="toast" class="toast"></div>
 
@@ -992,7 +1077,15 @@
         if (e.target === $("entryModal")) $("entryModal").classList.remove("show");
       });
 
-      $("btnPrint").addEventListener("click", printProgram);
+      $("btnPrint").addEventListener("click", openPrintModal);
+$("btnPrintNow").addEventListener("click", doPrint);
+
+document.querySelectorAll("[data-close-print]").forEach(b => {
+  b.addEventListener("click", () => $("printModal").classList.remove("show"));
+});
+$("printModal").addEventListener("click", e => {
+  if (e.target === $("printModal")) $("printModal").classList.remove("show");
+});
       $("btnExport").addEventListener("click", exportToExcel);
       $("btnRefresh").addEventListener("click", loadAndRender);
       $("btnClearTerm").addEventListener("click", clearTerm);
@@ -1322,16 +1415,16 @@ async function doCopyTerm() {
 
     // ============================================================
 // CLASS PROGRAM — OFFICIAL DepEd PRINT ENGINE
-// Mirrors ILAW print format. Reuses ILAWConfig for header/footer/signatories.
+// Reuses ILAWConfig for header/footer + supports per-print
+// signatory overrides via the Print Options modal.
 // ============================================================
 
-function buildProgramPrintHTML() {
+function getPrintConfig() {
   const cfg = (window.ILAWConfig && window.ILAWConfig.load)
     ? window.ILAWConfig.load()
     : {};
 
-  // Safe fallbacks so print never breaks
-  const C = {
+  return {
     depedLogo:           cfg.depedLogo           || "",
     schoolLogo:          cfg.schoolLogo          || "",
     rightLogo:           cfg.rightLogo           || "",
@@ -1341,16 +1434,40 @@ function buildProgramPrintHTML() {
     division:            cfg.division            || "Schools Division of Nueva Vizcaya",
     schoolName:          cfg.schoolName          || (CLASS_INFO?.schoolName || "STA. CRUZ PINGKIAN HIGH SCHOOL"),
     schoolAddress:       cfg.schoolAddress       || "Sta. Cruz, Kasibu, Nueva Vizcaya",
+    footerLine1:         cfg.footerLine1         || "",
+    footerLine2:         cfg.footerLine2         || "",
+    // Signatory defaults from Settings
     preparedByLabel:     cfg.preparedByLabel     || "Prepared by:",
     checkedByLabel:      cfg.checkedByLabel      || "Reviewed by:",
     notedByLabel:        cfg.notedByLabel        || "Approved:",
     defaultPrincipalName: cfg.defaultPrincipalName || "",
     defaultPrincipalPosition: cfg.defaultPrincipalPosition || "School Principal",
-    footerLine1:         cfg.footerLine1         || "",
-    footerLine2:         cfg.footerLine2         || "",
     showPageNumbers:     cfg.showPageNumbers !== false,
     showGeneratedDate:   cfg.showGeneratedDate !== false,
   };
+}
+
+function buildProgramPrintHTML(opts = {}) {
+  const C = getPrintConfig();
+
+  // Per-print overrides (opts wins over C)
+  const sigPrepared = {
+    label:    opts.preparedLabel    ?? C.preparedByLabel,
+    name:     opts.preparedName     ?? (CLASS_INFO.adviserName || ""),
+    position: opts.preparedPosition ?? "Class Adviser",
+  };
+  const sigReviewed = {
+    label:    opts.reviewedLabel    ?? C.checkedByLabel,
+    name:     opts.reviewedName     ?? C.defaultPrincipalName,
+    position: opts.reviewedPosition ?? C.defaultPrincipalPosition,
+  };
+  const sigApproved = {
+    label:    opts.approvedLabel    ?? C.notedByLabel,
+    name:     opts.approvedName     ?? "",
+    position: opts.approvedPosition ?? "Approving Authority",
+  };
+  const showSigs     = opts.showSignatories !== false;
+  const showPageNums = opts.showPageNumbers ?? C.showPageNumbers;
 
   // --- Header ---
   const headerHTML = `
@@ -1474,22 +1591,22 @@ function buildProgramPrintHTML() {
   `;
 
   // --- Signatories ---
-  const signatoriesHTML = `
+  const signatoriesHTML = !showSigs ? "" : `
     <div class="signatories">
       <div class="sig-block">
-        <div class="sig-label">${esc(C.preparedByLabel)}</div>
-        <div class="sig-name">${esc(CLASS_INFO.adviserName || "____________________")}</div>
-        <div class="sig-pos">Class Adviser</div>
+        <div class="sig-label">${esc(sigPrepared.label)}</div>
+        <div class="sig-name">${esc(sigPrepared.name || "____________________")}</div>
+        <div class="sig-pos">${esc(sigPrepared.position || "")}</div>
       </div>
       <div class="sig-block">
-        <div class="sig-label">${esc(C.checkedByLabel)}</div>
-        <div class="sig-name">${esc(C.defaultPrincipalName || "____________________")}</div>
-        <div class="sig-pos">${esc(C.defaultPrincipalPosition)}</div>
+        <div class="sig-label">${esc(sigReviewed.label)}</div>
+        <div class="sig-name">${esc(sigReviewed.name || "____________________")}</div>
+        <div class="sig-pos">${esc(sigReviewed.position || "")}</div>
       </div>
       <div class="sig-block">
-        <div class="sig-label">${esc(C.notedByLabel)}</div>
-        <div class="sig-name">____________________</div>
-        <div class="sig-pos">Approving Authority</div>
+        <div class="sig-label">${esc(sigApproved.label)}</div>
+        <div class="sig-name">${esc(sigApproved.name || "____________________")}</div>
+        <div class="sig-pos">${esc(sigApproved.position || "")}</div>
       </div>
     </div>
   `;
@@ -1506,11 +1623,63 @@ function buildProgramPrintHTML() {
   }
   const footerHTML = footerBits.length
     ? `<div class="doc-footer"><span>${footerBits.join(" · ")}</span>${
-        C.showPageNumbers ? `<span class="page-num"></span>` : ""
+        showPageNums ? `<span class="page-num"></span>` : ""
       }</div>`
-    : (C.showPageNumbers ? `<div class="doc-footer"><span></span><span class="page-num"></span></div>` : "");
+    : (showPageNums ? `<div class="doc-footer"><span></span><span class="page-num"></span></div>` : "");
 
   return headerHTML + bannerHTML + titleHTML + infoHTML + scheduleHTML + signatoriesHTML + footerHTML;
+}
+
+// ============================================================
+// OPEN PRINT MODAL — pre-filled from Settings + Adviser
+// ============================================================
+function openPrintModal() {
+  const C = getPrintConfig();
+
+  $("p-preparedLabel").value    = C.preparedByLabel;
+  $("p-preparedName").value     = CLASS_INFO.adviserName || "";
+  $("p-preparedPosition").value = "Class Adviser";
+
+  $("p-reviewedLabel").value    = C.checkedByLabel;
+  $("p-reviewedName").value     = C.defaultPrincipalName || "";
+  $("p-reviewedPosition").value = C.defaultPrincipalPosition || "School Principal";
+
+  $("p-approvedLabel").value    = C.notedByLabel;
+  $("p-approvedName").value     = "";
+  $("p-approvedPosition").value = "Approving Authority";
+
+  $("p-showSignatories").checked  = true;
+  $("p-showPageNumbers").checked  = C.showPageNumbers;
+
+  $("printModal").classList.add("show");
+}
+
+// ============================================================
+// PRINT — builds HTML from modal values, then triggers print
+// ============================================================
+function doPrint() {
+  const opts = {
+    preparedLabel:    $("p-preparedLabel").value.trim(),
+    preparedName:     $("p-preparedName").value.trim(),
+    preparedPosition: $("p-preparedPosition").value.trim(),
+    reviewedLabel:    $("p-reviewedLabel").value.trim(),
+    reviewedName:     $("p-reviewedName").value.trim(),
+    reviewedPosition: $("p-reviewedPosition").value.trim(),
+    approvedLabel:    $("p-approvedLabel").value.trim(),
+    approvedName:     $("p-approvedName").value.trim(),
+    approvedPosition: $("p-approvedPosition").value.trim(),
+    showSignatories:  $("p-showSignatories").checked,
+    showPageNumbers:  $("p-showPageNumbers").checked,
+  };
+
+  const root = $("printRoot");
+  if (!root) { toast("⚠️ Print container missing", "error"); return; }
+
+  root.innerHTML = buildProgramPrintHTML(opts);
+  $("printModal").classList.remove("show");
+
+  // Let images load before opening the print dialog
+  setTimeout(() => window.print(), 300);
 }
 
 // ============================================================
