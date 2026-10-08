@@ -747,7 +747,7 @@
       toastTimer = setTimeout(() => t.className = "toast", 3000);
     }
 
-        // AUTH
+            // AUTH
     onAuthStateChanged(auth, async (user) => {
       if (!user) {
         location.replace("login.html?next=" + encodeURIComponent(location.pathname + location.search));
@@ -807,47 +807,6 @@
       populateSpecializationDropdown();
       populateUserDropdown();
       loadRoomOptions();
-
-      renderHeader();
-      attachHandlers();
-
-      await loadAndRender();
-    });
-
-if (!CLASS_ID) {
-        $("loading").innerHTML = '<div style="color:#b91c1c;">Missing class ID in URL.</div>';
-        return;
-      }
-
-      try {
-        CLASS_INFO = await window.SF1.getClass(CLASS_ID);
-      } catch (e) {
-        $("loading").innerHTML = '<div style="color:#b91c1c;">Failed to load class.</div>';
-        return;
-      }
-
-      if (!CLASS_INFO) {
-        $("loading").innerHTML = '<div style="color:#b91c1c;">Class not found.</div>';
-        return;
-      }
-
-      const isAdmin = CURRENT_PROFILE?.primaryRole === "admin" || CURRENT_PROFILE?.isSuperAdmin;
-      const isAdviser = CLASS_INFO.adviserUid === CURRENT_USER.uid;
-      const canManageRoster = CURRENT_PROFILE?.permissions?.canManageRoster === true;
-      CAN_EDIT = isAdmin || isAdviser || (canManageRoster && CLASS_INFO.teacherUids.includes(CURRENT_USER.uid));
-
-      if (isAdmin) document.body.classList.add("is-admin");
-
-      try { TIME_SLOTS = await ensureTimeSlotsExist(); }
-      catch { TIME_SLOTS = await loadTimeSlots() || []; }
-
-      await loadUsers();
-
-      populateTimeSlotDropdown();
-      populateSubjectDropdown();
-      populateSpecializationDropdown();
-      populateUserDropdown();
-      loadRoomOptions(); 
 
       renderHeader();
       attachHandlers();
