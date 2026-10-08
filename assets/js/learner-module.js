@@ -89,6 +89,8 @@ export function collectLessonData() {
     aiDeclaration:       aiDeclValue,
     preparedByName:      val("f-sig-preparedName"),
     preparedByPosition:  val("f-sig-preparedPos"),
+    checkedByName:       val("f-sig-checkedName"),      // 👈 ADD
+    checkedByPosition:   val("f-sig-checkedPos"),       // 👈 ADD
     notedByName:         val("f-sig-notedName"),
     notedByPosition:     val("f-sig-notedPos"),
   };
@@ -109,7 +111,8 @@ export function buildLearnerModuleHTML(lesson, cfg = {}) {
     schoolAddress:    cfg.schoolAddress || "",
     footerLine1:      cfg.footerLine1 || "",
     preparedByLabel:  cfg.preparedByLabel || "Prepared by:",
-    notedByLabel:     cfg.notedByLabel || "Noted by:",
+    checkedByLabel:   cfg.checkedByLabel  || "Checked by:",   // 👈 ADD THIS
+    notedByLabel:     cfg.notedByLabel    || "Noted by:",
   };
 
   // Simplified content
@@ -249,11 +252,16 @@ export function buildLearnerModuleHTML(lesson, cfg = {}) {
         ${lesson.preparedByName ? `<p style="font-size:9pt;margin-top:8px;"><strong>Teacher:</strong> ${esc(lesson.preparedByName)}</p>` : ""}
       </div>
 
-      <div class="lm-signatories">
+            <div class="lm-signatories">
         <div class="lm-sig">
           <div class="lm-sig-label">${esc(C.preparedByLabel)}</div>
           <div class="lm-sig-name">${esc(lesson.preparedByName || "—")}</div>
           <div class="lm-sig-pos">${esc(lesson.preparedByPosition || "")}</div>
+        </div>
+        <div class="lm-sig">
+          <div class="lm-sig-label">${esc(C.checkedByLabel || "Checked by:")}</div>
+          <div class="lm-sig-name">${esc(lesson.checkedByName || "—")}</div>
+          <div class="lm-sig-pos">${esc(lesson.checkedByPosition || "")}</div>
         </div>
         <div class="lm-sig">
           <div class="lm-sig-label">${esc(C.notedByLabel)}</div>
