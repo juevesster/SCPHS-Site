@@ -270,6 +270,18 @@ export function buildLearnerModuleHTML(lesson, cfg = {}) {
         </div>
       </div>
 
+            ${lesson.publicSlug ? `
+      <div class="lm-qr-footer">
+        <div class="lm-qr-box">
+          <div class="lm-qr-label">📱 Scan to view on your phone</div>
+          <img class="lm-qr-img"
+               src="https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=${encodeURIComponent(`https://juevester.github.io/SCPHS-Site/m.html?slug=${lesson.publicSlug}`)}&color=0f2b4f&bgcolor=ffffff"
+               alt="QR Code" />
+          <div class="lm-qr-url">m.html?slug=${esc(lesson.publicSlug)}</div>
+        </div>
+      </div>
+      ` : ""}
+
       <div class="lm-footer">
         <div>${esc(C.footerLine1)}</div>
         <div>Generated: ${generatedDate} · Learner Module · ${esc(lesson.subjectCode)}-T${esc(lesson.term)}W${esc(lesson.week)}</div>
