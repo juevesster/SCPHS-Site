@@ -237,9 +237,26 @@
 
     result.stats.daysFound = Object.keys(dayColumnMap).length;
 
-    // ---- 2. Time column = column 0 (or the one before the first day column) ----
-    const firstDayCol = Math.min(...Object.values(dayColumnMap));
-    const timeCol = Math.max(0, firstDayCol - 1);
+        // ---- 2. Detect the time column by CONTENT, not position ----
+    // Scan the first few data rows to find which column has time patterns
+    const timeRxScan = /(\d{1,2}):(\d{2})\s*(?:AM|PM)?\s*[-–—]\s*(\d{1,2}):(\d{2})/i;
+    let timeCol = -1;
+    for (let r = headerRowIdx + 1; r < Math.min(rows.length, headerRowIdx + 5); r++) {
+      const row = rows[r];
+      for (let c = 0; c < row.length; c++) {
+        if (timeRxScan.test(row[c])) {
+          timeCol = c;
+          break;
+        }
+      }
+      if (timeCol >= 0) break;
+    }
+
+    // Fallback: use column before first day
+    if (timeCol === -1) {
+      const firstDayCol = Math.min(...Object.values(dayColumnMap));
+      timeCol = Math.max(0, firstDayCol - 1);
+    }
 
     // ---- 3. Parse data rows ----
     const timeRx = /(\d{1,2}):(\d{2})\s*(?:AM|PM)?\s*[-–—]\s*(\d{1,2}):(\d{2})\s*(?:AM|PM)?/i;
@@ -264,10 +281,20 @@
         });
       }
 
-      // ---- For each day, extract cell content ----
+            // Also skip column that contains "No. of Min." header
+      const minColIdx = (rows[headerRowIdx] || []).findIndex(c =>
+        /no\.?\s*of\s*min|minutes/i.test(c || "")
+      );
+
       for (const [day, col] of Object.entries(dayColumnMap)) {
         let cell = row[col] || "";
         if (!cell || !cell.trim()) continue;
+
+        // Skip if this is the minutes column (safety)
+        if (col === minColIdx) continue;
+
+        // Skip if cell looks like a duration (60 minutes, 25 min, etc.)
+        if (/^\d+\s*(min|minutes?|mins?)\b/i.test(cell.trim())) continue;
 
         // Detect row-spanning filler (FLAG CEREMONY, LUNCH, etc.)
         const upper = cell.toUpperCase().trim();
