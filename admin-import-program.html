@@ -23,21 +23,30 @@
 
     .ip-field { margin-bottom: 16px; }
     .ip-field label { display: block; font-size: 0.78rem; font-weight: 700; color: #374151; text-transform: uppercase; letter-spacing: 0.03em; margin-bottom: 6px; }
-    .ip-field select { width: 100%; max-width: 480px; padding: 10px 12px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 14px; font-family: inherit; background: #fff; }
-    .ip-field select:focus { outline: none; border-color: #1e6bb8; box-shadow: 0 0 0 3px rgba(30,107,184,.12); }
+    .ip-field select, .ip-field textarea, .ip-field input[type="file"] { width: 100%; max-width: 100%; padding: 10px 12px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 14px; font-family: inherit; background: #fff; }
+    .ip-field textarea { min-height: 200px; font-family: ui-monospace, monospace; font-size: 12px; line-height: 1.5; resize: vertical; }
+    .ip-field select:focus, .ip-field textarea:focus { outline: none; border-color: #1e6bb8; box-shadow: 0 0 0 3px rgba(30,107,184,.12); }
 
     .ip-btn { padding: 12px 24px; border: none; border-radius: 8px; cursor: pointer; font-family: inherit; font-size: 14px; font-weight: 700; display: inline-flex; align-items: center; gap: 8px; transition: all .15s; }
     .ip-btn:hover:not(:disabled) { transform: translateY(-1px); }
     .ip-btn:disabled { opacity: 0.5; cursor: not-allowed; }
     .ip-btn.primary { background: #1e3c72; color: #fff; }
     .ip-btn.success { background: #059669; color: #fff; }
+    .ip-btn.warning { background: #d97706; color: #fff; }
     .ip-btn.outline { background: #fff; color: #1e3c72; border: 1px solid #1e3c72; }
+    .ip-btn.small { padding: 6px 12px; font-size: 12px; }
+
+    /* Source tabs */
+    .ip-tabs { display: flex; gap: 8px; margin-bottom: 20px; flex-wrap: wrap; }
+    .ip-tab { padding: 10px 20px; border: 1px solid #d1d5db; border-radius: 8px; background: #fff; color: #333; font-size: 13px; font-weight: 700; cursor: pointer; font-family: inherit; transition: all .15s; }
+    .ip-tab:hover { border-color: #1e6bb8; color: #1e6bb8; }
+    .ip-tab.active { background: #1e3c72; color: #fff; border-color: #1e3c72; }
 
     /* Preview */
-    .ip-preview { display: grid; gap: 8px; margin-top: 16px; max-height: 400px; overflow-y: auto; padding: 4px; }
+    .ip-preview { display: grid; gap: 6px; margin-top: 16px; max-height: 500px; overflow-y: auto; padding: 4px; }
     .ip-preview-row {
       display: grid;
-      grid-template-columns: 100px 130px 110px 1fr;
+      grid-template-columns: 90px 120px 140px 1fr;
       gap: 10px;
       padding: 10px 14px;
       background: #f9fafb;
@@ -47,9 +56,11 @@
       border-left: 3px solid #cbd5e1;
     }
     .ip-preview-row .day { font-weight: 700; color: #1e3c72; }
-    .ip-preview-row .slot { color: #4b5563; font-size: 12px; }
+    .ip-preview-row .slot { color: #4b5563; font-size: 12px; font-family: ui-monospace, monospace; }
     .ip-preview-row .subject { font-weight: 700; color: #0f2b4f; }
     .ip-preview-row .teacher { color: #6b7280; font-size: 12px; }
+    .ip-preview-row .teacher.matched { color: #059669; }
+    .ip-preview-row .teacher.unmatched { color: #b91c1c; font-style: italic; }
     .ip-preview-row .spec { display: inline-block; background: #6f42c1; color: #fff; padding: 1px 6px; border-radius: 3px; font-size: 10px; margin-left: 4px; }
 
     .ip-stats { display: flex; gap: 16px; flex-wrap: wrap; padding: 14px 18px; background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 8px; margin-bottom: 16px; }
@@ -84,7 +95,7 @@
     <div class="ip-header-inner">
       <div>
         <h1>📥 Import Class Program</h1>
-        <p>Select a DepEd template or SCPHS template — auto-populates the schedule</p>
+        <p>Use a DepEd template, paste from Excel, or upload a file — auto-populates the schedule</p>
       </div>
       <a href="admin.html">← Back to Admin</a>
     </div>
@@ -101,16 +112,11 @@
       <!-- Step 1: Configure -->
       <div class="ip-card" id="configCard">
         <h2>Step 1 — Configure Import</h2>
-        <p class="sub">Pick the target class, template, and term.</p>
+        <p class="sub">Pick the target class and term.</p>
 
         <div class="ip-field">
           <label for="ipClass">Target Class</label>
           <select id="ipClass"></select>
-        </div>
-
-        <div class="ip-field">
-          <label for="ipTemplate">Schedule Template</label>
-          <select id="ipTemplate"></select>
         </div>
 
         <div class="ip-field">
@@ -122,7 +128,52 @@
           </select>
         </div>
 
-        <button class="ip-btn primary" id="btnPreview">👁 Preview Import</button>
+        <!-- Source tabs -->
+        <div class="ip-tabs">
+          <button class="ip-tab active" data-source="template">📚 Template</button>
+          <button class="ip-tab" data-source="paste">📋 Paste from Excel</button>
+          <button class="ip-tab" data-source="upload">📂 Upload File</button>
+        </div>
+
+        <!-- Template source -->
+        <div id="srcTemplate">
+          <div class="ip-field">
+            <label for="ipTemplate">Schedule Template</label>
+            <select id="ipTemplate"></select>
+          </div>
+          <button class="ip-btn primary" id="btnPreview">👁 Preview Import</button>
+        </div>
+
+        <!-- Paste source -->
+        <div id="srcPaste" style="display:none;">
+          <div class="ip-info">
+            <strong>💡 How to paste from Excel:</strong>
+            <ol style="margin:8px 0 0 18px;padding:0;">
+              <li>Open your Excel class program</li>
+              <li>Select the whole table (drag from top-left to bottom-right)</li>
+              <li>Press <strong>Ctrl + C</strong></li>
+              <li>Click into the textarea below and press <strong>Ctrl + V</strong></li>
+              <li>Click <strong>🔍 Parse Pasted Text</strong></li>
+            </ol>
+          </div>
+          <div class="ip-field">
+            <label for="pasteText">Pasted Schedule Text</label>
+            <textarea id="pasteText" placeholder="Paste your Excel table here (Ctrl+V)…"></textarea>
+          </div>
+          <button class="ip-btn primary" id="btnParsePaste">🔍 Parse Pasted Text</button>
+        </div>
+
+        <!-- Upload source -->
+        <div id="srcUpload" style="display:none;">
+          <div class="ip-info">
+            <strong>📂 Supported formats:</strong> .xlsx, .xls, .csv, .txt, .docx, .pdf
+          </div>
+          <div class="ip-field">
+            <label for="fileInput">Choose a File</label>
+            <input type="file" id="fileInput" accept=".xlsx,.xls,.csv,.txt,.docx,.pdf" />
+          </div>
+          <button class="ip-btn primary" id="btnParseUpload">🔍 Parse Uploaded File</button>
+        </div>
       </div>
 
       <!-- Step 2: Preview -->
@@ -131,10 +182,8 @@
         <p class="sub">These entries will be added to the selected class. Duplicates are skipped automatically.</p>
 
         <div class="ip-stats" id="ipStats"></div>
-
         <div id="ipSlotCheck" class="ip-info" style="display:none;"></div>
         <div id="ipWarn" class="ip-warn" style="display:none;"></div>
-
         <div class="ip-preview" id="ipPreview"></div>
 
         <div style="display:flex;gap:10px;margin-top:20px;flex-wrap:wrap;">
@@ -167,6 +216,7 @@
     import { getCurrentUserProfile } from "./assets/js/roles.js";
     import "./assets/js/program-templates.js";
     import "./assets/js/schedule-presets.js";
+    import "./assets/js/program-parser.js";
     import { saveTimeSlots as saveSlots, loadTimeSlots, ensureTimeSlotsExist } from "./assets/js/schedule-config.js";
 
     // ============================================================
@@ -176,8 +226,9 @@
     let CURRENT_USER = null;
     let CLASSES = [];
     let USERS = [];
-    let PENDING = null;
     let CURRENT_SLOTS = [];
+    let SOURCE = "template";
+    let PENDING = null;
 
     // ============================================================
     // AUTH
@@ -202,11 +253,8 @@
         return;
       }
 
-      try {
-        CURRENT_SLOTS = await ensureTimeSlotsExist();
-      } catch {
-        CURRENT_SLOTS = await loadTimeSlots() || [];
-      }
+      try { CURRENT_SLOTS = await ensureTimeSlotsExist(); }
+      catch { CURRENT_SLOTS = await loadTimeSlots() || []; }
 
       await loadClasses();
       await loadUsers();
@@ -232,11 +280,26 @@
       return USERS.find(u => (u.email || "").toLowerCase().trim() === e) || null;
     }
 
+    function userByName(name) {
+      const n = String(name || "").toLowerCase().trim();
+      if (!n) return null;
+      // Exact first
+      let match = USERS.find(u => (u.name || "").toLowerCase().trim() === n);
+      if (match) return match;
+      // Last-name-only fallback
+      const parts = n.split(/\s+/);
+      const last = parts[parts.length - 1];
+      if (last && last.length > 3) {
+        match = USERS.find(u => (u.name || "").toLowerCase().includes(last));
+      }
+      return match || null;
+    }
+
     // ============================================================
     // INIT FORM
     // ============================================================
     function initForm() {
-      // Fill class dropdown
+      // Class dropdown
       const classSel = $("ipClass");
       classSel.innerHTML = '<option value="">-- Select Class --</option>';
       CLASSES.forEach(c => {
@@ -246,10 +309,9 @@
         classSel.appendChild(opt);
       });
 
-      // Fill template dropdown — grouped by category
+      // Template dropdown (grouped)
       const tplSel = $("ipTemplate");
       tplSel.innerHTML = '<option value="">-- Select Template --</option>';
-
       const grouped = window.ProgramTemplates.getGrouped();
       Object.entries(grouped).forEach(([category, list]) => {
         const optgroup = document.createElement("optgroup");
@@ -263,7 +325,15 @@
         tplSel.appendChild(optgroup);
       });
 
-      $("btnPreview").addEventListener("click", preview);
+      // Source tabs
+      document.querySelectorAll(".ip-tab").forEach(tab => {
+        tab.addEventListener("click", () => switchSource(tab.dataset.source));
+      });
+
+      // Buttons
+      $("btnPreview").addEventListener("click", previewTemplate);
+      $("btnParsePaste").addEventListener("click", () => parseText($("pasteText").value));
+      $("btnParseUpload").addEventListener("click", parseUpload);
       $("btnImport").addEventListener("click", doImport);
       $("btnCancel").addEventListener("click", cancelPreview);
       $("btnImportAnother").addEventListener("click", resetAll);
@@ -272,10 +342,20 @@
       $("content").style.display = "block";
     }
 
+    function switchSource(source) {
+      SOURCE = source;
+      document.querySelectorAll(".ip-tab").forEach(t => {
+        t.classList.toggle("active", t.dataset.source === source);
+      });
+      $("srcTemplate").style.display = source === "template" ? "block" : "none";
+      $("srcPaste").style.display = source === "paste" ? "block" : "none";
+      $("srcUpload").style.display = source === "upload" ? "block" : "none";
+    }
+
     // ============================================================
-    // PREVIEW
+    // TEMPLATE PREVIEW
     // ============================================================
-    function preview() {
+    function previewTemplate() {
       const classId = $("ipClass").value;
       const tplKey = $("ipTemplate").value;
       const term = parseInt($("ipTerm").value, 10);
@@ -287,41 +367,197 @@
       const tpl = window.ProgramTemplates.get(tplKey);
       if (!cls || !tpl) return;
 
-      // Verify teachers exist (this template may have empty teacher field initially)
-      const missingTeachers = new Set();
+      // Build entries from template
+      const slotMap = {};
+      (CURRENT_SLOTS || []).forEach(s => { slotMap[s.id] = s; });
+
       const entries = tpl.entries.map(e => {
-        if (!e.teacher) {
-          return { ...e, teacherUid: "", teacherName: "" };
-        }
-        const u = userByEmail(e.teacher);
-        if (!u) missingTeachers.add(e.teacher);
+        const u = e.teacher ? userByEmail(e.teacher) : null;
         return {
-          ...e,
+          day: e.day,
+          timeSlotId: e.slot,
+          subject: e.subject,
           teacherUid: u ? u.uid : "",
-          teacherName: u ? (u.name || u.email) : e.teacher,
+          teacherName: u ? (u.name || u.email) : (e.teacher || ""),
+          specialization: e.spec || "",
+          entryType: "primary",
+          groupIndex: 0,
+          room: "",
+          notes: "",
+          matched: !!u,
+          teacherInput: e.teacher || "",
         };
       });
+
+      PENDING = {
+        classId, cls, term,
+        source: "template",
+        tpl,
+        entries,
+      };
+
+      renderPreview();
+    }
+
+    // ============================================================
+    // PASTE PARSE
+    // ============================================================
+    function parseText(text) {
+      const classId = $("ipClass").value;
+      const term = parseInt($("ipTerm").value, 10);
+
+      if (!classId) { toast("⚠️ Select a class first", "error"); return; }
+      if (!text || !text.trim()) { toast("⚠️ Paste some text first", "error"); return; }
+
+      try {
+        const parsed = window.ProgramParser.parseLines(
+          text.split(/\r?\n/),
+          { term }
+        );
+
+        if (!parsed.entries.length) {
+          toast("⚠️ No schedule entries detected. Check your paste format.", "error");
+          return;
+        }
+
+        // Match to time slots
+        const entries = mapToSlots(parsed.entries);
+
+        const cls = CLASSES.find(c => c.id === classId);
+
+        PENDING = {
+          classId, cls, term,
+          source: "paste",
+          parsed,
+          entries,
+        };
+
+        renderPreview();
+
+      } catch (e) {
+        console.error(e);
+        toast("⚠️ Parse failed: " + (e.message || "Unknown error"), "error");
+      }
+    }
+
+    // ============================================================
+    // UPLOAD PARSE
+    // ============================================================
+    async function parseUpload() {
+      const file = $("fileInput").files[0];
+      const classId = $("ipClass").value;
+      const term = parseInt($("ipTerm").value, 10);
+
+      if (!classId) { toast("⚠️ Select a class first", "error"); return; }
+      if (!file) { toast("⚠️ Choose a file first", "error"); return; }
+
+      const btn = $("btnParseUpload");
+      btn.disabled = true;
+      btn.textContent = "Parsing…";
+
+      try {
+        const parsed = await window.ProgramParser.parse(file, { term });
+
+        if (!parsed.entries.length) {
+          toast("⚠️ No schedule entries detected in the file.", "error");
+          return;
+        }
+
+        const entries = mapToSlots(parsed.entries);
+        const cls = CLASSES.find(c => c.id === classId);
+
+        PENDING = {
+          classId, cls, term,
+          source: "upload",
+          parsed,
+          entries,
+        };
+
+        renderPreview();
+
+      } catch (e) {
+        console.error(e);
+        toast("⚠️ Parse failed: " + (e.message || "Unknown error"), "error");
+      } finally {
+        btn.disabled = false;
+        btn.textContent = "🔍 Parse Uploaded File";
+      }
+    }
+
+    // ============================================================
+    // MAP ENTRIES TO TIME SLOT IDs
+    // ============================================================
+    function mapToSlots(rawEntries) {
+      // Build index of existing slots by time range
+      const byRange = {};
+      (CURRENT_SLOTS || []).forEach(s => {
+        const key = `${s.start}-${s.end}`;
+        byRange[key] = s.id;
+      });
+
+      return rawEntries.map(e => {
+        const rangeKey = `${e.slotStart}-${e.slotEnd}`;
+        let slotId = byRange[rangeKey];
+
+        // Fallback: try matching by time only
+        if (!slotId) {
+          const match = (CURRENT_SLOTS || []).find(s =>
+            String(s.start).padStart(5, "0") === String(e.slotStart).padStart(5, "0")
+          );
+          if (match) slotId = match.id;
+        }
+
+        // Last resort: auto-generate a slot id
+        if (!slotId) slotId = "auto-" + e.slotStart;
+
+        // Match teacher
+        const user = e.teacher ? userByName(e.teacher) : null;
+
+        return {
+          day: e.day,
+          timeSlotId: slotId,
+          subject: e.subject || "—",
+          teacherUid: user ? user.uid : "",
+          teacherName: user ? (user.name || user.email) : (e.teacher || ""),
+          specialization: e.specialization || "",
+          entryType: "primary",
+          groupIndex: 0,
+          room: "",
+          notes: "",
+          matched: !!user,
+          teacherInput: e.teacher || "",
+        };
+      });
+    }
+
+    // ============================================================
+    // RENDER PREVIEW
+    // ============================================================
+    function renderPreview() {
+      if (!PENDING) return;
+      const { entries, cls, term, tpl, source } = PENDING;
 
       // Stats
       const byDay = {};
       entries.forEach(e => { byDay[e.day] = (byDay[e.day] || 0) + 1; });
 
+      const matched = entries.filter(e => e.matched || !e.teacherInput).length;
+      const unmatched = entries.filter(e => !e.matched && e.teacherInput).length;
+
       $("ipStats").innerHTML = `
         <div><strong>${entries.length}</strong> total entries</div>
         <div><strong>${Object.keys(byDay).length}</strong> days</div>
-        ${Object.entries(byDay).map(([d, n]) => `<div><strong>${n}</strong> ${d}</div>`).join("")}
+        <div style="color:#059669;"><strong>${matched}</strong> matched</div>
+        ${unmatched ? `<div style="color:#b91c1c;"><strong>${unmatched}</strong> unmatched teachers</div>` : ""}
       `;
 
-      // Slot preset check
+      // Slot preset check (for template source)
       const slotCheck = $("ipSlotCheck");
-      if (tpl.slotPreset) {
+      if (source === "template" && tpl?.slotPreset) {
         const missing = window.SchedulePresets.missingCount(tpl.slotPreset, CURRENT_SLOTS);
         if (missing > 0) {
           slotCheck.style.display = "block";
-          slotCheck.innerHTML = `
-            ℹ️ This template uses <strong>${missing} new time slot${missing > 1 ? "s" : ""}</strong> not currently in your schedule.<br>
-            They will be auto-added on import.
-          `;
+          slotCheck.innerHTML = `ℹ️ This template uses <strong>${missing} new time slot${missing > 1 ? "s" : ""}</strong>. They will be auto-added on import.`;
         } else {
           slotCheck.style.display = "none";
         }
@@ -331,30 +567,37 @@
 
       // Teacher warnings
       const warn = $("ipWarn");
-      if (missingTeachers.size) {
+      const unmatchedNames = entries.filter(e => !e.matched && e.teacherInput).map(e => e.teacherInput);
+      const uniqueUnmatched = [...new Set(unmatchedNames)];
+      if (uniqueUnmatched.length) {
         warn.style.display = "block";
         warn.innerHTML = `
-          <strong>⚠️ ${missingTeachers.size} teacher(s) not found:</strong><br>
-          ${[...missingTeachers].map(t => `<code>${t}</code>`).join(", ")}<br>
-          <em>Entries with missing teachers will import with no teacher assigned. Fix after import.</em>
+          <strong>⚠️ ${uniqueUnmatched.length} teacher${uniqueUnmatched.length > 1 ? "s" : ""} not matched:</strong><br>
+          ${uniqueUnmatched.map(t => `<code>${t}</code>`).join(", ")}<br>
+          <em>These entries will import with the raw teacher name. Match them later in program.html.</em>
         `;
       } else {
         warn.style.display = "none";
       }
 
-      // Preview list (first 60 to keep it fast)
+      // Preview list
       const previewHost = $("ipPreview");
-      const shown = entries.slice(0, 60);
-      previewHost.innerHTML = shown.map(e => `
-        <div class="ip-preview-row">
-          <span class="day">${e.day}</span>
-          <span class="slot">${e.slot}</span>
-          <span class="subject">${e.subject}${e.spec ? `<span class="spec">${e.spec}</span>` : ""}</span>
-          <span class="teacher">${e.teacherName ? "👩‍🏫 " + e.teacherName : "<em>— no teacher —</em>"}</span>
-        </div>
-      `).join("") + (entries.length > 60 ? `<div style="text-align:center;color:#6b7280;font-size:12px;padding:8px;">… and ${entries.length - 60} more</div>` : "");
+      const shown = entries.slice(0, 100);
 
-      PENDING = { classId, cls, tplKey, tpl, entries, term };
+      previewHost.innerHTML = shown.map(e => {
+        const teacherClass = !e.teacherInput ? "" : (e.matched ? "matched" : "unmatched");
+        const teacherIcon = !e.teacherInput ? "" : (e.matched ? "✅" : "⚠️");
+        const spec = e.specialization ? `<span class="spec">${e.specialization}</span>` : "";
+
+        return `
+          <div class="ip-preview-row">
+            <span class="day">${e.day}</span>
+            <span class="slot">${e.timeSlotId}</span>
+            <span class="subject">${e.subject}${spec}</span>
+            <span class="teacher ${teacherClass}">${teacherIcon} ${e.teacherName || e.teacherInput || "— no teacher —"}</span>
+          </div>
+        `;
+      }).join("") + (entries.length > 100 ? `<div style="text-align:center;color:#6b7280;font-size:12px;padding:8px;">… and ${entries.length - 100} more</div>` : "");
 
       $("configCard").style.display = "none";
       $("previewCard").style.display = "block";
@@ -371,15 +614,13 @@
       btn.disabled = true;
       btn.textContent = "Importing…";
 
-      const { classId, tpl, entries, term } = PENDING;
+      const { classId, cls, entries, term, tpl, source } = PENDING;
 
       try {
-        // ---- 1. Ensure slot preset exists ----
-        if (tpl.slotPreset) {
+        // 1. Ensure slot preset (template source only)
+        if (source === "template" && tpl?.slotPreset) {
           const result = await window.SchedulePresets.ensurePreset(
-            tpl.slotPreset,
-            CURRENT_SLOTS,
-            saveSlots
+            tpl.slotPreset, CURRENT_SLOTS, saveSlots
           );
           if (result.added > 0) {
             toast(`✓ Added ${result.added} new time slot${result.added > 1 ? "s" : ""}`, "success");
@@ -387,7 +628,7 @@
           }
         }
 
-        // ---- 2. Import entries ----
+        // 2. Import entries
         const colRef = collection(db, "classes", classId, "program");
         const existingSnap = await getDocs(colRef);
         const existingKeys = new Set();
@@ -401,23 +642,23 @@
         let inserted = 0, skipped = 0, errors = 0;
 
         for (const e of entries) {
-          const key = `${e.day}|${e.slot}|${e.subject}|${e.teacherUid}`;
+          const key = `${e.day}|${e.timeSlotId}|${e.subject}|${e.teacherUid}`;
           if (existingKeys.has(key)) { skipped++; continue; }
 
           try {
             await addDoc(colRef, {
               day: e.day,
-              timeSlotId: e.slot,
+              timeSlotId: e.timeSlotId,
               term: term,
               subject: e.subject,
               subjectName: e.subject,
               teacherUid: e.teacherUid,
               teacherName: e.teacherName,
-              specialization: e.spec || "",
-              room: "",
-              entryType: "primary",
-              groupIndex: 0,
-              notes: "",
+              specialization: e.specialization || "",
+              room: e.room || "",
+              entryType: e.entryType || "primary",
+              groupIndex: e.groupIndex || 0,
+              notes: e.notes || "",
               createdAt: serverTimestamp(),
               updatedAt: serverTimestamp(),
               createdBy: CURRENT_USER.email || "",
@@ -430,8 +671,7 @@
         }
 
         $("doneBox").innerHTML = `
-          ✓ <strong>Import complete for ${PENDING.cls.classLabel} — Term ${term}</strong><br><br>
-          📋 Template: <strong>${tpl.label}</strong><br>
+          ✓ <strong>Import complete for ${cls.classLabel} — Term ${term}</strong><br><br>
           ✅ Inserted: <strong>${inserted}</strong><br>
           ⏭️ Skipped (already existed): <strong>${skipped}</strong><br>
           ${errors ? `❌ Errors: <strong>${errors}</strong><br>` : ""}
@@ -460,8 +700,9 @@
     function resetAll() {
       PENDING = null;
       $("ipClass").value = "";
-      $("ipTemplate").value = "";
       $("ipTerm").value = "1";
+      $("pasteText").value = "";
+      $("fileInput").value = "";
       $("configCard").style.display = "block";
       $("previewCard").style.display = "none";
       $("doneCard").style.display = "none";
