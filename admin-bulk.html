@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Bulk Tools — SCPHS Admin</title>
+  <link rel="stylesheet" href="assets/css/styles.css" />
+  <style>
+    * { box-sizing: border-box; }
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #f0f2f5; margin: 0; }
+
+    /* Header */
+    .bk-header { background: linear-gradient(135deg, #1e3c72, #2a5298); color: #fff; padding: 24px 0; }
+    .bk-header-inner { max-width: 1200px; margin: 0 auto; padding: 0 24px; display: flex; justify-content: space-between; align-items: center; gap: 16px; flex-wrap: wrap; }
+    .bk-header h1 { margin: 0 0 4px; font-size: 1.5rem; }
+    .bk-header p { margin: 0; opacity: 0.9; font-size: 0.9rem; }
+    .bk-header a { color: #fff; text-decoration: none; padding: 8px 16px; border: 1px solid rgba(255,255,255,0.3); border-radius: 8px; font-size: 13px; }
+
+    /* Container */
+    .bk-container { max-width: 1200px; margin: 0 auto; padding: 24px; }
+
+    /* Tabs */
+    .bk-tabs { display: flex; gap: 10px; margin-bottom: 24px; flex-wrap: wrap; }
+    .bk-tab { padding: 12px 24px; background: #fff; border: 1px solid #d1d5db; border-radius: 10px; color: #333; font-size: 14px; font-weight: 700; cursor: pointer; font-family: inherit; transition: all .15s; display: inline-flex; align-items: center; gap: 8px; }
+    .bk-tab:hover { border-color: #1e6bb8; color: #1e6bb8; }
+    .bk-tab.active { background: #1e3c72; color: #fff; border-color: #1e3c72; }
+    .bk-tab .ico { font-size: 1.1rem; }
+
+    /* Cards */
+    .bk-card { background: #fff; border-radius: 12px; padding: 24px; margin-bottom: 20px; box-shadow: 0 1px 3px rgba(0,0,0,.06); }
+    .bk-card h2 { margin: 0 0 6px; font-size: 1.2rem; color: #0f2b4f; display: flex; align-items: center; gap: 8px; }
+    .bk-card h3 { margin: 0 0 14px; font-size: 1rem; color: #0f2b4f; }
+    .bk-card .sub { margin: 0 0 20px; font-size: 0.88rem; color: #6b7280; line-height: 1.6; }
+
+    /* Info box */
+    .bk-info { background: #eff6ff; border: 1px solid #bfdbfe; color: #1e40af; padding: 14px 18px; border-radius: 10px; font-size: 13.5px; margin-bottom: 18px; line-height: 1.55; }
+    .bk-info ol, .bk-info ul { margin: 8px 0 0 18px; padding: 0; }
+    .bk-info li { margin-bottom: 4px; }
+
+    .bk-warn { background: #fef3c7; border: 1px solid #fcd34d; color: #92400e; padding: 14px 18px; border-radius: 10px; font-size: 13.5px; margin-bottom: 18px; line-height: 1.55; }
+    .bk-success { background: #f0fdf4; border: 1px solid #bbf7d0; color: #166534; padding: 16px 20px; border-radius: 10px; font-size: 14px; line-height: 1.6; }
+    .bk-error { background: #fef2f2; border: 1px solid #fecaca; color: #991b1b; padding: 14px 18px; border-radius: 10px; font-size: 13.5px; line-height: 1.55; }
+
+    /* Drop zone */
+    .bk-drop {
+      border: 2.5px dashed #cbd5e1;
+      background: #f9fafb;
+      border-radius: 12px;
+      padding: 40px 20px;
+      text-align: center;
+      cursor: pointer;
+      transition: all .15s;
+      margin-bottom: 16px;
+    }
+    .bk-drop:hover { border-color: #1e6bb8; background: #eff6ff; }
+    .bk-drop.dragover { border-color: #1e6bb8; background: #dbeafe; }
+    .bk-drop-icon { font-size: 3rem; margin-bottom: 10px; }
+    .bk-drop-title { font-weight: 700; color: #0f2b4f; font-size: 15px; }
+    .bk-drop-sub { font-size: 12px; color: #6b7280; margin-top: 4px; }
+
+    /* File list */
+    .bk-file-list { background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 10px; padding: 12px 16px; margin-bottom: 16px; max-height: 200px; overflow-y: auto; }
+    .bk-file-item { display: flex; justify-content: space-between; align-items: center; padding: 6px 0; font-size: 13px; border-bottom: 1px solid #f3f4f6; }
+    .bk-file-item:last-child { border-bottom: 0; }
+    .bk-file-name { font-family: ui-monospace, monospace; color: #374151; }
+    .bk-file-status { font-size: 11px; font-weight: 700; }
+    .bk-file-status.ok { color: #059669; }
+    .bk-file-status.err { color: #dc2626; }
+
+    /* Buttons */
+    .bk-btn { padding: 12px 22px; border: none; border-radius: 9px; cursor: pointer; font-family: inherit; font-size: 14px; font-weight: 700; display: inline-flex; align-items: center; gap: 8px; transition: all .15s; }
+    .bk-btn:hover:not(:disabled) { transform: translateY(-1px); }
+    .bk-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+    .bk-btn.primary { background: #1e3c72; color: #fff; }
+    .bk-btn.success { background: #059669; color: #fff; }
+    .bk-btn.warning { background: #d97706; color: #fff; }
+    .bk-btn.danger { background: #dc2626; color: #fff; }
+    .bk-btn.outline { background: #fff; color: #1e3c72; border: 1.5px solid #1e3c72; }
+
+    /* Form */
+    .bk-field { margin-bottom: 18px; }
+    .bk-field label { display: block; font-size: 12px; font-weight: 700; color: #374151; text-transform: uppercase; letter-spacing: 0.03em; margin-bottom: 6px; }
+    .bk-field select, .bk-field input[type="text"], .bk-field input[type="file"] { width: 100%; max-width: 480px; padding: 10px 12px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 14px; font-family: inherit; background: #fff; }
+    .bk-field select:focus, .bk-field input:focus { outline: none; border-color: #1e6bb8; box-shadow: 0 0 0 3px rgba(30,107,184,.12); }
+    .bk-field .hint { font-size: 11px; color: #6b7280; margin-top: 4px; }
+
+    .bk-checkbox-group { display: flex; gap: 20px; flex-wrap: wrap; padding: 8px 0; }
+    .bk-checkbox-group label { display: flex; align-items: center; gap: 8px; font-size: 13.5px; color: #374151; text-transform: none; letter-spacing: 0; cursor: pointer; font-weight: 500; }
+
+    /* Progress */
+    .bk-progress { background: #f3f4f6; border-radius: 8px; height: 10px; overflow: hidden; margin: 12px 0; }
+    .bk-progress-bar { background: linear-gradient(90deg, #1e6bb8, #059669); height: 100%; transition: width .3s; border-radius: 8px; }
+    .bk-progress-text { font-size: 12px; color: #6b7280; text-align: center; margin-top: 6px; }
+
+    /* Loading */
+    .bk-loading { text-align: center; padding: 60px 20px; color: #6b7280; }
+    .bk-spinner { width: 32px; height: 32px; border: 3px solid #e5e7eb; border-top-color: #1e3c72; border-radius: 50%; animation: bk-spin .8s linear infinite; margin: 0 auto 12px; }
+    @keyframes bk-spin { to { transform: rotate(360deg); } }
+
+    /* Toast */
+    .bk-toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(20px); background: #111827; color: #fff; padding: 12px 22px; border-radius: 8px; font-size: 14px; font-weight: 500; box-shadow: 0 8px 24px rgba(0,0,0,.2); opacity: 0; transition: all .25s; z-index: 10000; pointer-events: none; }
+    .bk-toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+    .bk-toast.success { background: #059669; }
+    .bk-toast.error { background: #b91c1c; }
+
+    /* Preview table */
+    .bk-preview-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    .bk-preview-table th { background: #f3f4f6; padding: 10px 12px; text-align: left; font-size: 11px; font-weight: 700; color: #6b7280; text-transform: uppercase; letter-spacing: 0.04em; }
+    .bk-preview-table td { padding: 10px 12px; border-bottom: 1px solid #f3f4f6; }
+    .bk-preview-table tr:hover td { background: #f9fafb; }
+
+    @media (max-width: 768px) {
+      .bk-tab { padding: 10px 16px; font-size: 13px; }
+      .bk-tab .ico { font-size: 1rem; }
+    }
+  </style>
+</head>
+<body>
+
+  <header class="bk-header">
+    <div class="bk-header-inner">
+      <div>
+        <h1>🚀 Bulk Tools</h1>
+        <p>Multi-class operations — Word to Excel, bulk import, and bulk term copy</p>
+      </div>
+      <a href="admin.html">← Back to Admin</a>
+    </div>
+  </header>
+
+  <div class="bk-container" id="bkMain">
+    <div class="bk-loading">
+      <div class="bk-spinner"></div>
+      <div>Loading bulk tools…</div>
+    </div>
+  </div>
+
+  <div id="bkToast" class="bk-toast"></div>
+
+  <script type="module">
+    import { auth, db } from "./assets/js/firebase-config.js";
+    import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+    import { collection, getDocs } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+    import { getCurrentUserProfile } from "./assets/js/roles.js";
+    import "./assets/js/bulk-tools.js";
+    import "./assets/js/bulk-import.js";
+
+    // ============================================================
+    // STATE
+    // ============================================================
+    let CURRENT_USER = null;
+    let CURRENT_PROFILE = null;
+    let ACTIVE_TAB = "word-to-excel";
+    let CLASSES = [];
+
+    const $ = id => document.getElementById(id);
+    const esc = s => String(s == null ? "" : s)
+      .replace(/&/g, "&amp;").replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+
+    // ============================================================
+    // TOAST
+    // ============================================================
+    let toastTimer;
+    function toast(msg, type = "") {
+      const t = $("bkToast");
+      if (!t) return;
+      t.textContent = msg;
+      t.className = "bk-toast show " + type;
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => t.className = "bk-toast", 3000);
+    }
+    window.bkToast = toast;
+
+    // ============================================================
+    // AUTH
+    // ============================================================
+    onAuthStateChanged(auth, async (user) => {
+      if (!user) {
+        location.replace("login.html?next=" + encodeURIComponent(location.pathname));
+        return;
+      }
+      CURRENT_USER = user;
+
+      try {
+        CURRENT_PROFILE = await getCurrentUserProfile();
+      } catch (e) {
+        $("bkMain").innerHTML = `
+          <div class="bk-error" style="max-width:600px;margin:40px auto;">
+            <strong>⚠️ Profile Error</strong><br>${esc(e.message)}
+          </div>
+        `;
+        return;
+      }
+
+      const isAdmin = CURRENT_PROFILE?.primaryRole === "admin"
+        || CURRENT_PROFILE?.isSuperAdmin
+        || CURRENT_PROFILE?.permissions?.canManageClasses === true;
+
+      if (!isAdmin) {
+        $("bkMain").innerHTML = `
+          <div class="bk-error" style="max-width:600px;margin:40px auto;">
+            <strong>🚫 Access Denied</strong><br>Only admins can use bulk tools.
+            <div style="margin-top:14px;"><a href="admin.html" class="bk-btn primary" style="text-decoration:none;">← Back to Admin</a></div>
+          </div>
+        `;
+        return;
+      }
+
+      // Load classes
+      try {
+        const snap = await getDocs(collection(db, "classes"));
+        CLASSES = snap.docs.map(d => ({ id: d.id, ...d.data() }))
+          .sort((a, b) => (a.classLabel || "").localeCompare(b.classLabel || ""));
+      } catch (e) {
+        CLASSES = [];
+      }
+
+      window.bkClasses = CLASSES;
+      window.bkProfile = CURRENT_PROFILE;
+      window.bkUser = CURRENT_USER;
+
+      // Expose helpers globally for bulk-tools.js
+      window.bkHelpers = { $, esc, toast };
+
+      // Init UI from bulk-tools
+      if (window.BulkTools?.init) {
+        window.BulkTools.init();
+      } else {
+        $("bkMain").innerHTML = `
+          <div class="bk-error" style="max-width:600px;margin:40px auto;">
+            <strong>⚠️ bulk-tools.js not loaded</strong><br>
+            Make sure assets/js/bulk-tools.js exists.
+          </div>
+        `;
+      }
+    });
+
+  </script>
+
+  <!-- Libraries (lazy-loaded by bulk-tools) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+  <script>
+    if (window.pdfjsLib) {
+      window.pdfjsLib.GlobalWorkerOptions.workerSrc =
+        "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
+    }
+  </script>
+</body>
+</html>
