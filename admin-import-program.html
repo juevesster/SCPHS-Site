@@ -415,8 +415,31 @@
           { term }
         );
 
-        if (!parsed.entries.length) {
-          toast("⚠️ No schedule entries detected. Check your paste format.", "error");
+                if (!parsed.entries.length) {
+          // Show debug info instead of just erroring
+          const d = parsed.diagnostics || {};
+          const debugHtml = `
+            <div class="ip-warn" style="display:block;">
+              <strong>⚠️ No entries detected.</strong> Here's what the parser saw:
+              <ul style="margin:8px 0 0 20px;font-size:12px;">
+                <li><strong>File type:</strong> ${d.fileType || "unknown"}</li>
+                <li><strong>Extraction method:</strong> ${d.extractMethod || "unknown"}</li>
+                <li><strong>Rows found:</strong> ${d.rowsFound || 0}</li>
+                <li><strong>Header row index:</strong> ${d.headerRowIdx != null ? d.headerRowIdx : "—"}</li>
+                <li><strong>Time column:</strong> ${d.timeColIdx != null ? d.timeColIdx : "—"}</li>
+                <li><strong>Day columns:</strong> ${JSON.stringify(d.dayColumns || {})}</li>
+              </ul>
+              <details style="margin-top:8px;">
+                <summary style="cursor:pointer;font-weight:700;">📄 First 5 rows as parsed</summary>
+                <pre style="background:#fff;border:1px solid #e5e7eb;border-radius:6px;padding:8px;font-size:10px;overflow:auto;max-height:240px;margin-top:6px;white-space:pre-wrap;">${
+                  (d.first5Rows || []).map((r, i) => `Row ${i}:\n  ${JSON.stringify(r)}`).join("\n")
+                }</pre>
+              </details>
+            </div>
+          `;
+          // Insert before config card and show
+          $("configCard").insertAdjacentHTML("afterend", debugHtml);
+          toast("⚠️ No entries detected — see debug info below", "error");
           return;
         }
 
