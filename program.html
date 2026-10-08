@@ -302,9 +302,11 @@
             <div class="hint">Required for TLE rotation slots. Leave empty for regular subjects.</div>
           </div>
 
-          <div class="form-group">
+            <div class="form-group">
             <label>Room (optional)</label>
-            <input type="text" id="f-room" placeholder="e.g., Room 201" />
+            <input type="text" id="f-room" list="f-room-list" placeholder="e.g., RM-101" />
+            <datalist id="f-room-list"></datalist>
+            <div class="hint">Start typing to pick from registered rooms, or enter a custom room.</div>
           </div>
 
           <div class="form-group" id="entryTypeGroup">
@@ -463,6 +465,7 @@
       populateSubjectDropdown();
       populateSpecializationDropdown();
       populateUserDropdown();
+      loadRoomOptions(); 
 
       renderHeader();
       attachHandlers();
@@ -562,6 +565,26 @@
           opt.textContent = `${u.name || u.email} (${u.email})`;
           sel.appendChild(opt);
         });
+    }
+
+    // ⬇️ PASTE HERE ⬇️
+    async function loadRoomOptions() {
+      try {
+        const snap = await getDocs(collection(db, "rooms"));
+        const rooms = snap.docs
+          .map(d => ({ id: d.id, ...d.data() }))
+          .filter(r => r.active !== false)
+          .sort((a, b) => (a.code || "").localeCompare(b.code || ""));
+
+        const host = $("f-room-list");
+        if (host) {
+          host.innerHTML = rooms
+            .map(r => `<option value="${esc(r.code)}">${esc(r.name || "")}</option>`)
+            .join("");
+        }
+      } catch (e) {
+        console.warn("[rooms] load failed:", e);
+      }
     }
 
     async function loadAndRender() {

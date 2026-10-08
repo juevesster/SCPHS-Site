@@ -879,14 +879,14 @@
     // ============================================================
     // RENDER DISPATCHER
     // ============================================================
-    function renderActiveTab() {
+      function renderActiveTab() {
       const main = $("acMain");
       switch (ACTIVE_TAB) {
         case "classes":  renderClassesTab(main); break;
         case "advisers": renderAdvisersTab(main); break;
         case "subjects": renderSubjectsTab(main); break;
         case "ilaw-settings": renderILAWSettingsTab(main); break;
-        case "rooms":    renderComingSoonTab(main, "Rooms"); break;
+        case "rooms":    renderRoomsTab(main); break;
         case "conflicts":renderConflictsTab(main); break;
         default:         renderClassesTab(main);
       }
@@ -1271,6 +1271,489 @@
         btn.textContent = "Assign to All";
       }
     }
+
+
+        // ============================================================
+    // TAB: ROOMS
+    // ============================================================
+    let ROOMS = [];
+    let ROOM_USAGE = {};      // { roomId: { classIds: Set, teachers: Set, count } }
+    let ROOM_TERM = 1;
+    let ROOM_VIEW = "grid";    // "grid" | "table"
+    let ROOM_FILTER_TYPE = "";
+    let ROOM_FILTER_STATUS = "";
+    let ROOM_SEARCH = "";
+
+    const ROOM_TYPE_ICONS = {
+      standard: "🏫",
+      laboratory: "🔬",
+      computer: "💻",
+      science: "🧪",
+      art: "🎨",
+      music: "🎵",
+      gym: "🏋️",
+      auditorium: "🎭",
+      aral: "📖",
+      homeroom: "🏠",
+      multipurpose: "🏛️",
+      cr: "🚻",
+    };
+
+    const ROOM_TYPE_LABELS = {
+      standard: "Standard Classroom",
+      laboratory: "Laboratory",
+      computer: "Computer Lab",
+      science: "Science Lab",
+      art: "Art Room",
+      music: "Music Room",
+      gym: "Gymnasium",
+      auditorium: "Auditorium",
+      aral: "ARAL Center",
+      homeroom: "Homeroom",
+      multipurpose: "Multipurpose Hall",
+      cr: "Comfort Room",
+    };
+
+    async function renderRoomsTab(main) {
+      const isAdminViewer = CURRENT_PROFILE?.isSuperAdmin
+        || CURRENT_PROFILE?.primaryRole === "admin";
+
+      main.innerHTML = `
+        <div class="ac-page-header">
+          <h2>🚪 Rooms & Facilities</h2>
+          <p>Manage classrooms, laboratories, and facilities for the school.</p>
+        </div>
+
+        <div class="ac-stats">
+          <div class="ac-stat">
+            <div class="ac-stat-value" id="statTotalRooms">—</div>
+            <div class="ac-stat-label">Total Rooms</div>
+          </div>
+          <div class="ac-stat">
+            <div class="ac-stat-value" style="color:#059669;" id="statActiveRooms">—</div>
+            <div class="ac-stat-label">Active Rooms</div>
+          </div>
+          <div class="ac-stat">
+            <div class="ac-stat-value" style="color:#17a2b8;" id="statUsedRooms">—</div>
+            <div class="ac-stat-label">In Use (Term ${ROOM_TERM})</div>
+          </div>
+          <div class="ac-stat">
+            <div class="ac-stat-value" style="color:#d97706;" id="statRoomCapacity">—</div>
+            <div class="ac-stat-label">Total Capacity</div>
+          </div>
+        </div>
+
+        <div class="ac-card">
+          <div class="ac-toolbar">
+            <a href="#rooms" onclick="event.preventDefault();history.replaceState(null,'','#rooms');" class="ac-btn outline small" data-room-term="1" style="padding:6px 14px;">📅 Term 1</a>
+            <a href="#rooms" onclick="event.preventDefault();history.replaceState(null,'','#rooms');" class="ac-btn outline small" data-room-term="2" style="padding:6px 14px;">📅 Term 2</a>
+            <a href="#rooms" onclick="event.preventDefault();history.replaceState(null,'','#rooms');" class="ac-btn outline small" data-room-term="3" style="padding:6px 14px;">📅 Term 3</a>
+            <input type="search" class="ac-search" id="roomSearch" placeholder="🔍 Search room code, name, or building…">
+            <select class="ac-select" id="roomTypeFilter">
+              <option value="">All Types</option>
+              ${Object.entries(ROOM_TYPE_LABELS).map(([k, v]) =>
+                `<option value="${esc(k)}">${ROOM_TYPE_ICONS[k]} ${esc(v)}</option>`
+              ).join("")}
+            </select>
+            <select class="ac-select" id="roomStatusFilter">
+              <option value="">All Status</option>
+              <option value="active">✅ Active</option>
+              <option value="inactive">⛔ Inactive</option>
+            </select>
+            ${isAdminViewer ? `
+              <button class="ac-btn success" id="btnNewRoom" style="margin-left:auto;">➕ Add Room</button>
+            ` : ""}
+          </div>
+
+          <div id="roomsResults">
+            <div class="ac-loading">
+              <div class="ac-spinner"></div>
+              <div>Loading rooms…</div>
+            </div>
+          </div>
+        </div>
+      `;
+
+      // Wire term tabs
+      document.querySelectorAll("[data-room-term]").forEach(btn => {
+        btn.addEventListener("click", () => {
+          ROOM_TERM = parseInt(btn.dataset.roomTerm, 10);
+          document.querySelectorAll("[data-room-term]").forEach(b => {
+            b.classList.toggle("primary", parseInt(b.dataset.roomTerm, 10) === ROOM_TERM);
+          });
+          loadRoomsData().then(() => renderRoomsList());
+        });
+      });
+
+      // Set initial active term
+      document.querySelectorAll("[data-room-term]").forEach(b => {
+        if (parseInt(b.dataset.roomTerm, 10) === ROOM_TERM) b.classList.add("primary");
+      });
+
+      $("roomSearch").addEventListener("input", (e) => {
+        ROOM_SEARCH = e.target.value.toLowerCase().trim();
+        renderRoomsList();
+      });
+      $("roomTypeFilter").addEventListener("change", (e) => {
+        ROOM_FILTER_TYPE = e.target.value;
+        renderRoomsList();
+      });
+      $("roomStatusFilter").addEventListener("change", (e) => {
+        ROOM_FILTER_STATUS = e.target.value;
+        renderRoomsList();
+      });
+      if (isAdminViewer) {
+        $("btnNewRoom")?.addEventListener("click", () => openRoomModal(null));
+      }
+
+      await loadRoomsData();
+      renderRoomsList();
+    }
+
+    async function loadRoomsData() {
+      // 1. Load rooms
+      try {
+        const snap = await getDocs(collection(db, "rooms"));
+        ROOMS = snap.docs.map(d => ({ id: d.id, ...d.data() }))
+          .sort((a, b) => (a.code || "").localeCompare(b.code || ""));
+      } catch (e) {
+        console.warn("[rooms] load failed:", e);
+        ROOMS = [];
+      }
+
+      // 2. Compute usage from program entries
+      ROOM_USAGE = {};
+      for (const cls of CLASSES) {
+        try {
+          const snap = await getDocs(collection(db, "classes", cls.id, "program"));
+          snap.docs.forEach(d => {
+            const e = d.data();
+            if (Number(e.term) !== ROOM_TERM) return;
+            const room = String(e.room || "").trim();
+            if (!room) return;
+            if (!ROOM_USAGE[room]) {
+              ROOM_USAGE[room] = { classIds: new Set(), teachers: new Set(), count: 0, subjects: new Set() };
+            }
+            const u = ROOM_USAGE[room];
+            u.classIds.add(cls.id);
+            u.count++;
+            if (e.teacherName) u.teachers.add(e.teacherName);
+            if (e.subject) u.subjects.add(e.subject);
+          });
+        } catch (e) {
+          // Skip
+        }
+      }
+
+      renderRoomStats();
+    }
+
+    function renderRoomStats() {
+      const active = ROOMS.filter(r => r.active !== false).length;
+      const inUse = Object.keys(ROOM_USAGE).length;
+      const capacity = ROOMS.reduce((sum, r) => sum + (Number(r.capacity) || 0), 0);
+
+      $("statTotalRooms").textContent = ROOMS.length || "—";
+      $("statActiveRooms").textContent = active || "—";
+      $("statUsedRooms").textContent = inUse || "—";
+      $("statRoomCapacity").textContent = capacity || "—";
+    }
+
+    function renderRoomsList() {
+      const host = $("roomsResults");
+      if (!host) return;
+
+      let list = ROOMS.slice();
+      if (ROOM_SEARCH) {
+        list = list.filter(r =>
+          (r.code || "").toLowerCase().includes(ROOM_SEARCH) ||
+          (r.name || "").toLowerCase().includes(ROOM_SEARCH) ||
+          (r.building || "").toLowerCase().includes(ROOM_SEARCH)
+        );
+      }
+      if (ROOM_FILTER_TYPE) list = list.filter(r => r.type === ROOM_FILTER_TYPE);
+      if (ROOM_FILTER_STATUS === "active") list = list.filter(r => r.active !== false);
+      if (ROOM_FILTER_STATUS === "inactive") list = list.filter(r => r.active === false);
+
+      if (!list.length) {
+        host.innerHTML = `
+          <div class="ac-empty">
+            <div style="font-size:2.5rem;margin-bottom:8px;">📭</div>
+            <p>No rooms found. ${ROOMS.length ? "Try a different filter." : "Click ➕ Add Room to start."}</p>
+          </div>
+        `;
+        return;
+      }
+
+      const isAdminViewer = CURRENT_PROFILE?.isSuperAdmin
+        || CURRENT_PROFILE?.primaryRole === "admin";
+
+      // Grid of cards
+      host.innerHTML = `
+        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px;">
+          ${list.map(r => renderRoomCard(r, isAdminViewer)).join("")}
+        </div>
+      `;
+
+      // Wire actions
+      host.querySelectorAll("[data-room-edit]").forEach(b => {
+        b.addEventListener("click", () => {
+          const room = ROOMS.find(x => x.id === b.dataset.roomEdit);
+          if (room) openRoomModal(room);
+        });
+      });
+      host.querySelectorAll("[data-room-toggle]").forEach(b => {
+        b.addEventListener("click", () => toggleRoomActive(b.dataset.roomToggle));
+      });
+      host.querySelectorAll("[data-room-delete]").forEach(b => {
+        b.addEventListener("click", () => deleteRoom(b.dataset.roomDelete));
+      });
+    }
+
+    function renderRoomCard(room, isAdminViewer) {
+      const icon = ROOM_TYPE_ICONS[room.type] || "🏫";
+      const typeLabel = ROOM_TYPE_LABELS[room.type] || room.type;
+      const usage = ROOM_USAGE[room.code] || { classIds: new Set(), count: 0, teachers: new Set() };
+      const inUse = usage.classIds.size > 0;
+      const isActive = room.active !== false;
+
+      return `
+        <div style="background:#fff;border:1px solid #e5e7eb;border-radius:12px;padding:16px;position:relative;${!isActive ? "opacity:0.55;" : ""}">
+          <div style="position:absolute;top:12px;right:12px;display:flex;gap:4px;">
+            ${isAdminViewer ? `
+              <button class="ac-btn outline small" data-room-edit="${esc(room.id)}" title="Edit">✏️</button>
+              <button class="ac-btn ${isActive ? "warning" : "success"} small" data-room-toggle="${esc(room.id)}" title="${isActive ? "Deactivate" : "Activate"}">
+                ${isActive ? "⏸" : "▶"}
+              </button>
+              <button class="ac-btn danger small" data-room-delete="${esc(room.id)}" title="Delete">✕</button>
+            ` : ""}
+          </div>
+          <div style="font-size:2rem;margin-bottom:6px;">${icon}</div>
+          <div style="font-weight:800;font-size:1.05rem;color:#0f2b4f;">${esc(room.code)}</div>
+          <div style="font-size:12px;color:#6b7280;margin-top:2px;">${esc(room.name || "")}</div>
+          ${room.building || room.floor ? `
+            <div style="font-size:11px;color:#9ca3af;margin-top:6px;">
+              📍 ${esc([room.building, room.floor].filter(Boolean).join(", "))}
+            </div>` : ""}
+          <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:10px;">
+            <span class="ac-badge info">👥 ${room.capacity || 0}</span>
+            <span class="ac-badge" style="background:#e0e7ff;color:#3730a3;">${esc(typeLabel)}</span>
+            ${room.hasProjector ? `<span class="ac-badge success">📽️</span>` : ""}
+            ${room.hasAircon ? `<span class="ac-badge info">❄️</span>` : ""}
+          </div>
+          <div style="margin-top:10px;display:flex;gap:6px;flex-wrap:wrap;">
+            <span class="ac-badge ${isActive ? "success" : "danger"}">${isActive ? "✓ Active" : "⛔ Inactive"}</span>
+            ${inUse ? `<span class="ac-badge warning">📅 ${usage.count} uses</span>` : `<span class="ac-badge" style="background:#f3f4f6;color:#9ca3af;">Unused</span>`}
+          </div>
+          ${inUse ? `
+            <div style="margin-top:10px;font-size:11px;color:#6b7280;">
+              <strong>Classes:</strong> ${[...usage.classIds].length}<br>
+              ${usage.teachers.size ? `<strong>Teachers:</strong> ${[...usage.teachers].slice(0,3).join(", ")}${usage.teachers.size > 3 ? "…" : ""}` : ""}
+            </div>` : ""}
+        </div>
+      `;
+    }
+
+    function openRoomModal(existing) {
+      const isNew = !existing;
+
+      const modal = document.createElement("div");
+      modal.className = "modal show";
+      modal.style.cssText = "position:fixed;inset:0;background:rgba(0,0,0,0.5);display:flex;align-items:center;justify-content:center;z-index:9999;padding:20px;";
+      modal.innerHTML = `
+        <div style="background:#fff;border-radius:12px;max-width:620px;width:100%;max-height:90vh;overflow-y:auto;box-shadow:0 24px 48px rgba(0,0,0,.2);">
+          <div style="padding:18px 22px;border-bottom:1px solid #e5e7eb;display:flex;justify-content:space-between;align-items:center;">
+            <h3 style="margin:0;font-size:1.05rem;color:#0f2b4f;">
+              ${isNew ? "➕ Add New Room" : "✏️ Edit Room: " + esc(existing.code)}
+            </h3>
+            <button class="ac-btn outline small" data-close-room>✕</button>
+          </div>
+          <div style="padding:20px 22px;">
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px;">
+              <div>
+                <label style="display:block;font-size:11px;font-weight:700;color:#374151;text-transform:uppercase;margin-bottom:6px;">Room Code *</label>
+                <input id="room-code" type="text" value="${esc(existing?.code || "")}" placeholder="e.g., RM-101"
+                       style="width:100%;padding:9px 12px;border:1px solid #d1d5db;border-radius:6px;font-size:14px;font-family:inherit;text-transform:uppercase;" />
+              </div>
+              <div>
+                <label style="display:block;font-size:11px;font-weight:700;color:#374151;text-transform:uppercase;margin-bottom:6px;">Room Name *</label>
+                <input id="room-name" type="text" value="${esc(existing?.name || "")}" placeholder="e.g., Science Lab 1"
+                       style="width:100%;padding:9px 12px;border:1px solid #d1d5db;border-radius:6px;font-size:14px;font-family:inherit;" />
+              </div>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px;">
+              <div>
+                <label style="display:block;font-size:11px;font-weight:700;color:#374151;text-transform:uppercase;margin-bottom:6px;">Building</label>
+                <input id="room-building" type="text" value="${esc(existing?.building || "")}" placeholder="e.g., Main Building"
+                       style="width:100%;padding:9px 12px;border:1px solid #d1d5db;border-radius:6px;font-size:14px;font-family:inherit;" />
+              </div>
+              <div>
+                <label style="display:block;font-size:11px;font-weight:700;color:#374151;text-transform:uppercase;margin-bottom:6px;">Floor</label>
+                <input id="room-floor" type="text" value="${esc(existing?.floor || "")}" placeholder="e.g., 2nd Floor"
+                       style="width:100%;padding:9px 12px;border:1px solid #d1d5db;border-radius:6px;font-size:14px;font-family:inherit;" />
+              </div>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px;">
+              <div>
+                <label style="display:block;font-size:11px;font-weight:700;color:#374151;text-transform:uppercase;margin-bottom:6px;">Capacity</label>
+                <input id="room-capacity" type="number" value="${existing?.capacity || 40}" min="1" max="500"
+                       style="width:100%;padding:9px 12px;border:1px solid #d1d5db;border-radius:6px;font-size:14px;font-family:inherit;" />
+              </div>
+              <div>
+                <label style="display:block;font-size:11px;font-weight:700;color:#374151;text-transform:uppercase;margin-bottom:6px;">Room Type</label>
+                <select id="room-type"
+                        style="width:100%;padding:9px 12px;border:1px solid #d1d5db;border-radius:6px;font-size:14px;font-family:inherit;">
+                  ${Object.entries(ROOM_TYPE_LABELS).map(([k, v]) =>
+                    `<option value="${esc(k)}" ${existing?.type === k ? "selected" : ""}>${ROOM_TYPE_ICONS[k]} ${esc(v)}</option>`
+                  ).join("")}
+                </select>
+              </div>
+            </div>
+            <div style="margin-bottom:14px;display:flex;gap:20px;">
+              <label style="display:inline-flex;align-items:center;gap:6px;font-size:13px;color:#374151;cursor:pointer;">
+                <input id="room-projector" type="checkbox" ${existing?.hasProjector ? "checked" : ""} />
+                📽️ Has Projector
+              </label>
+              <label style="display:inline-flex;align-items:center;gap:6px;font-size:13px;color:#374151;cursor:pointer;">
+                <input id="room-aircon" type="checkbox" ${existing?.hasAircon ? "checked" : ""} />
+                ❄️ Has Aircon
+              </label>
+            </div>
+            <div style="margin-bottom:14px;">
+              <label style="display:block;font-size:11px;font-weight:700;color:#374151;text-transform:uppercase;margin-bottom:6px;">Notes</label>
+              <textarea id="room-notes" rows="2"
+                        style="width:100%;padding:9px 12px;border:1px solid #d1d5db;border-radius:6px;font-size:14px;font-family:inherit;resize:vertical;"
+                        placeholder="Optional">${esc(existing?.notes || "")}</textarea>
+            </div>
+            <label style="display:inline-flex;align-items:center;gap:6px;font-size:13px;color:#374151;cursor:pointer;">
+              <input id="room-active" type="checkbox" ${existing?.active !== false ? "checked" : ""} />
+              Active
+            </label>
+          </div>
+          <div style="padding:14px 22px;border-top:1px solid #e5e7eb;display:flex;justify-content:flex-end;gap:10px;background:#fafbfc;">
+            <button class="ac-btn outline" data-close-room>Cancel</button>
+            <button class="ac-btn success" id="btnSaveRoom">💾 Save</button>
+          </div>
+        </div>
+      `;
+
+      document.body.appendChild(modal);
+
+      modal.querySelectorAll("[data-close-room]").forEach(b => {
+        b.addEventListener("click", () => modal.remove());
+      });
+      modal.addEventListener("click", e => { if (e.target === modal) modal.remove(); });
+
+      $("btnSaveRoom").addEventListener("click", () => saveRoom(existing, modal));
+    }
+
+    async function saveRoom(existing, modal) {
+      const isNew = !existing;
+      const code = $("room-code").value.trim().toUpperCase();
+      const name = $("room-name").value.trim();
+      const building = $("room-building").value.trim();
+      const floor = $("room-floor").value.trim();
+      const capacity = parseInt($("room-capacity").value, 10) || 0;
+      const type = $("room-type").value;
+      const hasProjector = $("room-projector").checked;
+      const hasAircon = $("room-aircon").checked;
+      const notes = $("room-notes").value.trim();
+      const active = $("room-active").checked;
+
+      if (!code || !name) {
+        toast("⚠️ Room code and name are required", "error");
+        return;
+      }
+
+      // Check duplicate code
+      const dup = ROOMS.find(r => r.code === code && r.id !== existing?.id);
+      if (dup) {
+        toast(`⚠️ Room code "${code}" already exists`, "error");
+        return;
+      }
+
+      const btn = $("btnSaveRoom");
+      btn.disabled = true;
+      btn.textContent = "Saving…";
+
+      try {
+        const data = {
+          code, name, building, floor, capacity, type,
+          hasProjector, hasAircon, notes, active,
+          updatedAt: serverTimestamp(),
+          updatedBy: CURRENT_USER?.email || "",
+        };
+
+        if (isNew) {
+          data.createdAt = serverTimestamp();
+          data.createdBy = CURRENT_USER?.email || "";
+          await addDoc(collection(db, "rooms"), data);
+          toast("✓ Room added", "success");
+        } else {
+          await updateDoc(doc(db, "rooms", existing.id), data);
+          toast("✓ Room updated", "success");
+        }
+
+        modal.remove();
+        await loadRoomsData();
+        renderRoomsList();
+      } catch (e) {
+        console.error(e);
+        toast("⚠️ " + (e.message || "Save failed"), "error");
+        btn.disabled = false;
+        btn.textContent = "💾 Save";
+      }
+    }
+
+    async function toggleRoomActive(roomId) {
+      const room = ROOMS.find(r => r.id === roomId);
+      if (!room) return;
+      const newActive = room.active === false;
+      try {
+        await updateDoc(doc(db, "rooms", roomId), {
+          active: newActive,
+          updatedAt: serverTimestamp(),
+        });
+        toast(newActive ? "✓ Room activated" : "✓ Room deactivated", "success");
+        await loadRoomsData();
+        renderRoomsList();
+      } catch (e) {
+        toast("⚠️ " + (e.message || "Failed"), "error");
+      }
+    }
+
+    async function deleteRoom(roomId) {
+      const room = ROOMS.find(r => r.id === roomId);
+      if (!room) return;
+
+      // Check usage across all terms
+      let inUse = 0;
+      for (const cls of CLASSES) {
+        try {
+          const snap = await getDocs(collection(db, "classes", cls.id, "program"));
+          const matches = snap.docs.filter(d => String(d.data().room || "").trim() === room.code);
+          inUse += matches.length;
+        } catch {}
+      }
+
+      if (inUse > 0) {
+        if (!confirm(`⚠️ Room "${room.code}" is used in ${inUse} program entries.\n\nDeactivate instead? Click OK to deactivate.`)) return;
+        await toggleRoomActive(roomId);
+        return;
+      }
+
+      if (!confirm(`Delete room "${room.code} — ${room.name}"? This cannot be undone.`)) return;
+
+      try {
+        await deleteDoc(doc(db, "rooms", roomId));
+        toast("✓ Room deleted", "success");
+        await loadRoomsData();
+        renderRoomsList();
+      } catch (e) {
+        toast("⚠️ " + (e.message || "Delete failed"), "error");
+      }
+    }
+
 
         // ============================================================
     // TAB: CONFLICTS
