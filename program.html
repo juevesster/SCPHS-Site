@@ -747,41 +747,72 @@
       toastTimer = setTimeout(() => t.className = "toast", 3000);
     }
 
-    // AUTH
-    CURRENT_USER = user;
-CURRENT_PROFILE = await getCurrentUserProfile();
+        // AUTH
+    onAuthStateChanged(auth, async (user) => {
+      if (!user) {
+        location.replace("login.html?next=" + encodeURIComponent(location.pathname + location.search));
+        return;
+      }
+      CURRENT_USER = user;
+      CURRENT_PROFILE = await getCurrentUserProfile();
 
-// ============================================================
-// Preload ILAW config + logos so the print dialog never misses them.
-// Mirrors ILAW's approach — by the time the user clicks Print,
-// the DepEd logo and school logos are already cached in the browser.
-// ============================================================
-try {
-  const cfg = (window.ILAWConfig && window.ILAWConfig.load)
-    ? await window.ILAWConfig.load()
-    : null;
+      // ============================================================
+      // Preload logos (NON-BLOCKING — fire and forget)
+      // ============================================================
+      (function preloadLogos() {
+        try {
+          if (!window.ILAWConfig || !window.ILAWConfig.load) return;
+          window.ILAWConfig.load().then(cfg => {
+            if (!cfg) return;
+            [cfg.depedLogo, cfg.schoolLogo, cfg.rightLogo]
+              .filter(Boolean)
+              .forEach(url => { new Image().src = url; });
+          }).catch(e => console.warn("[program] preload skipped:", e));
+        } catch (e) {
+          console.warn("[program] preload error:", e);
+        }
+      })();
 
-  if (cfg) {
-    const preload = (url) => {
-      if (!url) return Promise.resolve();
-      return new Promise(res => {
-        const img = new Image();
-        img.onload = () => res();
-        img.onerror = () => res();
-        img.src = url;
-        if (img.complete) return res();
-        setTimeout(res, 3000);
-      });
-    };
-    await Promise.all([
-      preload(cfg.depedLogo),
-      preload(cfg.schoolLogo),
-      preload(cfg.rightLogo),
-    ]);
-  }
-} catch (e) {
-  console.warn("[program] logo preload skipped:", e);
-}
+      if (!CLASS_ID) {
+        $("loading").innerHTML = '<div style="color:#b91c1c;">Missing class ID in URL.</div>';
+        return;
+      }
+
+      try {
+        CLASS_INFO = await window.SF1.getClass(CLASS_ID);
+      } catch (e) {
+        $("loading").innerHTML = '<div style="color:#b91c1c;">Failed to load class.</div>';
+        return;
+      }
+
+      if (!CLASS_INFO) {
+        $("loading").innerHTML = '<div style="color:#b91c1c;">Class not found.</div>';
+        return;
+      }
+
+      const isAdmin = CURRENT_PROFILE?.primaryRole === "admin" || CURRENT_PROFILE?.isSuperAdmin;
+      const isAdviser = CLASS_INFO.adviserUid === CURRENT_USER.uid;
+      const canManageRoster = CURRENT_PROFILE?.permissions?.canManageRoster === true;
+      CAN_EDIT = isAdmin || isAdviser || (canManageRoster && CLASS_INFO.teacherUids.includes(CURRENT_USER.uid));
+
+      if (isAdmin) document.body.classList.add("is-admin");
+
+      try { TIME_SLOTS = await ensureTimeSlotsExist(); }
+      catch { TIME_SLOTS = await loadTimeSlots() || []; }
+
+      await loadUsers();
+
+      populateTimeSlotDropdown();
+      populateSubjectDropdown();
+      populateSpecializationDropdown();
+      populateUserDropdown();
+      loadRoomOptions();
+
+      renderHeader();
+      attachHandlers();
+
+      await loadAndRender();
+    });
 
 if (!CLASS_ID) {
         $("loading").innerHTML = '<div style="color:#b91c1c;">Missing class ID in URL.</div>';
@@ -1719,24 +1750,6 @@ function doPrint() {
   setTimeout(() => window.print(), 300);
 }
 
-// ============================================================
-// PRINT TRIGGER
-// ============================================================
-function printProgram() {
-  const root = $("printRoot");
-  if (!root) { toast("⚠️ Print container missing", "error"); return; }
-
-  if (!PROGRAM.length) {
-    if (!confirm(`Term ${SELECTED_TERM} is empty. Print an empty class program anyway?`)) return;
-  }
-
-  root.innerHTML = buildProgramPrintHTML();
-
-  // Small delay lets images load before the dialog opens
-  setTimeout(() => {
-    window.print();
-  }, 250);
-}
   </script>
 
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
