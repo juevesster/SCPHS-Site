@@ -400,44 +400,106 @@
   }
 
   function parseCellContent(cell) {
-    if (!cell || !cell.trim()) return null;
-    let s = String(cell).replace(/\s+/g, " ").trim();
-    if (/^(FLAG|HEALTH BREAK|LUNCH|RECESS|CLASSROOM|ZONE|CLEANING)/i.test(s)) return null;
+  if (!cell || !cell.trim()) return null;
+  let s = String(cell).replace(/\s+/g, " ").trim();
+  if (/^(FLAG|HEALTH BREAK|LUNCH|RECESS|CLASSROOM|ZONE|CLEANING)/i.test(s)) return null;
 
-    let subject = "", teacher = "";
-    if (s.includes("\n")) {
-      const parts = s.split("\n").map(x => x.trim()).filter(Boolean);
-      subject = parts[0] || "";
-      teacher = parts.slice(1).join(" ");
-    } else {
-      const parts = s.split(/\s{2,}/).map(x => x.trim()).filter(Boolean);
-      if (parts.length >= 2) {
-        subject = parts[0];
-        teacher = parts.slice(1).join(" ");
-      } else {
-        subject = s;
+  let subject = "", teacher = "";
+
+  // Method 1: newline-split (ideal — from proper <br>)
+  if (s.includes("\n")) {
+    const parts = s.split("\n").map(x => x.trim()).filter(Boolean);
+    subject = parts[0] || "";
+    teacher = parts.slice(1).join(" ");
+  } else {
+    // Method 2: split on "Subject TeacherName" pattern
+    // Subjects typically end when a capitalized name with a period follows
+    // e.g., "Filipino Airish J. Manuel" → ["Filipino", "Airish J. Manuel"]
+
+    // Known subject names (add more as needed)
+    const KNOWN_SUBJECTS = [
+      "Homeroom Guidance Program", "Araling Panlipunan",
+      "Mathematics", "English", "Filipino", "Science",
+      "ESP", "Edukasyon sa Pagpapakatao", "MAPEH", "TLE", "AP",
+      "ARAL Program", "ARAL", "SPORTS", "Scouts", "Scouting",
+      "Journalism", "Journalism/DFOT", "DFOT",
+      "Collaborative Expertise Session",
+      "Reading", "Writing", "Values Education",
+      "Makabayan", "Music", "Arts", "Physical Education", "Health",
+      "Sports Facilitators", "Sports"
+    ];
+
+    // Try matching a known subject at the start
+    let matched = false;
+    for (const subj of KNOWN_SUBJECTS) {
+      const re = new RegExp("^" + escapeRx(subj) + "\\s+(.+)$", "i");
+      const m = s.match(re);
+      if (m) {
+        subject = subj;
+        teacher = m[1].trim();
+        matched = true;
+        break;
       }
     }
 
-    subject = subject.replace(/^[●○•\-\*]\s*/, "").trim();
-    teacher = teacher.replace(/^(Teacher|Tchr)[:\s]+/i, "").trim();
-
-    let spec = "";
-    const specMatch = subject.match(/(Cookery|Dressmaking|Electronics|Carpentry|ICT|Automotive|Welding|Plumbing|Masonry|AFA|FCS|IA)/i);
-    if (specMatch) spec = specMatch[1];
-
-    return { subject, teacher, specialization: spec };
+    // Fallback: split before first capital-name pattern (X. Yyyyy)
+    if (!matched) {
+      const nameRx = /\s+([A-Z][a-z]+(?:\s+[A-Z]\.?)?\s+[A-Z][a-z]+)\s*$/;
+      const m = s.match(nameRx);
+      if (m) {
+        subject = s.slice(0, m.index).trim();
+        teacher = m[1].trim();
+      } else {
+        // Last resort: 2+ spaces split
+        const parts = s.split(/\s{2,}/).map(x => x.trim()).filter(Boolean);
+        if (parts.length >= 2) {
+          subject = parts[0];
+          teacher = parts.slice(1).join(" ");
+        } else {
+          subject = s;
+        }
+      }
+    }
   }
+
+  subject = subject.replace(/^[●○•\-\*]\s*/, "").trim();
+  teacher = teacher.replace(/^(Teacher|Tchr)[:\s]+/i, "").trim();
+
+  let spec = "";
+  const specMatch = subject.match(/(Cookery|Dressmaking|Electronics|Carpentry|ICT|Automotive|Welding|Plumbing|Masonry|AFA|FCS|IA)/i);
+  if (specMatch) spec = specMatch[1];
+
+  return { subject, teacher, specialization: spec };
+}
+
+function escapeRx(s) {
+  return String(s).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
 
   function to24h(h, m, context) {
-    const lower = context.toLowerCase();
-    const isPm = /\bpm\b/.test(lower);
-    const isAm = /\bam\b/.test(lower);
-    let hours = h;
-    if (isPm && hours < 12) hours += 12;
-    if (!isAm && !isPm && hours >= 1 && hours <= 7) hours += 12;
-    return `${String(hours).padStart(2, "0")}:${String(m).padStart(2, "0")}`;
+  const lower = context.toLowerCase();
+
+  // If context explicitly says AM or PM, honor it
+  const isPm = /\bpm\b/.test(lower);
+  const isAm = /\bam\b/.test(lower);
+
+  let hours = h;
+
+  if (isPm && hours < 12) {
+    hours += 12;
+  } else if (!isAm && !isPm) {
+    // No marker — use a simple rule:
+    // 7:00-7:59 → 7 (morning — Flag Ceremony, Period 1)
+    // 8:00-11:59 → AM (morning periods)
+    // 12:00 → noon (12)
+    // 1:00-6:59 → PM (afternoon periods, add 12)
+    if (hours >= 1 && hours <= 6) hours += 12;  // PM
+    // hours 7-11 stay as AM
+    // hours 12 stays as 12 (noon)
   }
+
+  return `${String(hours).padStart(2, "0")}:${String(m).padStart(2, "0")}`;
+}
 
   function guessSlotLabel(start, end) {
     if (start === "07:20" && end === "07:45") return "Flag Ceremony";
