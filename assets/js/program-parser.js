@@ -1,15 +1,13 @@
 // ============================================================
-// program-parser.js
-// Universal class program parser
-// Supports: Paste (Excel/Word/PDF text), .xlsx, .csv, .txt, .docx, .pdf
-// Detects: days, time slots, subjects, teachers, TLE specializations
+// program-parser.js — v2
+// Now supports: Word .docx TABLE extraction (in addition to Excel/PDF/text)
 // ============================================================
 
 (function () {
   "use strict";
 
   // ------------------------------------------------------------
-  // LIBRARY LOADERS (lazy — only load what's needed)
+  // LIBRARY LOADERS
   // ------------------------------------------------------------
   async function ensureSheetJS() {
     if (window.XLSX) return;
@@ -41,73 +39,129 @@
   }
 
   // ------------------------------------------------------------
-  // MAIN ENTRY — parse a file or text
+  // MAIN ENTRY
   // ------------------------------------------------------------
   async function parse(source, opts = {}) {
-    let lines = [];
+    // Case 1: Excel or Word table with structured rows
+    if (source instanceof File) {
+      const name = (source.name || "").toLowerCase();
 
+      if (name.endsWith(".xlsx") || name.endsWith(".xls")) {
+        const rows = await extractExcelRows(source);
+        return parseRows(rows, opts);
+      }
+
+      if (name.endsWith(".docx")) {
+        const rows = await extractWordTableRows(source);
+        if (rows && rows.length) return parseRows(rows, opts);
+        // fallback to plain text if no tables found
+        const text = await extractWordText(source);
+        return parseText(text, opts);
+      }
+
+      if (name.endsWith(".pdf")) {
+        const lines = await extractPdfLines(source);
+        return parseLines(lines, opts);
+      }
+
+      if (name.endsWith(".csv") || name.endsWith(".txt")) {
+        const text = await source.text();
+        return parseText(text, opts);
+      }
+
+      throw new Error("Unsupported file type: " + name);
+    }
+
+    // Case 2: String (paste)
     if (typeof source === "string") {
-      // Pasted text
-      lines = source.split(/\r?\n/).map(cleanLine).filter(Boolean);
-    } else if (source instanceof File) {
-      lines = await extractFromFile(source);
-    } else {
-      throw new Error("Unknown source type");
+      return parseText(source, opts);
     }
 
-    return parseLines(lines, opts);
+    throw new Error("Unknown source type");
   }
 
   // ------------------------------------------------------------
-  // EXTRACT LINES FROM FILE
+  // EXCEL → rows of arrays
   // ------------------------------------------------------------
-  async function extractFromFile(file) {
-    const name = (file.name || "").toLowerCase();
-
-    if (name.endsWith(".xlsx") || name.endsWith(".xls")) {
-      return await extractExcel(file);
-    }
-    if (name.endsWith(".docx")) {
-      return await extractWord(file);
-    }
-    if (name.endsWith(".pdf")) {
-      return await extractPdf(file);
-    }
-    if (name.endsWith(".csv") || name.endsWith(".txt")) {
-      const text = await file.text();
-      return text.split(/\r?\n/).map(cleanLine).filter(Boolean);
-    }
-
-    throw new Error("Unsupported file type: " + name);
-  }
-
-  async function extractExcel(file) {
+  async function extractExcelRows(file) {
     await ensureSheetJS();
     const buf = await file.arrayBuffer();
     const wb = window.XLSX.read(buf, { type: "array" });
-    const lines = [];
+    const allRows = [];
 
     wb.SheetNames.forEach(sheetName => {
       const sheet = wb.Sheets[sheetName];
       const rows = window.XLSX.utils.sheet_to_json(sheet, { header: 1, blankrows: false });
       rows.forEach(row => {
         const cleaned = row.map(c => c == null ? "" : String(c).trim());
-        const joined = cleaned.join("\t");
-        if (joined.trim()) lines.push(joined);
+        if (cleaned.some(c => c)) allRows.push(cleaned);
       });
     });
 
-    return lines.map(cleanLine).filter(Boolean);
+    return allRows;
   }
 
-  async function extractWord(file) {
+  // ------------------------------------------------------------
+  // WORD → rows of arrays (via HTML table extraction)
+  // ------------------------------------------------------------
+  async function extractWordTableRows(file) {
+    await ensureMammoth();
+    const buf = await file.arrayBuffer();
+    const result = await window.mammoth.convertToHtml({ arrayBuffer: buf });
+    const html = result.value || "";
+
+    // Find the biggest table
+    const tables = html.match(/<table[\s\S]*?<\/table>/gi) || [];
+    if (!tables.length) return null;
+
+    let biggest = "", maxCells = 0;
+    for (const t of tables) {
+      const cellCount = (t.match(/<td|<th/gi) || []).length;
+      if (cellCount > maxCells) { maxCells = cellCount; biggest = t; }
+    }
+
+    // Parse the biggest table into rows/cells
+    const rows = [];
+    const trMatches = biggest.match(/<tr[\s\S]*?<\/tr>/gi) || [];
+    for (const tr of trMatches) {
+      const cells = [];
+      const cellMatches = tr.match(/<t[dh][\s\S]*?<\/t[dh]>/gi) || [];
+      for (const cell of cellMatches) {
+        // Strip inner tags but preserve <br> as line breaks
+        let content = cell
+          .replace(/<\/t[dh]>/i, "")
+          .replace(/<t[dh][^>]*>/i, "")
+          .replace(/<br\s*\/?>/gi, "\n")
+          .replace(/<[^>]+>/g, " ")
+          .replace(/&nbsp;/g, " ")
+          .replace(/&amp;/g, "&")
+          .replace(/&lt;/g, "<")
+          .replace(/&gt;/g, ">")
+          .replace(/\s*\n\s*/g, "\n")
+          .replace(/[ \t]+/g, " ")
+          .trim();
+        cells.push(content);
+      }
+      if (cells.length) rows.push(cells);
+    }
+
+    return rows;
+  }
+
+  // ------------------------------------------------------------
+  // WORD → plain text (fallback)
+  // ------------------------------------------------------------
+  async function extractWordText(file) {
     await ensureMammoth();
     const buf = await file.arrayBuffer();
     const result = await window.mammoth.extractRawText({ arrayBuffer: buf });
-    return result.value.split(/\r?\n/).map(cleanLine).filter(Boolean);
+    return result.value || "";
   }
 
-  async function extractPdf(file) {
+  // ------------------------------------------------------------
+  // PDF → lines
+  // ------------------------------------------------------------
+  async function extractPdfLines(file) {
     await ensurePdfJs();
     const buf = await file.arrayBuffer();
     const pdf = await window.pdfjsLib.getDocument({ data: buf }).promise;
@@ -116,9 +170,7 @@
     for (let i = 1; i <= pdf.numPages; i++) {
       const page = await pdf.getPage(i);
       const content = await page.getTextContent();
-
-      let lastY = null;
-      let line = "";
+      let lastY = null, line = "";
       for (const item of content.items) {
         const y = Math.round(item.transform[5]);
         if (lastY !== null && Math.abs(y - lastY) > 3) {
@@ -135,134 +187,99 @@
   }
 
   function cleanLine(line) {
-    return String(line || "")
-      .replace(/\u00A0/g, " ")
-      .replace(/[\u2018\u2019]/g, "'")
-      .replace(/[\u201C\u201D]/g, '"')
-      .replace(/\s+/g, " ")
-      .trim();
+    return String(line || "").replace(/\u00A0/g, " ").replace(/\s+/g, " ").trim();
   }
 
-  // ------------------------------------------------------------
-  // CORE PARSER
-  // ------------------------------------------------------------
-  function parseLines(lines, opts = {}) {
+  // ============================================================
+  // PARSER — TABLE ROWS
+  // ============================================================
+  function parseRows(rows, opts = {}) {
     const result = {
       classLabel: null,
       schoolYear: null,
       adviser: null,
       timeSlots: [],
       entries: [],
-      unmatchedTeachers: new Set(),
       warnings: [],
-      stats: {
-        linesRead: lines.length,
-        daysFound: 0,
-        slotsFound: 0,
-        entriesFound: 0,
-      },
+      stats: { linesRead: rows.length, daysFound: 0, slotsFound: 0, entriesFound: 0 },
     };
 
-    // ---- 1. Look for class metadata ----
-    for (const line of lines) {
-      const classMatch = line.match(/Grade\s+(\d+)\s*[-–]?\s*([A-Z][A-Za-z\s]+)/i);
-      if (classMatch && !result.classLabel) {
-        result.classLabel = `Grade ${classMatch[1]} - ${classMatch[2].trim()}`;
-      }
-      const yearMatch = line.match(/School Year[:\s]+(\d{4}\s*[-–]\s*\d{4})/i);
-      if (yearMatch && !result.schoolYear) {
-        result.schoolYear = yearMatch[1].replace(/\s+/g, "");
-      }
-      const adviserMatch = line.match(/Class Adviser[:\s]+([A-Z][A-Za-z.\s]+?)(?:\s+Position|$)/i);
-      if (adviserMatch && !result.adviser) {
-        result.adviser = adviserMatch[1].trim();
-      }
-    }
+    // ---- 1. Find the day header row ----
+    const DAY_NAMES = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"];
+    const DAY_RE = [/\bMONDAY\b|\bMON\b/i, /\bTUESDAY\b|\bTUE\b/i, /\bWEDNESDAY\b|\bWED\b/i, /\bTHURSDAY\b|\bTHU\b/i, /\bFRIDAY\b|\bFRI\b/i];
 
-    // ---- 2. Find days header row ----
-    const dayMap = {};
-    let dayRowIndex = -1;
-    const dayPatterns = [
-      { key: "Monday", re: /\bMONDAY\b|\bMON\b|\bLUNES\b/i },
-      { key: "Tuesday", re: /\bTUESDAY\b|\bTUE\b|\bMARTES\b/i },
-      { key: "Wednesday", re: /\bWEDNESDAY\b|\bWED\b|\bMIYERKULES\b/i },
-      { key: "Thursday", re: /\bTHURSDAY\b|\bTHU\b|\bHUWEBES\b/i },
-      { key: "Friday", re: /\bFRIDAY\b|\bFRI\b|\bBIYERNES\b/i },
-    ];
+    let headerRowIdx = -1;
+    let dayColumnMap = {}; // dayName → column index
 
-    for (let i = 0; i < lines.length; i++) {
-      const line = lines[i];
-      let dayCount = 0;
-      const found = {};
-      for (const { key, re } of dayPatterns) {
-        if (re.test(line)) {
-          dayCount++;
-          found[key] = true;
+    for (let r = 0; r < rows.length; r++) {
+      const row = rows[r];
+      let found = 0;
+      const map = {};
+      for (let c = 0; c < row.length; c++) {
+        for (let d = 0; d < DAY_RE.length; d++) {
+          if (DAY_RE[d].test(row[c])) {
+            found++;
+            map[DAY_NAMES[d]] = c;
+          }
         }
       }
-      if (dayCount >= 3) {
-        dayRowIndex = i;
-        Object.assign(dayMap, found);
+      if (found >= 3) {
+        headerRowIdx = r;
+        dayColumnMap = map;
         break;
       }
     }
 
-    if (dayRowIndex === -1) {
-      result.warnings.push("Could not find a header row with days (Monday-Friday).");
+    if (headerRowIdx === -1) {
+      result.warnings.push("Could not find a header row with days.");
       return result;
     }
 
-    // ---- 3. Parse rows after day header ----
-    // Detect time pattern (7:45 AM, 7:45-8:45, etc.)
-    const timeRx = /(\d{1,2}):(\d{2})\s*(?:AM|PM)?\s*[-–—]\s*(\d{1,2}):(\d{2})\s*(?:AM|PM)?/i;
-    const timeRx2 = /^(\d{1,2}):(\d{2})\s*(?:AM|PM)?$/i;
+    result.stats.daysFound = Object.keys(dayColumnMap).length;
 
+    // ---- 2. Time column = column 0 (or the one before the first day column) ----
+    const firstDayCol = Math.min(...Object.values(dayColumnMap));
+    const timeCol = Math.max(0, firstDayCol - 1);
+
+    // ---- 3. Parse data rows ----
+    const timeRx = /(\d{1,2}):(\d{2})\s*(?:AM|PM)?\s*[-–—]\s*(\d{1,2}):(\d{2})\s*(?:AM|PM)?/i;
     const slotsSeen = new Map();
 
-    for (let i = dayRowIndex + 1; i < lines.length; i++) {
-      const line = lines[i];
+    for (let r = headerRowIdx + 1; r < rows.length; r++) {
+      const row = rows[r];
+      if (!row || !row.length) continue;
 
-      // Skip metadata lines
-      if (/^(prepared|reviewed|approved|school\s+year|class\s+adviser|grade\s+level)/i.test(line)) {
-        continue;
-      }
-      if (/^(SATURNINO|ONOFRE|ROMMEL)/.test(line)) continue;
-
-      // Try to find time range
-      const timeMatch = line.match(timeRx);
+      const timeCell = row[timeCol] || row[0] || "";
+      const timeMatch = timeCell.match(timeRx);
       if (!timeMatch) continue;
 
-      // Extract start/end times as 24h
-      const start = to24h(parseInt(timeMatch[1], 10), parseInt(timeMatch[2], 10), line, "start");
-      const end = to24h(parseInt(timeMatch[3], 10), parseInt(timeMatch[4], 10), line, "end");
-
+      const start = to24h(parseInt(timeMatch[1], 10), parseInt(timeMatch[2], 10), timeCell);
+      const end = to24h(parseInt(timeMatch[3], 10), parseInt(timeMatch[4], 10), timeCell);
       const slotKey = `${start}-${end}`;
+
       if (!slotsSeen.has(slotKey)) {
         slotsSeen.set(slotKey, {
-          start: start,
-          end: end,
+          start, end,
           label: guessSlotLabel(start, end),
         });
       }
 
-      // Split the rest of the line into 5 day-cells
-      const rest = line.replace(timeRx, "").trim();
-      const cells = rest.split(/\t|\s{3,}|\s*\|\s*/).filter(c => c.trim());
+      // ---- For each day, extract cell content ----
+      for (const [day, col] of Object.entries(dayColumnMap)) {
+        let cell = row[col] || "";
+        if (!cell || !cell.trim()) continue;
 
-      // If we only got 1 cell (pasted text), try to split by <br>-like patterns
-      const dayCells = cells.length >= 3 ? cells : [rest];
+        // Detect row-spanning filler (FLAG CEREMONY, LUNCH, etc.)
+        const upper = cell.toUpperCase().trim();
+        if (/^(FLAG|HEALTH BREAK|LUNCH BREAK|RECESS|CLASSROOM|ZONE|CLEANING)/i.test(upper)) {
+          continue;
+        }
 
-      // For each day, if we have a cell, try to extract subject + teacher
-      const dayKeys = Object.keys(dayMap).filter(k => dayMap[k]);
-      for (let d = 0; d < dayKeys.length; d++) {
-        const cell = dayCells[d] || "";
-        if (!cell.trim()) continue;
-
-        const parsed = parseCell(cell);
+        const parsed = parseCellContent(cell);
         if (!parsed) continue;
 
         result.entries.push({
-          day: dayKeys[d],
+          day,
           slotStart: start,
           slotEnd: end,
           subject: parsed.subject,
@@ -272,101 +289,160 @@
       }
     }
 
-    // ---- 4. Compile stats ----
+    // ---- Compile ----
     result.timeSlots = Array.from(slotsSeen.values()).sort((a, b) => a.start.localeCompare(b.start));
-    result.stats.daysFound = Object.keys(dayMap).filter(k => dayMap[k]).length;
     result.stats.slotsFound = result.timeSlots.length;
     result.stats.entriesFound = result.entries.length;
 
     return result;
   }
 
-  // ------------------------------------------------------------
-  // PARSE A CELL — extract subject + teacher
-  // ------------------------------------------------------------
-  function parseCell(cell) {
-    const cleaned = cell.trim();
-    if (!cleaned) return null;
+  // ============================================================
+  // PARSER — TEXT LINES (fallback for pasted text / PDFs)
+  // ============================================================
+  function parseText(text, opts = {}) {
+    const lines = String(text).split(/\r?\n/).map(cleanLine).filter(Boolean);
+    return parseLines(lines, opts);
+  }
 
-    // Skip common filler
-    if (/^(flag|health\s*break|lunch|recess|classroom|zone|cleaning|aral)/i.test(cleaned)) {
-      return null;
+  function parseLines(lines, opts = {}) {
+    const result = {
+      classLabel: null, schoolYear: null, adviser: null,
+      timeSlots: [], entries: [], warnings: [],
+      stats: { linesRead: lines.length, daysFound: 0, slotsFound: 0, entriesFound: 0 },
+    };
+
+    // Find day header row
+    const DAY_NAMES = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"];
+    const DAY_RE = [/\bMONDAY\b|\bMON\b/i, /\bTUESDAY\b|\bTUE\b/i, /\bWEDNESDAY\b|\bWED\b/i, /\bTHURSDAY\b|\bTHU\b/i, /\bFRIDAY\b|\bFRI\b/i];
+
+    let dayRowIndex = -1, dayMap = {};
+    for (let i = 0; i < lines.length; i++) {
+      let count = 0;
+      const map = {};
+      for (let d = 0; d < DAY_RE.length; d++) {
+        if (DAY_RE[d].test(lines[i])) { count++; map[DAY_NAMES[d]] = true; }
+      }
+      if (count >= 3) { dayRowIndex = i; dayMap = map; break; }
     }
 
-    // Split on common separators
-    // Format 1: "SUBJECT<br>Teacher Name"
-    // Format 2: "SUBJECT\nTeacher Name"
-    // Format 3: "SUBJECT Teacher Name"
-    let subject = "";
-    let teacher = "";
-    let spec = "";
+    if (dayRowIndex === -1) {
+      result.warnings.push("Could not find a header row with days.");
+      return result;
+    }
 
-    // Try splitting by newline OR double-space (from Excel)
-    const parts = cleaned.split(/\n|\s{2,}/).map(p => p.trim()).filter(Boolean);
+    result.stats.daysFound = Object.keys(dayMap).length;
+    const timeRx = /(\d{1,2}):(\d{2})\s*(?:AM|PM)?\s*[-–—]\s*(\d{1,2}):(\d{2})\s*(?:AM|PM)?/i;
+    const slotsSeen = new Map();
 
-    if (parts.length >= 2) {
-      subject = parts[0];
-      teacher = parts.slice(1).join(" ");
-    } else {
-      // Fallback: try to detect subject code vs name
-      const match = cleaned.match(/^([A-Z][A-Z0-9-]{1,15}|[A-Z][a-z]+(?:\s+[A-Z][a-z]+)?)\s+(.+)$/);
-      if (match) {
-        subject = match[1];
-        teacher = match[2];
-      } else {
-        subject = cleaned;
+    for (let i = dayRowIndex + 1; i < lines.length; i++) {
+      const line = lines[i];
+      const timeMatch = line.match(timeRx);
+      if (!timeMatch) continue;
+
+      const start = to24h(parseInt(timeMatch[1], 10), parseInt(timeMatch[2], 10), line);
+      const end = to24h(parseInt(timeMatch[3], 10), parseInt(timeMatch[4], 10), line);
+      const slotKey = `${start}-${end}`;
+
+      if (!slotsSeen.has(slotKey)) {
+        slotsSeen.set(slotKey, { start, end, label: guessSlotLabel(start, end) });
+      }
+
+      // Split rest of line into cells
+      const rest = line.replace(timeRx, "").trim();
+      const cells = rest.split(/\t|\s{3,}/).filter(c => c.trim());
+      if (!cells.length) continue;
+
+      const days = Object.keys(dayMap).filter(k => dayMap[k]);
+      for (let d = 0; d < days.length; d++) {
+        const cell = cells[d] || "";
+        if (!cell.trim()) continue;
+
+        const parsed = parseCellContent(cell);
+        if (!parsed) continue;
+
+        result.entries.push({
+          day: days[d],
+          slotStart: start,
+          slotEnd: end,
+          subject: parsed.subject,
+          teacher: parsed.teacher,
+          specialization: parsed.specialization,
+        });
       }
     }
 
-    // Detect TLE specialization from subject
-    if (/(TLE|COOKERY|DRESSMAKING|ELECTRONICS|CARPENTRY|ICT|AUTOMOTIVE|WELDING|PLUMBING|MASONRY)/i.test(subject)) {
-      const specMatch = subject.match(/(Cookery|Dressmaking|Electronics|Carpentry|ICT|Automotive|Welding|Plumbing|Masonry|AFA|FCS|IA)/i);
-      if (specMatch) spec = specMatch[1];
+    result.timeSlots = Array.from(slotsSeen.values()).sort((a, b) => a.start.localeCompare(b.start));
+    result.stats.slotsFound = result.timeSlots.length;
+    result.stats.entriesFound = result.entries.length;
+    return result;
+  }
+
+  // ------------------------------------------------------------
+  // PARSE ONE CELL — extract subject, teacher, spec
+  // ------------------------------------------------------------
+  function parseCellContent(cell) {
+    if (!cell || !cell.trim()) return null;
+    let s = String(cell).replace(/\s+/g, " ").trim();
+
+    // Skip obvious non-subject cells
+    if (/^(FLAG|HEALTH BREAK|LUNCH|RECESS|CLASSROOM|ZONE|CLEANING)/i.test(s)) return null;
+
+    // Cell may contain: "HGP\nJoela P. Lunag" or "HGP Joela P. Lunag"
+    let subject = "";
+    let teacher = "";
+
+    // Newlines were preserved by our extractor
+    if (s.includes("\n")) {
+      const parts = s.split("\n").map(x => x.trim()).filter(Boolean);
+      subject = parts[0] || "";
+      teacher = parts.slice(1).join(" ");
+    } else {
+      // Try splitting on last two capitalized words (heuristic)
+      const parts = s.split(/\s{2,}/).map(x => x.trim()).filter(Boolean);
+      if (parts.length >= 2) {
+        subject = parts[0];
+        teacher = parts.slice(1).join(" ");
+      } else {
+        subject = s;
+      }
     }
 
-    // Detect multiple teachers (TLE rotation)
-    if (teacher && /\//.test(teacher)) {
-      // Store as-is for now; the import step can split if needed
-    }
+    // Clean subject
+    subject = subject.replace(/^[●○•\-\*]\s*/, "").trim();
+    teacher = teacher.replace(/^(Teacher|Tchr)[:\s]+/i, "").trim();
 
-    return { subject: subject.trim(), teacher: teacher.trim(), specialization: spec };
+    // Detect specialization for TLE
+    let spec = "";
+    const specMatch = subject.match(/(Cookery|Dressmaking|Electronics|Carpentry|ICT|Automotive|Welding|Plumbing|Masonry|AFA|FCS|IA)/i);
+    if (specMatch) spec = specMatch[1];
+
+    return { subject, teacher, specialization: spec };
   }
 
   // ------------------------------------------------------------
   // HELPERS
   // ------------------------------------------------------------
-  function to24h(h, m, context, position) {
-    let hours = h;
+  function to24h(h, m, context) {
     const lower = context.toLowerCase();
-    const isPm = /pm/.test(lower);
-
-    // If hour is 1-7 and there's a PM marker → assume PM
+    const isPm = /\bpm\b/.test(lower);
+    const isAm = /\bam\b/.test(lower);
+    let hours = h;
     if (isPm && hours < 12) hours += 12;
-    // If hour is 1-7 and no marker → assume PM for afternoon slots
-    if (!/am/.test(lower) && !isPm && hours >= 1 && hours <= 7) {
-      // ambiguous — leave as-is for now, will refine
-    }
-
+    if (!isAm && !isPm && hours >= 1 && hours <= 7) hours += 12; // assume afternoon
     return `${String(hours).padStart(2, "0")}:${String(m).padStart(2, "0")}`;
   }
 
   function guessSlotLabel(start, end) {
-    // Simple label guesser based on time
-    const [sh] = start.split(":").map(Number);
-    if (sh === 7 && start === "07:20") return "Flag Ceremony";
+    if (start === "07:20" && end === "07:45") return "Flag Ceremony";
     if (start === "09:45" && end === "10:00") return "Health Break";
     if (start === "12:00" && end === "13:00") return "Lunch Break";
-    if (start === "16:00") return "Aral Program";
+    if (start === "16:00" && end === "17:00") return "Aral Program";
     return `${start} - ${end}`;
   }
 
   // ------------------------------------------------------------
   // PUBLIC API
   // ------------------------------------------------------------
-  window.ProgramParser = {
-    parse,
-    extractFromFile,
-    parseLines,
-  };
-
+  window.ProgramParser = { parse, parseRows, parseText, parseLines };
 })();
