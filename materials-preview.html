@@ -1,0 +1,759 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Teaching Materials Pack — Preview</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background: #f0f2f5;
+    margin: 0;
+    color: #1f2937;
+  }
+
+  /* ============ HEADER ============ */
+  .tm-header {
+    background: linear-gradient(135deg, #1e3c72 0%, #2a5298 50%, #4f46e5 100%);
+    color: #fff;
+    padding: 28px 0 22px;
+    box-shadow: 0 4px 20px rgba(30, 60, 114, 0.25);
+    position: relative;
+    overflow: hidden;
+  }
+  .tm-header::before {
+    content: "";
+    position: absolute;
+    top: -50%; right: -10%;
+    width: 400px; height: 400px;
+    background: radial-gradient(circle, rgba(255,255,255,.15) 0%, transparent 70%);
+    border-radius: 50%;
+  }
+  .tm-header-inner {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 0 24px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 20px;
+    flex-wrap: wrap;
+    position: relative;
+    z-index: 1;
+  }
+  .tm-header h1 {
+    margin: 0 0 6px;
+    font-size: 1.6rem;
+    font-weight: 800;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    letter-spacing: -.01em;
+  }
+  .tm-header .sub {
+    margin: 0;
+    opacity: 0.9;
+    font-size: 0.9rem;
+    display: flex;
+    gap: 14px;
+    flex-wrap: wrap;
+  }
+  .tm-header .sub span {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+  }
+  .tm-header-actions {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+  .tm-btn {
+    padding: 11px 20px;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 13.5px;
+    font-weight: 700;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    transition: all .18s;
+    text-decoration: none;
+  }
+  .tm-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 18px rgba(0,0,0,.15); }
+  .tm-btn.ghost {
+    background: rgba(255,255,255,.15);
+    color: #fff;
+    border: 1px solid rgba(255,255,255,.3);
+  }
+  .tm-btn.ghost:hover { background: rgba(255,255,255,.25); }
+  .tm-btn.primary {
+    background: linear-gradient(135deg, #10b981, #059669);
+    color: #fff;
+    box-shadow: 0 4px 14px rgba(16,185,129,.4);
+  }
+
+  /* ============ CONTAINER ============ */
+  .tm-container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 28px 24px 60px;
+  }
+
+  /* ============ PROGRESS / SUMMARY BAR ============ */
+  .tm-progress-bar {
+    background: #fff;
+    border-radius: 16px;
+    padding: 18px 24px;
+    margin-bottom: 24px;
+    box-shadow: 0 1px 3px rgba(0,0,0,.06);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    flex-wrap: wrap;
+  }
+  .tm-progress-info { display: flex; gap: 28px; flex-wrap: wrap; }
+  .tm-progress-item { display: flex; align-items: center; gap: 10px; }
+  .tm-progress-dot {
+    width: 34px; height: 34px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    background: #ecfdf5;
+    color: #059669;
+    font-weight: 800;
+    flex-shrink: 0;
+  }
+  .tm-progress-dot.pending { background: #f3f4f6; color: #9ca3af; }
+  .tm-progress-label { font-size: 12px; color: #6b7280; text-transform: uppercase; letter-spacing: .04em; font-weight: 700; }
+  .tm-progress-value { font-size: 14px; color: #0f2b4f; font-weight: 700; }
+
+  /* ============ GRID ============ */
+  .tm-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+    gap: 22px;
+  }
+
+  /* ============ CARD ============ */
+  .tm-card {
+    background: #fff;
+    border-radius: 18px;
+    overflow: hidden;
+    box-shadow: 0 1px 3px rgba(0,0,0,.06);
+    transition: all .25s;
+    display: flex;
+    flex-direction: column;
+    border: 1px solid #e5e7eb;
+  }
+  .tm-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 14px 40px rgba(0,0,0,.1);
+    border-color: transparent;
+  }
+
+  /* Card header — the "wow" gradient */
+  .tm-card-head {
+    padding: 18px 22px;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    position: relative;
+    overflow: hidden;
+  }
+  .tm-card-head::after {
+    content: "";
+    position: absolute;
+    top: -60%; right: -20%;
+    width: 220px; height: 220px;
+    background: radial-gradient(circle, rgba(255,255,255,.2) 0%, transparent 70%);
+    border-radius: 50%;
+    pointer-events: none;
+  }
+  .tm-card-head .ico {
+    font-size: 1.6rem;
+    filter: drop-shadow(0 2px 4px rgba(0,0,0,.2));
+  }
+  .tm-card-head .title-block { flex: 1; position: relative; z-index: 1; }
+  .tm-card-head .title {
+    font-size: 1.05rem;
+    font-weight: 800;
+    letter-spacing: -.01em;
+    margin: 0;
+  }
+  .tm-card-head .subtitle {
+    font-size: 11.5px;
+    opacity: 0.9;
+    margin-top: 3px;
+  }
+  .tm-card-head .status-badge {
+    background: rgba(255,255,255,.22);
+    color: #fff;
+    font-size: 10px;
+    font-weight: 800;
+    padding: 4px 10px;
+    border-radius: 999px;
+    text-transform: uppercase;
+    letter-spacing: .06em;
+    position: relative;
+    z-index: 1;
+    border: 1px solid rgba(255,255,255,.3);
+  }
+
+  /* Gradient variations */
+  .tm-card.lecture .tm-card-head    { background: linear-gradient(135deg, #1e40af, #3b82f6); }
+  .tm-card.activities .tm-card-head { background: linear-gradient(135deg, #059669, #10b981); }
+  .tm-card.slides .tm-card-head     { background: linear-gradient(135deg, #6d28d9, #a855f7); }
+  .tm-card.quiz .tm-card-head       { background: linear-gradient(135deg, #c2410c, #f59e0b); }
+
+  .tm-card-body {
+    padding: 20px 22px 22px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  /* ============ SECTION LABEL ============ */
+  .tm-section-label {
+    font-size: 10.5px;
+    text-transform: uppercase;
+    letter-spacing: .06em;
+    color: #6b7280;
+    font-weight: 800;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .tm-section-label::after {
+    content: "";
+    flex: 1;
+    height: 1px;
+    background: #e5e7eb;
+  }
+
+  /* ============ CONTENT PREVIEW ============ */
+  .tm-content-preview {
+    background: #f9fafb;
+    border: 1px solid #f3f4f6;
+    border-radius: 10px;
+    padding: 14px 16px;
+    font-size: 13px;
+    line-height: 1.6;
+    color: #374151;
+    max-height: 220px;
+    overflow-y: auto;
+    position: relative;
+  }
+  .tm-content-preview::after {
+    content: "";
+    position: sticky;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 40px;
+    background: linear-gradient(to bottom, transparent, #f9fafb);
+    pointer-events: none;
+    display: block;
+    margin-bottom: -14px;
+  }
+  .tm-content-preview p { margin: 0 0 8px; }
+  .tm-content-preview p:last-child { margin-bottom: 0; }
+  .tm-content-preview ul {
+    margin: 6px 0 6px 18px;
+    padding: 0;
+  }
+  .tm-content-preview li { margin-bottom: 4px; }
+  .tm-content-preview strong { color: #0f2b4f; }
+
+  /* ============ QUIZ PREVIEW ============ */
+  .tm-quiz-item {
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    padding: 10px 12px;
+    margin-bottom: 8px;
+    font-size: 12.5px;
+  }
+  .tm-quiz-item .q-num {
+    display: inline-block;
+    background: #fef3c7;
+    color: #92400e;
+    font-size: 10px;
+    font-weight: 800;
+    padding: 2px 8px;
+    border-radius: 999px;
+    margin-right: 6px;
+  }
+  .tm-quiz-item .q-text { font-weight: 700; color: #0f2b4f; }
+  .tm-quiz-item .q-options {
+    margin: 6px 0 0 0;
+    font-size: 12px;
+    color: #4b5563;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 4px 12px;
+  }
+  .tm-quiz-item .q-options span::before {
+    content: "○ ";
+    color: #9ca3af;
+  }
+  .tm-quiz-item .q-answer {
+    margin-top: 6px;
+    font-size: 11px;
+    color: #059669;
+    font-weight: 700;
+  }
+
+  /* ============ RESOURCE LINKS ============ */
+  .tm-resources { display: flex; flex-direction: column; gap: 8px; }
+  .tm-resource {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 11px 14px;
+    border-radius: 10px;
+    background: linear-gradient(90deg, #f9fafb 0%, #ffffff 100%);
+    border: 1px solid #f3f4f6;
+    text-decoration: none;
+    color: inherit;
+    transition: all .15s;
+    cursor: pointer;
+  }
+  .tm-resource:hover {
+    background: #eff6ff;
+    border-color: #bfdbfe;
+    transform: translateX(3px);
+  }
+  .tm-resource .r-icon {
+    width: 38px; height: 38px;
+    border-radius: 9px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    background: #fff;
+    box-shadow: 0 1px 3px rgba(0,0,0,.05);
+    flex-shrink: 0;
+  }
+  .tm-resource .r-body { flex: 1; min-width: 0; }
+  .tm-resource .r-name {
+    font-size: 13px;
+    font-weight: 700;
+    color: #0f2b4f;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .tm-resource .r-tag {
+    font-size: 9.5px;
+    font-weight: 800;
+    padding: 1px 6px;
+    border-radius: 4px;
+    text-transform: uppercase;
+    letter-spacing: .04em;
+  }
+  .tm-resource .r-tag.ph { background: #fef3c7; color: #92400e; }
+  .tm-resource .r-tag.oer { background: #dbeafe; color: #1e40af; }
+  .tm-resource .r-tag.sim { background: #f0fdf4; color: #166534; }
+  .tm-resource .r-desc {
+    font-size: 11.5px;
+    color: #6b7280;
+    margin-top: 2px;
+  }
+  .tm-resource .r-arrow {
+    color: #9ca3af;
+    font-size: 18px;
+    flex-shrink: 0;
+  }
+
+  /* ============ ACTION BAR ============ */
+  .tm-card-actions {
+    display: flex;
+    gap: 8px;
+    padding-top: 4px;
+    margin-top: auto;
+    border-top: 1px solid #f3f4f6;
+    padding-top: 14px;
+  }
+  .tm-action {
+    flex: 1;
+    padding: 9px 12px;
+    border-radius: 8px;
+    border: 1px solid #e5e7eb;
+    background: #fff;
+    font-family: inherit;
+    font-size: 12px;
+    font-weight: 700;
+    color: #374151;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    transition: all .15s;
+  }
+  .tm-action:hover {
+    background: #f9fafb;
+    border-color: #d1d5db;
+    color: #0f2b4f;
+  }
+  .tm-action.primary {
+    background: #0f2b4f;
+    color: #fff;
+    border-color: #0f2b4f;
+  }
+  .tm-action.primary:hover {
+    background: #1e3c72;
+    color: #fff;
+  }
+
+  /* ============ FOOTER ============ */
+  .tm-footer-bar {
+    margin-top: 32px;
+    background: #fff;
+    border-radius: 16px;
+    padding: 22px 26px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+    box-shadow: 0 1px 3px rgba(0,0,0,.06);
+    border: 1px solid #e5e7eb;
+  }
+  .tm-footer-bar .info {
+    font-size: 13.5px;
+    color: #4b5563;
+    line-height: 1.5;
+  }
+  .tm-footer-bar .info strong { color: #0f2b4f; }
+  .tm-footer-bar .actions { display: flex; gap: 10px; flex-wrap: wrap; }
+
+  @media (max-width: 640px) {
+    .tm-grid { grid-template-columns: 1fr; }
+    .tm-header-inner { flex-direction: column; align-items: flex-start; }
+    .tm-progress-info { gap: 16px; }
+    .tm-progress-item { gap: 6px; }
+    .tm-progress-dot { width: 28px; height: 28px; font-size: 13px; }
+  }
+</style>
+</head>
+<body>
+
+  <!-- ============ HEADER ============ -->
+  <header class="tm-header">
+    <div class="tm-header-inner">
+      <div>
+        <h1>📚 Teaching Materials Pack</h1>
+        <p class="sub">
+          <span>🎓 Grade 9 — RUBY</span>
+          <span>📘 TLE 9</span>
+          <span>📅 Term 1 · Week 3</span>
+          <span>👤 Norberta B. Jomocan</span>
+        </p>
+      </div>
+      <div class="tm-header-actions">
+        <a href="#" class="tm-btn ghost">← Back to Lesson Plan</a>
+        <button class="tm-btn primary">✨ Generate All Materials</button>
+      </div>
+    </div>
+  </header>
+
+  <div class="tm-container">
+
+    <!-- ============ PROGRESS BAR ============ -->
+    <div class="tm-progress-bar">
+      <div class="tm-progress-info">
+        <div class="tm-progress-item">
+          <div class="tm-progress-dot">✓</div>
+          <div>
+            <div class="tm-progress-label">Lecture</div>
+            <div class="tm-progress-value">Ready</div>
+          </div>
+        </div>
+        <div class="tm-progress-item">
+          <div class="tm-progress-dot">✓</div>
+          <div>
+            <div class="tm-progress-label">Activities</div>
+            <div class="tm-progress-value">Ready</div>
+          </div>
+        </div>
+        <div class="tm-progress-item">
+          <div class="tm-progress-dot pending">…</div>
+          <div>
+            <div class="tm-progress-label">Slides</div>
+            <div class="tm-progress-value">Pending</div>
+          </div>
+        </div>
+        <div class="tm-progress-item">
+          <div class="tm-progress-dot">✓</div>
+          <div>
+            <div class="tm-progress-label">Quiz</div>
+            <div class="tm-progress-value">Ready</div>
+          </div>
+        </div>
+      </div>
+      <button class="tm-btn ghost" style="background:#eff6ff;color:#1e40af;border-color:#bfdbfe;">📥 Export Full Pack</button>
+    </div>
+
+    <!-- ============ GRID ============ -->
+    <div class="tm-grid">
+
+      <!-- ========== LECTURE NOTES ========== -->
+      <div class="tm-card lecture">
+        <div class="tm-card-head">
+          <span class="ico">📖</span>
+          <div class="title-block">
+            <h3 class="title">Lecture Notes</h3>
+            <div class="subtitle">Scripted discussion & talking points</div>
+          </div>
+          <span class="status-badge">Ready</span>
+        </div>
+        <div class="tm-card-body">
+          <div>
+            <div class="tm-section-label">📝 Generated Draft</div>
+            <div class="tm-content-preview">
+              <p><strong>Opening Hook (2 min):</strong> Ask students: <em>"Have you ever wondered how a simple wire becomes the heart of a working electronic circuit?"</em></p>
+              <p><strong>Core Content (8 min):</strong></p>
+              <ul>
+                <li>Define <strong>electronic components</strong> and their functions</li>
+                <li>Differentiate <strong>active</strong> vs <strong>passive</strong> components</li>
+                <li>Identify common components: resistor, capacitor, diode, transistor</li>
+                <li>Explain how they work together in a basic circuit</li>
+              </ul>
+              <p><strong>Closing (2 min):</strong> Summarize key terms. Preview next lesson: "Reading Schematic Diagrams."</p>
+            </div>
+          </div>
+
+          <div>
+            <div class="tm-section-label">🔗 Recommended Resources</div>
+            <div class="tm-resources">
+              <a class="tm-resource" href="#" onclick="return false;">
+                <div class="r-icon">📚</div>
+                <div class="r-body">
+                  <div class="r-name">STARBOOKS <span class="r-tag ph">PH</span></div>
+                  <div class="r-desc">Science & tech articles on electronics basics</div>
+                </div>
+                <span class="r-arrow">→</span>
+              </a>
+              <a class="tm-resource" href="#" onclick="return false;">
+                <div class="r-icon">📘</div>
+                <div class="r-body">
+                  <div class="r-name">DepEd LRMDS <span class="r-tag ph">PH</span></div>
+                  <div class="r-desc">MATATAG Lesson Exemplar — TLE 9 Quarter 1</div>
+                </div>
+                <span class="r-arrow">→</span>
+              </a>
+            </div>
+          </div>
+
+          <div class="tm-card-actions">
+            <button class="tm-action">✏️ Edit</button>
+            <button class="tm-action">🔄 Regenerate</button>
+            <button class="tm-action primary">📥 Export</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ========== ACTIVITIES ========== -->
+      <div class="tm-card activities">
+        <div class="tm-card-head">
+          <span class="ico">🎯</span>
+          <div class="title-block">
+            <h3 class="title">Activities & Simulations</h3>
+            <div class="subtitle">Group work, hands-on, virtual labs</div>
+          </div>
+          <span class="status-badge">Ready</span>
+        </div>
+        <div class="tm-card-body">
+          <div>
+            <div class="tm-section-label">🧪 Suggested Activities</div>
+            <div class="tm-content-preview">
+              <p><strong>Activity 1 — Component Detective (15 min)</strong></p>
+              <ul>
+                <li>Groups of 4 receive a bag of mixed components</li>
+                <li>Identify each by sight and write its name & function</li>
+                <li>Present findings to the class</li>
+              </ul>
+              <p><strong>Activity 2 — Build-a-Circuit Challenge (20 min)</strong></p>
+              <ul>
+                <li>Given a simple schematic, students assemble a working LED circuit</li>
+                <li>Measure voltage with a multimeter</li>
+              </ul>
+            </div>
+          </div>
+
+          <div>
+            <div class="tm-section-label">🌐 Interactive Simulations</div>
+            <div class="tm-resources">
+              <a class="tm-resource" href="#" onclick="return false;">
+                <div class="r-icon">⚡</div>
+                <div class="r-body">
+                  <div class="r-name">PhET Circuit Simulator <span class="r-tag sim">SIM</span></div>
+                  <div class="r-desc">Interactive circuit building — free virtual lab</div>
+                </div>
+                <span class="r-arrow">→</span>
+              </a>
+              <a class="tm-resource" href="#" onclick="return false;">
+                <div class="r-icon">🌍</div>
+                <div class="r-body">
+                  <div class="r-name">OER Commons — Electronics <span class="r-tag oer">OER</span></div>
+                  <div class="r-desc">Peer-reviewed hands-on activities library</div>
+                </div>
+                <span class="r-arrow">→</span>
+              </a>
+            </div>
+          </div>
+
+          <div class="tm-card-actions">
+            <button class="tm-action">✏️ Edit</button>
+            <button class="tm-action">🔄 Regenerate</button>
+            <button class="tm-action primary">📥 Export</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ========== SLIDES ========== -->
+      <div class="tm-card slides">
+        <div class="tm-card-head">
+          <span class="ico">📊</span>
+          <div class="title-block">
+            <h3 class="title">Presentation Slides</h3>
+            <div class="subtitle">Slide-by-slide outline</div>
+          </div>
+          <span class="status-badge">Pending</span>
+        </div>
+        <div class="tm-card-body">
+          <div>
+            <div class="tm-section-label">🎞️ Slide Outline</div>
+            <div class="tm-content-preview">
+              <p><strong>Slide 1:</strong> Title — "Introduction to Electronic Components"</p>
+              <p><strong>Slide 2:</strong> Learning Objectives</p>
+              <p><strong>Slide 3:</strong> What Are Electronic Components?</p>
+              <p><strong>Slide 4:</strong> Active vs Passive Components</p>
+              <p><strong>Slide 5:</strong> Common Components — Resistor, Capacitor, Diode, Transistor</p>
+              <p><strong>Slide 6:</strong> Putting It Together — A Basic Circuit</p>
+              <p style="color:#9ca3af;font-style:italic;">… 4 more slides generated on demand</p>
+            </div>
+          </div>
+
+          <div>
+            <div class="tm-section-label">🔗 Slide Templates</div>
+            <div class="tm-resources">
+              <a class="tm-resource" href="#" onclick="return false;">
+                <div class="r-icon">📊</div>
+                <div class="r-body">
+                  <div class="r-name">OpenStax Lecture Slides <span class="r-tag oer">OER</span></div>
+                  <div class="r-desc">Free PowerPoint decks — physics & electronics</div>
+                </div>
+                <span class="r-arrow">→</span>
+              </a>
+              <a class="tm-resource" href="#" onclick="return false;">
+                <div class="r-icon">🎨</div>
+                <div class="r-body">
+                  <div class="r-name">Slidesgo Templates <span class="r-tag oer">OER</span></div>
+                  <div class="r-desc">Free education slide templates</div>
+                </div>
+                <span class="r-arrow">→</span>
+              </a>
+            </div>
+          </div>
+
+          <div class="tm-card-actions">
+            <button class="tm-action">✨ Generate Slides</button>
+            <button class="tm-action primary">📥 Export PPTX</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ========== QUIZ ========== -->
+      <div class="tm-card quiz">
+        <div class="tm-card-head">
+          <span class="ico">❓</span>
+          <div class="title-block">
+            <h3 class="title">Quiz & Assessment</h3>
+            <div class="subtitle">Auto-generated from competencies</div>
+          </div>
+          <span class="status-badge">Ready</span>
+        </div>
+        <div class="tm-card-body">
+          <div>
+            <div class="tm-section-label">📋 Sample Questions (10 total)</div>
+
+            <div class="tm-quiz-item">
+              <span class="q-num">Q1</span>
+              <span class="q-text">Which of the following is an active electronic component?</span>
+              <div class="q-options">
+                <span>Resistor</span>
+                <span>Capacitor</span>
+                <span>Transistor</span>
+                <span>Inductor</span>
+              </div>
+              <div class="q-answer">✓ Answer: Transistor</div>
+            </div>
+
+            <div class="tm-quiz-item">
+              <span class="q-num">Q2</span>
+              <span class="q-text">What is the primary function of a resistor?</span>
+              <div class="q-options">
+                <span>Store energy</span>
+                <span>Limit current</span>
+                <span>Amplify signal</span>
+                <span>Convert AC to DC</span>
+              </div>
+              <div class="q-answer">✓ Answer: Limit current</div>
+            </div>
+
+            <p style="color:#9ca3af;font-style:italic;font-size:11.5px;margin:8px 0 0;">… 8 more questions generated on demand</p>
+          </div>
+
+          <div>
+            <div class="tm-section-label">🔗 Question Banks</div>
+            <div class="tm-resources">
+              <a class="tm-resource" href="#" onclick="return false;">
+                <div class="r-icon">🧠</div>
+                <div class="r-body">
+                  <div class="r-name">DepEd LRMDS Question Bank <span class="r-tag ph">PH</span></div>
+                  <div class="r-desc">MATATAG-aligned assessment items</div>
+                </div>
+                <span class="r-arrow">→</span>
+              </a>
+            </div>
+          </div>
+
+          <div class="tm-card-actions">
+            <button class="tm-action">✏️ Edit Quiz</button>
+            <button class="tm-action">➕ Add Question</button>
+            <button class="tm-action primary">📥 Export</button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ============ FOOTER BAR ============ -->
+    <div class="tm-footer-bar">
+      <div class="info">
+        <strong>📦 Full Teaching Pack</strong><br>
+        Lecture notes, activities, slides, and quiz — ready to download or print as one PDF.
+      </div>
+      <div class="actions">
+        <button class="tm-action">🖨 Print All</button>
+        <button class="tm-btn primary">📥 Download Complete Pack (PDF)</button>
+      </div>
+    </div>
+
+  </div>
+
+</body>
+</html>
