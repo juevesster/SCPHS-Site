@@ -178,6 +178,10 @@
     }
 
     @media print {
+  @page {
+    size: A4 landscape;
+    margin: 8mm 10mm 12mm 10mm;
+  }
   body { background: #fff; margin: 0; }
 
   /* Hide everything except the print output */
@@ -744,15 +748,42 @@
     }
 
     // AUTH
-    onAuthStateChanged(auth, async (user) => {
-      if (!user) {
-        location.replace("login.html?next=" + encodeURIComponent(location.pathname + location.search));
-        return;
-      }
-      CURRENT_USER = user;
-      CURRENT_PROFILE = await getCurrentUserProfile();
+    CURRENT_USER = user;
+CURRENT_PROFILE = await getCurrentUserProfile();
 
-      if (!CLASS_ID) {
+// ============================================================
+// Preload ILAW config + logos so the print dialog never misses them.
+// Mirrors ILAW's approach — by the time the user clicks Print,
+// the DepEd logo and school logos are already cached in the browser.
+// ============================================================
+try {
+  const cfg = (window.ILAWConfig && window.ILAWConfig.load)
+    ? await window.ILAWConfig.load()
+    : null;
+
+  if (cfg) {
+    const preload = (url) => {
+      if (!url) return Promise.resolve();
+      return new Promise(res => {
+        const img = new Image();
+        img.onload = () => res();
+        img.onerror = () => res();
+        img.src = url;
+        if (img.complete) return res();
+        setTimeout(res, 3000);
+      });
+    };
+    await Promise.all([
+      preload(cfg.depedLogo),
+      preload(cfg.schoolLogo),
+      preload(cfg.rightLogo),
+    ]);
+  }
+} catch (e) {
+  console.warn("[program] logo preload skipped:", e);
+}
+
+if (!CLASS_ID) {
         $("loading").innerHTML = '<div style="color:#b91c1c;">Missing class ID in URL.</div>';
         return;
       }
