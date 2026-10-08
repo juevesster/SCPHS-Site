@@ -1296,9 +1296,13 @@
             <div class="ac-stat-value" style="color:#dc2626;" id="statTeacherConflicts">—</div>
             <div class="ac-stat-label">👤 Teacher</div>
           </div>
-          <div class="ac-stat">
+                    <div class="ac-stat">
             <div class="ac-stat-value" style="color:#d97706;" id="statRoomConflicts">—</div>
             <div class="ac-stat-label">🚪 Room</div>
+          </div>
+          <div class="ac-stat">
+            <div class="ac-stat-value" style="color:#7c3aed;" id="statStackedConflicts">—</div>
+            <div class="ac-stat-label">📋 Stacked</div>
           </div>
           <div class="ac-stat">
             <div class="ac-stat-value" style="color:#6b7280;" id="statOtherConflicts">—</div>
@@ -1322,6 +1326,7 @@
               <option value="room">🚪 Room Clashes</option>
               <option value="orphan">📋 Orphaned TLE</option>
               <option value="dup-primary">📋 Duplicate Primary</option>
+              <option value="stacked">📋 Stacked Entries</option>
             </select>
             <select class="ac-select" id="conflictSeverityFilter">
               <option value="">All Severities</option>
@@ -1483,12 +1488,14 @@
         const roomConflicts = detectRoomClashes(scopedPrograms);
         const orphanConflicts = detectOrphanedSlots(scopedPrograms);
         const dupPrimaryConflicts = detectDuplicatePrimaries(scopedPrograms);
+        const stackedConflicts = detectStackedEntries(scopedPrograms);
 
         CONFLICTS = [
           ...teacherConflicts,
           ...roomConflicts,
           ...orphanConflicts,
           ...dupPrimaryConflicts,
+          ...stackedConflicts,
         ];
 
         CONFLICT_SCAN_DONE = true;
@@ -1700,10 +1707,12 @@
     }
 
     // ============================================================
-    // DETECTOR: Orphaned TLE slot (has "additional" but no "primary")
+    // DETECTOR: Stacked entries (2+ entries in same class + day + slot)
+    // Catches parser artifacts and accidental double-entries
     // ============================================================
-    function detectOrphanedSlots(allPrograms) {
+    function detectStackedEntries(allPrograms) {
       const conflicts = [];
+
       for (const prog of allPrograms) {
         const slotMap = {};
         for (const e of prog.entries) {
@@ -1714,47 +1723,53 @@
 
         for (const [k, entries] of Object.entries(slotMap)) {
           if (entries.length < 2) continue;
-          const hasPrimary = entries.some(e => (e.entryType || "primary") === "primary");
-          const hasAdditional = entries.some(e => e.entryType === "additional");
-          if (hasAdditional && !hasPrimary) {
-            const [day, timeSlotId] = k.split("|");
-            conflicts.push({
-              id: `orphan|${prog.classId}|${day}|${timeSlotId}|T${entries[0].term}`,
-              type: "orphan",
-              severity: "low",
-              title: `Orphaned TLE slot in ${prog.className}`,
-              description: `${entries.length} "additional" entries but no "primary" entry for this slot.`,
-              day,
-              timeSlotId,
-              term: entries[0].term,
-              hits: entries.map(e => ({
-                classId: prog.classId,
-                className: prog.className,
-                subject: e.subject || e.subjectName || "—",
-                specialization: e.specialization || "",
-                teacherName: e.teacherName || "",
-                entryId: e.id,
-                entryType: e.entryType,
-              })),
-            });
-          }
+
+          // Skip legitimate TLE rotation (all entries have distinct specs)
+          const specs = new Set(entries.map(e => e.specialization || "").filter(Boolean));
+          const nonEmptySpecs = entries.filter(e => e.specialization);
+          if (specs.size > 1 && nonEmptySpecs.length === entries.length) continue;
+
+          const [day, timeSlotId] = k.split("|");
+          conflicts.push({
+            id: `stacked|${prog.classId}|${day}|${timeSlotId}|T${entries[0].term}`,
+            type: "stacked",
+            severity: entries.length >= 3 ? "medium" : "low",
+            title: `${entries.length} entries stacked in ${prog.className}`,
+            description: `${entries.length} entries in the same slot (${day} ${timeSlotId}). May include duplicates from import.`,
+            day,
+            timeSlotId,
+            term: entries[0].term,
+            hits: entries.map(e => ({
+              classId: prog.classId,
+              className: prog.className,
+              gradeLevel: prog.gradeLevel,
+              subject: e.subject || e.subjectName || "—",
+              specialization: e.specialization || "",
+              teacherName: e.teacherName || "",
+              entryId: e.id,
+              entryType: e.entryType || "primary",
+            })),
+          });
         }
       }
       return conflicts;
     }
+    // ⬆️ END OF INSERT ⬆️
 
     // ============================================================
     // STATS
     // ============================================================
-    function renderConflictStats() {
+      function renderConflictStats() {
       const total = CONFLICTS.length;
       const teacher = CONFLICTS.filter(c => c.type === "teacher" || c.type === "teacher-dup").length;
       const room = CONFLICTS.filter(c => c.type === "room").length;
+      const stacked = CONFLICTS.filter(c => c.type === "stacked").length;
       const other = CONFLICTS.filter(c => c.type === "orphan" || c.type === "dup-primary").length;
 
       $("statTotalConflicts").textContent = total || "—";
       $("statTeacherConflicts").textContent = total ? teacher : "—";
       $("statRoomConflicts").textContent = total ? room : "—";
+      $("statStackedConflicts").textContent = total ? stacked : "—";
       $("statOtherConflicts").textContent = total ? other : "—";
     }
 
@@ -1796,12 +1811,13 @@
       }
 
       // Group by type
-      const typeLabels = {
+        const typeLabels = {
         "teacher": "👤 Teacher Clashes",
         "teacher-dup": "👤 Duplicate Teacher",
         "room": "🚪 Room Clashes",
         "orphan": "📋 Orphaned TLE Slots",
         "dup-primary": "📋 Duplicate Primary Entries",
+        "stacked": "📋 Stacked Entries",
       };
 
       const grouped = {};
