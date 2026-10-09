@@ -2335,17 +2335,31 @@ function wireShareButtons() {
     }
   });
 
-  // QR toggle — use event delegation to survive re-renders
+  // ============================================================
+// QR TOGGLE — event delegation (survives re-renders)
+// ============================================================
 document.addEventListener("click", (e) => {
   const btn = e.target.closest("#lmShowQr");
   if (!btn) return;
+  e.preventDefault();
+
   const wrap = document.getElementById("lmQrWrap");
-  if (!wrap) return;
-  const isHidden = wrap.style.display === "none" || !wrap.style.display;
+  if (!wrap) {
+    console.warn("[lm] QR wrap not found");
+    return;
+  }
+
+  const isHidden = !wrap.style.display || wrap.style.display === "none";
   wrap.style.display = isHidden ? "block" : "none";
   btn.textContent = isHidden ? "📱 Hide QR" : "📱 QR Code";
+
+  // Make sure the QR image src is set (in case it was cleared)
+  const img = document.getElementById("lmQrImg");
+  const url = document.getElementById("lmShareUrl")?.value;
+  if (img && url && (!img.src || img.src === "" || img.src === window.location.href)) {
+    img.src = `https://api.qrserver.com/v1/create-qr-code/?size=240x240&data=${encodeURIComponent(url)}&color=0f2b4f&bgcolor=ffffff`;
+  }
 });
-}
 
 // Wire once DOM is ready
 wireShareButtons();
