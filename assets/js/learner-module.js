@@ -218,8 +218,7 @@ export function buildLearnerModuleHTML(lessonRaw, cfg = {}, options = {}) {
   return `
     <div class="lm-page">
       <div class="lm-header">
-        <div class="lm-header">
-        ${C.depedLogo ? `<img class="lm-deped-logo" src="${esc(C.depedLogo)}" alt="DepEd" width="60" height="60" loading="eager" crossorigin="anonymous" />` : ""}
+        ${C.depedLogo ? `<img class="lm-deped-logo" src="${esc(C.depedLogo)}" alt="DepEd" />` : ""}
         <div class="lm-header-line1">${esc(C.headerLine1)}</div>
         <div class="lm-header-line2">${esc(C.headerLine2)}</div>
         ${C.region ? `<div class="lm-header-line3">${esc(C.region)}</div>` : ""}
