@@ -4,7 +4,7 @@
 // Self-contained: includes its own helpers, no external deps.
 // ============================================================
 
-// ---------- Local helpers (mirror ilaw.html) ----------
+// ---------- Local helpers ----------
 const esc = s => String(s == null ? "" : s)
   .replace(/&/g, "&amp;").replace(/</g, "&lt;")
   .replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
@@ -99,7 +99,36 @@ export function collectLessonData() {
 // ============================================================
 // BUILD LEARNER MODULE HTML
 // ============================================================
-export function buildLearnerModuleHTML(lesson, cfg = {}) {
+export function buildLearnerModuleHTML(lessonRaw, cfg = {}) {
+  // Defensive defaults — never let undefined arrays crash rendering
+  const lesson = {
+    ...lessonRaw,
+    competencies:        Array.isArray(lessonRaw?.competencies) ? lessonRaw.competencies : [],
+    competencyTexts:     Array.isArray(lessonRaw?.competencyTexts) ? lessonRaw.competencyTexts : [],
+    competencyCodes:     Array.isArray(lessonRaw?.competencyCodes) ? lessonRaw.competencyCodes : [],
+    lessonFlow:          typeof lessonRaw?.lessonFlow === "string" ? lessonRaw.lessonFlow : "",
+    contentStandard:     typeof lessonRaw?.contentStandard === "string" ? lessonRaw.contentStandard : "",
+    performanceStandard: typeof lessonRaw?.performanceStandard === "string" ? lessonRaw.performanceStandard : "",
+    materialsText:       typeof lessonRaw?.materialsText === "string" ? lessonRaw.materialsText : "",
+    materials:           typeof lessonRaw?.materials === "string" ? lessonRaw.materials : "",
+    learnerContext:      typeof lessonRaw?.learnerContext === "string" ? lessonRaw.learnerContext : "",
+    subjectName:         typeof lessonRaw?.subjectName === "string" ? lessonRaw.subjectName : "",
+    subjectCode:         typeof lessonRaw?.subjectCode === "string" ? lessonRaw.subjectCode : "",
+    gradeLevel:          typeof lessonRaw?.gradeLevel === "string" ? lessonRaw.gradeLevel : "",
+    lessonTitle:         typeof lessonRaw?.lessonTitle === "string" ? lessonRaw.lessonTitle : "",
+    preparedByName:      typeof lessonRaw?.preparedByName === "string" ? lessonRaw.preparedByName : "",
+    preparedByPosition:  typeof lessonRaw?.preparedByPosition === "string" ? lessonRaw.preparedByPosition : "",
+    checkedByName:       typeof lessonRaw?.checkedByName === "string" ? lessonRaw.checkedByName : "",
+    checkedByPosition:   typeof lessonRaw?.checkedByPosition === "string" ? lessonRaw.checkedByPosition : "",
+    notedByName:         typeof lessonRaw?.notedByName === "string" ? lessonRaw.notedByName : "",
+    notedByPosition:     typeof lessonRaw?.notedByPosition === "string" ? lessonRaw.notedByPosition : "",
+    publicSlug:          typeof lessonRaw?.publicSlug === "string" ? lessonRaw.publicSlug : "",
+    schoolYear:          typeof lessonRaw?.schoolYear === "string" ? lessonRaw.schoolYear : "",
+    section:             typeof lessonRaw?.section === "string" ? lessonRaw.section : "",
+    term:  typeof lessonRaw?.term === "string" || typeof lessonRaw?.term === "number" ? String(lessonRaw.term) : "",
+    week:  typeof lessonRaw?.week === "string" || typeof lessonRaw?.week === "number" ? String(lessonRaw.week) : "",
+  };
+
   const C = {
     depedLogo:        cfg.depedLogo || "",
     schoolLogo:       cfg.schoolLogo || "",
@@ -118,35 +147,45 @@ export function buildLearnerModuleHTML(lesson, cfg = {}) {
   // Simplified content
   const simpleContentStd = simplifySentence(shorten(lesson.contentStandard, 260));
   const simplePerfStd    = simplifySentence(shorten(lesson.performanceStandard, 260));
-  const simpleMaterials  = simplifySentence(shorten(lesson.materials, 400));
+  const simpleMaterials  = simplifySentence(shorten(lesson.materials || lesson.materialsText, 400));
   const simpleContext    = shorten(lesson.learnerContext, 220);
 
   const generatedDate = new Date().toLocaleDateString("en-PH", {
     year: "numeric", month: "long", day: "numeric"
   });
 
+  // Safely resolve arrays
+  const competencies = Array.isArray(lesson.competencies) ? lesson.competencies : [];
+
   // AI-enhanced overrides (optional)
   const useAI = !!lesson._aiLessonIntro;
-  const greeting    = lesson._aiGreeting || "Kumusta! While classes are on hold, let's keep learning. Take your time — this module is for you.";
-  const objectives  = useAI && Array.isArray(lesson._aiObjectives)
+
+  const greeting = lesson._aiGreeting ||
+    "Kumusta! While classes are on hold, let's keep learning. Take your time — this module is for you.";
+
+  const objectives = useAI && Array.isArray(lesson._aiObjectives)
     ? lesson._aiObjectives
-    : lesson.competencies.map(c => simplifySentence(c.text));
+    : competencies.map(c => simplifySentence(c.text));
+
   const lessonIntro = useAI ? lesson._aiLessonIntro : simpleContentStd;
+
   const lessonSteps = useAI && Array.isArray(lesson._aiLessonSteps)
     ? lesson._aiLessonSteps
     : (lesson.lessonFlow || "").split(/\n+/).filter(Boolean).slice(0, 6);
-  const activities  = useAI && Array.isArray(lesson._aiActivities)
+
+  const activities = useAI && Array.isArray(lesson._aiActivities)
     ? lesson._aiActivities
     : [
-        { title: "Activity 1 — Look Around You", duration: "10 min", instructions: `Find 3 things at home related to ${lesson.subjectName}. Draw or describe them.` },
+        { title: "Activity 1 — Look Around You", duration: "10 min", instructions: `Find 3 things at home related to ${lesson.subjectName || "this lesson"}. Draw or describe them.` },
         { title: "Activity 2 — Try It Yourself", duration: "15 min", instructions: "Do a simple hands-on practice based on the lesson. Write what you did and noticed." },
         { title: "Activity 3 — Share & Reflect", duration: "5 min",  instructions: "Share what you learned with a family member. Write their reaction." },
       ];
+
   const selfCheck = useAI && Array.isArray(lesson._aiSelfCheck)
     ? lesson._aiSelfCheck.map(q => ({
         question: q.question,
-        options: q.options,
-        answer: `${String.fromCharCode(97 + q.correct)} — ${q.options[q.correct]}`,
+        options: Array.isArray(q.options) ? q.options : [],
+        answer: `${String.fromCharCode(97 + q.correct)} — ${(q.options && q.options[q.correct]) || ""}`,
       }))
     : buildSelfCheckQuestions(lesson);
 
@@ -231,7 +270,7 @@ export function buildLearnerModuleHTML(lesson, cfg = {}) {
         ${selfCheck.map((q, i) => `
           <div class="lm-quiz-item">
             <div class="lm-quiz-q"><strong>${i + 1}.</strong> ${esc(q.question)}</div>
-            ${q.options.map((opt, j) => `<div class="lm-quiz-opt">${String.fromCharCode(97 + j)}) ${esc(opt)}</div>`).join("")}
+            ${(q.options || []).map((opt, j) => `<div class="lm-quiz-opt">${String.fromCharCode(97 + j)}) ${esc(opt)}</div>`).join("")}
           </div>
         `).join("")}
       </div>
@@ -270,7 +309,7 @@ export function buildLearnerModuleHTML(lesson, cfg = {}) {
         </div>
       </div>
 
-            ${lesson.publicSlug ? `
+      ${lesson.publicSlug ? `
       <div class="lm-qr-footer">
         <div class="lm-qr-box">
           <div class="lm-qr-label">📱 Scan to view on your phone</div>
@@ -295,10 +334,11 @@ export function buildLearnerModuleHTML(lesson, cfg = {}) {
 // ============================================================
 function buildSelfCheckQuestions(lesson) {
   const questions = [];
-  const comps = lesson.competencies.slice(0, 3);
+  const comps = Array.isArray(lesson.competencies) ? lesson.competencies.slice(0, 3) : [];
 
   comps.forEach((c) => {
-    const topic = c.text.split(/[.:;]/)[0].trim();
+    const text = c && c.text ? String(c.text) : "";
+    const topic = text.split(/[.:;]/)[0].trim();
     questions.push({
       question: `Which of the following best describes: "${shorten(topic, 60)}"?`,
       options: [
@@ -312,14 +352,14 @@ function buildSelfCheckQuestions(lesson) {
   });
 
   questions.push({
-    question: `What is the main topic of this lesson in ${lesson.subjectName}?`,
+    question: `What is the main topic of this lesson in ${lesson.subjectName || "this subject"}?`,
     options: [
-      lesson.lessonTitle || lesson.subjectName,
+      lesson.lessonTitle || lesson.subjectName || "The lesson topic",
       "A previous unrelated lesson",
       "A future advanced topic",
       "An unrelated elective",
     ],
-    answer: `a — ${lesson.lessonTitle || lesson.subjectName}`,
+    answer: `a — ${lesson.lessonTitle || lesson.subjectName || "The lesson topic"}`,
   });
 
   questions.push({
