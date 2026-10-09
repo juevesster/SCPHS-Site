@@ -2326,7 +2326,7 @@ function wireShareButtons() {
     shareToMessenger(url, lesson.lessonTitle || "Learning Module");
   });
 
-  document.getElementById("lmShareNative")?.addEventListener("click", async () => {
+    document.getElementById("lmShareNative")?.addEventListener("click", async () => {
     const url = document.getElementById("lmShareUrl").value;
     if (!url) return;
     const lesson = collectLessonData();
@@ -2336,15 +2336,14 @@ function wireShareButtons() {
       `Study this module while classes are suspended: ${lesson.subjectName} — ${lesson.lessonTitle}`
     );
     if (!ok) {
-      // Fallback: copy link
       const copied = await copyToClipboard(url);
       if (copied) toast("📋 Link copied — paste it in your group chat", "success");
     }
   });
-  
+}
 
-  // ============================================================
-// QR TOGGLE — event delegation (survives re-renders)
+// ============================================================
+// QR TOGGLE — event delegation (top-level, NOT inside wireShareButtons)
 // ============================================================
 document.addEventListener("click", (e) => {
   const btn = e.target.closest("#lmShowQr");
@@ -2361,14 +2360,18 @@ document.addEventListener("click", (e) => {
   wrap.style.display = isHidden ? "block" : "none";
   btn.textContent = isHidden ? "📱 Hide QR" : "📱 QR Code";
 
-  // Make sure the QR image src is set (in case it was cleared)
   const img = document.getElementById("lmQrImg");
   const url = document.getElementById("lmShareUrl")?.value;
   if (img && url && (!img.src || img.src === "" || img.src === window.location.href)) {
     img.src = `https://api.qrserver.com/v1/create-qr-code/?size=240x240&data=${encodeURIComponent(url)}&color=0f2b4f&bgcolor=ffffff`;
   }
 });
-}
+
+// ============================================================
+// WIRE ONCE — call after DOM ready
+// ============================================================
+wireShareButtons();
+setTimeout(wireShareButtons, 500);
 
 </script>
     
