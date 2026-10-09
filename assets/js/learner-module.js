@@ -169,6 +169,16 @@ export function buildLearnerModuleHTML(lessonRaw, cfg = {}, options = {}) {
     week:  typeof lessonRaw?.week === "string" || typeof lessonRaw?.week === "number" ? String(lessonRaw.week) : "",
   };
 
+  // Convert relative paths to absolute URLs (fixes mobile browsers)
+function resolveLogoUrl(path) {
+  if (!path) return "";
+  if (path.startsWith("http://") || path.startsWith("https://") || path.startsWith("data:")) {
+    return path; // Already absolute
+  }
+  // Relative path — prepend the current origin + repo folder
+  const base = location.origin + location.pathname.replace(/\/[^/]*$/, "");
+  return `${base}/${path.replace(/^\.?\//, "")}`;
+}
     const C = {
     depedLogo:        resolveLogoUrl(cfg.depedLogo) || DEPED_LOGO_FALLBACK,
     schoolLogo:       resolveLogoUrl(cfg.schoolLogo),
