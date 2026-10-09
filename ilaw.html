@@ -2018,7 +2018,7 @@ function openLearnerModuleModal() {
   }
 
   const cfg = ILAW_CONFIG || {};
-  LM_CURRENT_HTML = buildLearnerModuleHTML(lesson, cfg);
+  LM_CURRENT_HTML = buildLearnerModuleHTML(lesson, cfg, { hideAnswerKey: false });
 
   document.getElementById("lmPreviewHost").innerHTML = LM_CURRENT_HTML;
   document.getElementById("lmModal").style.display = "flex";
@@ -2286,10 +2286,16 @@ function wireShareButtons() {
     }
   });
 
-  document.getElementById("lmShowQr")?.addEventListener("click", () => {
-    const wrap = document.getElementById("lmQrWrap");
-    wrap.style.display = wrap.style.display === "none" ? "block" : "none";
-  });
+  // QR toggle — use event delegation to survive re-renders
+document.addEventListener("click", (e) => {
+  const btn = e.target.closest("#lmShowQr");
+  if (!btn) return;
+  const wrap = document.getElementById("lmQrWrap");
+  if (!wrap) return;
+  const isHidden = wrap.style.display === "none" || !wrap.style.display;
+  wrap.style.display = isHidden ? "block" : "none";
+  btn.textContent = isHidden ? "📱 Hide QR" : "📱 QR Code";
+});
 }
 
 // Wire once DOM is ready

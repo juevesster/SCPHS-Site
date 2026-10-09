@@ -99,7 +99,7 @@ export function collectLessonData() {
 // ============================================================
 // BUILD LEARNER MODULE HTML
 // ============================================================
-export function buildLearnerModuleHTML(lessonRaw, cfg = {}) {
+export function buildLearnerModuleHTML(lessonRaw, cfg = {}, options = {}) {
   // Defensive defaults — never let undefined arrays crash rendering
   const lesson = {
     ...lessonRaw,
@@ -275,11 +275,22 @@ export function buildLearnerModuleHTML(lessonRaw, cfg = {}) {
         `).join("")}
       </div>
 
+    ${!options.hideAnswerKey ? `
       <div class="lm-answer-key">
         <div class="lm-section-title">🔒 Answer Key (For parent/guardian only)</div>
         <p style="font-size:9pt;">${esc(answerKey)}</p>
         <p style="font-size:8pt;color:#777;margin-top:4px;">Fold or cut this section before giving the module to the learner.</p>
       </div>
+      ` : `
+      <div class="lm-answer-key" style="background:#fef3c7;border-color:#fcd34d;">
+        <div class="lm-section-title" style="color:#92400e;">🔒 Answer Key Not Included</div>
+        <p style="font-size:9pt;color:#92400e;margin:0;">
+          To protect learner work, the answer key is not included in this online version.
+          Parents/guardians may request it from the teacher via Messenger, or find it
+          in the printed copy sent home by the teacher.
+        </p>
+      </div>
+      `}
 
       <div class="lm-section lm-submit">
         <div class="lm-section-title">📱 How to Submit Your Work</div>
