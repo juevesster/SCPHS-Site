@@ -124,22 +124,9 @@ function getQrUrl(slug) {
 // BUILD LEARNER MODULE HTML
 // ============================================================
 export function buildLearnerModuleHTML(lessonRaw, cfg = {}, options = {}) {
-      // ============================================================
-  // FIX: Convert relative logo paths → absolute URLs
-  // This ensures logos load on both desktop AND mobile
-  // ============================================================
-  const resolveLogoUrl = (path) => {
-    if (!path) return "";
-    if (path.startsWith("http://") || path.startsWith("https://") || path.startsWith("data:")) {
-      return path; // Already absolute
-    }
-    // Relative path — prepend current origin
-    const base = location.origin + location.pathname.replace(/\/[^/]*$/, "");
-    return `${base}/${path.replace(/^\.?\//, "")}`;
-  };
-
   // Fallback DepEd logo (Wikimedia CDN — always works)
   const DEPED_LOGO_FALLBACK = "https://upload.wikimedia.org/wikipedia/commons/thumb/2/2c/Department_of_Education_%28Philippines%29.svg/240px-Department_of_Education_%28Philippines%29.svg.png";
+
   // Defensive defaults — never let undefined arrays crash rendering
   const lesson = {
     ...lessonRaw,
@@ -179,11 +166,11 @@ function resolveLogoUrl(path) {
   const base = location.origin + location.pathname.replace(/\/[^/]*$/, "");
   return `${base}/${path.replace(/^\.?\//, "")}`;
 }
-    const C = {
-  depedLogo:        resolveLogoUrl(cfg.depedLogo),   // ✅ FIX
-  schoolLogo:       resolveLogoUrl(cfg.schoolLogo),  // ✅ FIX
-  headerLine1:      cfg.headerLine1 || "Republic of the Philippines",
-  headerLine2:      cfg.headerLine2 || "Department of Education",
+const C = {
+    depedLogo:        resolveLogoUrl(cfg.depedLogo),
+    schoolLogo:       resolveLogoUrl(cfg.schoolLogo),
+    headerLine1:      cfg.headerLine1 || "Republic of the Philippines",
+    headerLine2:      cfg.headerLine2 || "Department of Education",
     region:           cfg.region || "",
     division:         cfg.division || "",
     schoolName:       cfg.schoolName || "",
