@@ -180,10 +180,10 @@ function resolveLogoUrl(path) {
   return `${base}/${path.replace(/^\.?\//, "")}`;
 }
     const C = {
-    depedLogo:        resolveLogoUrl(cfg.depedLogo) || DEPED_LOGO_FALLBACK,
-    schoolLogo:       resolveLogoUrl(cfg.schoolLogo),
-    headerLine1:      cfg.headerLine1 || "Republic of the Philippines",
-    headerLine2:      cfg.headerLine2 || "Department of Education",
+  depedLogo:        resolveLogoUrl(cfg.depedLogo),   // ✅ FIX
+  schoolLogo:       resolveLogoUrl(cfg.schoolLogo),  // ✅ FIX
+  headerLine1:      cfg.headerLine1 || "Republic of the Philippines",
+  headerLine2:      cfg.headerLine2 || "Department of Education",
     region:           cfg.region || "",
     division:         cfg.division || "",
     schoolName:       cfg.schoolName || "",
