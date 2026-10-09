@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Learning Module — SCPHS</title>
+  <meta name="description" content="Home-based learning module from Sta. Cruz Pingkian High School" />
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: #e5e7eb;
+      color: #1f2937;
+    }
+
+    /* ============ TOP BAR ============ */
+    .viewer-bar {
+      background: linear-gradient(135deg, #1e3c72, #2a5298);
+      color: #fff;
+      padding: 14px 20px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      box-shadow: 0 2px 12px rgba(0,0,0,.15);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    .viewer-bar .left { display: flex; align-items: center; gap: 10px; }
+    .viewer-bar .icon { font-size: 1.4rem; }
+    .viewer-bar h1 { margin: 0; font-size: 1rem; font-weight: 700; }
+    .viewer-bar .sub { font-size: 11.5px; opacity: .85; margin-top: 2px; }
+    .viewer-bar .actions { display: flex; gap: 8px; flex-wrap: wrap; }
+    .viewer-btn {
+      padding: 9px 16px;
+      border-radius: 8px;
+      border: none;
+      cursor: pointer;
+      font-family: inherit;
+      font-size: 13px;
+      font-weight: 700;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all .15s;
+      background: rgba(255,255,255,.15);
+      color: #fff;
+      border: 1px solid rgba(255,255,255,.3);
+    }
+    .viewer-btn:hover { background: rgba(255,255,255,.25); }
+    .viewer-btn.primary {
+      background: #10b981;
+      border-color: #10b981;
+      box-shadow: 0 4px 12px rgba(16,185,129,.4);
+    }
+    .viewer-btn.primary:hover { background: #059669; }
+
+    /* ============ MAIN ============ */
+    .viewer-main {
+      max-width: 210mm;
+      margin: 24px auto;
+      padding: 0 16px;
+    }
+
+    .viewer-loading, .viewer-error, .viewer-empty {
+      background: #fff;
+      border-radius: 14px;
+      padding: 60px 30px;
+      text-align: center;
+      box-shadow: 0 4px 16px rgba(0,0,0,.06);
+    }
+    .viewer-spinner {
+      width: 36px; height: 36px;
+      border: 3px solid #e5e7eb;
+      border-top-color: #1e3c72;
+      border-radius: 50%;
+      animation: spin .8s linear infinite;
+      margin: 0 auto 14px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .viewer-error h2 { color: #b91c1c; margin: 0 0 6px; }
+    .viewer-error p { color: #6b7280; margin: 0; }
+
+    /* ============ MODULE RENDER ============ */
+    .lm-page {
+      font-family: "Times New Roman", Times, serif;
+      color: #000;
+      font-size: 11pt;
+      line-height: 1.5;
+      background: #fff;
+      padding: 20mm 15mm;
+      border-radius: 8px;
+      box-shadow: 0 4px 24px rgba(0,0,0,.08);
+    }
+
+    .lm-header { text-align: center; margin-bottom: 6px; line-height: 1.3; }
+    .lm-deped-logo { display: block; margin: 0 auto 4px; max-height: 60px; }
+    .lm-header-line1 { font-size: 10pt; }
+    .lm-header-line2 { font-size: 11pt; font-weight: 700; }
+    .lm-header-line3 { font-size: 9.5pt; }
+    .lm-school-banner {
+      text-align: center; margin: 6px 0 8px;
+      padding-bottom: 4px; border-bottom: 1.5px solid #000;
+    }
+    .lm-school-name { font-size: 12pt; font-weight: 800; text-transform: uppercase; letter-spacing: .02em; }
+    .lm-school-address { font-size: 9pt; }
+    .lm-title { text-align: center; font-size: 15pt; font-weight: 800; letter-spacing: .12em; margin: 8px 0 2px; text-transform: uppercase; }
+    .lm-subtitle { text-align: center; font-size: 11.5pt; font-style: italic; margin-bottom: 6px; }
+    .lm-meta { display: flex; justify-content: center; gap: 12px; flex-wrap: wrap; font-size: 9.5pt; margin-bottom: 10px; color: #333; }
+    .lm-meta span { white-space: nowrap; }
+    .lm-suspension-banner {
+      background: #fef3c7; border: 1px solid #fcd34d; border-radius: 6px;
+      padding: 8px 12px; font-size: 10pt; text-align: center; margin-bottom: 14px;
+    }
+    .lm-suspension-banner strong { color: #92400e; }
+    .lm-section { margin-bottom: 14px; page-break-inside: auto; }
+    .lm-section-title {
+      font-size: 12pt; font-weight: 800; color: #0f2b4f;
+      margin: 0 0 6px; padding-bottom: 3px; border-bottom: 1.5px solid #0f2b4f;
+    }
+    .lm-section p { margin: 0 0 6px; }
+    .lm-greeting p { margin-bottom: 6px; }
+    .lm-obj-list { margin: 0 0 0 20px; padding: 0; }
+    .lm-obj-list li { margin-bottom: 4px; }
+    .lm-lesson-step { display: flex; gap: 8px; margin-bottom: 6px; align-items: flex-start; }
+    .lm-step-num {
+      display: inline-flex; align-items: center; justify-content: center;
+      width: 20px; height: 20px; border-radius: 50%;
+      background: #1e3c72; color: #fff; font-size: 10pt; font-weight: 800;
+      flex-shrink: 0; margin-top: 1px;
+    }
+    .lm-activity {
+      background: #f9fafb; border-left: 3px solid #10b981;
+      padding: 8px 12px; margin-bottom: 8px; border-radius: 0 4px 4px 0;
+    }
+    .lm-activity strong { color: #065f46; display: block; margin-bottom: 3px; }
+    .lm-activity p { margin: 0; font-size: 10pt; }
+    .lm-quiz-item { margin-bottom: 10px; padding: 6px 0; }
+    .lm-quiz-q { margin-bottom: 4px; font-size: 10.5pt; }
+    .lm-quiz-opt { margin-left: 20px; font-size: 10pt; margin-bottom: 2px; }
+    .lm-answer-key {
+      margin-top: 12px; padding: 10px 12px;
+      border: 1.5px dashed #999; background: #f9fafb; border-radius: 6px;
+    }
+    .lm-answer-key .lm-section-title { border-bottom: none; font-size: 11pt; color: #444; margin-bottom: 6px; }
+    .lm-submit { background: #eff6ff; padding: 10px 14px; border-radius: 6px; border: 1px solid #bfdbfe; }
+    .lm-submit .lm-section-title { border-bottom-color: #1e40af; }
+    .lm-submit ol { margin: 6px 0 6px 20px; padding: 0; }
+    .lm-submit li { margin-bottom: 3px; font-size: 10pt; }
+    .lm-signatories {
+      display: flex; justify-content: space-between;
+      gap: 12px; margin-top: 24px;
+    }
+    .lm-sig { text-align: center; flex: 1; min-width: 0; }
+    .lm-sig-label { font-size: 10pt; margin-bottom: 24px; }
+    .lm-sig-name { font-weight: 800; font-size: 10.5pt; border-top: 1px solid #000; padding-top: 3px; }
+    .lm-sig-pos { font-size: 9.5pt; font-style: italic; }
+    .lm-footer {
+      margin-top: 14px; padding-top: 4px;
+      border-top: 1px solid #ccc; text-align: center;
+      font-size: 8.5pt; color: #666;
+    }
+
+    /* ============ BOTTOM CTA ============ */
+    .viewer-bottom {
+      max-width: 210mm;
+      margin: 24px auto 60px;
+      padding: 0 16px;
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+    .viewer-bottom .viewer-btn {
+      background: #1e3c72;
+      border-color: #1e3c72;
+      padding: 14px 24px;
+      font-size: 14px;
+    }
+    .viewer-bottom .viewer-btn.primary {
+      background: #10b981;
+      border-color: #10b981;
+    }
+
+    /* ============ FOOTER ============ */
+    .viewer-credit {
+      text-align: center;
+      padding: 24px 16px 40px;
+      font-size: 11px;
+      color: #6b7280;
+    }
+    .viewer-credit strong { color: #0f2b4f; }
+
+    /* ============ MOBILE ============ */
+    @media (max-width: 640px) {
+      .lm-page { padding: 14mm 10mm; font-size: 10.5pt; }
+      .viewer-bar h1 { font-size: 0.9rem; }
+      .viewer-btn { padding: 8px 12px; font-size: 12px; }
+      .lm-signatories { flex-direction: column; gap: 24px; }
+      .lm-sig-label { margin-bottom: 18px; }
+    }
+
+    /* ============ PRINT ============ */
+    @media print {
+      @page { size: A4 portrait; margin: 12mm 10mm 14mm 10mm; }
+      body { background: #fff; }
+      .viewer-bar, .viewer-bottom, .viewer-credit { display: none !important; }
+      .viewer-main { margin: 0; padding: 0; max-width: 100%; }
+      .lm-page { box-shadow: none; padding: 0; border-radius: 0; }
+    }
+  </style>
+</head>
+<body>
+
+  <header class="viewer-bar">
+    <div class="left">
+      <span class="icon">📘</span>
+      <div>
+        <h1 id="pageTitle">Learning Module</h1>
+        <div class="sub" id="pageSub">Loading…</div>
+      </div>
+    </div>
+    <div class="actions">
+      <button class="viewer-btn" id="btnPrint">🖨 Print</button>
+      <button class="viewer-btn primary" id="btnDownload">📥 Download PDF</button>
+    </div>
+  </header>
+
+  <main class="viewer-main" id="viewerMain">
+    <div class="viewer-loading">
+      <div class="viewer-spinner"></div>
+      <div>Loading module…</div>
+    </div>
+  </main>
+
+  <div class="viewer-bottom" id="viewerBottom" style="display:none;">
+    <button class="viewer-btn" id="btnPrintBottom">🖨 Print This Module</button>
+    <button class="viewer-btn primary" id="btnDownloadBottom">📥 Download PDF</button>
+  </div>
+
+  <div class="viewer-credit" id="viewerCredit" style="display:none;">
+    Prepared with <strong>SCPHS Portal</strong> · Sta. Cruz Pingkian High School
+  </div>
+
+  <script type="module">
+    import { getSharedLessonBySlug } from "./assets/js/learner-share.js";
+    import { buildLearnerModuleHTML } from "./assets/js/learner-module.js";
+    import "./assets/js/ilaw-config.js";
+
+    const $ = id => document.getElementById(id);
+    const params = new URLSearchParams(location.search);
+    const SLUG = params.get("slug");
+
+    let CURRENT_LESSON = null;
+
+    async function init() {
+      if (!SLUG) {
+        showError("Missing module ID", "This link is incomplete. Please ask your teacher for the correct link.");
+        return;
+      }
+
+      try {
+        const lesson = await getSharedLessonBySlug(SLUG);
+        if (!lesson) {
+          showError("Module not found", "This module may have been removed or is not yet shared.");
+          return;
+        }
+
+        CURRENT_LESSON = lesson;
+        document.title = `${lesson.lessonTitle || lesson.subjectName} — Learning Module`;
+        $("pageTitle").textContent = lesson.lessonTitle || lesson.subjectName || "Learning Module";
+        $("pageSub").textContent = `${lesson.subjectName || ""} · Grade ${lesson.gradeLevel || ""} · Term ${lesson.term || ""} Week ${lesson.week || ""}`;
+
+        // Load config for header (logo, school name)
+        const cfg = (window.ILAWConfig && window.ILAWConfig.load)
+          ? await window.ILAWConfig.load()
+          : {};
+
+        // Build the module HTML
+        const html = buildLearnerModuleHTML(lesson, cfg);
+        $("viewerMain").innerHTML = html;
+        $("viewerBottom").style.display = "flex";
+        $("viewerCredit").style.display = "block";
+
+        // Increment view count (fire and forget)
+        import("./assets/js/learner-share.js").then(m => {
+          // Optional: track views — we'll add in V3
+        }).catch(() => {});
+      } catch (e) {
+        console.error(e);
+        showError("Could not load module", e.message || "Please try again later.");
+      }
+    }
+
+    function showError(title, message) {
+      $("viewerMain").innerHTML = `
+        <div class="viewer-error">
+          <h2>⚠️ ${title}</h2>
+          <p>${message}</p>
+        </div>
+      `;
+    }
+
+    function printModule() {
+      window.print();
+    }
+
+    function downloadPDF() {
+      const ok = confirm(
+        "📥 Save this Learning Module as PDF\n\n" +
+        "1. The Print dialog will open\n" +
+        "2. Choose 'Save as PDF' as the destination\n" +
+        "3. Click Save\n\n" +
+        "Click OK to continue."
+      );
+      if (!ok) return;
+      setTimeout(() => window.print(), 150);
+    }
+
+    $("btnPrint")?.addEventListener("click", printModule);
+    $("btnDownload")?.addEventListener("click", downloadPDF);
+    $("btnPrintBottom")?.addEventListener("click", printModule);
+    $("btnDownloadBottom")?.addEventListener("click", downloadPDF);
+
+    init();
+  </script>
+</body>
+</html>
