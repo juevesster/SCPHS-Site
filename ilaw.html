@@ -2004,17 +2004,33 @@ ${esc(JSON.stringify(parsed, null, 2))}
       if (editorArea) editorArea.scrollIntoView({ behavior: "smooth", block: "start" });
     }
 
-    // ============================================================
-// LEARNER MODULE — V1
+   // ============================================================
+// LEARNER MODULE — V2
 // ============================================================
 let LM_CURRENT_HTML = "";
 
-function openLearnerModuleModal() {
+async function openLearnerModuleModal() {
   const lesson = collectLessonData();
 
   if (!lesson.lessonTitle && !lesson.subjectName) {
     toast("⚠️ Please fill in the lesson details first.", "error");
     return;
+  }
+
+  // If the lesson is already saved, check for existing publicSlug + viewCount
+  if (CURRENT_LESSON_ID) {
+    try {
+      const { doc, getDoc } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js");
+      const snap = await getDoc(doc(db, "lessons", CURRENT_LESSON_ID));
+      if (snap.exists()) {
+        const saved = snap.data();
+        if (saved.publicSlug)                 lesson.publicSlug = saved.publicSlug;
+        if (typeof saved.viewCount === "number") lesson.viewCount = saved.viewCount;
+        if (typeof saved.isPublic === "boolean") lesson.isPublic = saved.isPublic;
+      }
+    } catch (e) {
+      console.warn("[ilaw] Could not load saved slug:", e);
+    }
   }
 
   const cfg = ILAW_CONFIG || {};
@@ -2023,6 +2039,38 @@ function openLearnerModuleModal() {
   document.getElementById("lmPreviewHost").innerHTML = LM_CURRENT_HTML;
   document.getElementById("lmModal").style.display = "flex";
   document.getElementById("lmStatus").textContent = "Template version (no AI used).";
+
+  // Auto-populate share panel if lesson is already shared
+  const toggleBtn = document.getElementById("lmToggleShare");
+  const sharePanel = document.getElementById("lmSharePanel");
+  const shareStatus = document.getElementById("lmShareStatus");
+
+  if (lesson.publicSlug && lesson.isPublic !== false && toggleBtn && sharePanel && shareStatus) {
+    const url = buildPublicUrl(lesson.publicSlug);
+
+    toggleBtn.dataset.shared = "true";
+    toggleBtn.dataset.slug = lesson.publicSlug;
+    toggleBtn.dataset.url = url;
+    toggleBtn.textContent = "🚫 Stop Sharing";
+    toggleBtn.style.background = "#dc2626";
+
+    sharePanel.style.display = "block";
+    shareStatus.innerHTML = `✅ <strong>Sharing enabled</strong> · Slug: <code>${lesson.publicSlug}</code>`;
+
+    document.getElementById("lmShareUrl").value = url;
+    document.getElementById("lmOpenPreview").href = url;
+
+    // Pre-generate QR (hidden by default — user clicks "QR Code" to reveal)
+    document.getElementById("lmQrImg").src = generateQrCodeUrl(url, 240);
+    document.getElementById("lmQrWrap").style.display = "none";
+  } else if (toggleBtn && sharePanel && shareStatus) {
+    // Reset to "not shared" state
+    toggleBtn.dataset.shared = "false";
+    toggleBtn.textContent = "🔗 Enable Sharing";
+    toggleBtn.style.background = "#10b981";
+    sharePanel.style.display = "none";
+    shareStatus.textContent = "Not yet shared";
+  }
 }
 
 function closeLearnerModuleModal() {
@@ -2054,7 +2102,7 @@ async function enhanceLearnerModule() {
     }
 
     const merged = mergeAIIntoLesson(lesson, aiData);
-    LM_CURRENT_HTML = buildLearnerModuleHTML(merged, cfg);
+    LM_CURRENT_HTML = buildLearnerModuleHTML(merged, cfg, { hideAnswerKey: false });
 
     document.getElementById("lmPreviewHost").innerHTML = LM_CURRENT_HTML;
     status.textContent = "✨ Enhanced with AI. Review before printing.";
@@ -2072,6 +2120,7 @@ async function enhanceLearnerModule() {
 
 function printLearnerModule() {
   if (!LM_CURRENT_HTML) return;
+  setPrintPageOrientation("portrait");    // ✅ FIXED — was missing
 
   const printDoc = document.getElementById("lmPrintDoc");
   printDoc.innerHTML = LM_CURRENT_HTML;
@@ -2089,7 +2138,7 @@ function printLearnerModule() {
 
 async function downloadLearnerModulePDF() {
   if (!LM_CURRENT_HTML) return;
-  setPrintPageOrientation("portrait");    // 👈 ADD THIS LINE
+  setPrintPageOrientation("portrait");
 
   const ok = confirm(
     "📥 Save Learner Module as PDF\n\n" +
@@ -2128,8 +2177,8 @@ async function downloadLearnerModulePDF() {
   }, 200);
 }
 
-// Wire the modal buttons after editor renders — hook into existing renderEditor
-// We'll add a global handler that runs after each render
+// Click delegation for the "Generate Learner Module" button
+// (survives editor re-renders)
 document.addEventListener("click", (e) => {
   if (e.target.closest("#btnLearnerModule")) {
     openLearnerModuleModal();

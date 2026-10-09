@@ -32,9 +32,32 @@ export function buildPublicUrl(slug) {
 
 // ---------- Enable public sharing on a lesson ----------
 export async function enableSharing(lessonId, lesson) {
-  const slug = lesson.publicSlug || generateSlug(lesson);
-  const ref = doc(db, "lessons", lessonId);
+  // Reuse existing slug if present — never regenerate
+  // (so old QR codes and printed modules keep working)
+  let slug = lesson.publicSlug;
 
+  if (!slug) {
+    // First time — check if lesson doc already has a slug in Firestore
+    const ref = doc(db, "lessons", lessonId);
+    try {
+      const snap = await getDoc(ref);
+      if (snap.exists()) {
+        const existing = snap.data();
+        if (existing.publicSlug) {
+          slug = existing.publicSlug;
+        }
+      }
+    } catch (e) {
+      console.warn("[learner-share] Could not check existing slug:", e);
+    }
+
+    // Still none — generate one
+    if (!slug) {
+      slug = generateSlug(lesson);
+    }
+  }
+
+  const ref = doc(db, "lessons", lessonId);
   await updateDoc(ref, {
     isPublic: true,
     publicSlug: slug,
