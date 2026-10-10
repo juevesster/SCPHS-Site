@@ -262,12 +262,99 @@
     body.is-admin .role-only-admin,
     body.is-admin .role-only-teacher { display: block; }
 
-    @media (max-width: 640px) {
-      .role-cta { margin-top: 20px; }
-      .role-card { padding: 18px; }
-      .role-card__icon { width: 48px; height: 48px; font-size: 22px; }
-      .role-card__title { font-size: 15px; }
-    }
+    /* ============================================================
+   TABLET & MOBILE — Stack the page grid + polish Quick Access
+   ============================================================ */
+@media (max-width: 900px) {
+  /* Force 3-column page grid to stack vertically */
+  .content-grid {
+    display: block !important;
+    grid-template-columns: 1fr !important;
+    gap: 16px !important;
+  }
+
+  .content-grid > aside,
+  .content-grid > section {
+    width: 100% !important;
+    max-width: 100% !important;
+    margin-bottom: 16px;
+  }
+
+  /* Prevent horizontal overflow */
+  body { overflow-x: hidden; }
+  .wrap {
+    max-width: 100%;
+    padding-left: 12px;
+    padding-right: 12px;
+  }
+
+  /* About section — stack */
+  .grid-2 { grid-template-columns: 1fr !important; }
+
+  /* Full-width widgets */
+  .widget { width: 100%; }
+
+  /* Quick Access — 2 columns on tablet too */
+  .role-cta__grid {
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 14px;
+  }
+}
+
+@media (max-width: 640px) {
+  .role-cta { margin-top: 20px; }
+
+  /* Quick Access — keep 2 cards per row */
+  .role-cta__grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+
+  /* Compact cards with vertical layout */
+  .role-card {
+    padding: 14px 12px;
+    border-radius: 12px;
+  }
+
+  .role-card__body {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+
+  .role-card__icon {
+    width: 42px;
+    height: 42px;
+    font-size: 20px;
+    border-radius: 10px;
+  }
+
+  .role-card__title {
+    font-size: 13px;
+    line-height: 1.25;
+    margin-bottom: 2px;
+  }
+
+  /* Hide long description on mobile — keeps cards clean */
+  .role-card__desc {
+    display: none;
+  }
+
+  .role-card__cta {
+    margin-top: 8px;
+    font-size: 10.5px;
+    letter-spacing: 0.03em;
+  }
+}
+
+/* Extra-small phones — tighten further */
+@media (max-width: 380px) {
+  .role-cta__grid { gap: 8px; }
+  .role-card { padding: 12px 10px; }
+  .role-card__icon { width: 38px; height: 38px; font-size: 18px; }
+  .role-card__title { font-size: 12px; }
+  .role-card__cta { font-size: 10px; }
+}
   </style>
 </head>
 <body>
