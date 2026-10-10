@@ -127,6 +127,11 @@ export function buildLearnerModuleHTML(lessonRaw, cfg = {}, options = {}) {
   // Fallback DepEd logo (Wikimedia CDN — always works)
   const DEPED_LOGO_FALLBACK = "https://upload.wikimedia.org/wikipedia/commons/thumb/2/2c/Department_of_Education_%28Philippines%29.svg/240px-Department_of_Education_%28Philippines%29.svg.png";
 
+    // 🆕 Merge overrides from module editor
+  const overrides = lessonRaw?.learnerModuleOverrides || {};
+  const hidden = Array.isArray(overrides.hiddenSections) ? overrides.hiddenSections : [];
+  const hasOverride = (key) => Object.prototype.hasOwnProperty.call(overrides, key);
+
   // Defensive defaults — never let undefined arrays crash rendering
   const lesson = {
     ...lessonRaw,
@@ -261,45 +266,58 @@ const C = {
         your answers to your teacher when classes resume or via Messenger.</span>
       </div>
 
+            ${!hidden.includes("greeting") ? `
       <div class="lm-section lm-greeting">
         <div class="lm-section-title">👋 Hello, Learner!</div>
-        <p>${esc(greeting)}</p>
+        <p>${esc(hasOverride("greeting") ? overrides.greeting : greeting)}</p>
         <p><strong>You will need:</strong> this module (printed or on a phone), a pencil or ballpen, and a notebook.</p>
-      </div>
+      </div>` : ""}
 
+            ${!hidden.includes("objectives") ? `
       <div class="lm-section">
         <div class="lm-section-title">🎯 What You Will Learn</div>
-        ${objectives.length
-          ? `<ul class="lm-obj-list">${objectives.map(o => `<li>${esc(simplifySentence(o))}</li>`).join("")}</ul>`
+        ${(hasOverride("objectives") ? overrides.objectives : objectives).length
+          ? `<ul class="lm-obj-list">${(hasOverride("objectives") ? overrides.objectives : objectives).map(o => `<li>${esc(simplifySentence(o))}</li>`).join("")}</ul>`
           : `<p class="lm-empty">No specific competencies linked to this lesson yet.</p>`}
-      </div>
-
-      ${lessonIntro ? `
-      <div class="lm-section">
-        <div class="lm-section-title">📖 What This Lesson Is About</div>
-        <p>${esc(lessonIntro)}</p>
-        ${simplePerfStd ? `<p style="margin-top:6px;"><em>By the end, you should be able to:</em> ${esc(simplePerfStd)}</p>` : ""}
       </div>` : ""}
 
-      ${lessonSteps.length ? `
-      <div class="lm-section">
-        <div class="lm-section-title">📚 The Lesson</div>
-        ${lessonSteps.map((step, i) => {
-          const clean = simplifySentence(String(step).trim());
-          return clean ? `<div class="lm-lesson-step"><span class="lm-step-num">${i + 1}</span>${esc(clean)}</div>` : "";
-        }).join("")}
-        ${simpleMaterials ? `<p style="margin-top:8px;font-size:9pt;"><strong>Things you can use:</strong> ${esc(simpleMaterials)}</p>` : ""}
-      </div>` : ""}
+            ${!hidden.includes("lessonIntro") ? (() => {
+        const introText = hasOverride("lessonIntro") ? overrides.lessonIntro : lessonIntro;
+        if (!introText && !simplePerfStd) return "";
+        return `
+          <div class="lm-section">
+            <div class="lm-section-title">📖 What This Lesson Is About</div>
+            ${introText ? `<p>${esc(introText)}</p>` : ""}
+            ${simplePerfStd ? `<p style="margin-top:6px;"><em>By the end, you should be able to:</em> ${esc(simplePerfStd)}</p>` : ""}
+          </div>
+        `;
+      })() : ""}
 
+            ${!hidden.includes("lessonSteps") ? (() => {
+        const steps = hasOverride("lessonSteps") ? overrides.lessonSteps : lessonSteps;
+        if (!steps.length) return "";
+        return `
+          <div class="lm-section">
+            <div class="lm-section-title">📚 The Lesson</div>
+            ${steps.map((step, i) => {
+              const clean = simplifySentence(String(step).trim());
+              return clean ? `<div class="lm-lesson-step"><span class="lm-step-num">${i + 1}</span>${esc(clean)}</div>` : "";
+            }).join("")}
+            ${simpleMaterials ? `<p style="margin-top:8px;font-size:9pt;"><strong>Things you can use:</strong> ${esc(hasOverride("materials") ? overrides.materials : simpleMaterials)}</p>` : ""}
+          </div>
+        `;
+      })() : ""}
+
+            ${!hidden.includes("activities") ? `
       <div class="lm-section">
         <div class="lm-section-title">✏️ Activities</div>
-        ${activities.map(a => `
+        ${(hasOverride("activities") ? overrides.activities : activities).map(a => `
           <div class="lm-activity">
             <strong>${esc(a.title)} (${esc(a.duration)})</strong>
             <p>${esc(a.instructions)}</p>
           </div>
         `).join("")}
-      </div>
+      </div>` : ""}
 
       <div class="lm-section">
         <div class="lm-section-title">❓ Self-Check (5 questions)</div>
@@ -329,15 +347,18 @@ const C = {
       </div>
       `}
 
+            ${!hidden.includes("howToSubmit") ? `
       <div class="lm-section lm-submit">
         <div class="lm-section-title">📱 How to Submit Your Work</div>
-        <ol>
-          <li>Take a clear photo of your notebook pages.</li>
-          <li>Send to your teacher via Messenger GC or private message.</li>
-          <li>Keep the printed module for review when classes resume.</li>
-        </ol>
+        ${hasOverride("howToSubmit") 
+          ? `<div style="white-space:pre-wrap;font-size:10pt;">${esc(overrides.howToSubmit)}</div>`
+          : `<ol>
+              <li>Take a clear photo of your notebook pages.</li>
+              <li>Send to your teacher via Messenger GC or private message.</li>
+              <li>Keep the printed module for review when classes resume.</li>
+            </ol>`}
         ${lesson.preparedByName ? `<p style="font-size:9pt;margin-top:8px;"><strong>Teacher:</strong> ${esc(lesson.preparedByName)}</p>` : ""}
-      </div>
+      </div>` : ""}
 
       <div class="lm-signatories">
         <div class="lm-sig">

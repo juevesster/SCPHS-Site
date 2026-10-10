@@ -593,6 +593,7 @@
     <div style="padding:14px 22px;border-top:1px solid #e5e7eb;display:flex;justify-content:space-between;gap:10px;background:#fafbfc;flex-wrap:wrap;">
       <div id="lmStatus" style="font-size:13px;color:#6b7280;align-self:center;"></div>
       <div style="display:flex;gap:8px;flex-wrap:wrap;">
+        <button class="btn btn-outline" id="lmEditModule" style="background:#f59e0b;color:#fff;border-color:#f59e0b;">✏️ Edit Module</button>
         <button class="btn btn-outline" id="lmUseAI" style="background:#4f46e5;color:#fff;border-color:#4f46e5;">✨ Enhance with AI</button>
         <button class="btn btn-outline" id="lmPrint">🖨 Print</button>
         <button class="btn btn-primary" id="lmDownload">📥 Download as PDF</button>
@@ -620,6 +621,7 @@
     enableSharing, disableSharing, buildPublicUrl, generateQrCodeUrl,
     shareToMessenger, copyToClipboard, nativeShare,
     } from "./assets/js/learner-share.js";
+    import { openEditorModal, loadOverrides } from "./assets/js/module-editor.js";
 
 
     let CURRENT_USER = null;
@@ -2040,11 +2042,58 @@ async function openLearnerModuleModal() {
     }
   }
 
+  
+  // 🆕 Load module overrides (teacher's edits)
+  if (CURRENT_LESSON_ID) {
+    try {
+      const { loadOverrides } = await import("./assets/js/module-editor.js");
+      const overrides = await loadOverrides(CURRENT_LESSON_ID);
+      if (overrides && Object.keys(overrides).length) {
+        lesson.learnerModuleOverrides = overrides;
+      }
+    } catch (e) {
+      console.warn("[ilaw] Could not load module overrides:", e);
+    }
+  }
+
   const cfg = ILAW_CONFIG || {};
   LM_CURRENT_HTML = buildLearnerModuleHTML(lesson, cfg, { hideAnswerKey: false });
 
   document.getElementById("lmPreviewHost").innerHTML = LM_CURRENT_HTML;
   document.getElementById("lmModal").style.display = "flex";
+
+  
+  // 🆕 Wire Edit Module button
+  const editBtn = document.getElementById("lmEditModule");
+  if (editBtn && !editBtn._wired) {
+    editBtn.addEventListener("click", async () => {
+      if (!CURRENT_LESSON_ID) {
+        toast("⚠️ Please save the lesson first before editing the module.", "error");
+        return;
+      }
+      const lessonData = collectLessonData();
+      // Include currently loaded overrides for the editor
+      if (lesson.learnerModuleOverrides) {
+        lessonData.learnerModuleOverrides = lesson.learnerModuleOverrides;
+      }
+      await openEditorModal(CURRENT_LESSON_ID, lessonData, async () => {
+        // After save, reload overrides and regenerate preview
+        try {
+          const { loadOverrides } = await import("./assets/js/module-editor.js");
+          const saved = await loadOverrides(CURRENT_LESSON_ID);
+          lessonData.learnerModuleOverrides = saved || {};
+          const cfg = ILAW_CONFIG || {};
+          LM_CURRENT_HTML = buildLearnerModuleHTML(lessonData, cfg, { hideAnswerKey: false });
+          document.getElementById("lmPreviewHost").innerHTML = LM_CURRENT_HTML;
+          toast("✓ Module updated", "success");
+        } catch (e) {
+          console.error("[ilaw] Failed to refresh preview:", e);
+        }
+      });
+    });
+    editBtn._wired = true;
+  }
+
   document.getElementById("lmStatus").textContent = "Template version (no AI used).";
 
   // Auto-populate share panel if lesson is already shared
@@ -2366,6 +2415,8 @@ document.addEventListener("click", (e) => {
     img.src = `https://api.qrserver.com/v1/create-qr-code/?size=240x240&data=${encodeURIComponent(url)}&color=0f2b4f&bgcolor=ffffff`;
   }
 });
+
+window.__ilawToast = toast;
 
 // ============================================================
 // WIRE ONCE — call after DOM ready
