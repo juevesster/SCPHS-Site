@@ -1,33 +1,45 @@
 // ============================================================
-// AI LEARNER MODULE ENHANCER (optional)
-// Uses DeepSeek to make the lesson content more student-friendly
-// Falls back to template output if AI is unavailable
+// AI LEARNER MODULE ENHANCER — V2
+// Reads DeepSeek key from Firestore: config/ai.deepseekKey
+// Falls back to template output if AI is unavailable.
 // ============================================================
 
 const DEEPSEEK_URL = "https://api.deepseek.com/v1/chat/completions";
 
+// ============================================================
+// Load the DeepSeek key from Firestore
+// ============================================================
 async function getDeepSeekKey() {
-  // Reuse whatever your project uses. Common patterns:
+  // 1. Window override first (for dev/testing)
   if (window.DEEPSEEK_API_KEY) return window.DEEPSEEK_API_KEY;
 
-  // Try Firestore config (adjust to your setup)
+  // 2. Read from Firestore config/ai
   try {
-    const { db } = window.__firebase || {};
-    if (db) {
-      const { doc, getDoc } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js");
-      const snap = await getDoc(doc(db, "config", "ai"));
-      if (snap.exists()) {
-        const key = snap.data().deepseekKey;
-        if (key) return key;
+    const { db } = await import("./firebase-config.js");
+    const { doc, getDoc } = await import(
+      "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js"
+    );
+    const snap = await getDoc(doc(db, "config", "ai"));
+    if (snap.exists()) {
+      const data = snap.data();
+      if (data.deepseekKey && typeof data.deepseekKey === "string") {
+        return data.deepseekKey.trim();
       }
     }
-  } catch (e) { /* ignore */ }
+  } catch (e) {
+    console.warn("[ai-learner-module] Could not load key from Firestore:", e);
+  }
 
   return null;
 }
 
+// ============================================================
+// Build the prompt
+// ============================================================
 function buildPrompt(lesson) {
-  const compsText = lesson.competencies.map(c => `- ${c.code}: ${c.text}`).join("\n");
+  const compsText = (lesson.competencies || [])
+    .map(c => `- ${c.code}: ${c.text}`)
+    .join("\n");
 
   return `You are helping a Filipino public school teacher turn a lesson plan into a SIMPLE, SELF-PACED HOME LEARNING MODULE for students.
 
@@ -75,10 +87,14 @@ TASK: Reply with STRICT JSON (no markdown, no code fences) with this shape:
 Keep language simple, warm, and encouraging. Use English with occasional Filipino hints. Do not add any explanation outside the JSON.`;
 }
 
+// ============================================================
+// Enhance with AI
+// ============================================================
 export async function enhanceLearnerModuleWithAI(lesson, onProgress) {
   const key = await getDeepSeekKey();
+
   if (!key) {
-    console.warn("[ai-learner-module] No DeepSeek key configured — using template only.");
+    console.warn("[ai-learner-module] No DeepSeek key configured.");
     return null;
   }
 
@@ -96,6 +112,7 @@ export async function enhanceLearnerModuleWithAI(lesson, onProgress) {
 
   try {
     onProgress?.("Generating content...");
+
     const res = await fetch(DEEPSEEK_URL, {
       method: "POST",
       headers: {
@@ -120,20 +137,23 @@ export async function enhanceLearnerModuleWithAI(lesson, onProgress) {
     try {
       parsed = JSON.parse(raw);
     } catch (e) {
-      // Try to extract the first JSON object
       const m = raw.match(/\{[\s\S]*\}/);
       if (!m) throw new Error("AI returned non-JSON content.");
       parsed = JSON.parse(m[0]);
     }
 
+    onProgress?.("Done.");
     return parsed;
+
   } catch (e) {
     console.error("[ai-learner-module] AI enhancement failed:", e);
     return null;
   }
 }
 
-// Merge AI output into the lesson object before rendering
+// ============================================================
+// Merge AI output into lesson object
+// ============================================================
 export function mergeAIIntoLesson(lesson, aiData) {
   if (!aiData) return lesson;
   const merged = { ...lesson };

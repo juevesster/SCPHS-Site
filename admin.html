@@ -656,6 +656,9 @@
         <button class="ac-nav-item" data-tab="conflicts">
           <span class="ico">⚠️</span> Conflicts
         </button>
+        <button class="ac-nav-item admin-only-tab" data-tab="ai-settings">
+        <span class="ico">🤖</span> AI Settings
+        </button>
       </nav>
 
         <div class="ac-sidebar-footer">
@@ -887,6 +890,7 @@
         case "advisers": renderAdvisersTab(main); break;
         case "subjects": renderSubjectsTab(main); break;
         case "ilaw-settings": renderILAWSettingsTab(main); break;
+        case "ai-settings": renderAISettingsTab(main); break;
         case "rooms":    renderRoomsTab(main); break;
         case "conflicts":renderConflictsTab(main); break;
         default:         renderClassesTab(main);
@@ -4586,6 +4590,153 @@
         }
       });
     }
+
+    // ============================================================
+// TAB: AI SETTINGS
+// ============================================================
+async function renderAISettingsTab(main) {
+  const isAdmin = CURRENT_PROFILE?.isSuperAdmin || CURRENT_PROFILE?.primaryRole === "admin";
+  if (!isAdmin) {
+    main.innerHTML = `<div class="ac-card" style="text-align:center;padding:60px;">
+      <h2 style="color:#b91c1c;">🚫 Admin only</h2>
+      <p>Only admins can configure AI settings.</p>
+    </div>`;
+    return;
+  }
+
+  // Load existing config
+  let cfg = { deepseekKey: "", provider: "deepseek" };
+  try {
+    const { doc, getDoc } = await import(
+      "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js"
+    );
+    const snap = await getDoc(doc(db, "config", "ai"));
+    if (snap.exists()) cfg = { ...cfg, ...snap.data() };
+  } catch (e) {
+    console.warn("[admin] AI config load failed:", e);
+  }
+
+  const hasKey = !!cfg.deepseekKey;
+  const maskedKey = hasKey
+    ? cfg.deepseekKey.slice(0, 7) + "•".repeat(20) + cfg.deepseekKey.slice(-4)
+    : "(not set)";
+
+  main.innerHTML = `
+    <div class="ac-page-header">
+      <h2>🤖 AI Settings</h2>
+      <p>Configure the DeepSeek API key used to power the "Enhance with AI" feature in Learner Modules.</p>
+    </div>
+
+    <div class="ac-card">
+      <h3>🔑 DeepSeek API Key</h3>
+      <p style="color:#6b7280;font-size:13px;margin:0 0 14px;">
+        Get a key from <a href="https://platform.deepseek.com/" target="_blank" style="color:#1e6bb8;">platform.deepseek.com</a>.
+        Stored securely in Firestore. Never exposed to students or the public viewer.
+      </p>
+
+      <div style="background:${hasKey ? "#f0fdf4" : "#fef3c7"};border:1px solid ${hasKey ? "#bbf7d0" : "#fcd34d"};border-radius:8px;padding:12px 14px;margin-bottom:14px;">
+        <div style="font-size:12px;font-weight:700;color:${hasKey ? "#166534" : "#92400e"};">
+          ${hasKey ? "✅ Key is configured" : "⚠️ No key configured — AI features will fall back to templates"}
+        </div>
+        <div style="font-size:11px;color:${hasKey ? "#14532d" : "#92400e"};margin-top:4px;font-family:monospace;">
+          ${esc(maskedKey)}
+        </div>
+      </div>
+
+      <div style="margin-bottom:14px;">
+        <label style="display:block;font-size:11px;font-weight:700;color:#374151;text-transform:uppercase;margin-bottom:6px;">
+          ${hasKey ? "Replace Key (leave blank to keep existing)" : "Paste DeepSeek API Key"}
+        </label>
+        <input type="password" id="cfg-deepseekKey" placeholder="sk-..." autocomplete="off"
+               style="width:100%;padding:10px 12px;border:1px solid #d1d5db;border-radius:8px;font-size:14px;font-family:monospace;" />
+        <div style="font-size:11px;color:#6b7280;margin-top:4px;">
+          Your key is stored in Firestore and only visible to admins.
+        </div>
+      </div>
+
+      <div style="display:flex;gap:10px;flex-wrap:wrap;">
+        <button class="ac-btn success" id="btnSaveAI">💾 Save Key</button>
+        ${hasKey ? `<button class="ac-btn danger" id="btnClearAI">🗑️ Remove Key</button>` : ""}
+      </div>
+    </div>
+
+    <div class="ac-card">
+      <h3>💡 How It Works</h3>
+      <ol style="color:#4b5563;font-size:13px;line-height:1.7;margin:0 0 0 18px;padding:0;">
+        <li>Teacher opens ILAW and generates a Learner Module</li>
+        <li>Teacher clicks <strong>✨ Enhance with AI</strong></li>
+        <li>The portal sends the lesson context to DeepSeek</li>
+        <li>AI returns structured content (greeting, objectives, activities, quiz)</li>
+        <li>Teacher reviews and can edit anything via <strong>✏️ Edit Module</strong></li>
+        <li>Teacher shares via QR / Messenger / Print</li>
+      </ol>
+    </div>
+
+    <div class="ac-card">
+      <h3>💰 Cost Estimate</h3>
+      <p style="color:#4b5563;font-size:13px;margin:0;">
+        DeepSeek charges approximately <strong>₱0.50 – ₱2.00</strong> per module enhancement.
+        A $5 (≈₱280) top-up supports <strong>150-300 enhancements</strong>.
+        Actual usage depends on lesson length.
+      </p>
+    </div>
+  `;
+
+  // Wire save
+  $("btnSaveAI").addEventListener("click", async () => {
+    const newKey = $("cfg-deepseekKey").value.trim();
+    if (!newKey && !hasKey) {
+      toast("⚠️ Please paste a key", "error");
+      return;
+    }
+
+    const btn = $("btnSaveAI");
+    btn.disabled = true;
+    btn.textContent = "Saving…";
+
+    try {
+      const { doc, setDoc, serverTimestamp } = await import(
+        "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js"
+      );
+
+      const updateData = {
+        provider: "deepseek",
+        updatedAt: serverTimestamp(),
+        updatedBy: CURRENT_USER?.email || "",
+      };
+
+      // Only update key if user entered a new one
+      if (newKey) updateData.deepseekKey = newKey;
+
+      await setDoc(doc(db, "config", "ai"), updateData, { merge: true });
+
+      toast("✓ AI settings saved", "success");
+      renderAISettingsTab(main);
+    } catch (e) {
+      console.error(e);
+      toast("⚠️ " + (e.message || "Save failed"), "error");
+      btn.disabled = false;
+      btn.textContent = "💾 Save Key";
+    }
+  });
+
+  // Wire clear
+  $("btnClearAI")?.addEventListener("click", async () => {
+    if (!confirm("Remove the API key? AI features will stop working.")) return;
+    try {
+      const { doc, updateDoc, deleteField } = await import(
+        "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js"
+      );
+      await updateDoc(doc(db, "config", "ai"), {
+        deepseekKey: deleteField(),
+      });
+      toast("✓ Key removed", "success");
+      renderAISettingsTab(main);
+    } catch (e) {
+      toast("⚠️ " + (e.message || "Failed"), "error");
+    }
+  });
+}
     
   </script>
 
