@@ -33,7 +33,6 @@
       max-width: fit-content;
     }
 
-    /* Guest banner — clean, below header */
     #guest-banner {
       background: #eff6ff;
       border-bottom: 1px solid #bfdbfe;
@@ -43,26 +42,18 @@
       font-size: 14px;
     }
 
-      /* ============================================================
-       ADMIN FLOATING ACTION BUTTON STACK
-       Always visible when user is admin. Simple hover lift.
-       ============================================================ */
     #admin-fab-stack {
-  position: fixed;
-  bottom: 96px;
-  right: 24px;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  z-index: 9998;
-}
-
-    /* Show the stack only when body has .is-admin */
-    body.is-admin #admin-fab-stack {
+      position: fixed;
+      bottom: 96px;
+      right: 24px;
       display: flex;
+      flex-direction: column;
+      gap: 8px;
+      z-index: 9998;
     }
+    body.is-admin #admin-fab-stack { display: flex; }
+    body:not(.is-admin) #admin-fab-stack { display: none; }
 
-    /* FAB button styling */
     #admin-fab-stack .fab {
       width: 56px;
       height: 56px;
@@ -77,24 +68,205 @@
       transition: transform .15s, box-shadow .15s;
       cursor: pointer;
     }
-
     #admin-fab-stack .fab:hover {
       transform: translateY(-2px) scale(1.05);
       box-shadow: 0 12px 28px rgba(0,0,0,0.25);
     }
 
-    /* Admin-only inline links (menu items, buttons) — separate rule */
-    .admin-only-link {
-      display: none;
-    }
-    body.is-admin .admin-only-link {
-      display: inline-flex;
-    }
+    .admin-only-link { display: none; }
+    body.is-admin .admin-only-link { display: inline-flex; }
 
-    /* Small phones — shrink FABs */
     @media (max-width: 480px) {
       #admin-fab-stack { right: 16px; gap: 6px; }
       #admin-fab-stack .fab { width: 48px; height: 48px; font-size: 20px; }
+    }
+
+    /* ============================================================
+       ROLE QUICK-ACCESS BANNER (Animated Info Drive)
+       Shows for ALL visitors — cards adapt to role.
+       ============================================================ */
+    .role-cta {
+      max-width: 1200px;
+      margin: 26px auto 8px;
+      padding: 0 16px;
+      display: none;
+    }
+    .role-cta.is-visible {
+      display: block;
+      animation: fadeSlideIn .55s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+
+    @keyframes fadeSlideIn {
+      from { opacity: 0; transform: translateY(16px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .role-cta__head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 14px;
+      flex-wrap: wrap;
+    }
+    .role-cta__head h3 {
+      margin: 0;
+      font-size: 15px;
+      font-weight: 800;
+      color: #0f2b4f;
+      letter-spacing: 0.03em;
+      text-transform: uppercase;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .role-cta__head .sub {
+      font-size: 12.5px;
+      color: #6b7280;
+      margin: 0;
+    }
+
+    .role-cta__grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 16px;
+    }
+
+    .role-card {
+      position: relative;
+      display: block;
+      text-decoration: none;
+      color: inherit;
+      background: #fff;
+      border-radius: 14px;
+      border: 1px solid #e5e7eb;
+      padding: 20px 22px;
+      overflow: hidden;
+      cursor: pointer;
+      transition: transform .28s cubic-bezier(0.22, 1, 0.36, 1),
+                  box-shadow .28s ease,
+                  border-color .28s ease;
+      isolation: isolate;
+    }
+
+    .role-card::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, var(--c1), var(--c2));
+      opacity: 0;
+      transition: opacity .35s ease;
+      z-index: -1;
+    }
+
+    .role-card:hover {
+      transform: translateY(-6px);
+      box-shadow: 0 18px 40px -12px rgba(15, 43, 79, 0.35);
+      border-color: transparent;
+    }
+    .role-card:hover::before { opacity: 1; }
+
+    .role-card:hover .role-card__title,
+    .role-card:hover .role-card__desc,
+    .role-card:hover .role-card__cta {
+      color: #fff;
+    }
+    .role-card:hover .role-card__icon {
+      background: rgba(255,255,255,0.2);
+      border-color: rgba(255,255,255,0.4);
+    }
+
+    .role-card__body {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .role-card__icon {
+      flex-shrink: 0;
+      width: 56px;
+      height: 56px;
+      border-radius: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 26px;
+      background: #eff6ff;
+      border: 1px solid #bfdbfe;
+      transition: all .28s ease;
+    }
+
+    .role-card__text { flex: 1; min-width: 0; }
+
+    .role-card__title {
+      font-size: 16px;
+      font-weight: 800;
+      color: #0f2b4f;
+      margin: 0 0 4px;
+      letter-spacing: -0.01em;
+      transition: color .28s ease;
+    }
+
+    .role-card__desc {
+      font-size: 12.5px;
+      color: #6b7280;
+      margin: 0;
+      line-height: 1.5;
+      transition: color .28s ease;
+    }
+
+    .role-card__cta {
+      margin-top: 12px;
+      font-size: 12.5px;
+      font-weight: 800;
+      color: var(--c1);
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      letter-spacing: 0.02em;
+      transition: color .28s ease, gap .28s ease;
+    }
+
+    .role-card__cta .arrow {
+      display: inline-block;
+      transition: transform .28s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+    .role-card:hover .role-card__cta .arrow {
+      transform: translateX(6px);
+    }
+
+    .role-card .shimmer {
+      position: absolute;
+      top: 0; left: -100%;
+      width: 100%; height: 100%;
+      background: linear-gradient(90deg,
+        transparent 0%,
+        rgba(255,255,255,0.28) 50%,
+        transparent 100%);
+      z-index: 2;
+      pointer-events: none;
+    }
+    .role-card:hover .shimmer {
+      animation: shimmerSwipe 1.1s ease-out;
+    }
+    @keyframes shimmerSwipe {
+      to { left: 100%; }
+    }
+
+    /* Role-based visibility */
+    .role-only-teacher,
+    .role-only-admin { display: none; }
+    body.is-teacher .role-only-teacher,
+    body.is-admin .role-only-admin,
+    body.is-admin .role-only-teacher { display: block; }
+
+    @media (max-width: 640px) {
+      .role-cta { margin-top: 20px; }
+      .role-card { padding: 18px; }
+      .role-card__icon { width: 48px; height: 48px; font-size: 22px; }
+      .role-card__title { font-size: 15px; }
     }
   </style>
 </head>
@@ -142,7 +314,7 @@
     </div>
   </header>
 
-  <!-- ⭐ GUEST WELCOME BANNER (below header, only shown when signed out) ⭐ -->
+  <!-- ⭐ GUEST WELCOME BANNER ⭐ -->
   <div id="guest-banner" style="display:none;">
     👋 <strong>Welcome, visitor!</strong>
     You're viewing public pages.
@@ -237,15 +409,16 @@
           Students <span class="chev" aria-hidden="true">▾</span>
         </button>
         <ul id="menu-students" class="dropdown" role="menu" aria-label="Students">
-        <li role="none"><a role="menuitem" href="students/index.html">Students Home</a></li>
-        <li role="separator" class="menu-sep" aria-hidden="true"></li>
-        <li role="none"><a role="menuitem" href="students/curricular.html">Curricular</a></li>
-        <li role="none"><a role="menuitem" href="students/non-curricular.html">Non‑Curricular</a></li>
-        <li role="none"><a role="menuitem" href="students/academics.html">Academic / Non‑Academic</a></li>
-        <li role="none"><a role="menuitem" href="students/organizations.html">Student Organizations</a></li>
-        <li role="separator" class="menu-sep" aria-hidden="true"></li>
-        <li role="none"><a role="menuitem" href="curriculum/subjects.html">📚 Curriculum &amp; Subjects</a></li>
-      </ul>
+          <li role="none"><a role="menuitem" href="students/index.html">Students Home</a></li>
+          <li role="separator" class="menu-sep" aria-hidden="true"></li>
+          <li role="none"><a role="menuitem" href="students/curricular.html">Curricular</a></li>
+          <li role="none"><a role="menuitem" href="students/non-curricular.html">Non‑Curricular</a></li>
+          <li role="none"><a role="menuitem" href="students/academics.html">Academic / Non‑Academic</a></li>
+          <li role="none"><a role="menuitem" href="students/organizations.html">Student Organizations</a></li>
+          <li role="separator" class="menu-sep" aria-hidden="true"></li>
+          <li role="none"><a role="menuitem" href="curriculum/subjects.html">📚 Curriculum &amp; Subjects</a></li>
+        </ul>
+      </li>
 
       <li class="has-dropdown" role="none">
         <button class="menu-toggle" aria-haspopup="true" aria-expanded="false" aria-controls="menu-bulletin" type="button">
@@ -393,6 +566,148 @@
     </div>
   </section>
 
+  <!-- ============================================================
+       ROLE QUICK-ACCESS BANNER
+       Visible to ALL visitors — cards adapt by role.
+       ============================================================ -->
+  <section class="role-cta" id="role-cta" aria-label="Quick access by role">
+
+    <div class="role-cta__head">
+      <h3>⚡ Quick Access</h3>
+      <p class="sub" id="role-cta-sub">Welcome — pick a card to get started.</p>
+    </div>
+
+    <div class="role-cta__grid">
+
+      <!-- ========== PUBLIC CARD (everyone) ========== -->
+      <a href="#issuances"
+         class="role-card public-card"
+         id="role-card-public"
+         style="--c1:#0f766e; --c2:#059669;"
+         aria-label="Public information — issuances, bulletins, downloads">
+        <span class="shimmer"></span>
+        <div class="role-card__body">
+          <div class="role-card__icon">📢</div>
+          <div class="role-card__text">
+            <p class="role-card__title">Public Info &amp; Issuances</p>
+            <p class="role-card__desc">
+              Browse the latest DepEd memoranda, school advisories, and community bulletins.
+            </p>
+            <span class="role-card__cta">
+              EXPLORE <span class="arrow">→</span>
+            </span>
+          </div>
+        </div>
+      </a>
+
+      <!-- ========== LEARNER MODULES (everyone) ========== -->
+      <a href="m.html"
+         class="role-card modules-card"
+         id="role-card-modules"
+         style="--c1:#0891b2; --c2:#0e7490;"
+         aria-label="Learner Modules — home-based learning during class suspension">
+        <span class="shimmer"></span>
+        <div class="role-card__body">
+          <div class="role-card__icon">📘</div>
+          <div class="role-card__text">
+            <p class="role-card__title">Learner Modules</p>
+            <p class="role-card__desc">
+              Access home-learning modules during class suspensions. No login needed — scan or click.
+            </p>
+            <span class="role-card__cta">
+              OPEN <span class="arrow">→</span>
+            </span>
+          </div>
+        </div>
+      </a>
+
+      <!-- ========== TEACHER CARD ========== -->
+      <a href="ilaw.html"
+         class="role-card teacher-card role-only-teacher"
+         id="role-card-teacher"
+         style="--c1:#7c3aed; --c2:#4f46e5;"
+         aria-label="ILAW Lesson Planner — create lessons and materials">
+        <span class="shimmer"></span>
+        <div class="role-card__body">
+          <div class="role-card__icon">👩‍🏫</div>
+          <div class="role-card__text">
+            <p class="role-card__title">ILAW Lesson Planner</p>
+            <p class="role-card__desc">
+              Create lesson plans, generate Learner Modules with AI, and share materials with students.
+            </p>
+            <span class="role-card__cta">
+              START TEACHING <span class="arrow">→</span>
+            </span>
+          </div>
+        </div>
+      </a>
+
+      <!-- ========== ADMIN CARD ========== -->
+      <a href="admin.html"
+         class="role-card admin-card role-only-admin"
+         id="role-card-admin"
+         style="--c1:#0f2b4f; --c2:#1e3c72;"
+         aria-label="Admin Center — class programs, users, schedules">
+        <span class="shimmer"></span>
+        <div class="role-card__body">
+          <div class="role-card__icon">🛡️</div>
+          <div class="role-card__text">
+            <p class="role-card__title">Admin Center</p>
+            <p class="role-card__desc">
+              Manage class programs, users, rooms, time slots, and schedules — everything administrative in one place.
+            </p>
+            <span class="role-card__cta">
+              OPEN ADMIN <span class="arrow">→</span>
+            </span>
+          </div>
+        </div>
+      </a>
+
+      <!-- ========== BULK TOOLS (Admin only) ========== -->
+      <a href="admin-bulk.html"
+         class="role-card bulk-card role-only-admin"
+         id="role-card-bulk"
+         style="--c1:#9333ea; --c2:#6d28d9;"
+         aria-label="Bulk Tools — Word to Excel, multi-class import">
+        <span class="shimmer"></span>
+        <div class="role-card__body">
+          <div class="role-card__icon">🚀</div>
+          <div class="role-card__text">
+            <p class="role-card__title">Bulk Tools</p>
+            <p class="role-card__desc">
+              Convert Word to Excel, bulk import schedules, and copy class programs across sections.
+            </p>
+            <span class="role-card__cta">
+              OPEN TOOLS <span class="arrow">→</span>
+            </span>
+          </div>
+        </div>
+      </a>
+
+      <!-- ========== MANAGE USERS (Admin only) ========== -->
+      <a href="manage-users.html"
+         class="role-card users-card role-only-admin"
+         id="role-card-users"
+         style="--c1:#be185d; --c2:#9d174d;"
+         aria-label="Manage Users — roles and access">
+        <span class="shimmer"></span>
+        <div class="role-card__body">
+          <div class="role-card__icon">👥</div>
+          <div class="role-card__text">
+            <p class="role-card__title">Manage Users</p>
+            <p class="role-card__desc">
+              Assign roles, activate accounts, and control access to portal features.
+            </p>
+            <span class="role-card__cta">
+              MANAGE <span class="arrow">→</span>
+            </span>
+          </div>
+        </div>
+      </a>
+
+    </div>
+  </section>
+
   <!-- ===================== MAIN: 3-COLUMN GRID ===================== -->
   <main class="wrap">
     <div class="content-grid">
@@ -536,7 +851,7 @@
           </div>
         </article>
 
-                <article id="core-values" class="card" style="grid-column: 1 / -1;">
+        <article id="core-values" class="card" style="grid-column: 1 / -1;">
           <h3>Core Values</h3>
           <div style="padding:16px">
             <ul class="list">
@@ -548,7 +863,6 @@
           </div>
         </article>
 
-        <!-- ⭐ PRINCIPALS ⭐ -->
         <article id="principals" class="card" style="grid-column: 1 / -1;">
           <h3>Principals</h3>
           <div style="padding:16px">
@@ -568,7 +882,6 @@
           </div>
         </article>
 
-        <!-- ⭐ ORGANIZATIONAL CHART ⭐ -->
         <article id="organizational-chart" class="card" style="grid-column: 1 / -1;">
           <h3>Organizational Chart</h3>
           <div style="padding:16px">
@@ -611,7 +924,6 @@
           </div>
         </article>
 
-        <!-- ⭐ DEPED QUALITY POLICY STATEMENT ⭐ -->
         <article id="deped-qps" class="card" style="grid-column: 1 / -1;">
           <h3>DepEd Quality Policy Statement</h3>
           <div style="padding:16px">
@@ -1028,7 +1340,7 @@
       });
     })();
 
-    // ============ Latest from Bulletin (reads from Firestore) ============
+    // ============ Latest from Bulletin ============
     (function initBulletin() {
       const list = document.getElementById('latest-bb-list');
       if (!list) return;
@@ -1070,82 +1382,59 @@
   })();
   </script>
 
-    <!-- ============================================================
+  <!-- ============================================================
        ADMIN FLOATING ACTION BUTTONS
-       Hidden from non-admins via .admin-only-link class.
-       Stacked vertically above the chatbot bubble.
        ============================================================ -->
-    <div id="admin-fab-stack">
+  <div id="admin-fab-stack">
 
-    <!-- Admin Center (top) -->
     <a href="admin.html"
        id="fab-admin-center"
        class="fab"
        title="Admin Control Center"
        style="background:#0f2b4f;"
-       onmouseover="this.style.background='#1e3c72';"
-       onmouseout="this.style.background='#0f2b4f';"
     >🏛️</a>
 
-    <!-- Bulk Tools (NEW) -->
     <a href="admin-bulk.html"
        id="fab-bulk"
        class="fab"
        title="Bulk Tools — Word to Excel, Multi-Class Import, Bulk Copy"
        style="background:#7c3aed;"
-       onmouseover="this.style.background='#6d28d9';"
-       onmouseout="this.style.background='#7c3aed';"
     >🚀</a>
 
-    <!-- Import Program (NEW) -->
     <a href="admin-import-program.html"
        id="fab-import"
        class="fab"
        title="Import Class Program"
        style="background:#dc2626;"
-       onmouseover="this.style.background='#b91c1c';"
-       onmouseout="this.style.background='#dc2626';"
     >📥</a>
 
-    <!-- Schedule Config -->
     <a href="schedule-config.html"
        id="fab-schedule"
        class="fab"
        title="Configure Time Slots"
        style="background:#d97706;"
-       onmouseover="this.style.background='#b45309';"
-       onmouseout="this.style.background='#d97706';"
     >⚙️</a>
 
-    <!-- Manage Users -->
     <a href="manage-users.html"
        id="fab-users"
        class="fab"
        title="Manage User Roles"
        style="background:#6f42c1;"
-       onmouseover="this.style.background='#5a32a3';"
-       onmouseout="this.style.background='#6f42c1';"
     >👥</a>
 
-    <!-- SF1 — School Register -->
     <a href="sf1.html"
        id="fab-sf1"
        class="fab"
        title="SF1 — School Register"
        style="background:#059669;"
-       onmouseover="this.style.background='#047857';"
-       onmouseout="this.style.background='#059669';"
     >📚</a>
 
-    <!-- School Memorandum Admin (bottom) -->
     <a href="school-memorandum.html"
        id="fab-memo"
        class="fab"
        title="School Memorandum Admin"
        aria-label="Open School Memorandum admin page"
        style="background:#0f4c81;"
-       onmouseover="this.style.background='#1e6bb8';"
-       onmouseout="this.style.background='#0f4c81';"
     >🔒</a>
 
   </div>
@@ -1164,6 +1453,8 @@
 
     onAuthStateChanged(auth, async (user) => {
       document.body.classList.remove("is-admin");
+      document.body.classList.remove("is-teacher");
+      document.body.classList.remove("is-guest");
 
       if (!user) {
         // ---------- Guest ----------
@@ -1173,6 +1464,13 @@
           logout.style.background = "#0f4c81";
         }
         if (banner) banner.style.display = "block";
+
+        // Show quick-access banner for guests
+        const roleCTA = document.getElementById("role-cta");
+        const roleSub = document.getElementById("role-cta-sub");
+        if (roleCTA) roleCTA.classList.add("is-visible");
+        if (roleSub) roleSub.textContent = "Welcome, visitor! Explore our public pages.";
+        document.body.classList.add("is-guest");
         return;
       }
 
@@ -1185,34 +1483,47 @@
       }
       if (banner) banner.style.display = "none";
 
-      // Determine admin status
+      // Determine role
       const ADMIN_EMAILS = [
-  "ricardo.jueves@deped.gov.ph",
-  "juevesster@gmail.com",
-  // Add more admin emails here:
-  "arman.puyao@deped.gov.ph",
-  "puyaoarman@gmail.com",
-  "shereen.paraguas@deped.gov.ph",
-  "darna.bugnay@deped.gov.ph",
-  // "principal.scphs@deped.gov.ph",
-];
-const ADMIN_EMAILS_LOWER = ADMIN_EMAILS.map(e => e.toLowerCase());
+        "ricardo.jueves@deped.gov.ph",
+        "juevesster@gmail.com",
+        "arman.puyao@deped.gov.ph",
+        "puyaoarman@gmail.com",
+        "shereen.paraguas@deped.gov.ph",
+        "darna.bugnay@deped.gov.ph",
+      ];
+      const ADMIN_EMAILS_LOWER = ADMIN_EMAILS.map(e => e.toLowerCase());
 
-let isAdmin = ADMIN_EMAILS_LOWER.includes((user.email || "").toLowerCase());
+      let isAdmin = ADMIN_EMAILS_LOWER.includes((user.email || "").toLowerCase());
+      let isTeacher = false;
 
       if (!isAdmin) {
         try {
           const snap = await getDoc(doc(db, "users", user.uid));
           if (snap.exists()) {
-            const role = snap.data().role;
-            isAdmin = role === "admin" || role === "teacher";
+            const role = snap.data().role || snap.data().primaryRole;
+            if (role === "admin") isAdmin = true;
+            else if (role === "teacher") isTeacher = true;
           }
         } catch (e) {
           console.warn("[role] lookup failed:", e?.code || e?.message);
         }
+      } else {
+        isTeacher = true;
       }
 
-      if (isAdmin) document.body.classList.add("is-admin");
+      if (isAdmin)  document.body.classList.add("is-admin");
+      if (isTeacher && !isAdmin) document.body.classList.add("is-teacher");
+
+      // Show quick-access banner
+      const roleCTA = document.getElementById("role-cta");
+      const roleSub = document.getElementById("role-cta-sub");
+      if (roleCTA) roleCTA.classList.add("is-visible");
+      if (roleSub) {
+        if (isAdmin)         roleSub.textContent = "Welcome back, Admin. Your tools are ready.";
+        else if (isTeacher)  roleSub.textContent = "Welcome back, Teacher. Let's get started.";
+        else                 roleSub.textContent = "Welcome! Explore our portal features.";
+      }
     });
 
     // Logout / Sign In button
