@@ -281,7 +281,7 @@
 
     async function init() {
       if (!SLUG) {
-        showError("Missing module ID", "This link is incomplete. Please ask your teacher for the correct link.");
+        showNoSlugLanding();
         return;
       }
 
@@ -320,9 +320,106 @@
 
     function showError(title, message) {
       $("viewerMain").innerHTML = `
-        <div class="viewer-error">
-          <h2>⚠️ ${title}</h2>
+        <div class="viewer-error" style="max-width:520px;margin:0 auto;">
+          <div style="font-size:3rem;margin-bottom:10px;">⚠️</div>
+          <h2>${title}</h2>
           <p>${message}</p>
+          <div style="margin-top:20px;">
+            <a href="index.html" style="
+              display:inline-block;
+              padding:10px 20px;
+              background:#1e3c72;
+              color:#fff;
+              border-radius:8px;
+              text-decoration:none;
+              font-weight:700;
+              font-size:13px;
+            ">
+              ← Back to Homepage
+            </a>
+          </div>
+        </div>
+      `;
+    }
+
+    // ============================================================
+    // Landing page shown when no slug is provided
+    // ============================================================
+    function showNoSlugLanding() {
+      $("pageTitle").textContent = "Learning Module Portal";
+      $("pageSub").textContent = "Home-based learning for students";
+
+      // Hide the top bar buttons since there's nothing to print/download
+      const printBtn = document.getElementById("btnPrint");
+      const dlBtn = document.getElementById("btnDownload");
+      if (printBtn) printBtn.style.display = "none";
+      if (dlBtn) dlBtn.style.display = "none";
+
+      $("viewerMain").innerHTML = `
+        <div style="background:#fff;border-radius:14px;padding:40px 30px;box-shadow:0 4px 16px rgba(0,0,0,.06);text-align:center;max-width:640px;margin:0 auto;">
+
+          <div style="font-size:4rem;margin-bottom:12px;">📘</div>
+
+          <h1 style="margin:0 0 8px;font-size:1.6rem;color:#0f2b4f;letter-spacing:-0.01em;">
+            Learning Module Portal
+          </h1>
+
+          <p style="margin:0 0 24px;font-size:15px;color:#6b7280;line-height:1.6;">
+            This page shows home-learning modules your teacher has shared.<br>
+            To view a specific module, you need a <strong>direct link</strong> from your teacher.
+          </p>
+
+          <!-- How to get a module -->
+          <div style="text-align:left;background:#eff6ff;border:1px solid #bfdbfe;border-radius:12px;padding:20px 22px;margin-bottom:24px;">
+            <div style="font-size:11px;font-weight:800;color:#1e40af;text-transform:uppercase;letter-spacing:.06em;margin-bottom:12px;">
+              🔗 How to access your module
+            </div>
+            <ol style="margin:0 0 0 18px;padding:0;font-size:14px;color:#1e3a8a;line-height:1.9;">
+              <li>Ask your teacher for the <strong>module link</strong> via Messenger or GC</li>
+              <li>Tap the link on your phone — it will open the module directly</li>
+              <li>Or <strong>scan the QR code</strong> on the printed module</li>
+            </ol>
+          </div>
+
+          <!-- Quick links -->
+          <div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:center;">
+            <a href="index.html" style="
+              padding:12px 22px;
+              background:#1e3c72;
+              color:#fff;
+              border-radius:9px;
+              text-decoration:none;
+              font-weight:700;
+              font-size:14px;
+              display:inline-flex;
+              align-items:center;
+              gap:8px;
+            ">
+              🏠 Back to Homepage
+            </a>
+            <a href="login.html" style="
+              padding:12px 22px;
+              background:#fff;
+              color:#1e3c72;
+              border:1.5px solid #1e3c72;
+              border-radius:9px;
+              text-decoration:none;
+              font-weight:700;
+              font-size:14px;
+              display:inline-flex;
+              align-items:center;
+              gap:8px;
+            ">
+              🔑 Teacher Sign In
+            </a>
+          </div>
+
+          <!-- Small note -->
+          <p style="margin:24px 0 0;font-size:12px;color:#9ca3af;">
+            Struggling to access a module? Contact your teacher.<br>
+            Parents may request the answer key separately.
+          </p>
+
         </div>
       `;
     }
