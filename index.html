@@ -262,12 +262,15 @@
 .role-only-guest-teacher { display: none; }
 
 /* Base teacher visibility — any teacher sees SOME teacher card */
-body.is-teacher .role-only-teacher,
-body.is-admin .role-only-teacher { display: block; }
+/* Base: hide all role-specific cards */
+.role-only-admin,
+.role-only-scphs-teacher,
+.role-only-guest-teacher { display: none; }
 
+/* Admin cards */
 body.is-admin .role-only-admin { display: block; }
 
-/* Teacher-type specific cards (Option A — exclusive) */
+/* Teacher-type exclusive cards (Option A) */
 body.is-scphs-teacher .role-only-scphs-teacher { display: block; }
 body.is-guest-teacher .role-only-guest-teacher { display: block; }
 
@@ -723,7 +726,7 @@ body.is-admin .role-only-guest-teacher { display: block; }
 
       <!-- ========== SCPHS TEACHER CARD (exclusive — ilaw.html) ========== -->
 <a href="ilaw.html"
-   class="role-card teacher-card role-only-teacher role-only-scphs-teacher"
+   class="role-card teacher-card role-only-scphs-teacher"
    id="role-card-teacher-scphs"
    style="--c1:#1e3c72; --c2:#2a5298;"
    aria-label="ILAW Lesson Planner — SCPHS assigned classes">
@@ -744,7 +747,7 @@ body.is-admin .role-only-guest-teacher { display: block; }
 
 <!-- ========== GUEST TEACHER CARD (exclusive — ilaw-open.html) ========== -->
 <a href="ilaw-open.html"
-   class="role-card teacher-card role-only-teacher role-only-guest-teacher"
+   class="role-card teacher-card role-only-guest-teacher"
    id="role-card-teacher-open"
    style="--c1:#7c3aed; --c2:#4f46e5;"
    aria-label="ILAW Open Workspace — any subject, any grade">
