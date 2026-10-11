@@ -2012,6 +2012,13 @@ let LM_CURRENT_HTML = "";
 async function openLearnerModuleModal() {
   const lesson = collectLessonData();
 
+    // 🏫 Attach template values so the module editor can pre-fill School Details
+  lesson._templateRegion        = ILAW_CONFIG?.region        || "Region II – Cagayan Valley";
+  lesson._templateDivision      = ILAW_CONFIG?.division      || "Schools Division of Nueva Vizcaya";
+  lesson._templateSchoolName    = ILAW_CONFIG?.schoolName    || "STA. CRUZ PINGKIAN HIGH SCHOOL";
+  lesson._templateSchoolAddress = ILAW_CONFIG?.schoolAddress || "Brgy. Sta. Cruz, Pingkian, Nueva Vizcaya";
+  lesson._templateGreeting      = "Kumusta! While classes are on hold, let's keep learning. Take your time — this module is for you.";
+
   if (!lesson.lessonTitle && !lesson.subjectName) {
     toast("⚠️ Please fill in the lesson details first.", "error");
     return;

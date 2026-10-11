@@ -162,6 +162,7 @@ export function buildLearnerModuleHTML(lessonRaw, cfg = {}, options = {}) {
   };
 
   // Convert relative paths to absolute URLs (fixes mobile browsers)
+  // Convert relative paths to absolute URLs (fixes mobile browsers)
 function resolveLogoUrl(path) {
   if (!path) return "";
   if (path.startsWith("http://") || path.startsWith("https://") || path.startsWith("data:")) {
@@ -171,15 +172,20 @@ function resolveLogoUrl(path) {
   const base = location.origin + location.pathname.replace(/\/[^/]*$/, "");
   return `${base}/${path.replace(/^\.?\//, "")}`;
 }
+
+// 🏫 Per-module school overrides (from Edit Module → School Details)
+const sd = overrides.schoolDetails || {};
+
 const C = {
     depedLogo:        resolveLogoUrl(cfg.depedLogo),
     schoolLogo:       resolveLogoUrl(cfg.schoolLogo),
     headerLine1:      cfg.headerLine1 || "Republic of the Philippines",
     headerLine2:      cfg.headerLine2 || "Department of Education",
-    region:           cfg.region || "",
-    division:         cfg.division || "",
-    schoolName:       cfg.schoolName || "",
-    schoolAddress:    cfg.schoolAddress || "",
+    // 🏫 School details — override first, then fall back to config (SCPHS defaults)
+    region:           sd.region        || cfg.region        || "",
+    division:         sd.division      || cfg.division      || "",
+    schoolName:       sd.schoolName    || cfg.schoolName    || "",
+    schoolAddress:    sd.schoolAddress || cfg.schoolAddress || "",
     footerLine1:      cfg.footerLine1 || "",
     preparedByLabel:  cfg.preparedByLabel || "Prepared by:",
     checkedByLabel:   cfg.checkedByLabel  || "Checked by:",

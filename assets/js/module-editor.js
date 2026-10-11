@@ -1,6 +1,7 @@
 // ============================================================
-// MODULE EDITOR — V1
+// MODULE EDITOR — V2
 // Additive overlay for editing Learner Modules.
+// Now with 🏫 School Details (Region, Division, School Name, Address)
 // Saves overrides to lessons/{id}.learnerModuleOverrides
 // Existing generator (learner-module.js) is UNTOUCHED.
 // ============================================================
@@ -51,10 +52,13 @@ export async function clearOverrides(lessonId) {
 
 // ---------- Open editor modal ----------
 export async function openEditorModal(lessonId, currentLesson, onSave) {
-  // currentLesson = the object from collectLessonData()
   // Load existing overrides first
   const existing = await loadOverrides(lessonId);
   const state = {
+    // 🏫 School Details (new)
+    schoolDetails: existing.schoolDetails || null,
+
+    // Existing fields
     greeting:     existing.greeting     || null,
     lessonIntro:  existing.lessonIntro  || null,
     materials:    existing.materials    || null,
@@ -66,8 +70,14 @@ export async function openEditorModal(lessonId, currentLesson, onSave) {
     hiddenSections: existing.hiddenSections || [],
   };
 
-  // Get template values for placeholders (what shows if not overridden)
+  // Template values (what shows if not overridden)
   const template = {
+    schoolDetails: {
+      region:        currentLesson._templateRegion        || "",
+      division:      currentLesson._templateDivision      || "",
+      schoolName:    currentLesson._templateSchoolName    || "",
+      schoolAddress: currentLesson._templateSchoolAddress || "",
+    },
     greeting: currentLesson._templateGreeting || "Kumusta! While classes are on hold, let's keep learning. Take your time — this module is for you.",
     lessonIntro: currentLesson.contentStandard || "",
     materials: currentLesson.materials || currentLesson.materialsText || "",
@@ -125,13 +135,12 @@ export async function openEditorModal(lessonId, currentLesson, onSave) {
   document.getElementById("lmeCancel").addEventListener("click", closeModal);
   modal.addEventListener("click", e => { if (e.target === modal) closeModal(); });
 
-  // ---------- Wire save ----------
+  // ---------- Wire Save ----------
   document.getElementById("lmeSave").addEventListener("click", async () => {
     const btn = document.getElementById("lmeSave");
     btn.disabled = true;
     btn.textContent = "Saving…";
 
-    // Collect overrides from form
     const newOverrides = collectOverridesFromForm(state, template);
 
     try {
@@ -151,7 +160,7 @@ export async function openEditorModal(lessonId, currentLesson, onSave) {
     }
   });
 
-  // ---------- Wire reset all ----------
+  // ---------- Wire Reset All ----------
   document.getElementById("lmeResetAll").addEventListener("click", async () => {
     if (!confirm("Reset all edits back to the template? This cannot be undone.")) return;
     try {
@@ -169,7 +178,18 @@ export async function openEditorModal(lessonId, currentLesson, onSave) {
     }
   });
 
-  // ---------- Wire dynamic add/remove buttons ----------
+  // ---------- Wire Use SCPHS defaults button ----------
+  const useDefaultsBtn = modal.querySelector("#lmeUseDefaults");
+  if (useDefaultsBtn) {
+    useDefaultsBtn.addEventListener("click", () => {
+      modal.querySelector('[data-lme-sd="region"]').value        = template.schoolDetails.region;
+      modal.querySelector('[data-lme-sd="division"]').value      = template.schoolDetails.division;
+      modal.querySelector('[data-lme-sd="schoolName"]').value    = template.schoolDetails.schoolName;
+      modal.querySelector('[data-lme-sd="schoolAddress"]').value = template.schoolDetails.schoolAddress;
+    });
+  }
+
+  // ---------- Wire dynamic add/remove ----------
   wireEditorDynamic(modal, state, template);
 }
 
@@ -178,6 +198,44 @@ export async function openEditorModal(lessonId, currentLesson, onSave) {
 // ============================================================
 function renderEditorSections(state, template) {
   return `
+    <!-- 🏫 SCHOOL DETAILS (NEW) -->
+    <div class="lme-section lme-school-details" data-section="schoolDetails">
+      <div class="lme-section-head">
+        <div class="lme-section-title">🏫 School Details</div>
+        <button class="lme-use-defaults" id="lmeUseDefaults" type="button">🔄 Use SCPHS defaults</button>
+      </div>
+      <div class="lme-hint" style="margin-top:0;margin-bottom:10px;">
+        These appear on the printed module header. Guest teachers should change to their own school.
+      </div>
+
+      <div class="lme-sd-grid">
+        <div class="lme-sd-field">
+          <label>Region</label>
+          <input type="text" data-lme-sd="region"
+                 value="${esc(state.schoolDetails?.region || "")}"
+                 placeholder="${esc(template.schoolDetails.region || 'Region II – Cagayan Valley')}">
+        </div>
+        <div class="lme-sd-field">
+          <label>Schools Division</label>
+          <input type="text" data-lme-sd="division"
+                 value="${esc(state.schoolDetails?.division || "")}"
+                 placeholder="${esc(template.schoolDetails.division || 'Schools Division of Nueva Vizcaya')}">
+        </div>
+        <div class="lme-sd-field">
+          <label>School Name</label>
+          <input type="text" data-lme-sd="schoolName"
+                 value="${esc(state.schoolDetails?.schoolName || "")}"
+                 placeholder="${esc(template.schoolDetails.schoolName || 'STA. CRUZ PINGKIAN HIGH SCHOOL')}">
+        </div>
+        <div class="lme-sd-field">
+          <label>School Address</label>
+          <input type="text" data-lme-sd="schoolAddress"
+                 value="${esc(state.schoolDetails?.schoolAddress || "")}"
+                 placeholder="${esc(template.schoolDetails.schoolAddress || 'Brgy. Sta. Cruz, Pingkian, Nueva Vizcaya')}">
+        </div>
+      </div>
+    </div>
+
     <!-- GREETING -->
     <div class="lme-section" data-section="greeting">
       <div class="lme-section-head">
@@ -346,6 +404,59 @@ function renderEditorSections(state, template) {
         font-size:10.5px;font-weight:700;color:#6b7280;
         text-transform:uppercase;letter-spacing:.04em;
       }
+
+      /* 🏫 School Details section */
+      .lme-school-details {
+        background: linear-gradient(135deg, #eff6ff, #dbeafe);
+        border-color: #93c5fd;
+      }
+      .lme-school-details .lme-section-title {
+        color: #1e40af;
+      }
+      .lme-use-defaults {
+        padding: 6px 12px;
+        border: 1px solid #1e40af;
+        background: #fff;
+        color: #1e40af;
+        border-radius: 6px;
+        font-size: 11px;
+        font-weight: 700;
+        cursor: pointer;
+        font-family: inherit;
+        transition: all .15s;
+      }
+      .lme-use-defaults:hover {
+        background: #1e40af;
+        color: #fff;
+      }
+      .lme-sd-grid {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 10px;
+      }
+      .lme-sd-field label {
+        display: block;
+        font-size: 11px;
+        font-weight: 700;
+        color: #1e40af;
+        text-transform: uppercase;
+        letter-spacing: .04em;
+        margin-bottom: 4px;
+      }
+      .lme-sd-field input {
+        width: 100%;
+        padding: 9px 12px;
+        border: 1px solid #93c5fd;
+        border-radius: 6px;
+        font-size: 13px;
+        font-family: inherit;
+        background: #fff;
+      }
+      .lme-sd-field input:focus {
+        outline: none;
+        border-color: #1e40af;
+        box-shadow: 0 0 0 3px rgba(30,64,175,.15);
+      }
     </style>
   `;
 }
@@ -384,7 +495,6 @@ function renderActivityItems(activities) {
 // WIRE DYNAMIC ADD/REMOVE
 // ============================================================
 function wireEditorDynamic(modal, state, template) {
-  // Add buttons
   modal.querySelectorAll("[data-lme-add]").forEach(btn => {
     btn.addEventListener("click", () => {
       const name = btn.dataset.lmeAdd;
@@ -393,7 +503,6 @@ function wireEditorDynamic(modal, state, template) {
       if (name === "activities") {
         const i = list.querySelectorAll("[data-lme-activity]").length;
         list.insertAdjacentHTML("beforeend", renderActivityItems([{ title: "", duration: "10 min", instructions: "" }]));
-        // Fix index for the new card
         const lastCard = list.querySelector(`[data-lme-activity]:last-child`);
         if (lastCard) {
           lastCard.dataset.lmeActivity = String(i);
@@ -438,6 +547,16 @@ function wireDeleteButtons(modal) {
 // ============================================================
 function collectOverridesFromForm(state, template) {
   const result = {};
+
+  // 🏫 School Details (NEW)
+  const sd = {};
+  ["region", "division", "schoolName", "schoolAddress"].forEach(key => {
+    const el = document.querySelector(`[data-lme-sd="${key}"]`);
+    if (!el) return;
+    const val = el.value.trim();
+    if (val) sd[key] = val;
+  });
+  if (Object.keys(sd).length) result.schoolDetails = sd;
 
   // Text fields
   ["greeting", "lessonIntro", "materials", "howToSubmit"].forEach(name => {
