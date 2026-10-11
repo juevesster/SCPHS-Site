@@ -1570,7 +1570,7 @@
       }
       if (banner) banner.style.display = "none";
 
-      // Determine role
+            // Determine role — robust, case-insensitive, multiple field names
       const ADMIN_EMAILS = [
         "ricardo.jueves@deped.gov.ph",
         "juevesster@gmail.com",
@@ -1581,23 +1581,55 @@
       ];
       const ADMIN_EMAILS_LOWER = ADMIN_EMAILS.map(e => e.toLowerCase());
 
+      // Role values we recognize as "teacher" or "admin"
+      const TEACHER_ROLES = ["teacher", "faculty", "instructor", "adviser", "advisor", "educator"];
+      const ADMIN_ROLES = ["admin", "administrator", "superadmin", "principal", "head", "director"];
+
       let isAdmin = ADMIN_EMAILS_LOWER.includes((user.email || "").toLowerCase());
       let isTeacher = false;
+      let detectedRole = "(none)";
 
-      if (!isAdmin) {
-        try {
-          const snap = await getDoc(doc(db, "users", user.uid));
-          if (snap.exists()) {
-            const role = snap.data().role || snap.data().primaryRole;
-            if (role === "admin") isAdmin = true;
-            else if (role === "teacher") isTeacher = true;
-          }
-        } catch (e) {
-          console.warn("[role] lookup failed:", e?.code || e?.message);
+      try {
+        const snap = await getDoc(doc(db, "users", user.uid));
+        if (snap.exists()) {
+          const data = snap.data();
+          // Check multiple possible role fields
+          const rawRole =
+            data.primaryRole ||
+            data.role ||
+            data.userRole ||
+            data.type ||
+            "";
+          detectedRole = String(rawRole).toLowerCase().trim();
+
+          if (ADMIN_ROLES.includes(detectedRole)) isAdmin = true;
+          if (TEACHER_ROLES.includes(detectedRole)) isTeacher = true;
+
+          // Also check permissions flags
+          if (data.isSuperAdmin === true) isAdmin = true;
+          if (data.permissions?.canEnterGrades === true) isTeacher = true;
+          if (data.permissions?.canManageClasses === true) { isAdmin = true; isTeacher = true; }
+        } else {
+          console.warn("[role] No users doc found for uid:", user.uid);
         }
-      } else {
-        isTeacher = true;
+            } catch (e) {
+        console.warn("[role] lookup failed:", e?.code || e?.message);
       }
+
+      // Fallback: any @deped.gov.ph email is treated as teacher
+      // This runs OUTSIDE the catch — handles "no doc" and "wrong role value" cases
+      if (!isAdmin && !isTeacher) {
+        const email = String(user.email || "").toLowerCase();
+        if (email.endsWith("@deped.gov.ph")) {
+          isTeacher = true;
+          console.log("[role] Fallback: treating @deped.gov.ph email as teacher");
+        }
+      }
+
+      // If admin, they're also implicitly a teacher
+      if (isAdmin) isTeacher = true;
+
+      console.log("[role] Detected:", { email: user.email, isAdmin, isTeacher, rawRole: detectedRole });
 
       if (isAdmin)  document.body.classList.add("is-admin");
       if (isTeacher && !isAdmin) document.body.classList.add("is-teacher");
