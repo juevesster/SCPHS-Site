@@ -1693,16 +1693,46 @@ if (isAdmin) {
         // If admin explicitly approved them as a teacher without a type,
         // we assume SCPHS by default ONLY if they have classes.
         // Otherwise treat as guest.
-        let hasAssignedClasses = false;
-        try {
-          const classesSnap = await getDocs(collection(db, "classes"));
-          hasAssignedClasses = classesSnap.docs.some(d => {
-            const c = d.data();
-            return c.adviserUid === user.uid
-              || (Array.isArray(c.teacherUids) && c.teacherUids.includes(user.uid));
-          });
-        } catch {}
-        teacherType = hasAssignedClasses ? "scphs" : "guest";
+        // No teacherType field — check if they have any class assignments
+let hasAssignedClasses = false;
+try {
+  const classesSnap = await getDocs(collection(db, "classes"));
+
+  for (const classDoc of classesSnap.docs) {
+    const c = classDoc.data();
+
+    // 1) Adviser check
+    if (c.adviserUid === user.uid) { hasAssignedClasses = true; break; }
+
+    // 2) teacherUids array check
+    if (Array.isArray(c.teacherUids) && c.teacherUids.includes(user.uid)) {
+      hasAssignedClasses = true; break;
+    }
+
+    // 3) subjectTeachers map check
+    if (c.subjectTeachers && typeof c.subjectTeachers === "object") {
+      if (Object.values(c.subjectTeachers).includes(user.uid)) {
+        hasAssignedClasses = true; break;
+      }
+    }
+
+    // 4) program subcollection check — matches how ilaw.html's loadSectionsForTeacher works
+    try {
+      const progSnap = await getDocs(collection(db, "classes", classDoc.id, "program"));
+      const hasProg = progSnap.docs.some(d => {
+        const e = d.data();
+        return e.teacherUid === user.uid;
+      });
+      if (hasProg) { hasAssignedClasses = true; break; }
+    } catch (err) {
+      // subcollection read may fail if rules block it — ignore
+    }
+  }
+} catch (e) {
+  console.warn("[role] class lookup failed:", e);
+}
+teacherType = hasAssignedClasses ? "scphs" : "guest";
+console.log("[role] Fallback class detection:", hasAssignedClasses ? "SCPHS" : "Guest");
       }
     }
   } catch (e) {
