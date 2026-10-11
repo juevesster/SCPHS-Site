@@ -1719,24 +1719,25 @@ if (isAdmin) {
       const roleCTA = document.getElementById("role-cta");
       const roleSub = document.getElementById("role-cta-sub");
       if (roleCTA) roleCTA.classList.add("is-visible");
-      if (roleSub) {
+            if (roleSub) {
         if (isAdmin) {
-  roleSub.textContent = "Welcome back, Admin. Your tools are ready.";
-} else if (isTeacher && document.body.classList.contains("is-guest-teacher")) {
-  roleSub.textContent = "Welcome! Your Open Workspace is ready — create lessons for any subject.";
-} else if (isTeacher) {
-  roleSub.textContent = "Welcome back, Teacher. Let's get started.";
-} else {
-  // Not yet approved — show pending hint for recent signups
-  const signupDate = user.metadata?.creationTime ? new Date(user.metadata.creationTime) : null;
-  const hoursSince = signupDate ? (Date.now() - signupDate) / 36e5 : 999;
-  if (hoursSince < 72) {
-    roleSub.innerHTML = `⏳ <strong>Account pending approval.</strong> An admin will activate your teacher access shortly. You can still browse public pages below.`;
-    roleSub.style.color = "#92400e";
-  } else {
-    roleSub.textContent = "Welcome! Explore our portal features.";
-  }
-}
+          roleSub.textContent = "Welcome back, Admin. Your tools are ready.";
+        } else if (isTeacher && document.body.classList.contains("is-guest-teacher")) {
+          roleSub.textContent = "Welcome! Your Open Workspace is ready — create lessons for any subject.";
+        } else if (isTeacher) {
+          roleSub.textContent = "Welcome back, Teacher. Let's get started.";
+        } else {
+          const signupDate = user.metadata?.creationTime ? new Date(user.metadata.creationTime) : null;
+          const hoursSince = signupDate ? (Date.now() - signupDate) / 36e5 : 999;
+          if (hoursSince < 72) {
+            roleSub.innerHTML = `⏳ <strong>Account pending approval.</strong> An admin will activate your teacher access shortly. You can still browse public pages below.`;
+            roleSub.style.color = "#92400e";
+          } else {
+            roleSub.textContent = "Welcome! Explore our portal features.";
+          }
+        }
+      }   // ← closes if (roleSub) — WAS MISSING
+    });   // ← closes onAuthStateChanged callback — WAS MISSING
 
     // Logout / Sign In button
     const btnLogout = document.getElementById("btn-logout");
