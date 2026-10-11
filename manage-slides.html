@@ -21,6 +21,18 @@
 
     .ms-container { max-width: 1100px; margin: 0 auto; padding: 24px; }
 
+    .ms-note {
+      background: #eff6ff;
+      border: 1px solid #bfdbfe;
+      border-left: 4px solid #1e40af;
+      border-radius: 8px;
+      padding: 12px 16px;
+      margin-bottom: 20px;
+      font-size: 13px;
+      color: #1e40af;
+      line-height: 1.55;
+    }
+
     .ms-toolbar {
       display: flex; gap: 12px; align-items: center;
       margin-bottom: 20px; flex-wrap: wrap;
@@ -62,14 +74,13 @@
       border-radius: 8px;
       overflow: hidden;
       position: relative;
+      display: flex; align-items: center; justify-content: center;
+      color: #9ca3af; font-size: 12px; text-align: center;
     }
     .ms-slide-thumb img {
       width: 100%; height: 100%; object-fit: cover; display: block;
     }
-    .ms-slide-thumb.empty {
-      display: flex; align-items: center; justify-content: center;
-      color: #9ca3af; font-size: 12px;
-    }
+
     .ms-slide-fields {
       display: flex; flex-direction: column; gap: 10px;
     }
@@ -78,8 +89,7 @@
       text-transform: uppercase; letter-spacing: 0.04em;
       display: block; margin-bottom: 4px;
     }
-    .ms-slide-fields input[type="text"],
-    .ms-slide-fields input[type="url"] {
+    .ms-slide-fields input[type="text"] {
       width: 100%; padding: 9px 12px;
       border: 1px solid #d1d5db; border-radius: 6px;
       font-size: 13.5px; font-family: inherit;
@@ -172,16 +182,6 @@
       font-family: monospace;
     }
 
-    .ms-progress {
-      height: 6px; background: #e5e7eb; border-radius: 3px;
-      overflow: hidden; margin-top: 12px; display: none;
-    }
-    .ms-progress.show { display: block; }
-    .ms-progress-bar {
-      height: 100%; background: #0891b2; width: 0%;
-      transition: width .25s;
-    }
-
     .ms-field { margin-top: 16px; }
     .ms-field label {
       display: block; font-size: 11px; font-weight: 800;
@@ -239,6 +239,12 @@
   </header>
 
   <div class="ms-container" id="main-content">
+    <div class="ms-note">
+      💾 <strong>Images are stored directly in the portal database</strong> — no external service needed.
+      Uploads are auto-fit to 16:9 with a blurred background, resized, and compressed for fast page loads.
+      Recommended: <strong>3–5 slides max</strong> for best performance.
+    </div>
+
     <div class="ms-loading" id="loading">
       <div class="ms-spinner"></div>
       <div>Loading slides…</div>
@@ -279,10 +285,6 @@
           <input type="file" id="fileInput" accept="image/*" style="display:none;">
         </div>
 
-        <div class="ms-progress" id="progressWrap">
-          <div class="ms-progress-bar" id="progressBar"></div>
-        </div>
-
         <div class="ms-preview" id="previewWrap" style="display:none;">
           <div class="ms-preview-col">
             <h5>Original</h5>
@@ -297,9 +299,9 @@
         </div>
 
         <div id="processedInfo" style="display:none;margin-top:12px;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;padding:10px 14px;font-size:12.5px;color:#166534;">
-          <div>✓ Auto-cropped to 16:9</div>
-          <div>✓ Resized to 1920×1080</div>
-          <div>✓ Compressed to JPEG (85% quality)</div>
+          <div>✓ Fitted to 16:9 (blurred background)</div>
+          <div>✓ Resized to 1600×900</div>
+          <div>✓ Compressed to JPEG (auto-quality)</div>
           <div id="reductionInfo" style="font-weight:700;margin-top:4px;"></div>
         </div>
 
@@ -367,6 +369,7 @@
       .replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
   }
 
+  // ---------- Auth gate ----------
   onAuthStateChanged(auth, async (user) => {
     if (!user) {
       location.replace("login.html?next=" + encodeURIComponent(location.pathname));
@@ -391,6 +394,7 @@
     await loadSlides();
   });
 
+  // ---------- Load ----------
   async function loadSlides() {
     try {
       const snap = await getDoc(CONFIG_DOC);
@@ -422,6 +426,7 @@
     }
   }
 
+  // ---------- Render ----------
   function renderSlides() {
     $("slideCount").textContent = `${SLIDES.length} slide${SLIDES.length === 1 ? "" : "s"}`;
 
@@ -434,9 +439,9 @@
     host.innerHTML = SLIDES.map((s, i) => `
       <div class="ms-slide-card" data-index="${i}">
         <div class="ms-slide-thumb">
-        ${(s.base64 || s.imageUrl)
-        ? `<img src="${esc(s.base64 || s.imageUrl)}" alt="${esc(s.alt || s.title)}">`
-        : `No image yet<br>Click Replace`}
+          ${(s.base64 || s.imageUrl)
+            ? `<img src="${esc(s.base64 || s.imageUrl)}" alt="${esc(s.alt || s.title)}">`
+            : `No image yet<br>Click Replace`}
         </div>
         <div class="ms-slide-fields">
           <div>
@@ -498,6 +503,7 @@
     toast("✓ Removed — click Save All to commit", "success");
   }
 
+  // ---------- Upload modal ----------
   function openUploadModal(replaceIndex = -1) {
     EDITING_INDEX = replaceIndex;
     PENDING_BASE64 = null;
@@ -540,6 +546,7 @@
     EDITING_INDEX = -1;
   }
 
+  // ---------- Drag/drop + picker ----------
   $("dropZone").addEventListener("click", () => $("fileInput").click());
   $("fileInput").addEventListener("change", e => {
     const f = e.target.files[0];
@@ -598,6 +605,7 @@
     }
   }
 
+  // ---------- Image processing (fit + blurred background) ----------
   function processImage(file) {
     return new Promise((resolve, reject) => {
       const img = new Image();
@@ -606,42 +614,42 @@
       img.onload = () => {
         try {
           const w = img.naturalWidth, h = img.naturalHeight;
-const ratio = TARGET_WIDTH / TARGET_HEIGHT;
-const srcRatio = w / h;
+          const ratio = TARGET_WIDTH / TARGET_HEIGHT;
+          const srcRatio = w / h;
 
-const canvas = document.createElement("canvas");
-canvas.width = TARGET_WIDTH;
-canvas.height = TARGET_HEIGHT;
-const ctx = canvas.getContext("2d");
+          const canvas = document.createElement("canvas");
+          canvas.width = TARGET_WIDTH;
+          canvas.height = TARGET_HEIGHT;
+          const ctx = canvas.getContext("2d");
 
-// 1) Draw a BLURRED, cropped version of the image as background
-ctx.save();
-ctx.filter = "blur(20px)";
-// Crop-and-scale background to fill the whole canvas
-if (srcRatio > ratio) {
-  const bh = TARGET_HEIGHT;
-  const bw = TARGET_HEIGHT * srcRatio;
-  ctx.drawImage(img, (TARGET_WIDTH - bw) / 2, 0, bw, bh);
-} else {
-  const bw = TARGET_WIDTH;
-  const bh = TARGET_WIDTH / srcRatio;
-  ctx.drawImage(img, 0, (TARGET_HEIGHT - bh) / 2, bw, bh);
-}
-ctx.restore();
+          // 1) Blurred background — fills the whole canvas with a blurred, cropped copy
+          ctx.save();
+          ctx.filter = "blur(30px)";
+          if (srcRatio > ratio) {
+            const bh = TARGET_HEIGHT;
+            const bw = TARGET_HEIGHT * srcRatio;
+            ctx.drawImage(img, (TARGET_WIDTH - bw) / 2, 0, bw, bh);
+          } else {
+            const bw = TARGET_WIDTH;
+            const bh = TARGET_WIDTH / srcRatio;
+            ctx.drawImage(img, 0, (TARGET_HEIGHT - bh) / 2, bw, bh);
+          }
+          ctx.restore();
 
-// 2) Draw the SHARP image fit-inside, centered
-let dw, dh;
-if (srcRatio > ratio) {
-  dw = TARGET_WIDTH;
-  dh = TARGET_WIDTH / srcRatio;
-} else {
-  dh = TARGET_HEIGHT;
-  dw = TARGET_HEIGHT * srcRatio;
-}
-const dx = (TARGET_WIDTH - dw) / 2;
-const dy = (TARGET_HEIGHT - dh) / 2;
-ctx.drawImage(img, 0, 0, w, h, dx, dy, dw, dh);
+          // 2) Sharp image — fit inside, centered
+          let dw, dh;
+          if (srcRatio > ratio) {
+            dw = TARGET_WIDTH;
+            dh = TARGET_WIDTH / srcRatio;
+          } else {
+            dh = TARGET_HEIGHT;
+            dw = TARGET_HEIGHT * srcRatio;
+          }
+          const dx = (TARGET_WIDTH - dw) / 2;
+          const dy = (TARGET_HEIGHT - dh) / 2;
+          ctx.drawImage(img, 0, 0, w, h, dx, dy, dw, dh);
 
+          // 3) Export with adaptive quality
           const tryQuality = (q) => {
             canvas.toBlob(blob => {
               if (!blob) { reject(new Error("Compression failed")); return; }
@@ -668,6 +676,7 @@ ctx.drawImage(img, 0, 0, w, h, dx, dy, dw, dh);
     });
   }
 
+  // ---------- Confirm upload ----------
   $("modalConfirm").addEventListener("click", () => {
     if (!PENDING_BASE64) return;
 
@@ -692,12 +701,14 @@ ctx.drawImage(img, 0, 0, w, h, dx, dy, dw, dh);
     renderSlides();
   });
 
+  // ---------- Modal close ----------
   $("modalClose").addEventListener("click", closeUploadModal);
   $("modalCancel").addEventListener("click", closeUploadModal);
   $("uploadModal").addEventListener("click", e => {
     if (e.target === $("uploadModal")) closeUploadModal();
   });
 
+  // ---------- Save All ----------
   $("btnSaveAll").addEventListener("click", async () => {
     const btn = $("btnSaveAll");
     btn.disabled = true;
