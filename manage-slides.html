@@ -434,9 +434,9 @@
     host.innerHTML = SLIDES.map((s, i) => `
       <div class="ms-slide-card" data-index="${i}">
         <div class="ms-slide-thumb">
-          ${s.base64
-            ? `<img src="${esc(s.base64)}" alt="${esc(s.alt || s.title)}">`
-            : `No image yet<br>Click Replace`}
+        ${(s.base64 || s.imageUrl)
+        ? `<img src="${esc(s.base64 || s.imageUrl)}" alt="${esc(s.alt || s.title)}">`
+        : `No image yet<br>Click Replace`}
         </div>
         <div class="ms-slide-fields">
           <div>

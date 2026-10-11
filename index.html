@@ -1820,6 +1820,7 @@ console.log("[role] Fallback class detection:", hasAssignedClasses ? "SCPHS" : "
 
       const data = snap.data();
       const slides = (data.slides || [])
+      .filter(s => s.active !== false && (s.base64 || s.imageUrl))
         .filter(s => s.active !== false)
         .sort((a, b) => (a.order || 0) - (b.order || 0));
 
@@ -1839,7 +1840,7 @@ console.log("[role] Fallback class detection:", hasAssignedClasses ? "SCPHS" : "
       // Rebuild slides HTML
       const slidesHTML = slides.map((s, i) => `
         <div class="slide ${i === 0 ? "is-active" : ""}" role="group" aria-roledescription="slide" aria-label="${i + 1} of ${slides.length}">
-          <img src="${esc(s.imageUrl)}" alt="${esc(s.alt || s.title || "")}" loading="${i === 0 ? "eager" : "lazy"}">
+          <img src="${esc(s.base64 || s.imageUrl || "")}" alt="${esc(s.alt || s.title || "")}" loading="${i === 0 ? "eager" : "lazy"}">
           <div class="slide-overlay"></div>
           <div class="slide-caption">
             ${s.title ? `<h2>${esc(s.title)}</h2>` : ""}
