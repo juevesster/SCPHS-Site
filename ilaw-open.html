@@ -2075,9 +2075,7 @@ async function openLearnerModuleModal() {
   LM_CURRENT_HTML = buildLearnerModuleHTML(lesson, cfg, { hideAnswerKey: false });
 
   document.getElementById("lmPreviewHost").innerHTML = LM_CURRENT_HTML;
-const modalEl = document.getElementById("lmModal");
-modalEl.style.display = "flex";
-modalEl.classList.add("show");
+document.getElementById("lmModal").style.display = "flex";
 
   
   // 🆕 Wire Edit Module button
@@ -2147,9 +2145,7 @@ modalEl.classList.add("show");
 }
 
 function closeLearnerModuleModal() {
-  const modalEl = document.getElementById("lmModal");
-  modalEl.style.display = "none";
-  modalEl.classList.remove("show");
+  document.getElementById("lmModal").style.display = "none";
   document.getElementById("lmPreviewHost").innerHTML = "";
   LM_CURRENT_HTML = "";
   document.getElementById("lmStatus").textContent = "";
@@ -2309,83 +2305,127 @@ function setPrintPageOrientation(orientation) {
 }
 
 // ============================================================
-// SHARE — V2
+// SHARE — identical to ilaw.html (proven working)
 // ============================================================
-let _sharingInProgress = false;
-
 async function handleToggleShare() {
-  if (_sharingInProgress) return;
-  _sharingInProgress = true;
+  if (!CURRENT_LESSON_ID) {
+    toast("⚠️ Please save the lesson first before sharing.", "error");
+    return;
+  }
 
-  const btn   = document.getElementById("lmToggleShare");
+  const lesson = collectLessonData();
+  const btn = document.getElementById("lmToggleShare");
   const panel = document.getElementById("lmSharePanel");
   const status = document.getElementById("lmShareStatus");
 
-  try {
-    if (!CURRENT_LESSON_ID) {
-      toast("⚠️ Please save the lesson first before sharing.", "error");
-      return;
-    }
+  // Check if already shared
+  const alreadyShared = btn.dataset.shared === "true";
 
-    const lesson = collectLessonData();
-    const alreadyShared = btn?.dataset.shared === "true";
-
-    // ---------- DISABLE SHARING ----------
-    if (alreadyShared) {
-      if (!confirm("Stop sharing this module? Students will no longer be able to access it via the link.")) return;
-
+  if (alreadyShared) {
+    if (!confirm("Stop sharing this module? Students will no longer be able to access it via the link.")) return;
+    try {
       await disableSharing(CURRENT_LESSON_ID);
-
-      if (btn) {
-        btn.dataset.shared = "false";
-        btn.textContent = "🔗 Enable Sharing";
-        btn.style.background = "#10b981";
-      }
-      if (panel)  panel.style.display = "none";
-      if (status) status.textContent = "Not yet shared";
+      btn.dataset.shared = "false";
+      btn.textContent = "🔗 Enable Sharing";
+      btn.style.background = "#10b981";
+      panel.style.display = "none";
+      status.textContent = "Not yet shared";
       toast("✓ Sharing disabled", "success");
-      return;
+    } catch (e) {
+      toast("⚠️ " + (e.message || "Could not disable"), "error");
     }
+    return;
+  }
 
-    // ---------- ENABLE SHARING ----------
-    if (btn) {
-      btn.disabled = true;
-      btn.textContent = "⏳ Enabling...";
-    }
+  // Enable sharing
+  btn.disabled = true;
+  btn.textContent = "⏳ Enabling...";
 
+  try {
     const result = await enableSharing(CURRENT_LESSON_ID, {
       subjectCode: lesson.subjectCode,
-      term:        lesson.term,
-      week:        lesson.week,
-      viewCount:   0,
+      term: lesson.term,
+      week: lesson.week,
+      viewCount: 0,
     });
 
-    if (btn) {
-      btn.dataset.shared = "true";
-      btn.dataset.slug   = result.slug;
-      btn.dataset.url    = result.url;
-      btn.textContent    = "🚫 Stop Sharing";
-      btn.style.background = "#dc2626";
-    }
+    btn.dataset.shared = "true";
+    btn.dataset.slug = result.slug;
+    btn.dataset.url = result.url;
+    btn.textContent = "🚫 Stop Sharing";
+    btn.style.background = "#dc2626";
 
-    document.getElementById("lmShareUrl").value   = result.url;
+    // Populate panel
+    document.getElementById("lmShareUrl").value = result.url;
     document.getElementById("lmOpenPreview").href = result.url;
-    document.getElementById("lmQrImg").src        = generateQrCodeUrl(result.url, 240);
+    document.getElementById("lmQrImg").src = generateQrCodeUrl(result.url, 240);
 
-    if (panel)  panel.style.display = "block";
-    if (status) status.innerHTML = `✅ <strong>Sharing enabled</strong> · Slug: <code>${result.slug}</code>`;
+    panel.style.display = "block";
+    status.innerHTML = `✅ <strong>Sharing enabled</strong> · Slug: <code>${result.slug}</code>`;
 
     toast("✓ Module is now shareable!", "success");
-
   } catch (e) {
-    console.error("[ilaw-open] Share failed:", e);
+    console.error(e);
     toast("⚠️ " + (e.message || "Could not enable sharing"), "error");
-    if (btn) btn.textContent = "🔗 Enable Sharing";
+    btn.textContent = "🔗 Enable Sharing";
   } finally {
-    _sharingInProgress = false;
-    if (btn) btn.disabled = false;
+    btn.disabled = false;
   }
 }
+
+function wireShareButtons() {
+  const q = id => document.getElementById(id);
+
+  const toggle = q("lmToggleShare");
+  if (toggle && !toggle._wired) {
+    toggle.addEventListener("click", handleToggleShare);
+    toggle._wired = true;
+  }
+
+  const copy = q("lmCopyLink");
+  if (copy && !copy._wired) {
+    copy.addEventListener("click", async () => {
+      const url = q("lmShareUrl")?.value;
+      if (!url) return;
+      const ok = await copyToClipboard(url);
+      toast(ok ? "✓ Link copied to clipboard" : "⚠️ Copy failed", ok ? "success" : "error");
+    });
+    copy._wired = true;
+  }
+
+  const messenger = q("lmShareMessenger");
+  if (messenger && !messenger._wired) {
+    messenger.addEventListener("click", () => {
+      const url = q("lmShareUrl")?.value;
+      if (!url) return;
+      const lesson = collectLessonData();
+      shareToMessenger(url, lesson.lessonTitle || "Learning Module");
+    });
+    messenger._wired = true;
+  }
+
+  const nativeBtn = q("lmShareNative");
+  if (nativeBtn && !nativeBtn._wired) {
+    nativeBtn.addEventListener("click", async () => {
+      const url = q("lmShareUrl")?.value;
+      if (!url) return;
+      const lesson = collectLessonData();
+      const ok = await nativeShare(
+        url,
+        lesson.lessonTitle || "Learning Module",
+        `Study this module while classes are suspended: ${lesson.subjectName} — ${lesson.lessonTitle}`
+      );
+      if (!ok) {
+        const copied = await copyToClipboard(url);
+        if (copied) toast("📋 Link copied — paste it in your group chat", "success");
+      }
+    });
+    nativeBtn._wired = true;
+  }
+}
+
+// Call once — the _wired flags make future calls no-ops
+wireShareButtons();
 
 // ============================================================
 // WIRE SHARE BUTTONS — safe, idempotent (no double-binding)
