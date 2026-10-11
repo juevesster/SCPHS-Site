@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ILAW — Open Workspace for Teachers</title>
+  <title>ILAW Lesson Planner — SCPHS</title>
   <link rel="stylesheet" href="assets/css/styles.css" />
   <style>
     /* ============================================================
@@ -469,7 +469,7 @@
 </head>
 <body>
 
-    <header class="ilaw-header">
+  <header class="ilaw-header">
     <div class="ilaw-header-inner">
       <div>
         <h1>📝 ILAW Lesson Planner <span style="display:inline-block;background:#f59e0b;color:#fff;font-size:10.5px;font-weight:800;padding:3px 10px;border-radius:999px;letter-spacing:.05em;text-transform:uppercase;vertical-align:middle;margin-left:6px;">🌐 Open Mode</span></h1>
@@ -477,7 +477,7 @@
       </div>
       <div class="ilaw-header-actions">
         <span id="statusBadge"></span>
-        <a href="index.html" class="btn btn-outline-white small">← Back to Portal</a>
+        <a href="admin.html" class="btn btn-outline-white small">← Back to Portal</a>
       </div>
     </div>
   </header>
@@ -656,31 +656,10 @@
       CURRENT_USER = user;
       CURRENT_PROFILE = await getCurrentUserProfile();
 
-            // Open Mode: any authenticated user can access.
-      // (Admins approve accounts via Manage Users.)
-      const role = CURRENT_PROFILE?.primaryRole || "unknown";
-      const isStaff = role === "teacher"
-        || role === "admin"
-        || role === "faculty"
-        || role === "instructor"
-        || role === "adviser"
-        || CURRENT_PROFILE?.isSuperAdmin
-        || CURRENT_PROFILE?.permissions?.canEnterGrades === true
-        || CURRENT_PROFILE?.permissions?.canManageClasses === true;
-
-      // Log for visibility but allow all authenticated users
-      console.log(`[ilaw-open] Signed in as ${user.email} · role: ${role} · isStaff: ${isStaff}`);
-
-      // Only truly anonymous users are blocked (they'd have been redirected already)
-      // Optional: If you want a hard gate for students, uncomment below:
-      // if (role === "student") {
-      //   $("loading").innerHTML = `
-      //     <h2 style="color:#b91c1c;">🚫 Access Denied</h2>
-      //     <p>Ask your teacher or admin to enable Teacher access for your account.</p>
-      //     <a href="index.html" class="btn btn-primary" style="margin-top:12px;">← Back to Portal</a>
-      //   `;
-      //   return;
-      // }
+      // Open Mode: any authenticated user can access.
+// Admin approves accounts via Manage Users.
+console.log(`[ilaw-open] Signed in as ${user.email} · role: ${CURRENT_PROFILE?.primaryRole || "unknown"}`);
+// (no gate — continue)
 
       ILAW_CONFIG = await window.ILAWConfig.load();
             // ✅ Preload the DepEd logo so print/PDF don't miss it on first try
@@ -1164,7 +1143,7 @@
       const sectionEl = document.getElementById("f-section");
       const section = sectionEl?.value?.trim() || "";
 
-            const data = {
+      const data = {
         teacherUid: CURRENT_USER.uid,
         teacherName: ($("f-teacherName")?.value || "").trim() || CURRENT_PROFILE?.name || CURRENT_USER.email,
         subjectCode, subjectName, gradeLevel, term, week, schoolYear,
@@ -1201,9 +1180,6 @@
         aiDeclaration: aiDecl,
         aiDeclarationNotes: ($("f-aiDeclarationNotes")?.value || "").trim(),
         lastSavedBy: CURRENT_USER.email || "",
-
-        // 🆕 Mark as external (guest teacher's workspace)
-        isExternal: true,
       };
 
       try {
@@ -1538,7 +1514,7 @@
       try {
         const newId = await window.ILAW.duplicateLesson(CURRENT_LESSON_ID, { week: wk });
         toast("✓ Duplicated", "success");
-        location.href = `ilaw-open.html?lesson=${newId}`;
+        location.href = `ilaw.html?lesson=${newId}`;
       } catch (e) { toast("⚠️ Duplicate failed", "error"); }
     }
 
@@ -1548,7 +1524,7 @@
       try {
         await window.ILAW.deleteLesson(CURRENT_LESSON_ID);
         toast("✓ Deleted", "success");
-        setTimeout(() => location.href = "ilaw-open.html", 500);
+        setTimeout(() => location.href = "ilaw.html", 500);
       } catch (e) { toast("⚠️ Delete failed", "error"); }
     }
 
@@ -2075,7 +2051,7 @@ async function openLearnerModuleModal() {
   LM_CURRENT_HTML = buildLearnerModuleHTML(lesson, cfg, { hideAnswerKey: false });
 
   document.getElementById("lmPreviewHost").innerHTML = LM_CURRENT_HTML;
-document.getElementById("lmModal").style.display = "flex";
+  document.getElementById("lmModal").style.display = "flex";
 
   
   // 🆕 Wire Edit Module button
@@ -2305,7 +2281,7 @@ function setPrintPageOrientation(orientation) {
 }
 
 // ============================================================
-// SHARE — identical to ilaw.html (proven working)
+// SHARE — V2
 // ============================================================
 async function handleToggleShare() {
   if (!CURRENT_LESSON_ID) {
@@ -2374,114 +2350,36 @@ async function handleToggleShare() {
 }
 
 function wireShareButtons() {
-  const q = id => document.getElementById(id);
+  document.getElementById("lmToggleShare")?.addEventListener("click", handleToggleShare);
 
-  const toggle = q("lmToggleShare");
-  if (toggle && !toggle._wired) {
-    toggle.addEventListener("click", handleToggleShare);
-    toggle._wired = true;
-  }
+  document.getElementById("lmCopyLink")?.addEventListener("click", async () => {
+    const url = document.getElementById("lmShareUrl").value;
+    if (!url) return;
+    const ok = await copyToClipboard(url);
+    toast(ok ? "✓ Link copied to clipboard" : "⚠️ Copy failed — please select manually", ok ? "success" : "error");
+  });
 
-  const copy = q("lmCopyLink");
-  if (copy && !copy._wired) {
-    copy.addEventListener("click", async () => {
-      const url = q("lmShareUrl")?.value;
-      if (!url) return;
-      const ok = await copyToClipboard(url);
-      toast(ok ? "✓ Link copied to clipboard" : "⚠️ Copy failed", ok ? "success" : "error");
-    });
-    copy._wired = true;
-  }
+  document.getElementById("lmShareMessenger")?.addEventListener("click", () => {
+    const url = document.getElementById("lmShareUrl").value;
+    if (!url) return;
+    const lesson = collectLessonData();
+    shareToMessenger(url, lesson.lessonTitle || "Learning Module");
+  });
 
-  const messenger = q("lmShareMessenger");
-  if (messenger && !messenger._wired) {
-    messenger.addEventListener("click", () => {
-      const url = q("lmShareUrl")?.value;
-      if (!url) return;
-      const lesson = collectLessonData();
-      shareToMessenger(url, lesson.lessonTitle || "Learning Module");
-    });
-    messenger._wired = true;
-  }
-
-  const nativeBtn = q("lmShareNative");
-  if (nativeBtn && !nativeBtn._wired) {
-    nativeBtn.addEventListener("click", async () => {
-      const url = q("lmShareUrl")?.value;
-      if (!url) return;
-      const lesson = collectLessonData();
-      const ok = await nativeShare(
-        url,
-        lesson.lessonTitle || "Learning Module",
-        `Study this module while classes are suspended: ${lesson.subjectName} — ${lesson.lessonTitle}`
-      );
-      if (!ok) {
-        const copied = await copyToClipboard(url);
-        if (copied) toast("📋 Link copied — paste it in your group chat", "success");
-      }
-    });
-    nativeBtn._wired = true;
-  }
-}
-
-// Call once — the _wired flags make future calls no-ops
-wireShareButtons();
-
-// ============================================================
-// WIRE SHARE BUTTONS — safe, idempotent (no double-binding)
-// ============================================================
-function wireShareButtons() {
-  const q = id => document.getElementById(id);
-
-  const toggle = q("lmToggleShare");
-  if (toggle && !toggle._wired) {
-    toggle.addEventListener("click", handleToggleShare);
-    toggle._wired = true;
-  }
-
-  const copy = q("lmCopyLink");
-  if (copy && !copy._wired) {
-    copy.addEventListener("click", async () => {
-      const url = q("lmShareUrl")?.value;
-      if (!url) return;
-      const ok = await copyToClipboard(url);
-      toast(
-        ok ? "✓ Link copied to clipboard" : "⚠️ Copy failed — please select manually",
-        ok ? "success" : "error"
-      );
-    });
-    copy._wired = true;
-  }
-
-  const messenger = q("lmShareMessenger");
-  if (messenger && !messenger._wired) {
-    messenger.addEventListener("click", () => {
-      const url = q("lmShareUrl")?.value;
-      if (!url) return;
-      const lesson = collectLessonData();
-      shareToMessenger(url, lesson.lessonTitle || "Learning Module");
-    });
-    messenger._wired = true;
-  }
-
-  const nativeBtn = q("lmShareNative");
-  if (nativeBtn && !nativeBtn._wired) {
-    nativeBtn.addEventListener("click", async () => {
-      const url = q("lmShareUrl")?.value;
-      if (!url) return;
-      const lesson = collectLessonData();
-      const ok = await nativeShare(
-        url,
-        lesson.lessonTitle || "Learning Module",
-        `Study this module while classes are suspended: ${lesson.subjectName} — ${lesson.lessonTitle}`
-      );
-      if (!ok) {
-        const copied = await copyToClipboard(url);
-        if (copied) toast("📋 Link copied — paste it in your group chat", "success");
-      }
-    });
-    nativeBtn._wired = true;
-  }
+    document.getElementById("lmShareNative")?.addEventListener("click", async () => {
+    const url = document.getElementById("lmShareUrl").value;
+    if (!url) return;
+    const lesson = collectLessonData();
+    const ok = await nativeShare(
+      url,
+      lesson.lessonTitle || "Learning Module",
+      `Study this module while classes are suspended: ${lesson.subjectName} — ${lesson.lessonTitle}`
+    );
+    if (!ok) {
+      const copied = await copyToClipboard(url);
+      if (copied) toast("📋 Link copied — paste it in your group chat", "success");
+    }
+  });
 }
 
 // ============================================================
@@ -2514,11 +2412,8 @@ window.__ilawToast = toast;
 // ============================================================
 // WIRE ONCE — call after DOM ready
 // ============================================================
-// Wire once — guard against double-binding
-if (!window.__ilawShareWired) {
-  wireShareButtons();
-  window.__ilawShareWired = true;
-}
+wireShareButtons();
+setTimeout(wireShareButtons, 500);
 
 </script>
     
