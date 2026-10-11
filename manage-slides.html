@@ -240,9 +240,9 @@
 
   <div class="ms-container" id="main-content">
     <div class="ms-note">
-      💾 <strong>Images are stored directly in the portal database</strong> — no external service needed.
-      Uploads are auto-fit to 16:9 with a blurred background, resized, and compressed for fast page loads.
-      Recommended: <strong>3–5 slides max</strong> for best performance.
+    💾 <strong>Images are stored directly in the portal database</strong> — no external service needed.
+        Uploads keep the full image (no cropping), auto-resized and compressed for fast page loads.
+        Recommended: <strong>3–5 slides max</strong> for best performance.
     </div>
 
     <div class="ms-loading" id="loading">
@@ -292,17 +292,17 @@
             <div class="meta" id="metaOriginal">—</div>
           </div>
           <div class="ms-preview-col">
-            <h5>Processed (16:9)</h5>
+            <h5>Processed</h5>
             <img id="previewProcessed" alt="">
             <div class="meta" id="metaProcessed">—</div>
           </div>
         </div>
 
         <div id="processedInfo" style="display:none;margin-top:12px;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;padding:10px 14px;font-size:12.5px;color:#166534;">
-          <div>✓ Fitted to 16:9 (blurred background)</div>
-          <div>✓ Resized to 1600×900</div>
-          <div>✓ Compressed to JPEG (auto-quality)</div>
-          <div id="reductionInfo" style="font-weight:700;margin-top:4px;"></div>
+        <div>✓ Full image preserved (no crop)</div>
+        <div>✓ Auto-resized for web</div>
+        <div>✓ Compressed to JPEG (auto-quality)</div>
+        <div id="reductionInfo" style="font-weight:700;margin-top:4px;"></div>
         </div>
 
         <div class="ms-field">
@@ -593,7 +593,7 @@
       const reduction = Math.round((1 - (finalKB * 1024) / file.size) * 100);
 
       $("metaOriginal").textContent = `${meta.w}×${meta.h} · ${origMB} MB`;
-      $("metaProcessed").textContent = `${TARGET_WIDTH}×${TARGET_HEIGHT} · ${finalKB} KB`;
+      $("metaProcessed").textContent = `${meta.processedW}×${meta.processedH} · ${finalKB} KB`;
 
       $("processedInfo").style.display = "block";
       $("reductionInfo").textContent = `Reduction: ${reduction}% smaller`;
@@ -607,74 +607,53 @@
 
   // ---------- Image processing (fit + blurred background) ----------
   function processImage(file) {
-    return new Promise((resolve, reject) => {
-      const img = new Image();
-      const originalUrl = URL.createObjectURL(file);
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    const originalUrl = URL.createObjectURL(file);
 
-      img.onload = () => {
-        try {
-          const w = img.naturalWidth, h = img.naturalHeight;
-          const ratio = TARGET_WIDTH / TARGET_HEIGHT;
-          const srcRatio = w / h;
+    img.onload = () => {
+      try {
+        const w = img.naturalWidth, h = img.naturalHeight;
+        
+        // Just cap the max width — preserve the original aspect ratio
+        const maxWidth = 1600;
+        let dw = w, dh = h;
+        if (w > maxWidth) {
+          dw = maxWidth;
+          dh = Math.round(h * (maxWidth / w));
+        }
 
-          const canvas = document.createElement("canvas");
-          canvas.width = TARGET_WIDTH;
-          canvas.height = TARGET_HEIGHT;
-          const ctx = canvas.getContext("2d");
+        const canvas = document.createElement("canvas");
+        canvas.width = dw;
+        canvas.height = dh;
+        const ctx = canvas.getContext("2d");
+        ctx.drawImage(img, 0, 0, w, h, 0, 0, dw, dh);
 
-          // 1) Blurred background — fills the whole canvas with a blurred, cropped copy
-          ctx.save();
-          ctx.filter = "blur(30px)";
-          if (srcRatio > ratio) {
-            const bh = TARGET_HEIGHT;
-            const bw = TARGET_HEIGHT * srcRatio;
-            ctx.drawImage(img, (TARGET_WIDTH - bw) / 2, 0, bw, bh);
-          } else {
-            const bw = TARGET_WIDTH;
-            const bh = TARGET_WIDTH / srcRatio;
-            ctx.drawImage(img, 0, (TARGET_HEIGHT - bh) / 2, bw, bh);
-          }
-          ctx.restore();
+        const tryQuality = (q) => {
+          canvas.toBlob(blob => {
+            if (!blob) { reject(new Error("Compression failed")); return; }
+            const kb = Math.round(blob.size / 1024);
+            if (kb > MAX_OUTPUT_KB && q > 0.35) { tryQuality(q - 0.1); return; }
 
-          // 2) Sharp image — fit inside, centered
-          let dw, dh;
-          if (srcRatio > ratio) {
-            dw = TARGET_WIDTH;
-            dh = TARGET_WIDTH / srcRatio;
-          } else {
-            dh = TARGET_HEIGHT;
-            dw = TARGET_HEIGHT * srcRatio;
-          }
-          const dx = (TARGET_WIDTH - dw) / 2;
-          const dy = (TARGET_HEIGHT - dh) / 2;
-          ctx.drawImage(img, 0, 0, w, h, dx, dy, dw, dh);
+            const reader = new FileReader();
+            reader.onloadend = () => resolve({
+              base64: reader.result,
+              originalUrl,
+              meta: { w, h, processedW: dw, processedH: dh },
+            });
+            reader.onerror = () => reject(new Error("Encode failed"));
+            reader.readAsDataURL(blob);
+          }, "image/jpeg", q);
+        };
 
-          // 3) Export with adaptive quality
-          const tryQuality = (q) => {
-            canvas.toBlob(blob => {
-              if (!blob) { reject(new Error("Compression failed")); return; }
-              const kb = Math.round(blob.size / 1024);
-              if (kb > MAX_OUTPUT_KB && q > 0.35) { tryQuality(q - 0.1); return; }
+        tryQuality(JPEG_QUALITY);
+      } catch (e) { reject(e); }
+    };
 
-              const reader = new FileReader();
-              reader.onloadend = () => resolve({
-                base64: reader.result,
-                originalUrl,
-                meta: { w, h },
-              });
-              reader.onerror = () => reject(new Error("Encode failed"));
-              reader.readAsDataURL(blob);
-            }, "image/jpeg", q);
-          };
-
-          tryQuality(JPEG_QUALITY);
-        } catch (e) { reject(e); }
-      };
-
-      img.onerror = () => reject(new Error("Could not read image"));
-      img.src = originalUrl;
-    });
-  }
+    img.onerror = () => reject(new Error("Could not read image"));
+    img.src = originalUrl;
+  });
+}
 
   // ---------- Confirm upload ----------
   $("modalConfirm").addEventListener("click", () => {
