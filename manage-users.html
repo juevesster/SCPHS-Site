@@ -63,6 +63,8 @@
     .mu-btn.outline:hover { background: #f3f6fa; border-color: #1e6bb8; }
     .mu-btn.danger { background: #fff; color: #b91c1c; border-color: #fecaca; }
     .mu-btn.danger:hover { background: #fef2f2; border-color: #b91c1c; }
+    .mu-btn.guest { background: #7c3aed; color: #fff; border-color: #7c3aed; }
+    .mu-btn.guest:hover { background: #6d28d9; }
     .mu-btn:disabled { opacity: 0.5; cursor: not-allowed; }
 
     .mu-user-card {
@@ -116,6 +118,34 @@
       margin-top: 4px;
     }
 
+    /* Teacher-type picker */
+    .mu-teacher-type {
+      display: flex; flex-direction: column; gap: 8px;
+      max-width: 500px;
+    }
+    .mu-teacher-type label {
+      display: flex; align-items: flex-start; gap: 10px;
+      padding: 10px 12px;
+      border: 1px solid #e5e7eb;
+      border-radius: 8px;
+      background: #fafbfc;
+      cursor: pointer;
+      font-size: 0.85rem;
+      transition: all .15s;
+    }
+    .mu-teacher-type label:hover {
+      background: #eff6ff; border-color: #bfdbfe;
+    }
+    .mu-teacher-type label.selected {
+      background: #eff6ff; border-color: #1e6bb8;
+    }
+    .mu-teacher-type input[type="radio"] {
+      margin-top: 3px;
+      accent-color: #1e3c72;
+    }
+    .mu-teacher-type .tt-title { font-weight: 700; color: #0f2b4f; }
+    .mu-teacher-type .tt-desc  { font-size: 0.75rem; color: #6b7280; margin-top: 2px; }
+
     .mu-checkbox-group {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
@@ -157,6 +187,14 @@
       margin-left: 6px;
     }
     .mu-badge.super-admin { background: #fef3c7; color: #92400e; }
+    .mu-badge.guest-teacher {
+      background: #ede9fe;
+      color: #6d28d9;
+    }
+    .mu-badge.scphs-teacher {
+      background: #dbeafe;
+      color: #1e40af;
+    }
 
     .mu-toast {
       position: fixed; bottom: 24px; left: 50%;
@@ -200,7 +238,7 @@
     <div class="mu-header-inner">
       <a href="index.html">← Back to Portal</a>
       <h1>👥 Manage Users</h1>
-      <p>Assign roles and permissions to staff, students, and leaders</p>
+      <p>Assign roles and permissions to staff, students, and guest teachers</p>
     </div>
   </header>
 
@@ -216,7 +254,9 @@
         <select id="roleFilter" class="mu-select">
           <option value="">All roles</option>
           <option value="student">Students</option>
-          <option value="teacher">Teachers</option>
+          <option value="teacher">Teachers (all)</option>
+          <option value="scphs-teacher">SCPHS Teachers</option>
+          <option value="guest-teacher">Guest Teachers</option>
           <option value="admin">Admins</option>
         </select>
         <span id="userCount" style="font-size:0.85rem;color:#6b7280;margin-left:auto;"></span>
@@ -304,10 +344,21 @@
 
       const filtered = ALL_USERS.filter(u => {
         const primary = u.primaryRole || u.role || "student";
+        const tType = String(u.teacherType || "").toLowerCase();
+
         const matchTerm = !term
           || (u.name || "").toLowerCase().includes(term)
           || (u.email || "").toLowerCase().includes(term);
-        const matchRole = !filter || primary === filter;
+
+        let matchRole = true;
+        if (filter === "scphs-teacher") {
+          matchRole = primary === "teacher" && (tType === "scphs" || tType === "internal" || !tType);
+        } else if (filter === "guest-teacher") {
+          matchRole = primary === "teacher" && (tType === "external" || tType === "guest");
+        } else if (filter) {
+          matchRole = primary === filter;
+        }
+
         return matchTerm && matchRole;
       });
 
@@ -332,6 +383,24 @@
         : (typeof user.secondaryRoles === "string" && user.secondaryRoles
             ? [user.secondaryRoles]
             : []);
+
+      // Teacher type — default to scphs if role is teacher and no type set
+      let teacherType = String(user.teacherType || "").toLowerCase();
+      if (primaryRole === "teacher" && !teacherType) {
+        teacherType = "scphs";
+      }
+
+      const isTeacher = primaryRole === "teacher";
+
+      // Teacher-type badge
+      let teacherBadge = "";
+      if (isTeacher) {
+        if (teacherType === "external" || teacherType === "guest") {
+          teacherBadge = '<span class="mu-badge guest-teacher">🌐 Guest Teacher</span>';
+        } else {
+          teacherBadge = '<span class="mu-badge scphs-teacher">🏫 SCPHS Teacher</span>';
+        }
+      }
 
       // Permission checkboxes
       const permissionList = [
@@ -362,6 +431,29 @@
             : '<span style="font-size:0.8rem;color:#9ca3af;">No additional roles</span>'}
         </div>`;
 
+      // Teacher-type picker (only shown when primary role = teacher)
+      const teacherTypeHTML = `
+        <div class="mu-field-row" data-teacher-type-row style="${isTeacher ? "" : "display:none;"}">
+          <label>Teacher Type</label>
+          <div class="mu-teacher-type">
+            <label class="${teacherType === "scphs" ? "selected" : ""}">
+              <input type="radio" name="teacherType_${user.uid}" value="scphs" ${teacherType === "scphs" ? "checked" : ""} ${isSuper ? "disabled" : ""}>
+              <div>
+                <div class="tt-title">🏫 SCPHS Teacher</div>
+                <div class="tt-desc">Assigned classes and subjects. Accesses the full ILAW Lesson Planner.</div>
+              </div>
+            </label>
+            <label class="${teacherType === "external" ? "selected" : ""}">
+              <input type="radio" name="teacherType_${user.uid}" value="external" ${teacherType === "external" || teacherType === "guest" ? "checked" : ""} ${isSuper ? "disabled" : ""}>
+              <div>
+                <div class="tt-title">🌐 Guest Teacher</div>
+                <div class="tt-desc">Open workspace — any subject, any grade. Uses the ILAW Open Workspace.</div>
+              </div>
+            </label>
+          </div>
+        </div>
+      `;
+
       return `
         <div class="mu-user-card" data-uid="${user.uid}" data-email="${esc(user.email || "")}">
           <div class="mu-user-header">
@@ -369,6 +461,7 @@
               <h3 class="mu-user-name">
                 ${esc(user.name || "Unnamed")}
                 ${isSuper ? '<span class="mu-badge super-admin">👑 Super Admin</span>' : ''}
+                ${teacherBadge}
               </h3>
               <p class="mu-user-email">${esc(user.email || "")}</p>
             </div>
@@ -384,6 +477,8 @@
               </select>
             </div>
           </div>
+
+          ${teacherTypeHTML}
 
           <div class="mu-field-row">
             <label>Additional Roles</label>
@@ -414,7 +509,10 @@
               👑 Apply Admin
             </button>
             <button class="mu-btn outline" data-action="apply-teacher" ${isSuper ? "disabled" : ""}>
-              🎓 Apply Teacher
+              🏫 Apply SCPHS Teacher
+            </button>
+            <button class="mu-btn guest" data-action="apply-guest-teacher" ${isSuper ? "disabled" : ""}>
+              🌐 Apply Guest Teacher
             </button>
             <button class="mu-btn outline" data-action="apply-adviser" ${isSuper ? "disabled" : ""}>
               📋 Apply Adviser
@@ -439,11 +537,28 @@
       document.querySelectorAll(".mu-user-card").forEach(card => {
         const uid = card.dataset.uid;
 
+        // Primary role change → show/hide teacher-type row
+        const roleSel = card.querySelector("[data-field='primaryRole']");
+        roleSel?.addEventListener("change", () => {
+          const row = card.querySelector("[data-teacher-type-row]");
+          if (!row) return;
+          row.style.display = roleSel.value === "teacher" ? "" : "none";
+        });
+
+        // Teacher-type radio visual feedback
+        card.querySelectorAll("input[name^='teacherType_']").forEach(radio => {
+          radio.addEventListener("change", () => {
+            card.querySelectorAll(".mu-teacher-type label").forEach(lbl => lbl.classList.remove("selected"));
+            radio.closest("label").classList.add("selected");
+          });
+        });
+
         card.querySelector("[data-action='save']")?.addEventListener("click", () => saveUser(card, uid));
         card.querySelector("[data-action='reset']")?.addEventListener("click", () => loadUsers());
 
         card.querySelector("[data-action='apply-admin']")?.addEventListener("click", () => applyTemplate(card, "admin"));
-        card.querySelector("[data-action='apply-teacher']")?.addEventListener("click", () => applyTemplate(card, "teacher"));
+        card.querySelector("[data-action='apply-teacher']")?.addEventListener("click", () => applyTemplate(card, "teacher", "scphs"));
+        card.querySelector("[data-action='apply-guest-teacher']")?.addEventListener("click", () => applyTemplate(card, "teacher", "external"));
         card.querySelector("[data-action='apply-adviser']")?.addEventListener("click", () => applyTemplate(card, "adviser"));
         card.querySelector("[data-action='apply-student-leader']")?.addEventListener("click", () => applyTemplate(card, "student-leader"));
       });
@@ -460,15 +575,27 @@
         permissions[cb.dataset.perm] = cb.checked;
       });
 
+      // Read teacher type (radio)
+      const teacherTypeRadio = card.querySelector("input[name^='teacherType_']:checked");
+      const teacherType = teacherTypeRadio ? teacherTypeRadio.value : "";
+
+      // Build update payload
+      const updatePayload = {
+        primaryRole,
+        secondaryRoles,
+        permissions,
+        updatedAt: serverTimestamp(),
+        updatedBy: CURRENT_ADMIN.uid,
+      };
+
+      // Include teacherType only when role is teacher
+      if (primaryRole === "teacher" && teacherType) {
+        updatePayload.teacherType = teacherType;
+      }
+
       try {
-        await updateDoc(doc(db, "users", uid), {
-          primaryRole,
-          secondaryRoles,
-          permissions,
-          updatedAt: serverTimestamp(),
-          updatedBy: CURRENT_ADMIN.uid,
-        });
-        toast("✓ Saved", "success");
+        await updateDoc(doc(db, "users", uid), updatePayload);
+        toast(`✓ Saved${primaryRole === "teacher" ? ` (${teacherType === "external" ? "Guest" : "SCPHS"} Teacher)` : ""}`, "success");
         await loadUsers();
       } catch (e) {
         console.error(e);
@@ -476,7 +603,7 @@
       }
     }
 
-    function applyTemplate(card, templateKey) {
+    function applyTemplate(card, templateKey, forcedTeacherType) {
       const template = PERMISSION_TEMPLATES[templateKey];
       if (!template) return;
 
@@ -490,7 +617,26 @@
         }
       });
 
-      toast(`Applied: ${template.label}`, "success");
+      // If teacher template, set teacher type
+      if (template.primaryRole === "teacher") {
+        const row = card.querySelector("[data-teacher-type-row]");
+        if (row) row.style.display = "";
+
+        const target = forcedTeacherType || "scphs";
+        const radio = card.querySelector(`input[name^='teacherType_'][value='${target}']`);
+        if (radio) {
+          radio.checked = true;
+          card.querySelectorAll(".mu-teacher-type label").forEach(l => l.classList.remove("selected"));
+          radio.closest("label").classList.add("selected");
+        }
+      }
+
+      const label = forcedTeacherType === "external"
+        ? "Guest Teacher"
+        : forcedTeacherType === "scphs"
+          ? "SCPHS Teacher"
+          : template.label;
+      toast(`Applied: ${label}`, "success");
     }
 
     // ---------- Filters ----------

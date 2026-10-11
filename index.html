@@ -256,11 +256,24 @@
     }
 
     /* Role-based visibility */
-    .role-only-teacher,
-    .role-only-admin { display: none; }
-    body.is-teacher .role-only-teacher,
-    body.is-admin .role-only-admin,
-    body.is-admin .role-only-teacher { display: block; }
+.role-only-teacher,
+.role-only-admin,
+.role-only-scphs-teacher,
+.role-only-guest-teacher { display: none; }
+
+/* Base teacher visibility — any teacher sees SOME teacher card */
+body.is-teacher .role-only-teacher,
+body.is-admin .role-only-teacher { display: block; }
+
+body.is-admin .role-only-admin { display: block; }
+
+/* Teacher-type specific cards (Option A — exclusive) */
+body.is-scphs-teacher .role-only-scphs-teacher { display: block; }
+body.is-guest-teacher .role-only-guest-teacher { display: block; }
+
+/* Admin sees BOTH teacher cards */
+body.is-admin .role-only-scphs-teacher,
+body.is-admin .role-only-guest-teacher { display: block; }
 
     /* ============================================================
    TABLET & MOBILE — Stack the page grid + polish Quick Access
@@ -708,26 +721,47 @@
         </div>
       </a>
 
-      <!-- ========== TEACHER CARD ========== -->
-      <a href="ilaw-open.html"
-         class="role-card teacher-card role-only-teacher"
-         id="role-card-teacher"
-         style="--c1:#7c3aed; --c2:#4f46e5;"
-         aria-label="ILAW Lesson Planner — create lessons and materials">
-        <span class="shimmer"></span>
-        <div class="role-card__body">
-          <div class="role-card__icon">👩‍🏫</div>
-          <div class="role-card__text">
-            <p class="role-card__title">ILAW Lesson Planner</p>
-            <p class="role-card__desc">
-              Create lesson plans, generate Learner Modules with AI, and share materials with students.
-            </p>
-            <span class="role-card__cta">
-              START TEACHING <span class="arrow">→</span>
-            </span>
-          </div>
-        </div>
-      </a>
+      <!-- ========== SCPHS TEACHER CARD (exclusive — ilaw.html) ========== -->
+<a href="ilaw.html"
+   class="role-card teacher-card role-only-teacher role-only-scphs-teacher"
+   id="role-card-teacher-scphs"
+   style="--c1:#1e3c72; --c2:#2a5298;"
+   aria-label="ILAW Lesson Planner — SCPHS assigned classes">
+  <span class="shimmer"></span>
+  <div class="role-card__body">
+    <div class="role-card__icon">👩‍🏫</div>
+    <div class="role-card__text">
+      <p class="role-card__title">ILAW Lesson Planner</p>
+      <p class="role-card__desc">
+        Create lesson plans for your assigned classes and subjects. Access the full BoW curriculum.
+      </p>
+      <span class="role-card__cta">
+        START TEACHING <span class="arrow">→</span>
+      </span>
+    </div>
+  </div>
+</a>
+
+<!-- ========== GUEST TEACHER CARD (exclusive — ilaw-open.html) ========== -->
+<a href="ilaw-open.html"
+   class="role-card teacher-card role-only-teacher role-only-guest-teacher"
+   id="role-card-teacher-open"
+   style="--c1:#7c3aed; --c2:#4f46e5;"
+   aria-label="ILAW Open Workspace — any subject, any grade">
+  <span class="shimmer"></span>
+  <div class="role-card__body">
+    <div class="role-card__icon">🌐</div>
+    <div class="role-card__text">
+      <p class="role-card__title">ILAW Open Workspace</p>
+      <p class="role-card__desc">
+        Create lesson plans for any subject or grade. Generate Learner Modules and share with your students during suspensions.
+      </p>
+      <span class="role-card__cta">
+        START CREATING <span class="arrow">→</span>
+      </span>
+    </div>
+  </div>
+</a>
 
       <!-- ========== ADMIN CARD ========== -->
       <a href="admin.html"
@@ -1631,19 +1665,78 @@
 
       console.log("[role] Detected:", { email: user.email, isAdmin, isTeacher, rawRole: detectedRole });
 
-      if (isAdmin)  document.body.classList.add("is-admin");
-      if (isTeacher && !isAdmin) document.body.classList.add("is-teacher");
+      // ---------- Apply role classes ----------
+if (isAdmin) {
+  document.body.classList.add("is-admin");
+  console.log("[role] Admin — showing all cards");
+} else if (isTeacher) {
+  document.body.classList.add("is-teacher");
+
+  // ---------- Distinguish SCPHS teacher from Guest teacher ----------
+  let teacherType = "guest";   // safest default: treat unknown as guest
+
+  try {
+    const snap = await getDoc(doc(db, "users", user.uid));
+    if (snap.exists()) {
+      const data = snap.data();
+      const t = String(data.teacherType || "").toLowerCase();
+
+      if (t === "scphs" || t === "internal") {
+        teacherType = "scphs";
+      } else if (t === "external" || t === "guest") {
+        teacherType = "guest";
+      } else {
+        // No teacherType field — check if they have any class assignments
+        // If admin explicitly approved them as a teacher without a type,
+        // we assume SCPHS by default ONLY if they have classes.
+        // Otherwise treat as guest.
+        let hasAssignedClasses = false;
+        try {
+          const classesSnap = await getDocs(collection(db, "classes"));
+          hasAssignedClasses = classesSnap.docs.some(d => {
+            const c = d.data();
+            return c.adviserUid === user.uid
+              || (Array.isArray(c.teacherUids) && c.teacherUids.includes(user.uid));
+          });
+        } catch {}
+        teacherType = hasAssignedClasses ? "scphs" : "guest";
+      }
+    }
+  } catch (e) {
+    console.warn("[role] teacherType lookup failed:", e);
+  }
+
+  if (teacherType === "scphs") {
+    document.body.classList.add("is-scphs-teacher");
+    console.log("[role] SCPHS teacher — showing ILAW card");
+  } else {
+    document.body.classList.add("is-guest-teacher");
+    console.log("[role] Guest teacher — showing Open Workspace card");
+  }
+}
 
       // Show quick-access banner
       const roleCTA = document.getElementById("role-cta");
       const roleSub = document.getElementById("role-cta-sub");
       if (roleCTA) roleCTA.classList.add("is-visible");
       if (roleSub) {
-        if (isAdmin)         roleSub.textContent = "Welcome back, Admin. Your tools are ready.";
-        else if (isTeacher)  roleSub.textContent = "Welcome back, Teacher. Let's get started.";
-        else                 roleSub.textContent = "Welcome! Explore our portal features.";
-      }
-    });
+        if (isAdmin) {
+  roleSub.textContent = "Welcome back, Admin. Your tools are ready.";
+} else if (isTeacher && document.body.classList.contains("is-guest-teacher")) {
+  roleSub.textContent = "Welcome! Your Open Workspace is ready — create lessons for any subject.";
+} else if (isTeacher) {
+  roleSub.textContent = "Welcome back, Teacher. Let's get started.";
+} else {
+  // Not yet approved — show pending hint for recent signups
+  const signupDate = user.metadata?.creationTime ? new Date(user.metadata.creationTime) : null;
+  const hoursSince = signupDate ? (Date.now() - signupDate) / 36e5 : 999;
+  if (hoursSince < 72) {
+    roleSub.innerHTML = `⏳ <strong>Account pending approval.</strong> An admin will activate your teacher access shortly. You can still browse public pages below.`;
+    roleSub.style.color = "#92400e";
+  } else {
+    roleSub.textContent = "Welcome! Explore our portal features.";
+  }
+}
 
     // Logout / Sign In button
     const btnLogout = document.getElementById("btn-logout");
