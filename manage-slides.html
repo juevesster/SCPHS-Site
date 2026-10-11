@@ -606,20 +606,41 @@
       img.onload = () => {
         try {
           const w = img.naturalWidth, h = img.naturalHeight;
-          const ratio = TARGET_WIDTH / TARGET_HEIGHT;
-          const srcRatio = w / h;
+const ratio = TARGET_WIDTH / TARGET_HEIGHT;
+const srcRatio = w / h;
 
-          let cw, ch, cx, cy;
-          if (srcRatio > ratio) {
-            ch = h; cw = h * ratio; cx = (w - cw) / 2; cy = 0;
-          } else {
-            cw = w; ch = w / ratio; cx = 0; cy = (h - ch) / 2;
-          }
+const canvas = document.createElement("canvas");
+canvas.width = TARGET_WIDTH;
+canvas.height = TARGET_HEIGHT;
+const ctx = canvas.getContext("2d");
 
-          const canvas = document.createElement("canvas");
-          canvas.width = TARGET_WIDTH;
-          canvas.height = TARGET_HEIGHT;
-          canvas.getContext("2d").drawImage(img, cx, cy, cw, ch, 0, 0, TARGET_WIDTH, TARGET_HEIGHT);
+// 1) Draw a BLURRED, cropped version of the image as background
+ctx.save();
+ctx.filter = "blur(20px)";
+// Crop-and-scale background to fill the whole canvas
+if (srcRatio > ratio) {
+  const bh = TARGET_HEIGHT;
+  const bw = TARGET_HEIGHT * srcRatio;
+  ctx.drawImage(img, (TARGET_WIDTH - bw) / 2, 0, bw, bh);
+} else {
+  const bw = TARGET_WIDTH;
+  const bh = TARGET_WIDTH / srcRatio;
+  ctx.drawImage(img, 0, (TARGET_HEIGHT - bh) / 2, bw, bh);
+}
+ctx.restore();
+
+// 2) Draw the SHARP image fit-inside, centered
+let dw, dh;
+if (srcRatio > ratio) {
+  dw = TARGET_WIDTH;
+  dh = TARGET_WIDTH / srcRatio;
+} else {
+  dh = TARGET_HEIGHT;
+  dw = TARGET_HEIGHT * srcRatio;
+}
+const dx = (TARGET_WIDTH - dw) / 2;
+const dy = (TARGET_HEIGHT - dh) / 2;
+ctx.drawImage(img, 0, 0, w, h, dx, dy, dw, dh);
 
           const tryQuality = (q) => {
             canvas.toBlob(blob => {
