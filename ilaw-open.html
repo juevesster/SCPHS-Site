@@ -1,0 +1,2446 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ILAW — Open Workspace for Teachers</title>
+  <link rel="stylesheet" href="assets/css/styles.css" />
+  <style>
+    /* ============================================================
+   LEARNER MODULE — PRINT LAYOUT (A4 PORTRAIT)
+   ============================================================ */
+@media print {
+  body.lm-printing .ilaw-header,
+  body.lm-printing .context-bar,
+  body.lm-printing .action-bar,
+  body.lm-printing .toast,
+  body.lm-printing .section,
+  body.lm-printing .loading,
+  body.lm-printing .btn,
+  body.lm-printing .bow-info { display: none !important; }
+
+  body.lm-printing .lm-print-doc { display: block !important; }
+  body.lm-printing .print-doc { display: none !important; }
+}
+
+/* Hidden on screen */
+.lm-print-doc { display: none; }
+
+/* The learner module styles — used both on-screen preview and in print */
+.lm-page {
+  font-family: "Times New Roman", Times, serif;
+  color: #000;
+  font-size: 11pt;
+  line-height: 1.5;
+  max-width: 210mm;
+  margin: 0 auto;
+  padding: 12mm;
+  background: #fff;
+}
+
+.lm-header { text-align: center; margin-bottom: 6px; line-height: 1.3; }
+.lm-deped-logo {
+  display: block;
+  margin: 0 auto 4px;
+  width: 60px;
+  height: 60px;
+  max-height: 60px;
+  object-fit: contain;
+}
+.lm-header-line1 { font-size: 10pt; }
+.lm-header-line2 { font-size: 11pt; font-weight: 700; }
+.lm-header-line3 { font-size: 9.5pt; }
+
+.lm-school-banner {
+  text-align: center;
+  margin: 6px 0 8px;
+  padding-bottom: 4px;
+  border-bottom: 1.5px solid #000;
+}
+.lm-school-name {
+  font-size: 12pt;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: .02em;
+}
+.lm-school-address { font-size: 9pt; }
+
+.lm-title {
+  text-align: center;
+  font-size: 15pt;
+  font-weight: 800;
+  letter-spacing: .12em;
+  margin: 8px 0 2px;
+  text-transform: uppercase;
+}
+.lm-subtitle {
+  text-align: center;
+  font-size: 11.5pt;
+  font-style: italic;
+  margin-bottom: 6px;
+}
+
+.lm-meta {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  font-size: 9.5pt;
+  margin-bottom: 10px;
+  color: #333;
+}
+.lm-meta span { white-space: nowrap; }
+
+.lm-suspension-banner {
+  background: #fef3c7;
+  border: 1px solid #fcd34d;
+  border-radius: 6px;
+  padding: 8px 12px;
+  font-size: 10pt;
+  text-align: center;
+  margin-bottom: 14px;
+}
+.lm-suspension-banner strong { color: #92400e; }
+
+.lm-section {
+  margin-bottom: 14px;
+  page-break-inside: auto;
+}
+.lm-section-title {
+  font-size: 12pt;
+  font-weight: 800;
+  color: #0f2b4f;
+  margin: 0 0 6px;
+  padding-bottom: 3px;
+  border-bottom: 1.5px solid #0f2b4f;
+}
+.lm-section p { margin: 0 0 6px; }
+
+.lm-greeting p { margin-bottom: 6px; }
+
+.lm-obj-list { margin: 0 0 0 20px; padding: 0; }
+.lm-obj-list li { margin-bottom: 4px; }
+
+.lm-lesson-step {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 6px;
+  align-items: flex-start;
+}
+.lm-step-num {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px; height: 20px;
+  border-radius: 50%;
+  background: #1e3c72;
+  color: #fff;
+  font-size: 10pt;
+  font-weight: 800;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.lm-activity {
+  background: #f9fafb;
+  border-left: 3px solid #10b981;
+  padding: 8px 12px;
+  margin-bottom: 8px;
+  border-radius: 0 4px 4px 0;
+  page-break-inside: avoid;
+}
+.lm-activity strong { color: #065f46; display: block; margin-bottom: 3px; }
+.lm-activity p { margin: 0; font-size: 10pt; }
+
+.lm-quiz-item {
+  margin-bottom: 10px;
+  padding: 6px 0;
+  page-break-inside: avoid;
+}
+.lm-quiz-q { margin-bottom: 4px; font-size: 10.5pt; }
+.lm-quiz-opt {
+  margin-left: 20px;
+  font-size: 10pt;
+  margin-bottom: 2px;
+}
+
+.lm-answer-key {
+  margin-top: 12px;
+  padding: 10px 12px;
+  border: 1.5px dashed #999;
+  background: #f9fafb;
+  border-radius: 6px;
+  page-break-inside: avoid;
+}
+.lm-answer-key .lm-section-title {
+  border-bottom: none;
+  font-size: 11pt;
+  color: #444;
+  margin-bottom: 6px;
+}
+
+.lm-submit {
+  background: #eff6ff;
+  padding: 10px 14px;
+  border-radius: 6px;
+  border: 1px solid #bfdbfe;
+}
+.lm-submit .lm-section-title { border-bottom-color: #1e40af; }
+.lm-submit ol { margin: 6px 0 6px 20px; padding: 0; }
+.lm-submit li { margin-bottom: 3px; font-size: 10pt; }
+
+.lm-signatories {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 24px;
+  page-break-inside: avoid;
+}
+.lm-sig { text-align: center; flex: 1; min-width: 0; }
+
+.lm-sig { text-align: center; flex: 1; }
+.lm-sig-label { font-size: 10pt; margin-bottom: 24px; }
+.lm-sig-name {
+  font-weight: 800;
+  font-size: 10.5pt;
+  border-top: 1px solid #000;
+  padding-top: 3px;
+}
+.lm-sig-pos { font-size: 9.5pt; font-style: italic; }
+
+.lm-footer {
+  margin-top: 14px;
+  padding-top: 4px;
+  border-top: 1px solid #ccc;
+  text-align: center;
+  font-size: 8.5pt;
+  color: #666;
+}
+
+.lm-qr-footer {
+  margin-top: 20px;
+  text-align: center;
+  page-break-inside: avoid;
+}
+.lm-qr-box {
+  display: inline-block;
+  padding: 12px 20px;
+  border: 1.5px solid #0f2b4f;
+  border-radius: 10px;
+  background: #f9fafb;
+}
+.lm-qr-label {
+  font-size: 9.5pt;
+  font-weight: 700;
+  color: #0f2b4f;
+  margin-bottom: 6px;
+}
+.lm-qr-img {
+  display: block;
+  margin: 0 auto 6px;
+  width: 140px;
+  height: 140px;
+}
+.lm-qr-url {
+  font-family: monospace;
+  font-size: 8.5pt;
+  color: #4b5563;
+  word-break: break-all;
+}
+
+    #pdfRenderHost .print-section {
+  page-break-inside: auto;
+  break-inside: auto;
+}
+    /* Print-only document — hidden until printing */
+    .print-doc { display: none; }
+    * { box-sizing: border-box; }
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #f0f2f5; margin: 0; }
+
+    .ilaw-header { background: linear-gradient(135deg, #1e3c72, #2a5298); color: #fff; padding: 20px 0; position: sticky; top: 0; z-index: 100; box-shadow: 0 2px 8px rgba(0,0,0,.1); }
+    .ilaw-header-inner { max-width: 1400px; margin: 0 auto; padding: 0 24px; display: flex; justify-content: space-between; align-items: center; gap: 16px; flex-wrap: wrap; }
+    .ilaw-header h1 { margin: 0 0 4px; font-size: 1.3rem; }
+    .ilaw-header .sub { margin: 0; opacity: 0.85; font-size: 0.85rem; }
+    .ilaw-header-actions { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+
+    .ilaw-container { max-width: 1400px; margin: 0 auto; padding: 24px; }
+
+    .btn { padding: 9px 16px; border: none; border-radius: 8px; cursor: pointer; font-family: inherit; font-size: 13px; font-weight: 700; display: inline-flex; align-items: center; gap: 6px; transition: all .15s; text-decoration: none; }
+    .btn:hover:not(:disabled) { transform: translateY(-1px); }
+    .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+    .btn-primary { background: #1e3c72; color: #fff; }
+    .btn-success { background: #059669; color: #fff; }
+    .btn-warning { background: #d97706; color: #fff; }
+    .btn-danger { background: #dc2626; color: #fff; }
+    .btn-outline { background: #fff; color: #1e3c72; border: 1px solid #1e3c72; }
+    .btn-outline-white { background: rgba(255,255,255,0.15); color: #fff; border: 1px solid rgba(255,255,255,0.3); }
+    .btn-outline-white:hover { background: rgba(255,255,255,0.25); }
+    .btn.small { padding: 6px 12px; font-size: 12px; }
+
+    .context-bar {
+      background: #fff; border-radius: 12px; padding: 16px 20px; margin-bottom: 20px;
+      display: flex; gap: 12px; flex-wrap: wrap; align-items: flex-end;
+      box-shadow: 0 1px 3px rgba(0,0,0,.06);
+    }
+    .context-bar label { font-size: 11px; font-weight: 700; color: #374151; text-transform: uppercase; letter-spacing: .03em; display: block; margin-bottom: 4px; }
+    .context-bar select { padding: 9px 12px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 13px; font-family: inherit; background: #fff; min-width: 160px; }
+
+    .card { background: #fff; border-radius: 12px; padding: 20px; margin-bottom: 18px; box-shadow: 0 1px 3px rgba(0,0,0,.06); }
+
+    .bow-info { background: #eff6ff; border: 1px solid #bfdbfe; border-left: 4px solid #1e40af; border-radius: 8px; padding: 14px 16px; margin-bottom: 18px; }
+    .bow-info .lbl { font-size: 11px; font-weight: 800; color: #1e40af; text-transform: uppercase; letter-spacing: .04em; margin-bottom: 4px; }
+    .bow-info .txt { font-size: 13px; color: #1e3a8a; line-height: 1.55; }
+    .bow-info.perf { border-left-color: #166534; background: #f0fdf4; }
+    .bow-info.perf .lbl { color: #166534; }
+    .bow-info.perf .txt { color: #14532d; }
+
+    .section { background: #fff; border-radius: 12px; margin-bottom: 18px; box-shadow: 0 1px 3px rgba(0,0,0,.06); overflow: hidden; }
+    .section-head { padding: 14px 20px; background: linear-gradient(90deg, #1e3c72, #2a5298); color: #fff; display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; }
+    .section-head h2 { margin: 0; font-size: 15px; font-weight: 800; letter-spacing: .03em; }
+    .section-head .hint { font-size: 11px; opacity: 0.85; margin-top: 2px; }
+    .section-body { padding: 18px 20px; }
+
+    .field { margin-bottom: 16px; }
+    .field:last-child { margin-bottom: 0; }
+    .field-label { font-size: 11.5px; font-weight: 800; color: #374151; text-transform: uppercase; letter-spacing: .04em; margin-bottom: 6px; display: block; }
+    .field textarea, .field input[type="text"], .field input[type="number"], .field select { width: 100%; padding: 10px 12px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 13.5px; font-family: inherit; resize: vertical; line-height: 1.55; }
+    .field textarea { min-height: 80px; }
+    .field textarea:focus, .field input:focus, .field select:focus { outline: none; border-color: #1e6bb8; box-shadow: 0 0 0 3px rgba(30,107,184,.12); }
+
+    .comp-picker { display: flex; flex-direction: column; gap: 8px; max-height: 300px; overflow-y: auto; padding: 4px; }
+    .comp-check { display: flex; align-items: flex-start; gap: 10px; padding: 10px 12px; border: 1px solid #e5e7eb; border-radius: 8px; background: #f9fafb; cursor: pointer; transition: all .15s; }
+    .comp-check:hover { background: #fff; border-color: #bfdbfe; }
+    .comp-check input { margin-top: 3px; flex-shrink: 0; }
+    .comp-check.checked { background: #eff6ff; border-color: #1e40af; }
+    .comp-check .code { font-family: monospace; font-size: 11px; color: #1e40af; font-weight: 700; margin-bottom: 3px; }
+    .comp-check .text { font-size: 12.5px; color: #111827; line-height: 1.5; }
+
+    .rubric-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    .rubric-table th { text-align: left; padding: 10px 14px; border-bottom: 1px solid #e5e7eb; font-size: 11px; text-transform: uppercase; letter-spacing: .03em; color: #374151; background: #f9fafb; }
+    .rubric-table td { padding: 10px 14px; border-bottom: 1px solid #f3f4f6; }
+    .rubric-table input[type="radio"] { transform: scale(1.2); }
+
+    .status-badge { display: inline-block; padding: 3px 10px; border-radius: 999px; font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: .03em; }
+    .status-badge.draft { background: #fef3c7; color: #92400e; }
+    .status-badge.final { background: #d1fae5; color: #065f46; }
+
+    .action-bar { position: sticky; bottom: 0; background: #fff; border-top: 1px solid #e5e7eb; padding: 14px 20px; display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin: 0 -24px -24px; box-shadow: 0 -4px 12px rgba(0,0,0,.05); }
+
+    .loading { text-align: center; padding: 60px 20px; color: #6b7280; }
+    .spinner { width: 32px; height: 32px; border: 3px solid #e5e7eb; border-top-color: #1e3c72; border-radius: 50%; animation: spin .8s linear infinite; margin: 0 auto 12px; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .toast { position: fixed; bottom: 90px; left: 50%; transform: translateX(-50%) translateY(20px); background: #111827; color: #fff; padding: 12px 22px; border-radius: 8px; font-size: 14px; font-weight: 500; box-shadow: 0 8px 24px rgba(0,0,0,.2); opacity: 0; transition: all .25s; z-index: 10000; pointer-events: none; }
+    .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+    .toast.success { background: #059669; }
+    .toast.error { background: #b91c1c; }
+
+        /* ============================================================
+       PRINT-ONLY LAYOUT (A4 LANDSCAPE — DepEd ILAW format)
+       ============================================================ */
+    @media print {
+      @page {
+        size: A4 landscape;
+        margin: 8mm 10mm 15mm 10mm;
+        @bottom-center {
+          content: "ILAW Lesson Plan — Page " counter(page) " of " counter(pages);
+          font-family: "Times New Roman", Times, serif;
+          font-size: 8.5pt;
+          color: #333;
+          padding-top: 2mm;
+          border-top: 0.5px solid #999;
+          width: 100%;
+        }
+      }
+
+      body { background: #fff; font-size: 9.5pt; margin: 0; font-family: "Times New Roman", Times, serif; }
+      .ilaw-header, .context-bar, .action-bar, .toast, .section, .loading, .btn, .bow-info { display: none !important; }
+      .ilaw-container { padding: 0; max-width: 100%; }
+      .print-doc { display: block !important; width: 100%; }
+
+            /* ---------- DepEd Header ---------- */
+      .print-header { text-align: center; margin-bottom: 2mm; line-height: 1.25; }
+      .print-deped-logo { display: block; margin: 0 auto 1.5mm; max-height: 15mm; }
+      .print-header-line1 { font-size: 10pt; font-weight: 400; }
+      .print-header-line2 { font-size: 11pt; font-weight: 700; }
+      .print-header-region { font-size: 9.5pt; }
+      .print-header-division { font-size: 9.5pt; }
+
+      .print-school-row {
+        text-align: center;
+        margin-top: 3mm;
+        padding-bottom: 1.5mm;
+        border-bottom: 1.5px solid #000;
+      }
+      .print-school-name {
+        font-size: 12pt; font-weight: 800;
+        text-transform: uppercase; letter-spacing: .02em;
+        line-height: 1.15;
+      }
+      .print-school-address {
+        font-size: 9pt; line-height: 1.2; margin-top: 0.5mm;
+      }
+
+      .print-title {
+        text-align: center; font-size: 12.5pt; font-weight: 800;
+        letter-spacing: .05em; margin: 3mm 0 2.5mm;
+        text-transform: uppercase;
+      }
+
+      /* ---------- Lesson Info Grid (2-col table) ---------- */
+      .print-info-table {
+        width: 100%; border-collapse: collapse;
+        font-size: 9.5pt; margin-bottom: 3mm;
+      }
+      .print-info-table td {
+        border: 1px solid #000; padding: 1.2mm 2mm;
+        vertical-align: top; line-height: 1.3;
+      }
+      .print-info-table .lbl {
+        font-weight: 700; width: 30mm;
+      }
+
+      /* ---------- Sections (full-width stacked) ---------- */
+      .print-section {
+        width: 100%; border: 1px solid #000;
+        padding: 2mm 3mm; margin-bottom: 2mm;
+        page-break-inside: auto;
+        font-size: 9.5pt; line-height: 1.4;
+      }
+      .print-section-title {
+        font-size: 11pt; font-weight: 800;
+        text-transform: uppercase; letter-spacing: .04em;
+        margin: 0 0 1.5mm; padding-bottom: 1mm;
+        border-bottom: 1.5px solid #000;
+      }
+      .print-sub { margin-bottom: 2mm; }
+      .print-sub:last-child { margin-bottom: 0; }
+      .print-sub-label {
+        font-weight: 700; font-size: 9.5pt;
+        text-transform: uppercase; letter-spacing: .02em;
+        display: block; margin-bottom: 0.5mm;
+      }
+      .print-sub-body {
+        font-size: 9.5pt; line-height: 1.4;
+        white-space: pre-wrap; margin: 0;
+        orphans: 2;
+        widows: 2;
+      }
+
+      .print-competency-list { margin: 0.5mm 0 0 4mm; padding: 0; }
+      .print-competency-list li { margin-bottom: 0.5mm; line-height: 1.35; }
+
+      /* ---------- Rubric ---------- */
+      .print-rubric-table {
+        width: 100%; border-collapse: collapse;
+        font-size: 9pt; margin-top: 1mm;
+      }
+      .print-rubric-table th, .print-rubric-table td {
+        border: 1px solid #000; padding: 1.2mm 2mm;
+        text-align: left; line-height: 1.3;
+      }
+      .print-rubric-table th {
+        background: #eee; font-weight: 700;
+        text-transform: uppercase; font-size: 8.5pt;
+      }
+      .print-rubric-table .center { text-align: center; width: 15mm; }
+
+      /* ---------- Signatories ---------- */
+      .print-signatories {
+        display: flex; justify-content: space-around;
+        gap: 5mm; margin-top: 6mm; page-break-inside: avoid;
+      }
+      .print-sig-col { text-align: center; flex: 1; }
+      .print-sig-label { font-size: 9pt; margin-bottom: 10mm; }
+      .print-sig-name {
+        font-weight: 800; font-size: 9.5pt;
+        border-top: 1px solid #000; padding-top: 1mm;
+      }
+      .print-sig-position { font-size: 9pt; }
+
+      .print-footer {
+        margin-top: 3mm; padding-top: 1.5mm;
+        border-top: 1px solid #000;
+        text-align: center; font-size: 8.5pt;
+        color: #333; line-height: 1.3;
+      }
+    }
+  </style>
+</head>
+<body>
+
+    <header class="ilaw-header">
+    <div class="ilaw-header-inner">
+      <div>
+        <h1>📝 ILAW Lesson Planner <span style="display:inline-block;background:#f59e0b;color:#fff;font-size:10.5px;font-weight:800;padding:3px 10px;border-radius:999px;letter-spacing:.05em;text-transform:uppercase;vertical-align:middle;margin-left:6px;">🌐 Open Mode</span></h1>
+        <p class="sub" id="headerSub">Loading…</p>
+      </div>
+      <div class="ilaw-header-actions">
+        <span id="statusBadge"></span>
+        <a href="index.html" class="btn btn-outline-white small">← Back to Portal</a>
+      </div>
+    </div>
+  </header>
+
+  <main class="ilaw-container" id="mainContent">
+    <div class="loading" id="loading">
+      <div class="spinner"></div>
+      <div>Loading ILAW planner…</div>
+    </div>
+
+    <div id="content" style="display:none;">
+      <div class="context-bar">
+        <div>
+          <label>Grade Level</label>
+          <select id="pickGrade"><option value="">— Select —</option></select>
+        </div>
+        <div>
+          <label>Subject</label>
+          <select id="pickSubject"><option value="">— Select —</option></select>
+        </div>
+        <div>
+          <label>Term</label>
+          <select id="pickTerm">
+            <option value="1" selected>Term 1</option>
+            <option value="2">Term 2</option>
+            <option value="3">Term 3</option>
+            <option value="4">Term 4 (Legacy)</option>
+          </select>
+        </div>
+        <div>
+          <label>Week</label>
+          <select id="pickWeek"></select>
+        </div>
+        <div>
+          <label>School Year</label>
+          <select id="pickYear">
+            <option value="2026-2027" selected>2026-2027</option>
+            <option value="2025-2026">2025-2026</option>
+            <option value="2027-2028">2027-2028</option>
+          </select>
+        </div>
+        <div style="margin-left:auto;">
+          <div style="margin-left:auto;display:flex;gap:8px;">
+          <!-- ⬇️ ADDED: AI Generate button -->
+          <button class="btn btn-primary" id="btnAIGenerate" disabled style="background:#4f46e5;">🤖 Generate with AI</button>
+          <button class="btn btn-success" id="btnUploadDoc" disabled>📤 Upload Lesson Plan</button>
+          <button class="btn btn-primary" id="btnLoadContext" disabled>📖 Load BoW</button>
+        </div>
+        </div>
+      </div>
+
+      <div id="editorArea"></div>
+    </div>
+  </main>
+
+  <div class="print-doc" id="printDoc"></div>
+  <div class="toast" id="toast"></div>
+
+  <!-- Learner Module Modal -->
+<div class="modal" id="lmModal" style="position:fixed;inset:0;background:rgba(0,0,0,.6);display:none;align-items:center;justify-content:center;z-index:10000;padding:20px;">
+  <div style="background:#fff;border-radius:14px;max-width:900px;width:100%;max-height:92vh;display:flex;flex-direction:column;box-shadow:0 24px 48px rgba(0,0,0,.25);">
+    <div style="padding:18px 22px;border-bottom:1px solid #e5e7eb;display:flex;justify-content:space-between;align-items:center;">
+      <div>
+        <h3 style="margin:0;font-size:1.1rem;color:#0f2b4f;">📘 Learner Module Preview</h3>
+        <p style="margin:4px 0 0;font-size:12px;color:#6b7280;">A student-friendly version of this lesson — for home learning during class suspension.</p>
+      </div>
+      <button class="btn btn-outline small" id="lmClose">✕</button>
+    </div>
+
+    <div style="flex:1;overflow-y:auto;background:#f3f4f6;padding:20px;">
+      <div id="lmPreviewHost" style="background:#fff;border-radius:8px;box-shadow:0 4px 20px rgba(0,0,0,.1);"></div>
+    </div>
+
+      <!-- SHARE SECTION (new) -->
+    <div id="lmShareSection" style="padding:16px 22px;border-top:1px solid #e5e7eb;background:#f8fafc;">
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:12px;">
+        <div>
+          <div style="font-size:12px;font-weight:800;color:#0f2b4f;text-transform:uppercase;letter-spacing:.05em;">🚀 Share with Learners</div>
+          <div id="lmShareStatus" style="font-size:11.5px;color:#6b7280;margin-top:3px;">Not yet shared</div>
+        </div>
+        <button class="btn btn-outline small" id="lmToggleShare" style="background:#10b981;color:#fff;border-color:#10b981;">🔗 Enable Sharing</button>
+      </div>
+
+      <!-- Share panel (hidden until sharing enabled) -->
+      <div id="lmSharePanel" style="display:none;background:#fff;border:1px solid #e5e7eb;border-radius:10px;padding:14px;">
+        <div style="margin-bottom:12px;">
+          <div style="font-size:10.5px;font-weight:800;color:#6b7280;text-transform:uppercase;letter-spacing:.04em;margin-bottom:4px;">Public Link</div>
+          <div style="display:flex;gap:6px;flex-wrap:wrap;">
+            <input type="text" id="lmShareUrl" readonly
+                   style="flex:1;min-width:200px;padding:8px 10px;border:1px solid #d1d5db;border-radius:6px;font-size:12px;font-family:monospace;background:#f9fafb;" />
+            <button class="btn btn-outline small" id="lmCopyLink">📋 Copy</button>
+            <a class="btn btn-outline small" id="lmOpenPreview" href="#" target="_blank" rel="noopener">↗ Open</a>
+          </div>
+        </div>
+
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;">
+          <button class="btn btn-outline small" id="lmShareMessenger" style="background:#0084FF;color:#fff;border-color:#0084FF;">💬 Send to Messenger</button>
+          <button class="btn btn-outline small" id="lmShareNative" style="background:#7c3aed;color:#fff;border-color:#7c3aed;">📤 Share…</button>
+          <button class="btn btn-outline small" id="lmShowQr" style="background:#0f2b4f;color:#fff;border-color:#0f2b4f;">📱 QR Code</button>
+        </div>
+
+        <!-- QR display -->
+        <div id="lmQrWrap" style="display:none;text-align:center;padding:12px;background:#f9fafb;border-radius:8px;">
+          <div style="font-size:11px;color:#6b7280;margin-bottom:8px;">Scan this on your phone</div>
+          <img id="lmQrImg" alt="QR Code"
+               style="max-width:200px;border-radius:8px;box-shadow:0 2px 8px rgba(0,0,0,.1);" />
+          <div style="font-size:10px;color:#9ca3af;margin-top:8px;">Students scan → opens module on phone</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- FOOTER (existing) -->
+    <div style="padding:14px 22px;border-top:1px solid #e5e7eb;display:flex;justify-content:space-between;gap:10px;background:#fafbfc;flex-wrap:wrap;">
+      <div id="lmStatus" style="font-size:13px;color:#6b7280;align-self:center;"></div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;">
+        <button class="btn btn-outline" id="lmEditModule" style="background:#f59e0b;color:#fff;border-color:#f59e0b;">✏️ Edit Module</button>
+        <button class="btn btn-outline" id="lmUseAI" style="background:#4f46e5;color:#fff;border-color:#4f46e5;">✨ Enhance with AI</button>
+        <button class="btn btn-outline" id="lmPrint">🖨 Print</button>
+        <button class="btn btn-primary" id="lmDownload">📥 Download as PDF</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Hidden container that holds the module during print -->
+<div class="lm-print-doc" id="lmPrintDoc"></div>
+
+  <script type="module">
+    import { auth, db } from "./assets/js/firebase-config.js";
+    import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+    import { collection, getDocs } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+    import { getCurrentUserProfile } from "./assets/js/roles.js";
+    import "./assets/js/bow-store.js";
+    import "./assets/js/ilaw-store.js";
+    import "./assets/js/ilaw-config.js";
+    import "./assets/js/doc-parser.js";
+    import { enrichILAW } from "./assets/js/ai-enricher.js";
+    import { collectLessonData, buildLearnerModuleHTML } from "./assets/js/learner-module.js";
+    import { enhanceLearnerModuleWithAI, mergeAIIntoLesson } from "./assets/js/ai-learner-module.js";
+    import {
+    enableSharing, disableSharing, buildPublicUrl, generateQrCodeUrl,
+    shareToMessenger, copyToClipboard, nativeShare,
+    } from "./assets/js/learner-share.js";
+    import { openEditorModal, loadOverrides } from "./assets/js/module-editor.js";
+
+    let CURRENT_USER = null;
+    let CURRENT_PROFILE = null;
+    let SUBJECTS = [];
+    let CURRENT_BOW = null;
+    let CURRENT_LESSON_ID = null;
+    let DIRTY = false;
+    let ILAW_CONFIG = null;
+
+    const $ = id => document.getElementById(id);
+    const esc = s => String(s == null ? "" : s)
+      .replace(/&/g, "&amp;").replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+
+    let toastTimer;
+    function toast(msg, type = "") {
+      const t = $("toast");
+      t.textContent = msg;
+      t.className = "toast show " + type;
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => t.className = "toast", 3000);
+    }
+
+    // ============================================================
+    // AUTH
+    // ============================================================
+    onAuthStateChanged(auth, async (user) => {
+      if (!user) {
+        location.replace("login.html?next=" + encodeURIComponent(location.pathname + location.search));
+        return;
+      }
+      CURRENT_USER = user;
+      CURRENT_PROFILE = await getCurrentUserProfile();
+
+            // Open Mode: any authenticated user can access.
+      // (Admins approve accounts via Manage Users.)
+      const role = CURRENT_PROFILE?.primaryRole || "unknown";
+      const isStaff = role === "teacher"
+        || role === "admin"
+        || role === "faculty"
+        || role === "instructor"
+        || role === "adviser"
+        || CURRENT_PROFILE?.isSuperAdmin
+        || CURRENT_PROFILE?.permissions?.canEnterGrades === true
+        || CURRENT_PROFILE?.permissions?.canManageClasses === true;
+
+      // Log for visibility but allow all authenticated users
+      console.log(`[ilaw-open] Signed in as ${user.email} · role: ${role} · isStaff: ${isStaff}`);
+
+      // Only truly anonymous users are blocked (they'd have been redirected already)
+      // Optional: If you want a hard gate for students, uncomment below:
+      // if (role === "student") {
+      //   $("loading").innerHTML = `
+      //     <h2 style="color:#b91c1c;">🚫 Access Denied</h2>
+      //     <p>Ask your teacher or admin to enable Teacher access for your account.</p>
+      //     <a href="index.html" class="btn btn-primary" style="margin-top:12px;">← Back to Portal</a>
+      //   `;
+      //   return;
+      // }
+
+      ILAW_CONFIG = await window.ILAWConfig.load();
+            // ✅ Preload the DepEd logo so print/PDF don't miss it on first try
+      if (ILAW_CONFIG?.depedLogo) {
+        const preloadImg = new Image();
+        preloadImg.src = ILAW_CONFIG.depedLogo;
+        // Also wait for it to actually finish loading before continuing
+        await new Promise(res => {
+          if (preloadImg.complete) return res();
+          preloadImg.addEventListener("load", res, { once: true });
+          preloadImg.addEventListener("error", res, { once: true });
+          setTimeout(res, 3000);
+        });
+      }
+
+      $("pickWeek").innerHTML = Array.from({length: 13}, (_, i) =>
+        `<option value="${i+1}">Week ${i+1}</option>`).join("");
+
+      await loadSubjects();
+      initContextPicker();
+      attachHandlers();
+
+      $("loading").style.display = "none";
+      $("content").style.display = "block";
+      $("headerSub").textContent = `Signed in as ${CURRENT_PROFILE?.name || user.email}`;
+
+      loadFromUrl();
+    });
+
+    async function loadSubjects() {
+      try {
+        const snap = await getDocs(collection(db, "subjects"));
+        SUBJECTS = snap.docs
+          .map(d => ({ id: d.id, ...d.data() }))
+          .filter(s => s.active !== false);
+      } catch (e) {
+        SUBJECTS = [];
+      }
+    }
+
+    function initContextPicker() {
+      const ALL_GRADES = ["K", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12"];
+      $("pickGrade").innerHTML = '<option value="">— Select —</option>' +
+        ALL_GRADES.map(g => `<option value="${esc(g)}">${g === "K" ? "Kindergarten" : "Grade " + g}</option>`).join("");
+
+      $("pickGrade").addEventListener("change", populateSubjectPicker);
+      $("pickSubject").addEventListener("change", checkContextReady);
+      $("pickTerm").addEventListener("change", checkContextReady);
+      $("pickWeek").addEventListener("change", checkContextReady);
+    }
+
+    function populateSubjectPicker() {
+      const grade = $("pickGrade").value;
+      const list = SUBJECTS.filter(s => String(s.level) === String(grade));
+      $("pickSubject").innerHTML = '<option value="">— Select —</option>' +
+        list.map(s => `<option value="${esc(s.id)}">${esc(s.displayName || s.id)}</option>`).join("");
+      checkContextReady();
+    }
+
+    // ⬇️ UPDATED: also enable btnAIGenerate
+    function checkContextReady() {
+      const ready = !!$("pickGrade").value && !!$("pickSubject").value &&
+                    !!$("pickTerm").value && !!$("pickWeek").value;
+      $("btnLoadContext").disabled = !ready;
+      const uploadBtn = $("btnUploadDoc");
+      if (uploadBtn) uploadBtn.disabled = !ready;
+      const aiBtn = $("btnAIGenerate");
+      if (aiBtn) aiBtn.disabled = !ready;
+    }
+
+    // ⬇️ UPDATED: also wire btnAIGenerate
+    function attachHandlers() {
+      $("btnLoadContext").addEventListener("click", loadContext);
+      $("btnUploadDoc").addEventListener("click", () => {
+        if (!$("editorArea").querySelector(".section")) {
+          loadContext().then(() => openUploadModal());
+        } else {
+          openUploadModal();
+        }
+      });
+      $("btnAIGenerate").addEventListener("click", async () => {
+        // Warn if editor already has content
+        const hasContent = ["f-contentStandard", "f-lessonFlow", "f-assessment"]
+          .some(id => $(id)?.value?.trim());
+        if (hasContent) {
+          if (!confirm("This will overwrite fields that already have content. Continue?")) return;
+        }
+        // Load editor first if not present
+        if (!$("editorArea").querySelector(".section")) {
+          await loadContext();
+        }
+        generateFromScratch();
+      });
+    }
+
+    async function loadContext() {
+      const subjectCode = $("pickSubject").value;
+      const term = parseInt($("pickTerm").value, 10);
+      const week = parseInt($("pickWeek").value, 10);
+      const schoolYear = $("pickYear").value;
+
+      if (!subjectCode) { toast("⚠️ Please select a subject", "error"); return; }
+
+      $("editorArea").innerHTML = `
+        <div class="loading">
+          <div class="spinner"></div>
+          <div>Loading BoW and lesson...</div>
+        </div>
+      `;
+
+      try {
+        const termDoc = await window.BoW.getBoWTerm(subjectCode, term);
+        const competencies = termDoc ? await window.BoW.listCompetencies(subjectCode, term) : [];
+        CURRENT_BOW = { termDoc, competencies };
+
+        const existing = await window.ILAW.findLesson(
+          CURRENT_USER.uid, subjectCode, term, week, schoolYear
+        );
+        CURRENT_LESSON_ID = existing?.id || null;
+
+        renderEditor(existing);
+      } catch (e) {
+        console.error(e);
+        $("editorArea").innerHTML = `
+          <div class="card" style="text-align:center;padding:40px;">
+            <div style="font-size:2.5rem;">⚠️</div>
+            <h3 style="color:#b91c1c;margin:8px 0 4px;">Load failed</h3>
+            <p style="color:#6b7280;font-size:13px;">${esc(e.message || "Unknown error")}</p>
+          </div>
+        `;
+      }
+    }
+
+    function renderEditor(existing) {
+      const subjectCode = $("pickSubject").value;
+      const subjectName = $("pickSubject").selectedOptions[0].textContent;
+      const gradeLevel = $("pickGrade").value;
+      const term = parseInt($("pickTerm").value, 10);
+      const week = parseInt($("pickWeek").value, 10);
+
+      const bow = CURRENT_BOW;
+      const comps = bow.competencies || [];
+      const contentStd = bow.termDoc?.contentStandard || "";
+      const perfStd = bow.termDoc?.performanceStandard || "";
+
+      const selectedCodes = new Set(existing?.competencyCodes || []);
+      const e = existing || {};
+      const status = e.status || "draft";
+
+      const byTopic = {};
+      comps.forEach(c => {
+        const t = c.topicLabel || "(untitled)";
+        if (!byTopic[t]) byTopic[t] = { items: [], orderIndex: c.topicOrderIndex || 999 };
+        byTopic[t].items.push(c);
+      });
+      const topicList = Object.entries(byTopic)
+        .sort((a, b) => a[1].orderIndex - b[1].orderIndex);
+
+      const RUBRIC = [
+        ["intentions_clear", "Intentions are clearly stated, with appropriate learning competencies articulated."],
+        ["intentions_coherent", "Intentions are evident across all sections, there is coherence."],
+        ["learning_clear", "Learning experience is clear — another teacher can implement this lesson."],
+        ["learning_designed", "Learning experience is well-designed, with embedded Learning Design Principles."],
+        ["integration_maximized", "Learning experience maximizes opportunities for integration."],
+        ["inclusive", "Learning experience is inclusive, supports learners with disabilities and unique contexts."],
+        ["assessment_integrated", "Assessment strategies are integrated throughout the session."],
+        ["assessment_evidence", "Assessment strategies generate evidence of learning."],
+        ["interventions_actionable", "Interventions are actionable, providing ways to extend or adjust learning."],
+      ];
+      const rubric = e.rubric || {};
+
+      const sign = e.signatories || {};
+      const sectionOptions = e.section ? [e.section] : [];
+
+      $("editorArea").innerHTML = `
+        <!-- LESSON INFORMATION -->
+        <div class="section">
+          <div class="section-head">
+            <div>
+              <h2>📋 LESSON INFORMATION</h2>
+              <div class="hint">Basic details for this lesson plan</div>
+            </div>
+          </div>
+          <div class="section-body">
+            <div style="display:grid;grid-template-columns:2fr 1fr 2fr 1fr;gap:12px;margin-bottom:14px;">
+              <div class="field" style="margin:0;">
+                <label class="field-label">Lesson Title</label>
+                <input type="text" id="f-lessonTitle" value="${esc(e.lessonTitle || `${subjectName} — Term ${term} Week ${week}`)}" />
+              </div>
+              <div class="field" style="margin:0;">
+                <label class="field-label">No. of Sessions</label>
+                <input type="number" id="f-noOfSessions" min="1" max="10" value="${e.noOfSessions || 5}" />
+              </div>
+              <div class="field" style="margin:0;">
+                <label class="field-label">Teacher Name</label>
+                <input type="text" id="f-teacherName" value="${esc(e.teacherName || CURRENT_PROFILE?.name || CURRENT_USER.email)}" />
+              </div>
+              <div class="field" style="margin:0;">
+                <label class="field-label">Section</label>
+                <select id="f-section">
+                  <option value="">— Select —</option>
+                  ${sectionOptions.map(s => `<option value="${esc(s)}" ${e.section === s ? "selected" : ""}>${esc(s)}</option>`).join("")}
+                </select>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        ${contentStd ? `<div class="bow-info"><div class="lbl">📘 Content Standard</div><div class="txt">${esc(contentStd)}</div></div>` : ""}
+        ${perfStd ? `<div class="bow-info perf"><div class="lbl">⭐ Performance Standard</div><div class="txt">${esc(perfStd)}</div></div>` : ""}
+
+        <!-- REFERENCES -->
+        <div class="section">
+          <div class="section-head"><div><h2>📚 REFERENCES</h2><div class="hint">Curriculum guides, textbooks, LR Portal links</div></div></div>
+          <div class="section-body">
+            <div class="field">
+              <textarea id="f-references" rows="4" placeholder="1. Curriculum Guide: ...">${esc(e.references || "")}</textarea>
+            </div>
+          </div>
+        </div>
+
+        <!-- I. INTENTIONS -->
+        <div class="section">
+          <div class="section-head"><div><h2>🎯 I — INTENTIONS</h2></div></div>
+          <div class="section-body">
+            <div class="field">
+              <label class="field-label">Learning Competencies (pick from BoW)</label>
+              ${topicList.length ? `
+                <div class="comp-picker" id="compPicker">
+                  ${topicList.map(([topicLabel, group]) => `
+                    <div style="font-size:11px;font-weight:800;color:#1e3c72;text-transform:uppercase;letter-spacing:.04em;margin:10px 0 4px;">📂 ${esc(topicLabel)}</div>
+                    ${group.items.map(c => `
+                      <label class="comp-check ${selectedCodes.has(c.code) ? "checked" : ""}">
+                        <input type="checkbox" data-comp-code="${esc(c.code)}" data-comp-text="${esc(c.text)}" ${selectedCodes.has(c.code) ? "checked" : ""} />
+                        <div>
+                          <div class="code">${esc(c.code)}${c.isRecurring ? " *" : ""}</div>
+                          <div class="text">${esc(c.text)}</div>
+                        </div>
+                      </label>
+                    `).join("")}
+                  `).join("")}
+                </div>
+                <div style="font-size:11px;color:#6b7280;margin-top:8px;">Selected: <strong id="compCount">${selectedCodes.size}</strong></div>
+              ` : `<textarea id="manualComps" rows="4" placeholder="Type competencies manually...">${esc((e.competencyTexts || []).join("\n"))}</textarea>`}
+            </div>
+            <div class="field"><label class="field-label">Content Standard</label><textarea id="f-contentStandard" rows="2">${esc(e.contentStandard || contentStd)}</textarea></div>
+            <div class="field"><label class="field-label">Performance Standard</label><textarea id="f-performanceStandard" rows="2">${esc(e.performanceStandard || perfStd)}</textarea></div>
+            <div class="field"><label class="field-label">Learner Context</label><textarea id="f-learnerContext" rows="4">${esc(e.learnerContext || "")}</textarea></div>
+          </div>
+        </div>
+
+        <!-- L. LEARNING EXPERIENCE -->
+        <div class="section">
+          <div class="section-head"><div><h2>📖 L — LEARNING EXPERIENCE</h2></div></div>
+          <div class="section-body">
+            <div class="field"><label class="field-label">Pre-Lesson</label><textarea id="f-preLesson" rows="3">${esc(e.preLesson || "")}</textarea></div>
+            <div class="field"><label class="field-label">Lesson Flow</label><textarea id="f-lessonFlow" rows="8">${esc(e.lessonFlow || "")}</textarea></div>
+            <div class="field"><label class="field-label">Materials / Resources</label><textarea id="f-materialsText" rows="3">${esc(e.materialsText || "")}</textarea></div>
+            <div class="field"><label class="field-label">Integration Opportunities</label><textarea id="f-integration" rows="2">${esc(e.integration || "")}</textarea></div>
+          </div>
+        </div>
+
+        <!-- A. ASSESSMENT -->
+        <div class="section">
+          <div class="section-head"><div><h2>📊 A — ASSESSMENT</h2></div></div>
+          <div class="section-body"><div class="field"><textarea id="f-assessment" rows="5">${esc(e.assessment || "")}</textarea></div></div>
+        </div>
+
+        <!-- W. WAYS FORWARD -->
+        <div class="section">
+          <div class="section-head"><div><h2>🛣️ W — WAYS FORWARD</h2></div></div>
+          <div class="section-body">
+            <div class="field"><label class="field-label">Extended Learning</label><textarea id="f-extendedLearning" rows="3">${esc(e.extendedLearning || "")}</textarea></div>
+            <div class="field"><label class="field-label">Ways Forward / ARAL</label><textarea id="f-waysForward" rows="3">${esc(e.waysForward || "")}</textarea></div>
+            <div class="field"><label class="field-label">Teacher Reflections</label><textarea id="f-teacherReflections" rows="3">${esc(e.teacherReflections || "")}</textarea></div>
+          </div>
+        </div>
+
+        <!-- RUBRIC -->
+        <div class="section">
+          <div class="section-head"><div><h2>✅ RUBRIC FOR LESSON PLANNING SELF-CHECK</h2></div></div>
+          <div class="section-body" style="padding:0;">
+            <table class="rubric-table">
+              <thead><tr><th>I can say that in my lesson plan…</th><th style="width:70px;text-align:center;color:#059669;">Yes</th><th style="width:70px;text-align:center;color:#dc2626;">Not Yet</th></tr></thead>
+              <tbody>
+                ${RUBRIC.map(([key, label]) => `
+                  <tr>
+                    <td>${esc(label)}</td>
+                    <td style="text-align:center;"><input type="radio" name="rubric_${key}" value="yes" ${rubric[key] === "yes" ? "checked" : ""} /></td>
+                    <td style="text-align:center;"><input type="radio" name="rubric_${key}" value="not_yet" ${(rubric[key] || "not_yet") === "not_yet" ? "checked" : ""} /></td>
+                  </tr>
+                `).join("")}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- COACHING NOTES -->
+        <div class="section">
+          <div class="section-head"><div><h2>👨‍🏫 COACHING NOTES</h2></div></div>
+          <div class="section-body">
+            <div class="field"><label class="field-label">What I want help with...</label><textarea id="f-coachingNotes" rows="4">${esc(e.coaching?.notes || "")}</textarea></div>
+            <div class="field"><label class="field-label">Coach's Name</label><input type="text" id="f-coachName" value="${esc(e.coaching?.coachName || "")}" style="max-width:300px;" /></div>
+          </div>
+        </div>
+
+        <!-- SIGNATORIES -->
+        <div class="section">
+          <div class="section-head">
+            <div><h2>✍️ SIGNATORIES</h2><div class="hint">Pre-filled from school settings — edit to override for this lesson only</div></div>
+            <button class="btn btn-outline small" id="btnResetSign" style="background:#fff;color:#1e3c72;">🔄 Use Defaults</button>
+          </div>
+          <div class="section-body">
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px;">
+              <div class="field" style="margin:0;">
+                <label class="field-label">Prepared by — Name</label>
+                <input type="text" id="f-sig-preparedName" value="${esc(sign.preparedByName || e.teacherName || CURRENT_PROFILE?.name || CURRENT_USER.email)}" />
+              </div>
+              <div class="field" style="margin:0;">
+                <label class="field-label">Position</label>
+                <input type="text" id="f-sig-preparedPos" value="${esc(sign.preparedByPosition || "Teacher")}" />
+              </div>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px;">
+              <div class="field" style="margin:0;">
+                <label class="field-label">Checked by — Name</label>
+                <input type="text" id="f-sig-checkedName" value="${esc(sign.checkedByName || "")}" />
+              </div>
+              <div class="field" style="margin:0;">
+                <label class="field-label">Position</label>
+                <input type="text" id="f-sig-checkedPos" value="${esc(sign.checkedByPosition || "Master Teacher I")}" />
+              </div>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+              <div class="field" style="margin:0;">
+                <label class="field-label">Noted by — Name</label>
+                <input type="text" id="f-sig-notedName" value="${esc(sign.notedByName || ILAW_CONFIG?.defaultPrincipalName || "")}" />
+              </div>
+              <div class="field" style="margin:0;">
+                <label class="field-label">Position</label>
+                <input type="text" id="f-sig-notedPos" value="${esc(sign.notedByPosition || ILAW_CONFIG?.defaultPrincipalPosition || "Principal IV")}" />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- AI DECLARATION -->
+        <div class="section">
+          <div class="section-head"><div><h2>📜 AI DECLARATION</h2><div class="hint">DepEd DO 3, s. 2026</div></div></div>
+          <div class="section-body">
+            <label style="display:flex;align-items:center;gap:6px;font-size:13px;margin-bottom:8px;"><input type="radio" name="aiDecl" value="not-used" ${(e.aiDeclaration || "not-used") === "not-used" ? "checked" : ""} /> 🚫 Not used</label>
+            <label style="display:flex;align-items:center;gap:6px;font-size:13px;margin-bottom:8px;"><input type="radio" name="aiDecl" value="draft-generation" ${e.aiDeclaration === "draft-generation" ? "checked" : ""} /> 🤖 AI-generated draft, teacher revised</label>
+            <label style="display:flex;align-items:center;gap:6px;font-size:13px;margin-bottom:8px;"><input type="radio" name="aiDecl" value="grammar-only" ${e.aiDeclaration === "grammar-only" ? "checked" : ""} /> ✏️ Grammar/style editing only</label>
+            <label style="display:flex;align-items:center;gap:6px;font-size:13px;margin-bottom:12px;"><input type="radio" name="aiDecl" value="other" ${e.aiDeclaration === "other" ? "checked" : ""} /> 📝 Other</label>
+            <input type="text" id="f-aiDeclarationNotes" placeholder="Notes (optional)" value="${esc(e.aiDeclarationNotes || "")}" style="width:100%;padding:10px 12px;border:1px solid #d1d5db;border-radius:8px;font-size:13.5px;font-family:inherit;" />
+          </div>
+        </div>
+
+        <!-- Action bar -->
+        <div class="action-bar">
+          <span class="status-badge ${status}" id="statusBadgeBody">${status}</span>
+          <span style="color:#6b7280;font-size:12px;" id="dirtyIndicator"></span>
+          <div style="margin-left:auto;display:flex;gap:8px;flex-wrap:wrap;">
+            <button class="btn btn-outline" id="btnDuplicate">📋 Duplicate</button>
+            <button class="btn btn-outline" id="btnLearnerModule" style="background:#7c3aed;color:#fff;border-color:#7c3aed;">📘 Generate Learner Module</button>
+            <button class="btn btn-outline" id="btnDownload" style="background:#1e3c72;color:white;border-color:#1e3c72;">📥 Download PDF</button>
+            <button class="btn btn-outline" id="btnPrint">🖨️ Print</button>
+            ${CURRENT_LESSON_ID ? `<button class="btn btn-danger" id="btnDelete">🗑️ Delete</button>` : ""}
+            <button class="btn btn-primary" id="btnSaveDraft">💾 Save as Draft</button>
+            <button class="btn btn-success" id="btnSaveFinal">✅ Mark as Final</button>
+          </div>
+        </div>
+      `;
+
+      $("statusBadge").innerHTML = `<span class="status-badge ${status}">${status}</span>`;
+
+      loadSectionsForTeacher(subjectCode, e.section);
+
+      document.querySelectorAll("[data-comp-code]").forEach(cb => {
+        cb.addEventListener("change", () => {
+          cb.closest(".comp-check").classList.toggle("checked", cb.checked);
+          $("compCount").textContent = document.querySelectorAll("[data-comp-code]:checked").length;
+          DIRTY = true;
+          updateDirtyIndicator();
+        });
+      });
+
+      document.querySelectorAll("textarea, input[type='text'], input[type='number'], input[type='radio'], select").forEach(el => {
+        el.addEventListener("input", () => { DIRTY = true; updateDirtyIndicator(); });
+        el.addEventListener("change", () => { DIRTY = true; updateDirtyIndicator(); });
+      });
+
+      $("btnSaveDraft").addEventListener("click", () => saveLesson("draft"));
+      $("btnSaveFinal").addEventListener("click", () => saveLesson("final"));
+      $("btnPrint").addEventListener("click", printLesson);
+      $("btnDownload").addEventListener("click", downloadLessonPDF);
+      $("btnDuplicate")?.addEventListener("click", duplicateCurrent);
+      $("btnDelete")?.addEventListener("click", deleteCurrent);
+      $("btnResetSign")?.addEventListener("click", resetSignatories);
+    }
+
+    function resetSignatories() {
+      if (!ILAW_CONFIG) return;
+      $("f-sig-preparedName").value = CURRENT_PROFILE?.name || CURRENT_USER.email;
+      $("f-sig-preparedPos").value = "Teacher";
+      $("f-sig-checkedName").value = "";
+      $("f-sig-checkedPos").value = "Master Teacher I";
+      $("f-sig-notedName").value = ILAW_CONFIG.defaultPrincipalName || "";
+      $("f-sig-notedPos").value = ILAW_CONFIG.defaultPrincipalPosition || "Principal IV";
+      DIRTY = true;
+      updateDirtyIndicator();
+      toast("✓ Signatories reset to defaults", "success");
+    }
+
+    async function loadSectionsForTeacher(subjectCode, currentSection) {
+      try {
+        const select = document.getElementById("f-section");
+        if (!select) return;
+        const classesSnap = await getDocs(collection(db, "classes"));
+        const myClasses = [];
+        for (const classDoc of classesSnap.docs) {
+          const cls = { id: classDoc.id, ...classDoc.data() };
+          const isAdviser = cls.adviserUid === CURRENT_USER.uid;
+          let hasSubject = false;
+          if (!isAdviser) {
+            try {
+              const progSnap = await getDocs(collection(db, "classes", cls.id, "program"));
+              hasSubject = progSnap.docs.some(d => {
+                const e = d.data();
+                return e.teacherUid === CURRENT_USER.uid && (e.subject || e.subjectName) === subjectCode;
+              });
+            } catch {}
+          }
+          if (isAdviser || hasSubject) myClasses.push(cls.classLabel || "(unnamed class)");
+        }
+        const sections = [...new Set(myClasses)].sort();
+        if (sections.length) {
+          select.innerHTML = '<option value="">— Select —</option>' +
+            sections.map(s => `<option value="${esc(s)}" ${currentSection === s ? "selected" : ""}>${esc(s)}</option>`).join("");
+        } else {
+          select.outerHTML = `<input type="text" id="f-section" value="${esc(currentSection || "")}" placeholder="e.g., Grade 7 - DIAMOND" style="width:100%;padding:10px 12px;border:1px solid #d1d5db;border-radius:8px;font-size:13.5px;font-family:inherit;" />`;
+        }
+      } catch (e) {}
+    }
+
+    function updateDirtyIndicator() {
+      const el = $("dirtyIndicator");
+      if (!el) return;
+      el.textContent = DIRTY ? "• Unsaved changes" : "";
+      el.style.color = DIRTY ? "#d97706" : "#6b7280";
+    }
+
+    async function saveLesson(status) {
+      const subjectCode = $("pickSubject").value;
+      const subjectName = $("pickSubject").selectedOptions[0].textContent;
+      const gradeLevel = $("pickGrade").value;
+      const term = parseInt($("pickTerm").value, 10);
+      const week = parseInt($("pickWeek").value, 10);
+      const schoolYear = $("pickYear").value;
+
+      const checked = Array.from(document.querySelectorAll("[data-comp-code]:checked"));
+      let competencyCodes = checked.map(cb => cb.dataset.compCode);
+      let competencyTexts = checked.map(cb => cb.dataset.compText);
+
+      const manualComps = document.getElementById("manualComps");
+      if (manualComps && manualComps.value.trim()) {
+        const lines = manualComps.value.split("\n").map(l => l.trim()).filter(Boolean);
+        lines.forEach((line, idx) => {
+          competencyCodes.push(`T${term}-M${idx + 1}`);
+          competencyTexts.push(line);
+        });
+      }
+
+      const rubric = {};
+      ["intentions_clear","intentions_coherent","learning_clear","learning_designed","integration_maximized","inclusive","assessment_integrated","assessment_evidence","interventions_actionable"].forEach(key => {
+        const r = document.querySelector(`input[name="rubric_${key}"]:checked`);
+        rubric[key] = r?.value || "not_yet";
+      });
+
+      const aiDecl = document.querySelector('input[name="aiDecl"]:checked')?.value || "not-used";
+      const sectionEl = document.getElementById("f-section");
+      const section = sectionEl?.value?.trim() || "";
+
+            const data = {
+        teacherUid: CURRENT_USER.uid,
+        teacherName: ($("f-teacherName")?.value || "").trim() || CURRENT_PROFILE?.name || CURRENT_USER.email,
+        subjectCode, subjectName, gradeLevel, term, week, schoolYear,
+        title: ($("f-lessonTitle")?.value || "").trim(),
+        lessonTitle: ($("f-lessonTitle")?.value || "").trim(),
+        noOfSessions: parseInt($("f-noOfSessions")?.value, 10) || 5,
+        section, status,
+        references: ($("f-references")?.value || "").trim(),
+        competencyCodes, competencyTexts,
+        contentStandard: ($("f-contentStandard")?.value || "").trim(),
+        performanceStandard: ($("f-performanceStandard")?.value || "").trim(),
+        learnerContext: ($("f-learnerContext")?.value || "").trim(),
+        preLesson: ($("f-preLesson")?.value || "").trim(),
+        lessonFlow: ($("f-lessonFlow")?.value || "").trim(),
+        materialsText: ($("f-materialsText")?.value || "").trim(),
+        integration: ($("f-integration")?.value || "").trim(),
+        assessment: ($("f-assessment")?.value || "").trim(),
+        extendedLearning: ($("f-extendedLearning")?.value || "").trim(),
+        waysForward: ($("f-waysForward")?.value || "").trim(),
+        teacherReflections: ($("f-teacherReflections")?.value || "").trim(),
+        rubric,
+        coaching: {
+          notes: ($("f-coachingNotes")?.value || "").trim(),
+          coachName: ($("f-coachName")?.value || "").trim(),
+        },
+        signatories: {
+          preparedByName: ($("f-sig-preparedName")?.value || "").trim(),
+          preparedByPosition: ($("f-sig-preparedPos")?.value || "").trim(),
+          checkedByName: ($("f-sig-checkedName")?.value || "").trim(),
+          checkedByPosition: ($("f-sig-checkedPos")?.value || "").trim(),
+          notedByName: ($("f-sig-notedName")?.value || "").trim(),
+          notedByPosition: ($("f-sig-notedPos")?.value || "").trim(),
+        },
+        aiDeclaration: aiDecl,
+        aiDeclarationNotes: ($("f-aiDeclarationNotes")?.value || "").trim(),
+        lastSavedBy: CURRENT_USER.email || "",
+
+        // 🆕 Mark as external (guest teacher's workspace)
+        isExternal: true,
+      };
+
+      try {
+        const id = await window.ILAW.saveLesson(CURRENT_LESSON_ID, data);
+        CURRENT_LESSON_ID = id;
+        DIRTY = false;
+        updateDirtyIndicator();
+        toast(`✓ Lesson saved (${status})`, "success");
+        $("statusBadge").innerHTML = `<span class="status-badge ${status}">${status}</span>`;
+        $("statusBadgeBody").textContent = status;
+        $("statusBadgeBody").className = `status-badge ${status}`;
+      } catch (err) {
+        toast("⚠️ " + (err.message || "Save failed"), "error");
+      }
+    }
+
+        // ============================================================
+    // PURE HTML BUILDER — returns the print-ready HTML string
+    // No side effects: does not touch the DOM, does not call print
+    // ============================================================
+    function buildILAWPrintHTML() {
+      if (!ILAW_CONFIG) return "";
+
+      const cfg = ILAW_CONFIG;
+      const subjectName = $("pickSubject").selectedOptions[0].textContent;
+      const gradeLevel = $("pickGrade").value;
+      const term = $("pickTerm").value;
+      const week = $("pickWeek").value;
+      const year = $("pickYear").value;
+
+      const checked = Array.from(document.querySelectorAll("[data-comp-code]:checked"));
+      const selectedComps = checked.map(cb => ({ code: cb.dataset.compCode, text: cb.dataset.compText }));
+
+      const manualCompsEl = document.getElementById("manualComps");
+      const manualComps = manualCompsEl?.value?.trim() || "";
+
+      const rubric = [];
+      const RUBRIC_LABELS = {
+        intentions_clear: "Intentions are clearly stated, with appropriate learning competencies articulated.",
+        intentions_coherent: "Intentions are evident across all sections, there is coherence.",
+        learning_clear: "Learning experience is clear — another teacher can implement this lesson.",
+        learning_designed: "Learning experience is well-designed, with embedded Learning Design Principles.",
+        integration_maximized: "Learning experience maximizes opportunities for integration.",
+        inclusive: "Learning experience is inclusive, supports learners with disabilities and unique contexts.",
+        assessment_integrated: "Assessment strategies are integrated throughout the session.",
+        assessment_evidence: "Assessment strategies generate evidence of learning.",
+        interventions_actionable: "Interventions are actionable, providing ways to extend or adjust learning.",
+      };
+      Object.entries(RUBRIC_LABELS).forEach(([key, label]) => {
+        const r = document.querySelector(`input[name="rubric_${key}"]:checked`);
+        rubric.push({ label, value: r?.value || "not_yet" });
+      });
+
+      const val = id => $(id)?.value || "";
+      const sig = {
+        preparedByName: val("f-sig-preparedName"),
+        preparedByPosition: val("f-sig-preparedPos"),
+        checkedByName: val("f-sig-checkedName"),
+        checkedByPosition: val("f-sig-checkedPos"),
+        notedByName: val("f-sig-notedName"),
+        notedByPosition: val("f-sig-notedPos"),
+      };
+
+      const aiDeclValue = document.querySelector('input[name="aiDecl"]:checked')?.value || "not-used";
+      const aiDeclNotes = val("f-aiDeclarationNotes");
+      const aiDeclLabel = {
+        "not-used": "🚫 Not used.",
+        "draft-generation": "🤖 AI-generated draft, teacher revised.",
+        "grammar-only": "✏️ Grammar/style editing only.",
+        "other": "📝 Other."
+      }[aiDeclValue] || "";
+      const aiDeclarationFull = [aiDeclLabel, aiDeclNotes].filter(Boolean).join(" ");
+
+      const generatedDate = new Date().toLocaleDateString("en-PH", { year: "numeric", month: "long", day: "numeric" });
+
+      const competencyHTML = selectedComps.length
+        ? `<ol class="print-competency-list">${selectedComps.map(c => `<li>${esc(c.text)}</li>`).join("")}</ol>`
+        : (manualComps
+            ? `<div class="print-sub-body">${esc(manualComps)}</div>`
+            : `<div class="print-sub-body">—</div>`);
+
+      return `
+        <!-- ============ DEPED HEADER ============ -->
+        <div class="print-header">
+          <img src="${cfg.depedLogo}" alt="DepEd" class="print-deped-logo" />
+          <div class="print-header-line1">${esc(cfg.headerLine1)}</div>
+          <div class="print-header-line2">${esc(cfg.headerLine2)}</div>
+          <div class="print-header-region">${esc(cfg.region)}</div>
+          <div class="print-header-division">${esc(cfg.division)}</div>
+        </div>
+
+        <div class="print-school-row">
+          <div class="print-school-name">${esc(cfg.schoolName)}</div>
+          <div class="print-school-address">${esc(cfg.schoolAddress)}</div>
+        </div>
+
+        <div class="print-title">${esc(cfg.titleLabel)}</div>
+
+        <!-- ============ LESSON INFO TABLE ============ -->
+        <table class="print-info-table">
+          <tr>
+            <td class="lbl">Lesson Title:</td>
+            <td>${esc(val("f-lessonTitle"))}</td>
+            <td class="lbl">Learning Area/s:</td>
+            <td>${esc(subjectName)}</td>
+          </tr>
+          <tr>
+            <td class="lbl">Name of Teacher/s:</td>
+            <td>${esc(val("f-teacherName"))}</td>
+            <td class="lbl">Grade Level & Section:</td>
+            <td>${esc(gradeLevel === "K" ? "Kindergarten" : "Grade " + gradeLevel)} — ${esc(val("f-section"))}</td>
+          </tr>
+          <tr>
+            <td class="lbl">No. of Sessions:</td>
+            <td>${esc(val("f-noOfSessions"))}</td>
+            <td class="lbl">School Year · Term · Week:</td>
+            <td>${esc(year)} · Term ${esc(term)} · Week ${esc(week)}</td>
+          </tr>
+          <tr>
+            <td class="lbl">References:</td>
+            <td colspan="3">${esc(val("f-references")) || "—"}</td>
+          </tr>
+        </table>
+
+        <!-- ============ DECLARATION OF AI USE ============ -->
+        <div class="print-section">
+          <div class="print-section-title">Declaration of AI Use</div>
+          <div class="print-sub-body">${esc(aiDeclarationFull) || "—"}</div>
+        </div>
+
+        <!-- ============ I. INTENTIONS ============ -->
+        <div class="print-section">
+          <div class="print-section-title">I. Intentions</div>
+          <div class="print-sub">
+            <div class="print-sub-label">Learning Competency and Curriculum Standards:</div>
+            ${competencyHTML}
+          </div>
+          <div class="print-sub">
+            <div class="print-sub-label">Content Standard:</div>
+            <div class="print-sub-body">${esc(val("f-contentStandard")) || "—"}</div>
+          </div>
+          <div class="print-sub">
+            <div class="print-sub-label">Performance Standard:</div>
+            <div class="print-sub-body">${esc(val("f-performanceStandard")) || "—"}</div>
+          </div>
+          <div class="print-sub">
+            <div class="print-sub-label">Learner Context:</div>
+            <div class="print-sub-body">${esc(val("f-learnerContext")) || "—"}</div>
+          </div>
+        </div>
+
+        <!-- ============ II. LEARNING EXPERIENCE ============ -->
+        <div class="print-section">
+          <div class="print-section-title">II. Learning Experience</div>
+          <div class="print-sub">
+            <div class="print-sub-label">Pre-Lesson:</div>
+            <div class="print-sub-body">${esc(val("f-preLesson")) || "—"}</div>
+          </div>
+          <div class="print-sub">
+            <div class="print-sub-label">Lesson Flow:</div>
+            <div class="print-sub-body">${esc(val("f-lessonFlow")) || "—"}</div>
+          </div>
+          <div class="print-sub">
+            <div class="print-sub-label">Materials/Resources:</div>
+            <div class="print-sub-body">${esc(val("f-materialsText")) || "—"}</div>
+          </div>
+          <div class="print-sub">
+            <div class="print-sub-label">Opportunities for Integration:</div>
+            <div class="print-sub-body">${esc(val("f-integration")) || "—"}</div>
+          </div>
+        </div>
+
+        <!-- ============ III. ASSESSMENT ============ -->
+        <div class="print-section">
+          <div class="print-section-title">III. Assessment</div>
+          <div class="print-sub-body">${esc(val("f-assessment")) || "—"}</div>
+        </div>
+
+        <!-- ============ IV. WAYS FORWARD ============ -->
+        <div class="print-section">
+          <div class="print-section-title">IV. Ways Forward</div>
+          <div class="print-sub">
+            <div class="print-sub-label">Extended Learning Opportunities:</div>
+            <div class="print-sub-body">${esc(val("f-extendedLearning")) || "—"}</div>
+          </div>
+          <div class="print-sub">
+            <div class="print-sub-label">Reflections (Teacher):</div>
+            <div class="print-sub-body">${esc(val("f-teacherReflections")) || "—"}</div>
+          </div>
+          <div class="print-sub">
+            <div class="print-sub-label">Next Steps (Ways Forward / ARAL):</div>
+            <div class="print-sub-body">${esc(val("f-waysForward")) || "—"}</div>
+          </div>
+        </div>
+
+        <!-- ============ COACHING NOTES ============ -->
+        <div class="print-section">
+          <div class="print-section-title">Notes for Instructional Coaching Session</div>
+          <div class="print-sub-body">${esc(val("f-coachingNotes")) || "—"}</div>
+          ${val("f-coachName") ? `<div style="margin-top:1.5mm;font-size:9.5pt;"><strong>Coach Name:</strong> ${esc(val("f-coachName"))}</div>` : ""}
+        </div>
+
+        <!-- ============ SELF-CHECK RUBRIC ============ -->
+        <div class="print-section">
+          <div class="print-section-title">Self-Check Rubric for Lesson Planning</div>
+          <table class="print-rubric-table">
+            <thead>
+              <tr>
+                <th>I can say that in my lesson plan…</th>
+                <th class="center">Yes</th>
+                <th class="center">Not Yet</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${rubric.map(r => `
+                <tr>
+                  <td>${esc(r.label)}</td>
+                  <td class="center">${r.value === "yes" ? "☑" : "☐"}</td>
+                  <td class="center">${r.value === "not_yet" ? "☑" : "☐"}</td>
+                </tr>
+              `).join("")}
+            </tbody>
+          </table>
+        </div>
+
+        <!-- ============ SIGNATORIES ============ -->
+        <div class="print-section" style="border:none;padding:0;">
+          <div class="print-signatories">
+            <div class="print-sig-col">
+              <div class="print-sig-label">${esc(cfg.preparedByLabel)}</div>
+              <div class="print-sig-name">${esc(sig.preparedByName || "—")}</div>
+              <div class="print-sig-position">${esc(sig.preparedByPosition || "")}</div>
+            </div>
+            <div class="print-sig-col">
+              <div class="print-sig-label">${esc(cfg.checkedByLabel)}</div>
+              <div class="print-sig-name">${esc(sig.checkedByName || "—")}</div>
+              <div class="print-sig-position">${esc(sig.checkedByPosition || "")}</div>
+            </div>
+            <div class="print-sig-col">
+              <div class="print-sig-label">${esc(cfg.notedByLabel)}</div>
+              <div class="print-sig-name">${esc(sig.notedByName || "—")}</div>
+              <div class="print-sig-position">${esc(sig.notedByPosition || "")}</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ============ FOOTER ============ -->
+        <div class="print-footer">
+          ${cfg.footerLine1 ? `<div>${esc(cfg.footerLine1)}</div>` : ""}
+          ${cfg.footerLine2 ? `<div>${esc(cfg.footerLine2)}</div>` : ""}
+          ${cfg.showGeneratedDate ? `<div>Generated: ${generatedDate}</div>` : ""}
+        </div>
+      `;
+    }
+        // ============================================================
+    // PRINT — Landscape A4, DepEd ILAW format
+    // ============================================================
+        function printLesson() {
+      if (!ILAW_CONFIG) { toast("⚠️ Config not loaded", "error"); return; }
+      const html = buildILAWPrintHTML();
+      if (!html) { toast("⚠️ Could not build print HTML", "error"); return; }
+
+      $("printDoc").innerHTML = html;
+      setTimeout(() => {
+        window.print();
+        setTimeout(() => {
+          const pd = $("printDoc");
+          if (pd) pd.innerHTML = "";
+        }, 500);
+      }, 150);
+    }
+
+            // ============================================================
+    // DOWNLOAD AS PDF — uses the browser's native Save-as-PDF
+    // ============================================================
+    async function downloadLessonPDF() {
+  setPrintPageOrientation("landscape");   // 👈 ADD THIS LINE
+  if (!ILAW_CONFIG) { toast("⚠️ Config not loaded", "error"); return; }
+
+      // Friendly guidance (once per click)
+      const ok = confirm(
+        "📥 Save Lesson Plan as PDF\n\n" +
+        "How to save:\n" +
+        "1. The Print dialog will open\n" +
+        "2. In the Destination/Printer dropdown, choose\n" +
+        "   ➜ 'Save as PDF'  or  'Microsoft Print to PDF'\n" +
+        "3. Click Save / Print\n" +
+        "4. Choose a folder, then Save\n\n" +
+        "Click OK to continue."
+      );
+      if (!ok) return;
+
+      // Build the same HTML used by the Print button
+      const html = buildILAWPrintHTML();
+      if (!html) { toast("⚠️ Could not build print HTML", "error"); return; }
+
+      // Inject into #printDoc — same as Print button
+      $("printDoc").innerHTML = html;
+
+      // Wait for images (DepEd logo) to fully load
+      const imgs = $("printDoc").querySelectorAll("img");
+      await Promise.all(Array.from(imgs).map(img => {
+        if (img.complete && img.naturalWidth > 0) return Promise.resolve();
+        return new Promise(res => {
+          img.addEventListener("load", res, { once: true });
+          img.addEventListener("error", res, { once: true });
+          setTimeout(res, 2000);
+        });
+      }));
+
+      // Give the browser a beat, then open the print dialog
+      setTimeout(() => {
+        window.print();
+        setTimeout(() => {
+          const pd = $("printDoc");
+          if (pd) pd.innerHTML = "";
+        }, 800);
+      }, 200);
+    }
+
+        // Helper: extracts the print HTML without side effects
+    function buildPrintHTML() {
+      return buildILAWPrintHTML();
+    }
+
+    async function duplicateCurrent() {
+      if (!CURRENT_LESSON_ID) { toast("⚠️ Save first, then duplicate", "error"); return; }
+      const newWeek = prompt("Duplicate to which week? (1-13)", "1");
+      if (!newWeek) return;
+      const wk = parseInt(newWeek, 10);
+      if (!wk || wk < 1 || wk > 13) { toast("⚠️ Invalid week", "error"); return; }
+      try {
+        const newId = await window.ILAW.duplicateLesson(CURRENT_LESSON_ID, { week: wk });
+        toast("✓ Duplicated", "success");
+        location.href = `ilaw-open.html?lesson=${newId}`;
+      } catch (e) { toast("⚠️ Duplicate failed", "error"); }
+    }
+
+    async function deleteCurrent() {
+      if (!CURRENT_LESSON_ID) return;
+      if (!confirm("Delete this lesson plan?")) return;
+      try {
+        await window.ILAW.deleteLesson(CURRENT_LESSON_ID);
+        toast("✓ Deleted", "success");
+        setTimeout(() => location.href = "ilaw-open.html", 500);
+      } catch (e) { toast("⚠️ Delete failed", "error"); }
+    }
+
+    async function loadFromUrl() {
+      const params = new URLSearchParams(location.search);
+      const lessonId = params.get("lesson");
+      if (!lessonId) return;
+      const lesson = await window.ILAW.getLesson(lessonId);
+      if (!lesson) { toast("⚠️ Lesson not found", "error"); return; }
+      if (lesson.teacherUid !== CURRENT_USER.uid && CURRENT_PROFILE?.primaryRole !== "admin" && !CURRENT_PROFILE?.isSuperAdmin) {
+        toast("⚠️ No permission", "error");
+        return;
+      }
+      $("pickGrade").value = lesson.gradeLevel;
+      populateSubjectPicker();
+      $("pickSubject").value = lesson.subjectCode;
+      $("pickTerm").value = lesson.term;
+      $("pickWeek").value = lesson.week;
+      $("pickYear").value = lesson.schoolYear || "2026-2027";
+      setTimeout(() => loadContext(), 100);
+    }
+
+    // ============================================================
+    // ⬇️ ADDED: GENERATE FROM SCRATCH (no upload needed)
+    // ============================================================
+    async function generateFromScratch() {
+      const btn = $("btnAIGenerate");
+      if (!btn) return;
+      const originalText = btn.textContent;
+      btn.disabled = true;
+      btn.textContent = "⏳ Generating...";
+
+      const ctx = {
+        subjectCode: $("pickSubject").value,
+        subjectName: $("pickSubject").selectedOptions[0]?.textContent || "",
+        gradeLevel:  $("pickGrade").value,
+        term:        $("pickTerm").value,
+        week:        $("pickWeek").value,
+      };
+
+      // Collect whatever is currently in the form as input context.
+      // If BoW was loaded, content/perf standards come from there.
+      // If teacher typed anything, we respect it as input.
+      const currentForm = {
+        lessonTitle:         $("f-lessonTitle")?.value || "",
+        references:          $("f-references")?.value || "",
+        contentStandard:     $("f-contentStandard")?.value || CURRENT_BOW?.termDoc?.contentStandard || "",
+        performanceStandard: $("f-performanceStandard")?.value || CURRENT_BOW?.termDoc?.performanceStandard || "",
+        competencies:        (CURRENT_BOW?.competencies || []).map(c => `${c.code}: ${c.text}`),
+        learnerContext:      $("f-learnerContext")?.value || "",
+        preLesson:           $("f-preLesson")?.value || "",
+        lessonFlow:          $("f-lessonFlow")?.value || "",
+        materials:           $("f-materialsText")?.value || "",
+        integration:         $("f-integration")?.value || "",
+        assessment:          $("f-assessment")?.value || "",
+        extendedLearning:    $("f-extendedLearning")?.value || "",
+        waysForward:         $("f-waysForward")?.value || "",
+        teacherReflections:  $("f-teacherReflections")?.value || "",
+      };
+
+      try {
+        const enriched = await enrichILAW(currentForm, ctx, (pct, msg) => {
+          btn.textContent = `⏳ ${msg || pct + "%"}`;
+        });
+
+        const map = {
+          content_standard:          "f-contentStandard",
+          performance_standard:      "f-performanceStandard",
+          learner_context:           "f-learnerContext",
+          pre_lesson:                "f-preLesson",
+          lesson_flow:               "f-lessonFlow",
+          materials_text:            "f-materialsText",
+          integration_opportunities: "f-integration",
+          assessment:                "f-assessment",
+          extended_learning:         "f-extendedLearning",
+          ways_forward:              "f-waysForward",
+          teacher_reflections:       "f-teacherReflections",
+          references_text:           "f-references",
+        };
+
+        let applied = 0;
+        for (const [key, id] of Object.entries(map)) {
+          const val = enriched[key];
+          if (!val) continue;
+          const el = document.getElementById(id);
+          if (!el) continue;
+          el.value = val;
+          el.dispatchEvent(new Event("input",  { bubbles: true }));
+          el.dispatchEvent(new Event("change", { bubbles: true }));
+          el.style.border = "2px solid #4f46e5";
+          setTimeout(() => { el.style.border = ""; }, 2500);
+          applied++;
+        }
+
+        // If BoW is empty and AI returned competencies, drop into manualComps
+        if (enriched.competencies) {
+          const manual = document.getElementById("manualComps");
+          if (manual) {
+            manual.value = enriched.competencies;
+            manual.dispatchEvent(new Event("input", { bubbles: true }));
+            applied++;
+          }
+        }
+
+        DIRTY = true;
+        updateDirtyIndicator();
+        toast(`✓ AI generated ${applied} field(s) — review and save`, "success");
+
+        const ed = document.getElementById("editorArea");
+        if (ed) ed.scrollIntoView({ behavior: "smooth", block: "start" });
+
+      } catch (err) {
+        console.error(err);
+        toast("⚠️ AI failed: " + err.message, "error");
+      } finally {
+        btn.disabled = false;
+        btn.textContent = originalText;
+      }
+    }
+
+    // ============================================================
+    // UPLOAD LESSON PLAN (Session F4)
+    // ============================================================
+    let UPLOAD_STATE = null;
+
+    function openUploadModal() {
+      const existing = document.getElementById("uploadModal");
+      if (existing) existing.remove();
+
+      const modal = document.createElement("div");
+      modal.id = "uploadModal";
+      modal.className = "modal show";
+      modal.style.cssText = "position:fixed;inset:0;background:rgba(0,0,0,0.6);display:flex;align-items:center;justify-content:center;z-index:10000;padding:20px;";
+      modal.innerHTML = `
+        <div style="background:#fff;border-radius:14px;max-width:900px;width:100%;max-height:92vh;overflow-y:auto;box-shadow:0 24px 48px rgba(0,0,0,.25);">
+          <div style="padding:18px 22px;border-bottom:1px solid #e5e7eb;display:flex;justify-content:space-between;align-items:center;">
+            <div>
+              <h3 style="margin:0;font-size:1.1rem;color:#0f2b4f;">📤 Upload Existing Lesson Plan</h3>
+              <p style="margin:4px 0 0;font-size:12px;color:#6b7280;">
+                Drop a <strong>.docx</strong>, <strong>.pdf</strong>, or <strong>.txt</strong> file.
+                We auto-detect ILAW, DLL, and MATATAG formats.
+              </p>
+            </div>
+            <button class="btn btn-outline small" data-close>✕</button>
+          </div>
+
+          <div style="padding:20px 22px;">
+            <div id="uploadDropZone" style="border:2px dashed #cbd5e1;background:#f9fafb;border-radius:12px;padding:36px 20px;text-align:center;cursor:pointer;transition:all .15s;">
+              <div style="font-size:3rem;margin-bottom:10px;">📄</div>
+              <div style="font-weight:700;color:#0f2b4f;font-size:15px;">Drop your lesson plan here</div>
+              <div style="font-size:12px;color:#6b7280;margin-top:6px;">or click to browse</div>
+              <div style="font-size:11px;color:#9ca3af;margin-top:8px;">
+                Accepts: .docx · .pdf · .txt · or paste below
+              </div>
+              <input type="file" id="uploadFileInput" accept=".docx,.pdf,.txt,.doc" style="display:none;">
+            </div>
+
+            <div style="margin-top:12px;text-align:center;">
+              <span style="font-size:11px;color:#9ca3af;">— or —</span>
+              <button class="btn btn-outline small" id="uploadPasteToggle" style="margin-left:8px;">📋 Paste Text Instead</button>
+            </div>
+
+            <div id="uploadPasteArea" style="display:none;margin-top:12px;">
+              <textarea id="uploadPasteText" rows="8" placeholder="Paste the contents of your lesson plan here…"
+                        style="width:100%;padding:10px 12px;border:1px solid #d1d5db;border-radius:8px;font-size:13px;font-family:inherit;resize:vertical;"></textarea>
+              <button class="btn btn-primary small" id="uploadParsePaste" style="margin-top:8px;">🔍 Parse Pasted Text</button>
+            </div>
+
+            <div id="uploadStatus" style="margin-top:16px;"></div>
+
+            <div id="uploadPreview" style="margin-top:16px;"></div>
+          </div>
+        </div>
+      `;
+      document.body.appendChild(modal);
+
+      modal.querySelectorAll("[data-close]").forEach(b => {
+        b.addEventListener("click", () => modal.remove());
+      });
+      modal.addEventListener("click", e => {
+        if (e.target === modal) modal.remove();
+      });
+
+      const dropZone = modal.querySelector("#uploadDropZone");
+      const fileInput = modal.querySelector("#uploadFileInput");
+
+      dropZone.addEventListener("click", () => fileInput.click());
+      dropZone.addEventListener("dragover", e => {
+        e.preventDefault();
+        dropZone.style.borderColor = "#1e6bb8";
+        dropZone.style.background = "#eff6ff";
+      });
+      dropZone.addEventListener("dragleave", () => {
+        dropZone.style.borderColor = "#cbd5e1";
+        dropZone.style.background = "#f9fafb";
+      });
+      dropZone.addEventListener("drop", e => {
+        e.preventDefault();
+        dropZone.style.borderColor = "#cbd5e1";
+        dropZone.style.background = "#f9fafb";
+        const file = e.dataTransfer.files[0];
+        if (file) handleUploadFile(file, modal);
+      });
+      fileInput.addEventListener("change", e => {
+        const file = e.target.files[0];
+        if (file) handleUploadFile(file, modal);
+      });
+
+      modal.querySelector("#uploadPasteToggle").addEventListener("click", () => {
+        const area = modal.querySelector("#uploadPasteArea");
+        area.style.display = area.style.display === "none" ? "block" : "none";
+      });
+      modal.querySelector("#uploadParsePaste").addEventListener("click", () => {
+        const text = modal.querySelector("#uploadPasteText").value;
+        if (!text.trim()) { toast("⚠️ Paste some text first", "error"); return; }
+        try {
+          const parsed = window.DocParser.parseText(text);
+          showUploadPreview(parsed, modal);
+        } catch (e) {
+          toast("⚠️ " + e.message, "error");
+        }
+      });
+    }
+
+    async function handleUploadFile(file, modal) {
+      const status = modal.querySelector("#uploadStatus");
+      const preview = modal.querySelector("#uploadPreview");
+      preview.innerHTML = "";
+      status.innerHTML = `
+        <div style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:8px;padding:14px;font-size:13px;color:#1e40af;">
+          📄 Reading <strong>${esc(file.name)}</strong> (${(file.size/1024).toFixed(1)} KB)…
+        </div>
+      `;
+
+      try {
+        const parsed = await window.DocParser.parse(file);
+        status.innerHTML = "";
+        showUploadPreview(parsed, modal, file.name);
+      } catch (e) {
+        console.error(e);
+        status.innerHTML = `
+          <div style="background:#fef2f2;border:1px solid #fecaca;border-radius:8px;padding:14px;font-size:13px;color:#991b1b;">
+            ⚠️ ${esc(e.message || "Failed to parse file")}
+          </div>
+        `;
+      }
+    }
+
+    function showUploadPreview(parsed, modal, fileName) {
+      UPLOAD_STATE = parsed;
+      const preview = modal.querySelector("#uploadPreview");
+
+      const fields = [
+        ["Lesson Title", parsed.lessonTitle],
+        ["Learning Area", parsed.learningArea],
+        ["Teacher", parsed.teacherName],
+        ["Grade Level", parsed.gradeLevel],
+        ["No. of Sessions", parsed.noOfSessions],
+        ["References", parsed.references],
+        ["Content Standard", parsed.contentStandard],
+        ["Performance Standard", parsed.performanceStandard],
+        ["Learning Objectives", parsed.learningObjectives.length ? parsed.learningObjectives.length + " items" : ""],
+        ["Competencies", parsed.competencies.length ? parsed.competencies.length + " items" : ""],
+        ["Learner Context", parsed.learnerContext],
+        ["Pre-Lesson", parsed.preLesson],
+        ["Lesson Flow", parsed.lessonFlow],
+        ["Materials", parsed.materials],
+        ["Integration", parsed.integration],
+        ["Assessment", parsed.assessment],
+        ["Extended Learning", parsed.extendedLearning],
+        ["Ways Forward", parsed.waysForward],
+        ["Teacher Reflections", parsed.teacherReflections],
+      ];
+
+      const found = fields.filter(([_, v]) => v && String(v).trim().length > 3);
+      const missing = fields.filter(([_, v]) => !v || String(v).trim().length <= 3);
+
+      const formatBadge = {
+        ILAW: '<span class="ac-badge success" style="background:#d1fae5;color:#065f46;">ILAW Format</span>',
+        DLL: '<span class="ac-badge info" style="background:#dbeafe;color:#1e40af;">DLL Format</span>',
+        MATATAG: '<span class="ac-badge warning" style="background:#fef3c7;color:#92400e;">MATATAG Format</span>',
+        GENERIC: '<span class="ac-badge" style="background:#f3f4f6;color:#4b5563;">Generic Format</span>',
+      }[parsed.format] || "";
+
+      preview.innerHTML = `
+        <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:10px;padding:14px 16px;margin-bottom:14px;">
+          <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;">
+            <div>
+              <div style="font-weight:800;color:#166534;font-size:14px;">✅ Parsed successfully</div>
+              <div style="font-size:12px;color:#14532d;margin-top:4px;">
+                Detected: ${formatBadge} · ${parsed._stats.charsRead.toLocaleString()} chars read
+              </div>
+            </div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;">
+              <button class="btn btn-outline small" id="previewClose">Cancel</button>
+              <button class="btn btn-success" id="previewApply">✨ Apply to ILAW</button>
+              <button class="btn btn-primary" id="previewEnrich" style="background:#4f46e5;color:#fff;">🤖 Apply + Enrich with AI</button>
+            </div>
+          </div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px;">
+          <div style="background:#eff6ff;border-radius:8px;padding:12px 14px;">
+            <div style="font-size:11px;font-weight:800;color:#1e40af;text-transform:uppercase;letter-spacing:.04em;margin-bottom:6px;">
+              ✓ Found (${found.length})
+            </div>
+            <div style="display:flex;flex-direction:column;gap:3px;font-size:12px;color:#1e3a8a;">
+              ${found.map(([k, v]) => `<div>• <strong>${esc(k)}</strong>: ${esc(String(v).slice(0, 60))}${String(v).length > 60 ? "…" : ""}</div>`).join("")}
+            </div>
+          </div>
+          ${missing.length ? `
+            <div style="background:#fef3c7;border-radius:8px;padding:12px 14px;">
+              <div style="font-size:11px;font-weight:800;color:#92400e;text-transform:uppercase;letter-spacing:.04em;margin-bottom:6px;">
+                ⚠️ Not Detected (${missing.length})
+              </div>
+              <div style="display:flex;flex-direction:column;gap:3px;font-size:12px;color:#92400e;">
+                ${missing.map(([k]) => `<div>• ${esc(k)}</div>`).join("")}
+              </div>
+              <div style="font-size:11px;color:#92400e;margin-top:8px;opacity:0.8;">
+                You can fill these manually after applying.
+              </div>
+            </div>
+          ` : ""}
+        </div>
+
+        <details style="background:#f9fafb;border-radius:8px;padding:12px;font-size:12px;color:#4b5563;">
+          <summary style="cursor:pointer;font-weight:700;color:#0f2b4f;">📄 View raw extracted content</summary>
+          <div style="margin-top:10px;max-height:300px;overflow-y:auto;white-space:pre-wrap;font-family:monospace;font-size:11px;line-height:1.5;">
+${esc(JSON.stringify(parsed, null, 2))}
+          </div>
+        </details>
+      `;
+
+      // Apply button
+      preview.querySelector("#previewApply").addEventListener("click", () => {
+        applyParsedToILAW(parsed);
+        modal.remove();
+        toast("✓ Applied to ILAW editor", "success");
+      });
+
+      // Apply + Enrich button
+      preview.querySelector("#previewEnrich").addEventListener("click", async () => {
+        const btn = preview.querySelector("#previewEnrich");
+        btn.disabled = true;
+        btn.textContent = "⏳ Enriching...";
+
+        applyParsedToILAW(parsed);
+
+        const ctx = {
+          subjectCode: $("pickSubject").value,
+          subjectName: $("pickSubject").selectedOptions[0]?.textContent || "",
+          gradeLevel:  $("pickGrade").value,
+          term:        $("pickTerm").value,
+          week:        $("pickWeek").value,
+        };
+
+        try {
+          const enriched = await enrichILAW(parsed, ctx, (pct, msg) => {
+            btn.textContent = `⏳ ${msg || pct + "%"}`;
+          });
+
+          const map = {
+            content_standard:          "f-contentStandard",
+            performance_standard:      "f-performanceStandard",
+            learner_context:           "f-learnerContext",
+            pre_lesson:                "f-preLesson",
+            lesson_flow:               "f-lessonFlow",
+            materials_text:            "f-materialsText",
+            integration_opportunities: "f-integration",
+            assessment:                "f-assessment",
+            extended_learning:         "f-extendedLearning",
+            ways_forward:              "f-waysForward",
+            teacher_reflections:       "f-teacherReflections",
+            references_text:           "f-references",
+          };
+
+          let applied = 0;
+          for (const [key, id] of Object.entries(map)) {
+            const val = enriched[key];
+            if (!val) continue;
+            const el = document.getElementById(id);
+            if (!el) continue;
+            el.value = val;
+            el.dispatchEvent(new Event("input",  { bubbles: true }));
+            el.dispatchEvent(new Event("change", { bubbles: true }));
+            el.style.border = "2px solid #4f46e5";
+            setTimeout(() => { el.style.border = ""; }, 2500);
+            applied++;
+          }
+
+          if (enriched.competencies) {
+            const manual = document.getElementById("manualComps");
+            if (manual) {
+              manual.value = enriched.competencies;
+              manual.dispatchEvent(new Event("input", { bubbles: true }));
+              applied++;
+            }
+          }
+
+          DIRTY = true;
+          updateDirtyIndicator();
+          modal.remove();
+          toast(`✓ AI enriched ${applied} field(s) — review and save`, "success");
+
+          const ed = document.getElementById("editorArea");
+          if (ed) ed.scrollIntoView({ behavior: "smooth", block: "start" });
+
+        } catch (err) {
+          console.error(err);
+          toast("⚠️ AI failed: " + err.message, "error");
+          btn.disabled = false;
+          btn.textContent = "🤖 Apply + Enrich with AI";
+        }
+      });
+
+      // Cancel button
+      preview.querySelector("#previewClose").addEventListener("click", () => {
+        preview.innerHTML = "";
+        UPLOAD_STATE = null;
+      });
+    }
+
+    // ============================================================
+    // APPLY PARSED DATA TO ILAW EDITOR
+    // ============================================================
+    function applyParsedToILAW(parsed) {
+      const setVal = (id, val) => {
+        const el = document.getElementById(id);
+        if (el && val) el.value = val;
+      };
+
+      setVal("f-lessonTitle", parsed.lessonTitle);
+      if (parsed.noOfSessions) {
+        const num = String(parsed.noOfSessions).match(/\d+/);
+        if (num) setVal("f-noOfSessions", num[0]);
+      }
+      setVal("f-teacherName", parsed.teacherName);
+      setVal("f-section", parsed.gradeLevel || parsed.section);
+
+      setVal("f-references", parsed.references);
+
+      setVal("f-contentStandard", parsed.contentStandard);
+      setVal("f-performanceStandard", parsed.performanceStandard);
+      setVal("f-learnerContext", parsed.learnerContext);
+
+      setVal("f-preLesson", parsed.preLesson);
+      setVal("f-lessonFlow", parsed.lessonFlow);
+      setVal("f-materialsText", parsed.materials);
+      setVal("f-integration", parsed.integration);
+
+      setVal("f-assessment", parsed.assessment);
+
+      setVal("f-extendedLearning", parsed.extendedLearning);
+      setVal("f-waysForward", parsed.waysForward);
+      setVal("f-teacherReflections", parsed.teacherReflections);
+
+      if (parsed.competencies && parsed.competencies.length) {
+        const manualTextarea = document.getElementById("manualComps");
+        if (manualTextarea) {
+          manualTextarea.value = parsed.competencies
+            .map(c => typeof c === "string" ? c : (c.text || c.code || ""))
+            .filter(Boolean)
+            .join("\n");
+        }
+      }
+
+      if (parsed.signatories) {
+        setVal("f-sig-preparedName", parsed.signatories.preparedByName);
+        setVal("f-sig-checkedName", parsed.signatories.checkedByName);
+        setVal("f-sig-notedName", parsed.signatories.notedByName);
+      }
+
+      DIRTY = true;
+      updateDirtyIndicator();
+
+      const editorArea = document.getElementById("editorArea");
+      if (editorArea) editorArea.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+
+   // ============================================================
+// LEARNER MODULE — V2
+// ============================================================
+let LM_CURRENT_HTML = "";
+
+async function openLearnerModuleModal() {
+  const lesson = collectLessonData();
+
+  if (!lesson.lessonTitle && !lesson.subjectName) {
+    toast("⚠️ Please fill in the lesson details first.", "error");
+    return;
+  }
+
+  // If the lesson is already saved, check for existing publicSlug + viewCount
+  if (CURRENT_LESSON_ID) {
+    try {
+      const { doc, getDoc } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js");
+      const snap = await getDoc(doc(db, "lessons", CURRENT_LESSON_ID));
+      if (snap.exists()) {
+        const saved = snap.data();
+        if (saved.publicSlug)                 lesson.publicSlug = saved.publicSlug;
+        if (typeof saved.viewCount === "number") lesson.viewCount = saved.viewCount;
+        if (typeof saved.isPublic === "boolean") lesson.isPublic = saved.isPublic;
+      }
+    } catch (e) {
+      console.warn("[ilaw] Could not load saved slug:", e);
+    }
+  }
+
+  
+  // 🆕 Load module overrides (teacher's edits)
+  if (CURRENT_LESSON_ID) {
+    try {
+      const { loadOverrides } = await import("./assets/js/module-editor.js");
+      const overrides = await loadOverrides(CURRENT_LESSON_ID);
+      if (overrides && Object.keys(overrides).length) {
+        lesson.learnerModuleOverrides = overrides;
+      }
+    } catch (e) {
+      console.warn("[ilaw] Could not load module overrides:", e);
+    }
+  }
+
+  const cfg = ILAW_CONFIG || {};
+  LM_CURRENT_HTML = buildLearnerModuleHTML(lesson, cfg, { hideAnswerKey: false });
+
+  document.getElementById("lmPreviewHost").innerHTML = LM_CURRENT_HTML;
+  document.getElementById("lmModal").style.display = "flex";
+
+  
+  // 🆕 Wire Edit Module button
+  const editBtn = document.getElementById("lmEditModule");
+  if (editBtn && !editBtn._wired) {
+    editBtn.addEventListener("click", async () => {
+      if (!CURRENT_LESSON_ID) {
+        toast("⚠️ Please save the lesson first before editing the module.", "error");
+        return;
+      }
+      const lessonData = collectLessonData();
+      // Include currently loaded overrides for the editor
+      if (lesson.learnerModuleOverrides) {
+        lessonData.learnerModuleOverrides = lesson.learnerModuleOverrides;
+      }
+      await openEditorModal(CURRENT_LESSON_ID, lessonData, async () => {
+        // After save, reload overrides and regenerate preview
+        try {
+          const { loadOverrides } = await import("./assets/js/module-editor.js");
+          const saved = await loadOverrides(CURRENT_LESSON_ID);
+          lessonData.learnerModuleOverrides = saved || {};
+          const cfg = ILAW_CONFIG || {};
+          LM_CURRENT_HTML = buildLearnerModuleHTML(lessonData, cfg, { hideAnswerKey: false });
+          document.getElementById("lmPreviewHost").innerHTML = LM_CURRENT_HTML;
+          toast("✓ Module updated", "success");
+        } catch (e) {
+          console.error("[ilaw] Failed to refresh preview:", e);
+        }
+      });
+    });
+    editBtn._wired = true;
+  }
+
+  document.getElementById("lmStatus").textContent = "Template version (no AI used).";
+
+  // Auto-populate share panel if lesson is already shared
+  const toggleBtn = document.getElementById("lmToggleShare");
+  const sharePanel = document.getElementById("lmSharePanel");
+  const shareStatus = document.getElementById("lmShareStatus");
+
+  if (lesson.publicSlug && lesson.isPublic !== false && toggleBtn && sharePanel && shareStatus) {
+    const url = buildPublicUrl(lesson.publicSlug);
+
+    toggleBtn.dataset.shared = "true";
+    toggleBtn.dataset.slug = lesson.publicSlug;
+    toggleBtn.dataset.url = url;
+    toggleBtn.textContent = "🚫 Stop Sharing";
+    toggleBtn.style.background = "#dc2626";
+
+    sharePanel.style.display = "block";
+    shareStatus.innerHTML = `✅ <strong>Sharing enabled</strong> · Slug: <code>${lesson.publicSlug}</code>`;
+
+    document.getElementById("lmShareUrl").value = url;
+    document.getElementById("lmOpenPreview").href = url;
+
+    // Pre-generate QR (hidden by default — user clicks "QR Code" to reveal)
+    document.getElementById("lmQrImg").src = generateQrCodeUrl(url, 240);
+    document.getElementById("lmQrWrap").style.display = "none";
+  } else if (toggleBtn && sharePanel && shareStatus) {
+    // Reset to "not shared" state
+    toggleBtn.dataset.shared = "false";
+    toggleBtn.textContent = "🔗 Enable Sharing";
+    toggleBtn.style.background = "#10b981";
+    sharePanel.style.display = "none";
+    shareStatus.textContent = "Not yet shared";
+  }
+}
+
+function closeLearnerModuleModal() {
+  document.getElementById("lmModal").style.display = "none";
+  document.getElementById("lmPreviewHost").innerHTML = "";
+  LM_CURRENT_HTML = "";
+  document.getElementById("lmStatus").textContent = "";
+}
+
+async function enhanceLearnerModule() {
+  const btn = document.getElementById("lmUseAI");
+  const status = document.getElementById("lmStatus");
+  const originalText = btn.textContent;
+  btn.disabled = true;
+
+  const lesson = collectLessonData();
+  const cfg = ILAW_CONFIG || {};
+
+  try {
+    const aiData = await enhanceLearnerModuleWithAI(lesson, (msg) => {
+      status.textContent = msg;
+      btn.textContent = "⏳ " + msg;
+    });
+
+    if (!aiData) {
+      status.textContent = "⚠️ AI not configured or unavailable — keeping template version.";
+      toast("⚠️ AI unavailable, using template.", "error");
+      return;
+    }
+
+    const merged = mergeAIIntoLesson(lesson, aiData);
+    LM_CURRENT_HTML = buildLearnerModuleHTML(merged, cfg, { hideAnswerKey: false });
+
+    document.getElementById("lmPreviewHost").innerHTML = LM_CURRENT_HTML;
+    status.textContent = "✨ Enhanced with AI. Review before printing.";
+    toast("✓ Learner module enhanced with AI", "success");
+
+  } catch (e) {
+    console.error(e);
+    status.textContent = "⚠️ AI failed: " + e.message;
+    toast("⚠️ AI failed", "error");
+  } finally {
+    btn.disabled = false;
+    btn.textContent = originalText;
+  }
+}
+
+function printLearnerModule() {
+  if (!LM_CURRENT_HTML) return;
+  setPrintPageOrientation("portrait");    // ✅ FIXED — was missing
+
+  const printDoc = document.getElementById("lmPrintDoc");
+  printDoc.innerHTML = LM_CURRENT_HTML;
+
+  document.body.classList.add("lm-printing");
+
+  setTimeout(() => {
+    window.print();
+    setTimeout(() => {
+      printDoc.innerHTML = "";
+      document.body.classList.remove("lm-printing");
+    }, 600);
+  }, 200);
+}
+
+async function downloadLearnerModulePDF() {
+  if (!LM_CURRENT_HTML) return;
+  setPrintPageOrientation("portrait");
+
+  const ok = confirm(
+    "📥 Save Learner Module as PDF\n\n" +
+    "How to save:\n" +
+    "1. The Print dialog will open\n" +
+    "2. In the Destination dropdown, choose\n" +
+    "   ➜ 'Save as PDF'\n" +
+    "3. Click Save / Print\n" +
+    "4. Choose a folder, then Save\n\n" +
+    "Click OK to continue."
+  );
+  if (!ok) return;
+
+  const printDoc = document.getElementById("lmPrintDoc");
+  printDoc.innerHTML = LM_CURRENT_HTML;
+
+  // Wait for images
+  const imgs = printDoc.querySelectorAll("img");
+  await Promise.all(Array.from(imgs).map(img => {
+    if (img.complete && img.naturalWidth > 0) return Promise.resolve();
+    return new Promise(res => {
+      img.addEventListener("load", res, { once: true });
+      img.addEventListener("error", res, { once: true });
+      setTimeout(res, 2000);
+    });
+  }));
+
+  document.body.classList.add("lm-printing");
+
+  setTimeout(() => {
+    window.print();
+    setTimeout(() => {
+      printDoc.innerHTML = "";
+      document.body.classList.remove("lm-printing");
+    }, 800);
+  }, 200);
+}
+
+// Click delegation for the "Generate Learner Module" button
+// (survives editor re-renders)
+document.addEventListener("click", (e) => {
+  if (e.target.closest("#btnLearnerModule")) {
+    openLearnerModuleModal();
+  }
+});
+
+// ============================================================
+// Wire modal buttons after DOM ready
+// ============================================================
+function wireLearnerModuleModal() {
+  const lmClose = document.getElementById("lmClose");
+  const lmUseAI = document.getElementById("lmUseAI");
+  const lmPrint = document.getElementById("lmPrint");
+  const lmDownload = document.getElementById("lmDownload");
+
+  if (lmClose && !lmClose._wired) {
+    lmClose.addEventListener("click", closeLearnerModuleModal);
+    lmClose._wired = true;
+  }
+  if (lmUseAI && !lmUseAI._wired) {
+    lmUseAI.addEventListener("click", enhanceLearnerModule);
+    lmUseAI._wired = true;
+  }
+  if (lmPrint && !lmPrint._wired) {
+    lmPrint.addEventListener("click", printLearnerModule);
+    lmPrint._wired = true;
+  }
+  if (lmDownload && !lmDownload._wired) {
+    lmDownload.addEventListener("click", downloadLearnerModulePDF);
+    lmDownload._wired = true;
+  }
+}
+
+// Try immediately, then again after a tick (in case DOM isn't ready)
+wireLearnerModuleModal();
+setTimeout(wireLearnerModuleModal, 500);
+
+// ============================================================
+// DYNAMIC PRINT ORIENTATION
+// Swaps the @page rule before each print so ILAW prints landscape
+// and the Learner Module prints portrait.
+// ============================================================
+function setPrintPageOrientation(orientation) {
+  let style = document.getElementById("dynamic-page-style");
+  if (!style) {
+    style = document.createElement("style");
+    style.id = "dynamic-page-style";
+    document.head.appendChild(style);
+  }
+  style.textContent = orientation === "portrait"
+    ? "@page { size: A4 portrait; margin: 12mm 10mm 14mm 10mm; }"
+    : "@page { size: A4 landscape; margin: 8mm 10mm 15mm 10mm; }";
+}
+
+// ============================================================
+// SHARE — V2
+// ============================================================
+async function handleToggleShare() {
+  if (!CURRENT_LESSON_ID) {
+    toast("⚠️ Please save the lesson first before sharing.", "error");
+    return;
+  }
+
+  const lesson = collectLessonData();
+  const btn = document.getElementById("lmToggleShare");
+  const panel = document.getElementById("lmSharePanel");
+  const status = document.getElementById("lmShareStatus");
+
+  // Check if already shared
+  const alreadyShared = btn.dataset.shared === "true";
+
+  if (alreadyShared) {
+    if (!confirm("Stop sharing this module? Students will no longer be able to access it via the link.")) return;
+    try {
+      await disableSharing(CURRENT_LESSON_ID);
+      btn.dataset.shared = "false";
+      btn.textContent = "🔗 Enable Sharing";
+      btn.style.background = "#10b981";
+      panel.style.display = "none";
+      status.textContent = "Not yet shared";
+      toast("✓ Sharing disabled", "success");
+    } catch (e) {
+      toast("⚠️ " + (e.message || "Could not disable"), "error");
+    }
+    return;
+  }
+
+  // Enable sharing
+  btn.disabled = true;
+  btn.textContent = "⏳ Enabling...";
+
+  try {
+    const result = await enableSharing(CURRENT_LESSON_ID, {
+      subjectCode: lesson.subjectCode,
+      term: lesson.term,
+      week: lesson.week,
+      viewCount: 0,
+    });
+
+    btn.dataset.shared = "true";
+    btn.dataset.slug = result.slug;
+    btn.dataset.url = result.url;
+    btn.textContent = "🚫 Stop Sharing";
+    btn.style.background = "#dc2626";
+
+    // Populate panel
+    document.getElementById("lmShareUrl").value = result.url;
+    document.getElementById("lmOpenPreview").href = result.url;
+    document.getElementById("lmQrImg").src = generateQrCodeUrl(result.url, 240);
+
+    panel.style.display = "block";
+    status.innerHTML = `✅ <strong>Sharing enabled</strong> · Slug: <code>${result.slug}</code>`;
+
+    toast("✓ Module is now shareable!", "success");
+  } catch (e) {
+    console.error(e);
+    toast("⚠️ " + (e.message || "Could not enable sharing"), "error");
+    btn.textContent = "🔗 Enable Sharing";
+  } finally {
+    btn.disabled = false;
+  }
+}
+
+function wireShareButtons() {
+  document.getElementById("lmToggleShare")?.addEventListener("click", handleToggleShare);
+
+  document.getElementById("lmCopyLink")?.addEventListener("click", async () => {
+    const url = document.getElementById("lmShareUrl").value;
+    if (!url) return;
+    const ok = await copyToClipboard(url);
+    toast(ok ? "✓ Link copied to clipboard" : "⚠️ Copy failed — please select manually", ok ? "success" : "error");
+  });
+
+  document.getElementById("lmShareMessenger")?.addEventListener("click", () => {
+    const url = document.getElementById("lmShareUrl").value;
+    if (!url) return;
+    const lesson = collectLessonData();
+    shareToMessenger(url, lesson.lessonTitle || "Learning Module");
+  });
+
+    document.getElementById("lmShareNative")?.addEventListener("click", async () => {
+    const url = document.getElementById("lmShareUrl").value;
+    if (!url) return;
+    const lesson = collectLessonData();
+    const ok = await nativeShare(
+      url,
+      lesson.lessonTitle || "Learning Module",
+      `Study this module while classes are suspended: ${lesson.subjectName} — ${lesson.lessonTitle}`
+    );
+    if (!ok) {
+      const copied = await copyToClipboard(url);
+      if (copied) toast("📋 Link copied — paste it in your group chat", "success");
+    }
+  });
+}
+
+// ============================================================
+// QR TOGGLE — event delegation (top-level, NOT inside wireShareButtons)
+// ============================================================
+document.addEventListener("click", (e) => {
+  const btn = e.target.closest("#lmShowQr");
+  if (!btn) return;
+  e.preventDefault();
+
+  const wrap = document.getElementById("lmQrWrap");
+  if (!wrap) {
+    console.warn("[lm] QR wrap not found");
+    return;
+  }
+
+  const isHidden = !wrap.style.display || wrap.style.display === "none";
+  wrap.style.display = isHidden ? "block" : "none";
+  btn.textContent = isHidden ? "📱 Hide QR" : "📱 QR Code";
+
+  const img = document.getElementById("lmQrImg");
+  const url = document.getElementById("lmShareUrl")?.value;
+  if (img && url && (!img.src || img.src === "" || img.src === window.location.href)) {
+    img.src = `https://api.qrserver.com/v1/create-qr-code/?size=240x240&data=${encodeURIComponent(url)}&color=0f2b4f&bgcolor=ffffff`;
+  }
+});
+
+window.__ilawToast = toast;
+
+// ============================================================
+// WIRE ONCE — call after DOM ready
+// ============================================================
+wireShareButtons();
+setTimeout(wireShareButtons, 500);
+
+</script>
+    
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
+</body>
+</html>
