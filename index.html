@@ -1209,8 +1209,8 @@ body.is-admin .role-only-guest-teacher { display: block; }
       document.addEventListener('keydown', e => { if (e.key === 'Escape') closeAll(); });
     })();
 
-    // Hero slider
-    (function initSlider() {
+        // Hero slider — exposed globally for Firestore reload
+    window.initSlider = function initSlider() {
       const slider = document.getElementById('home-slider');
       if (!slider) return;
       const slides = Array.from(slider.querySelectorAll('.slide'));
@@ -1220,6 +1220,9 @@ body.is-admin .role-only-guest-teacher { display: block; }
       const prevBtn  = slider.querySelector('.prev');
       const nextBtn  = slider.querySelector('.next');
       const interval = parseInt(slider.dataset.interval, 10) || 5000;
+
+      // Clear any existing dots to avoid duplicates on re-init
+      if (dotsHost) dotsHost.innerHTML = '';
 
       const dots = slides.map((_, i) => {
         const b = document.createElement('button');
@@ -1252,7 +1255,10 @@ body.is-admin .role-only-guest-teacher { display: block; }
       slider.tabIndex = 0;
       setActive(0);
       start();
-    })();
+    };
+
+    // Call once on page load
+    window.initSlider();
 
     // Helpers
     const esc = (s = '') => String(s)
@@ -1561,6 +1567,13 @@ body.is-admin .role-only-guest-teacher { display: block; }
        style="background:#0f4c81;"
     >🔒</a>
 
+    <a href="manage-slides.html"
+      id="fab-slides"
+      class="fab"
+      title="Manage Homepage Slides"
+      style="background:#0891b2;"
+      >📸</a>
+
   </div>
 
   <!-- ===================== AUTH + ROLE ===================== -->
@@ -1788,7 +1801,75 @@ console.log("[role] Fallback class detection:", hasAssignedClasses ? "SCPHS" : "
         }
       });
     }
+    
   </script>
+<!-- ============================================================ -->
+<!-- Homepage Slider — load from Firestore (with fallback) -->
+<!-- ============================================================ -->
+<script type="module">
+  import { db } from "./assets/js/firebase-config.js";
+  import { doc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+  (async function loadDynamicSlides() {
+    try {
+      const snap = await getDoc(doc(db, "config", "homepage_slides"));
+      if (!snap.exists()) {
+        console.log("[slider] No Firestore slides — using hardcoded defaults");
+        return;
+      }
+
+      const data = snap.data();
+      const slides = (data.slides || [])
+        .filter(s => s.active !== false)
+        .sort((a, b) => (a.order || 0) - (b.order || 0));
+
+      if (!slides.length) {
+        console.log("[slider] Empty slides array — using defaults");
+        return;
+      }
+
+      const slider = document.getElementById("home-slider");
+      if (!slider) return;
+
+      // Preserve the welcome badge only on the first slide if wanted
+      const esc = s => String(s == null ? "" : s)
+        .replace(/&/g, "&amp;").replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+
+      // Rebuild slides HTML
+      const slidesHTML = slides.map((s, i) => `
+        <div class="slide ${i === 0 ? "is-active" : ""}" role="group" aria-roledescription="slide" aria-label="${i + 1} of ${slides.length}">
+          <img src="${esc(s.imageUrl)}" alt="${esc(s.alt || s.title || "")}" loading="${i === 0 ? "eager" : "lazy"}">
+          <div class="slide-overlay"></div>
+          <div class="slide-caption">
+            ${s.title ? `<h2>${esc(s.title)}</h2>` : ""}
+            ${s.subtitle ? `<p>${esc(s.subtitle)}</p>` : ""}
+          </div>
+        </div>
+      `).join("");
+
+      // Keep nav buttons + dots host
+      slider.innerHTML = slidesHTML + `
+        <button class="nav prev" aria-label="Previous slide" type="button">‹</button>
+        <button class="nav next" aria-label="Next slide" type="button">›</button>
+        <div class="dots" role="tablist" aria-label="Slide indicators"></div>
+      `;
+
+      console.log("[slider] Loaded", slides.length, "slides from Firestore");
+
+      // Re-init slider (reuse your existing initSlider logic if exposed)
+      if (typeof window.initSlider === "function") {
+        window.initSlider();
+      } else {
+        // Minimal fallback re-init
+        window.dispatchEvent(new Event("slider:reload"));
+      }
+
+    } catch (e) {
+      console.warn("[slider] Falling back to hardcoded slides:", e.message);
+    }
+  })();
+</script>
 
   <!-- ===================== COUNTER + CHATBOT ===================== -->
   <script type="module" src="assets/js/counter.js"></script>

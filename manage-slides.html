@@ -1,0 +1,798 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Manage Homepage Slides — SCPHS</title>
+  <link rel="stylesheet" href="assets/css/styles.css" />
+  <style>
+    * { box-sizing: border-box; }
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #f6f7f9; margin: 0; }
+
+    .ms-header {
+      background: linear-gradient(135deg, #0891b2, #0e7490);
+      color: #fff;
+      padding: 24px 0;
+    }
+    .ms-header-inner { max-width: 1100px; margin: 0 auto; padding: 0 24px; }
+    .ms-header a { color: #fff; text-decoration: none; opacity: 0.85; font-size: 0.85rem; }
+    .ms-header h1 { margin: 6px 0 4px; font-size: 1.5rem; }
+    .ms-header p  { margin: 0; opacity: 0.9; font-size: 0.9rem; }
+
+    .ms-container { max-width: 1100px; margin: 0 auto; padding: 24px; }
+
+    .ms-toolbar {
+      display: flex; gap: 12px; align-items: center;
+      margin-bottom: 20px; flex-wrap: wrap;
+    }
+    .ms-btn {
+      padding: 10px 16px; border: 1px solid transparent;
+      border-radius: 8px; font-size: 14px; font-weight: 600;
+      cursor: pointer; font-family: inherit;
+      transition: all .15s;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .ms-btn.primary { background: #0891b2; color: #fff; }
+    .ms-btn.primary:hover { background: #0e7490; }
+    .ms-btn.outline { background: #fff; border-color: #d1d5db; color: #0891b2; }
+    .ms-btn.outline:hover { background: #f3f6fa; border-color: #0891b2; }
+    .ms-btn.danger { background: #fff; color: #b91c1c; border-color: #fecaca; }
+    .ms-btn.danger:hover { background: #fef2f2; border-color: #b91c1c; }
+    .ms-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    .ms-slide-card {
+      background: #fff;
+      border: 1px solid #e5e7eb;
+      border-radius: 12px;
+      padding: 16px;
+      margin-bottom: 14px;
+      display: grid;
+      grid-template-columns: 220px 1fr auto;
+      gap: 16px;
+      align-items: flex-start;
+      box-shadow: 0 1px 3px rgba(0,0,0,.04);
+    }
+    .ms-slide-thumb {
+      width: 100%;
+      aspect-ratio: 16/9;
+      background: #f3f4f6;
+      border-radius: 8px;
+      overflow: hidden;
+      position: relative;
+    }
+    .ms-slide-thumb img {
+      width: 100%; height: 100%; object-fit: cover; display: block;
+    }
+    .ms-slide-thumb.empty {
+      display: flex; align-items: center; justify-content: center;
+      color: #9ca3af; font-size: 12px;
+    }
+    .ms-slide-fields {
+      display: flex; flex-direction: column; gap: 10px;
+    }
+    .ms-slide-fields label {
+      font-size: 11px; font-weight: 800; color: #374151;
+      text-transform: uppercase; letter-spacing: 0.04em;
+      display: block; margin-bottom: 4px;
+    }
+    .ms-slide-fields input[type="text"],
+    .ms-slide-fields input[type="url"] {
+      width: 100%; padding: 9px 12px;
+      border: 1px solid #d1d5db; border-radius: 6px;
+      font-size: 13.5px; font-family: inherit;
+    }
+    .ms-slide-fields input:focus {
+      outline: none; border-color: #0891b2;
+      box-shadow: 0 0 0 3px rgba(8,145,178,.12);
+    }
+
+    .ms-slide-actions {
+      display: flex; flex-direction: column; gap: 6px; align-items: stretch;
+    }
+    .ms-slide-actions .ms-btn { justify-content: center; font-size: 12px; padding: 8px 12px; }
+
+    .ms-empty {
+      text-align: center; padding: 60px 20px; color: #6b7280;
+      background: #fff; border-radius: 12px; border: 1px dashed #d1d5db;
+    }
+    .ms-loading { text-align: center; padding: 60px 20px; color: #6b7280; }
+    .ms-spinner {
+      display: inline-block; width: 32px; height: 32px;
+      border: 3px solid #e5e7eb; border-top-color: #0891b2;
+      border-radius: 50%; animation: spin .8s linear infinite; margin-bottom: 12px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ---------- Modal (upload) ---------- */
+    .ms-modal {
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,0.6);
+      display: none; align-items: center; justify-content: center;
+      z-index: 10000; padding: 20px;
+    }
+    .ms-modal.show { display: flex; }
+    .ms-modal-inner {
+      background: #fff;
+      border-radius: 14px;
+      max-width: 720px; width: 100%;
+      max-height: 92vh;
+      display: flex; flex-direction: column;
+      box-shadow: 0 24px 48px rgba(0,0,0,.25);
+    }
+    .ms-modal-head {
+      padding: 18px 22px;
+      border-bottom: 1px solid #e5e7eb;
+      display: flex; justify-content: space-between; align-items: center;
+    }
+    .ms-modal-head h3 { margin: 0; font-size: 1.1rem; color: #0e7490; }
+    .ms-modal-body { padding: 22px; overflow-y: auto; flex: 1; }
+
+    .ms-drop {
+      border: 2px dashed #cbd5e1;
+      background: #f9fafb;
+      border-radius: 12px;
+      padding: 36px 20px;
+      text-align: center;
+      cursor: pointer;
+      transition: all .15s;
+    }
+    .ms-drop:hover, .ms-drop.dragover {
+      border-color: #0891b2; background: #f0f9ff;
+    }
+    .ms-drop-icon { font-size: 3rem; margin-bottom: 10px; }
+    .ms-drop-title { font-weight: 700; color: #0e7490; font-size: 15px; }
+    .ms-drop-hint { font-size: 12px; color: #6b7280; margin-top: 6px; }
+
+    .ms-preview {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-top: 16px;
+    }
+    .ms-preview-col {
+      background: #f9fafb;
+      border-radius: 8px;
+      padding: 10px;
+      text-align: center;
+    }
+    .ms-preview-col h5 {
+      margin: 0 0 8px; font-size: 10.5px; font-weight: 800;
+      color: #6b7280; text-transform: uppercase; letter-spacing: 0.04em;
+    }
+    .ms-preview-col img {
+      width: 100%; aspect-ratio: 16/9;
+      object-fit: cover; border-radius: 6px;
+      background: #fff; border: 1px solid #e5e7eb;
+    }
+    .ms-preview-col .meta {
+      font-size: 11px; color: #6b7280; margin-top: 6px;
+      font-family: monospace;
+    }
+
+    .ms-progress {
+      height: 6px; background: #e5e7eb; border-radius: 3px;
+      overflow: hidden; margin-top: 12px; display: none;
+    }
+    .ms-progress.show { display: block; }
+    .ms-progress-bar {
+      height: 100%; background: #0891b2; width: 0%;
+      transition: width .25s;
+    }
+
+    .ms-field { margin-top: 16px; }
+    .ms-field label {
+      display: block; font-size: 11px; font-weight: 800;
+      color: #374151; text-transform: uppercase;
+      letter-spacing: 0.04em; margin-bottom: 6px;
+    }
+    .ms-field input {
+      width: 100%; padding: 10px 12px;
+      border: 1px solid #d1d5db; border-radius: 8px;
+      font-size: 13.5px; font-family: inherit;
+    }
+    .ms-field input:focus {
+      outline: none; border-color: #0891b2;
+      box-shadow: 0 0 0 3px rgba(8,145,178,.12);
+    }
+
+    .ms-modal-foot {
+      padding: 16px 22px;
+      border-top: 1px solid #e5e7eb;
+      display: flex; justify-content: space-between; gap: 10px;
+      background: #fafbfc; border-radius: 0 0 14px 14px;
+      flex-wrap: wrap;
+    }
+
+    .ms-toast {
+      position: fixed; bottom: 24px; left: 50%;
+      transform: translateX(-50%) translateY(20px);
+      background: #111827; color: #fff;
+      padding: 10px 20px; border-radius: 8px;
+      font-size: 14px; font-weight: 500;
+      box-shadow: 0 8px 24px rgba(0,0,0,.2);
+      opacity: 0; transition: all .2s;
+      z-index: 9999; pointer-events: none;
+    }
+    .ms-toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+    .ms-toast.success { background: #059669; }
+    .ms-toast.error { background: #b91c1c; }
+
+    @media (max-width: 700px) {
+      .ms-slide-card { grid-template-columns: 1fr; }
+      .ms-slide-thumb { max-width: 320px; }
+      .ms-slide-actions { flex-direction: row; }
+      .ms-preview { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+  <header class="ms-header">
+    <div class="ms-header-inner">
+      <a href="index.html">← Back to Portal</a>
+      <h1>📸 Manage Homepage Slides</h1>
+      <p>Update the images and captions shown on the homepage slider</p>
+    </div>
+  </header>
+
+  <div class="ms-container" id="main-content">
+    <div class="ms-loading" id="loading">
+      <div class="ms-spinner"></div>
+      <div>Loading slides…</div>
+    </div>
+
+    <div id="content" style="display:none;">
+      <div class="ms-toolbar">
+        <button class="ms-btn primary" id="btnAdd">📤 Add New Slide</button>
+        <button class="ms-btn outline" id="btnReload">🔄 Reload from Firestore</button>
+        <span id="slideCount" style="font-size:0.85rem;color:#6b7280;margin-left:auto;"></span>
+      </div>
+
+      <div id="slideList"></div>
+
+      <div style="margin-top:20px;text-align:right;">
+        <button class="ms-btn primary" id="btnSaveAll" style="padding:12px 24px;font-size:15px;">
+          💾 Save All Changes
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Upload Modal -->
+  <div class="ms-modal" id="uploadModal">
+    <div class="ms-modal-inner">
+      <div class="ms-modal-head">
+        <h3 id="modalTitle">📤 Upload Slide Image</h3>
+        <button class="ms-btn outline" id="modalClose">✕</button>
+      </div>
+      <div class="ms-modal-body">
+        <div class="ms-drop" id="dropZone">
+          <div class="ms-drop-icon">🖼️</div>
+          <div class="ms-drop-title">Drop your image here</div>
+          <div class="ms-drop-hint">or click to browse</div>
+          <div class="ms-drop-hint" style="margin-top:8px;">
+            Accepts: JPG · PNG · BMP · WEBP · GIF — max 10 MB
+          </div>
+          <input type="file" id="fileInput" accept="image/*" style="display:none;">
+        </div>
+
+        <div class="ms-progress" id="progressWrap">
+          <div class="ms-progress-bar" id="progressBar"></div>
+        </div>
+
+        <div class="ms-preview" id="previewWrap" style="display:none;">
+          <div class="ms-preview-col">
+            <h5>Original</h5>
+            <img id="previewOriginal" alt="">
+            <div class="meta" id="metaOriginal">—</div>
+          </div>
+          <div class="ms-preview-col">
+            <h5>Processed (16:9)</h5>
+            <img id="previewProcessed" alt="">
+            <div class="meta" id="metaProcessed">—</div>
+          </div>
+        </div>
+
+        <div id="processedInfo" style="display:none;margin-top:12px;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;padding:10px 14px;font-size:12.5px;color:#166534;">
+          <div>✓ Auto-cropped to 16:9</div>
+          <div>✓ Resized to 1920×1080</div>
+          <div>✓ Compressed to JPEG (85% quality)</div>
+          <div id="reductionInfo" style="font-weight:700;margin-top:4px;"></div>
+        </div>
+
+        <div class="ms-field">
+          <label>Title</label>
+          <input type="text" id="slideTitle" placeholder="e.g., Welcome to SCPHS">
+        </div>
+
+        <div class="ms-field">
+          <label>Subtitle</label>
+          <input type="text" id="slideSubtitle" placeholder="e.g., Announcements, issuances, forms & resources">
+        </div>
+
+        <div class="ms-field">
+          <label>Alt Text (for accessibility)</label>
+          <input type="text" id="slideAlt" placeholder="Short description of the image">
+        </div>
+      </div>
+      <div class="ms-modal-foot">
+        <button class="ms-btn outline" id="modalCancel">Cancel</button>
+        <button class="ms-btn primary" id="modalConfirm" disabled>Add Slide</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast" class="ms-toast"></div>
+
+  <script type="module">
+    import { auth, db } from "./assets/js/firebase-config.js";
+    import {
+      doc, getDoc, setDoc, serverTimestamp
+    } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+    import {
+      getStorage, ref as storageRef, uploadBytes, getDownloadURL, deleteObject
+    } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-storage.js";
+    import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+    import { getCurrentUserProfile } from "./assets/js/roles.js";
+
+    const storage = getStorage();
+    const CONFIG_DOC = doc(db, "config", "homepage_slides");
+    const TARGET_WIDTH  = 1920;
+    const TARGET_HEIGHT = 1080;
+    const JPEG_QUALITY  = 0.85;
+    const MAX_INPUT_MB  = 10;
+
+    const $ = id => document.getElementById(id);
+    let CURRENT_USER = null;
+    let CURRENT_PROFILE = null;
+    let SLIDES = [];        // working copy
+    let PENDING_FILE = null;    // processed Blob awaiting upload
+    let PENDING_ORIGINAL = null; // original File for preview
+    let PENDING_META = null;
+    let EDITING_INDEX = -1;      // -1 = adding new; >=0 = replacing existing
+
+    // ---------- Toast ----------
+    let toastTimer;
+    function toast(msg, type = "") {
+      const t = $("toast");
+      t.textContent = msg;
+      t.className = "ms-toast show" + (type ? " " + type : "");
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => t.className = "ms-toast", 3000);
+    }
+
+    function esc(s) {
+      return String(s == null ? "" : s)
+        .replace(/&/g, "&amp;").replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+    }
+
+    // ---------- Auth gate ----------
+    onAuthStateChanged(auth, async (user) => {
+      if (!user) {
+        location.replace("login.html?next=" + encodeURIComponent(location.pathname));
+        return;
+      }
+      CURRENT_USER = user;
+      CURRENT_PROFILE = await getCurrentUserProfile();
+
+      const isAdmin = CURRENT_PROFILE?.primaryRole === "admin"
+        || CURRENT_PROFILE?.isSuperAdmin
+        || CURRENT_PROFILE?.permissions?.canManageUsers === true;
+
+      if (!isAdmin) {
+        $("loading").innerHTML = `
+          <h2 style="color:#b91c1c;">🚫 Access Denied</h2>
+          <p>Only admins can manage homepage slides.</p>
+          <a href="index.html" class="ms-btn primary" style="margin-top:12px;">← Back to Portal</a>
+        `;
+        return;
+      }
+
+      await loadSlides();
+    });
+
+    // ---------- Load ----------
+    async function loadSlides() {
+      try {
+        const snap = await getDoc(CONFIG_DOC);
+        if (snap.exists()) {
+          SLIDES = Array.isArray(snap.data().slides) ? snap.data().slides : [];
+        } else {
+          SLIDES = defaultSlides();
+          console.log("[manage-slides] No Firestore doc — seeded with defaults");
+        }
+
+        SLIDES.sort((a, b) => (a.order || 0) - (b.order || 0));
+        $("loading").style.display = "none";
+        $("content").style.display = "block";
+        renderSlides();
+      } catch (e) {
+        console.error(e);
+        $("loading").innerHTML = `<div style="color:#b91c1c;">Failed to load: ${esc(e.message)}</div>`;
+      }
+    }
+
+    function defaultSlides() {
+      return [
+        {
+          order: 1, active: true,
+          imageUrl: "assets/images/Slider-Welcome.png",
+          storagePath: null,
+          title: "Welcome to SCPHS",
+          subtitle: "Announcements, issuances, forms & resources for our community.",
+          alt: "Welcome to SCPHS",
+        },
+        {
+          order: 2, active: true,
+          imageUrl: "assets/images/Matatag.png",
+          storagePath: null,
+          title: "MATATAG",
+          subtitle: "Stronger foundations for learning and nation-building.",
+          alt: "MATATAG banner",
+        },
+        {
+          order: 3, active: true,
+          imageUrl: "assets/images/58founding-anniversary.png",
+          storagePath: null,
+          title: "58th Founding Anniversary",
+          subtitle: "Celebrating excellence and community since 1968.",
+          alt: "58th Founding Anniversary banner",
+        },
+      ];
+    }
+
+    // ---------- Render ----------
+    function renderSlides() {
+      $("slideCount").textContent = `${SLIDES.length} slide${SLIDES.length === 1 ? "" : "s"}`;
+
+      const host = $("slideList");
+      if (!SLIDES.length) {
+        host.innerHTML = `<div class="ms-empty">No slides yet. Click "📤 Add New Slide" to begin.</div>`;
+        return;
+      }
+
+      host.innerHTML = SLIDES.map((s, i) => `
+        <div class="ms-slide-card" data-index="${i}">
+          <div class="ms-slide-thumb">
+            <img src="${esc(s.imageUrl)}" alt="${esc(s.alt || s.title)}"
+                 onerror="this.parentElement.classList.add('empty');this.style.display='none';this.parentElement.textContent='Image unavailable';">
+          </div>
+          <div class="ms-slide-fields">
+            <div>
+              <label>Title</label>
+              <input type="text" data-field="title" value="${esc(s.title || "")}" placeholder="Slide title">
+            </div>
+            <div>
+              <label>Subtitle</label>
+              <input type="text" data-field="subtitle" value="${esc(s.subtitle || "")}" placeholder="Slide subtitle">
+            </div>
+            <div>
+              <label>Alt Text</label>
+              <input type="text" data-field="alt" value="${esc(s.alt || "")}" placeholder="Accessibility description">
+            </div>
+          </div>
+          <div class="ms-slide-actions">
+            <button class="ms-btn outline" data-action="up" ${i === 0 ? "disabled" : ""}>▲ Up</button>
+            <button class="ms-btn outline" data-action="down" ${i === SLIDES.length - 1 ? "disabled" : ""}>▼ Down</button>
+            <button class="ms-btn outline" data-action="replace">🔄 Replace</button>
+            <button class="ms-btn danger" data-action="delete">🗑 Delete</button>
+          </div>
+        </div>
+      `).join("");
+
+      attachSlideHandlers();
+    }
+
+    function attachSlideHandlers() {
+      document.querySelectorAll(".ms-slide-card").forEach(card => {
+        const i = parseInt(card.dataset.index, 10);
+
+        // Live edit text fields → working copy
+        card.querySelectorAll("input[data-field]").forEach(inp => {
+          inp.addEventListener("input", () => {
+            const field = inp.dataset.field;
+            SLIDES[i][field] = inp.value;
+          });
+        });
+
+        card.querySelector("[data-action='up']")?.addEventListener("click", () => moveSlide(i, -1));
+        card.querySelector("[data-action='down']")?.addEventListener("click", () => moveSlide(i, +1));
+        card.querySelector("[data-action='replace']")?.addEventListener("click", () => openUploadModal(i));
+        card.querySelector("[data-action='delete']")?.addEventListener("click", () => deleteSlide(i));
+      });
+    }
+
+    function moveSlide(i, dir) {
+      const j = i + dir;
+      if (j < 0 || j >= SLIDES.length) return;
+      [SLIDES[i], SLIDES[j]] = [SLIDES[j], SLIDES[i]];
+      SLIDES.forEach((s, k) => s.order = k + 1);
+      renderSlides();
+    }
+
+    async function deleteSlide(i) {
+      const s = SLIDES[i];
+      if (!confirm(`Delete slide "${s.title || "(untitled)"}"?`)) return;
+
+      // Delete storage file if it's a Firebase Storage URL
+      if (s.storagePath) {
+        try {
+          await deleteObject(storageRef(storage, s.storagePath));
+          console.log("[manage-slides] Deleted storage file:", s.storagePath);
+        } catch (e) {
+          console.warn("[manage-slides] Storage delete failed (may already be gone):", e.message);
+        }
+      }
+
+      SLIDES.splice(i, 1);
+      SLIDES.forEach((s, k) => s.order = k + 1);
+      renderSlides();
+      toast("✓ Removed — click Save All to commit", "success");
+    }
+
+    // ---------- Upload modal ----------
+    function openUploadModal(replaceIndex = -1) {
+      EDITING_INDEX = replaceIndex;
+      PENDING_FILE = null;
+      PENDING_ORIGINAL = null;
+      PENDING_META = null;
+
+      $("modalTitle").textContent = replaceIndex >= 0
+        ? "🔄 Replace Slide Image"
+        : "📤 Upload Slide Image";
+      $("modalConfirm").textContent = replaceIndex >= 0 ? "Replace Slide" : "Add Slide";
+      $("modalConfirm").disabled = true;
+
+      // Clear preview
+      $("previewWrap").style.display = "none";
+      $("processedInfo").style.display = "none";
+      $("progressWrap").classList.remove("show");
+      $("progressBar").style.width = "0%";
+      $("fileInput").value = "";
+
+      // Pre-fill fields if replacing
+      if (replaceIndex >= 0 && SLIDES[replaceIndex]) {
+        const s = SLIDES[replaceIndex];
+        $("slideTitle").value    = s.title || "";
+        $("slideSubtitle").value = s.subtitle || "";
+        $("slideAlt").value      = s.alt || "";
+      } else {
+        $("slideTitle").value = "";
+        $("slideSubtitle").value = "";
+        $("slideAlt").value = "";
+      }
+
+      $("uploadModal").classList.add("show");
+    }
+
+    function closeUploadModal() {
+      $("uploadModal").classList.remove("show");
+      PENDING_FILE = null;
+      PENDING_ORIGINAL = null;
+      PENDING_META = null;
+    }
+
+    // ---------- Drag/drop + file picker ----------
+    $("dropZone").addEventListener("click", () => $("fileInput").click());
+    $("fileInput").addEventListener("change", e => {
+      const file = e.target.files[0];
+      if (file) handleFile(file);
+    });
+    $("dropZone").addEventListener("dragover", e => {
+      e.preventDefault();
+      $("dropZone").classList.add("dragover");
+    });
+    $("dropZone").addEventListener("dragleave", () => {
+      $("dropZone").classList.remove("dragover");
+    });
+    $("dropZone").addEventListener("drop", e => {
+      e.preventDefault();
+      $("dropZone").classList.remove("dragover");
+      const file = e.dataTransfer.files[0];
+      if (file) handleFile(file);
+    });
+
+    async function handleFile(file) {
+      if (!file.type.startsWith("image/")) {
+        toast("⚠️ Please select an image file", "error");
+        return;
+      }
+      if (file.size > MAX_INPUT_MB * 1024 * 1024) {
+        toast(`⚠️ Image too large — max ${MAX_INPUT_MB} MB`, "error");
+        return;
+      }
+
+      try {
+        const { blob, meta, originalUrl } = await processImage(file);
+        PENDING_FILE = blob;
+        PENDING_ORIGINAL = file;
+        PENDING_META = meta;
+
+        // Show preview
+        $("previewOriginal").src = originalUrl;
+        $("previewProcessed").src = URL.createObjectURL(blob);
+        $("previewWrap").style.display = "grid";
+
+        const origMB = (file.size / 1024 / 1024).toFixed(2);
+        const procKB = Math.round(blob.size / 1024);
+        const reduction = Math.round((1 - blob.size / file.size) * 100);
+
+        $("metaOriginal").textContent = `${meta.originalW}×${meta.originalH} · ${origMB} MB`;
+        $("metaProcessed").textContent = `${TARGET_WIDTH}×${TARGET_HEIGHT} · ${procKB} KB`;
+
+        $("processedInfo").style.display = "block";
+        $("reductionInfo").textContent = `Reduction: ${reduction}% smaller`;
+
+        $("modalConfirm").disabled = false;
+      } catch (e) {
+        console.error(e);
+        toast("⚠️ " + (e.message || "Failed to process image"), "error");
+      }
+    }
+
+    // ---------- Image processing (crop → resize → compress) ----------
+    function processImage(file) {
+      return new Promise((resolve, reject) => {
+        const img = new Image();
+        const originalUrl = URL.createObjectURL(file);
+
+        img.onload = () => {
+          try {
+            const origW = img.naturalWidth;
+            const origH = img.naturalHeight;
+
+            // Compute 16:9 crop (center)
+            const targetRatio = TARGET_WIDTH / TARGET_HEIGHT;
+            const sourceRatio = origW / origH;
+
+            let cropW, cropH, cropX, cropY;
+            if (sourceRatio > targetRatio) {
+              // Wider than 16:9 → crop left/right
+              cropH = origH;
+              cropW = origH * targetRatio;
+              cropX = (origW - cropW) / 2;
+              cropY = 0;
+            } else {
+              // Taller than 16:9 → crop top/bottom
+              cropW = origW;
+              cropH = origW / targetRatio;
+              cropX = 0;
+              cropY = (origH - cropH) / 2;
+            }
+
+            // Draw to canvas at 1920×1080
+            const canvas = document.createElement("canvas");
+            canvas.width = TARGET_WIDTH;
+            canvas.height = TARGET_HEIGHT;
+            const ctx = canvas.getContext("2d");
+            ctx.drawImage(
+              img,
+              cropX, cropY, cropW, cropH,     // source crop
+              0, 0, TARGET_WIDTH, TARGET_HEIGHT  // destination
+            );
+
+            canvas.toBlob(
+              (blob) => {
+                if (!blob) { reject(new Error("Failed to compress image")); return; }
+                resolve({
+                  blob,
+                  originalUrl,
+                  meta: { originalW: origW, originalH: origH },
+                });
+              },
+              "image/jpeg",
+              JPEG_QUALITY
+            );
+          } catch (e) {
+            reject(e);
+          }
+        };
+
+        img.onerror = () => reject(new Error("Could not read image file"));
+        img.src = originalUrl;
+      });
+    }
+
+    // ---------- Upload to Storage + confirm ----------
+    $("modalConfirm").addEventListener("click", async () => {
+      if (!PENDING_FILE) return;
+
+      const btn = $("modalConfirm");
+      btn.disabled = true;
+      btn.textContent = "⏳ Uploading…";
+      $("progressWrap").classList.add("show");
+      $("progressBar").style.width = "30%";
+
+      try {
+        // Filename: slides/{timestamp}-{random}.jpg
+        const filename = `slides/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.jpg`;
+        const ref = storageRef(storage, filename);
+
+        $("progressBar").style.width = "60%";
+        await uploadBytes(ref, PENDING_FILE, { contentType: "image/jpeg" });
+
+        $("progressBar").style.width = "85%";
+        const url = await getDownloadURL(ref);
+
+        $("progressBar").style.width = "100%";
+
+        const newSlide = {
+          order: EDITING_INDEX >= 0 ? SLIDES[EDITING_INDEX].order : SLIDES.length + 1,
+          active: true,
+          imageUrl: url,
+          storagePath: filename,
+          title: $("slideTitle").value.trim(),
+          subtitle: $("slideSubtitle").value.trim(),
+          alt: $("slideAlt").value.trim(),
+        };
+
+        if (EDITING_INDEX >= 0) {
+          // Replace: delete old storage file
+          const old = SLIDES[EDITING_INDEX];
+          if (old.storagePath && old.storagePath !== filename) {
+            try {
+              await deleteObject(storageRef(storage, old.storagePath));
+            } catch (e) {
+              console.warn("[manage-slides] Could not delete old image:", e.message);
+            }
+          }
+          SLIDES[EDITING_INDEX] = newSlide;
+          toast("✓ Image replaced — click Save All to commit", "success");
+        } else {
+          SLIDES.push(newSlide);
+          toast("✓ Slide added — click Save All to commit", "success");
+        }
+
+        closeUploadModal();
+        renderSlides();
+      } catch (e) {
+        console.error(e);
+        toast("⚠️ Upload failed: " + (e.message || "unknown"), "error");
+        btn.disabled = false;
+        btn.textContent = EDITING_INDEX >= 0 ? "Replace Slide" : "Add Slide";
+      }
+    });
+
+    // ---------- Modal close ----------
+    $("modalClose").addEventListener("click", closeUploadModal);
+    $("modalCancel").addEventListener("click", closeUploadModal);
+    $("uploadModal").addEventListener("click", e => {
+      if (e.target === $("uploadModal")) closeUploadModal();
+    });
+
+    // ---------- Save All ----------
+    $("btnSaveAll").addEventListener("click", async () => {
+      const btn = $("btnSaveAll");
+      btn.disabled = true;
+      btn.textContent = "⏳ Saving…";
+
+      try {
+        SLIDES.forEach((s, i) => s.order = i + 1);
+
+        await setDoc(CONFIG_DOC, {
+          slides: SLIDES,
+          updatedAt: serverTimestamp(),
+          updatedBy: CURRENT_USER.email || "",
+        });
+
+        toast("✓ All slides saved — live on homepage now!", "success");
+      } catch (e) {
+        console.error(e);
+        toast("⚠️ Save failed: " + (e.message || "unknown"), "error");
+      } finally {
+        btn.disabled = false;
+        btn.textContent = "💾 Save All Changes";
+      }
+    });
+
+    $("btnAdd").addEventListener("click", () => openUploadModal(-1));
+    $("btnReload").addEventListener("click", () => {
+      if (confirm("Discard unsaved changes and reload from Firestore?")) loadSlides();
+    });
+  </script>
+</body>
+</html>
