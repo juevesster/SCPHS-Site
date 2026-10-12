@@ -1,6 +1,6 @@
 // login.js — SCPHS Portal authentication handlers
 // Handles: tab switching, sign-in, sign-up, password reset,
-// password visibility, password strength.
+// Protection password visibility, password strength.
 
 import { auth, db } from "./firebase-config.js";
 import {
