@@ -106,6 +106,28 @@ const HELP_TOPICS = {
       "This is the DepEd-standard lesson plan format.",
     ],
   },
+
+    "edit-header": {
+    icon: "🏫",
+    title: "How do I edit the school header?",
+    steps: [
+      "The printed lesson plan and Learner Module show your school name, region, and division.",
+      "",
+      "<strong>Steps to change it:</strong>",
+      "1️⃣ Save your lesson first (<strong>💾 Save as Draft</strong>)",
+      "2️⃣ Click <strong>📘 Generate Learner Module</strong>",
+      "3️⃣ Click <strong>✏️ Edit Module</strong> (yellow button)",
+      "4️⃣ Look for <strong>🏫 School Details</strong> at the top (blue box)",
+      "5️⃣ Change Region, Division, School Name, Address",
+      "6️⃣ Click <strong>💾 Save Changes</strong>",
+      "",
+      "<em>This applies to BOTH the Learner Module AND the printed ILAW lesson plan.</em>",
+      "<em>SCPHS teachers: defaults are pre-filled.</em>",
+      "<em>Guest teachers: change to your own school.</em>",
+    ],
+    tourStep: 8, // Points to Learner Module button
+  },
+  
   "edit-header": {
     icon: "🏫",
     title: "How do I edit the school header?",
