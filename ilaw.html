@@ -1032,6 +1032,7 @@
           <span style="color:#6b7280;font-size:12px;" id="dirtyIndicator"></span>
           <div style="margin-left:auto;display:flex;gap:8px;flex-wrap:wrap;">
             <button class="btn btn-outline" id="btnDuplicate">📋 Duplicate</button>
+            <button class="btn btn-outline" id="btnMaterialsPack" style="background:#4f46e5;color:#fff;border-color:#4f46e5;">📚 Materials Pack</button>
             <button class="btn btn-outline" id="btnLearnerModule" style="background:#7c3aed;color:#fff;border-color:#7c3aed;">📘 Generate Learner Module</button>
             <button class="btn btn-outline" id="btnDownload" style="background:#1e3c72;color:white;border-color:#1e3c72;">📥 Download PDF</button>
             <button class="btn btn-outline" id="btnPrint">🖨️ Print</button>
@@ -2244,6 +2245,17 @@ async function downloadLearnerModulePDF() {
 document.addEventListener("click", (e) => {
   if (e.target.closest("#btnLearnerModule")) {
     openLearnerModuleModal();
+  }
+});
+
+// Materials Pack button — opens materials-pack.html
+document.addEventListener("click", (e) => {
+  if (e.target.closest("#btnMaterialsPack")) {
+    if (!CURRENT_LESSON_ID) {
+      toast("⚠️ Please save the lesson first before generating materials.", "error");
+      return;
+    }
+    window.open(`materials-pack.html?lesson=${CURRENT_LESSON_ID}`, "_blank");
   }
 });
 

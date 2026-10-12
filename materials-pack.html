@@ -1,0 +1,979 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Teaching Materials Pack — SCPHS</title>
+<link rel="stylesheet" href="assets/css/styles.css" />
+<style>
+  * { box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background: #f0f2f5;
+    margin: 0;
+    color: #1f2937;
+  }
+
+  /* ============ HEADER ============ */
+  .tm-header {
+    background: linear-gradient(135deg, #1e3c72 0%, #2a5298 50%, #4f46e5 100%);
+    color: #fff;
+    padding: 28px 0 22px;
+    box-shadow: 0 4px 20px rgba(30, 60, 114, 0.25);
+    position: relative;
+    overflow: hidden;
+  }
+  .tm-header::before {
+    content: "";
+    position: absolute;
+    top: -50%; right: -10%;
+    width: 400px; height: 400px;
+    background: radial-gradient(circle, rgba(255,255,255,.15) 0%, transparent 70%);
+    border-radius: 50%;
+  }
+  .tm-header-inner {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 0 24px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 20px;
+    flex-wrap: wrap;
+    position: relative;
+    z-index: 1;
+  }
+  .tm-header h1 {
+    margin: 0 0 6px;
+    font-size: 1.6rem;
+    font-weight: 800;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    letter-spacing: -.01em;
+  }
+  .tm-header .sub {
+    margin: 0;
+    opacity: 0.9;
+    font-size: 0.9rem;
+    display: flex;
+    gap: 14px;
+    flex-wrap: wrap;
+  }
+  .tm-header .sub span {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+  }
+  .tm-header-actions {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+  .tm-btn {
+    padding: 11px 20px;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 13.5px;
+    font-weight: 700;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    transition: all .18s;
+    text-decoration: none;
+  }
+  .tm-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 18px rgba(0,0,0,.15); }
+  .tm-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+  .tm-btn.ghost {
+    background: rgba(255,255,255,.15);
+    color: #fff;
+    border: 1px solid rgba(255,255,255,.3);
+  }
+  .tm-btn.ghost:hover { background: rgba(255,255,255,.25); }
+  .tm-btn.primary {
+    background: linear-gradient(135deg, #10b981, #059669);
+    color: #fff;
+    box-shadow: 0 4px 14px rgba(16,185,129,.4);
+  }
+
+  /* ============ CONTAINER ============ */
+  .tm-container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 28px 24px 60px;
+  }
+
+  /* ============ PROGRESS / SUMMARY BAR ============ */
+  .tm-progress-bar {
+    background: #fff;
+    border-radius: 16px;
+    padding: 18px 24px;
+    margin-bottom: 24px;
+    box-shadow: 0 1px 3px rgba(0,0,0,.06);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    flex-wrap: wrap;
+  }
+  .tm-progress-info { display: flex; gap: 28px; flex-wrap: wrap; }
+  .tm-progress-item { display: flex; align-items: center; gap: 10px; }
+  .tm-progress-dot {
+    width: 34px; height: 34px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    background: #ecfdf5;
+    color: #059669;
+    font-weight: 800;
+    flex-shrink: 0;
+  }
+  .tm-progress-dot.pending { background: #f3f4f6; color: #9ca3af; }
+  .tm-progress-dot.working { background: #fef3c7; color: #d97706; animation: tmPulse 1.2s ease-in-out infinite; }
+  @keyframes tmPulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+  }
+  .tm-progress-label { font-size: 12px; color: #6b7280; text-transform: uppercase; letter-spacing: .04em; font-weight: 700; }
+  .tm-progress-value { font-size: 14px; color: #0f2b4f; font-weight: 700; }
+
+  /* ============ GRID ============ */
+  .tm-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+    gap: 22px;
+  }
+
+  /* ============ CARD ============ */
+  .tm-card {
+    background: #fff;
+    border-radius: 18px;
+    overflow: hidden;
+    box-shadow: 0 1px 3px rgba(0,0,0,.06);
+    transition: all .25s;
+    display: flex;
+    flex-direction: column;
+    border: 1px solid #e5e7eb;
+  }
+  .tm-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 14px 40px rgba(0,0,0,.1);
+    border-color: transparent;
+  }
+
+  .tm-card-head {
+    padding: 18px 22px;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    position: relative;
+    overflow: hidden;
+  }
+  .tm-card-head::after {
+    content: "";
+    position: absolute;
+    top: -60%; right: -20%;
+    width: 220px; height: 220px;
+    background: radial-gradient(circle, rgba(255,255,255,.2) 0%, transparent 70%);
+    border-radius: 50%;
+    pointer-events: none;
+  }
+  .tm-card-head .ico {
+    font-size: 1.6rem;
+    filter: drop-shadow(0 2px 4px rgba(0,0,0,.2));
+  }
+  .tm-card-head .title-block { flex: 1; position: relative; z-index: 1; }
+  .tm-card-head .title {
+    font-size: 1.05rem;
+    font-weight: 800;
+    letter-spacing: -.01em;
+    margin: 0;
+  }
+  .tm-card-head .subtitle {
+    font-size: 11.5px;
+    opacity: 0.9;
+    margin-top: 3px;
+  }
+  .tm-card-head .status-badge {
+    background: rgba(255,255,255,.22);
+    color: #fff;
+    font-size: 10px;
+    font-weight: 800;
+    padding: 4px 10px;
+    border-radius: 999px;
+    text-transform: uppercase;
+    letter-spacing: .06em;
+    position: relative;
+    z-index: 1;
+    border: 1px solid rgba(255,255,255,.3);
+  }
+
+  .tm-card.lecture .tm-card-head    { background: linear-gradient(135deg, #1e40af, #3b82f6); }
+  .tm-card.activities .tm-card-head { background: linear-gradient(135deg, #059669, #10b981); }
+  .tm-card.slides .tm-card-head     { background: linear-gradient(135deg, #6d28d9, #a855f7); }
+  .tm-card.quiz .tm-card-head       { background: linear-gradient(135deg, #c2410c, #f59e0b); }
+
+  .tm-card-body {
+    padding: 20px 22px 22px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  /* ============ EMPTY STATE ============ */
+  .tm-empty {
+    text-align: center;
+    padding: 36px 20px;
+    background: #f9fafb;
+    border: 1px dashed #d1d5db;
+    border-radius: 10px;
+    color: #6b7280;
+    font-size: 13px;
+    line-height: 1.6;
+  }
+  .tm-empty .tm-empty-icon {
+    font-size: 2.4rem;
+    margin-bottom: 10px;
+    opacity: 0.6;
+  }
+
+  /* ============ SECTION LABEL ============ */
+  .tm-section-label {
+    font-size: 10.5px;
+    text-transform: uppercase;
+    letter-spacing: .06em;
+    color: #6b7280;
+    font-weight: 800;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .tm-section-label::after {
+    content: "";
+    flex: 1;
+    height: 1px;
+    background: #e5e7eb;
+  }
+
+  /* ============ CONTENT PREVIEW ============ */
+  .tm-content-preview {
+    background: #f9fafb;
+    border: 1px solid #f3f4f6;
+    border-radius: 10px;
+    padding: 14px 16px;
+    font-size: 13px;
+    line-height: 1.6;
+    color: #374151;
+    max-height: 260px;
+    overflow-y: auto;
+  }
+  .tm-content-preview p { margin: 0 0 8px; }
+  .tm-content-preview p:last-child { margin-bottom: 0; }
+  .tm-content-preview ul,
+  .tm-content-preview ol {
+    margin: 6px 0 6px 18px;
+    padding: 0;
+  }
+  .tm-content-preview li { margin-bottom: 4px; }
+  .tm-content-preview strong { color: #0f2b4f; }
+
+  /* ============ RESOURCE LINKS ============ */
+  .tm-resources { display: flex; flex-direction: column; gap: 8px; }
+  .tm-resource {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 11px 14px;
+    border-radius: 10px;
+    background: linear-gradient(90deg, #f9fafb 0%, #ffffff 100%);
+    border: 1px solid #f3f4f6;
+    text-decoration: none;
+    color: inherit;
+    transition: all .15s;
+    cursor: pointer;
+  }
+  .tm-resource:hover {
+    background: #eff6ff;
+    border-color: #bfdbfe;
+    transform: translateX(3px);
+  }
+  .tm-resource .r-icon {
+    width: 38px; height: 38px;
+    border-radius: 9px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    background: #fff;
+    box-shadow: 0 1px 3px rgba(0,0,0,.05);
+    flex-shrink: 0;
+  }
+  .tm-resource .r-body { flex: 1; min-width: 0; }
+  .tm-resource .r-name {
+    font-size: 13px;
+    font-weight: 700;
+    color: #0f2b4f;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .tm-resource .r-tag {
+    font-size: 9.5px;
+    font-weight: 800;
+    padding: 1px 6px;
+    border-radius: 4px;
+    text-transform: uppercase;
+    letter-spacing: .04em;
+  }
+  .tm-resource .r-tag.ph { background: #fef3c7; color: #92400e; }
+  .tm-resource .r-tag.oer { background: #dbeafe; color: #1e40af; }
+  .tm-resource .r-tag.sim { background: #f0fdf4; color: #166534; }
+  .tm-resource .r-desc {
+    font-size: 11.5px;
+    color: #6b7280;
+    margin-top: 2px;
+  }
+  .tm-resource .r-arrow {
+    color: #9ca3af;
+    font-size: 18px;
+    flex-shrink: 0;
+  }
+
+  /* ============ ACTION BAR ============ */
+  .tm-card-actions {
+    display: flex;
+    gap: 8px;
+    padding-top: 14px;
+    margin-top: auto;
+    border-top: 1px solid #f3f4f6;
+  }
+  .tm-action {
+    flex: 1;
+    padding: 9px 12px;
+    border-radius: 8px;
+    border: 1px solid #e5e7eb;
+    background: #fff;
+    font-family: inherit;
+    font-size: 12px;
+    font-weight: 700;
+    color: #374151;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    transition: all .15s;
+  }
+  .tm-action:hover {
+    background: #f9fafb;
+    border-color: #d1d5db;
+    color: #0f2b4f;
+  }
+  .tm-action.primary {
+    background: #0f2b4f;
+    color: #fff;
+    border-color: #0f2b4f;
+  }
+  .tm-action.primary:hover {
+    background: #1e3c72;
+    color: #fff;
+  }
+  .tm-action:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  /* ============ FOOTER ============ */
+  .tm-footer-bar {
+    margin-top: 32px;
+    background: #fff;
+    border-radius: 16px;
+    padding: 22px 26px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+    box-shadow: 0 1px 3px rgba(0,0,0,.06);
+    border: 1px solid #e5e7eb;
+  }
+  .tm-footer-bar .info {
+    font-size: 13.5px;
+    color: #4b5563;
+    line-height: 1.5;
+  }
+  .tm-footer-bar .info strong { color: #0f2b4f; }
+  .tm-footer-bar .actions { display: flex; gap: 10px; flex-wrap: wrap; }
+
+  /* ============ LOADING / ERROR ============ */
+  .tm-loading {
+    text-align: center;
+    padding: 80px 20px;
+    color: #6b7280;
+    font-size: 14px;
+  }
+  .tm-spinner {
+    width: 42px; height: 42px;
+    border: 4px solid #e5e7eb;
+    border-top-color: #4f46e5;
+    border-radius: 50%;
+    animation: tmSpin .8s linear infinite;
+    margin: 0 auto 16px;
+  }
+  @keyframes tmSpin { to { transform: rotate(360deg); } }
+
+  .tm-error {
+    text-align: center;
+    padding: 60px 20px;
+    color: #b91c1c;
+  }
+
+  @media (max-width: 640px) {
+    .tm-grid { grid-template-columns: 1fr; }
+    .tm-header-inner { flex-direction: column; align-items: flex-start; }
+    .tm-progress-info { gap: 16px; }
+    .tm-progress-item { gap: 6px; }
+    .tm-progress-dot { width: 28px; height: 28px; font-size: 13px; }
+  }
+</style>
+</head>
+<body>
+
+  <!-- ============ HEADER ============ -->
+  <header class="tm-header">
+    <div class="tm-header-inner">
+      <div>
+        <h1>📚 Teaching Materials Pack</h1>
+        <p class="sub" id="tmHeaderSub">
+          <span>Loading lesson…</span>
+        </p>
+      </div>
+      <div class="tm-header-actions">
+        <a href="ilaw.html" class="tm-btn ghost" id="tmBackLink">← Back to Lesson Plan</a>
+        <button class="tm-btn primary" id="tmGenerateAll">✨ Generate All Materials</button>
+      </div>
+    </div>
+  </header>
+
+  <div class="tm-container" id="tmMain">
+    <!-- Progress bar -->
+    <div class="tm-progress-bar">
+      <div class="tm-progress-info" id="tmProgressInfo">
+        <div class="tm-progress-item" data-type="lecture">
+          <div class="tm-progress-dot pending">…</div>
+          <div>
+            <div class="tm-progress-label">Lecture</div>
+            <div class="tm-progress-value">Pending</div>
+          </div>
+        </div>
+        <div class="tm-progress-item" data-type="activities">
+          <div class="tm-progress-dot pending">…</div>
+          <div>
+            <div class="tm-progress-label">Activities</div>
+            <div class="tm-progress-value">Pending</div>
+          </div>
+        </div>
+        <div class="tm-progress-item" data-type="slides">
+          <div class="tm-progress-dot pending">…</div>
+          <div>
+            <div class="tm-progress-label">Slides</div>
+            <div class="tm-progress-value">Pending</div>
+          </div>
+        </div>
+        <div class="tm-progress-item" data-type="quiz">
+          <div class="tm-progress-dot pending">…</div>
+          <div>
+            <div class="tm-progress-label">Quiz</div>
+            <div class="tm-progress-value">Pending</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Loading -->
+    <div class="tm-loading" id="tmLoading">
+      <div class="tm-spinner"></div>
+      <div>Loading lesson and materials…</div>
+    </div>
+
+    <!-- Error -->
+    <div class="tm-error" id="tmError" style="display:none;"></div>
+
+    <!-- Cards grid -->
+    <div class="tm-grid" id="tmGrid" style="display:none;"></div>
+
+    <!-- Footer bar -->
+    <div class="tm-footer-bar" id="tmFooter" style="display:none;">
+      <div class="info">
+        <strong>📦 Full Teaching Pack</strong><br>
+        Lecture notes, activities, slides, and quiz — ready to download or print as one PDF.
+      </div>
+      <div class="actions">
+        <button class="tm-action" id="tmPrintAll">🖨 Print All</button>
+        <button class="tm-btn primary" id="tmDownloadPack">📥 Download Complete Pack (PDF)</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Print container (hidden) -->
+  <div id="tmPrintHost" style="display:none;"></div>
+
+  <!-- Toast -->
+  <div id="tmToast" style="position:fixed;bottom:90px;left:50%;transform:translateX(-50%) translateY(20px);background:#111827;color:#fff;padding:12px 22px;border-radius:8px;font-size:14px;font-weight:600;box-shadow:0 8px 24px rgba(0,0,0,.2);opacity:0;transition:all .25s;z-index:10000;pointer-events:none;"></div>
+
+  <script type="module">
+    import { auth, db } from "./assets/js/firebase-config.js";
+    import { doc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+    import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+    import { getCurrentUserProfile } from "./assets/js/roles.js";
+    import "./assets/js/ilaw-config.js";
+    import {
+      generateMaterial,
+      MATERIAL_PROMPTS,
+      getRecommendedResources,
+      loadMaterial,
+      saveMaterial,
+    } from "./assets/js/materials-generator.js";
+
+    const $ = id => document.getElementById(id);
+    const urlParams = new URLSearchParams(location.search);
+    const LESSON_ID = urlParams.get("lesson");
+
+    let CURRENT_USER = null;
+    let CURRENT_PROFILE = null;
+    let ILAW_CONFIG = null;
+    let LESSON = null;
+    let MATERIALS = { lecture: null, activities: null, slides: null, quiz: null };
+    let BUSY = false;
+
+    // ---------- Toast ----------
+    let toastTimer;
+    function toast(msg, type = "") {
+      const t = $("tmToast");
+      t.textContent = msg;
+      t.style.background = type === "error" ? "#b91c1c"
+        : type === "success" ? "#059669" : "#111827";
+      t.style.opacity = "1";
+      t.style.transform = "translateX(-50%) translateY(0)";
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => {
+        t.style.opacity = "0";
+        t.style.transform = "translateX(-50%) translateY(20px)";
+      }, 3000);
+    }
+
+    function esc(s) {
+      return String(s == null ? "" : s)
+        .replace(/&/g, "&amp;").replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+    }
+
+    // ---------- Boot ----------
+    onAuthStateChanged(auth, async (user) => {
+      if (!user) {
+        location.replace("login.html?next=" + encodeURIComponent(location.pathname + location.search));
+        return;
+      }
+      CURRENT_USER = user;
+      CURRENT_PROFILE = await getCurrentUserProfile();
+      ILAW_CONFIG = await window.ILAWConfig.load();
+
+      if (!LESSON_ID) {
+        showError("No lesson specified. Open this page from the ILAW editor via the '📚 Materials Pack' button.");
+        return;
+      }
+
+      await loadLessonAndMaterials();
+    });
+
+    async function loadLessonAndMaterials() {
+      try {
+        const snap = await getDoc(doc(db, "lessons", LESSON_ID));
+        if (!snap.exists()) {
+          showError("Lesson not found.");
+          return;
+        }
+        LESSON = { id: snap.id, ...snap.data() };
+
+        // Load each material (or null if not yet generated)
+        for (const type of ["lecture", "activities", "slides", "quiz"]) {
+          MATERIALS[type] = await loadMaterial(LESSON_ID, type);
+        }
+
+        renderHeader();
+        renderGrid();
+        renderProgress();
+        $("tmLoading").style.display = "none";
+        $("tmGrid").style.display = "grid";
+        $("tmFooter").style.display = "flex";
+      } catch (e) {
+        console.error(e);
+        showError("Failed to load: " + (e.message || "Unknown error"));
+      }
+    }
+
+    function showError(msg) {
+      $("tmLoading").style.display = "none";
+      $("tmError").style.display = "block";
+      $("tmError").innerHTML = `
+        <div style="font-size:3rem;">⚠️</div>
+        <h3>Something went wrong</h3>
+        <p>${esc(msg)}</p>
+        <a href="ilaw.html" class="tm-btn primary" style="margin-top:16px;">← Back to ILAW</a>
+      `;
+    }
+
+    // ---------- Header ----------
+    function renderHeader() {
+      const sub = $("tmHeaderSub");
+      const gradeLabel = LESSON.gradeLevel === "K" ? "Kindergarten" : "Grade " + (LESSON.gradeLevel || "—");
+      sub.innerHTML = `
+        <span>🎓 ${esc(gradeLabel)}${LESSON.section ? " — " + esc(LESSON.section) : ""}</span>
+        <span>📘 ${esc(LESSON.subjectName || "—")}</span>
+        <span>📅 Term ${esc(LESSON.term || "—")} · Week ${esc(LESSON.week || "—")}</span>
+        <span>👤 ${esc(LESSON.teacherName || "—")}</span>
+      `;
+
+      // Smart back link: use ilaw-open if the lesson is external
+      const backUrl = LESSON.isExternal ? "ilaw-open.html" : "ilaw.html";
+      $("tmBackLink").href = `${backUrl}?lesson=${LESSON_ID}`;
+    }
+
+    // ---------- Grid ----------
+    function renderGrid() {
+      const host = $("tmGrid");
+      host.innerHTML = [
+        renderCard("lecture", "📖", "Lecture Notes", "Scripted discussion & talking points"),
+        renderCard("activities", "🎯", "Activities & Simulations", "Group work, hands-on, virtual labs"),
+        renderCard("slides", "📊", "Presentation Slides", "Slide-by-slide outline"),
+        renderCard("quiz", "❓", "Quiz & Assessment", "Auto-generated from competencies"),
+      ].join("");
+
+      // Wire actions
+      host.querySelectorAll("[data-tm-action]").forEach(btn => {
+        btn.addEventListener("click", () => handleAction(btn.dataset.tmAction, btn.dataset.tmType));
+      });
+    }
+
+    function renderCard(type, icon, title, subtitle) {
+      const material = MATERIALS[type];
+      const ready = !!(material && material.content);
+      const statusText = ready ? "Ready" : "Pending";
+      const statusClass = ready ? "" : "";
+
+      // Content area
+      let contentHTML = "";
+      if (ready) {
+        contentHTML = `
+          <div>
+            <div class="tm-section-label">📝 Generated Content</div>
+            <div class="tm-content-preview">${material.content}</div>
+          </div>
+        `;
+      } else {
+        contentHTML = `
+          <div class="tm-empty">
+            <div class="tm-empty-icon">${icon}</div>
+            <div><strong>${esc(title)}</strong> not yet generated.</div>
+            <div style="margin-top:6px;">Click <strong>✨ Generate</strong> below to create it with AI.</div>
+          </div>
+        `;
+      }
+
+      // Recommended resources
+      const resources = getRecommendedResources(LESSON);
+      const resourcesHTML = resources && resources.length ? `
+        <div>
+          <div class="tm-section-label">🔗 Recommended Resources</div>
+          <div class="tm-resources">
+            ${resources.map(r => `
+              <a class="tm-resource" href="${esc(r.url)}" target="_blank" rel="noopener">
+                <div class="r-icon">${esc(r.icon)}</div>
+                <div class="r-body">
+                  <div class="r-name">${esc(r.name)} ${r.tag ? `<span class="r-tag ${r.tagClass || "oer"}">${esc(r.tag)}</span>` : ""}</div>
+                  <div class="r-desc">${esc(r.desc)}</div>
+                </div>
+                <span class="r-arrow">→</span>
+              </a>
+            `).join("")}
+          </div>
+        </div>
+      ` : "";
+
+      // Action buttons
+      const actionsHTML = ready ? `
+        <div class="tm-card-actions">
+          <button class="tm-action" data-tm-action="edit" data-tm-type="${type}">✏️ Edit</button>
+          <button class="tm-action" data-tm-action="regenerate" data-tm-type="${type}">🔄 Regenerate</button>
+          <button class="tm-action primary" data-tm-action="export" data-tm-type="${type}">📥 Export</button>
+        </div>
+      ` : `
+        <div class="tm-card-actions">
+          <button class="tm-action primary" data-tm-action="generate" data-tm-type="${type}">✨ Generate</button>
+        </div>
+      `;
+
+      return `
+        <div class="tm-card ${type}" data-card-type="${type}">
+          <div class="tm-card-head">
+            <span class="ico">${icon}</span>
+            <div class="title-block">
+              <h3 class="title">${esc(title)}</h3>
+              <div class="subtitle">${esc(subtitle)}</div>
+            </div>
+            <span class="status-badge" data-status="${type}">${esc(statusText)}</span>
+          </div>
+          <div class="tm-card-body">
+            ${contentHTML}
+            ${resourcesHTML}
+            ${actionsHTML}
+          </div>
+        </div>
+      `;
+    }
+
+    // ---------- Progress bar ----------
+    function renderProgress() {
+      ["lecture", "activities", "slides", "quiz"].forEach(type => {
+        const item = document.querySelector(`[data-type="${type}"]`);
+        if (!item) return;
+        const dot = item.querySelector(".tm-progress-dot");
+        const val = item.querySelector(".tm-progress-value");
+        const ready = !!(MATERIALS[type] && MATERIALS[type].content);
+        dot.className = "tm-progress-dot" + (ready ? "" : " pending");
+        dot.textContent = ready ? "✓" : "…";
+        val.textContent = ready ? "Ready" : "Pending";
+      });
+    }
+
+    function markProgressWorking(type) {
+      const item = document.querySelector(`[data-type="${type}"]`);
+      if (!item) return;
+      const dot = item.querySelector(".tm-progress-dot");
+      const val = item.querySelector(".tm-progress-value");
+      dot.className = "tm-progress-dot working";
+      dot.textContent = "⏳";
+      val.textContent = "Generating…";
+    }
+
+    // ---------- Actions ----------
+    async function handleAction(action, type) {
+      if (BUSY) {
+        toast("Please wait — another generation is in progress", "error");
+        return;
+      }
+
+      const card = document.querySelector(`[data-card-type="${type}"]`);
+      if (!card) return;
+
+      if (action === "generate" || action === "regenerate") {
+        await generateOne(type, card);
+      } else if (action === "edit") {
+        await editOne(type);
+      } else if (action === "export") {
+        await exportOne(type);
+      }
+    }
+
+    async function generateOne(type, card) {
+      BUSY = true;
+      markProgressWorking(type);
+      const statusBadge = card.querySelector(`[data-status="${type}"]`);
+      if (statusBadge) statusBadge.textContent = "Generating…";
+
+      // Show loading state inside the card
+      const body = card.querySelector(".tm-card-body");
+      const originalBody = body.innerHTML;
+      body.innerHTML = `
+        <div class="tm-loading" style="padding:40px 20px;">
+          <div class="tm-spinner"></div>
+          <div>Generating ${esc(type)}…</div>
+          <div style="font-size:12px;color:#9ca3af;margin-top:6px;">This may take 10-30 seconds</div>
+        </div>
+      `;
+
+      try {
+        const result = await generateMaterial(type, LESSON, (msg) => {
+          const l = body.querySelector(".tm-loading div:nth-child(2)");
+          if (l) l.textContent = msg;
+        });
+
+        await saveMaterial(LESSON_ID, type, {
+          content: result.content,
+          status: "ready",
+          aiModel: result.aiModel || "deepseek-chat",
+        });
+
+        MATERIALS[type] = { content: result.content, status: "ready" };
+        renderGrid();
+        renderProgress();
+        toast(`✓ ${type} generated`, "success");
+      } catch (e) {
+        console.error(e);
+        body.innerHTML = originalBody;
+        if (statusBadge) statusBadge.textContent = "Error";
+        toast("⚠️ " + (e.message || "Generation failed"), "error");
+      } finally {
+        BUSY = false;
+      }
+    }
+
+    async function editOne(type) {
+      const material = MATERIALS[type];
+      if (!material) return;
+      const newContent = await openEditorModal(type, material.content);
+      if (newContent === null) return;
+      MATERIALS[type] = { ...material, content: newContent };
+      await saveMaterial(LESSON_ID, type, { content: newContent, status: "ready" });
+      renderGrid();
+      toast("✓ Saved", "success");
+    }
+
+    async function exportOne(type) {
+      const material = MATERIALS[type];
+      if (!material) return;
+      exportMaterialPDF(type, material.content);
+    }
+
+    // ---------- Generate All ----------
+    $("tmGenerateAll").addEventListener("click", async () => {
+      if (BUSY) { toast("Already generating", "error"); return; }
+      const missing = ["lecture", "activities", "slides", "quiz"]
+        .filter(t => !MATERIALS[t] || !MATERIALS[t].content);
+      if (!missing.length) {
+        toast("All materials are already generated", "success");
+        return;
+      }
+      if (!confirm(`Generate ${missing.length} material(s)? This may take 1-2 minutes.`)) return;
+
+      for (const type of missing) {
+        const card = document.querySelector(`[data-card-type="${type}"]`);
+        if (card) await generateOne(type, card);
+      }
+      toast("✓ All materials generated", "success");
+    });
+
+    // ---------- Print / Download Pack ----------
+    $("tmPrintAll").addEventListener("click", () => printPack());
+    $("tmDownloadPack").addEventListener("click", () => printPack());
+
+    function printPack() {
+      const ready = Object.keys(MATERIALS).filter(t => MATERIALS[t] && MATERIALS[t].content);
+      if (!ready.length) { toast("⚠️ Generate at least one material first", "error"); return; }
+
+      const html = `
+        <html><head><title>Materials Pack — ${esc(LESSON.lessonTitle || LESSON.subjectName)}</title>
+        <style>
+          body { font-family: "Times New Roman", serif; margin: 20mm; line-height: 1.5; color: #000; }
+          h1 { font-size: 18pt; text-align: center; }
+          h2 { font-size: 14pt; border-bottom: 2px solid #000; padding-bottom: 4px; margin-top: 24px; page-break-before: always; }
+          h2:first-of-type { page-break-before: avoid; }
+          .meta { text-align: center; font-size: 11pt; color: #333; margin-bottom: 20px; }
+          .content p { margin: 0 0 8px; }
+          .content ul, .content ol { margin: 6px 0 6px 20px; }
+          .content li { margin-bottom: 4px; }
+        </style></head><body>
+        <h1>Teaching Materials Pack</h1>
+        <div class="meta">
+          ${esc(LESSON.lessonTitle || LESSON.subjectName || "")}<br>
+          ${esc(LESSON.subjectName || "")} — Grade ${esc(LESSON.gradeLevel || "")} — Term ${esc(LESSON.term || "")} Week ${esc(LESSON.week || "")}<br>
+          ${esc(LESSON.teacherName || "")}
+        </div>
+        ${ready.map(type => `
+          <h2>${esc(materialTitle(type))}</h2>
+          <div class="content">${MATERIALS[type].content}</div>
+        `).join("")}
+        </body></html>
+      `;
+
+      const host = $("tmPrintHost");
+      host.innerHTML = html;
+      setTimeout(() => { window.print(); }, 300);
+    }
+
+    function materialTitle(type) {
+      return {
+        lecture: "📖 Lecture Notes",
+        activities: "🎯 Activities & Simulations",
+        slides: "📊 Presentation Slides",
+        quiz: "❓ Quiz & Assessment",
+      }[type] || type;
+    }
+
+    // ---------- Simple editor modal ----------
+    function openEditorModal(type, currentContent) {
+      return new Promise((resolve) => {
+        const existing = document.getElementById("tmEditModal");
+        if (existing) existing.remove();
+
+        const modal = document.createElement("div");
+        modal.id = "tmEditModal";
+        modal.style.cssText = "position:fixed;inset:0;background:rgba(0,0,0,.6);display:flex;align-items:center;justify-content:center;z-index:10001;padding:20px;";
+
+        modal.innerHTML = `
+          <div style="background:#fff;border-radius:14px;max-width:900px;width:100%;max-height:92vh;display:flex;flex-direction:column;box-shadow:0 24px 48px rgba(0,0,0,.3);">
+            <div style="padding:18px 22px;border-bottom:1px solid #e5e7eb;display:flex;justify-content:space-between;align-items:center;">
+              <div>
+                <h3 style="margin:0;font-size:1.1rem;color:#0f2b4f;">✏️ Edit ${esc(materialTitle(type))}</h3>
+                <p style="margin:4px 0 0;font-size:12px;color:#6b7280;">Raw HTML is editable. Changes are saved to the lesson.</p>
+              </div>
+              <button id="tmEditClose" style="border:1px solid #e5e7eb;background:#fff;padding:6px 12px;border-radius:8px;cursor:pointer;font-family:inherit;">✕</button>
+            </div>
+            <div style="flex:1;overflow-y:auto;padding:20px 22px;background:#f9fafb;">
+              <textarea id="tmEditText" style="width:100%;min-height:400px;padding:12px;border:1px solid #d1d5db;border-radius:8px;font-family:monospace;font-size:13px;line-height:1.5;resize:vertical;">${esc(currentContent)}</textarea>
+            </div>
+            <div style="padding:14px 22px;border-top:1px solid #e5e7eb;display:flex;justify-content:flex-end;gap:8px;background:#fff;">
+              <button id="tmEditCancel" class="tm-action">Cancel</button>
+              <button id="tmEditSave" class="tm-action primary">💾 Save Changes</button>
+            </div>
+          </div>
+        `;
+
+        document.body.appendChild(modal);
+
+        const close = (result) => { modal.remove(); resolve(result); };
+        modal.querySelector("#tmEditClose").addEventListener("click", () => close(null));
+        modal.querySelector("#tmEditCancel").addEventListener("click", () => close(null));
+        modal.querySelector("#tmEditSave").addEventListener("click", () => {
+          const val = modal.querySelector("#tmEditText").value;
+          close(val);
+        });
+        modal.addEventListener("click", e => { if (e.target === modal) close(null); });
+      });
+    }
+
+    // ---------- Export one material as PDF ----------
+    function exportMaterialPDF(type, content) {
+      const html = `
+        <html><head><title>${esc(materialTitle(type))} — ${esc(LESSON.lessonTitle || "")}</title>
+        <style>
+          body { font-family: "Times New Roman", serif; margin: 20mm; line-height: 1.5; color: #000; }
+          h1 { font-size: 16pt; text-align: center; }
+          .meta { text-align: center; font-size: 11pt; color: #333; margin-bottom: 20px; border-bottom: 1px solid #000; padding-bottom: 8px; }
+          .content p { margin: 0 0 8px; }
+          .content ul, .content ol { margin: 6px 0 6px 20px; }
+        </style></head><body>
+        <h1>${esc(materialTitle(type))}</h1>
+        <div class="meta">
+          ${esc(LESSON.lessonTitle || "")} — ${esc(LESSON.subjectName || "")} — Grade ${esc(LESSON.gradeLevel || "")}
+        </div>
+        <div class="content">${content}</div>
+        </body></html>
+      `;
+      const host = $("tmPrintHost");
+      host.innerHTML = html;
+      setTimeout(() => { window.print(); }, 300);
+    }
+
+    window.__tmToast = toast;
+  </script>
+</body>
+</html>
