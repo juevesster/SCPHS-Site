@@ -476,9 +476,10 @@
         <p class="sub" id="headerSub">Loading…</p>
       </div>
       <div class="ilaw-header-actions">
-        <span id="statusBadge"></span>
-        <a href="admin.html" class="btn btn-outline-white small">← Back to Portal</a>
-      </div>
+  <span id="statusBadge"></span>
+  <button id="btnReplayTour" class="btn btn-outline-white small" type="button" title="Replay the guided tour">👋 Replay Tour</button>
+  <a href="admin.html" class="btn btn-outline-white small">← Back to Portal</a>
+</div>
     </div>
   </header>
 
@@ -622,6 +623,8 @@
     shareToMessenger, copyToClipboard, nativeShare,
     } from "./assets/js/learner-share.js";
     import { openEditorModal, loadOverrides } from "./assets/js/module-editor.js";
+    import { shouldRunTour, runTour, initReplayButton, resetTour } from "./assets/js/ilaw-tour.js";
+    import { initHelper } from "./assets/js/ilaw-helper.js";
 
     let CURRENT_USER = null;
     let CURRENT_PROFILE = null;
@@ -645,6 +648,24 @@
       toastTimer = setTimeout(() => t.className = "toast", 3000);
     }
 
+    // ============================================================
+    // 🏫 Load school details from lesson overrides (for print)
+    // Read by buildILAWPrintHTML() to override the header for guest teachers
+    // ============================================================
+    async function loadSchoolDetailsForPrint() {
+      if (!CURRENT_LESSON_ID) {
+        window.__ilawSchoolDetails = null;
+        return;
+      }
+      try {
+        const { loadOverrides } = await import("./assets/js/module-editor.js");
+        const overrides = await loadOverrides(CURRENT_LESSON_ID);
+        window.__ilawSchoolDetails = overrides?.schoolDetails || null;
+      } catch (e) {
+        console.warn("[ilaw] could not load school details:", e);
+        window.__ilawSchoolDetails = null;
+      }
+    }
     // ============================================================
     // AUTH
     // ============================================================
@@ -1261,20 +1282,23 @@ console.log(`[ilaw-open] Signed in as ${user.email} · role: ${CURRENT_PROFILE?.
             ? `<div class="print-sub-body">${esc(manualComps)}</div>`
             : `<div class="print-sub-body">—</div>`);
 
-      return `
-        <!-- ============ DEPED HEADER ============ -->
-        <div class="print-header">
-          <img src="${cfg.depedLogo}" alt="DepEd" class="print-deped-logo" />
-          <div class="print-header-line1">${esc(cfg.headerLine1)}</div>
-          <div class="print-header-line2">${esc(cfg.headerLine2)}</div>
-          <div class="print-header-region">${esc(cfg.region)}</div>
-          <div class="print-header-division">${esc(cfg.division)}</div>
-        </div>
+      // 🏫 Read school details from overrides (set via Edit Module), fallback to config
+const sd = (window.__ilawSchoolDetails) || {};
 
-        <div class="print-school-row">
-          <div class="print-school-name">${esc(cfg.schoolName)}</div>
-          <div class="print-school-address">${esc(cfg.schoolAddress)}</div>
-        </div>
+return `
+  <!-- ============ DEPED HEADER ============ -->
+  <div class="print-header">
+    <img src="${cfg.depedLogo}" alt="DepEd" class="print-deped-logo" />
+    <div class="print-header-line1">${esc(cfg.headerLine1)}</div>
+    <div class="print-header-line2">${esc(cfg.headerLine2)}</div>
+    <div class="print-header-region">${esc(sd.region || cfg.region || "")}</div>
+    <div class="print-header-division">${esc(sd.division || cfg.division || "")}</div>
+  </div>
+
+  <div class="print-school-row">
+    <div class="print-school-name">${esc(sd.schoolName || cfg.schoolName || "")}</div>
+    <div class="print-school-address">${esc(sd.schoolAddress || cfg.schoolAddress || "")}</div>
+  </div>
 
         <div class="print-title">${esc(cfg.titleLabel)}</div>
 
@@ -1437,8 +1461,9 @@ console.log(`[ilaw-open] Signed in as ${user.email} · role: ${CURRENT_PROFILE?.
         // ============================================================
     // PRINT — Landscape A4, DepEd ILAW format
     // ============================================================
-        function printLesson() {
+    async function printLesson() {
       if (!ILAW_CONFIG) { toast("⚠️ Config not loaded", "error"); return; }
+      await loadSchoolDetailsForPrint(); // 👈 ADD THIS LINE
       const html = buildILAWPrintHTML();
       if (!html) { toast("⚠️ Could not build print HTML", "error"); return; }
 
@@ -2387,6 +2412,27 @@ function wireShareButtons() {
       if (copied) toast("📋 Link copied — paste it in your group chat", "success");
     }
   });
+}
+
+// ============================================================
+// FIRST-VISIT TOUR + HELPER
+// ============================================================
+initHelper();
+initReplayButton();
+
+// Run the tour on first visit (after a small delay so page loads)
+if (shouldRunTour()) {
+  setTimeout(() => {
+    // Show a friendly prompt
+    const ok = confirm(
+      "👋 Welcome to ILAW Lesson Planner!\n\n" +
+      "Would you like a quick 60-second tour of how to use it?\n\n" +
+      "Click OK to start the tour, or Cancel to skip it.\n" +
+      "You can always replay it later with the '👋 Replay Tour' button in the header."
+    );
+    if (ok) runTour();
+    else resetTour(); // don't show again
+  }, 1200);
 }
 
 // ============================================================

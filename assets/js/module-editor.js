@@ -201,7 +201,7 @@ function renderEditorSections(state, template) {
     <!-- 🏫 SCHOOL DETAILS (NEW) -->
     <div class="lme-section lme-school-details" data-section="schoolDetails">
       <div class="lme-section-head">
-        <div class="lme-section-title">🏫 School Details</div>
+        <div class="lme-section-title">🏫 School Details (used on printed lesson plan AND module)</div>
         <button class="lme-use-defaults" id="lmeUseDefaults" type="button">🔄 Use SCPHS defaults</button>
       </div>
       <div class="lme-hint" style="margin-top:0;margin-bottom:10px;">
