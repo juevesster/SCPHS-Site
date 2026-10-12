@@ -1,0 +1,693 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#0f4c81" />
+  <title>Welcome — SCPHS Portal</title>
+  <link rel="stylesheet" href="assets/css/styles.css" />
+  <style>
+    * { box-sizing: border-box; }
+    html, body {
+      margin: 0; padding: 0; min-height: 100vh;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      -webkit-font-smoothing: antialiased;
+      background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+    }
+
+    .wc-shell {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 40px 20px;
+    }
+
+    .wc-card {
+      background: #fff;
+      border-radius: 20px;
+      max-width: 600px;
+      width: 100%;
+      box-shadow: 0 20px 60px rgba(15, 76, 129, 0.15);
+      overflow: hidden;
+    }
+
+    /* Top hero */
+    .wc-hero {
+      background: linear-gradient(135deg, #0f4c81, #2a5298, #4f46e5);
+      color: #fff;
+      padding: 32px 28px 26px;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+    .wc-hero::before {
+      content: "";
+      position: absolute;
+      top: -60%; right: -10%;
+      width: 300px; height: 300px;
+      background: radial-gradient(circle, rgba(255,255,255,.15) 0%, transparent 70%);
+      border-radius: 50%;
+    }
+    .wc-hero-emoji {
+      font-size: 48px;
+      margin-bottom: 8px;
+      filter: drop-shadow(0 4px 12px rgba(0,0,0,.2));
+      position: relative;
+      z-index: 1;
+    }
+    .wc-hero h1 {
+      margin: 0 0 8px;
+      font-size: 1.5rem;
+      font-weight: 800;
+      letter-spacing: -0.01em;
+      position: relative;
+      z-index: 1;
+    }
+    .wc-hero p {
+      margin: 0;
+      font-size: 0.95rem;
+      opacity: 0.92;
+      line-height: 1.5;
+      position: relative;
+      z-index: 1;
+    }
+
+    /* Progress indicator */
+    .wc-progress {
+      display: flex;
+      gap: 8px;
+      padding: 16px 28px;
+      background: #f9fafb;
+      border-bottom: 1px solid #e5e7eb;
+    }
+    .wc-progress-dot {
+      flex: 1;
+      height: 4px;
+      background: #e5e7eb;
+      border-radius: 2px;
+      transition: background .3s;
+    }
+    .wc-progress-dot.active { background: #4f46e5; }
+    .wc-progress-dot.done { background: #059669; }
+
+    /* Form body */
+    .wc-body {
+      padding: 28px;
+    }
+
+    .wc-step {
+      display: none;
+    }
+    .wc-step.active {
+      display: block;
+      animation: slideIn .3s ease;
+    }
+    @keyframes slideIn {
+      from { opacity: 0; transform: translateX(20px); }
+      to   { opacity: 1; transform: translateX(0); }
+    }
+
+    .wc-field {
+      margin-bottom: 20px;
+    }
+    .wc-field:last-child { margin-bottom: 0; }
+
+    .wc-label {
+      display: block;
+      font-size: 11.5px;
+      font-weight: 800;
+      color: #374151;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 8px;
+    }
+
+    .wc-label-optional {
+      font-weight: 500;
+      color: #9ca3af;
+      text-transform: none;
+      letter-spacing: 0;
+      font-size: 11px;
+      margin-left: 4px;
+    }
+
+    /* Role picker */
+    .wc-roles {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+    .wc-role {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      padding: 16px 12px;
+      border: 2px solid #e5e7eb;
+      border-radius: 12px;
+      background: #fff;
+      cursor: pointer;
+      transition: all .15s;
+      text-align: center;
+      font-family: inherit;
+    }
+    .wc-role:hover {
+      border-color: #4f46e5;
+      background: #f5f3ff;
+    }
+    .wc-role.selected {
+      border-color: #4f46e5;
+      background: #eef2ff;
+      box-shadow: 0 4px 12px rgba(79,70,229,.15);
+    }
+    .wc-role input { display: none; }
+    .wc-role-icon {
+      font-size: 28px;
+      line-height: 1;
+    }
+    .wc-role-title {
+      font-size: 13px;
+      font-weight: 800;
+      color: #0f2b4f;
+    }
+    .wc-role-desc {
+      font-size: 10.5px;
+      color: #6b7280;
+      line-height: 1.3;
+    }
+
+    /* Text inputs */
+    .wc-input,
+    .wc-textarea {
+      width: 100%;
+      padding: 12px 14px;
+      border: 1px solid #d1d5db;
+      border-radius: 10px;
+      font-size: 14px;
+      font-family: inherit;
+      outline: none;
+      transition: border-color .15s, box-shadow .15s;
+      background: #fff;
+    }
+    .wc-input:focus,
+    .wc-textarea:focus {
+      border-color: #4f46e5;
+      box-shadow: 0 0 0 4px rgba(79,70,229,.12);
+    }
+    .wc-textarea {
+      min-height: 90px;
+      resize: vertical;
+      line-height: 1.5;
+    }
+    .wc-input::placeholder,
+    .wc-textarea::placeholder { color: #9ca3af; }
+
+    /* Source options (radio pills) */
+    .wc-source-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .wc-source {
+      padding: 8px 14px;
+      border: 1px solid #e5e7eb;
+      border-radius: 999px;
+      background: #fff;
+      cursor: pointer;
+      font-size: 12.5px;
+      font-weight: 600;
+      color: #4b5563;
+      transition: all .15s;
+      font-family: inherit;
+    }
+    .wc-source:hover {
+      border-color: #4f46e5;
+      background: #f5f3ff;
+      color: #4f46e5;
+    }
+    .wc-source.selected {
+      background: #4f46e5;
+      border-color: #4f46e5;
+      color: #fff;
+    }
+
+    /* Info banner */
+    .wc-info {
+      background: #eff6ff;
+      border: 1px solid #bfdbfe;
+      border-left: 4px solid #1e40af;
+      border-radius: 8px;
+      padding: 12px 14px;
+      font-size: 12.5px;
+      color: #1e40af;
+      line-height: 1.55;
+      margin-bottom: 20px;
+    }
+
+    /* Footer buttons */
+    .wc-footer {
+      padding: 18px 28px 24px;
+      display: flex;
+      gap: 10px;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      border-top: 1px solid #f3f4f6;
+      background: #fafbfc;
+    }
+
+    .wc-btn {
+      padding: 12px 22px;
+      border: 1px solid transparent;
+      border-radius: 10px;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      font-family: inherit;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all .15s;
+      text-decoration: none;
+    }
+    .wc-btn.primary {
+      background: linear-gradient(135deg, #4f46e5, #7c3aed);
+      color: #fff;
+      box-shadow: 0 4px 12px rgba(79,70,229,.3);
+    }
+    .wc-btn.primary:hover:not(:disabled) {
+      transform: translateY(-1px);
+      box-shadow: 0 6px 18px rgba(79,70,229,.4);
+    }
+    .wc-btn.primary:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none;
+    }
+    .wc-btn.ghost {
+      background: transparent;
+      color: #6b7280;
+      border-color: transparent;
+    }
+    .wc-btn.ghost:hover {
+      background: #f3f4f6;
+      color: #111827;
+    }
+
+    /* Success screen */
+    .wc-success {
+      padding: 48px 28px;
+      text-align: center;
+    }
+    .wc-success-emoji {
+      font-size: 64px;
+      margin-bottom: 16px;
+      line-height: 1;
+    }
+    .wc-success h2 {
+      margin: 0 0 12px;
+      font-size: 1.5rem;
+      color: #0f2b4f;
+      font-weight: 800;
+    }
+    .wc-success p {
+      margin: 0 0 8px;
+      font-size: 0.95rem;
+      color: #4b5563;
+      line-height: 1.6;
+    }
+    .wc-success-detail {
+      display: inline-block;
+      background: #fef3c7;
+      color: #92400e;
+      font-size: 12.5px;
+      font-weight: 700;
+      padding: 8px 16px;
+      border-radius: 999px;
+      margin: 16px 0 24px;
+      border: 1px solid #fcd34d;
+    }
+
+    /* Mobile */
+    @media (max-width: 540px) {
+      .wc-shell { padding: 20px 12px; }
+      .wc-hero { padding: 24px 20px 20px; }
+      .wc-hero h1 { font-size: 1.25rem; }
+      .wc-body { padding: 20px; }
+      .wc-footer { padding: 14px 20px 20px; }
+      .wc-roles { grid-template-columns: 1fr; }
+      .wc-role {
+        flex-direction: row;
+        text-align: left;
+        padding: 12px 14px;
+      }
+      .wc-role-icon { font-size: 24px; }
+      .wc-role-desc { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="wc-shell">
+    <div class="wc-card">
+
+      <!-- Hero -->
+      <div class="wc-hero">
+        <div class="wc-hero-emoji">🎉</div>
+        <h1>Welcome to SCPHS Portal!</h1>
+        <p>Your account has been created.<br>Just a few details to help us activate your access faster.</p>
+      </div>
+
+      <!-- Progress -->
+      <div class="wc-progress">
+        <div class="wc-progress-dot active" data-step="1"></div>
+        <div class="wc-progress-dot" data-step="2"></div>
+        <div class="wc-progress-dot" data-step="3"></div>
+      </div>
+
+      <!-- Form body -->
+      <div class="wc-body" id="wcBody">
+
+        <!-- Step 1 — Role -->
+        <div class="wc-step active" data-step="1">
+          <div class="wc-field">
+            <label class="wc-label">I am a…</label>
+            <div class="wc-roles">
+              <label class="wc-role" data-role="scphs-teacher">
+                <input type="radio" name="role" value="scphs-teacher">
+                <span class="wc-role-icon">🏫</span>
+                <span class="wc-role-title">SCPHS Teacher</span>
+                <span class="wc-role-desc">I teach at Sta. Cruz Pingkian HS</span>
+              </label>
+              <label class="wc-role" data-role="external-teacher">
+                <input type="radio" name="role" value="external-teacher">
+                <span class="wc-role-icon">🌐</span>
+                <span class="wc-role-title">Teacher from another school</span>
+                <span class="wc-role-desc">Guest teacher — any school</span>
+              </label>
+              <label class="wc-role" data-role="student">
+                <input type="radio" name="role" value="student">
+                <span class="wc-role-icon">🎓</span>
+                <span class="wc-role-title">Student</span>
+                <span class="wc-role-desc">I want to learn</span>
+              </label>
+              <label class="wc-role" data-role="parent">
+                <input type="radio" name="role" value="parent">
+                <span class="wc-role-icon">👨‍👩‍👧</span>
+                <span class="wc-role-title">Parent / Guardian</span>
+                <span class="wc-role-desc">Helping my child</span>
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <!-- Step 2 — Details -->
+        <div class="wc-step" data-step="2">
+          <div class="wc-info">
+            💡 Your answers will only be seen by school administrators.
+            This helps us verify your account and activate it faster.
+          </div>
+
+          <div class="wc-field" id="schoolField" style="display:none;">
+            <label class="wc-label">School Name <span class="wc-label-optional">(if not SCPHS)</span></label>
+            <input type="text" class="wc-input" id="wcSchool" placeholder="e.g., Nueva Ecija High School" />
+          </div>
+
+          <div class="wc-field">
+            <label class="wc-label">Short Message <span class="wc-label-optional">(optional)</span></label>
+            <textarea class="wc-textarea" id="wcMessage" placeholder="e.g., I teach Grade 8 Math and want to try the lesson planner."></textarea>
+          </div>
+
+          <div class="wc-field">
+            <label class="wc-label">How did you hear about this portal? <span class="wc-label-optional">(optional)</span></label>
+            <div class="wc-source-list" id="wcSourceList">
+              <button type="button" class="wc-source" data-source="facebook">📘 Facebook</button>
+              <button type="button" class="wc-source" data-source="colleague">👥 Colleague</button>
+              <button type="button" class="wc-source" data-source="admin">🛡️ School Admin</button>
+              <button type="button" class="wc-source" data-source="other">❓ Other</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Step 3 — Confirm -->
+        <div class="wc-step" data-step="3">
+          <div class="wc-info">
+            ✅ Almost done! Please review your info before submitting.
+          </div>
+          <div id="wcReview" style="font-size:14px;line-height:1.8;color:#374151;"></div>
+        </div>
+
+      </div>
+
+      <!-- Success screen -->
+      <div class="wc-success" id="wcSuccess" style="display:none;">
+        <div class="wc-success-emoji">✅</div>
+        <h2>Thank you!</h2>
+        <p>Your request has been sent to the school admin.</p>
+        <div class="wc-success-detail">⏳ Waiting for admin approval</div>
+        <p style="font-size:13px;color:#6b7280;margin-bottom:24px;">
+          You'll get access once approved. Usually within 24 hours.<br>
+          You can close this page and check back later.
+        </p>
+        <a href="index.html" class="wc-btn primary">Continue to Portal →</a>
+      </div>
+
+      <!-- Footer buttons -->
+      <div class="wc-footer" id="wcFooter">
+        <button class="wc-btn ghost" id="wcSkip" type="button">Skip for now</button>
+        <div style="display:flex;gap:8px;">
+          <button class="wc-btn ghost" id="wcBack" type="button" style="display:none;">← Back</button>
+          <button class="wc-btn primary" id="wcNext" type="button" disabled>Next →</button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <div id="wcToast" style="position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(20px);background:#111827;color:#fff;padding:12px 22px;border-radius:8px;font-size:14px;font-weight:600;box-shadow:0 8px 24px rgba(0,0,0,.2);opacity:0;transition:all .25s;z-index:10000;pointer-events:none;"></div>
+
+  <script type="module">
+    import { auth, db } from "./assets/js/firebase-config.js";
+    import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+    import { doc, updateDoc, getDoc, serverTimestamp }
+      from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+    const $ = id => document.getElementById(id);
+
+    let CURRENT_USER = null;
+    let CURRENT_STEP = 1;
+    let FORM_DATA = {
+      role: "",
+      school: "",
+      message: "",
+      source: "",
+    };
+
+    // ---------- Toast ----------
+    let toastTimer;
+    function toast(msg, type = "") {
+      const t = $("wcToast");
+      t.textContent = msg;
+      t.style.background = type === "error" ? "#b91c1c" : type === "success" ? "#059669" : "#111827";
+      t.style.opacity = "1";
+      t.style.transform = "translateX(-50%) translateY(0)";
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => {
+        t.style.opacity = "0";
+        t.style.transform = "translateX(-50%) translateY(20px)";
+      }, 3000);
+    }
+
+    // ---------- Auth check ----------
+    onAuthStateChanged(auth, async (user) => {
+      if (!user) {
+        location.replace("login.html");
+        return;
+      }
+      CURRENT_USER = user;
+
+      // Pre-fill name from user doc
+      try {
+        const snap = await getDoc(doc(db, "users", user.uid));
+        if (snap.exists()) {
+          const d = snap.data();
+          // If already submitted, go straight to success
+          if (d.signupSubmittedAt) {
+            showSuccess();
+            return;
+          }
+          // Pre-fill school if somehow set
+          if (d.signupSchool) {
+            $("wcSchool").value = d.signupSchool;
+            FORM_DATA.school = d.signupSchool;
+          }
+        }
+      } catch (e) {
+        console.warn("[welcome] lookup failed:", e);
+      }
+    });
+
+    // ---------- Role picker ----------
+    document.querySelectorAll(".wc-role").forEach(label => {
+      label.addEventListener("click", () => {
+        document.querySelectorAll(".wc-role").forEach(l => l.classList.remove("selected"));
+        label.classList.add("selected");
+        FORM_DATA.role = label.dataset.role;
+        updateNextButton();
+
+        // Show/hide school field
+        const schoolField = $("schoolField");
+        if (FORM_DATA.role === "external-teacher") {
+          schoolField.style.display = "";
+        } else if (FORM_DATA.role === "scphs-teacher") {
+          schoolField.style.display = "none";
+        } else {
+          schoolField.style.display = "none";
+        }
+      });
+    });
+
+    // ---------- Source picker ----------
+    document.querySelectorAll(".wc-source").forEach(btn => {
+      btn.addEventListener("click", () => {
+        document.querySelectorAll(".wc-source").forEach(b => b.classList.remove("selected"));
+        btn.classList.add("selected");
+        FORM_DATA.source = btn.dataset.source;
+      });
+    });
+
+    // ---------- Inputs ----------
+    $("wcSchool").addEventListener("input", e => { FORM_DATA.school = e.target.value.trim(); });
+    $("wcMessage").addEventListener("input", e => { FORM_DATA.message = e.target.value.trim(); });
+
+    // ---------- Navigation ----------
+    function showStep(n) {
+      CURRENT_STEP = n;
+      document.querySelectorAll(".wc-step").forEach(s => {
+        s.classList.toggle("active", parseInt(s.dataset.step, 10) === n);
+      });
+
+      // Progress dots
+      document.querySelectorAll(".wc-progress-dot").forEach(dot => {
+        const step = parseInt(dot.dataset.step, 10);
+        dot.classList.toggle("active", step === n);
+        dot.classList.toggle("done", step < n);
+      });
+
+      // Buttons
+      $("wcBack").style.display = n > 1 ? "inline-flex" : "none";
+      $("wcNext").textContent = n === 3 ? "✅ Submit Request" : "Next →";
+
+      if (n === 3) {
+        renderReview();
+        $("wcNext").disabled = false;
+      } else {
+        updateNextButton();
+      }
+
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+
+    function updateNextButton() {
+      if (CURRENT_STEP === 1) {
+        $("wcNext").disabled = !FORM_DATA.role;
+      } else {
+        $("wcNext").disabled = false;
+      }
+    }
+
+    function renderReview() {
+      const roleLabels = {
+        "scphs-teacher": "🏫 SCPHS Teacher",
+        "external-teacher": "🌐 Teacher from another school",
+        "student": "🎓 Student",
+        "parent": "👨‍👩‍👧 Parent / Guardian",
+      };
+      const sourceLabels = {
+        "facebook": "📘 Facebook",
+        "colleague": "👥 Colleague",
+        "admin": "🛡️ School Admin",
+        "other": "❓ Other",
+      };
+
+      $("wcReview").innerHTML = `
+        <div><strong>Role:</strong> ${roleLabels[FORM_DATA.role] || "—"}</div>
+        ${FORM_DATA.school ? `<div><strong>School:</strong> ${esc(FORM_DATA.school)}</div>` : ""}
+        ${FORM_DATA.message ? `<div><strong>Message:</strong> ${esc(FORM_DATA.message)}</div>` : ""}
+        ${FORM_DATA.source ? `<div><strong>Heard about us via:</strong> ${sourceLabels[FORM_DATA.source] || FORM_DATA.source}</div>` : ""}
+      `;
+    }
+
+    function esc(s) {
+      return String(s == null ? "" : s)
+        .replace(/&/g, "&amp;").replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+    }
+
+    // ---------- Buttons ----------
+    $("wcNext").addEventListener("click", async () => {
+      if (CURRENT_STEP < 3) {
+        showStep(CURRENT_STEP + 1);
+        return;
+      }
+      // Submit
+      await submitRequest();
+    });
+
+    $("wcBack").addEventListener("click", () => {
+      if (CURRENT_STEP > 1) showStep(CURRENT_STEP - 1);
+    });
+
+    $("wcSkip").addEventListener("click", async () => {
+      if (!confirm("Skip the welcome form? Your access may take longer to approve.")) return;
+      await markSubmitted(true);
+      showSuccess();
+    });
+
+    // ---------- Submit ----------
+    async function submitRequest() {
+      const btn = $("wcNext");
+      btn.disabled = true;
+      btn.textContent = "⏳ Submitting…";
+
+      try {
+        await updateDoc(doc(db, "users", CURRENT_USER.uid), {
+          pendingApproval: true,
+          requestingAccess: true,
+          signupRole: FORM_DATA.role || "other",
+          signupSchool: FORM_DATA.school || "",
+          signupMessage: FORM_DATA.message || "",
+          signupSource: FORM_DATA.source || "",
+          signupSubmittedAt: serverTimestamp(),
+        });
+        showSuccess();
+      } catch (e) {
+        console.error(e);
+        toast("⚠️ " + (e.message || "Submission failed"), "error");
+        btn.disabled = false;
+        btn.textContent = "✅ Submit Request";
+      }
+    }
+
+    async function markSubmitted(skipped = false) {
+      try {
+        await updateDoc(doc(db, "users", CURRENT_USER.uid), {
+          pendingApproval: true,
+          requestingAccess: true,
+          signupSkipped: skipped,
+          signupSubmittedAt: serverTimestamp(),
+        });
+      } catch (e) {
+        console.warn("[welcome] markSubmitted failed:", e);
+      }
+    }
+
+    function showSuccess() {
+      $("wcBody").style.display = "none";
+      $("wcFooter").style.display = "none";
+      $("wcSuccess").style.display = "block";
+      document.querySelectorAll(".wc-progress-dot").forEach(d => d.classList.add("done"));
+    }
+  </script>
+</body>
+</html>

@@ -203,43 +203,39 @@ formSignup?.addEventListener("submit", async (e) => {
       return;
     }
 
+    // Create Firebase Auth account
     const cred = await createUserWithEmailAndPassword(auth, email, password);
-await updateProfile(cred.user, { displayName: name });
+    await updateProfile(cred.user, { displayName: name });
 
-// ⚠️ SECURITY: New accounts are ALWAYS "student".
-// Teacher/admin roles are granted manually by admins.
-await setDoc(doc(db, "users", cred.user.uid), {
-  name,
-  email,
-  role: "student",           // ← forced student
-  requestedRole: role,        // ← what they wanted (for admin review)
-  approved: false,            // ← admin flips this later
-  createdAt: serverTimestamp()
-});
+    // ⚠️ SECURITY: New accounts are ALWAYS "student".
+    // Teacher/admin roles are granted manually by admins via the pending queue.
+    await setDoc(doc(db, "users", cred.user.uid), {
+      name: name,
+      email: email,
+      primaryRole: "student",
+      requestedRole: role,             // what they wanted — for admin review
+      pendingApproval: true,           // queue flag
+      requestingAccess: true,
+      createdAt: serverTimestamp(),
+    }, { merge: true });
 
-    if (role === "teacher") {
-  showMsg(
-    "Account created! A teacher account must be approved by an administrator. You'll receive access once approved.",
-    "success"
-  );
-  setTimeout(() => location.replace("index.html"), 3000);
-} else {
-  showMsg("Account created successfully! Redirecting…", "success");
-  setTimeout(() => location.replace(getNextUrl()), 700);
-}
+    // Redirect to welcome questionnaire
+    showMsg("Account created! Taking you to a quick setup…", "success");
+    setTimeout(() => location.href = "welcome.html", 700);
+
   } catch (err) {
     console.error(err);
     let msg = "Sign up failed. Please try again.";
-    if (err.code === "auth/email-already-in-use") msg = "That email is already registered. Try signing in.";
-    if (err.code === "auth/weak-password")        msg = "Password is too weak. Use at least 8 characters.";
-    if (err.code === "auth/invalid-email")        msg = "That email address is not valid.";
+    if (err.code === "auth/email-already-in-use")   msg = "That email is already registered. Try signing in.";
+    if (err.code === "auth/weak-password")          msg = "Password is too weak. Use at least 8 characters.";
+    if (err.code === "auth/invalid-email")          msg = "That email address is not valid.";
     if (err.code === "auth/network-request-failed") msg = "Network error. Check your connection.";
-    if (err.code === "permission-denied")         msg = "Account created but profile save failed. Contact admin.";
+    if (err.code === "permission-denied")           msg = "Account created but profile save failed. Contact admin.";
     showMsg(msg, "error");
     setLoading(btnSignup, false, "Create Account");
   }
 });
-
+   
 /* ---------- FORGOT PASSWORD ---------- */
 linkForgot?.addEventListener("click", async (e) => {
   e.preventDefault();

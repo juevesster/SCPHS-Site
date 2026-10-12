@@ -9,6 +9,7 @@
     * { box-sizing: border-box; }
     body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #f6f7f9; margin: 0; }
 
+    /* ============ HEADER ============ */
     .mu-header {
       background: linear-gradient(135deg, #1e3c72, #2a5298);
       color: #fff;
@@ -17,11 +18,193 @@
     .mu-header-inner { max-width: 1100px; margin: 0 auto; padding: 0 24px; }
     .mu-header a { color: #fff; text-decoration: none; opacity: 0.85; font-size: 0.85rem; }
     .mu-header a:hover { opacity: 1; }
-    .mu-header h1 { margin: 6px 0 4px; font-size: 1.5rem; }
+    .mu-header h1 { margin: 6px 0 4px; font-size: 1.5rem; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+    .mu-header h1 .pending-badge {
+      background: #f59e0b;
+      color: #fff;
+      font-size: 12px;
+      font-weight: 800;
+      padding: 4px 12px;
+      border-radius: 999px;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      animation: pulseBadge 1.6s ease-in-out infinite;
+    }
+    @keyframes pulseBadge {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.6); }
+      50%      { box-shadow: 0 0 0 8px rgba(245, 158, 11, 0); }
+    }
     .mu-header p { margin: 0; opacity: 0.9; font-size: 0.9rem; }
 
     .mu-container { max-width: 1100px; margin: 0 auto; padding: 24px; }
 
+    /* ============ PENDING APPROVALS QUEUE ============ */
+    .mu-pending-panel {
+      background: linear-gradient(135deg, #fef3c7, #fde68a);
+      border: 1px solid #fcd34d;
+      border-left: 5px solid #f59e0b;
+      border-radius: 14px;
+      padding: 20px 22px;
+      margin-bottom: 24px;
+      box-shadow: 0 4px 12px rgba(245, 158, 11, 0.15);
+      display: none;
+    }
+    .mu-pending-panel.has-items { display: block; }
+    .mu-pending-panel.empty {
+      background: linear-gradient(135deg, #f0fdf4, #dcfce7);
+      border-color: #86efac;
+      border-left-color: #16a34a;
+      box-shadow: 0 4px 12px rgba(16, 185, 129, 0.1);
+    }
+    .mu-pending-panel.empty .pending-title-icon { background: #16a34a; }
+
+    .mu-pending-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 14px;
+      flex-wrap: wrap;
+    }
+    .mu-pending-title {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 15px;
+      font-weight: 800;
+      color: #78350f;
+      letter-spacing: 0.02em;
+    }
+    .mu-pending-panel.empty .mu-pending-title { color: #166534; }
+    .mu-pending-title-icon {
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      background: #f59e0b;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 17px;
+      font-weight: 800;
+      box-shadow: 0 2px 6px rgba(245, 158, 11, 0.3);
+    }
+    .mu-pending-sub {
+      font-size: 12px;
+      color: #92400e;
+      font-weight: 500;
+    }
+    .mu-pending-panel.empty .mu-pending-sub { color: #15803d; }
+    .mu-pending-count {
+      background: #fff;
+      color: #92400e;
+      font-size: 13px;
+      font-weight: 800;
+      padding: 5px 12px;
+      border-radius: 999px;
+      border: 1px solid #fcd34d;
+      margin-left: 6px;
+    }
+    .mu-pending-panel.empty .mu-pending-count {
+      color: #166534;
+      border-color: #86efac;
+    }
+
+    /* Pending user cards */
+    .mu-pending-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .mu-pending-card {
+      background: #fff;
+      border: 1px solid #fde68a;
+      border-radius: 12px;
+      padding: 14px 16px;
+      display: grid;
+      grid-template-columns: 44px 1fr auto;
+      gap: 14px;
+      align-items: flex-start;
+      transition: all .15s;
+    }
+    .mu-pending-card:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 6px 16px rgba(245, 158, 11, 0.12);
+    }
+    .mu-pending-avatar {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #f59e0b, #d97706);
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      font-size: 17px;
+      flex-shrink: 0;
+    }
+    .mu-pending-body { min-width: 0; }
+    .mu-pending-name {
+      margin: 0 0 2px;
+      font-size: 15px;
+      font-weight: 800;
+      color: #0f2b4f;
+    }
+    .mu-pending-email {
+      margin: 0 0 6px;
+      font-size: 12.5px;
+      color: #6b7280;
+      font-family: monospace;
+      word-break: break-all;
+    }
+    .mu-pending-meta {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      font-size: 11.5px;
+      color: #6b7280;
+      margin-top: 4px;
+    }
+    .mu-pending-meta .tag {
+      background: #f3f4f6;
+      padding: 2px 8px;
+      border-radius: 999px;
+      font-weight: 600;
+    }
+    .mu-pending-meta .tag.role {
+      background: #dbeafe;
+      color: #1e40af;
+    }
+    .mu-pending-meta .tag.school {
+      background: #fef3c7;
+      color: #92400e;
+    }
+    .mu-pending-message {
+      background: #fef9c3;
+      border-left: 3px solid #f59e0b;
+      padding: 6px 10px;
+      border-radius: 0 6px 6px 0;
+      font-size: 12.5px;
+      color: #78350f;
+      margin-top: 8px;
+      font-style: italic;
+    }
+    .mu-pending-actions {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      flex-shrink: 0;
+    }
+    .mu-pending-actions .mu-btn {
+      font-size: 12px;
+      padding: 7px 12px;
+      justify-content: center;
+      white-space: nowrap;
+    }
+
+    /* ============ TOOLBAR ============ */
     .mu-toolbar {
       display: flex; gap: 12px; align-items: center;
       margin-bottom: 20px; flex-wrap: wrap;
@@ -65,8 +248,11 @@
     .mu-btn.danger:hover { background: #fef2f2; border-color: #b91c1c; }
     .mu-btn.guest { background: #7c3aed; color: #fff; border-color: #7c3aed; }
     .mu-btn.guest:hover { background: #6d28d9; }
+    .mu-btn.success { background: #059669; color: #fff; border-color: #059669; }
+    .mu-btn.success:hover { background: #047857; }
     .mu-btn:disabled { opacity: 0.5; cursor: not-allowed; }
 
+    /* ============ USER CARDS ============ */
     .mu-user-card {
       background: #fff;
       border: 1px solid #e5e7eb;
@@ -112,37 +298,17 @@
       outline: none; border-color: #1e6bb8; box-shadow: 0 0 0 3px rgba(30,107,184,.12);
     }
 
-    .mu-hint {
-      font-size: 0.72rem;
-      color: #6b7280;
-      margin-top: 4px;
-    }
+    .mu-hint { font-size: 0.72rem; color: #6b7280; margin-top: 4px; }
 
-    /* Teacher-type picker */
-    .mu-teacher-type {
-      display: flex; flex-direction: column; gap: 8px;
-      max-width: 500px;
-    }
+    .mu-teacher-type { display: flex; flex-direction: column; gap: 8px; max-width: 500px; }
     .mu-teacher-type label {
       display: flex; align-items: flex-start; gap: 10px;
-      padding: 10px 12px;
-      border: 1px solid #e5e7eb;
-      border-radius: 8px;
-      background: #fafbfc;
-      cursor: pointer;
-      font-size: 0.85rem;
-      transition: all .15s;
+      padding: 10px 12px; border: 1px solid #e5e7eb; border-radius: 8px;
+      background: #fafbfc; cursor: pointer; font-size: 0.85rem; transition: all .15s;
     }
-    .mu-teacher-type label:hover {
-      background: #eff6ff; border-color: #bfdbfe;
-    }
-    .mu-teacher-type label.selected {
-      background: #eff6ff; border-color: #1e6bb8;
-    }
-    .mu-teacher-type input[type="radio"] {
-      margin-top: 3px;
-      accent-color: #1e3c72;
-    }
+    .mu-teacher-type label:hover { background: #eff6ff; border-color: #bfdbfe; }
+    .mu-teacher-type label.selected { background: #eff6ff; border-color: #1e6bb8; }
+    .mu-teacher-type input[type="radio"] { margin-top: 3px; accent-color: #1e3c72; }
     .mu-teacher-type .tt-title { font-weight: 700; color: #0f2b4f; }
     .mu-teacher-type .tt-desc  { font-size: 0.75rem; color: #6b7280; margin-top: 2px; }
 
@@ -153,20 +319,13 @@
     }
     .mu-checkbox {
       display: flex; align-items: center; gap: 8px;
-      padding: 8px 12px;
-      border: 1px solid #e5e7eb;
-      border-radius: 8px;
-      background: #fafbfc;
-      cursor: pointer;
-      font-size: 0.85rem;
-      transition: all .15s;
-      user-select: none;
+      padding: 8px 12px; border: 1px solid #e5e7eb; border-radius: 8px;
+      background: #fafbfc; cursor: pointer; font-size: 0.85rem;
+      transition: all .15s; user-select: none;
     }
     .mu-checkbox:hover { background: #eff6ff; border-color: #bfdbfe; }
     .mu-checkbox input[type="checkbox"] {
-      cursor: pointer;
-      width: 16px; height: 16px;
-      accent-color: #1e3c72;
+      cursor: pointer; width: 16px; height: 16px; accent-color: #1e3c72;
     }
     .mu-checkbox.checked { background: #eff6ff; border-color: #1e6bb8; }
 
@@ -187,14 +346,9 @@
       margin-left: 6px;
     }
     .mu-badge.super-admin { background: #fef3c7; color: #92400e; }
-    .mu-badge.guest-teacher {
-      background: #ede9fe;
-      color: #6d28d9;
-    }
-    .mu-badge.scphs-teacher {
-      background: #dbeafe;
-      color: #1e40af;
-    }
+    .mu-badge.guest-teacher { background: #ede9fe; color: #6d28d9; }
+    .mu-badge.scphs-teacher { background: #dbeafe; color: #1e40af; }
+    .mu-badge.pending { background: #fef3c7; color: #92400e; }
 
     .mu-toast {
       position: fixed; bottom: 24px; left: 50%;
@@ -226,9 +380,16 @@
     }
     @keyframes spin { to { transform: rotate(360deg); } }
 
-    @media (max-width: 640px) {
+    @media (max-width: 700px) {
       .mu-field-row { grid-template-columns: 1fr; gap: 4px; }
       .mu-field-row label { font-size: 0.72rem; padding-top: 0; }
+      .mu-pending-card { grid-template-columns: 1fr; }
+      .mu-pending-avatar { display: none; }
+      .mu-pending-actions {
+        flex-direction: row;
+        flex-wrap: wrap;
+        margin-top: 8px;
+      }
     }
   </style>
 </head>
@@ -237,26 +398,48 @@
   <header class="mu-header">
     <div class="mu-header-inner">
       <a href="index.html">← Back to Portal</a>
-      <h1>👥 Manage Users</h1>
-      <p>Assign roles and permissions to staff, students, and guest teachers</p>
+      <h1 id="muTitle">👥 Manage Users</h1>
+      <p id="muSubtitle">Assign roles and permissions to staff, students, and guest teachers</p>
     </div>
   </header>
 
   <div class="mu-container" id="main-content">
+
     <div class="mu-loading" id="loading">
       <div class="mu-spinner"></div>
       <div>Loading users…</div>
     </div>
 
     <div id="content" style="display:none;">
+
+      <!-- ============ PENDING APPROVALS QUEUE ============ -->
+      <div class="mu-pending-panel" id="pendingPanel">
+        <div class="mu-pending-head">
+          <div>
+            <div class="mu-pending-title">
+              <span class="mu-pending-title-icon" id="pendingIcon">⏳</span>
+              <span id="pendingTitleText">Pending Approvals</span>
+              <span class="mu-pending-count" id="pendingCount">0</span>
+            </div>
+            <div class="mu-pending-sub" id="pendingSubtitle">
+              These users are waiting for teacher access.
+            </div>
+          </div>
+          <button class="mu-btn outline" id="pendingRefresh" style="font-size:12px;padding:6px 12px;">🔄 Refresh</button>
+        </div>
+        <div class="mu-pending-list" id="pendingList"></div>
+      </div>
+
+      <!-- ============ TOOLBAR ============ -->
       <div class="mu-toolbar">
         <input type="search" id="searchInput" class="mu-search" placeholder="🔍 Search by name or email…" />
         <select id="roleFilter" class="mu-select">
           <option value="">All roles</option>
+          <option value="pending">⏳ Pending approval</option>
           <option value="student">Students</option>
           <option value="teacher">Teachers (all)</option>
-          <option value="scphs-teacher">SCPHS Teachers</option>
-          <option value="guest-teacher">Guest Teachers</option>
+          <option value="scphs-teacher">🏫 SCPHS Teachers</option>
+          <option value="guest-teacher">🌐 Guest Teachers</option>
           <option value="admin">Admins</option>
         </select>
         <span id="userCount" style="font-size:0.85rem;color:#6b7280;margin-left:auto;"></span>
@@ -271,7 +454,7 @@
   <script type="module">
     import { auth, db } from "./assets/js/firebase-config.js";
     import {
-      collection, getDocs, doc, updateDoc, serverTimestamp
+      collection, getDocs, doc, updateDoc, deleteDoc, serverTimestamp
     } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
     import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
     import { SUPER_ADMINS, PERMISSION_TEMPLATES, getCurrentUserProfile } from "./assets/js/roles.js";
@@ -279,8 +462,11 @@
     const $ = id => document.getElementById(id);
     let CURRENT_ADMIN = null;
     let ALL_USERS = [];
+    let REFRESH_TIMER = null;
 
-    // ---------- Toast ----------
+    // ============================================================
+    // Toast
+    // ============================================================
     let toastTimer;
     function toast(msg, type = "") {
       const t = $("toast");
@@ -290,14 +476,15 @@
       toastTimer = setTimeout(() => t.className = "mu-toast", 3000);
     }
 
-    // ---------- Escape HTML ----------
     function esc(s) {
       return String(s == null ? "" : s)
         .replace(/&/g, "&amp;").replace(/</g, "&lt;")
         .replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
     }
 
-    // ---------- Auth check ----------
+    // ============================================================
+    // Auth gate
+    // ============================================================
     onAuthStateChanged(auth, async (user) => {
       if (!user) {
         location.replace("login.html?next=" + encodeURIComponent(location.pathname));
@@ -319,9 +506,12 @@
       }
 
       await loadUsers();
+      startAutoRefresh();
     });
 
-    // ---------- Load users ----------
+    // ============================================================
+    // Load users
+    // ============================================================
     async function loadUsers() {
       try {
         const snap = await getDocs(collection(db, "users"));
@@ -330,14 +520,234 @@
 
         $("loading").style.display = "none";
         $("content").style.display = "block";
+        renderPendingQueue();
         renderUsers();
+        updateHeaderBadge();
       } catch (e) {
         console.error(e);
         $("loading").innerHTML = `<div style="color:#b91c1c;">Failed to load users: ${esc(e.message)}</div>`;
       }
     }
 
-    // ---------- Render ----------
+    // ============================================================
+    // Auto-refresh every 45 seconds
+    // ============================================================
+    function startAutoRefresh() {
+      if (REFRESH_TIMER) clearInterval(REFRESH_TIMER);
+      REFRESH_TIMER = setInterval(() => loadUsers(), 45000);
+    }
+
+    // ============================================================
+    // Pending detection
+    // ============================================================
+    function isPending(user) {
+      // Pending if explicitly flagged
+      if (user.pendingApproval === true) return true;
+      // Or if signed up as student but recent (within 30 days) — treat as pending
+      const role = user.primaryRole || user.role || "student";
+      if (role === "student" && user.createdAt) {
+        const created = user.createdAt.toDate ? user.createdAt.toDate() : new Date(user.createdAt);
+        const daysOld = (Date.now() - created.getTime()) / (1000 * 60 * 60 * 24);
+        return daysOld < 30 && user.requestingAccess === true;
+      }
+      return false;
+    }
+
+    function getPendingUsers() {
+      return ALL_USERS
+        .filter(u => isPending(u))
+        .sort((a, b) => {
+          const ta = a.createdAt?.toDate?.()?.getTime?.() || 0;
+          const tb = b.createdAt?.toDate?.()?.getTime?.() || 0;
+          return ta - tb; // oldest first
+        });
+    }
+
+    // ============================================================
+    // Relative time ("2h ago", "3d ago")
+    // ============================================================
+    function timeAgo(ts) {
+      if (!ts) return "just now";
+      const date = ts.toDate ? ts.toDate() : new Date(ts);
+      const seconds = Math.floor((Date.now() - date.getTime()) / 1000);
+      if (seconds < 60) return "just now";
+      const mins = Math.floor(seconds / 60);
+      if (mins < 60) return `${mins}m ago`;
+      const hours = Math.floor(mins / 60);
+      if (hours < 24) return `${hours}h ago`;
+      const days = Math.floor(hours / 24);
+      if (days < 30) return `${days}d ago`;
+      return date.toLocaleDateString();
+    }
+
+    // ============================================================
+    // Header badge
+    // ============================================================
+    function updateHeaderBadge() {
+      const count = getPendingUsers().length;
+      const titleEl = $("muTitle");
+      let badge = titleEl.querySelector(".pending-badge");
+      if (count > 0) {
+        if (!badge) {
+          badge = document.createElement("span");
+          badge.className = "pending-badge";
+          titleEl.appendChild(badge);
+        }
+        badge.textContent = `⏳ ${count} waiting`;
+        // Update page title too
+        document.title = `(${count}) Manage Users — SCPHS`;
+      } else {
+        if (badge) badge.remove();
+        document.title = "Manage Users — SCPHS";
+      }
+    }
+
+    // ============================================================
+    // Render pending queue
+    // ============================================================
+    function renderPendingQueue() {
+      const panel = $("pendingPanel");
+      const list = $("pendingList");
+      const pending = getPendingUsers();
+      const count = pending.length;
+
+      $("pendingCount").textContent = count;
+
+      if (count === 0) {
+        panel.classList.add("empty");
+        $("pendingIcon").textContent = "✓";
+        $("pendingTitleText").textContent = "All Caught Up";
+        $("pendingSubtitle").textContent = "No pending approvals right now. New signups will appear here.";
+        list.innerHTML = "";
+        return;
+      }
+
+      panel.classList.remove("empty");
+      $("pendingIcon").textContent = "⏳";
+      $("pendingTitleText").textContent = "Pending Approvals";
+      $("pendingSubtitle").textContent = `${count} user${count === 1 ? "" : "s"} waiting for teacher access.`;
+
+      list.innerHTML = pending.map(u => renderPendingCard(u)).join("");
+
+      // Wire actions
+      list.querySelectorAll("[data-pending-action]").forEach(btn => {
+        btn.addEventListener("click", () => handlePendingAction(btn));
+      });
+    }
+
+    function renderPendingCard(u) {
+      const initial = (u.name || u.email || "?").trim().charAt(0).toUpperCase();
+      const role = u.signupRole || "unknown";
+      const school = u.signupSchool || "";
+      const message = u.signupMessage || u.requestMessage || "";
+
+      const roleLabels = {
+        "scphs-teacher": "🏫 SCPHS teacher",
+        "external-teacher": "🌐 External teacher",
+        "student": "🎓 Student",
+        "parent": "👨‍👩‍👧 Parent",
+        "other": "❓ Other",
+      };
+      const roleLabel = roleLabels[role] || "❔ Not specified";
+
+      return `
+        <div class="mu-pending-card" data-uid="${u.uid}">
+          <div class="mu-pending-avatar">${esc(initial)}</div>
+          <div class="mu-pending-body">
+            <h4 class="mu-pending-name">${esc(u.name || "Unnamed")}</h4>
+            <p class="mu-pending-email">${esc(u.email || "")}</p>
+            <div class="mu-pending-meta">
+              <span class="tag role">${roleLabel}</span>
+              ${school ? `<span class="tag school">🏫 ${esc(school)}</span>` : ""}
+              <span class="tag">⏳ ${timeAgo(u.createdAt)}</span>
+            </div>
+            ${message ? `<div class="mu-pending-message">"${esc(message)}"</div>` : ""}
+          </div>
+          <div class="mu-pending-actions">
+            <button class="mu-btn success" data-pending-action="approve-scphs" data-uid="${u.uid}">🏫 SCPHS Teacher</button>
+            <button class="mu-btn guest" data-pending-action="approve-guest" data-uid="${u.uid}">🌐 Guest Teacher</button>
+            <button class="mu-btn outline" data-pending-action="approve-student" data-uid="${u.uid}">🎓 Student</button>
+            <button class="mu-btn danger" data-pending-action="decline" data-uid="${u.uid}">🚫 Decline</button>
+          </div>
+        </div>
+      `;
+    }
+
+    // ============================================================
+    // Handle pending actions
+    // ============================================================
+    async function handlePendingAction(btn) {
+      const action = btn.dataset.pendingAction;
+      const uid = btn.dataset.uid;
+      const user = ALL_USERS.find(u => u.uid === uid);
+      if (!user) return;
+
+      const userName = user.name || user.email || "this user";
+
+      const confirmMessages = {
+        "approve-scphs": `Approve ${userName} as SCPHS Teacher?\n\nThey'll access the full ILAW Lesson Planner.`,
+        "approve-guest": `Approve ${userName} as Guest Teacher?\n\nThey'll access the ILAW Open Workspace (any subject/grade).`,
+        "approve-student": `Approve ${userName} as Student?\n\nThey'll have access to the Learner Modules area.`,
+        "decline": `Decline ${userName}'s request?\n\nThey will not be granted access. This cannot be undone.`,
+      };
+
+      if (!confirm(confirmMessages[action])) return;
+
+      btn.disabled = true;
+      const originalText = btn.textContent;
+      btn.textContent = "⏳ Processing…";
+
+      try {
+        const payload = {
+          updatedAt: serverTimestamp(),
+          updatedBy: CURRENT_ADMIN.uid,
+          approvedAt: serverTimestamp(),
+          approvedBy: CURRENT_ADMIN.email || CURRENT_ADMIN.uid,
+          pendingApproval: false,
+        };
+
+        switch (action) {
+          case "approve-scphs":
+            payload.primaryRole = "teacher";
+            payload.teacherType = "scphs";
+            break;
+          case "approve-guest":
+            payload.primaryRole = "teacher";
+            payload.teacherType = "external";
+            break;
+          case "approve-student":
+            payload.primaryRole = "student";
+            delete payload.teacherType;
+            break;
+          case "decline":
+            payload.primaryRole = "declined";
+            payload.declinedAt = serverTimestamp();
+            payload.declinedBy = CURRENT_ADMIN.email || CURRENT_ADMIN.uid;
+            break;
+        }
+
+        await updateDoc(doc(db, "users", uid), payload);
+
+        const successMsg = {
+          "approve-scphs": "✓ Approved as SCPHS Teacher",
+          "approve-guest": "✓ Approved as Guest Teacher",
+          "approve-student": "✓ Approved as Student",
+          "decline": "✓ Request declined",
+        }[action];
+
+        toast(successMsg, "success");
+        await loadUsers();
+      } catch (e) {
+        console.error(e);
+        toast("⚠️ " + (e.message || "Action failed"), "error");
+        btn.disabled = false;
+        btn.textContent = originalText;
+      }
+    }
+
+    // ============================================================
+    // Render all users (with role filter including "pending")
+    // ============================================================
     function renderUsers() {
       const term = ($("searchInput")?.value || "").toLowerCase().trim();
       const filter = $("roleFilter")?.value || "";
@@ -351,7 +761,9 @@
           || (u.email || "").toLowerCase().includes(term);
 
         let matchRole = true;
-        if (filter === "scphs-teacher") {
+        if (filter === "pending") {
+          matchRole = isPending(u);
+        } else if (filter === "scphs-teacher") {
           matchRole = primary === "teacher" && (tType === "scphs" || tType === "internal" || !tType);
         } else if (filter === "guest-teacher") {
           matchRole = primary === "teacher" && (tType === "external" || tType === "guest");
@@ -374,6 +786,9 @@
       attachHandlers();
     }
 
+    // ============================================================
+    // Render user card (mostly unchanged, adds "Pending" badge)
+    // ============================================================
     function renderUserCard(user) {
       const isSuper = SUPER_ADMINS.includes(user.email);
       const primaryRole = user.primaryRole || user.role || "student";
@@ -384,13 +799,13 @@
             ? [user.secondaryRoles]
             : []);
 
-      // Teacher type — default to scphs if role is teacher and no type set
       let teacherType = String(user.teacherType || "").toLowerCase();
       if (primaryRole === "teacher" && !teacherType) {
         teacherType = "scphs";
       }
 
       const isTeacher = primaryRole === "teacher";
+      const isPendingUser = isPending(user);
 
       // Teacher-type badge
       let teacherBadge = "";
@@ -400,6 +815,9 @@
         } else {
           teacherBadge = '<span class="mu-badge scphs-teacher">🏫 SCPHS Teacher</span>';
         }
+      }
+      if (isPendingUser) {
+        teacherBadge += '<span class="mu-badge pending">⏳ Pending</span>';
       }
 
       // Permission checkboxes
@@ -423,7 +841,6 @@
           </label>`;
       }).join("");
 
-      // Secondary roles as badges
       const secondaryHTML = `
         <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px;">
           ${secondaryRoles.length
@@ -431,7 +848,6 @@
             : '<span style="font-size:0.8rem;color:#9ca3af;">No additional roles</span>'}
         </div>`;
 
-      // Teacher-type picker (only shown when primary role = teacher)
       const teacherTypeHTML = `
         <div class="mu-field-row" data-teacher-type-row style="${isTeacher ? "" : "display:none;"}">
           <label>Teacher Type</label>
@@ -454,6 +870,16 @@
         </div>
       `;
 
+      // Signup info (if present)
+      const signupInfo = (user.signupRole || user.signupSchool || user.signupMessage) ? `
+        <div style="background:#fef9c3;border-left:3px solid #f59e0b;padding:8px 12px;border-radius:0 6px 6px 0;font-size:12.5px;color:#78350f;margin-bottom:14px;">
+          <strong>📝 Signup info:</strong>
+          ${user.signupRole ? `<div>Role: <em>${esc(user.signupRole)}</em></div>` : ""}
+          ${user.signupSchool ? `<div>School: <em>${esc(user.signupSchool)}</em></div>` : ""}
+          ${user.signupMessage ? `<div>Message: <em>"${esc(user.signupMessage)}"</em></div>` : ""}
+        </div>
+      ` : "";
+
       return `
         <div class="mu-user-card" data-uid="${user.uid}" data-email="${esc(user.email || "")}">
           <div class="mu-user-header">
@@ -467,6 +893,8 @@
             </div>
           </div>
 
+          ${signupInfo}
+
           <div class="mu-field-row">
             <label>Primary Role</label>
             <div>
@@ -474,6 +902,7 @@
                 <option value="student" ${primaryRole === "student" ? "selected" : ""}>Student</option>
                 <option value="teacher" ${primaryRole === "teacher" ? "selected" : ""}>Teacher</option>
                 <option value="admin"   ${primaryRole === "admin"   ? "selected" : ""}>Admin</option>
+                <option value="declined" ${primaryRole === "declined" ? "selected" : ""}>Declined</option>
               </select>
             </div>
           </div>
@@ -525,9 +954,10 @@
       `;
     }
 
-    // ---------- Handlers ----------
+    // ============================================================
+    // Handlers for regular user cards
+    // ============================================================
     function attachHandlers() {
-      // Checkbox visual feedback
       document.querySelectorAll(".mu-checkbox input[type='checkbox']").forEach(cb => {
         cb.addEventListener("change", () => {
           cb.closest(".mu-checkbox").classList.toggle("checked", cb.checked);
@@ -537,7 +967,6 @@
       document.querySelectorAll(".mu-user-card").forEach(card => {
         const uid = card.dataset.uid;
 
-        // Primary role change → show/hide teacher-type row
         const roleSel = card.querySelector("[data-field='primaryRole']");
         roleSel?.addEventListener("change", () => {
           const row = card.querySelector("[data-teacher-type-row]");
@@ -545,7 +974,6 @@
           row.style.display = roleSel.value === "teacher" ? "" : "none";
         });
 
-        // Teacher-type radio visual feedback
         card.querySelectorAll("input[name^='teacherType_']").forEach(radio => {
           radio.addEventListener("change", () => {
             card.querySelectorAll(".mu-teacher-type label").forEach(lbl => lbl.classList.remove("selected"));
@@ -567,28 +995,25 @@
     async function saveUser(card, uid) {
       const primaryRole = card.querySelector("[data-field='primaryRole']").value;
       const secondaryRaw = card.querySelector("[data-field='secondaryRoles']").value;
-      const secondaryRoles = secondaryRaw
-        .split(",").map(s => s.trim()).filter(Boolean);
+      const secondaryRoles = secondaryRaw.split(",").map(s => s.trim()).filter(Boolean);
 
       const permissions = {};
       card.querySelectorAll("input[data-perm]").forEach(cb => {
         permissions[cb.dataset.perm] = cb.checked;
       });
 
-      // Read teacher type (radio)
       const teacherTypeRadio = card.querySelector("input[name^='teacherType_']:checked");
       const teacherType = teacherTypeRadio ? teacherTypeRadio.value : "";
 
-      // Build update payload
       const updatePayload = {
         primaryRole,
         secondaryRoles,
         permissions,
+        pendingApproval: false, // Clear any pending flag on save
         updatedAt: serverTimestamp(),
         updatedBy: CURRENT_ADMIN.uid,
       };
 
-      // Include teacherType only when role is teacher
       if (primaryRole === "teacher" && teacherType) {
         updatePayload.teacherType = teacherType;
       }
@@ -617,7 +1042,6 @@
         }
       });
 
-      // If teacher template, set teacher type
       if (template.primaryRole === "teacher") {
         const row = card.querySelector("[data-teacher-type-row]");
         if (row) row.style.display = "";
@@ -639,9 +1063,23 @@
       toast(`Applied: ${label}`, "success");
     }
 
-    // ---------- Filters ----------
+    // ============================================================
+    // Filters + refresh button
+    // ============================================================
     $("searchInput")?.addEventListener("input", renderUsers);
     $("roleFilter")?.addEventListener("change", renderUsers);
+    $("pendingRefresh")?.addEventListener("click", async () => {
+      const btn = $("pendingRefresh");
+      btn.disabled = true;
+      btn.textContent = "⏳ Refreshing…";
+      await loadUsers();
+      btn.disabled = false;
+      btn.textContent = "🔄 Refresh";
+      toast("✓ Refreshed", "success");
+    });
+
+    // Refresh on window focus (so admins see new signups immediately)
+    window.addEventListener("focus", () => loadUsers());
   </script>
 </body>
 </html>
