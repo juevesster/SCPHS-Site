@@ -2950,17 +2950,92 @@
           openBoWViewer(btn.dataset.bowView, SUBJECT_TERM);
         });
       });
-      // ✅ NEW: Delete subject handler
+            // ✅ Delete subject handler with in-use guard
       host.querySelectorAll("[data-delete-subject]").forEach(btn => {
         btn.addEventListener("click", async () => {
           const code = btn.dataset.deleteSubject;
           const name = btn.dataset.subjectName;
-          if (!confirm(`Delete subject "${name}" (${code})?\n\nThis will also delete all its BoW terms and competencies.`)) return;
 
+          // ---- GUARD: is this subject used anywhere in any term? ----
           btn.disabled = true;
           btn.textContent = "⏳";
+          let usage = { count: 0, classes: [], terms: new Set() };
+
           try {
-            // 1. Delete all BoW terms and their competencies
+            for (const cls of CLASSES) {
+              const snap = await getDocs(collection(db, "classes", cls.id, "program"));
+              snap.docs.forEach(d => {
+                const e = d.data();
+                const ec = String(e.subject || e.subjectName || "").trim();
+                if (ec !== code) return;
+                usage.count++;
+                usage.terms.add(Number(e.term));
+                if (!usage.classes.find(c => c.id === cls.id)) {
+                  usage.classes.push({ id: cls.id, label: cls.classLabel || cls.id });
+                }
+              });
+            }
+          } catch (e) {
+            console.warn("[subjects] usage scan failed:", e);
+          }
+
+          // ---- If in use, warn and block hard delete ----
+          if (usage.count > 0) {
+            const termList = [...usage.terms].sort().map(t => `Term ${t}`).join(", ");
+            const classList = usage.classes.slice(0, 5).map(c => `• ${c.label}`).join("\n");
+            const more = usage.classes.length > 5 ? `\n…and ${usage.classes.length - 5} more` : "";
+
+            const proceed = confirm(
+              `⚠️ "${name}" is currently used in ${usage.count} program entr${usage.count === 1 ? "y" : "ies"}.\n\n` +
+              `Terms: ${termList}\n` +
+              `Classes:\n${classList}${more}\n\n` +
+              `Deleting it will NOT remove those program entries — they will show "${code}" as an orphaned subject.\n\n` +
+              `Do you want to deactivate it instead? (Recommended)\n\n` +
+              `OK = Deactivate (safe)\n` +
+              `Cancel = Keep as is`
+            );
+
+            if (proceed) {
+              try {
+                await updateDoc(doc(db, "subjects", code), {
+                  active: false,
+                  updatedAt: serverTimestamp(),
+                  updatedBy: CURRENT_USER?.email || "",
+                });
+                toast(`✓ Deactivated "${name}" (still in use)`, "success");
+                await loadSubjects();
+                renderSubjectList();
+              } catch (e) {
+                toast("⚠️ " + (e.message || "Deactivate failed"), "error");
+                btn.disabled = false;
+                btn.textContent = "🗑️";
+              }
+            } else {
+              btn.disabled = false;
+              btn.textContent = "🗑️";
+            }
+            return;
+          }
+
+          // ---- Not in use: confirm hard delete ----
+          const ok = confirm(
+            `Delete subject "${name}" (${code})?\n\n` +
+            `This will permanently remove:\n` +
+            `• The subject record\n` +
+            `• All BoW terms\n` +
+            `• All competencies\n\n` +
+            `This action cannot be undone.\n\n` +
+            `Continue?`
+          );
+          if (!ok) {
+            btn.disabled = false;
+            btn.textContent = "🗑️";
+            return;
+          }
+
+          // ---- Perform hard delete ----
+          try {
+            // 1. Delete BoW terms + competencies
             const termsRef = collection(db, "subjects", code, "bow_terms");
             const termsSnap = await getDocs(termsRef);
             for (const termDoc of termsSnap.docs) {
@@ -2986,9 +3061,8 @@
           }
         });
       });
-    }
 
-            function renderSubjectRow(s) {
+       function renderSubjectRow(s) {
       const statusDot = s.managed
         ? '<span style="color:#059669;font-weight:900;">●</span>'
         : (s.usage?.count ? '<span style="color:#d97706;font-weight:900;">●</span>' : '<span style="color:#dc2626;font-weight:900;">●</span>');
@@ -3035,6 +3109,7 @@
           </td>
         </tr>
       `;
+    }
     }
 
     // ------------------------------------------------------------
