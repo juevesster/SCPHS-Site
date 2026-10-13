@@ -1218,10 +1218,10 @@
       toast("✓ Saved", "success");
     }
 
-    async function exportOne(type) {
+      async function exportOne(type) {
       const material = MATERIALS[type];
       if (!material) return;
-      exportMaterialPDF(type, material.content);
+      await exportMaterialPDF(type, material.content);
     }
 
     // ---------- Generate All ----------
@@ -1552,26 +1552,92 @@ Continue?`
     }
 
     // ---------- Export one material as PDF ----------
-    function exportMaterialPDF(type, content) {
+        // ============================================================
+    // EXPORT ONE MATERIAL AS PDF — clean, single-section print
+    // Uses the same .pack-* print classes as Print All
+    // ============================================================
+    async function exportMaterialPDF(type, content) {
+      if (!content) { toast("⚠️ Nothing to export", "error"); return; }
+
+      const h = getEffectiveHeader();
+      const gradeLabel = LESSON.gradeLevel === "K" ? "Kindergarten" : "Grade " + (LESSON.gradeLevel || "—");
+      const generatedDate = new Date().toLocaleDateString("en-PH", { year: "numeric", month: "long", day: "numeric" });
+
       const html = `
-        <html><head><title>${esc(materialTitle(type))} — ${esc(LESSON.lessonTitle || "")}</title>
-        <style>
-          body { font-family: "Times New Roman", serif; margin: 20mm; line-height: 1.5; color: #000; }
-          h1 { font-size: 16pt; text-align: center; }
-          .meta { text-align: center; font-size: 11pt; color: #333; margin-bottom: 20px; border-bottom: 1px solid #000; padding-bottom: 8px; }
-          .content p { margin: 0 0 8px; }
-          .content ul, .content ol { margin: 6px 0 6px 20px; }
-        </style></head><body>
-        <h1>${esc(materialTitle(type))}</h1>
-        <div class="meta">
-          ${esc(LESSON.lessonTitle || "")} — ${esc(LESSON.subjectName || "")} — Grade ${esc(LESSON.gradeLevel || "")}
+        <div class="pack-cover-page" style="page-break-after: always;">
+          <div class="pack-header">
+            ${h.depedLogo ? `<img src="${esc(h.depedLogo)}" alt="DepEd" class="pack-deped-logo" />` : ""}
+            <div class="pack-header-line1">${esc(h.headerLine1)}</div>
+            <div class="pack-header-line2">${esc(h.headerLine2)}</div>
+            <div class="pack-header-region">${esc(h.region)}</div>
+            <div class="pack-header-division">${esc(h.division)}</div>
+          </div>
+
+          <div class="pack-school-row">
+            <div class="pack-school-name">${esc(h.schoolName)}</div>
+            <div class="pack-school-address">${esc(h.schoolAddress)}</div>
+          </div>
+
+          <div class="pack-title">${esc(materialTitle(type))}</div>
+
+          <div class="pack-meta">
+            <div><strong>${esc(LESSON.lessonTitle || LESSON.subjectName || "Lesson")}</strong></div>
+            <div>${esc(LESSON.subjectName || "")} · ${esc(gradeLabel)}${LESSON.section ? " · " + esc(LESSON.section) : ""}</div>
+            <div>Term ${esc(LESSON.term || "—")} · Week ${esc(LESSON.week || "—")} · SY ${esc(h.schoolYear)}</div>
+            <div>Teacher: ${esc(h.teacherName)}</div>
+          </div>
+
+          <div class="pack-cover-footer">
+            Generated: ${esc(generatedDate)}<br>
+            Produced via SCPHS ILAW Portal · SY ${esc(h.schoolYear)}
+          </div>
         </div>
-        <div class="content">${content}</div>
-        </body></html>
+
+        <div class="pack-section" style="page-break-before: avoid;">
+          <div class="pack-section-header">
+            <div class="pack-section-num">${esc(materialTitle(type))}</div>
+            <div class="pack-section-sub">${esc(LESSON.subjectName || "")} · ${esc(gradeLabel)} · Term ${esc(LESSON.term || "")} Week ${esc(LESSON.week || "")}</div>
+          </div>
+          <div class="pack-section-body">
+            ${content}
+          </div>
+        </div>
+
+        <div class="pack-page-footer">
+          ${esc(h.schoolName)} · ${esc(LESSON.subjectName || "")} · Term ${esc(LESSON.term || "")} Week ${esc(LESSON.week || "")} · SY ${esc(h.schoolYear)}
+        </div>
       `;
-      const host = $("tmPrintHost");
+
+      const host = $("packPrintDoc");
+      if (!host) { toast("⚠️ Print container missing", "error"); return; }
       host.innerHTML = html;
-      setTimeout(() => { window.print(); }, 300);
+
+      document.body.classList.add("pack-printing");
+
+      // Wait for images (DepEd logo)
+      const imgs = host.querySelectorAll("img");
+      if (imgs.length) {
+        await Promise.all(Array.from(imgs).map(img => {
+          if (img.complete && img.naturalWidth > 0) return Promise.resolve();
+          return new Promise(res => {
+            img.addEventListener("load", res, { once: true });
+            img.addEventListener("error", res, { once: true });
+            setTimeout(res, 3000);
+          });
+        }));
+      }
+
+      void host.offsetHeight;
+      await new Promise(res => requestAnimationFrame(() => requestAnimationFrame(res)));
+
+      const cleanup = () => {
+        host.innerHTML = "";
+        document.body.classList.remove("pack-printing");
+        window.removeEventListener("afterprint", cleanup);
+      };
+      window.addEventListener("afterprint", cleanup);
+      window.print();
+      setTimeout(cleanup, 2000);
     }
 
     window.__tmToast = toast;
