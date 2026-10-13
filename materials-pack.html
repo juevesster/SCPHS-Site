@@ -1364,52 +1364,85 @@
       return coverPage + sectionsHTML + footer;
     }
 
-    async function printPack() {
+        async function printPack() {
       const ready = Object.keys(MATERIALS).filter(t => MATERIALS[t] && MATERIALS[t].content);
       if (!ready.length) {
         toast("⚠️ Generate at least one material first", "error");
         return;
       }
 
+      console.log("[pack] Starting print. Ready sections:", ready);
+
+      // 1. Load per-lesson header overrides
       PACK_OVERRIDES = await loadPackOverrides();
+      console.log("[pack] Overrides loaded:", PACK_OVERRIDES);
 
+      // 2. Build HTML
       const html = buildPackPrintHTML();
-      if (!html) { toast("⚠️ Could not build print document", "error"); return; }
+      if (!html) {
+        toast("⚠️ Could not build print document", "error");
+        return;
+      }
+      console.log("[pack] HTML built, length:", html.length);
 
+      // 3. Inject into the print host
       const host = $("packPrintDoc");
+      if (!host) {
+        toast("⚠️ Print container missing", "error");
+        return;
+      }
       host.innerHTML = html;
 
-      const imgs = host.querySelectorAll("img");
-      await Promise.all(Array.from(imgs).map(img => {
-        if (img.complete && img.naturalWidth > 0) return Promise.resolve();
-        return new Promise(res => {
-          img.addEventListener("load", res, { once: true });
-          img.addEventListener("error", res, { once: true });
-          setTimeout(res, 2000);
-        });
-      }));
-
+      // 4. Apply the print class IMMEDIATELY (before any awaiting)
       document.body.classList.add("pack-printing");
+      console.log("[pack] pack-printing class added. body.className:", document.body.className);
 
-      setTimeout(() => {
-        window.print();
-        setTimeout(() => {
-          host.innerHTML = "";
-          document.body.classList.remove("pack-printing");
-        }, 800);
-      }, 200);
+      // 5. Wait for images (DepEd logo) to load
+      const imgs = host.querySelectorAll("img");
+      if (imgs.length) {
+        console.log("[pack] Waiting for", imgs.length, "image(s)…");
+        await Promise.all(Array.from(imgs).map(img => {
+          if (img.complete && img.naturalWidth > 0) return Promise.resolve();
+          return new Promise(res => {
+            img.addEventListener("load", res, { once: true });
+            img.addEventListener("error", res, { once: true });
+            setTimeout(res, 3000);
+          });
+        }));
+        console.log("[pack] Images ready");
+      }
+
+      // 6. Force layout reflow so the class + content are committed
+      void host.offsetHeight;
+
+      // 7. Wait two animation frames, then print
+      await new Promise(res => requestAnimationFrame(() => requestAnimationFrame(res)));
+
+      console.log("[pack] Calling window.print()…");
+
+      const cleanup = () => {
+        host.innerHTML = "";
+        document.body.classList.remove("pack-printing");
+        window.removeEventListener("afterprint", cleanup);
+      };
+      window.addEventListener("afterprint", cleanup);
+      window.print();
+      setTimeout(cleanup, 2000);
     }
 
     // Wire Print All + Download Pack to the new function
     $("tmPrintAll").addEventListener("click", () => printPack());
+
     $("tmDownloadPack").addEventListener("click", async () => {
       const ok = confirm(
-        "📥 Save Materials Pack as PDF\\n\\n" +
-        "How to save:\\n" +
-        "1. The Print dialog will open\\n" +
-        "2. Choose 'Save as PDF' as the printer\\n" +
-        "3. Click Save\\n\\n" +
-        "Continue?"
+        `📥 Save Materials Pack as PDF
+
+How to save:
+1. The Print dialog will open
+2. Choose 'Save as PDF' as the printer
+3. Click Save
+
+Continue?`
       );
       if (!ok) return;
       await printPack();
