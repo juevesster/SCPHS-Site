@@ -315,8 +315,11 @@
 
         const codeMatch = lineText.match(RX.competencyCode);
         const text = codeMatch
-          ? lineText.replace(codeMatch[1], "").replace(/^[\s\-–:]+/, "").trim()
-          : lineText;
+        ? lineText.replace(codeMatch[1], "").replace(/^[\s\-–:]+/, "").trim()
+        : lineText;
+
+        // ✅ SKIP pure code lines (they're labels, not competencies)
+        if (codeMatch && text.length < 3) continue;
 
         pendingComp = {
           code: "", // assigned at flush
