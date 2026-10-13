@@ -14,6 +14,139 @@
     color: #1f2937;
   }
 
+      /* ============ PRINT-READY PACK ============ */
+    .pack-print-doc { display: none; }
+
+    @media print {
+      body.pack-printing {
+        background: #fff !important;
+        margin: 0 !important;
+      }
+      body.pack-printing .tm-header,
+      body.pack-printing .tm-container,
+      body.pack-printing .tm-progress-bar,
+      body.pack-printing .tm-grid,
+      body.pack-printing .tm-footer-bar,
+      body.pack-printing #tmToast,
+      body.pack-printing #tmHeaderModal { display: none !important; }
+
+      body.pack-printing .pack-print-doc { display: block !important; }
+
+      @page {
+      size: A4 portrait;
+      margin: 12mm 12mm 20mm 12mm;   /* ← bottom bumped from 16mm to 20mm */
+      }
+
+      .pack-print-doc { font-family: "Times New Roman", Times, serif; color: #000; font-size: 11pt; line-height: 1.45; }
+      .pack-print-doc .pack-header { text-align: center; line-height: 1.25; }
+      .pack-print-doc .pack-deped-logo { display: block; margin: 0 auto 3mm; max-height: 18mm; }
+      .pack-print-doc .pack-header-line1 { font-size: 10pt; }
+      .pack-print-doc .pack-header-line2 { font-size: 11pt; font-weight: 700; }
+      .pack-print-doc .pack-header-region { font-size: 9.5pt; }
+      .pack-print-doc .pack-header-division { font-size: 9.5pt; }
+
+      .pack-print-doc .pack-school-row {
+        text-align: center;
+        margin-top: 3mm;
+        padding-bottom: 1.5mm;
+        border-bottom: 1.5px solid #000;
+      }
+      .pack-print-doc .pack-school-name { font-size: 12pt; font-weight: 800; text-transform: uppercase; letter-spacing: .02em; }
+      .pack-print-doc .pack-school-address { font-size: 9pt; margin-top: .5mm; }
+
+      .pack-print-doc .pack-title {
+        text-align: center;
+        font-size: 14pt;
+        font-weight: 800;
+        letter-spacing: .06em;
+        margin: 6mm 0 4mm;
+        text-transform: uppercase;
+      }
+
+      .pack-print-doc .pack-meta {
+        text-align: center;
+        font-size: 10.5pt;
+        margin-bottom: 6mm;
+        line-height: 1.5;
+      }
+
+      .pack-print-doc .pack-toc {
+        border: 1px solid #000;
+        padding: 4mm 6mm;
+        margin-bottom: 6mm;
+      }
+      .pack-print-doc .pack-toc-title {
+        font-weight: 800;
+        font-size: 11pt;
+        text-transform: uppercase;
+        letter-spacing: .04em;
+        border-bottom: 1px solid #000;
+        padding-bottom: 1.5mm;
+        margin-bottom: 2.5mm;
+      }
+      .pack-print-doc .pack-toc ol { margin: 0 0 0 5mm; padding: 0; }
+      .pack-print-doc .pack-toc li { margin-bottom: 1mm; font-size: 10.5pt; }
+
+      .pack-print-doc .pack-cover-footer {
+        text-align: center;
+        font-size: 9pt;
+        color: #333;
+        margin-top: 10mm;
+        padding-top: 3mm;
+        border-top: 1px solid #000;
+      }
+
+      .pack-print-doc .pack-section {
+        page-break-before: always;
+      }
+      .pack-print-doc .pack-section:first-of-type { page-break-before: avoid; }
+
+      .pack-print-doc .pack-section-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-bottom: 1.5px solid #000;
+        padding-bottom: 1.5mm;
+        margin-bottom: 4mm;
+      }
+      .pack-print-doc .pack-section-num {
+        font-size: 13pt;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: .04em;
+      }
+      .pack-print-doc .pack-section-sub {
+        font-size: 9pt;
+        color: #333;
+      }
+
+        .pack-print-doc .pack-section-body {
+        font-size: 11pt;
+        line-height: 1.5;
+        padding-bottom: 10mm;   /* 🆕 reserves space for the running footer */
+      }
+
+      .pack-print-doc .pack-section-body p { margin: 0 0 6px; }
+      .pack-print-doc .pack-section-body ul,
+      .pack-print-doc .pack-section-body ol { margin: 6px 0 6px 20px; padding: 0; }
+      .pack-print-doc .pack-section-body li { margin-bottom: 3px; }
+      .pack-print-doc .pack-section-body strong { font-weight: 700; }
+      .pack-print-doc .pack-section-body h1,
+      .pack-print-doc .pack-section-body h2,
+      .pack-print-doc .pack-section-body h3 { margin: 8px 0 4px; font-size: 11.5pt; }
+
+      .pack-print-doc .pack-page-footer {
+        bottom: 6mm;
+        left: 12mm;
+        right: 12mm;
+        font-size: 8.5pt;
+        color: #333;
+        border-top: .5px solid #999;
+        padding-top: 1.5mm;
+        text-align: center;
+      }
+    }
+
   /* ============ HEADER ============ */
   .tm-header {
     background: linear-gradient(135deg, #1e3c72 0%, #2a5298 50%, #4f46e5 100%);
@@ -443,6 +576,184 @@
     .tm-progress-item { gap: 6px; }
     .tm-progress-dot { width: 28px; height: 28px; font-size: 13px; }
   }
+
+    /* ============================================================
+     MOBILE / TABLET RESPONSIVE
+     ============================================================ */
+  @media (max-width: 768px) {
+    /* Header */
+    .tm-header { padding: 20px 0 16px; }
+    .tm-header-inner {
+      flex-direction: column;
+      align-items: stretch;
+      gap: 14px;
+      padding: 0 16px;
+    }
+    .tm-header h1 { font-size: 1.25rem; }
+    .tm-header .sub {
+      font-size: 0.8rem;
+      gap: 8px;
+      flex-direction: column;
+      align-items: flex-start;
+    }
+    .tm-header .sub span { font-size: 0.8rem; }
+
+    .tm-header-actions {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 8px;
+    }
+    .tm-btn {
+      justify-content: center;
+      width: 100%;
+      padding: 10px 16px;
+      font-size: 13px;
+    }
+
+    /* Container */
+    .tm-container { padding: 16px 12px 40px; }
+
+    /* Progress bar — 2x2 grid */
+    .tm-progress-bar {
+      padding: 14px 16px;
+      gap: 14px;
+    }
+    .tm-progress-info {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      width: 100%;
+    }
+    .tm-progress-item {
+      gap: 8px;
+      min-width: 0;
+    }
+    .tm-progress-dot {
+      width: 28px;
+      height: 28px;
+      font-size: 13px;
+    }
+    .tm-progress-label { font-size: 10px; }
+    .tm-progress-value { font-size: 12.5px; }
+
+    /* Grid — single column */
+    .tm-grid { grid-template-columns: 1fr; gap: 16px; }
+
+    /* Cards */
+    .tm-card-head { padding: 14px 16px; gap: 10px; }
+    .tm-card-head .ico { font-size: 1.3rem; }
+    .tm-card-head .title { font-size: 0.98rem; }
+    .tm-card-head .subtitle { font-size: 11px; }
+    .tm-card-head .status-badge { font-size: 9px; padding: 3px 8px; }
+
+    .tm-card-body { padding: 16px 16px 18px; gap: 12px; }
+
+    /* Content preview */
+    .tm-content-preview {
+      padding: 12px 14px;
+      font-size: 12.5px;
+      max-height: 220px;
+    }
+
+    /* Action buttons — wrap into full-width rows */
+    .tm-card-actions {
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+    .tm-action {
+      flex: 1 1 calc(50% - 3px);
+      min-width: 0;
+      padding: 9px 10px;
+      font-size: 11.5px;
+    }
+    .tm-card-actions .tm-action:only-child {
+      flex: 1 1 100%;
+    }
+
+    /* Resources */
+    .tm-resource { padding: 10px 12px; gap: 10px; }
+    .tm-resource .r-icon { width: 34px; height: 34px; font-size: 16px; }
+    .tm-resource .r-name { font-size: 12.5px; }
+    .tm-resource .r-desc { font-size: 11px; }
+
+    /* Footer bar */
+    .tm-footer-bar {
+      padding: 16px 18px;
+      flex-direction: column;
+      align-items: stretch;
+      gap: 12px;
+    }
+    .tm-footer-bar .info { font-size: 12.5px; }
+    .tm-footer-bar .actions {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 8px;
+    }
+    .tm-footer-bar .actions .tm-btn,
+    .tm-footer-bar .actions .tm-action {
+      width: 100%;
+      justify-content: center;
+    }
+
+    /* Edit Header modal */
+    #tmHeaderModal > div { max-width: 100% !important; }
+    #tmHeaderModal > div > div:nth-child(2) {
+      padding: 16px 16px !important;
+    }
+    #tmHeaderModal > div > div:nth-child(2) > div {
+      grid-template-columns: 1fr !important;
+      gap: 10px !important;
+    }
+    /* Stack the bottom action row of the modal */
+    #tmHeaderModal > div > div:last-child {
+      padding: 12px 16px !important;
+      flex-direction: column-reverse !important;
+      gap: 8px !important;
+    }
+    #tmHeaderModal > div > div:last-child > div {
+      display: grid !important;
+      grid-template-columns: 1fr 1fr !important;
+      gap: 8px !important;
+      width: 100%;
+    }
+    #tmHeaderModal > div > div:last-child button {
+      width: 100%;
+      justify-content: center;
+    }
+    #tmHeaderModal > div > div:last-child > button {
+      width: 100%;
+    }
+
+    /* Editor modal */
+    #tmEditModal > div { max-width: 100% !important; }
+    #tmEditModal textarea { min-height: 260px !important; font-size: 12px !important; }
+
+    /* Toast */
+    #tmToast {
+      bottom: 20px !important;
+      left: 16px !important;
+      right: 16px !important;
+      transform: translateX(0) translateY(20px) !important;
+      text-align: center;
+      font-size: 13px !important;
+      padding: 10px 16px !important;
+    }
+    #tmToast.show {
+      transform: translateX(0) translateY(0) !important;
+    }
+  }
+
+  @media (max-width: 480px) {
+    .tm-header h1 { font-size: 1.1rem; }
+    .tm-progress-info { grid-template-columns: 1fr; }
+    .tm-progress-item { gap: 10px; }
+
+    .tm-card-actions .tm-action {
+      flex: 1 1 100%;
+    }
+
+    .tm-content-preview { font-size: 12px; }
+  }
 </style>
 </head>
 <body>
@@ -456,8 +767,10 @@
           <span>Loading lesson…</span>
         </p>
       </div>
-      <div class="tm-header-actions">
+            <div class="tm-header-actions">
         <a href="ilaw.html" class="tm-btn ghost" id="tmBackLink">← Back to Lesson Plan</a>
+        <!-- 🆕 ADD THIS BUTTON -->
+        <button class="tm-btn ghost" id="tmEditHeader">✏️ Edit Header</button>
         <button class="tm-btn primary" id="tmGenerateAll">✨ Generate All Materials</button>
       </div>
     </div>
@@ -525,6 +838,72 @@
 
   <!-- Print container (hidden) -->
   <div id="tmPrintHost" style="display:none;"></div>
+
+  <!-- 🆕 Print-only container for the improved pack -->
+<div class="pack-print-doc" id="packPrintDoc"></div>
+
+<!-- 🆕 EDIT HEADER MODAL -->
+<div id="tmHeaderModal" style="position:fixed;inset:0;background:rgba(0,0,0,.6);display:none;align-items:center;justify-content:center;z-index:10001;padding:20px;">
+  <div style="background:#fff;border-radius:14px;max-width:640px;width:100%;max-height:92vh;overflow-y:auto;box-shadow:0 24px 48px rgba(0,0,0,.3);">
+    <div style="padding:18px 22px;border-bottom:1px solid #e5e7eb;display:flex;justify-content:space-between;align-items:center;">
+      <div>
+        <h3 style="margin:0;font-size:1.1rem;color:#0f2b4f;">✏️ Edit Printed Header</h3>
+        <p style="margin:4px 0 0;font-size:12px;color:#6b7280;">These details appear on the printed Materials Pack. They only affect this lesson.</p>
+      </div>
+      <button id="tmHeaderClose" style="border:1px solid #e5e7eb;background:#fff;padding:6px 12px;border-radius:8px;cursor:pointer;font-family:inherit;">✕</button>
+    </div>
+    <div style="padding:20px 22px;">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px;">
+        <div>
+          <label style="display:block;font-size:11px;font-weight:700;color:#374151;text-transform:uppercase;margin-bottom:6px;">DepEd Logo URL</label>
+          <input type="text" id="th-depedLogo" style="width:100%;padding:9px 12px;border:1px solid #d1d5db;border-radius:6px;font-size:13px;font-family:inherit;" />
+        </div>
+        <div>
+          <label style="display:block;font-size:11px;font-weight:700;color:#374151;text-transform:uppercase;margin-bottom:6px;">Header Line 1</label>
+          <input type="text" id="th-headerLine1" style="width:100%;padding:9px 12px;border:1px solid #d1d5db;border-radius:6px;font-size:13px;font-family:inherit;" />
+        </div>
+        <div>
+          <label style="display:block;font-size:11px;font-weight:700;color:#374151;text-transform:uppercase;margin-bottom:6px;">Header Line 2</label>
+          <input type="text" id="th-headerLine2" style="width:100%;padding:9px 12px;border:1px solid #d1d5db;border-radius:6px;font-size:13px;font-family:inherit;" />
+        </div>
+        <div>
+          <label style="display:block;font-size:11px;font-weight:700;color:#374151;text-transform:uppercase;margin-bottom:6px;">Region</label>
+          <input type="text" id="th-region" style="width:100%;padding:9px 12px;border:1px solid #d1d5db;border-radius:6px;font-size:13px;font-family:inherit;" />
+        </div>
+        <div style="grid-column:1/-1;">
+          <label style="display:block;font-size:11px;font-weight:700;color:#374151;text-transform:uppercase;margin-bottom:6px;">Division</label>
+          <input type="text" id="th-division" style="width:100%;padding:9px 12px;border:1px solid #d1d5db;border-radius:6px;font-size:13px;font-family:inherit;" />
+        </div>
+        <div>
+          <label style="display:block;font-size:11px;font-weight:700;color:#374151;text-transform:uppercase;margin-bottom:6px;">School Name</label>
+          <input type="text" id="th-schoolName" style="width:100%;padding:9px 12px;border:1px solid #d1d5db;border-radius:6px;font-size:13px;font-family:inherit;" />
+        </div>
+        <div>
+          <label style="display:block;font-size:11px;font-weight:700;color:#374151;text-transform:uppercase;margin-bottom:6px;">School Address</label>
+          <input type="text" id="th-schoolAddress" style="width:100%;padding:9px 12px;border:1px solid #d1d5db;border-radius:6px;font-size:13px;font-family:inherit;" />
+        </div>
+        <div>
+          <label style="display:block;font-size:11px;font-weight:700;color:#374151;text-transform:uppercase;margin-bottom:6px;">Teacher Name</label>
+          <input type="text" id="th-teacherName" style="width:100%;padding:9px 12px;border:1px solid #d1d5db;border-radius:6px;font-size:13px;font-family:inherit;" />
+        </div>
+        <div>
+          <label style="display:block;font-size:11px;font-weight:700;color:#374151;text-transform:uppercase;margin-bottom:6px;">School Year</label>
+          <input type="text" id="th-schoolYear" style="width:100%;padding:9px 12px;border:1px solid #d1d5db;border-radius:6px;font-size:13px;font-family:inherit;" />
+        </div>
+      </div>
+      <div style="font-size:11px;color:#6b7280;margin-top:8px;">
+        💡 Tip: Leave any field blank to use the school-wide default from ILAW Settings.
+      </div>
+    </div>
+    <div style="padding:14px 22px;border-top:1px solid #e5e7eb;display:flex;justify-content:space-between;gap:10px;background:#fafbfc;">
+      <button id="tmHeaderReset" class="tm-action" style="flex:0 0 auto;padding:9px 16px;">🔄 Reset to Defaults</button>
+      <div style="display:flex;gap:8px;">
+        <button id="tmHeaderCancel" class="tm-action" style="flex:0 0 auto;padding:9px 16px;">Cancel</button>
+        <button id="tmHeaderSave" class="tm-action primary" style="flex:0 0 auto;padding:9px 16px;">💾 Save Header</button>
+      </div>
+    </div>
+  </div>
+</div>
 
   <!-- Toast -->
   <div id="tmToast" style="position:fixed;bottom:90px;left:50%;transform:translateX(-50%) translateY(20px);background:#111827;color:#fff;padding:12px 22px;border-radius:8px;font-size:14px;font-weight:600;box-shadow:0 8px 24px rgba(0,0,0,.2);opacity:0;transition:all .25s;z-index:10000;pointer-events:none;"></div>
@@ -602,6 +981,8 @@
           return;
         }
         LESSON = { id: snap.id, ...snap.data() };
+        // 🆕 Load header overrides for this pack
+        PACK_OVERRIDES = LESSON.packOverrides || null;
 
         // Load each material (or null if not yet generated)
         for (const type of ["lecture", "activities", "slides", "quiz"]) {
@@ -861,44 +1242,6 @@
       toast("✓ All materials generated", "success");
     });
 
-    // ---------- Print / Download Pack ----------
-    $("tmPrintAll").addEventListener("click", () => printPack());
-    $("tmDownloadPack").addEventListener("click", () => printPack());
-
-    function printPack() {
-      const ready = Object.keys(MATERIALS).filter(t => MATERIALS[t] && MATERIALS[t].content);
-      if (!ready.length) { toast("⚠️ Generate at least one material first", "error"); return; }
-
-      const html = `
-        <html><head><title>Materials Pack — ${esc(LESSON.lessonTitle || LESSON.subjectName)}</title>
-        <style>
-          body { font-family: "Times New Roman", serif; margin: 20mm; line-height: 1.5; color: #000; }
-          h1 { font-size: 18pt; text-align: center; }
-          h2 { font-size: 14pt; border-bottom: 2px solid #000; padding-bottom: 4px; margin-top: 24px; page-break-before: always; }
-          h2:first-of-type { page-break-before: avoid; }
-          .meta { text-align: center; font-size: 11pt; color: #333; margin-bottom: 20px; }
-          .content p { margin: 0 0 8px; }
-          .content ul, .content ol { margin: 6px 0 6px 20px; }
-          .content li { margin-bottom: 4px; }
-        </style></head><body>
-        <h1>Teaching Materials Pack</h1>
-        <div class="meta">
-          ${esc(LESSON.lessonTitle || LESSON.subjectName || "")}<br>
-          ${esc(LESSON.subjectName || "")} — Grade ${esc(LESSON.gradeLevel || "")} — Term ${esc(LESSON.term || "")} Week ${esc(LESSON.week || "")}<br>
-          ${esc(LESSON.teacherName || "")}
-        </div>
-        ${ready.map(type => `
-          <h2>${esc(materialTitle(type))}</h2>
-          <div class="content">${MATERIALS[type].content}</div>
-        `).join("")}
-        </body></html>
-      `;
-
-      const host = $("tmPrintHost");
-      host.innerHTML = html;
-      setTimeout(() => { window.print(); }, 300);
-    }
-
     function materialTitle(type) {
       return {
         lecture: "📖 Lecture Notes",
@@ -907,6 +1250,231 @@
         quiz: "❓ Quiz & Assessment",
       }[type] || type;
     }
+
+        // ============================================================
+    // PRINT PACK — Cover page + per-section covers + running footer
+    // ============================================================
+    let PACK_OVERRIDES = null;
+
+    async function loadPackOverrides() {
+      if (!LESSON_ID) return null;
+      try {
+        const snap = await getDoc(doc(db, "lessons", LESSON_ID));
+        if (snap.exists()) {
+          return snap.data().packOverrides || null;
+        }
+      } catch (e) {
+        console.warn("[pack] could not load overrides:", e);
+      }
+      return null;
+    }
+
+    async function savePackOverrides(overrides) {
+      if (!LESSON_ID) return;
+      const { updateDoc, serverTimestamp } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js");
+      await updateDoc(doc(db, "lessons", LESSON_ID), {
+        packOverrides: overrides || {},
+        updatedAt: serverTimestamp(),
+      });
+      PACK_OVERRIDES = overrides;
+    }
+
+    function getEffectiveHeader() {
+      const ov = PACK_OVERRIDES || {};
+      const cfg = ILAW_CONFIG || {};
+      return {
+        depedLogo:     ov.depedLogo     || cfg.depedLogo     || "",
+        headerLine1:   ov.headerLine1   || cfg.headerLine1   || "Republic of the Philippines",
+        headerLine2:   ov.headerLine2   || cfg.headerLine2   || "Department of Education",
+        region:        ov.region        || cfg.region        || "",
+        division:      ov.division      || cfg.division      || "",
+        schoolName:    ov.schoolName    || cfg.schoolName    || "STA. CRUZ PINGKIAN HIGH SCHOOL",
+        schoolAddress: ov.schoolAddress || cfg.schoolAddress || "",
+        teacherName:   ov.teacherName   || LESSON.teacherName || "",
+        schoolYear:    ov.schoolYear    || LESSON.schoolYear  || "2026-2027",
+      };
+    }
+
+    function buildPackPrintHTML() {
+      const h = getEffectiveHeader();
+      const ready = Object.keys(MATERIALS).filter(t => MATERIALS[t] && MATERIALS[t].content);
+      if (!ready.length) return "";
+
+      const orderedSections = ["lecture", "activities", "slides", "quiz"].filter(t => ready.includes(t));
+      const roman = ["I", "II", "III", "IV", "V", "VI", "VII"];
+      const gradeLabel = LESSON.gradeLevel === "K" ? "Kindergarten" : "Grade " + (LESSON.gradeLevel || "—");
+      const generatedDate = new Date().toLocaleDateString("en-PH", { year: "numeric", month: "long", day: "numeric" });
+
+      const coverPage = `
+        <div class="pack-cover-page">
+          <div class="pack-header">
+            ${h.depedLogo ? `<img src="${esc(h.depedLogo)}" alt="DepEd" class="pack-deped-logo" />` : ""}
+            <div class="pack-header-line1">${esc(h.headerLine1)}</div>
+            <div class="pack-header-line2">${esc(h.headerLine2)}</div>
+            <div class="pack-header-region">${esc(h.region)}</div>
+            <div class="pack-header-division">${esc(h.division)}</div>
+          </div>
+
+          <div class="pack-school-row">
+            <div class="pack-school-name">${esc(h.schoolName)}</div>
+            <div class="pack-school-address">${esc(h.schoolAddress)}</div>
+          </div>
+
+          <div class="pack-title">Teaching Materials Pack</div>
+
+          <div class="pack-meta">
+            <div><strong>${esc(LESSON.lessonTitle || LESSON.subjectName || "Lesson")}</strong></div>
+            <div>${esc(LESSON.subjectName || "")} · ${esc(gradeLabel)}${LESSON.section ? " · " + esc(LESSON.section) : ""}</div>
+            <div>Term ${esc(LESSON.term || "—")} · Week ${esc(LESSON.week || "—")} · SY ${esc(h.schoolYear)}</div>
+            <div>Teacher: ${esc(h.teacherName)}</div>
+          </div>
+
+          <div class="pack-toc">
+            <div class="pack-toc-title">Contents</div>
+            <ol>
+              ${orderedSections.map(t => `<li>${esc(materialTitle(t))}</li>`).join("")}
+            </ol>
+          </div>
+
+          <div class="pack-cover-footer">
+            Generated: ${esc(generatedDate)}<br>
+            Produced via SCPHS ILAW Portal · SY ${esc(h.schoolYear)}
+          </div>
+        </div>
+      `;
+
+      const sectionsHTML = orderedSections.map((type, idx) => `
+        <div class="pack-section">
+          <div class="pack-section-header">
+            <div class="pack-section-num">${roman[idx]}. ${esc(materialTitle(type))}</div>
+            <div class="pack-section-sub">${esc(LESSON.subjectName || "")} · ${esc(gradeLabel)} · Term ${esc(LESSON.term || "")} Week ${esc(LESSON.week || "")}</div>
+          </div>
+          <div class="pack-section-body">
+            ${MATERIALS[type].content}
+          </div>
+        </div>
+      `).join("");
+
+      const footer = `
+        <div class="pack-page-footer">
+          ${esc(h.schoolName)} · ${esc(LESSON.subjectName || "")} · Term ${esc(LESSON.term || "")} Week ${esc(LESSON.week || "")} · SY ${esc(h.schoolYear)}
+        </div>
+      `;
+
+      return coverPage + sectionsHTML + footer;
+    }
+
+    async function printPack() {
+      const ready = Object.keys(MATERIALS).filter(t => MATERIALS[t] && MATERIALS[t].content);
+      if (!ready.length) {
+        toast("⚠️ Generate at least one material first", "error");
+        return;
+      }
+
+      PACK_OVERRIDES = await loadPackOverrides();
+
+      const html = buildPackPrintHTML();
+      if (!html) { toast("⚠️ Could not build print document", "error"); return; }
+
+      const host = $("packPrintDoc");
+      host.innerHTML = html;
+
+      const imgs = host.querySelectorAll("img");
+      await Promise.all(Array.from(imgs).map(img => {
+        if (img.complete && img.naturalWidth > 0) return Promise.resolve();
+        return new Promise(res => {
+          img.addEventListener("load", res, { once: true });
+          img.addEventListener("error", res, { once: true });
+          setTimeout(res, 2000);
+        });
+      }));
+
+      document.body.classList.add("pack-printing");
+
+      setTimeout(() => {
+        window.print();
+        setTimeout(() => {
+          host.innerHTML = "";
+          document.body.classList.remove("pack-printing");
+        }, 800);
+      }, 200);
+    }
+
+    // Wire Print All + Download Pack to the new function
+    $("tmPrintAll").addEventListener("click", () => printPack());
+    $("tmDownloadPack").addEventListener("click", async () => {
+      const ok = confirm(
+        "📥 Save Materials Pack as PDF\\n\\n" +
+        "How to save:\\n" +
+        "1. The Print dialog will open\\n" +
+        "2. Choose 'Save as PDF' as the printer\\n" +
+        "3. Click Save\\n\\n" +
+        "Continue?"
+      );
+      if (!ok) return;
+      await printPack();
+    });
+
+        // ============================================================
+    // EDIT HEADER MODAL
+    // ============================================================
+    function openHeaderModal() {
+      const modal = $("tmHeaderModal");
+      modal.style.display = "flex";
+
+      $("th-depedLogo").value     = PACK_OVERRIDES?.depedLogo     || "";
+      $("th-headerLine1").value   = PACK_OVERRIDES?.headerLine1   || "";
+      $("th-headerLine2").value   = PACK_OVERRIDES?.headerLine2   || "";
+      $("th-region").value        = PACK_OVERRIDES?.region        || "";
+      $("th-division").value      = PACK_OVERRIDES?.division      || "";
+      $("th-schoolName").value    = PACK_OVERRIDES?.schoolName    || "";
+      $("th-schoolAddress").value = PACK_OVERRIDES?.schoolAddress || "";
+      $("th-teacherName").value   = PACK_OVERRIDES?.teacherName   || LESSON.teacherName || "";
+      $("th-schoolYear").value    = PACK_OVERRIDES?.schoolYear    || LESSON.schoolYear  || "";
+    }
+
+    function closeHeaderModal() {
+      $("tmHeaderModal").style.display = "none";
+    }
+
+    $("tmEditHeader").addEventListener("click", async () => {
+      if (!PACK_OVERRIDES) PACK_OVERRIDES = await loadPackOverrides();
+      openHeaderModal();
+    });
+
+    $("tmHeaderClose").addEventListener("click", closeHeaderModal);
+    $("tmHeaderCancel").addEventListener("click", closeHeaderModal);
+    $("tmHeaderModal").addEventListener("click", e => {
+      if (e.target === $("tmHeaderModal")) closeHeaderModal();
+    });
+
+    $("tmHeaderSave").addEventListener("click", async () => {
+      const overrides = {};
+      const fields = ["depedLogo","headerLine1","headerLine2","region","division","schoolName","schoolAddress","teacherName","schoolYear"];
+      fields.forEach(f => {
+        const v = ($("th-" + f)?.value || "").trim();
+        if (v) overrides[f] = v;
+      });
+      try {
+        await savePackOverrides(overrides);
+        toast("✓ Header saved for this pack", "success");
+        closeHeaderModal();
+      } catch (e) {
+        toast("⚠️ " + (e.message || "Save failed"), "error");
+      }
+    });
+
+    $("tmHeaderReset").addEventListener("click", async () => {
+      if (!confirm("Reset header for this pack to school defaults?")) return;
+      try {
+        await savePackOverrides(null);
+        PACK_OVERRIDES = null;
+        toast("✓ Reset to school defaults", "success");
+        closeHeaderModal();
+      } catch (e) {
+        toast("⚠️ " + (e.message || "Reset failed"), "error");
+      }
+    });
 
     // ---------- Simple editor modal ----------
     function openEditorModal(type, currentContent) {
@@ -974,6 +1542,8 @@
     }
 
     window.__tmToast = toast;
+
+    
   </script>
 </body>
 </html>
