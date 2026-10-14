@@ -2469,10 +2469,22 @@ async function handleToggleShare() {
     document.getElementById("lmOpenPreview").href = result.url;
     document.getElementById("lmQrImg").src = generateQrCodeUrl(result.url, 240);
 
-    panel.style.display = "block";
+        panel.style.display = "block";
     status.innerHTML = `✅ <strong>Sharing enabled</strong> · Slug: <code>${result.slug}</code>`;
 
-    toast("✓ Module is now shareable!", "success");
+    toast("✓ Activity sheet is now shareable!", "success");
+
+    // 🆕 Refresh the sheet preview so the QR appears at the bottom of the sheet
+    try {
+      const lessonData = collectLASData();
+      lessonData.lasPublicSlug = result.slug;
+      lessonData.lasIsPublic = true;
+      const cfg = ILAW_CONFIG || {};
+      LAS_CURRENT_HTML = buildLASHTML(lessonData, cfg, { hideAnswerKey: false });
+      document.getElementById("lasPreviewHost").innerHTML = LAS_CURRENT_HTML;
+    } catch (e) {
+      console.warn("[las] Could not refresh preview with QR:", e);
+    }
   } catch (e) {
     console.error(e);
     toast("⚠️ " + (e.message || "Could not enable sharing"), "error");
