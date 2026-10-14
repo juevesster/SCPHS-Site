@@ -2157,16 +2157,27 @@ async function openLearnerModuleModal() {
     return;
   }
 
-  // If the lesson is already saved, check for existing publicSlug + viewCount
+    // If the lesson is already saved, check for existing publicSlug + viewCount + AI content
   if (CURRENT_LESSON_ID) {
     try {
       const { doc, getDoc } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js");
       const snap = await getDoc(doc(db, "lessons", CURRENT_LESSON_ID));
       if (snap.exists()) {
         const saved = snap.data();
-        if (saved.publicSlug)                 lesson.publicSlug = saved.publicSlug;
+        if (saved.publicSlug)                    lesson.publicSlug = saved.publicSlug;
         if (typeof saved.viewCount === "number") lesson.viewCount = saved.viewCount;
         if (typeof saved.isPublic === "boolean") lesson.isPublic = saved.isPublic;
+
+        // 🆕 Restore saved AI module content so it appears in the modal
+        if (saved.moduleContent) {
+          const mc = saved.moduleContent;
+          if (mc.greeting)                    lesson._aiGreeting     = mc.greeting;
+          if (Array.isArray(mc.objectives))   lesson._aiObjectives   = mc.objectives;
+          if (mc.lessonIntro)                 lesson._aiLessonIntro  = mc.lessonIntro;
+          if (Array.isArray(mc.lessonSteps))  lesson._aiLessonSteps  = mc.lessonSteps;
+          if (Array.isArray(mc.activities))   lesson._aiActivities   = mc.activities;
+          if (Array.isArray(mc.selfCheck))    lesson._aiSelfCheck    = mc.selfCheck;
+        }
       }
     } catch (e) {
       console.warn("[ilaw] Could not load saved slug:", e);
