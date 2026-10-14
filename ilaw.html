@@ -19,6 +19,11 @@
   body.lm-printing .btn,
   body.lm-printing .bow-info { display: none !important; }
 
+  /* 🆕 Hide modals during print */
+  body.lm-printing #lmModal,
+  body.lm-printing #lasModal,
+  body.lm-printing .modal { display: none !important; }
+
   body.lm-printing .lm-print-doc { display: block !important; }
   body.lm-printing .print-doc { display: none !important; }
 }
@@ -2452,9 +2457,40 @@ function setPrintPageOrientation(orientation) {
     style.id = "dynamic-page-style";
     document.head.appendChild(style);
   }
-  style.textContent = orientation === "portrait"
-    ? "@page { size: A4 portrait; margin: 12mm 10mm 14mm 10mm; }"
-    : "@page { size: A4 landscape; margin: 8mm 10mm 15mm 10mm; }";
+
+  if (orientation === "portrait") {
+    style.textContent = `
+      @page {
+        size: A4 portrait;
+        margin: 12mm 10mm 14mm 10mm;
+        @bottom-center {
+          content: "Learning Module — Page " counter(page) " of " counter(pages);
+          font-family: "Times New Roman", Times, serif;
+          font-size: 8.5pt;
+          color: #333;
+          padding-top: 2mm;
+          border-top: 0.5px solid #999;
+          width: 100%;
+        }
+      }
+    `;
+  } else {
+    style.textContent = `
+      @page {
+        size: A4 landscape;
+        margin: 8mm 10mm 15mm 10mm;
+        @bottom-center {
+          content: "ILAW Lesson Plan — Page " counter(page) " of " counter(pages);
+          font-family: "Times New Roman", Times, serif;
+          font-size: 8.5pt;
+          color: #333;
+          padding-top: 2mm;
+          border-top: 0.5px solid #999;
+          width: 100%;
+        }
+      }
+    `;
+  }
 }
 
 // ============================================================
