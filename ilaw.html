@@ -2402,6 +2402,17 @@ function wireLearnerModuleModal() {
     lmDownload.addEventListener("click", downloadLearnerModulePDF);
     lmDownload._wired = true;
   }
+    if (lmDownload && !lmDownload._wired) {
+    lmDownload.addEventListener("click", downloadLearnerModulePDF);
+    lmDownload._wired = true;
+  }
+
+  // 🎯 Replay Tour button
+  const lmReplay = document.getElementById("lmReplayTour");
+  if (lmReplay && !lmReplay._wired) {
+    lmReplay.addEventListener("click", () => runLMTour());
+    lmReplay._wired = true;
+  }
 }
 
 // Try immediately, then again after a tick (in case DOM isn't ready)
