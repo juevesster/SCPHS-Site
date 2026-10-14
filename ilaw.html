@@ -2862,35 +2862,34 @@ function wireLASModal() {
     }
   });
 
-  document.getElementById("lasShowQr")?.addEventListener("click", () => {
-  const wrap = document.getElementById("lasQrWrap");
-  const img  = document.getElementById("lasQrImg");
-  const url  = document.getElementById("lasShareUrl")?.value || "";
-  const btn  = document.getElementById("lasShowQr");
+    document.getElementById("lasShowQr")?.addEventListener("click", () => {
+    const wrap = document.getElementById("lasQrWrap");
+    const img  = document.getElementById("lasQrImg");
+    const url  = document.getElementById("lasShareUrl")?.value || "";
+    const btn  = document.getElementById("lasShowQr");
 
-  if (!url) {
-    toast("⚠️ Enable sharing first, then show the QR code.", "error");
-    return;
-  }
+    if (!url) {
+      toast("⚠️ Enable sharing first, then the QR will appear.", "error");
+      return;
+    }
 
-  // Generate QR src on demand
-  const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=240x240&data=${encodeURIComponent(url)}&color=0f2b4f&bgcolor=ffffff`;
-  if (!img.src || img.src.indexOf("qrserver") === -1) {
-    img.src = qrUrl;
-  }
+    // Always generate the QR src on click
+    img.src = `https://api.qrserver.com/v1/create-qr-code/?size=240x240&data=${encodeURIComponent(url)}&color=0f2b4f&bgcolor=ffffff`;
 
-  const isHidden = !wrap.style.display || wrap.style.display === "none";
-  wrap.style.display = isHidden ? "block" : "none";
-  btn.textContent = isHidden ? "📱 Hide QR" : "📱 QR Code";
-});
+    const isHidden = !wrap.style.display || wrap.style.display === "none";
+    wrap.style.display = isHidden ? "block" : "none";
+    btn.textContent = isHidden ? "📱 Hide QR" : "📱 QR Code";
+  });
+}
 
-// Wire once immediately, then retry in case DOM isn't ready
+// Robust wiring — retries in case DOM isn't ready
 if (document.readyState === "loading") {
   document.addEventListener("DOMContentLoaded", wireLASModal);
 } else {
   wireLASModal();
 }
 setTimeout(wireLASModal, 500);
+setTimeout(wireLASModal, 1500);
 
 window.__ilawToast = toast;
 
