@@ -279,7 +279,7 @@
 
     let CURRENT_LESSON = null;
 
-    async function init() {
+        async function init() {
       if (!SLUG) {
         showNoSlugLanding();
         return;
@@ -288,16 +288,17 @@
       try {
         const lesson = await getSharedLessonBySlug(SLUG);
         if (!lesson) {
-        showError("Module not found", "...");
-        return;
-      }
+          showError("Module not found", "This module may have been removed or is not yet shared.");
+          return;
+        }
 
-      // 🆕 Merge saved AI content (if any) into the lesson object
+        // 🆕 Merge saved AI content (if any) into the lesson object
         const merged = applySavedModuleContent(lesson);
         CURRENT_LESSON = merged;
-        document.title = `${lesson.lessonTitle || lesson.subjectName} — Learning Module`;
-        $("pageTitle").textContent = lesson.lessonTitle || lesson.subjectName || "Learning Module";
-        $("pageSub").textContent = `${lesson.subjectName || ""} · Grade ${lesson.gradeLevel || ""} · Term ${lesson.term || ""} Week ${lesson.week || ""}`;
+
+        document.title = `${merged.lessonTitle || merged.subjectName} — Learning Module`;
+        $("pageTitle").textContent = merged.lessonTitle || merged.subjectName || "Learning Module";
+        $("pageSub").textContent = `${merged.subjectName || ""} · Grade ${merged.gradeLevel || ""} · Term ${merged.term || ""} Week ${merged.week || ""}`;
 
         // Load config for header (logo, school name)
         const cfg = (window.ILAWConfig && window.ILAWConfig.load)

@@ -2288,6 +2288,27 @@ async function enhanceLearnerModule() {
     document.getElementById("lmPreviewHost").innerHTML = LM_CURRENT_HTML;
     status.textContent = "✨ Enhanced with AI. Review before printing.";
     toast("✓ Learner module enhanced with AI", "success");
+    // 🆕 Save AI content to Firestore so the public viewer can display it
+if (CURRENT_LESSON_ID) {
+  try {
+    const { doc, updateDoc, serverTimestamp } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js");
+    await updateDoc(doc(db, "lessons", CURRENT_LESSON_ID), {
+      moduleContent: {
+        greeting:      merged._aiGreeting      || "",
+        objectives:    merged._aiObjectives    || [],
+        lessonIntro:   merged._aiLessonIntro   || "",
+        lessonSteps:   merged._aiLessonSteps   || [],
+        activities:    merged._aiActivities    || [],
+        selfCheck:     merged._aiSelfCheck     || [],
+        savedAt:       serverTimestamp(),
+      },
+    });
+    status.textContent = "✨ Enhanced with AI. Saved.";
+  } catch (saveErr) {
+    console.error("[lm] Save failed:", saveErr);
+    status.textContent = "⚠️ Enhanced but not saved: " + saveErr.message;
+  }
+}
 
   } catch (e) {
     console.error(e);
