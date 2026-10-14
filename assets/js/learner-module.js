@@ -498,22 +498,3 @@ function buildSelfCheckQuestions(lesson) {
 
   return questions.slice(0, 5);
 }
-
-// ------------------------------------------------------------
-// Merge saved AI content from Firestore back into lesson object
-// Called by m.html when loading a shared module
-// ------------------------------------------------------------
-export function applySavedModuleContent(lesson) {
-  if (!lesson || !lesson.moduleContent) return lesson;
-  const mc = lesson.moduleContent;
-  const merged = { ...lesson };
-
-  if (mc.greeting)                    merged._aiGreeting      = mc.greeting;
-  if (Array.isArray(mc.objectives))   merged._aiObjectives    = mc.objectives;
-  if (mc.lessonIntro)                 merged._aiLessonIntro   = mc.lessonIntro;
-  if (Array.isArray(mc.lessonSteps))  merged._aiLessonSteps   = mc.lessonSteps;
-  if (Array.isArray(mc.activities))   merged._aiActivities    = mc.activities;
-  if (Array.isArray(mc.selfCheck))    merged._aiSelfCheck     = mc.selfCheck;
-
-  return merged;
-}
