@@ -280,6 +280,28 @@
 
       try {
         const lesson = await getSharedLASBySlug(SLUG);
+        // Merge saved LAS content back into the lesson object
+if (lesson.lasContent) {
+  lesson._aiLASActivityTitle = lesson.lasContent.activityTitle;
+  lesson._aiLASObjective     = lesson.lasContent.objective;
+  lesson._aiLASMaterials     = lesson.lasContent.materials;
+  lesson._aiLASInstructions  = lesson.lasContent.instructions;
+  lesson._aiLASAnalysis      = lesson.lasContent.analysis;
+  lesson._aiLASAnswerKey     = lesson.lasContent.answerKey;
+  lesson.subjectName         = lesson.lasContent.subjectName;
+  lesson.gradeLevel          = lesson.lasContent.gradeLevel;
+  lesson.section             = lesson.lasContent.section;
+  lesson.term                = lesson.lasContent.term;
+  lesson.week                = lesson.lasContent.week;
+  lesson.schoolYear          = lesson.lasContent.schoolYear;
+  lesson.preparedByName      = lesson.lasContent.preparedByName;
+  lesson.preparedByPosition  = lesson.lasContent.preparedByPosition;
+  lesson.checkedByName       = lesson.lasContent.checkedByName;
+  lesson.checkedByPosition   = lesson.lasContent.checkedByPosition;
+  lesson.notedByName         = lesson.lasContent.notedByName;
+  lesson.notedByPosition     = lesson.lasContent.notedByPosition;
+  lesson.competencies        = lesson.lasContent.competencies;
+}
         if (!lesson) {
           showError("Activity sheet not found", "This sheet may have been removed or is not yet shared.");
           return;
