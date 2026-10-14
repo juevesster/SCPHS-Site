@@ -545,7 +545,10 @@
         <h3 style="margin:0;font-size:1.1rem;color:#0f2b4f;">📘 Learner Module Preview</h3>
         <p style="margin:4px 0 0;font-size:12px;color:#6b7280;">A student-friendly version of this lesson — for home learning during class suspension.</p>
       </div>
-      <button class="btn btn-outline small" id="lmClose">✕</button>
+      <div style="display:flex;gap:8px;align-items:center;">
+  <button class="btn btn-outline small" id="lmReplayTour" style="background:#eef2ff;color:#4f46e5;border-color:#c7d2fe;">❓ Tour</button>
+  <button class="btn btn-outline small" id="lmClose">✕</button>
+</div>
     </div>
 
     <div style="flex:1;overflow-y:auto;background:#f3f4f6;padding:20px;">
@@ -614,7 +617,10 @@
         <h3 style="margin:0;font-size:1.1rem;color:#0f2b4f;">📝 Learning Activity Sheet Preview</h3>
         <p style="margin:4px 0 0;font-size:12px;color:#6b7280;">An original worksheet aligned to the BoW competency — for classroom or home use.</p>
       </div>
-      <button class="btn btn-outline small" id="lasClose">✕</button>
+      <div style="display:flex;gap:8px;align-items:center;">
+  <button class="btn btn-outline small" id="lasReplayTour" style="background:#eef2ff;color:#4f46e5;border-color:#c7d2fe;">❓ Tour</button>
+  <button class="btn btn-outline small" id="lasClose">✕</button>
+</div>
     </div>
 
     <div style="flex:1;overflow-y:auto;background:#f3f4f6;padding:20px;">
@@ -696,6 +702,8 @@
     enableLASSharing, disableLASSharing, buildLASPublicUrl,
     getSharedLASBySlug,
     } from "./assets/js/learner-share.js";
+    import { runLASTour, shouldRunLASTour } from "./assets/js/las-tour.js";
+    import { runLMTour, shouldRunLMTour } from "./assets/js/lm-tour.js";
 
     let CURRENT_USER = null;
     let CURRENT_PROFILE = null;
@@ -2240,6 +2248,10 @@ async function openLearnerModuleModal() {
     sharePanel.style.display = "none";
     shareStatus.textContent = "Not yet shared";
   }
+  // 🎯 Fire the tour on first open
+  setTimeout(() => {
+    if (shouldRunLMTour()) runLMTour();
+  }, 500);
 }
 
 function closeLearnerModuleModal() {
@@ -2389,6 +2401,12 @@ function wireLearnerModuleModal() {
   if (lmDownload && !lmDownload._wired) {
     lmDownload.addEventListener("click", downloadLearnerModulePDF);
     lmDownload._wired = true;
+  }
+    // 🎯 Replay Tour button
+  const lmReplay = document.getElementById("lmReplayTour");
+  if (lmReplay && !lmReplay._wired) {
+    lmReplay.addEventListener("click", () => runLMTour());
+    lmReplay._wired = true;
   }
 }
 
@@ -2651,6 +2669,10 @@ async function openLASModal() {
     sharePanel.style.display = "none";
     shareStatus.textContent = "Not yet shared";
   }
+  // 🎯 Fire the tour on first open
+  setTimeout(() => {
+    if (shouldRunLASTour()) runLASTour();
+  }, 500);
 }
 
 function closeLASModal() {
@@ -2875,6 +2897,13 @@ function wireLASModal() {
   if (lasDownload && !lasDownload._wired) {
     lasDownload.addEventListener("click", downloadLASPDF);
     lasDownload._wired = true;
+
+      // 🎯 Replay Tour button
+  const lasReplay = document.getElementById("lasReplayTour");
+  if (lasReplay && !lasReplay._wired) {
+    lasReplay.addEventListener("click", () => runLASTour());
+    lasReplay._wired = true;
+  }
   }
 
   document.getElementById("lasToggleShare")?.addEventListener("click", handleToggleLASShare);
