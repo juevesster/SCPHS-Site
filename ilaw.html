@@ -606,6 +606,71 @@
 <!-- Hidden container that holds the module during print -->
 <div class="lm-print-doc" id="lmPrintDoc"></div>
 
+<!-- LAS Modal -->
+<div class="modal" id="lasModal" style="position:fixed;inset:0;background:rgba(0,0,0,.6);display:none;align-items:center;justify-content:center;z-index:10000;padding:20px;">
+  <div style="background:#fff;border-radius:14px;max-width:900px;width:100%;max-height:92vh;display:flex;flex-direction:column;box-shadow:0 24px 48px rgba(0,0,0,.25);">
+    <div style="padding:18px 22px;border-bottom:1px solid #e5e7eb;display:flex;justify-content:space-between;align-items:center;">
+      <div>
+        <h3 style="margin:0;font-size:1.1rem;color:#0f2b4f;">📝 Learning Activity Sheet Preview</h3>
+        <p style="margin:4px 0 0;font-size:12px;color:#6b7280;">An original worksheet aligned to the BoW competency — for classroom or home use.</p>
+      </div>
+      <button class="btn btn-outline small" id="lasClose">✕</button>
+    </div>
+
+    <div style="flex:1;overflow-y:auto;background:#f3f4f6;padding:20px;">
+      <div id="lasPreviewHost" style="background:#fff;border-radius:8px;box-shadow:0 4px 20px rgba(0,0,0,.1);"></div>
+    </div>
+
+    <!-- SHARE SECTION -->
+    <div id="lasShareSection" style="padding:16px 22px;border-top:1px solid #e5e7eb;background:#f8fafc;">
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:12px;">
+        <div>
+          <div style="font-size:12px;font-weight:800;color:#0f2b4f;text-transform:uppercase;letter-spacing:.05em;">🚀 Share with Learners</div>
+          <div id="lasShareStatus" style="font-size:11.5px;color:#6b7280;margin-top:3px;">Not yet shared</div>
+        </div>
+        <button class="btn btn-outline small" id="lasToggleShare" style="background:#10b981;color:#fff;border-color:#10b981;">🔗 Enable Sharing</button>
+      </div>
+
+      <div id="lasSharePanel" style="display:none;background:#fff;border:1px solid #e5e7eb;border-radius:10px;padding:14px;">
+        <div style="margin-bottom:12px;">
+          <div style="font-size:10.5px;font-weight:800;color:#6b7280;text-transform:uppercase;letter-spacing:.04em;margin-bottom:4px;">Public Link</div>
+          <div style="display:flex;gap:6px;flex-wrap:wrap;">
+            <input type="text" id="lasShareUrl" readonly
+                   style="flex:1;min-width:200px;padding:8px 10px;border:1px solid #d1d5db;border-radius:6px;font-size:12px;font-family:monospace;background:#f9fafb;" />
+            <button class="btn btn-outline small" id="lasCopyLink">📋 Copy</button>
+            <a class="btn btn-outline small" id="lasOpenPreview" href="#" target="_blank" rel="noopener">↗ Open</a>
+          </div>
+        </div>
+
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;">
+          <button class="btn btn-outline small" id="lasShareMessenger" style="background:#0084FF;color:#fff;border-color:#0084FF;">💬 Send to Messenger</button>
+          <button class="btn btn-outline small" id="lasShareNative" style="background:#7c3aed;color:#fff;border-color:#7c3aed;">📤 Share…</button>
+          <button class="btn btn-outline small" id="lasShowQr" style="background:#0f2b4f;color:#fff;border-color:#0f2b4f;">📱 QR Code</button>
+        </div>
+
+        <div id="lasQrWrap" style="display:none;text-align:center;padding:12px;background:#f9fafb;border-radius:8px;">
+          <div style="font-size:11px;color:#6b7280;margin-bottom:8px;">Scan this on your phone</div>
+          <img id="lasQrImg" alt="QR Code"
+               style="max-width:200px;border-radius:8px;box-shadow:0 2px 8px rgba(0,0,0,.1);" />
+          <div style="font-size:10px;color:#9ca3af;margin-top:8px;">Students scan → opens activity sheet on phone</div>
+        </div>
+      </div>
+    </div>
+
+    <div style="padding:14px 22px;border-top:1px solid #e5e7eb;display:flex;justify-content:space-between;gap:10px;background:#fafbfc;flex-wrap:wrap;">
+      <div id="lasStatus" style="font-size:13px;color:#6b7280;align-self:center;"></div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;">
+        <button class="btn btn-outline" id="lasUseAI" style="background:#4f46e5;color:#fff;border-color:#4f46e5;">✨ Enhance with AI</button>
+        <button class="btn btn-outline" id="lasPrint">🖨 Print</button>
+        <button class="btn btn-primary" id="lasDownload">📥 Download as PDF</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Hidden container that holds the LAS during print -->
+<div class="lm-print-doc" id="lasPrintDoc"></div>
+
   <script type="module">
     import { auth, db } from "./assets/js/firebase-config.js";
     import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
@@ -625,6 +690,12 @@
     import { openEditorModal, loadOverrides } from "./assets/js/module-editor.js";
     import { shouldRunTour, runTour, initReplayButton, resetTour } from "./assets/js/ilaw-tour.js";
     import { initHelper } from "./assets/js/ilaw-helper.js";
+    import { collectLASData, buildLASHTML } from "./assets/js/las-generator.js";
+    import { enhanceLASWithAI, mergeAIIntoLAS } from "./assets/js/ai-las.js";
+    import {
+    enableLASSharing, disableLASSharing, buildLASPublicUrl,
+    getSharedLASBySlug,
+    } from "./assets/js/learner-share.js";
 
     let CURRENT_USER = null;
     let CURRENT_PROFILE = null;
@@ -1061,6 +1132,7 @@ async function loadSchoolDetailsForPrint() {
             <button class="btn btn-outline" id="btnDuplicate">📋 Duplicate</button>
             <button class="btn btn-outline" id="btnMaterialsPack" style="background:#4f46e5;color:#fff;border-color:#4f46e5;">📚 Materials Pack</button>
             <button class="btn btn-outline" id="btnLearnerModule" style="background:#7c3aed;color:#fff;border-color:#7c3aed;">📘 Generate Learner Module</button>
+            <button class="btn btn-outline" id="btnLAS" style="background:#0891b2;color:#fff;border-color:#0891b2;">📝 Generate LAS</button>
             <button class="btn btn-outline" id="btnDownload" style="background:#1e3c72;color:white;border-color:#1e3c72;">📥 Download PDF</button>
             <button class="btn btn-outline" id="btnPrint">🖨️ Print</button>
             ${CURRENT_LESSON_ID ? `<button class="btn btn-danger" id="btnDelete">🗑️ Delete</button>` : ""}
@@ -2488,6 +2560,318 @@ document.addEventListener("click", (e) => {
     img.src = `https://api.qrserver.com/v1/create-qr-code/?size=240x240&data=${encodeURIComponent(url)}&color=0f2b4f&bgcolor=ffffff`;
   }
 });
+
+// ============================================================
+// LAS (Learning Activity Sheet) — mirrors Learner Module
+// ============================================================
+let LAS_CURRENT_HTML = "";
+
+async function openLASModal() {
+  const lesson = collectLASData();
+
+  lesson._templateRegion        = ILAW_CONFIG?.region        || "";
+  lesson._templateDivision      = ILAW_CONFIG?.division      || "";
+  lesson._templateSchoolName    = ILAW_CONFIG?.schoolName    || "";
+  lesson._templateSchoolAddress = ILAW_CONFIG?.schoolAddress || "";
+
+  if (!lesson.lessonTitle && !lesson.subjectName) {
+    toast("⚠️ Please fill in the lesson details first.", "error");
+    return;
+  }
+
+  // Check for existing LAS slug
+  if (CURRENT_LESSON_ID) {
+    try {
+      const { doc, getDoc } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js");
+      const snap = await getDoc(doc(db, "lessons", CURRENT_LESSON_ID));
+      if (snap.exists()) {
+        const saved = snap.data();
+        if (saved.lasPublicSlug) lesson.lasPublicSlug = saved.lasPublicSlug;
+        if (typeof saved.lasIsPublic === "boolean") lesson.lasIsPublic = saved.lasIsPublic;
+      }
+    } catch (e) {
+      console.warn("[las] Could not load saved slug:", e);
+    }
+
+    // Load LAS overrides (teacher edits)
+    try {
+      const { loadOverrides } = await import("./assets/js/module-editor.js");
+      const overrides = await loadOverrides(CURRENT_LESSON_ID + ":LAS");
+      if (overrides && Object.keys(overrides).length) {
+        lesson.lasOverrides = overrides;
+      }
+    } catch (e) {
+      console.warn("[las] Could not load LAS overrides:", e);
+    }
+  }
+
+  const cfg = ILAW_CONFIG || {};
+  LAS_CURRENT_HTML = buildLASHTML(lesson, cfg, { hideAnswerKey: false });
+  document.getElementById("lasPreviewHost").innerHTML = LAS_CURRENT_HTML;
+  document.getElementById("lasModal").style.display = "flex";
+
+  document.getElementById("lasStatus").textContent = "Template version (no AI used).";
+
+  // Reset share panel state
+  const toggleBtn = document.getElementById("lasToggleShare");
+  const sharePanel = document.getElementById("lasSharePanel");
+  const shareStatus = document.getElementById("lasShareStatus");
+
+  if (lesson.lasPublicSlug && lesson.lasIsPublic !== false && toggleBtn) {
+    const url = buildLASPublicUrl(lesson.lasPublicSlug);
+    toggleBtn.dataset.shared = "true";
+    toggleBtn.dataset.slug = lesson.lasPublicSlug;
+    toggleBtn.dataset.url = url;
+    toggleBtn.textContent = "🚫 Stop Sharing";
+    toggleBtn.style.background = "#dc2626";
+    sharePanel.style.display = "block";
+    shareStatus.innerHTML = `✅ <strong>Sharing enabled</strong> · Slug: <code>${lesson.lasPublicSlug}</code>`;
+    document.getElementById("lasShareUrl").value = url;
+    document.getElementById("lasOpenPreview").href = url;
+    document.getElementById("lasQrImg").src = `https://api.qrserver.com/v1/create-qr-code/?size=240x240&data=${encodeURIComponent(url)}&color=0f2b4f&bgcolor=ffffff`;
+    document.getElementById("lasQrWrap").style.display = "none";
+  } else if (toggleBtn) {
+    toggleBtn.dataset.shared = "false";
+    toggleBtn.textContent = "🔗 Enable Sharing";
+    toggleBtn.style.background = "#10b981";
+    sharePanel.style.display = "none";
+    shareStatus.textContent = "Not yet shared";
+  }
+}
+
+function closeLASModal() {
+  document.getElementById("lasModal").style.display = "none";
+  document.getElementById("lasPreviewHost").innerHTML = "";
+  LAS_CURRENT_HTML = "";
+  document.getElementById("lasStatus").textContent = "";
+}
+
+async function enhanceLAS() {
+  const btn = document.getElementById("lasUseAI");
+  const status = document.getElementById("lasStatus");
+  const originalText = btn.textContent;
+  btn.disabled = true;
+
+  const lesson = collectLASData();
+  const cfg = ILAW_CONFIG || {};
+
+  try {
+    const aiData = await enhanceLASWithAI(lesson, (msg) => {
+      status.textContent = msg;
+      btn.textContent = "⏳ " + msg;
+    });
+
+    if (!aiData) {
+      status.textContent = "⚠️ AI not configured or unavailable — keeping template version.";
+      toast("⚠️ AI unavailable, using template.", "error");
+      return;
+    }
+
+    const merged = mergeAIIntoLAS(lesson, aiData);
+    LAS_CURRENT_HTML = buildLASHTML(merged, cfg, { hideAnswerKey: false });
+
+    document.getElementById("lasPreviewHost").innerHTML = LAS_CURRENT_HTML;
+    status.textContent = "✨ Enhanced with AI. Review before printing.";
+    toast("✓ Learning Activity Sheet enhanced with AI", "success");
+
+  } catch (e) {
+    console.error(e);
+    status.textContent = "⚠️ AI failed: " + e.message;
+    toast("⚠️ AI failed", "error");
+  } finally {
+    btn.disabled = false;
+    btn.textContent = originalText;
+  }
+}
+
+function printLAS() {
+  if (!LAS_CURRENT_HTML) return;
+  setPrintPageOrientation("portrait");
+
+  const printDoc = document.getElementById("lasPrintDoc");
+  printDoc.innerHTML = LAS_CURRENT_HTML;
+  document.body.classList.add("lm-printing");
+
+  setTimeout(() => {
+    window.print();
+    setTimeout(() => {
+      printDoc.innerHTML = "";
+      document.body.classList.remove("lm-printing");
+    }, 600);
+  }, 200);
+}
+
+async function downloadLASPDF() {
+  if (!LAS_CURRENT_HTML) return;
+  setPrintPageOrientation("portrait");
+
+  const ok = confirm(
+    "📥 Save Learning Activity Sheet as PDF\n\n" +
+    "How to save:\n" +
+    "1. The Print dialog will open\n" +
+    "2. Choose 'Save as PDF'\n" +
+    "3. Click Save\n\n" +
+    "Continue?"
+  );
+  if (!ok) return;
+
+  const printDoc = document.getElementById("lasPrintDoc");
+  printDoc.innerHTML = LAS_CURRENT_HTML;
+
+  const imgs = printDoc.querySelectorAll("img");
+  await Promise.all(Array.from(imgs).map(img => {
+    if (img.complete && img.naturalWidth > 0) return Promise.resolve();
+    return new Promise(res => {
+      img.addEventListener("load", res, { once: true });
+      img.addEventListener("error", res, { once: true });
+      setTimeout(res, 2000);
+    });
+  }));
+
+  document.body.classList.add("lm-printing");
+  setTimeout(() => {
+    window.print();
+    setTimeout(() => {
+      printDoc.innerHTML = "";
+      document.body.classList.remove("lm-printing");
+    }, 800);
+  }, 200);
+}
+
+async function handleToggleLASShare() {
+  if (!CURRENT_LESSON_ID) {
+    toast("⚠️ Please save the lesson first before sharing.", "error");
+    return;
+  }
+
+  const lesson = collectLASData();
+  const btn = document.getElementById("lasToggleShare");
+  const panel = document.getElementById("lasSharePanel");
+  const status = document.getElementById("lasShareStatus");
+
+  const alreadyShared = btn.dataset.shared === "true";
+
+  if (alreadyShared) {
+    if (!confirm("Stop sharing this activity sheet?")) return;
+    try {
+      await disableLASSharing(CURRENT_LESSON_ID);
+      btn.dataset.shared = "false";
+      btn.textContent = "🔗 Enable Sharing";
+      btn.style.background = "#10b981";
+      panel.style.display = "none";
+      status.textContent = "Not yet shared";
+      toast("✓ Sharing disabled", "success");
+    } catch (e) {
+      toast("⚠️ " + (e.message || "Could not disable"), "error");
+    }
+    return;
+  }
+
+  btn.disabled = true;
+  btn.textContent = "⏳ Enabling...";
+
+  try {
+    const result = await enableLASSharing(CURRENT_LESSON_ID, {
+      subjectCode: lesson.subjectCode,
+      term: lesson.term,
+      week: lesson.week,
+    });
+
+    btn.dataset.shared = "true";
+    btn.dataset.slug = result.slug;
+    btn.dataset.url = result.url;
+    btn.textContent = "🚫 Stop Sharing";
+    btn.style.background = "#dc2626";
+
+    document.getElementById("lasShareUrl").value = result.url;
+    document.getElementById("lasOpenPreview").href = result.url;
+    document.getElementById("lasQrImg").src = `https://api.qrserver.com/v1/create-qr-code/?size=240x240&data=${encodeURIComponent(result.url)}&color=0f2b4f&bgcolor=ffffff`;
+
+    panel.style.display = "block";
+    status.innerHTML = `✅ <strong>Sharing enabled</strong> · Slug: <code>${result.slug}</code>`;
+
+    toast("✓ Activity sheet is now shareable!", "success");
+  } catch (e) {
+    console.error(e);
+    toast("⚠️ " + (e.message || "Could not enable sharing"), "error");
+    btn.textContent = "🔗 Enable Sharing";
+  } finally {
+    btn.disabled = false;
+  }
+}
+
+// Button delegation — LAS
+document.addEventListener("click", (e) => {
+  if (e.target.closest("#btnLAS")) {
+    openLASModal();
+  }
+});
+
+// Wire LAS modal buttons
+function wireLASModal() {
+  const lasClose = document.getElementById("lasClose");
+  const lasUseAI = document.getElementById("lasUseAI");
+  const lasPrint = document.getElementById("lasPrint");
+  const lasDownload = document.getElementById("lasDownload");
+
+  if (lasClose && !lasClose._wired) {
+    lasClose.addEventListener("click", closeLASModal);
+    lasClose._wired = true;
+  }
+  if (lasUseAI && !lasUseAI._wired) {
+    lasUseAI.addEventListener("click", enhanceLAS);
+    lasUseAI._wired = true;
+  }
+  if (lasPrint && !lasPrint._wired) {
+    lasPrint.addEventListener("click", printLAS);
+    lasPrint._wired = true;
+  }
+  if (lasDownload && !lasDownload._wired) {
+    lasDownload.addEventListener("click", downloadLASPDF);
+    lasDownload._wired = true;
+  }
+
+  document.getElementById("lasToggleShare")?.addEventListener("click", handleToggleLASShare);
+
+  document.getElementById("lasCopyLink")?.addEventListener("click", async () => {
+    const url = document.getElementById("lasShareUrl").value;
+    if (!url) return;
+    const ok = await copyToClipboard(url);
+    toast(ok ? "✓ Link copied" : "⚠️ Copy failed", ok ? "success" : "error");
+  });
+
+  document.getElementById("lasShareMessenger")?.addEventListener("click", () => {
+    const url = document.getElementById("lasShareUrl").value;
+    if (!url) return;
+    const lesson = collectLASData();
+    shareToMessenger(url, lesson.lessonTitle || "Learning Activity Sheet");
+  });
+
+  document.getElementById("lasShareNative")?.addEventListener("click", async () => {
+    const url = document.getElementById("lasShareUrl").value;
+    if (!url) return;
+    const lesson = collectLASData();
+    const ok = await nativeShare(
+      url,
+      lesson.lessonTitle || "Learning Activity Sheet",
+      `Activity sheet for ${lesson.subjectName} — ${lesson.lessonTitle}`
+    );
+    if (!ok) {
+      const copied = await copyToClipboard(url);
+      if (copied) toast("📋 Link copied", "success");
+    }
+  });
+
+  document.getElementById("lasShowQr")?.addEventListener("click", () => {
+    const wrap = document.getElementById("lasQrWrap");
+    const isHidden = !wrap.style.display || wrap.style.display === "none";
+    wrap.style.display = isHidden ? "block" : "none";
+    document.getElementById("lasShowQr").textContent = isHidden ? "📱 Hide QR" : "📱 QR Code";
+  });
+}
+
+wireLASModal();
+setTimeout(wireLASModal, 500);
 
 window.__ilawToast = toast;
 

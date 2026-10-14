@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Learning Activity Sheet — SCPHS</title>
+  <meta name="description" content="Learning Activity Sheet from Sta. Cruz Pingkian High School" />
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: #e5e7eb;
+      color: #1f2937;
+    }
+
+    /* ============ TOP BAR ============ */
+    .viewer-bar {
+      background: linear-gradient(135deg, #1e3c72, #2a5298);
+      color: #fff;
+      padding: 14px 20px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      box-shadow: 0 2px 12px rgba(0,0,0,.15);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    .viewer-bar .left { display: flex; align-items: center; gap: 10px; }
+    .viewer-bar .icon { font-size: 1.4rem; }
+    .viewer-bar h1 { margin: 0; font-size: 1rem; font-weight: 700; }
+    .viewer-bar .sub { font-size: 11.5px; opacity: .85; margin-top: 2px; }
+    .viewer-bar .actions { display: flex; gap: 8px; flex-wrap: wrap; }
+    .viewer-btn {
+      padding: 9px 16px;
+      border-radius: 8px;
+      border: none;
+      cursor: pointer;
+      font-family: inherit;
+      font-size: 13px;
+      font-weight: 700;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all .15s;
+      background: rgba(255,255,255,.15);
+      color: #fff;
+      border: 1px solid rgba(255,255,255,.3);
+    }
+    .viewer-btn:hover { background: rgba(255,255,255,.25); }
+    .viewer-btn.primary {
+      background: #10b981;
+      border-color: #10b981;
+      box-shadow: 0 4px 12px rgba(16,185,129,.4);
+    }
+    .viewer-btn.primary:hover { background: #059669; }
+
+    /* ============ MAIN ============ */
+    .viewer-main {
+      max-width: 210mm;
+      margin: 24px auto;
+      padding: 0 16px;
+    }
+
+    .viewer-loading, .viewer-error {
+      background: #fff;
+      border-radius: 14px;
+      padding: 60px 30px;
+      text-align: center;
+      box-shadow: 0 4px 16px rgba(0,0,0,.06);
+    }
+    .viewer-spinner {
+      width: 36px; height: 36px;
+      border: 3px solid #e5e7eb;
+      border-top-color: #1e3c72;
+      border-radius: 50%;
+      animation: spin .8s linear infinite;
+      margin: 0 auto 14px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .viewer-error h2 { color: #b91c1c; margin: 0 0 6px; }
+    .viewer-error p { color: #6b7280; margin: 0; }
+
+    /* ============ LAS RENDER — same as Learner Module (.lm-*) ============ */
+    .lm-page {
+      font-family: "Times New Roman", Times, serif;
+      color: #000;
+      font-size: 11pt;
+      line-height: 1.5;
+      background: #fff;
+      padding: 20mm 15mm;
+      border-radius: 8px;
+      box-shadow: 0 4px 24px rgba(0,0,0,.08);
+    }
+
+    .lm-header { text-align: center; margin-bottom: 6px; line-height: 1.3; }
+    .lm-deped-logo {
+      display: block;
+      margin: 0 auto 4px;
+      width: 60px;
+      height: 60px;
+      max-height: 60px;
+      object-fit: contain;
+    }
+    .lm-header-line1 { font-size: 10pt; }
+    .lm-header-line2 { font-size: 11pt; font-weight: 700; }
+    .lm-header-line3 { font-size: 9.5pt; }
+    .lm-school-banner {
+      text-align: center; margin: 6px 0 8px;
+      padding-bottom: 4px; border-bottom: 1.5px solid #000;
+    }
+    .lm-school-name { font-size: 12pt; font-weight: 800; text-transform: uppercase; letter-spacing: .02em; }
+    .lm-school-address { font-size: 9pt; }
+    .lm-title { text-align: center; font-size: 15pt; font-weight: 800; letter-spacing: .12em; margin: 8px 0 2px; text-transform: uppercase; }
+    .lm-subtitle { text-align: center; font-size: 11.5pt; font-style: italic; margin-bottom: 6px; }
+    .lm-meta { display: flex; justify-content: center; gap: 12px; flex-wrap: wrap; font-size: 9.5pt; margin-bottom: 10px; color: #333; }
+    .lm-meta span { white-space: nowrap; }
+    .lm-section { margin-bottom: 14px; page-break-inside: auto; }
+    .lm-section-title {
+      font-size: 12pt; font-weight: 800; color: #0f2b4f;
+      margin: 0 0 6px; padding-bottom: 3px; border-bottom: 1.5px solid #0f2b4f;
+    }
+    .lm-section p { margin: 0 0 6px; }
+    .lm-obj-list { margin: 0 0 0 20px; padding: 0; }
+    .lm-obj-list li { margin-bottom: 4px; }
+    .lm-lesson-step { display: flex; gap: 8px; margin-bottom: 6px; align-items: flex-start; }
+    .lm-step-num {
+      display: inline-flex; align-items: center; justify-content: center;
+      width: 20px; height: 20px; border-radius: 50%;
+      background: #1e3c72; color: #fff; font-size: 10pt; font-weight: 800;
+      flex-shrink: 0; margin-top: 1px;
+    }
+    .lm-answer-key {
+      margin-top: 12px; padding: 10px 12px;
+      border: 1.5px dashed #999; background: #f9fafb; border-radius: 6px;
+    }
+    .lm-answer-key .lm-section-title { border-bottom: none; font-size: 11pt; color: #444; margin-bottom: 6px; }
+    .lm-signatories {
+      display: flex; justify-content: space-between;
+      gap: 12px; margin-top: 24px;
+    }
+    .lm-sig { text-align: center; flex: 1; min-width: 0; }
+    .lm-sig-label { font-size: 10pt; margin-bottom: 24px; }
+    .lm-sig-name { font-weight: 800; font-size: 10.5pt; border-top: 1px solid #000; padding-top: 3px; }
+    .lm-sig-pos { font-size: 9.5pt; font-style: italic; }
+    .lm-footer {
+      margin-top: 14px; padding-top: 4px;
+      border-top: 1px solid #ccc; text-align: center;
+      font-size: 8.5pt; color: #666;
+    }
+    .lm-qr-footer { margin-top: 20px; text-align: center; }
+    .lm-qr-box {
+      display: inline-block;
+      padding: 12px 20px;
+      border: 1.5px solid #0f2b4f;
+      border-radius: 10px;
+      background: #f9fafb;
+    }
+    .lm-qr-label {
+      font-size: 9.5pt; font-weight: 700; color: #0f2b4f; margin-bottom: 6px;
+    }
+    .lm-qr-img {
+      display: block; margin: 0 auto 6px;
+      width: 140px; height: 140px;
+    }
+    .lm-qr-url {
+      font-family: monospace; font-size: 8.5pt; color: #4b5563; word-break: break-all;
+    }
+
+    /* ============ BOTTOM CTA ============ */
+    .viewer-bottom {
+      max-width: 210mm;
+      margin: 24px auto 60px;
+      padding: 0 16px;
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+    .viewer-bottom .viewer-btn {
+      background: #1e3c72;
+      border-color: #1e3c72;
+      padding: 14px 24px;
+      font-size: 14px;
+    }
+    .viewer-bottom .viewer-btn.primary {
+      background: #10b981;
+      border-color: #10b981;
+    }
+
+    /* ============ FOOTER ============ */
+    .viewer-credit {
+      text-align: center;
+      padding: 24px 16px 40px;
+      font-size: 11px;
+      color: #6b7280;
+    }
+    .viewer-credit strong { color: #0f2b4f; }
+
+    /* ============ MOBILE ============ */
+    @media (max-width: 640px) {
+      .lm-page { padding: 14mm 10mm; font-size: 10.5pt; }
+      .viewer-bar h1 { font-size: 0.9rem; }
+      .viewer-btn { padding: 8px 12px; font-size: 12px; }
+      .lm-signatories { flex-direction: column; gap: 24px; }
+      .lm-sig-label { margin-bottom: 18px; }
+      .lm-deped-logo {
+        width: 84px !important;
+        height: 84px !important;
+        max-height: 84px !important;
+        margin-bottom: 8px !important;
+      }
+      .lm-header-line1 { font-size: 10.5pt; }
+      .lm-header-line2 { font-size: 11.5pt; }
+      .lm-school-name { font-size: 13pt; line-height: 1.2; }
+    }
+
+    /* ============ PRINT ============ */
+    @media print {
+      @page { size: A4 portrait; margin: 12mm 10mm 14mm 10mm; }
+      body { background: #fff; }
+      .viewer-bar, .viewer-bottom, .viewer-credit { display: none !important; }
+      .viewer-main { margin: 0; padding: 0; max-width: 100%; }
+      .lm-page { box-shadow: none; padding: 0; border-radius: 0; }
+    }
+  </style>
+</head>
+<body>
+
+  <header class="viewer-bar">
+    <div class="left">
+      <span class="icon">📝</span>
+      <div>
+        <h1 id="pageTitle">Learning Activity Sheet</h1>
+        <div class="sub" id="pageSub">Loading…</div>
+      </div>
+    </div>
+    <div class="actions">
+      <button class="viewer-btn" id="btnPrint">🖨 Print</button>
+      <button class="viewer-btn primary" id="btnDownload">📥 Download PDF</button>
+    </div>
+  </header>
+
+  <main class="viewer-main" id="viewerMain">
+    <div class="viewer-loading">
+      <div class="viewer-spinner"></div>
+      <div>Loading activity sheet…</div>
+    </div>
+  </main>
+
+  <div class="viewer-bottom" id="viewerBottom" style="display:none;">
+    <button class="viewer-btn" id="btnPrintBottom">🖨 Print This Activity Sheet</button>
+    <button class="viewer-btn primary" id="btnDownloadBottom">📥 Download PDF</button>
+  </div>
+
+  <div class="viewer-credit" id="viewerCredit" style="display:none;">
+    Prepared with <strong>SCPHS Portal</strong> · Sta. Cruz Pingkian High School
+  </div>
+
+  <script type="module">
+    import { getSharedLASBySlug } from "./assets/js/learner-share.js";
+    import { buildLASHTML } from "./assets/js/las-generator.js";
+    import "./assets/js/ilaw-config.js";
+
+    const $ = id => document.getElementById(id);
+    const params = new URLSearchParams(location.search);
+    const SLUG = params.get("slug");
+
+    let CURRENT_LESSON = null;
+
+    async function init() {
+      if (!SLUG) {
+        showNoSlugLanding();
+        return;
+      }
+
+      try {
+        const lesson = await getSharedLASBySlug(SLUG);
+        if (!lesson) {
+          showError("Activity sheet not found", "This sheet may have been removed or is not yet shared.");
+          return;
+        }
+
+        CURRENT_LESSON = lesson;
+        document.title = `${lesson.lessonTitle || lesson.subjectName} — Learning Activity Sheet`;
+        $("pageTitle").textContent = lesson.lessonTitle || lesson.subjectName || "Learning Activity Sheet";
+        $("pageSub").textContent = `${lesson.subjectName || ""} · Grade ${lesson.gradeLevel || ""} · Term ${lesson.term || ""} Week ${lesson.week || ""}`;
+
+        // Load config for header (logo, school name)
+        const cfg = (window.ILAWConfig && window.ILAWConfig.load)
+          ? await window.ILAWConfig.load()
+          : {};
+
+        // Build the LAS HTML
+        const html = buildLASHTML(lesson, cfg, { hideAnswerKey: true });
+        $("viewerMain").innerHTML = html;
+        $("viewerBottom").style.display = "flex";
+        $("viewerCredit").style.display = "block";
+      } catch (e) {
+        console.error(e);
+        showError("Could not load activity sheet", e.message || "Please try again later.");
+      }
+    }
+
+    function showError(title, message) {
+      $("viewerMain").innerHTML = `
+        <div class="viewer-error" style="max-width:520px;margin:0 auto;">
+          <div style="font-size:3rem;margin-bottom:10px;">⚠️</div>
+          <h2>${title}</h2>
+          <p>${message}</p>
+          <div style="margin-top:20px;">
+            <a href="index.html" style="
+              display:inline-block;
+              padding:10px 20px;
+              background:#1e3c72;
+              color:#fff;
+              border-radius:8px;
+              text-decoration:none;
+              font-weight:700;
+              font-size:13px;
+            ">
+              ← Back to Homepage
+            </a>
+          </div>
+        </div>
+      `;
+    }
+
+    function showNoSlugLanding() {
+      $("pageTitle").textContent = "Learning Activity Sheet Portal";
+      $("pageSub").textContent = "Activity sheets shared by teachers";
+
+      const printBtn = document.getElementById("btnPrint");
+      const dlBtn = document.getElementById("btnDownload");
+      if (printBtn) printBtn.style.display = "none";
+      if (dlBtn) dlBtn.style.display = "none";
+
+      $("viewerMain").innerHTML = `
+        <div style="background:#fff;border-radius:14px;padding:40px 30px;box-shadow:0 4px 16px rgba(0,0,0,.06);text-align:center;max-width:640px;margin:0 auto;">
+          <div style="font-size:4rem;margin-bottom:12px;">📝</div>
+
+          <h1 style="margin:0 0 8px;font-size:1.6rem;color:#0f2b4f;letter-spacing:-0.01em;">
+            Learning Activity Sheet Portal
+          </h1>
+
+          <p style="margin:0 0 24px;font-size:15px;color:#6b7280;line-height:1.6;">
+            This page shows activity sheets your teacher has shared.<br>
+            To view a specific sheet, you need a <strong>direct link</strong> from your teacher.
+          </p>
+
+          <div style="text-align:left;background:#eff6ff;border:1px solid #bfdbfe;border-radius:12px;padding:20px 22px;margin-bottom:24px;">
+            <div style="font-size:11px;font-weight:800;color:#1e40af;text-transform:uppercase;letter-spacing:.06em;margin-bottom:12px;">
+              🔗 How to access your activity sheet
+            </div>
+            <ol style="margin:0 0 0 18px;padding:0;font-size:14px;color:#1e3a8a;line-height:1.9;">
+              <li>Ask your teacher for the <strong>activity sheet link</strong> via Messenger or GC</li>
+              <li>Tap the link on your phone — it will open the sheet directly</li>
+              <li>Or <strong>scan the QR code</strong> on the printed sheet</li>
+            </ol>
+          </div>
+
+          <div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:center;">
+            <a href="index.html" style="
+              padding:12px 22px;
+              background:#1e3c72;
+              color:#fff;
+              border-radius:9px;
+              text-decoration:none;
+              font-weight:700;
+              font-size:14px;
+              display:inline-flex;
+              align-items:center;
+              gap:8px;
+            ">
+              🏠 Back to Homepage
+            </a>
+            <a href="login.html" style="
+              padding:12px 22px;
+              background:#fff;
+              color:#1e3c72;
+              border:1.5px solid #1e3c72;
+              border-radius:9px;
+              text-decoration:none;
+              font-weight:700;
+              font-size:14px;
+              display:inline-flex;
+              align-items:center;
+              gap:8px;
+            ">
+              🔑 Teacher Sign In
+            </a>
+          </div>
+
+          <p style="margin:24px 0 0;font-size:12px;color:#9ca3af;">
+            Struggling to access an activity sheet? Contact your teacher.<br>
+            Parents may request the answer key separately.
+          </p>
+        </div>
+      `;
+    }
+
+    function printLAS() {
+      window.print();
+    }
+
+    function downloadPDF() {
+      const ok = confirm(
+        "📥 Save this Activity Sheet as PDF\n\n" +
+        "1. The Print dialog will open\n" +
+        "2. Choose 'Save as PDF' as the destination\n" +
+        "3. Click Save\n\n" +
+        "Click OK to continue."
+      );
+      if (!ok) return;
+      setTimeout(() => window.print(), 150);
+    }
+
+    $("btnPrint")?.addEventListener("click", printLAS);
+    $("btnDownload")?.addEventListener("click", downloadPDF);
+    $("btnPrintBottom")?.addEventListener("click", printLAS);
+    $("btnDownloadBottom")?.addEventListener("click", downloadPDF);
+
+    init();
+  </script>
+</body>
+</html>

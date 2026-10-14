@@ -149,3 +149,65 @@ export async function nativeShare(url, title, text) {
 }
 
 export { esc };
+
+// ------------------------------------------------------------
+// LAS sharing — same collection, different fields
+// ------------------------------------------------------------
+export async function enableLASSharing(lessonId, lesson) {
+  let slug = lesson.lasPublicSlug;
+  if (!slug) {
+    const { doc: _doc, getDoc: _getDoc } = await import(
+      "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js"
+    );
+    const ref = _doc(db, "lessons", lessonId);
+    try {
+      const snap = await _getDoc(ref);
+      if (snap.exists() && snap.data().lasPublicSlug) {
+        slug = snap.data().lasPublicSlug;
+      }
+    } catch (e) {
+      console.warn("[learner-share] Could not check existing LAS slug:", e);
+    }
+    if (!slug) {
+      // Slug uses LAS- prefix so it's distinguishable from module slugs
+      slug = "LAS-" + generateSlug(lesson);
+    }
+  }
+
+  const ref = doc(db, "lessons", lessonId);
+  await updateDoc(ref, {
+    lasIsPublic: true,
+    lasPublicSlug: slug,
+    lasSharedAt: serverTimestamp(),
+  });
+
+  return {
+    slug,
+    url: buildLASPublicUrl(slug),
+  };
+}
+
+export async function disableLASSharing(lessonId) {
+  const ref = doc(db, "lessons", lessonId);
+  await updateDoc(ref, { lasIsPublic: false });
+}
+
+export async function getSharedLASBySlug(slug) {
+  const { collection, query, where, getDocs } = await import(
+    "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js"
+  );
+  const q = query(
+    collection(db, "lessons"),
+    where("lasPublicSlug", "==", slug),
+    where("lasIsPublic", "==", true)
+  );
+  const snap = await getDocs(q);
+  if (snap.empty) return null;
+  const docSnap = snap.docs[0];
+  return { id: docSnap.id, ...docSnap.data() };
+}
+
+export function buildLASPublicUrl(slug) {
+  const base = location.origin + location.pathname.replace(/[^/]*$/, "");
+  return `${base}las.html?slug=${encodeURIComponent(slug)}`;
+}
