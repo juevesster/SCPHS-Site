@@ -272,6 +272,7 @@
     import { getSharedLessonBySlug } from "./assets/js/learner-share.js";
     import { buildLearnerModuleHTML } from "./assets/js/learner-module.js";
     import "./assets/js/ilaw-config.js";
+    import { buildLearnerModuleHTML, applySavedModuleContent } from "./assets/js/learner-module.js";
 
     const $ = id => document.getElementById(id);
     const params = new URLSearchParams(location.search);
@@ -288,11 +289,13 @@
       try {
         const lesson = await getSharedLessonBySlug(SLUG);
         if (!lesson) {
-          showError("Module not found", "This module may have been removed or is not yet shared.");
-          return;
-        }
+        showError("Module not found", "...");
+        return;
+      }
 
-        CURRENT_LESSON = lesson;
+      // 🆕 Merge saved AI content (if any) into the lesson object
+        const merged = applySavedModuleContent(lesson);
+        CURRENT_LESSON = merged;
         document.title = `${lesson.lessonTitle || lesson.subjectName} — Learning Module`;
         $("pageTitle").textContent = lesson.lessonTitle || lesson.subjectName || "Learning Module";
         $("pageSub").textContent = `${lesson.subjectName || ""} · Grade ${lesson.gradeLevel || ""} · Term ${lesson.term || ""} Week ${lesson.week || ""}`;

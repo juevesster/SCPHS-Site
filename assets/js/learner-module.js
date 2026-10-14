@@ -306,8 +306,9 @@ const C = {
           <div class="lm-section">
             <div class="lm-section-title">📚 The Lesson</div>
             ${steps.map((step, i) => {
-              const clean = simplifySentence(String(step).trim());
-              return clean ? `<div class="lm-lesson-step"><span class="lm-step-num">${i + 1}</span>${esc(clean)}</div>` : "";
+            let clean = simplifySentence(String(step).trim());
+            clean = clean.replace(/^\s*\d+[\.\)]\s*/, "");   // strip leading "1. "
+            return clean ? `<div class="lm-lesson-step"><span class="lm-step-num">${i + 1}</span>${esc(clean)}</div>` : "";
             }).join("")}
             ${simpleMaterials ? `<p style="margin-top:8px;font-size:9pt;"><strong>Things you can use:</strong> ${esc(hasOverride("materials") ? overrides.materials : simpleMaterials)}</p>` : ""}
           </div>
@@ -402,6 +403,45 @@ const C = {
       </div>
     </div>
   `;
+}
+
+// ------------------------------------------------------------
+// Merge saved AI content (from Firestore) back into lesson object
+// Called by the public viewer (m.html) after fetching by slug
+// ------------------------------------------------------------
+export function applySavedModuleContent(lesson) {
+  if (!lesson || !lesson.moduleContent) return lesson;
+  const mc = lesson.moduleContent;
+  const merged = { ...lesson };
+
+  if (mc.greeting)                merged._aiGreeting     = mc.greeting;
+  if (Array.isArray(mc.objectives))    merged._aiObjectives = mc.objectives;
+  if (mc.lessonIntro)             merged._aiLessonIntro  = mc.lessonIntro;
+  if (Array.isArray(mc.lessonSteps))   merged._aiLessonSteps = mc.lessonSteps;
+  if (Array.isArray(mc.activities))    merged._aiActivities  = mc.activities;
+  if (Array.isArray(mc.selfCheck))     merged._aiSelfCheck   = mc.selfCheck;
+
+  // Overlay metadata captured at enhance time
+  if (mc.subjectName)   merged.subjectName = mc.subjectName;
+  if (mc.subjectCode)   merged.subjectCode = mc.subjectCode;
+  if (mc.gradeLevel)    merged.gradeLevel  = mc.gradeLevel;
+  if (mc.section)       merged.section     = mc.section;
+  if (mc.term)          merged.term        = mc.term;
+  if (mc.week)          merged.week        = mc.week;
+  if (mc.schoolYear)    merged.schoolYear  = mc.schoolYear;
+  if (mc.lessonTitle)   merged.lessonTitle = mc.lessonTitle;
+  if (mc.contentStandard)     merged.contentStandard = mc.contentStandard;
+  if (mc.performanceStandard) merged.performanceStandard = mc.performanceStandard;
+  if (mc.materialsText)       merged.materialsText = mc.materialsText;
+  if (Array.isArray(mc.competencies)) merged.competencies = mc.competencies;
+  if (mc.preparedByName)      merged.preparedByName = mc.preparedByName;
+  if (mc.preparedByPosition)  merged.preparedByPosition = mc.preparedByPosition;
+  if (mc.checkedByName)       merged.checkedByName = mc.checkedByName;
+  if (mc.checkedByPosition)   merged.checkedByPosition = mc.checkedByPosition;
+  if (mc.notedByName)         merged.notedByName = mc.notedByName;
+  if (mc.notedByPosition)     merged.notedByPosition = mc.notedByPosition;
+
+  return merged;
 }
 
 // ============================================================

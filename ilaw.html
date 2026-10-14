@@ -2267,6 +2267,13 @@ async function enhanceLearnerModule() {
   const originalText = btn.textContent;
   btn.disabled = true;
 
+  if (!CURRENT_LESSON_ID) {
+    toast("⚠️ Please save the lesson first before enhancing.", "error");
+    btn.disabled = false;
+    btn.textContent = originalText;
+    return;
+  }
+
   const lesson = collectLessonData();
   const cfg = ILAW_CONFIG || {};
 
@@ -2286,8 +2293,50 @@ async function enhanceLearnerModule() {
     LM_CURRENT_HTML = buildLearnerModuleHTML(merged, cfg, { hideAnswerKey: false });
 
     document.getElementById("lmPreviewHost").innerHTML = LM_CURRENT_HTML;
-    status.textContent = "✨ Enhanced with AI. Review before printing.";
-    toast("✓ Learner module enhanced with AI", "success");
+    status.textContent = "✨ Enhanced with AI. Saving…";
+
+    // 🆕 SAVE the AI content to Firestore so the public viewer has it
+    try {
+      const { doc, updateDoc, serverTimestamp } = await import(
+        "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js"
+      );
+      await updateDoc(doc(db, "lessons", CURRENT_LESSON_ID), {
+        moduleContent: {
+          greeting:      merged._aiGreeting      || "",
+          objectives:    merged._aiObjectives    || [],
+          lessonIntro:   merged._aiLessonIntro   || "",
+          lessonSteps:   merged._aiLessonSteps   || [],
+          activities:    merged._aiActivities    || [],
+          selfCheck:     merged._aiSelfCheck     || [],
+          // Also snapshot the base lesson info so viewer renders correctly
+          subjectName:   merged.subjectName || "",
+          subjectCode:   merged.subjectCode || "",
+          gradeLevel:    merged.gradeLevel  || "",
+          section:       merged.section     || "",
+          term:          merged.term        || "",
+          week:          merged.week        || "",
+          schoolYear:    merged.schoolYear  || "",
+          lessonTitle:   merged.lessonTitle || "",
+          contentStandard:     merged.contentStandard || "",
+          performanceStandard: merged.performanceStandard || "",
+          materialsText:       merged.materialsText || "",
+          competencies:        merged.competencies || [],
+          preparedByName:      merged.preparedByName || "",
+          preparedByPosition:  merged.preparedByPosition || "",
+          checkedByName:       merged.checkedByName || "",
+          checkedByPosition:   merged.checkedByPosition || "",
+          notedByName:         merged.notedByName || "",
+          notedByPosition:     merged.notedByPosition || "",
+          savedAt:             serverTimestamp(),
+        },
+      });
+      status.textContent = "✨ Enhanced with AI. Saved to lesson.";
+      toast("✓ Module enhanced & saved", "success");
+    } catch (saveErr) {
+      console.error("[lm] Save failed:", saveErr);
+      status.textContent = "⚠️ Enhanced but not saved: " + (saveErr.message || "");
+      toast("⚠️ Enhanced, but saving failed", "error");
+    }
 
   } catch (e) {
     console.error(e);
@@ -2611,18 +2660,31 @@ async function openLASModal() {
   }
 
   // Check for existing LAS slug
-  if (CURRENT_LESSON_ID) {
-    try {
-      const { doc, getDoc } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js");
-      const snap = await getDoc(doc(db, "lessons", CURRENT_LESSON_ID));
-      if (snap.exists()) {
-        const saved = snap.data();
-        if (saved.lasPublicSlug) lesson.lasPublicSlug = saved.lasPublicSlug;
-        if (typeof saved.lasIsPublic === "boolean") lesson.lasIsPublic = saved.lasIsPublic;
+ if (CURRENT_LESSON_ID) {
+  try {
+    const { doc, getDoc } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js");
+    const snap = await getDoc(doc(db, "lessons", CURRENT_LESSON_ID));
+    if (snap.exists()) {
+      const saved = snap.data();
+      if (saved.publicSlug)                    lesson.publicSlug = saved.publicSlug;
+      if (typeof saved.viewCount === "number") lesson.viewCount = saved.viewCount;
+      if (typeof saved.isPublic === "boolean") lesson.isPublic = saved.isPublic;
+
+      // 🆕 Restore saved AI module content
+      if (saved.moduleContent) {
+        const mc = saved.moduleContent;
+        if (mc.greeting)                    lesson._aiGreeting     = mc.greeting;
+        if (Array.isArray(mc.objectives))   lesson._aiObjectives   = mc.objectives;
+        if (mc.lessonIntro)                 lesson._aiLessonIntro  = mc.lessonIntro;
+        if (Array.isArray(mc.lessonSteps))  lesson._aiLessonSteps  = mc.lessonSteps;
+        if (Array.isArray(mc.activities))   lesson._aiActivities   = mc.activities;
+        if (Array.isArray(mc.selfCheck))    lesson._aiSelfCheck    = mc.selfCheck;
       }
-    } catch (e) {
-      console.warn("[las] Could not load saved slug:", e);
     }
+  } catch (e) {
+    console.warn("[ilaw] Could not load saved slug:", e);
+  }
+}
 
     // Load LAS overrides (teacher edits)
     try {

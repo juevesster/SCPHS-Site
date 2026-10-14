@@ -179,19 +179,17 @@ export function buildLASHTML(lessonRaw, cfg = {}, options = {}) {
   return `
     <div class="lm-page las-page">
       <div class="lm-header">
-        <img class="lm-deped-logo" src="${esc(C.depedLogo || DEPED_LOGO_FALLBACK)}" alt="DepEd"
-             width="60" height="60" loading="eager"
-             onerror="this.onerror=null;this.src='${DEPED_LOGO_FALLBACK}';" />
-        <div class="lm-header-line1">${esc(C.headerLine1)}</div>
-        <div class="lm-header-line2">${esc(C.headerLine2)}</div>
-        ${C.region ? `<div class="lm-header-line3">${esc(C.region)}</div>` : ""}
-        ${C.division ? `<div class="lm-header-line3">${esc(C.division)}</div>` : ""}
-      </div>
+  <img class="lm-deped-logo" src="${esc(C.depedLogo || DEPED_LOGO_FALLBACK)}" alt="DepEd" ... />
+  <div class="lm-header-line1">${esc(C.headerLine1)}</div>
+  <div class="lm-header-line2">${esc(C.headerLine2)}</div>
+  ${C.region ? `<div class="lm-header-line3">${esc(C.region)}</div>` : ""}
+  ${C.division ? `<div class="lm-header-line3">${esc(C.division)}</div>` : ""}
+</div>
 
-      <div class="lm-school-banner">
-        <div class="lm-school-name">${esc(C.schoolName)}</div>
-        ${C.schoolAddress ? `<div class="lm-school-address">${esc(C.schoolAddress)}</div>` : ""}
-      </div>
+<div class="lm-school-banner">
+  <div class="lm-school-name">${esc(C.schoolName)}</div>
+  ${C.schoolAddress ? `<div class="lm-school-address">${esc(C.schoolAddress)}</div>` : ""}
+</div>
 
       <div class="lm-title">LEARNING ACTIVITY SHEET</div>
       <div class="lm-subtitle">${esc(activityTitle)}</div>
