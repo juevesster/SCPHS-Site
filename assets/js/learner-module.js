@@ -448,6 +448,7 @@ export function applySavedModuleContent(lesson) {
 // ============================================================
 // TEMPLATE-BASED SELF-CHECK GENERATOR
 // ============================================================
+
 function buildSelfCheckQuestions(lesson) {
   const questions = [];
   const comps = Array.isArray(lesson.competencies) ? lesson.competencies.slice(0, 3) : [];
