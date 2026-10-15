@@ -366,6 +366,7 @@ export function buildLearnerModuleHTML(lessonRaw, cfg = {}, options = {}) {
         ${lesson.preparedByName ? `<p style="font-size:9pt;margin-top:8px;"><strong>Teacher:</strong> ${esc(lesson.preparedByName)}</p>` : ""}
       </div>` : ""}
 
+      ${!options.hideAnswerKey ? `
       <div class="lm-signatories">
         <div class="lm-sig">
           <div class="lm-sig-label">${esc(C.preparedByLabel)}</div>
@@ -383,6 +384,7 @@ export function buildLearnerModuleHTML(lessonRaw, cfg = {}, options = {}) {
           <div class="lm-sig-pos">${esc(lesson.notedByPosition || "")}</div>
         </div>
       </div>
+      ` : ""}
 
       <!-- 👇 FIX: QR code and URL are now OUTSIDE the hideAnswerKey condition. 
            They will always appear, even on the printed public version. -->
@@ -448,7 +450,6 @@ export function applySavedModuleContent(lesson) {
 // ============================================================
 // TEMPLATE-BASED SELF-CHECK GENERATOR
 // ============================================================
-
 function buildSelfCheckQuestions(lesson) {
   const questions = [];
   const comps = Array.isArray(lesson.competencies) ? lesson.competencies.slice(0, 3) : [];
