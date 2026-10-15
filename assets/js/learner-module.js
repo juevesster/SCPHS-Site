@@ -366,7 +366,7 @@ export function buildLearnerModuleHTML(lessonRaw, cfg = {}, options = {}) {
         ${lesson.preparedByName ? `<p style="font-size:9pt;margin-top:8px;"><strong>Teacher:</strong> ${esc(lesson.preparedByName)}</p>` : ""}
       </div>` : ""}
 
-      ${!options.hideAnswerKey ? `
+      ${options.showSignatories ? `
       <div class="lm-signatories">
         <div class="lm-sig">
           <div class="lm-sig-label">${esc(C.preparedByLabel)}</div>

@@ -2202,7 +2202,10 @@ async function openLearnerModuleModal() {
   }
 
   const cfg = ILAW_CONFIG || {};
-  LM_CURRENT_HTML = buildLearnerModuleHTML(lesson, cfg, { hideAnswerKey: false });
+  LM_CURRENT_HTML = buildLearnerModuleHTML(lesson, cfg, { 
+  hideAnswerKey: false, 
+  showSignatories: true 
+});
 
   document.getElementById("lmPreviewHost").innerHTML = LM_CURRENT_HTML;
   document.getElementById("lmModal").style.display = "flex";
@@ -2228,7 +2231,10 @@ async function openLearnerModuleModal() {
           const saved = await loadOverrides(CURRENT_LESSON_ID);
           lessonData.learnerModuleOverrides = saved || {};
           const cfg = ILAW_CONFIG || {};
-          LM_CURRENT_HTML = buildLearnerModuleHTML(lessonData, cfg, { hideAnswerKey: false });
+          LM_CURRENT_HTML = buildLearnerModuleHTML(lessonData, cfg, { 
+  hideAnswerKey: false, 
+  showSignatories: true 
+});
           document.getElementById("lmPreviewHost").innerHTML = LM_CURRENT_HTML;
           toast("✓ Module updated", "success");
         } catch (e) {
@@ -2307,7 +2313,10 @@ async function enhanceLearnerModule() {
     }
 
     const merged = mergeAIIntoLesson(lesson, aiData);
-    LM_CURRENT_HTML = buildLearnerModuleHTML(merged, cfg, { hideAnswerKey: false });
+    LM_CURRENT_HTML = buildLearnerModuleHTML(merged, cfg, { 
+  hideAnswerKey: false, 
+  showSignatories: true 
+});
 
     document.getElementById("lmPreviewHost").innerHTML = LM_CURRENT_HTML;
     status.textContent = "✨ Enhanced with AI. Review before printing.";
@@ -2494,7 +2503,10 @@ function wireLearnerModuleModal() {
         if (Array.isArray(mc.selfCheck))    lesson._aiSelfCheck     = mc.selfCheck;
 
         const cfg = ILAW_CONFIG || {};
-        LM_CURRENT_HTML = buildLearnerModuleHTML(lesson, cfg, { hideAnswerKey: false });
+        LM_CURRENT_HTML = buildLearnerModuleHTML(lesson, cfg, { 
+  hideAnswerKey: false, 
+  showSignatories: true 
+});
         document.getElementById("lmPreviewHost").innerHTML = LM_CURRENT_HTML;
 
         document.getElementById("lmStatus").textContent = "✨ Retrieved saved AI content.";
