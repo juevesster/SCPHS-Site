@@ -79,9 +79,11 @@ export async function disableSharing(lessonId) {
   });
 }
 
-// ---------- Fetch a shared lesson by slug (public read) ----------
+// ============================================================
+// ✅ FIXED: Fetch a shared lesson by slug (public read)
+// Flattens signatories so buildLearnerModuleHTML can find them
+// ============================================================
 export async function getSharedLessonBySlug(slug) {
-  // We query the lessons collection publicly (rules allow read if isPublic = true)
   const { collection, query, where, getDocs } = await import(
     "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js"
   );
@@ -96,7 +98,22 @@ export async function getSharedLessonBySlug(slug) {
   if (snap.empty) return null;
 
   const docSnap = snap.docs[0];
-  return { id: docSnap.id, ...docSnap.data() };
+  const data = docSnap.data();
+  const sig = data.signatories || {};
+
+  // 🆕 Flatten signatories so buildLearnerModuleHTML finds them at top level
+  return {
+    id: docSnap.id,
+    ...data,
+
+    // Flatten signatories
+    preparedByName:     sig.preparedByName     || data.teacherName || "",
+    preparedByPosition: sig.preparedByPosition || "Teacher",
+    checkedByName:      sig.checkedByName      || "",
+    checkedByPosition:  sig.checkedByPosition  || "",
+    notedByName:        sig.notedByName        || "",
+    notedByPosition:    sig.notedByPosition    || "",
+  };
 }
 
 // ---------- QR code generator (uses free qrserver.com API) ----------
@@ -192,6 +209,10 @@ export async function disableLASSharing(lessonId) {
   await updateDoc(ref, { lasIsPublic: false });
 }
 
+// ============================================================
+// ✅ FIXED: Fetch a shared LAS by slug (public read)
+// Flattens signatories the same way as the Learner Module
+// ============================================================
 export async function getSharedLASBySlug(slug) {
   const { collection, query, where, getDocs } = await import(
     "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js"
@@ -203,8 +224,22 @@ export async function getSharedLASBySlug(slug) {
   );
   const snap = await getDocs(q);
   if (snap.empty) return null;
+
   const docSnap = snap.docs[0];
-  return { id: docSnap.id, ...docSnap.data() };
+  const data = docSnap.data();
+  const sig = data.signatories || {};
+
+  // 🆕 Flatten signatories so buildLASHTML finds them at top level
+  return {
+    id: docSnap.id,
+    ...data,
+    preparedByName:     sig.preparedByName     || data.teacherName || "",
+    preparedByPosition: sig.preparedByPosition || "Teacher",
+    checkedByName:      sig.checkedByName      || "",
+    checkedByPosition:  sig.checkedByPosition  || "",
+    notedByName:        sig.notedByName        || "",
+    notedByPosition:    sig.notedByPosition    || "",
+  };
 }
 
 export function buildLASPublicUrl(slug) {
