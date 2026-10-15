@@ -162,35 +162,34 @@ export function buildLearnerModuleHTML(lessonRaw, cfg = {}, options = {}) {
   };
 
   // Convert relative paths to absolute URLs (fixes mobile browsers)
-  // Convert relative paths to absolute URLs (fixes mobile browsers)
-function resolveLogoUrl(path) {
-  if (!path) return "";
-  if (path.startsWith("http://") || path.startsWith("https://") || path.startsWith("data:")) {
-    return path; // Already absolute
+  function resolveLogoUrl(path) {
+    if (!path) return "";
+    if (path.startsWith("http://") || path.startsWith("https://") || path.startsWith("data:")) {
+      return path; // Already absolute
+    }
+    // Relative path — prepend the current origin + repo folder
+    const base = location.origin + location.pathname.replace(/\/[^/]*$/, "");
+    return `${base}/${path.replace(/^\.?\//, "")}`;
   }
-  // Relative path — prepend the current origin + repo folder
-  const base = location.origin + location.pathname.replace(/\/[^/]*$/, "");
-  return `${base}/${path.replace(/^\.?\//, "")}`;
-}
 
-// 🏫 Per-module school overrides (from Edit Module → School Details)
-const sd = overrides.schoolDetails || {};
+  // 🏫 Per-module school overrides (from Edit Module → School Details)
+  const sd = overrides.schoolDetails || {};
 
-const C = {
-    depedLogo:        resolveLogoUrl(cfg.depedLogo),
-    schoolLogo:       resolveLogoUrl(cfg.schoolLogo),
-    headerLine1:      cfg.headerLine1 || "Republic of the Philippines",
-    headerLine2:      cfg.headerLine2 || "Department of Education",
-    // 🏫 School details — override first, then fall back to config (SCPHS defaults)
-    region:           sd.region        || cfg.region        || "",
-    division:         sd.division      || cfg.division      || "",
-    schoolName:       sd.schoolName    || cfg.schoolName    || "",
-    schoolAddress:    sd.schoolAddress || cfg.schoolAddress || "",
-    footerLine1:      cfg.footerLine1 || "",
-    preparedByLabel:  cfg.preparedByLabel || "Prepared by:",
-    checkedByLabel:   cfg.checkedByLabel  || "Checked by:",
-    notedByLabel:     cfg.notedByLabel    || "Noted by:",
-  };
+  const C = {
+      depedLogo:        resolveLogoUrl(cfg.depedLogo),
+      schoolLogo:       resolveLogoUrl(cfg.schoolLogo),
+      headerLine1:      cfg.headerLine1 || "Republic of the Philippines",
+      headerLine2:      cfg.headerLine2 || "Department of Education",
+      // 🏫 School details — override first, then fall back to config (SCPHS defaults)
+      region:           sd.region        || cfg.region        || "",
+      division:         sd.division      || cfg.division      || "",
+      schoolName:       sd.schoolName    || cfg.schoolName    || "",
+      schoolAddress:    sd.schoolAddress || cfg.schoolAddress || "",
+      footerLine1:      cfg.footerLine1 || "",
+      preparedByLabel:  cfg.preparedByLabel || "Prepared by:",
+      checkedByLabel:   cfg.checkedByLabel  || "Checked by:",
+      notedByLabel:     cfg.notedByLabel    || "Noted by:",
+    };
 
   // Simplified content
   const simpleContentStd = simplifySentence(shorten(lesson.contentStandard, 260));
@@ -385,7 +384,9 @@ const C = {
         </div>
       </div>
 
-            ${lesson.publicSlug ? `
+      <!-- 👇 FIX: QR code and URL are now OUTSIDE the hideAnswerKey condition. 
+           They will always appear, even on the printed public version. -->
+      ${lesson.publicSlug ? `
       <div class="lm-qr-footer">
         <div class="lm-qr-box">
           <div class="lm-qr-label">📱 Scan to view on your phone</div>
