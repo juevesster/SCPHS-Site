@@ -272,6 +272,9 @@
 
     let CURRENT_LESSON = null;
 
+    // ============================================================
+    // ✅ MAIN INIT
+    // ============================================================
     async function init() {
       if (!SLUG) {
         showNoSlugLanding();
@@ -279,55 +282,89 @@
       }
 
       try {
+        // 1. Fetch the shared lesson by slug
         const lesson = await getSharedLASBySlug(SLUG);
-        // Merge saved LAS content back into the lesson object
-if (lesson.lasContent) {
-  lesson._aiLASActivityTitle = lesson.lasContent.activityTitle;
-  lesson._aiLASObjective     = lesson.lasContent.objective;
-  lesson._aiLASMaterials     = lesson.lasContent.materials;
-  lesson._aiLASInstructions  = lesson.lasContent.instructions;
-  lesson._aiLASAnalysis      = lesson.lasContent.analysis;
-  lesson._aiLASAnswerKey     = lesson.lasContent.answerKey;
-  lesson.subjectName         = lesson.lasContent.subjectName;
-  lesson.gradeLevel          = lesson.lasContent.gradeLevel;
-  lesson.section             = lesson.lasContent.section;
-  lesson.term                = lesson.lasContent.term;
-  lesson.week                = lesson.lasContent.week;
-  lesson.schoolYear          = lesson.lasContent.schoolYear;
-  lesson.preparedByName      = lesson.lasContent.preparedByName;
-  lesson.preparedByPosition  = lesson.lasContent.preparedByPosition;
-  lesson.checkedByName       = lesson.lasContent.checkedByName;
-  lesson.checkedByPosition   = lesson.lasContent.checkedByPosition;
-  lesson.notedByName         = lesson.lasContent.notedByName;
-  lesson.notedByPosition     = lesson.lasContent.notedByPosition;
-  lesson.competencies        = lesson.lasContent.competencies;
-}
+
+        // 2. NULL CHECK FIRST — before touching any property
         if (!lesson) {
-          showError("Activity sheet not found", "This sheet may have been removed or is not yet shared.");
+          showError(
+            "Activity sheet not found",
+            "This sheet may have been removed, is not yet shared, or the link is incorrect."
+          );
           return;
         }
 
         CURRENT_LESSON = lesson;
-        document.title = `${lesson.lessonTitle || lesson.subjectName} — Learning Activity Sheet`;
-        $("pageTitle").textContent = lesson.lessonTitle || lesson.subjectName || "Learning Activity Sheet";
-        $("pageSub").textContent = `${lesson.subjectName || ""} · Grade ${lesson.gradeLevel || ""} · Term ${lesson.term || ""} Week ${lesson.week || ""}`;
 
-        // Load config for header (logo, school name)
+        // 3. Update page title + subtitle from lesson metadata
+        document.title = `${lesson.lessonTitle || lesson.subjectName || "Activity Sheet"} — Learning Activity Sheet`;
+        $("pageTitle").textContent = lesson.lessonTitle || lesson.subjectName || "Learning Activity Sheet";
+        $("pageSub").textContent = [
+          lesson.subjectName  || "",
+          lesson.gradeLevel   ? `Grade ${lesson.gradeLevel}` : "",
+          lesson.term         ? `Term ${lesson.term}`         : "",
+          lesson.week         ? `Week ${lesson.week}`         : "",
+        ].filter(Boolean).join(" · ");
+
+        // 4. Load ILAW config (school name, logo, region, etc.)
         const cfg = (window.ILAWConfig && window.ILAWConfig.load)
           ? await window.ILAWConfig.load()
           : {};
 
-        // Build the LAS HTML
+        // 5. Merge saved lasContent (from Firestore) into the lesson object
+        //    This makes AI-enhanced content appear in the public view.
+        if (lesson.lasContent) {
+          const lc = lesson.lasContent;
+
+          // AI-generated content
+          if (lc.activityTitle)               lesson._aiLASActivityTitle = lc.activityTitle;
+          if (lc.objective)                   lesson._aiLASObjective     = lc.objective;
+          if (Array.isArray(lc.materials))    lesson._aiLASMaterials     = lc.materials;
+          if (Array.isArray(lc.instructions)) lesson._aiLASInstructions  = lc.instructions;
+          if (Array.isArray(lc.analysis))     lesson._aiLASAnalysis      = lc.analysis;
+          if (Array.isArray(lc.answerKey))    lesson._aiLASAnswerKey     = lc.answerKey;
+
+          // Metadata
+          if (lc.subjectName)                 lesson.subjectName         = lc.subjectName;
+          if (lc.gradeLevel)                  lesson.gradeLevel          = lc.gradeLevel;
+          if (lc.section)                     lesson.section             = lc.section;
+          if (lc.term)                        lesson.term                = lc.term;
+          if (lc.week)                        lesson.week                = lc.week;
+          if (lc.schoolYear)                  lesson.schoolYear          = lc.schoolYear;
+          if (lc.lessonTitle)                 lesson.lessonTitle         = lc.lessonTitle;
+
+          // Signatories
+          if (lc.preparedByName)              lesson.preparedByName      = lc.preparedByName;
+          if (lc.preparedByPosition)          lesson.preparedByPosition  = lc.preparedByPosition;
+          if (lc.checkedByName)               lesson.checkedByName       = lc.checkedByName;
+          if (lc.checkedByPosition)           lesson.checkedByPosition   = lc.checkedByPosition;
+          if (lc.notedByName)                 lesson.notedByName         = lc.notedByName;
+          if (lc.notedByPosition)             lesson.notedByPosition     = lc.notedByPosition;
+
+          // Competencies
+          if (Array.isArray(lc.competencies)) lesson.competencies        = lc.competencies;
+        } else {
+          console.warn("[las] No lasContent found in Firestore — showing base template.");
+        }
+
+        // 6. Build the LAS HTML and inject it
         const html = buildLASHTML(lesson, cfg, { hideAnswerKey: true });
         $("viewerMain").innerHTML = html;
         $("viewerBottom").style.display = "flex";
         $("viewerCredit").style.display = "block";
+
       } catch (e) {
-        console.error(e);
-        showError("Could not load activity sheet", e.message || "Please try again later.");
+        console.error("[las] Load failed:", e);
+        showError(
+          "Could not load activity sheet",
+          e.message || "Please try again later."
+        );
       }
     }
 
+    // ============================================================
+    // ERROR / LANDING HELPERS
+    // ============================================================
     function showError(title, message) {
       $("viewerMain").innerHTML = `
         <div class="viewer-error" style="max-width:520px;margin:0 auto;">
@@ -425,6 +462,9 @@ if (lesson.lasContent) {
       `;
     }
 
+    // ============================================================
+    // PRINT / PDF
+    // ============================================================
     function printLAS() {
       window.print();
     }
@@ -441,11 +481,17 @@ if (lesson.lasContent) {
       setTimeout(() => window.print(), 150);
     }
 
+    // ============================================================
+    // WIRE BUTTONS
+    // ============================================================
     $("btnPrint")?.addEventListener("click", printLAS);
     $("btnDownload")?.addEventListener("click", downloadPDF);
     $("btnPrintBottom")?.addEventListener("click", printLAS);
     $("btnDownloadBottom")?.addEventListener("click", downloadPDF);
 
+    // ============================================================
+    // GO
+    // ============================================================
     init();
   </script>
 </body>
