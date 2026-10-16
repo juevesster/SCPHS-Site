@@ -17,13 +17,14 @@ const esc = s => String(s == null ? "" : s)
   .replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
 
 // ---------- Load existing overrides ----------
-export async function loadOverrides(lessonId) {
+// overrideKey: "learnerModuleOverrides" (LM) | "lasOverrides" (LAS)
+export async function loadOverrides(lessonId, overrideKey = "learnerModuleOverrides") {
   if (!lessonId) return {};
   try {
     const snap = await getDoc(doc(db, "lessons", lessonId));
     if (!snap.exists()) return {};
     const data = snap.data();
-    return data.learnerModuleOverrides || {};
+    return data[overrideKey] || {};
   } catch (e) {
     console.warn("[module-editor] load failed:", e);
     return {};
@@ -31,29 +32,29 @@ export async function loadOverrides(lessonId) {
 }
 
 // ---------- Save overrides ----------
-export async function saveOverrides(lessonId, overrides) {
+export async function saveOverrides(lessonId, overrides, overrideKey = "learnerModuleOverrides") {
   if (!lessonId) throw new Error("No lesson ID");
   const ref = doc(db, "lessons", lessonId);
-  await updateDoc(ref, {
-    learnerModuleOverrides: overrides,
-    learnerModuleEditedAt: serverTimestamp(),
-  });
+  const payload = {};
+  payload[overrideKey] = overrides;
+  payload[overrideKey + "EditedAt"] = serverTimestamp();
+  await updateDoc(ref, payload);
 }
 
 // ---------- Clear all overrides ----------
-export async function clearOverrides(lessonId) {
+export async function clearOverrides(lessonId, overrideKey = "learnerModuleOverrides") {
   if (!lessonId) return;
   const ref = doc(db, "lessons", lessonId);
-  await updateDoc(ref, {
-    learnerModuleOverrides: {},
-    learnerModuleEditedAt: serverTimestamp(),
-  });
+  const payload = {};
+  payload[overrideKey] = {};
+  payload[overrideKey + "EditedAt"] = serverTimestamp();
+  await updateDoc(ref, payload);
 }
 
 // ---------- Open editor modal ----------
-export async function openEditorModal(lessonId, currentLesson, onSave) {
-  // Load existing overrides first
-  const existing = await loadOverrides(lessonId);
+export async function openEditorModal(lessonId, currentLesson, onSave, overrideKey = "learnerModuleOverrides") {
+  // Load existing overrides first (from the correct field)
+  const existing = await loadOverrides(lessonId, overrideKey);
   const state = {
     // 🏫 School Details (new)
     schoolDetails: existing.schoolDetails || null,
@@ -143,8 +144,8 @@ export async function openEditorModal(lessonId, currentLesson, onSave) {
 
     const newOverrides = collectOverridesFromForm(state, template);
 
-    try {
-      await saveOverrides(lessonId, newOverrides);
+      try {
+      await saveOverrides(lessonId, newOverrides, overrideKey);
       if (typeof onSave === "function") onSave(newOverrides);
       closeModal();
       if (typeof window.__ilawToast === "function") {
@@ -163,8 +164,8 @@ export async function openEditorModal(lessonId, currentLesson, onSave) {
   // ---------- Wire Reset All ----------
   document.getElementById("lmeResetAll").addEventListener("click", async () => {
     if (!confirm("Reset all edits back to the template? This cannot be undone.")) return;
-    try {
-      await clearOverrides(lessonId);
+        try {
+      await clearOverrides(lessonId, overrideKey);
       if (typeof onSave === "function") onSave({});
       closeModal();
       if (typeof window.__ilawToast === "function") {
