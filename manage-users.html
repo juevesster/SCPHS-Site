@@ -10,55 +10,236 @@
     body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #f6f7f9; margin: 0; }
 
     /* ============ MAIN HEADER ============ */
-    .mu-header { background: linear-gradient(135deg, #1e3c72, #2a5298); color: #fff; padding: 24px 0; }
+    .mu-header {
+      background: linear-gradient(135deg, #1e3c72, #2a5298);
+      color: #fff;
+      padding: 24px 0;
+    }
     .mu-header-inner { max-width: 1100px; margin: 0 auto; padding: 0 24px; }
     .mu-header a { color: #fff; text-decoration: none; opacity: 0.85; font-size: 0.85rem; }
     .mu-header a:hover { opacity: 1; }
     .mu-header h1 { margin: 6px 0 4px; font-size: 1.5rem; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
-    .mu-header h1 .pending-badge { background: #f59e0b; color: #fff; font-size: 12px; font-weight: 800; padding: 4px 12px; border-radius: 999px; display: inline-flex; align-items: center; gap: 5px; animation: pulseBadge 1.6s ease-in-out infinite; }
-    @keyframes pulseBadge { 0%, 100% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.6); } 50% { box-shadow: 0 0 0 8px rgba(245, 158, 11, 0); } }
+    .mu-header h1 .pending-badge {
+      background: #f59e0b;
+      color: #fff;
+      font-size: 12px;
+      font-weight: 800;
+      padding: 4px 12px;
+      border-radius: 999px;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      animation: pulseBadge 1.6s ease-in-out infinite;
+    }
+    @keyframes pulseBadge {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.6); }
+      50%      { box-shadow: 0 0 0 8px rgba(245, 158, 11, 0); }
+    }
     .mu-header p { margin: 0; opacity: 0.9; font-size: 0.9rem; }
 
     .mu-container { max-width: 1100px; margin: 0 auto; padding: 24px; }
 
     /* ============ PENDING APPROVALS QUEUE ============ */
-    .mu-pending-panel { background: linear-gradient(135deg, #fef3c7, #fde68a); border: 1px solid #fcd34d; border-left: 5px solid #f59e0b; border-radius: 14px; padding: 20px 22px; margin-bottom: 24px; box-shadow: 0 4px 12px rgba(245, 158, 11, 0.15); display: none; }
+    .mu-pending-panel {
+      background: linear-gradient(135deg, #fef3c7, #fde68a);
+      border: 1px solid #fcd34d;
+      border-left: 5px solid #f59e0b;
+      border-radius: 14px;
+      padding: 20px 22px;
+      margin-bottom: 24px;
+      box-shadow: 0 4px 12px rgba(245, 158, 11, 0.15);
+      display: none;
+    }
     .mu-pending-panel.has-items { display: block; }
-    .mu-pending-panel.empty { background: linear-gradient(135deg, #f0fdf4, #dcfce7); border-color: #86efac; border-left-color: #16a34a; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.1); }
+    .mu-pending-panel.empty {
+      background: linear-gradient(135deg, #f0fdf4, #dcfce7);
+      border-color: #86efac;
+      border-left-color: #16a34a;
+      box-shadow: 0 4px 12px rgba(16, 185, 129, 0.1);
+    }
     .mu-pending-panel.empty .pending-title-icon { background: #16a34a; }
 
-    .mu-pending-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 14px; flex-wrap: wrap; }
-    .mu-pending-title { display: flex; align-items: center; gap: 10px; font-size: 15px; font-weight: 800; color: #78350f; letter-spacing: 0.02em; }
+    .mu-pending-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 14px;
+      flex-wrap: wrap;
+    }
+    .mu-pending-title {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 15px;
+      font-weight: 800;
+      color: #78350f;
+      letter-spacing: 0.02em;
+    }
     .mu-pending-panel.empty .mu-pending-title { color: #166534; }
-    .mu-pending-title-icon { width: 34px; height: 34px; border-radius: 50%; background: #f59e0b; color: #fff; display: flex; align-items: center; justify-content: center; font-size: 17px; font-weight: 800; box-shadow: 0 2px 6px rgba(245, 158, 11, 0.3); }
-    .mu-pending-sub { font-size: 12px; color: #92400e; font-weight: 500; }
+    .mu-pending-title-icon {
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      background: #f59e0b;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 17px;
+      font-weight: 800;
+      box-shadow: 0 2px 6px rgba(245, 158, 11, 0.3);
+    }
+    .mu-pending-sub {
+      font-size: 12px;
+      color: #92400e;
+      font-weight: 500;
+    }
     .mu-pending-panel.empty .mu-pending-sub { color: #15803d; }
-    .mu-pending-count { background: #fff; color: #92400e; font-size: 13px; font-weight: 800; padding: 5px 12px; border-radius: 999px; border: 1px solid #fcd34d; margin-left: 6px; }
-    .mu-pending-panel.empty .mu-pending-count { color: #166534; border-color: #86efac; }
+    .mu-pending-count {
+      background: #fff;
+      color: #92400e;
+      font-size: 13px;
+      font-weight: 800;
+      padding: 5px 12px;
+      border-radius: 999px;
+      border: 1px solid #fcd34d;
+      margin-left: 6px;
+    }
+    .mu-pending-panel.empty .mu-pending-count {
+      color: #166534;
+      border-color: #86efac;
+    }
 
     /* Pending user cards */
-    .mu-pending-list { display: flex; flex-direction: column; gap: 10px; }
-    .mu-pending-card { background: #fff; border: 1px solid #fde68a; border-radius: 12px; padding: 14px 16px; display: grid; grid-template-columns: 44px 1fr auto; gap: 14px; align-items: flex-start; transition: all .15s; }
-    .mu-pending-card:hover { transform: translateY(-1px); box-shadow: 0 6px 16px rgba(245, 158, 11, 0.12); }
-    .mu-pending-avatar { width: 44px; height: 44px; border-radius: 50%; background: linear-gradient(135deg, #f59e0b, #d97706); color: #fff; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 17px; flex-shrink: 0; }
+    .mu-pending-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .mu-pending-card {
+      background: #fff;
+      border: 1px solid #fde68a;
+      border-radius: 12px;
+      padding: 14px 16px;
+      display: grid;
+      grid-template-columns: 44px 1fr auto;
+      gap: 14px;
+      align-items: flex-start;
+      transition: all .15s;
+    }
+    .mu-pending-card:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 6px 16px rgba(245, 158, 11, 0.12);
+    }
+    .mu-pending-avatar {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #f59e0b, #d97706);
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      font-size: 17px;
+      flex-shrink: 0;
+    }
     .mu-pending-body { min-width: 0; }
-    .mu-pending-name { margin: 0 0 2px; font-size: 15px; font-weight: 800; color: #0f2b4f; }
-    .mu-pending-email { margin: 0 0 6px; font-size: 12.5px; color: #6b7280; font-family: monospace; word-break: break-all; }
-    .mu-pending-meta { display: flex; gap: 8px; flex-wrap: wrap; font-size: 11.5px; color: #6b7280; margin-top: 4px; }
-    .mu-pending-meta .tag { background: #f3f4f6; padding: 2px 8px; border-radius: 999px; font-weight: 600; }
-    .mu-pending-meta .tag.role { background: #dbeafe; color: #1e40af; }
-    .mu-pending-message { background: #fef9c3; border-left: 3px solid #f59e0b; padding: 6px 10px; border-radius: 0 6px 6px 0; font-size: 12.5px; color: #78350f; margin-top: 8px; font-style: italic; }
-    .mu-pending-actions { display: flex; flex-direction: column; gap: 6px; flex-shrink: 0; }
-    .mu-pending-actions .mu-btn { font-size: 12px; padding: 7px 12px; justify-content: center; white-space: nowrap; }
+    .mu-pending-name {
+      margin: 0 0 2px;
+      font-size: 15px;
+      font-weight: 800;
+      color: #0f2b4f;
+    }
+    .mu-pending-email {
+      margin: 0 0 6px;
+      font-size: 12.5px;
+      color: #6b7280;
+      font-family: monospace;
+      word-break: break-all;
+    }
+    .mu-pending-meta {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      font-size: 11.5px;
+      color: #6b7280;
+      margin-top: 4px;
+    }
+    .mu-pending-meta .tag {
+      background: #f3f4f6;
+      padding: 2px 8px;
+      border-radius: 999px;
+      font-weight: 600;
+    }
+    .mu-pending-meta .tag.role {
+      background: #dbeafe;
+      color: #1e40af;
+    }
+    .mu-pending-meta .tag.school {
+      background: #fef3c7;
+      color: #92400e;
+    }
+    .mu-pending-message {
+      background: #fef9c3;
+      border-left: 3px solid #f59e0b;
+      padding: 6px 10px;
+      border-radius: 0 6px 6px 0;
+      font-size: 12.5px;
+      color: #78350f;
+      margin-top: 8px;
+      font-style: italic;
+    }
+    .mu-pending-actions {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      flex-shrink: 0;
+    }
+    .mu-pending-actions .mu-btn {
+      font-size: 12px;
+      padding: 7px 12px;
+      justify-content: center;
+      white-space: nowrap;
+    }
 
     /* ============ TOOLBAR ============ */
-    .mu-toolbar { display: flex; gap: 12px; align-items: center; margin-bottom: 20px; flex-wrap: wrap; }
-    .mu-search { flex: 1; min-width: 220px; padding: 10px 14px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 14px; font-family: inherit; outline: none; }
+    .mu-toolbar {
+      display: flex; gap: 12px; align-items: center;
+      margin-bottom: 20px; flex-wrap: wrap;
+    }
+    .mu-search {
+      flex: 1; min-width: 220px;
+      padding: 10px 14px;
+      border: 1px solid #d1d5db;
+      border-radius: 8px;
+      font-size: 14px;
+      font-family: inherit;
+      outline: none;
+    }
     .mu-search:focus { border-color: #1e6bb8; box-shadow: 0 0 0 3px rgba(30,107,184,.15); }
 
-    .mu-select { padding: 10px 12px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 14px; font-family: inherit; background: #fff; cursor: pointer; }
+    .mu-select {
+      padding: 10px 12px;
+      border: 1px solid #d1d5db;
+      border-radius: 8px;
+      font-size: 14px;
+      font-family: inherit;
+      background: #fff;
+      cursor: pointer;
+    }
 
-    .mu-btn { padding: 10px 16px; border: 1px solid transparent; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; font-family: inherit; transition: all .15s; text-decoration: none; display: inline-flex; align-items: center; gap: 6px; }
+    .mu-btn {
+      padding: 10px 16px; border: 1px solid transparent;
+      border-radius: 8px; font-size: 14px; font-weight: 600;
+      cursor: pointer; font-family: inherit;
+      transition: all .15s;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
     .mu-btn.primary { background: #1e3c72; color: #fff; }
     .mu-btn.primary:hover { background: #2a5298; }
     .mu-btn.outline { background: #fff; border-color: #d1d5db; color: #1e3c72; }
@@ -72,52 +253,144 @@
     .mu-btn:disabled { opacity: 0.5; cursor: not-allowed; }
 
     /* ============ USER CARDS ============ */
-    .mu-user-card { background: #fff; border: 1px solid #e5e7eb; border-radius: 12px; padding: 20px; margin-bottom: 14px; box-shadow: 0 1px 3px rgba(0,0,0,.04); }
+    .mu-user-card {
+      background: #fff;
+      border: 1px solid #e5e7eb;
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 14px;
+      box-shadow: 0 1px 3px rgba(0,0,0,.04);
+    }
     .mu-user-card.hidden { display: none; }
 
-    .mu-user-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; margin-bottom: 16px; flex-wrap: wrap; padding-bottom: 14px; border-bottom: 1px solid #f3f4f6; }
-    .mu-user-name { margin: 0 0 2px; font-size: 1.1rem; color: #0f2b4f; font-weight: 700; }
-    .mu-user-email { margin: 0; font-size: 0.85rem; color: #6b7280; font-family: monospace; }
+    .mu-user-header {
+      display: flex; justify-content: space-between; align-items: flex-start;
+      gap: 12px; margin-bottom: 16px; flex-wrap: wrap;
+      padding-bottom: 14px;
+      border-bottom: 1px solid #f3f4f6;
+    }
+    .mu-user-name {
+      margin: 0 0 2px; font-size: 1.1rem; color: #0f2b4f; font-weight: 700;
+    }
+    .mu-user-email {
+      margin: 0; font-size: 0.85rem; color: #6b7280; font-family: monospace;
+    }
 
-    .mu-field-row { display: grid; grid-template-columns: 180px 1fr; gap: 12px; align-items: flex-start; margin-bottom: 14px; }
-    .mu-field-row label { font-size: 0.78rem; font-weight: 700; color: #374151; text-transform: uppercase; letter-spacing: 0.02em; padding-top: 10px; }
-    .mu-field-row select, .mu-field-row input[type="text"] { padding: 9px 12px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 0.9rem; font-family: inherit; width: 100%; max-width: 400px; }
-    .mu-field-row select:focus, .mu-field-row input[type="text"]:focus { outline: none; border-color: #1e6bb8; box-shadow: 0 0 0 3px rgba(30,107,184,.12); }
+    .mu-field-row {
+      display: grid;
+      grid-template-columns: 180px 1fr;
+      gap: 12px;
+      align-items: flex-start;
+      margin-bottom: 14px;
+    }
+    .mu-field-row label {
+      font-size: 0.78rem; font-weight: 700;
+      color: #374151; text-transform: uppercase; letter-spacing: 0.02em;
+      padding-top: 10px;
+    }
+    .mu-field-row select,
+    .mu-field-row input[type="text"] {
+      padding: 9px 12px; border: 1px solid #d1d5db; border-radius: 6px;
+      font-size: 0.9rem; font-family: inherit; width: 100%; max-width: 400px;
+    }
+    .mu-field-row select:focus,
+    .mu-field-row input[type="text"]:focus {
+      outline: none; border-color: #1e6bb8; box-shadow: 0 0 0 3px rgba(30,107,184,.12);
+    }
 
     .mu-hint { font-size: 0.72rem; color: #6b7280; margin-top: 4px; }
 
     .mu-teacher-type { display: flex; flex-direction: column; gap: 8px; max-width: 500px; }
-    .mu-teacher-type label { display: flex; align-items: flex-start; gap: 10px; padding: 10px 12px; border: 1px solid #e5e7eb; border-radius: 8px; background: #fafbfc; cursor: pointer; font-size: 0.85rem; transition: all .15s; }
+    .mu-teacher-type label {
+      display: flex; align-items: flex-start; gap: 10px;
+      padding: 10px 12px; border: 1px solid #e5e7eb; border-radius: 8px;
+      background: #fafbfc; cursor: pointer; font-size: 0.85rem; transition: all .15s;
+    }
     .mu-teacher-type label:hover { background: #eff6ff; border-color: #bfdbfe; }
     .mu-teacher-type label.selected { background: #eff6ff; border-color: #1e6bb8; }
     .mu-teacher-type input[type="radio"] { margin-top: 3px; accent-color: #1e3c72; }
     .mu-teacher-type .tt-title { font-weight: 700; color: #0f2b4f; }
     .mu-teacher-type .tt-desc  { font-size: 0.75rem; color: #6b7280; margin-top: 2px; }
 
-    .mu-checkbox-group { display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 8px; }
-    .mu-checkbox { display: flex; align-items: center; gap: 8px; padding: 8px 12px; border: 1px solid #e5e7eb; border-radius: 8px; background: #fafbfc; cursor: pointer; font-size: 0.85rem; transition: all .15s; user-select: none; }
+    .mu-checkbox-group {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+      gap: 8px;
+    }
+    .mu-checkbox {
+      display: flex; align-items: center; gap: 8px;
+      padding: 8px 12px; border: 1px solid #e5e7eb; border-radius: 8px;
+      background: #fafbfc; cursor: pointer; font-size: 0.85rem;
+      transition: all .15s; user-select: none;
+    }
     .mu-checkbox:hover { background: #eff6ff; border-color: #bfdbfe; }
-    .mu-checkbox input[type="checkbox"] { cursor: pointer; width: 16px; height: 16px; accent-color: #1e3c72; }
+    .mu-checkbox input[type="checkbox"] {
+      cursor: pointer; width: 16px; height: 16px; accent-color: #1e3c72;
+    }
     .mu-checkbox.checked { background: #eff6ff; border-color: #1e6bb8; }
 
-    .mu-actions { display: flex; gap: 8px; margin-top: 16px; padding-top: 16px; border-top: 1px solid #f3f4f6; flex-wrap: wrap; }
+    .mu-actions {
+      display: flex; gap: 8px; margin-top: 16px;
+      padding-top: 16px; border-top: 1px solid #f3f4f6;
+      flex-wrap: wrap;
+    }
 
-    .mu-badge { display: inline-block; padding: 3px 10px; border-radius: 999px; font-size: 11px; font-weight: 700; background: #eff6ff; color: #1e40af; margin-left: 6px; }
+    .mu-badge {
+      display: inline-block;
+      padding: 3px 10px;
+      border-radius: 999px;
+      font-size: 11px;
+      font-weight: 700;
+      background: #eff6ff;
+      color: #1e40af;
+      margin-left: 6px;
+    }
     .mu-badge.super-admin { background: #fef3c7; color: #92400e; }
     .mu-badge.guest-teacher { background: #ede9fe; color: #6d28d9; }
     .mu-badge.scphs-teacher { background: #dbeafe; color: #1e40af; }
     .mu-badge.pending { background: #fef3c7; color: #92400e; }
 
-    .mu-toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(20px); background: #111827; color: #fff; padding: 10px 20px; border-radius: 8px; font-size: 14px; font-weight: 500; box-shadow: 0 8px 24px rgba(0,0,0,.2); opacity: 0; transition: all .2s; z-index: 9999; pointer-events: none; }
+    .mu-toast {
+      position: fixed; bottom: 24px; left: 50%;
+      transform: translateX(-50%) translateY(20px);
+      background: #111827; color: #fff;
+      padding: 10px 20px; border-radius: 8px;
+      font-size: 14px; font-weight: 500;
+      box-shadow: 0 8px 24px rgba(0,0,0,.2);
+      opacity: 0; transition: all .2s;
+      z-index: 9999; pointer-events: none;
+    }
     .mu-toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
     .mu-toast.error { background: #b91c1c; }
     .mu-toast.success { background: #059669; }
 
-    .mu-loading, .mu-empty { text-align: center; padding: 60px 20px; color: #6b7280; }
-    .mu-spinner { display: inline-block; width: 32px; height: 32px; border: 3px solid #e5e7eb; border-top-color: #1e3c72; border-radius: 50%; animation: spin .8s linear infinite; margin-bottom: 12px; }
+    .mu-loading, .mu-empty {
+      text-align: center;
+      padding: 60px 20px;
+      color: #6b7280;
+    }
+    .mu-spinner {
+      display: inline-block;
+      width: 32px; height: 32px;
+      border: 3px solid #e5e7eb;
+      border-top-color: #1e3c72;
+      border-radius: 50%;
+      animation: spin .8s linear infinite;
+      margin-bottom: 12px;
+    }
     @keyframes spin { to { transform: rotate(360deg); } }
 
-    @media (max-width: 700px) { .mu-field-row { grid-template-columns: 1fr; gap: 4px; } .mu-field-row label { font-size: 0.72rem; padding-top: 0; } .mu-pending-card { grid-template-columns: 1fr; } .mu-pending-avatar { display: none; } .mu-pending-actions { flex-direction: row; flex-wrap: wrap; margin-top: 8px; } }
+    @media (max-width: 700px) {
+      .mu-field-row { grid-template-columns: 1fr; gap: 4px; }
+      .mu-field-row label { font-size: 0.72rem; padding-top: 0; }
+      .mu-pending-card { grid-template-columns: 1fr; }
+      .mu-pending-avatar { display: none; }
+      .mu-pending-actions {
+        flex-direction: row;
+        flex-wrap: wrap;
+        margin-top: 8px;
+      }
+    }
   </style>
 </head>
 <body>
@@ -149,7 +422,7 @@
               <span class="mu-pending-count" id="pendingCount">0</span>
             </div>
             <div class="mu-pending-sub" id="pendingSubtitle">
-              These users are waiting for approval.
+              These users are waiting for teacher access.
             </div>
           </div>
           <button class="mu-btn outline" id="pendingRefresh" style="font-size:12px;padding:6px 12px;">🔄 Refresh</button>
@@ -180,7 +453,9 @@
 
   <script type="module">
     import { auth, db } from "./assets/js/firebase-config.js";
-    import { collection, getDocs, doc, updateDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+    import {
+      collection, getDocs, doc, updateDoc, deleteDoc, serverTimestamp
+    } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
     import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
     import { SUPER_ADMINS, PERMISSION_TEMPLATES, getCurrentUserProfile } from "./assets/js/roles.js";
 
@@ -189,6 +464,9 @@
     let ALL_USERS = [];
     let REFRESH_TIMER = null;
 
+    // ============================================================
+    // Toast
+    // ============================================================
     let toastTimer;
     function toast(msg, type = "") {
       const t = $("toast");
@@ -199,40 +477,73 @@
     }
 
     function esc(s) {
-      return String(s == null ? "" : s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+      return String(s == null ? "" : s)
+        .replace(/&/g, "&amp;").replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
     }
 
+    // ============================================================
+    // Auth gate
+    // ============================================================
     onAuthStateChanged(auth, async (user) => {
-      if (!user) { location.replace("login.html"); return; }
+      if (!user) {
+        location.replace("login.html?next=" + encodeURIComponent(location.pathname));
+        return;
+      }
+
       CURRENT_ADMIN = await getCurrentUserProfile();
-      const isAdmin = CURRENT_ADMIN?.primaryRole === "admin" || CURRENT_ADMIN?.isSuperAdmin || CURRENT_ADMIN?.permissions?.canManageUsers === true;
-      if (!isAdmin) { $("loading").innerHTML = `<h2 style="color:#b91c1c;">🚫 Access Denied</h2>`; return; }
+      const isAdmin = CURRENT_ADMIN?.primaryRole === "admin"
+        || CURRENT_ADMIN?.isSuperAdmin
+        || CURRENT_ADMIN?.permissions?.canManageUsers === true;
+
+      if (!isAdmin) {
+        $("loading").innerHTML = `
+          <h2 style="color:#b91c1c;">🚫 Access Denied</h2>
+          <p>Only admins can access this page.</p>
+          <a href="index.html" class="mu-btn primary" style="margin-top:12px;">← Back to Portal</a>
+        `;
+        return;
+      }
+
       await loadUsers();
       startAutoRefresh();
     });
 
+    // ============================================================
+    // Load users
+    // ============================================================
     async function loadUsers() {
       try {
         const snap = await getDocs(collection(db, "users"));
         ALL_USERS = snap.docs.map(d => ({ uid: d.id, ...d.data() }));
         ALL_USERS.sort((a, b) => (a.name || "").localeCompare(b.name || ""));
+
         $("loading").style.display = "none";
         $("content").style.display = "block";
         renderPendingQueue();
         renderUsers();
         updateHeaderBadge();
       } catch (e) {
+        console.error(e);
         $("loading").innerHTML = `<div style="color:#b91c1c;">Failed to load users: ${esc(e.message)}</div>`;
       }
     }
 
+    // ============================================================
+    // Auto-refresh every 45 seconds
+    // ============================================================
     function startAutoRefresh() {
       if (REFRESH_TIMER) clearInterval(REFRESH_TIMER);
       REFRESH_TIMER = setInterval(() => loadUsers(), 45000);
     }
 
+    // ============================================================
+    // Pending detection
+    // ============================================================
     function isPending(user) {
+      // Pending if explicitly flagged
       if (user.pendingApproval === true) return true;
+      // Or if signed up as student but recent (within 30 days) — treat as pending
       const role = user.primaryRole || user.role || "student";
       if (role === "student" && user.createdAt) {
         const created = user.createdAt.toDate ? user.createdAt.toDate() : new Date(user.createdAt);
@@ -243,13 +554,18 @@
     }
 
     function getPendingUsers() {
-      return ALL_USERS.filter(u => isPending(u)).sort((a, b) => {
-        const ta = a.createdAt?.toDate?.()?.getTime?.() || 0;
-        const tb = b.createdAt?.toDate?.()?.getTime?.() || 0;
-        return ta - tb;
-      });
+      return ALL_USERS
+        .filter(u => isPending(u))
+        .sort((a, b) => {
+          const ta = a.createdAt?.toDate?.()?.getTime?.() || 0;
+          const tb = b.createdAt?.toDate?.()?.getTime?.() || 0;
+          return ta - tb; // oldest first
+        });
     }
 
+    // ============================================================
+    // Relative time ("2h ago", "3d ago")
+    // ============================================================
     function timeAgo(ts) {
       if (!ts) return "just now";
       const date = ts.toDate ? ts.toDate() : new Date(ts);
@@ -264,13 +580,21 @@
       return date.toLocaleDateString();
     }
 
+    // ============================================================
+    // Header badge
+    // ============================================================
     function updateHeaderBadge() {
       const count = getPendingUsers().length;
       const titleEl = $("muTitle");
       let badge = titleEl.querySelector(".pending-badge");
       if (count > 0) {
-        if (!badge) { badge = document.createElement("span"); badge.className = "pending-badge"; titleEl.appendChild(badge); }
+        if (!badge) {
+          badge = document.createElement("span");
+          badge.className = "pending-badge";
+          titleEl.appendChild(badge);
+        }
         badge.textContent = `⏳ ${count} waiting`;
+        // Update page title too
         document.title = `(${count}) Manage Users — SCPHS`;
       } else {
         if (badge) badge.remove();
@@ -278,6 +602,9 @@
       }
     }
 
+    // ============================================================
+    // Render pending queue
+    // ============================================================
     function renderPendingQueue() {
       const panel = $("pendingPanel");
       const list = $("pendingList");
@@ -290,7 +617,7 @@
         panel.classList.add("empty");
         $("pendingIcon").textContent = "✓";
         $("pendingTitleText").textContent = "All Caught Up";
-        $("pendingSubtitle").textContent = "No pending approvals right now.";
+        $("pendingSubtitle").textContent = "No pending approvals right now. New signups will appear here.";
         list.innerHTML = "";
         return;
       }
@@ -298,9 +625,11 @@
       panel.classList.remove("empty");
       $("pendingIcon").textContent = "⏳";
       $("pendingTitleText").textContent = "Pending Approvals";
-      $("pendingSubtitle").textContent = `${count} user(s) waiting for approval.`;
+      $("pendingSubtitle").textContent = `${count} user${count === 1 ? "" : "s"} waiting for teacher access.`;
+
       list.innerHTML = pending.map(u => renderPendingCard(u)).join("");
 
+      // Wire actions
       list.querySelectorAll("[data-pending-action]").forEach(btn => {
         btn.addEventListener("click", () => handlePendingAction(btn));
       });
@@ -312,7 +641,13 @@
       const school = u.signupSchool || "";
       const message = u.signupMessage || u.requestMessage || "";
 
-      const roleLabels = { "scphs-teacher": "🏫 SCPHS teacher", "external-teacher": "🌐 External teacher", "student": "🎓 Student", "parent": "👨‍👩‍👧 Parent", "other": "❓ Other" };
+      const roleLabels = {
+        "scphs-teacher": "🏫 SCPHS teacher",
+        "external-teacher": "🌐 External teacher",
+        "student": "🎓 Student",
+        "parent": "👨‍👩‍👧 Parent",
+        "other": "❓ Other",
+      };
       const roleLabel = roleLabels[role] || "❔ Not specified";
 
       return `
@@ -338,6 +673,9 @@
       `;
     }
 
+    // ============================================================
+    // Handle pending actions
+    // ============================================================
     async function handlePendingAction(btn) {
       const action = btn.dataset.pendingAction;
       const uid = btn.dataset.uid;
@@ -345,36 +683,71 @@
       if (!user) return;
 
       const userName = user.name || user.email || "this user";
+
       const confirmMessages = {
-        "approve-scphs": `Approve ${userName} as SCPHS Teacher?`,
-        "approve-guest": `Approve ${userName} as Guest Teacher?`,
-        "approve-student": `Approve ${userName} as Student?`,
-        "decline": `Decline ${userName}'s request?`
+        "approve-scphs": `Approve ${userName} as SCPHS Teacher?\n\nThey'll access the full ILAW Lesson Planner.`,
+        "approve-guest": `Approve ${userName} as Guest Teacher?\n\nThey'll access the ILAW Open Workspace (any subject/grade).`,
+        "approve-student": `Approve ${userName} as Student?\n\nThey'll have access to the Learner Modules area.`,
+        "decline": `Decline ${userName}'s request?\n\nThey will not be granted access. This cannot be undone.`,
       };
+
       if (!confirm(confirmMessages[action])) return;
 
       btn.disabled = true;
       const originalText = btn.textContent;
-      btn.textContent = "⏳...";
+      btn.textContent = "⏳ Processing…";
 
       try {
-        const payload = { updatedAt: serverTimestamp(), updatedBy: CURRENT_ADMIN.uid, approvedAt: serverTimestamp(), approvedBy: CURRENT_ADMIN.email || CURRENT_ADMIN.uid, pendingApproval: false };
+        const payload = {
+          updatedAt: serverTimestamp(),
+          updatedBy: CURRENT_ADMIN.uid,
+          approvedAt: serverTimestamp(),
+          approvedBy: CURRENT_ADMIN.email || CURRENT_ADMIN.uid,
+          pendingApproval: false,
+        };
 
-        if (action === "approve-scphs") { payload.primaryRole = "teacher"; payload.teacherType = "scphs"; }
-        else if (action === "approve-guest") { payload.primaryRole = "teacher"; payload.teacherType = "external"; }
-        else if (action === "approve-student") { payload.primaryRole = "student"; delete payload.teacherType; }
-        else if (action === "decline") { payload.primaryRole = "declined"; payload.declinedAt = serverTimestamp(); }
+        switch (action) {
+          case "approve-scphs":
+            payload.primaryRole = "teacher";
+            payload.teacherType = "scphs";
+            break;
+          case "approve-guest":
+            payload.primaryRole = "teacher";
+            payload.teacherType = "external";
+            break;
+          case "approve-student":
+            payload.primaryRole = "student";
+            delete payload.teacherType;
+            break;
+          case "decline":
+            payload.primaryRole = "declined";
+            payload.declinedAt = serverTimestamp();
+            payload.declinedBy = CURRENT_ADMIN.email || CURRENT_ADMIN.uid;
+            break;
+        }
 
         await updateDoc(doc(db, "users", uid), payload);
-        toast("✓ Action completed", "success");
+
+        const successMsg = {
+          "approve-scphs": "✓ Approved as SCPHS Teacher",
+          "approve-guest": "✓ Approved as Guest Teacher",
+          "approve-student": "✓ Approved as Student",
+          "decline": "✓ Request declined",
+        }[action];
+
+        toast(successMsg, "success");
         await loadUsers();
       } catch (e) {
+        console.error(e);
         toast("⚠️ " + (e.message || "Action failed"), "error");
         btn.disabled = false;
         btn.textContent = originalText;
       }
     }
 
+    // ============================================================
+    // Render all users (with role filter including "pending")
+    // ============================================================
     function renderUsers() {
       const term = ($("searchInput")?.value || "").toLowerCase().trim();
       const filter = $("roleFilter")?.value || "";
@@ -382,121 +755,223 @@
       const filtered = ALL_USERS.filter(u => {
         const primary = u.primaryRole || u.role || "student";
         const tType = String(u.teacherType || "").toLowerCase();
-        const matchTerm = !term || (u.name || "").toLowerCase().includes(term) || (u.email || "").toLowerCase().includes(term);
+
+        const matchTerm = !term
+          || (u.name || "").toLowerCase().includes(term)
+          || (u.email || "").toLowerCase().includes(term);
 
         let matchRole = true;
-        if (filter === "pending") { matchRole = isPending(u); }
-        else if (filter === "scphs-teacher") { matchRole = primary === "teacher" && (tType === "scphs" || tType === "internal" || !tType); }
-        else if (filter === "guest-teacher") { matchRole = primary === "teacher" && (tType === "external" || tType === "guest"); }
-        else if (filter) { matchRole = primary === filter; }
+        if (filter === "pending") {
+          matchRole = isPending(u);
+        } else if (filter === "scphs-teacher") {
+          matchRole = primary === "teacher" && (tType === "scphs" || tType === "internal" || !tType);
+        } else if (filter === "guest-teacher") {
+          matchRole = primary === "teacher" && (tType === "external" || tType === "guest");
+        } else if (filter) {
+          matchRole = primary === filter;
+        }
 
         return matchTerm && matchRole;
       });
 
       $("userCount").textContent = `${filtered.length} user${filtered.length === 1 ? "" : "s"}`;
+
       const host = $("userList");
-      
-      if (!filtered.length) { host.innerHTML = `<div class="mu-empty">No users match your filters.</div>`; return; }
+      if (!filtered.length) {
+        host.innerHTML = `<div class="mu-empty">No users match your filters.</div>`;
+        return;
+      }
 
       host.innerHTML = filtered.map(user => renderUserCard(user)).join("");
       attachHandlers();
     }
 
+    // ============================================================
+    // Render user card (mostly unchanged, adds "Pending" badge)
+    // ============================================================
     function renderUserCard(user) {
       const isSuper = SUPER_ADMINS.includes(user.email);
       const primaryRole = user.primaryRole || user.role || "student";
       const permissions = user.permissions || {};
-      const secondaryRoles = Array.isArray(user.secondaryRoles) ? user.secondaryRoles : (typeof user.secondaryRoles === "string" && user.secondaryRoles ? [user.secondaryRoles] : []);
+      const secondaryRoles = Array.isArray(user.secondaryRoles)
+        ? user.secondaryRoles
+        : (typeof user.secondaryRoles === "string" && user.secondaryRoles
+            ? [user.secondaryRoles]
+            : []);
+
       let teacherType = String(user.teacherType || "").toLowerCase();
-      if (primaryRole === "teacher" && !teacherType) teacherType = "scphs";
+      if (primaryRole === "teacher" && !teacherType) {
+        teacherType = "scphs";
+      }
 
       const isTeacher = primaryRole === "teacher";
       const isPendingUser = isPending(user);
 
+      // Teacher-type badge
       let teacherBadge = "";
       if (isTeacher) {
-        if (teacherType === "external" || teacherType === "guest") teacherBadge = '<span class="mu-badge guest-teacher">🌐 Guest Teacher</span>';
-        else teacherBadge = '<span class="mu-badge scphs-teacher">🏫 SCPHS Teacher</span>';
+        if (teacherType === "external" || teacherType === "guest") {
+          teacherBadge = '<span class="mu-badge guest-teacher">🌐 Guest Teacher</span>';
+        } else {
+          teacherBadge = '<span class="mu-badge scphs-teacher">🏫 SCPHS Teacher</span>';
+        }
       }
-      if (isPendingUser) teacherBadge += '<span class="mu-badge pending">⏳ Pending</span>';
+      if (isPendingUser) {
+        teacherBadge += '<span class="mu-badge pending">⏳ Pending</span>';
+      }
 
-      const permissionList = [["canPostBulletin", "Post Bulletins"], ["canUploadMemo", "Upload Memos"], ["canManageClasses", "Manage Classes"], ["canEnterGrades", "Enter Grades"], ["canManageRoster", "Manage Class Roster"], ["canCreateExams", "Create Exams"], ["canModerateContent", "Moderate Content"], ["canManageUsers", "Manage Users"]];
+      // Permission checkboxes
+      const permissionList = [
+        ["canPostBulletin",    "Post Bulletins"],
+        ["canUploadMemo",      "Upload Memos"],
+        ["canManageClasses",   "Manage Classes"],
+        ["canEnterGrades",     "Enter Grades"],
+        ["canManageRoster",    "Manage Class Roster"],
+        ["canCreateExams",     "Create Exams"],
+        ["canModerateContent", "Moderate Content"],
+        ["canManageUsers",     "Manage Users"],
+      ];
+
       const permHTML = permissionList.map(([key, label]) => {
         const checked = permissions[key] === true;
-        return `<label class="mu-checkbox${checked ? " checked" : ""}"><input type="checkbox" data-perm="${key}" ${checked ? "checked" : ""} ${isSuper ? "disabled" : ""}><span>${label}</span></label>`;
+        return `
+          <label class="mu-checkbox${checked ? " checked" : ""}">
+            <input type="checkbox" data-perm="${key}" ${checked ? "checked" : ""} ${isSuper ? "disabled" : ""}>
+            <span>${label}</span>
+          </label>`;
       }).join("");
 
-      const secondaryHTML = `<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px;">${secondaryRoles.length ? secondaryRoles.map(r => `<span class="mu-badge">${esc(r)}</span>`).join("") : '<span style="font-size:0.8rem;color:#9ca3af;">No additional roles</span>'}</div>`;
+      const secondaryHTML = `
+        <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px;">
+          ${secondaryRoles.length
+            ? secondaryRoles.map(r => `<span class="mu-badge">${esc(r)}</span>`).join("")
+            : '<span style="font-size:0.8rem;color:#9ca3af;">No additional roles</span>'}
+        </div>`;
 
       const teacherTypeHTML = `
         <div class="mu-field-row" data-teacher-type-row style="${isTeacher ? "" : "display:none;"}">
           <label>Teacher Type</label>
           <div class="mu-teacher-type">
-            <label class="${teacherType === "scphs" ? "selected" : ""}"><input type="radio" name="teacherType_${user.uid}" value="scphs" ${teacherType === "scphs" ? "checked" : ""} ${isSuper ? "disabled" : ""}><div><div class="tt-title">🏫 SCPHS Teacher</div><div class="tt-desc">Assigned classes and subjects.</div></div></label>
-            <label class="${teacherType === "external" ? "selected" : ""}"><input type="radio" name="teacherType_${user.uid}" value="external" ${teacherType === "external" || teacherType === "guest" ? "checked" : ""} ${isSuper ? "disabled" : ""}><div><div class="tt-title">🌐 Guest Teacher</div><div class="tt-desc">Open workspace — any subject, any grade.</div></div></label>
+            <label class="${teacherType === "scphs" ? "selected" : ""}">
+              <input type="radio" name="teacherType_${user.uid}" value="scphs" ${teacherType === "scphs" ? "checked" : ""} ${isSuper ? "disabled" : ""}>
+              <div>
+                <div class="tt-title">🏫 SCPHS Teacher</div>
+                <div class="tt-desc">Assigned classes and subjects. Accesses the full ILAW Lesson Planner.</div>
+              </div>
+            </label>
+            <label class="${teacherType === "external" ? "selected" : ""}">
+              <input type="radio" name="teacherType_${user.uid}" value="external" ${teacherType === "external" || teacherType === "guest" ? "checked" : ""} ${isSuper ? "disabled" : ""}>
+              <div>
+                <div class="tt-title">🌐 Guest Teacher</div>
+                <div class="tt-desc">Open workspace — any subject, any grade. Uses the ILAW Open Workspace.</div>
+              </div>
+            </label>
           </div>
         </div>
       `;
 
-      const signupInfo = (user.signupRole || user.signupSchool || user.signupMessage) ? `<div style="background:#fef9c3;border-left:3px solid #f59e0b;padding:8px 12px;border-radius:0 6px 6px 0;font-size:12.5px;color:#78350f;margin-bottom:14px;"><strong>📝 Signup info:</strong>${user.signupRole ? `<div>Role: <em>${esc(user.signupRole)}</em></div>` : ""}${user.signupSchool ? `<div>School: <em>${esc(user.signupSchool)}</em></div>` : ""}${user.signupMessage ? `<div>Message: <em>"${esc(user.signupMessage)}"</em></div>` : ""}</div>` : "";
+      // Signup info (if present)
+      const signupInfo = (user.signupRole || user.signupSchool || user.signupMessage) ? `
+        <div style="background:#fef9c3;border-left:3px solid #f59e0b;padding:8px 12px;border-radius:0 6px 6px 0;font-size:12.5px;color:#78350f;margin-bottom:14px;">
+          <strong>📝 Signup info:</strong>
+          ${user.signupRole ? `<div>Role: <em>${esc(user.signupRole)}</em></div>` : ""}
+          ${user.signupSchool ? `<div>School: <em>${esc(user.signupSchool)}</em></div>` : ""}
+          ${user.signupMessage ? `<div>Message: <em>"${esc(user.signupMessage)}"</em></div>` : ""}
+        </div>
+      ` : "";
 
       return `
         <div class="mu-user-card" data-uid="${user.uid}" data-email="${esc(user.email || "")}">
           <div class="mu-user-header">
             <div>
-              <h3 class="mu-user-name">${esc(user.name || "Unnamed")} ${isSuper ? '<span class="mu-badge super-admin">👑 Super Admin</span>' : ''} ${teacherBadge}</h3>
+              <h3 class="mu-user-name">
+                ${esc(user.name || "Unnamed")}
+                ${isSuper ? '<span class="mu-badge super-admin">👑 Super Admin</span>' : ''}
+                ${teacherBadge}
+              </h3>
               <p class="mu-user-email">${esc(user.email || "")}</p>
             </div>
           </div>
+
           ${signupInfo}
+
           <div class="mu-field-row">
             <label>Primary Role</label>
             <div>
               <select data-field="primaryRole" ${isSuper ? "disabled" : ""}>
                 <option value="student" ${primaryRole === "student" ? "selected" : ""}>Student</option>
                 <option value="teacher" ${primaryRole === "teacher" ? "selected" : ""}>Teacher</option>
-                <option value="admin" ${primaryRole === "admin" ? "selected" : ""}>Admin</option>
+                <option value="admin"   ${primaryRole === "admin"   ? "selected" : ""}>Admin</option>
                 <option value="declined" ${primaryRole === "declined" ? "selected" : ""}>Declined</option>
               </select>
             </div>
           </div>
+
           ${teacherTypeHTML}
+
           <div class="mu-field-row">
             <label>Additional Roles</label>
             <div>
-              <input type="text" data-field="secondaryRoles" value="${esc(secondaryRoles.join(", "))}" placeholder="e.g., SSLG President" ${isSuper ? "disabled" : ""}>
+              <input type="text"
+                     data-field="secondaryRoles"
+                     value="${esc(secondaryRoles.join(", "))}"
+                     placeholder="e.g., SSLG President, Club Adviser, Master Teacher I"
+                     ${isSuper ? "disabled" : ""}>
               <div class="mu-hint">Separate multiple roles with commas</div>
               ${secondaryHTML}
             </div>
           </div>
+
           <div class="mu-field-row" style="grid-template-columns:1fr;">
             <label style="margin-bottom:8px;">Permissions</label>
             <div class="mu-checkbox-group">${permHTML}</div>
           </div>
+
           <div class="mu-actions">
-            <button class="mu-btn primary" data-action="save" ${isSuper ? "disabled" : ""}>💾 Save Changes</button>
-            <button class="mu-btn outline" data-action="reset" ${isSuper ? "disabled" : ""}>↺ Reset</button>
-            <button class="mu-btn outline" data-action="apply-admin" ${isSuper ? "disabled" : ""}>👑 Apply Admin</button>
-            <button class="mu-btn outline" data-action="apply-teacher" ${isSuper ? "disabled" : ""}>🏫 Apply SCPHS Teacher</button>
-            <button class="mu-btn guest" data-action="apply-guest-teacher" ${isSuper ? "disabled" : ""}>🌐 Apply Guest Teacher</button>
-            <button class="mu-btn outline" data-action="apply-adviser" ${isSuper ? "disabled" : ""}>📋 Apply Adviser</button>
-            <button class="mu-btn outline" data-action="apply-student-leader" ${isSuper ? "disabled" : ""}>🎯 Apply Student Leader</button>
+            <button class="mu-btn primary" data-action="save" ${isSuper ? "disabled" : ""}>
+              💾 Save Changes
+            </button>
+            <button class="mu-btn outline" data-action="reset" ${isSuper ? "disabled" : ""}>
+              ↺ Reset
+            </button>
+            <button class="mu-btn outline" data-action="apply-admin" ${isSuper ? "disabled" : ""}>
+              👑 Apply Admin
+            </button>
+            <button class="mu-btn outline" data-action="apply-teacher" ${isSuper ? "disabled" : ""}>
+              🏫 Apply SCPHS Teacher
+            </button>
+            <button class="mu-btn guest" data-action="apply-guest-teacher" ${isSuper ? "disabled" : ""}>
+              🌐 Apply Guest Teacher
+            </button>
+            <button class="mu-btn outline" data-action="apply-adviser" ${isSuper ? "disabled" : ""}>
+              📋 Apply Adviser
+            </button>
+            <button class="mu-btn outline" data-action="apply-student-leader" ${isSuper ? "disabled" : ""}>
+              🎯 Apply Student Leader
+            </button>
           </div>
         </div>
       `;
     }
 
+    // ============================================================
+    // Handlers for regular user cards
+    // ============================================================
     function attachHandlers() {
       document.querySelectorAll(".mu-checkbox input[type='checkbox']").forEach(cb => {
-        cb.addEventListener("change", () => cb.closest(".mu-checkbox").classList.toggle("checked", cb.checked));
+        cb.addEventListener("change", () => {
+          cb.closest(".mu-checkbox").classList.toggle("checked", cb.checked);
+        });
       });
 
       document.querySelectorAll(".mu-user-card").forEach(card => {
         const uid = card.dataset.uid;
+
         const roleSel = card.querySelector("[data-field='primaryRole']");
         roleSel?.addEventListener("change", () => {
           const row = card.querySelector("[data-teacher-type-row]");
-          if (row) row.style.display = roleSel.value === "teacher" ? "" : "none";
+          if (!row) return;
+          row.style.display = roleSel.value === "teacher" ? "" : "none";
         });
 
         card.querySelectorAll("input[name^='teacherType_']").forEach(radio => {
@@ -508,6 +983,7 @@
 
         card.querySelector("[data-action='save']")?.addEventListener("click", () => saveUser(card, uid));
         card.querySelector("[data-action='reset']")?.addEventListener("click", () => loadUsers());
+
         card.querySelector("[data-action='apply-admin']")?.addEventListener("click", () => applyTemplate(card, "admin"));
         card.querySelector("[data-action='apply-teacher']")?.addEventListener("click", () => applyTemplate(card, "teacher", "scphs"));
         card.querySelector("[data-action='apply-guest-teacher']")?.addEventListener("click", () => applyTemplate(card, "teacher", "external"));
@@ -520,20 +996,34 @@
       const primaryRole = card.querySelector("[data-field='primaryRole']").value;
       const secondaryRaw = card.querySelector("[data-field='secondaryRoles']").value;
       const secondaryRoles = secondaryRaw.split(",").map(s => s.trim()).filter(Boolean);
+
       const permissions = {};
-      card.querySelectorAll("input[data-perm]").forEach(cb => { permissions[cb.dataset.perm] = cb.checked; });
+      card.querySelectorAll("input[data-perm]").forEach(cb => {
+        permissions[cb.dataset.perm] = cb.checked;
+      });
 
       const teacherTypeRadio = card.querySelector("input[name^='teacherType_']:checked");
       const teacherType = teacherTypeRadio ? teacherTypeRadio.value : "";
 
-      const updatePayload = { primaryRole, secondaryRoles, permissions, pendingApproval: false, updatedAt: serverTimestamp(), updatedBy: CURRENT_ADMIN.uid };
-      if (primaryRole === "teacher" && teacherType) updatePayload.teacherType = teacherType;
+      const updatePayload = {
+        primaryRole,
+        secondaryRoles,
+        permissions,
+        pendingApproval: false, // Clear any pending flag on save
+        updatedAt: serverTimestamp(),
+        updatedBy: CURRENT_ADMIN.uid,
+      };
+
+      if (primaryRole === "teacher" && teacherType) {
+        updatePayload.teacherType = teacherType;
+      }
 
       try {
         await updateDoc(doc(db, "users", uid), updatePayload);
-        toast("✓ Saved successfully", "success");
+        toast(`✓ Saved${primaryRole === "teacher" ? ` (${teacherType === "external" ? "Guest" : "SCPHS"} Teacher)` : ""}`, "success");
         await loadUsers();
       } catch (e) {
+        console.error(e);
         toast("⚠️ " + (e.message || "Save failed"), "error");
       }
     }
@@ -546,21 +1036,36 @@
 
       Object.entries(template.permissions).forEach(([key, val]) => {
         const cb = card.querySelector(`input[data-perm='${key}']`);
-        if (cb) { cb.checked = val; cb.closest(".mu-checkbox").classList.toggle("checked", val); }
+        if (cb) {
+          cb.checked = val;
+          cb.closest(".mu-checkbox").classList.toggle("checked", val);
+        }
       });
 
       if (template.primaryRole === "teacher") {
         const row = card.querySelector("[data-teacher-type-row]");
         if (row) row.style.display = "";
+
         const target = forcedTeacherType || "scphs";
         const radio = card.querySelector(`input[name^='teacherType_'][value='${target}']`);
-        if (radio) { radio.checked = true; card.querySelectorAll(".mu-teacher-type label").forEach(l => l.classList.remove("selected")); radio.closest("label").classList.add("selected"); }
+        if (radio) {
+          radio.checked = true;
+          card.querySelectorAll(".mu-teacher-type label").forEach(l => l.classList.remove("selected"));
+          radio.closest("label").classList.add("selected");
+        }
       }
 
-      const label = forcedTeacherType === "external" ? "Guest Teacher" : forcedTeacherType === "scphs" ? "SCPHS Teacher" : template.label;
+      const label = forcedTeacherType === "external"
+        ? "Guest Teacher"
+        : forcedTeacherType === "scphs"
+          ? "SCPHS Teacher"
+          : template.label;
       toast(`Applied: ${label}`, "success");
     }
 
+    // ============================================================
+    // Filters + refresh button
+    // ============================================================
     $("searchInput")?.addEventListener("input", renderUsers);
     $("roleFilter")?.addEventListener("change", renderUsers);
     $("pendingRefresh")?.addEventListener("click", async () => {
@@ -573,6 +1078,7 @@
       toast("✓ Refreshed", "success");
     });
 
+    // Refresh on window focus (so admins see new signups immediately)
     window.addEventListener("focus", () => loadUsers());
   </script>
 </body>
