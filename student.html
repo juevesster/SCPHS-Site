@@ -238,7 +238,7 @@
     </div>
   </div>
 
-    <script type="module">
+      <script type="module">
     import { auth, db } from "./assets/js/firebase-config.js";
     import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
     import { doc, getDoc, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
@@ -258,7 +258,7 @@
         CURRENT_USER = user;
 
         try {
-          // 1. Load User Profile
+          // 1. Load User Profile (This now contains the LRN from signup)
           const userSnap = await getDoc(doc(db, "users", user.uid));
           if (userSnap.exists()) {
             PROFILE = userSnap.data();
@@ -275,7 +275,7 @@
             
             const me = rosterSnap.docs.find(d => {
               const s = d.data();
-              // Match by LRN (if profile has LRN) OR by Email (if roster has email)
+              // Match by LRN (if saved in profile) OR by Email
               const matchLrn = PROFILE.lrn && s.lrn && String(s.lrn).trim() === String(PROFILE.lrn).trim();
               const matchEmail = s.email && s.email.toLowerCase() === user.email.toLowerCase();
               
@@ -289,13 +289,12 @@
             }
           }
 
-          // 3. Load Grades (if student found)
+          // 3. Load Grades
           if (CLASS_INFO && STUDENT_INFO) {
             const progSnap = await getDocs(collection(db, "classes", CLASS_INFO.id, "program"));
             const subjects = [...new Set(progSnap.docs.map(d => d.data().subject).filter(Boolean))];
             
             for (const subj of subjects) {
-              // FIXED: Added "data" as the final segment to make the path valid
               const gSnap = await getDoc(doc(db, "classes", CLASS_INFO.id, "grades", STUDENT_INFO.id, subj, "data"));
               
               if (gSnap.exists()) {
@@ -321,20 +320,37 @@
     }
 
     function renderDashboard() {
-      const fullName = PROFILE.name || "Student";
-      const firstName = fullName.split(' ')[0];
+      // 1. Get the best name available (Prioritize the roster name, then account name)
+      const rosterName = STUDENT_INFO?.name || "";
+      const profileName = PROFILE.name || "Student";
+      const displayName = rosterName || profileName;
+
+      // 2. Format the name beautifully (Fixes "AGUINALDO, JESSIREE" to just "JESSIREE")
+      let firstName = "Student";
+      if (displayName.includes(',')) {
+        // If it's "Lastname, Firstname", grab the part after the comma
+        firstName = displayName.split(',')[1].trim().split(' ')[0];
+      } else {
+        // If it's "Firstname Lastname", grab the first word
+        firstName = displayName.split(' ')[0];
+      }
+
       const gradeLevel = CLASS_INFO ? CLASS_INFO.gradeLevel : "Not Assigned";
       const className = CLASS_INFO ? CLASS_INFO.classLabel : "";
       const adviserName = CLASS_INFO ? CLASS_INFO.adviserName : "Not Assigned";
 
       // Set Header/Welcome Data
       document.getElementById("welcomeName").textContent = `Hello, ${firstName}! 👋`;
-      document.getElementById("welcomeMeta").textContent = `LRN: ${STUDENT_INFO?.lrn || PROFILE.lrn || "—"} | SY: ${CLASS_INFO?.schoolYear || "2026-2027"}`;
+      
+      // Use the LRN from the profile, roster, or show a fallback
+      const displayLrn = STUDENT_INFO?.lrn || PROFILE.lrn || "Not Linked";
+      document.getElementById("welcomeMeta").textContent = `LRN: ${displayLrn} | SY: ${CLASS_INFO?.schoolYear || "2026-2027"}`;
+      
       document.getElementById("welcomeClass").textContent = `${gradeLevel} - ${className}`;
       
       document.getElementById("bentoClassName").textContent = className;
       document.getElementById("bentoAdviser").textContent = `Adviser: ${adviserName}`;
-      document.getElementById("bentoAvatar").textContent = fullName.charAt(0).toUpperCase();
+      document.getElementById("bentoAvatar").textContent = firstName.charAt(0).toUpperCase();
 
       // Calculate Grades
       let totalAvg = 0;
@@ -380,7 +396,7 @@
       const overallAvg = validSubjects > 0 ? Math.round(totalAvg / validSubjects) : 0;
       document.getElementById("statAvg").textContent = overallAvg > 0 ? overallAvg : "--";
 
-      // Circular Progress Animation (Fake 75% for demo, but you can link to real data)
+      // Circular Progress Animation
       setTimeout(() => {
         const percent = overallAvg > 0 ? overallAvg : 75; 
         document.getElementById("progressPercent").textContent = percent + "%";

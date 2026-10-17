@@ -31,6 +31,8 @@ const loginPassword = $("loginPassword");
 const signupName     = $("signupName");
 const signupEmail    = $("signupEmail");
 const signupPassword = $("signupPassword");
+const signupLrn      = $("signupLrn");      // 🆕 LRN Field
+const signupLrnField = $("signupLrnField"); // 🆕 LRN Field Container
 
 const linkForgot = $("linkForgot");
 
@@ -86,6 +88,14 @@ document.querySelectorAll(".role-option").forEach(opt => {
     opt.classList.add("selected");
     const input = opt.querySelector('input[type="radio"]');
     if (input) input.checked = true;
+
+    // 🆕 Show LRN field ONLY if Student is selected
+    if (input && input.value === "student") {
+      if (signupLrnField) signupLrnField.style.display = "block";
+    } else {
+      if (signupLrnField) signupLrnField.style.display = "none";
+      if (signupLrn) signupLrn.value = ""; // Clear it if they switch to Teacher
+    }
   });
 });
 
@@ -191,12 +201,21 @@ formSignup?.addEventListener("submit", async (e) => {
     const email    = signupEmail.value.trim();
     const password = signupPassword.value;
     const role     = document.querySelector('input[name="role"]:checked')?.value || "student";
+    const lrn      = signupLrn ? signupLrn.value.trim() : ""; // 🆕 Get LRN
 
     if (!name) {
       showMsg("Please enter your full name.", "error");
       setLoading(btnSignup, false, "Create Account");
       return;
     }
+
+    // 🆕 Require LRN if they are a student
+    if (role === "student" && !lrn) {
+      showMsg("Please enter your LRN to link your account to your class.", "error");
+      setLoading(btnSignup, false, "Create Account");
+      return;
+    }
+
     if (password.length < 8) {
       showMsg("Password must be at least 8 characters.", "error");
       setLoading(btnSignup, false, "Create Account");
@@ -212,6 +231,7 @@ formSignup?.addEventListener("submit", async (e) => {
     await setDoc(doc(db, "users", cred.user.uid), {
       name: name,
       email: email,
+      lrn: lrn,                        // 🆕 Save LRN to Firestore
       primaryRole: "student",
       requestedRole: role,             // what they wanted — for admin review
       pendingApproval: true,           // queue flag
