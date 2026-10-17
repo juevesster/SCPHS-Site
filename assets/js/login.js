@@ -228,14 +228,19 @@ formSignup?.addEventListener("submit", async (e) => {
 
     // ⚠️ SECURITY: New accounts are ALWAYS "student".
     // Teacher/admin roles are granted manually by admins via the pending queue.
+        // Determine role assignment
+    const isParent = role === "parent";
+    const assignedRole = isParent ? "parent" : "student";
+    const needsApproval = !isParent; // Parents don't need admin approval to view grades
+
     await setDoc(doc(db, "users", cred.user.uid), {
       name: name,
       email: email,
-      lrn: lrn,                        // 🆕 Save LRN to Firestore
-      primaryRole: "student",
-      requestedRole: role,             // what they wanted — for admin review
-      pendingApproval: true,           // queue flag
-      requestingAccess: true,
+      lrn: isParent ? null : lrn,      // Only save LRN for students
+      primaryRole: assignedRole,
+      requestedRole: role,
+      pendingApproval: needsApproval,
+      requestingAccess: needsApproval,
       createdAt: serverTimestamp(),
     }, { merge: true });
 
