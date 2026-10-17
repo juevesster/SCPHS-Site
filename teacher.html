@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Teacher Dashboard — SCPHS</title>
   
-  <!-- Google Fonts for a professional look -->
+  <!-- Google Fonts -->
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   
   <style>
@@ -28,10 +28,17 @@
     .sidebar { width: 260px; background: var(--sidebar-bg); color: #fff; display: flex; flex-direction: column; transition: all 0.3s; z-index: 100; }
     .sidebar-brand { padding: 24px 20px; font-size: 1.2rem; font-weight: 800; border-bottom: 1px solid rgba(255,255,255,0.1); display: flex; align-items: center; gap: 10px; }
     .sidebar-brand span { font-size: 1.5rem; }
-    .sidebar-menu { flex: 1; padding: 20px 10px; display: flex; flex-direction: column; gap: 8px; }
-    .menu-item { display: flex; align-items: center; gap: 12px; padding: 12px 16px; border-radius: 8px; color: #94a3b8; text-decoration: none; font-weight: 500; transition: all 0.2s; }
+    .sidebar-menu { flex: 1; padding: 20px 10px; display: flex; flex-direction: column; gap: 8px; overflow-y: auto; }
+    .menu-item { display: flex; align-items: center; gap: 12px; padding: 12px 16px; border-radius: 8px; color: #94a3b8; text-decoration: none; font-weight: 500; transition: all 0.2s; font-size: 0.9rem; }
     .menu-item:hover { background: var(--sidebar-hover); color: #fff; }
     .menu-item.active { background: var(--primary); color: #fff; font-weight: 600; box-shadow: 0 4px 12px rgba(30, 60, 114, 0.3); }
+    
+    /* TERM SELECTOR IN SIDEBAR */
+    .term-selector { padding: 16px 20px; background: rgba(0,0,0,0.2); border-bottom: 1px solid rgba(255,255,255,0.1); border-top: 1px solid rgba(255,255,255,0.1); margin-bottom: 10px; }
+    .term-selector label { display: block; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.05em; color: #94a3b8; margin-bottom: 8px; font-weight: 700; }
+    .term-selector select { width: 100%; padding: 10px; border-radius: 6px; background: #1e293b; color: #fff; border: 1px solid #334155; font-family: inherit; font-size: 0.9rem; cursor: pointer; outline: none; }
+    .term-selector select:focus { border-color: #3b82f6; }
+
     .sidebar-footer { padding: 20px; border-top: 1px solid rgba(255,255,255,0.1); }
     
     /* ================= MAIN LAYOUT ================= */
@@ -39,7 +46,9 @@
     
     /* TOP NAVBAR */
     .top-navbar { background: var(--card-bg); height: 70px; padding: 0 30px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); box-shadow: 0 1px 3px rgba(0,0,0,0.02); z-index: 90; }
-    .page-title { font-size: 1.25rem; font-weight: 700; color: var(--primary); }
+    .page-title { font-size: 1.25rem; font-weight: 700; color: var(--primary); display: flex; align-items: center; gap: 10px; }
+    .term-badge { background: #e0e7ff; color: #3730a3; font-size: 0.75rem; padding: 4px 10px; border-radius: 999px; font-weight: 700; border: 1px solid #c7d2fe; }
+    
     .user-profile { display: flex; align-items: center; gap: 15px; }
     .user-info { text-align: right; }
     .user-name { font-weight: 700; font-size: 0.9rem; }
@@ -66,7 +75,7 @@
     .btn-las { background: linear-gradient(135deg, #0891b2, #06b6d4); }
     .btn-materials { background: linear-gradient(135deg, #4f46e5, #6366f1); }
 
-    /* LISTS (Recent Lessons & Shared) */
+    /* LISTS */
     .list-group { display: flex; flex-direction: column; gap: 10px; }
     .list-item { padding: 14px 16px; border: 1px solid var(--border); border-radius: 10px; display: flex; justify-content: space-between; align-items: center; text-decoration: none; color: inherit; transition: all 0.15s; cursor: pointer; background: #f8fafc; }
     .list-item:hover { background: #fff; border-color: #cbd5e1; box-shadow: 0 2px 8px rgba(0,0,0,0.04); transform: translateX(4px); }
@@ -84,7 +93,7 @@
     .chatbot-fab { position: fixed; bottom: 30px; right: 30px; width: 60px; height: 60px; border-radius: 50%; background: linear-gradient(135deg, #4f46e5, #7c3aed); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 1.8rem; box-shadow: 0 8px 24px rgba(79,70,229,0.4); cursor: pointer; transition: transform 0.2s; z-index: 999; border: none; }
     .chatbot-fab:hover { transform: scale(1.1); }
 
-    /* LOADING SPINNER */
+    /* LOADING */
     .spinner { width: 40px; height: 40px; border: 4px solid #e2e8f0; border-top-color: var(--primary); border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 16px; }
     @keyframes spin { to { transform: rotate(360deg); } }
     
@@ -92,9 +101,10 @@
     @media (max-width: 1024px) { .grid-layout { grid-template-columns: 1fr; } }
     @media (max-width: 768px) { 
       .sidebar { width: 70px; } 
-      .sidebar-brand span, .menu-item span:not(.icon) { display: none; }
+      .sidebar-brand span, .menu-item span:not(.icon), .term-selector { display: none; }
       .menu-item { justify-content: center; padding: 12px; }
       .user-info { display: none; }
+      .top-navbar { padding: 0 15px; }
     }
   </style>
 </head>
@@ -105,6 +115,18 @@
     <div class="sidebar-brand">
       <span>🏫</span> SCPHS Portal
     </div>
+    
+    <!-- TERM SELECTOR -->
+    <div class="term-selector">
+      <label>Active Term</label>
+      <select id="termPicker">
+        <option value="1" selected>Term 1</option>
+        <option value="2">Term 2</option>
+        <option value="3">Term 3</option>
+        <option value="4">Term 4 (Legacy)</option>
+      </select>
+    </div>
+
     <div class="sidebar-menu">
       <a href="teacher.html" class="menu-item active">
         <span class="icon">📊</span> <span>Dashboard</span>
@@ -131,7 +153,10 @@
     
     <!-- TOP NAVBAR -->
     <header class="top-navbar">
-      <div class="page-title">Teacher Dashboard</div>
+      <div class="page-title">
+        Teacher Dashboard
+        <span class="term-badge" id="activeTermBadge">Term 1</span>
+      </div>
       <div class="user-profile">
         <div class="user-info">
           <div class="user-name" id="navUserName">Loading...</div>
@@ -234,7 +259,9 @@
 
     let CURRENT_USER = null;
     let CURRENT_PROFILE = null;
+    let CURRENT_TERM = 1; // Default
 
+    // 1. AUTH CHECK
     onAuthStateChanged(auth, async (user) => {
       if (!user) {
         location.replace("login.html?next=teacher.html");
@@ -263,18 +290,37 @@
       document.getElementById("loading").style.display = "none";
       document.getElementById("dashboardContent").style.display = "block";
       
+      // Initial Load
       await loadMyClasses();
       await loadRecentLessons();
       await loadSharedMaterials();
     });
 
+    // 2. LOGOUT
     document.getElementById("btnLogout").addEventListener("click", () => {
       if (confirm("Are you sure you want to logout?")) {
         signOut(auth).then(() => location.replace("login.html"));
       }
     });
 
-    // 1. LOAD CLASSES
+    // 3. TERM SELECTOR HANDLER
+    document.getElementById("termPicker").addEventListener("change", async (e) => {
+      CURRENT_TERM = parseInt(e.target.value, 10);
+      
+      // Update UI Badge
+      const termText = CURRENT_TERM === 4 ? "Legacy" : `Term ${CURRENT_TERM}`;
+      document.getElementById("activeTermBadge").textContent = termText;
+
+      // Show loading states in lists
+      document.getElementById("recentLessons").innerHTML = `<div style="color: var(--text-muted); font-size: 0.85rem;">Switching to ${termText}...</div>`;
+      document.getElementById("sharedMaterials").innerHTML = `<div style="color: var(--text-muted); font-size: 0.85rem;">Switching to ${termText}...</div>`;
+
+      // Reload data filtered by term
+      await loadRecentLessons();
+      await loadSharedMaterials();
+    });
+
+    // 4. LOAD CLASSES (Automated from Admin)
     async function loadMyClasses() {
       const host = document.getElementById("classList");
       try {
@@ -283,62 +329,84 @@
 
         snap.forEach(docSnap => {
           const cls = { id: docSnap.id, ...docSnap.data() };
+          
           const isAdviser = cls.adviserUid === CURRENT_USER.uid;
           const isTeacher = cls.teacherUids && cls.teacherUids.includes(CURRENT_USER.uid);
           const isSubjectTeacher = cls.subjectTeachers && Object.values(cls.subjectTeachers).includes(CURRENT_USER.uid);
 
           if (isAdviser || isTeacher || isSubjectTeacher) {
-            myClasses.push({ ...cls, role: isAdviser ? "Adviser" : "Subject Teacher" });
+            myClasses.push({ 
+              ...cls, 
+              role: isAdviser ? "Class Adviser" : "Subject Teacher" 
+            });
           }
         });
 
         if (myClasses.length === 0) {
-          host.innerHTML = `<div style="color: var(--text-muted); font-size: 0.85rem;">No classes assigned yet.</div>`;
+          host.innerHTML = `
+            <div style="text-align: center; padding: 20px; color: var(--text-muted);">
+              <div style="font-size: 2rem; margin-bottom: 8px;">📭</div>
+              <div style="font-size: 0.9rem;">No classes assigned yet.</div>
+            </div>`;
           return;
         }
 
+        // Sort classes: Adviser first, then by Grade Level
+        myClasses.sort((a, b) => {
+          if (a.role !== b.role) return a.role === "Class Adviser" ? -1 : 1;
+          return String(a.gradeLevel).localeCompare(String(b.gradeLevel));
+        });
+
         host.innerHTML = myClasses.map(cls => `
           <a href="class.html?id=${cls.id}" class="list-item">
-            <div>
-              <div class="list-item-title">${cls.classLabel || cls.name || "Unnamed Class"}</div>
-              <div class="list-item-sub">${cls.role}</div>
+            <div style="display: flex; align-items: center; gap: 12px;">
+              <div style="width: 40px; height: 40px; border-radius: 8px; background: #eff6ff; color: #1e40af; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 1.1rem;">
+                ${cls.gradeLevel ? cls.gradeLevel.replace('Grade ', '') : '?'}
+              </div>
+              <div>
+                <div class="list-item-title">${cls.classLabel || cls.name || "Unnamed Class"}</div>
+                <div class="list-item-sub">${cls.role} · ${cls.studentCount || 0} Students</div>
+              </div>
             </div>
-            <div class="badge badge-grade">Grade ${cls.gradeLevel || "—"}</div>
+            <div class="badge badge-grade" style="background: #f8fafc; border-color: #e2e8f0; color: #475569;">
+              View →
+            </div>
           </a>
         `).join("");
 
       } catch (e) {
         console.error("Error loading classes:", e);
-        host.innerHTML = `<div style="color: #dc2626; font-size: 0.85rem;">Failed to load classes.</div>`;
+        host.innerHTML = `<div style="color: #dc2626; font-size: 0.85rem; padding: 10px;">Failed to load classes. Check console.</div>`;
       }
     }
 
-    // 2. LOAD RECENT LESSONS (With Fallback Sort)
+    // 5. LOAD RECENT LESSONS (Filtered by Term)
     async function loadRecentLessons() {
       const host = document.getElementById("recentLessons");
       try {
-        // Attempt to fetch with orderBy
+        // Query: Lessons created by this teacher for the CURRENT_TERM
         const q = query(
           collection(db, "lessons"),
-          where("teacherUid", "==", CURRENT_USER.uid)
+          where("teacherUid", "==", CURRENT_USER.uid),
+          where("term", "==", CURRENT_TERM)
         );
 
         const snap = await getDocs(q);
         
         if (snap.empty) {
-          host.innerHTML = `<div style="color: var(--text-muted); font-size: 0.85rem;">No lessons created yet. Click "Create ILAW Lesson" to start.</div>`;
+          host.innerHTML = `<div style="color: var(--text-muted); font-size: 0.85rem; padding: 10px;">No lessons for Term ${CURRENT_TERM} yet.</div>`;
           return;
         }
 
-        // Fallback Sort: If Firestore index is missing, we sort in JavaScript by updatedAt
+        // Fallback Sort: Sort by updatedAt in JavaScript
         const lessons = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
         lessons.sort((a, b) => {
           const timeA = a.updatedAt?.toMillis() || 0;
           const timeB = b.updatedAt?.toMillis() || 0;
-          return timeB - timeA; // Descending
+          return timeB - timeA;
         });
 
-        const recent = lessons.slice(0, 5); // Show top 5
+        const recent = lessons.slice(0, 5);
 
         host.innerHTML = recent.map(data => {
           const isFinal = data.status === "final";
@@ -346,7 +414,7 @@
             <a href="ilaw.html?lesson=${data.id}" class="list-item" target="_blank">
               <div>
                 <div class="list-item-title">${data.lessonTitle || "Untitled Lesson"}</div>
-                <div class="list-item-sub">Term ${data.term} · Week ${data.week}</div>
+                <div class="list-item-sub">Week ${data.week} · ${data.subjectName || ""}</div>
               </div>
               <div class="badge ${isFinal ? 'badge-final' : 'badge-draft'}">
                 ${data.status || "draft"}
@@ -361,13 +429,14 @@
       }
     }
 
-    // 3. LOAD SHARED MATERIALS
+    // 6. LOAD SHARED MATERIALS (Filtered by Term)
     async function loadSharedMaterials() {
       const host = document.getElementById("sharedMaterials");
       try {
         const q = query(
           collection(db, "lessons"),
-          where("teacherUid", "==", CURRENT_USER.uid)
+          where("teacherUid", "==", CURRENT_USER.uid),
+          where("term", "==", CURRENT_TERM)
         );
 
         const snap = await getDocs(q);
@@ -396,7 +465,7 @@
         });
 
         if (shared.length === 0) {
-          host.innerHTML = `<div style="color: var(--text-muted); font-size: 0.85rem;">No shared materials yet.</div>`;
+          host.innerHTML = `<div style="color: var(--text-muted); font-size: 0.85rem; padding: 10px;">No shared materials for Term ${CURRENT_TERM} yet.</div>`;
           return;
         }
 
