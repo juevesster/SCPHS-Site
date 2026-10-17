@@ -320,18 +320,25 @@
       await loadSharedMaterials();
     });
 
-    // 4. LOAD CLASSES (Automated from Admin)
+        // 4. LOAD CLASSES (Automated from Admin assignments)
     async function loadMyClasses() {
       const host = document.getElementById("classList");
       try {
+        // Fetch all classes from Firestore
         const snap = await getDocs(collection(db, "classes"));
         const myClasses = [];
 
+        // Loop through each class to check if this teacher is assigned
         snap.forEach(docSnap => {
           const cls = { id: docSnap.id, ...docSnap.data() };
           
+          // 1. Check if Adviser
           const isAdviser = cls.adviserUid === CURRENT_USER.uid;
+          
+          // 2. Check if in general teacherUids array
           const isTeacher = cls.teacherUids && cls.teacherUids.includes(CURRENT_USER.uid);
+          
+          // 3. Check if in subjectTeachers map (key: subject, value: teacherUid)
           const isSubjectTeacher = cls.subjectTeachers && Object.values(cls.subjectTeachers).includes(CURRENT_USER.uid);
 
           if (isAdviser || isTeacher || isSubjectTeacher) {
@@ -344,9 +351,10 @@
 
         if (myClasses.length === 0) {
           host.innerHTML = `
-            <div style="text-align: center; padding: 20px; color: var(--text-muted);">
-              <div style="font-size: 2rem; margin-bottom: 8px;">📭</div>
-              <div style="font-size: 0.9rem;">No classes assigned yet.</div>
+            <div style="text-align: center; padding: 30px; color: var(--text-muted);">
+              <div style="font-size: 3rem; margin-bottom: 12px;">🏫</div>
+              <div style="font-weight: 700; color: var(--text-main); margin-bottom: 4px;">No classes assigned yet</div>
+              <div style="font-size: 0.85rem;">Please contact the Admin Center to assign you to a class.</div>
             </div>`;
           return;
         }
@@ -357,22 +365,45 @@
           return String(a.gradeLevel).localeCompare(String(b.gradeLevel));
         });
 
-        host.innerHTML = myClasses.map(cls => `
-          <a href="class.html?id=${cls.id}" class="list-item">
-            <div style="display: flex; align-items: center; gap: 12px;">
-              <div style="width: 40px; height: 40px; border-radius: 8px; background: #eff6ff; color: #1e40af; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 1.1rem;">
-                ${cls.gradeLevel ? cls.gradeLevel.replace('Grade ', '') : '?'}
+        // Show a temporary loading state while we count students
+        host.innerHTML = `<div style="color: var(--text-muted); font-size: 0.85rem; padding: 10px;">Loading student counts...</div>`;
+
+        // Fetch student counts for each class
+        const classCards = await Promise.all(myClasses.map(async (cls) => {
+          let studentCount = 0;
+          try {
+            const studentsSnap = await getDocs(collection(db, "classes", cls.id, "students"));
+            studentCount = studentsSnap.size;
+          } catch (e) {
+            console.warn(`Could not load students for ${cls.id}`);
+          }
+
+          // Format grade level cleanly (e.g., "Grade 7" -> "7")
+          const gradeDisplay = cls.gradeLevel ? cls.gradeLevel.replace('Grade ', '') : '?';
+
+          return `
+            <a href="class.html?id=${cls.id}" class="list-item">
+              <div style="display: flex; align-items: center; gap: 14px;">
+                <div style="width: 44px; height: 44px; border-radius: 10px; background: #eff6ff; color: #1e40af; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 1.2rem; border: 1px solid #bfdbfe;">
+                  ${gradeDisplay}
+                </div>
+                <div>
+                  <div class="list-item-title">${cls.classLabel || cls.name || "Unnamed Class"}</div>
+                  <div class="list-item-sub">
+                    <span style="color: ${cls.role === 'Class Adviser' ? '#059669' : '#d97706'}; font-weight: 700;">${cls.role}</span> 
+                    · ${studentCount} Students
+                  </div>
+                </div>
               </div>
-              <div>
-                <div class="list-item-title">${cls.classLabel || cls.name || "Unnamed Class"}</div>
-                <div class="list-item-sub">${cls.role} · ${cls.studentCount || 0} Students</div>
+              <div class="badge badge-grade" style="background: #f8fafc; border-color: #e2e8f0; color: #475569; padding: 8px 12px;">
+                View →
               </div>
-            </div>
-            <div class="badge badge-grade" style="background: #f8fafc; border-color: #e2e8f0; color: #475569;">
-              View →
-            </div>
-          </a>
-        `).join("");
+            </a>
+          `;
+        }));
+
+        // Insert the fully loaded cards into the dashboard
+        host.innerHTML = classCards.join("");
 
       } catch (e) {
         console.error("Error loading classes:", e);
