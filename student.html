@@ -3,128 +3,251 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Student Portal — SCPHS</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <title>My Student Portal — SCPHS</title>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   
   <style>
-    :root { --primary: #1e3c72; --primary-light: #2a5298; --bg: #f0f2f5; --card: #fff; --text: #1e293b; --muted: #64748b; --border: #e2e8f0; }
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
-    body { background: var(--bg); color: var(--text); min-height: 100vh; padding-bottom: 60px; }
+    :root { 
+      --primary: #4f46e5; 
+      --primary-light: #818cf8; 
+      --bg-gradient: linear-gradient(135deg, #e0e7ff 0%, #f3e8ff 100%);
+      --glass-bg: rgba(255, 255, 255, 0.7);
+      --glass-border: rgba(255, 255, 255, 0.5);
+      --text: #1e1b4b; 
+      --muted: #64748b; 
+    }
+    
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Outfit', sans-serif; }
+    body { background: var(--bg-gradient); color: var(--text); min-height: 100vh; padding-bottom: 60px; overflow-x: hidden; }
+    
+    /* Animated Background Orbs */
+    .orb { position: fixed; border-radius: 50%; filter: blur(80px); z-index: -1; opacity: 0.6; animation: float 10s infinite alternate; }
+    .orb-1 { width: 400px; height: 400px; background: #c7d2fe; top: -100px; left: -100px; }
+    .orb-2 { width: 300px; height: 300px; background: #fbcfe8; bottom: 10%; right: -50px; animation-delay: -5s; }
+    @keyframes float { from { transform: translateY(0) scale(1); } to { transform: translateY(30px) scale(1.1); } }
 
+    /* Glass Container */
+    .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
+    
     /* Header */
-    .header { background: linear-gradient(135deg, var(--primary), var(--primary-light)); color: #fff; padding: 24px 0; margin-bottom: 24px; }
-    .container { max-width: 1200px; margin: 0 auto; padding: 0 20px; }
-    .header-row { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px; }
-    .header h1 { font-size: 1.5rem; font-weight: 800; display: flex; align-items: center; gap: 10px; }
-    .header p { opacity: 0.85; font-size: 0.9rem; margin-top: 4px; }
-    .header-actions { display: flex; gap: 10px; flex-wrap: wrap; }
-    .btn-top { background: rgba(255,255,255,0.15); color: #fff; text-decoration: none; padding: 8px 16px; border-radius: 8px; font-weight: 600; font-size: 0.85rem; transition: background 0.2s; display: flex; align-items: center; gap: 6px; border: none; cursor: pointer; }
-    .btn-top:hover { background: rgba(255,255,255,0.25); }
+    .header { display: flex; justify-content: space-between; align-items: center; padding: 20px 0; margin-bottom: 20px; animation: slideDown 0.6s ease-out; }
+    .header h1 { font-size: 1.8rem; font-weight: 800; color: var(--primary); display: flex; align-items: center; gap: 12px; }
+    .header-actions { display: flex; gap: 12px; }
+    .btn-icon { background: var(--glass-bg); border: 1px solid var(--glass-border); width: 45px; height: 45px; border-radius: 12px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s; color: var(--primary); font-size: 1.2rem; backdrop-filter: blur(10px); }
+    .btn-icon:hover { background: #fff; transform: translateY(-2px); box-shadow: 0 4px 12px rgba(79,70,229,0.15); }
+    .btn-logout { width: auto; padding: 0 20px; gap: 8px; font-weight: 700; color: #e11d48; }
 
     /* Welcome Card */
-    .welcome-card { background: linear-gradient(135deg, var(--primary), var(--primary-light)); color: #fff; border-radius: 20px; padding: 30px; position: relative; overflow: hidden; margin-bottom: 24px; box-shadow: 0 10px 30px rgba(30,60,114,0.2); }
-    .welcome-card::after { content: '🎓'; position: absolute; font-size: 140px; opacity: 0.1; right: 20px; bottom: -40px; }
-    .welcome-card h2 { font-size: 1.8rem; margin-bottom: 8px; }
-    .welcome-card p { opacity: 0.9; font-size: 1rem; margin-bottom: 4px; }
+    .welcome-card { background: linear-gradient(135deg, var(--primary), #7c3aed); color: #fff; border-radius: 24px; padding: 40px; position: relative; overflow: hidden; margin-bottom: 24px; box-shadow: 0 20px 40px rgba(79,70,229,0.2); animation: slideUp 0.6s ease-out; }
+    .welcome-card::after { content: '🎓'; position: absolute; font-size: 200px; opacity: 0.1; right: -20px; bottom: -60px; transform: rotate(-15deg); }
+    .welcome-card h2 { font-size: 2.2rem; font-weight: 800; margin-bottom: 8px; letter-spacing: -0.02em; }
+    .welcome-card p { opacity: 0.9; font-size: 1.1rem; font-weight: 300; }
+    .pill-badge { display: inline-flex; align-items: center; gap: 6px; background: rgba(255,255,255,0.2); backdrop-filter: blur(10px); padding: 6px 16px; border-radius: 99px; font-size: 0.85rem; font-weight: 600; margin-top: 16px; border: 1px solid rgba(255,255,255,0.3); }
 
-    /* Stats Grid */
-    .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; margin-bottom: 24px; }
-    .stat-card { background: var(--card); border-radius: 16px; padding: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); border-top: 4px solid var(--primary); transition: transform 0.2s; text-decoration: none; color: inherit; display: block; }
-    .stat-card:hover { transform: translateY(-4px); box-shadow: 0 8px 25px rgba(0,0,0,0.1); }
-    .stat-card.green { border-top-color: #10b981; }
-    .stat-card.purple { border-top-color: #7c3aed; }
-    .stat-card.orange { border-top-color: #f59e0b; }
-    .stat-icon { font-size: 1.8rem; margin-bottom: 8px; }
-    .stat-num { font-size: 2rem; font-weight: 800; color: var(--primary); line-height: 1; }
-    .stat-label { font-size: 0.8rem; color: var(--muted); font-weight: 600; margin-top: 4px; text-transform: uppercase; letter-spacing: 0.05em; }
-
-    /* Progress Tracker */
-    .progress-card { background: var(--card); border-radius: 16px; padding: 24px; margin-bottom: 24px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
-    .progress-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; font-weight: 800; color: var(--primary); font-size: 1.1rem; }
-    .progress-badge { background: #10b981; color: #fff; padding: 4px 12px; border-radius: 99px; font-size: 0.8rem; }
-    .progress-bar-bg { height: 10px; background: #e2e8f0; border-radius: 5px; overflow: hidden; margin-bottom: 20px; }
-    .progress-bar-fill { height: 100%; background: linear-gradient(90deg, #10b981, #34d399); width: 0%; transition: width 0.5s; }
-    .progress-steps { display: flex; justify-content: space-between; }
-    .p-step { text-align: center; flex: 1; cursor: pointer; }
-    .p-dot { width: 14px; height: 14px; background: #e2e8f0; border-radius: 50%; margin: 0 auto 8px; transition: all 0.3s; }
-    .p-step.completed .p-dot { background: #10b981; box-shadow: 0 0 0 3px rgba(16,185,129,0.2); }
-    .p-step-label { font-size: 0.7rem; font-weight: 700; color: var(--muted); text-transform: uppercase; }
-    .p-step.completed .p-step-label { color: #10b981; }
-
-    /* Layout Grid */
-    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 24px; }
-    @media (max-width: 768px) { .grid-2 { grid-template-columns: 1fr; } }
-
-    /* Cards */
-    .card { background: var(--card); border-radius: 16px; padding: 24px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); margin-bottom: 24px; }
-    .card-title { font-size: 1.1rem; font-weight: 800; color: var(--primary); margin-bottom: 16px; display: flex; align-items: center; gap: 8px; border-bottom: 2px solid var(--border); padding-bottom: 12px; }
-
-    /* Grade Items */
-    .grade-item { display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; border-radius: 10px; margin-bottom: 8px; background: #f8fafc; border-left: 4px solid #cbd5e1; }
-    .grade-item.excellent { border-left-color: #10b981; background: #f0fdf4; }
-    .grade-item.good { border-left-color: #3b82f6; background: #eff6ff; }
-    .grade-item.average { border-left-color: #f59e0b; background: #fffbeb; }
-    .grade-item.low { border-left-color: #ef4444; background: #fef2f2; }
-    .grade-subject { font-weight: 700; font-size: 0.95rem; }
-    .grade-value { font-size: 1.3rem; font-weight: 800; }
+    /* Bento Grid */
+    .bento-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; margin-bottom: 24px; }
+    .bento-item { background: var(--glass-bg); backdrop-filter: blur(16px); border: 1px solid var(--glass-border); border-radius: 24px; padding: 24px; box-shadow: 0 10px 30px rgba(0,0,0,0.03); transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); animation: slideUp 0.6s ease-out backwards; }
+    .bento-item:hover { transform: translateY(-5px); box-shadow: 0 20px 40px rgba(79,70,229,0.08); }
     
-    /* Table */
-    .table-wrap { overflow-x: auto; }
-    table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
-    th { background: #f8fafc; padding: 12px; text-align: left; font-size: 0.75rem; font-weight: 800; color: var(--muted); text-transform: uppercase; border-bottom: 1px solid var(--border); }
-    td { padding: 12px; border-bottom: 1px solid var(--border); }
-    .badge-subject { background: #e0e7ff; color: #3730a3; padding: 4px 8px; border-radius: 6px; font-weight: 700; font-size: 0.75rem; }
+    .bento-item:nth-child(1) { animation-delay: 0.1s; }
+    .bento-item:nth-child(2) { animation-delay: 0.2s; }
+    .bento-item:nth-child(3) { animation-delay: 0.3s; }
+    .bento-item:nth-child(4) { animation-delay: 0.4s; }
 
-    /* Floating Tour Button */
-    .fab-tour { position: fixed; bottom: 30px; right: 30px; background: linear-gradient(135deg, var(--primary), var(--primary-light)); color: #fff; width: 60px; height: 60px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; box-shadow: 0 8px 24px rgba(30,60,114,0.4); cursor: pointer; z-index: 1000; transition: all 0.3s; border: none; }
-    .fab-tour:hover { transform: scale(1.1); }
+    .bento-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 16px; }
+    .bento-title { font-size: 0.85rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--muted); }
+    .bento-icon { font-size: 1.5rem; }
+    
+    .bento-value { font-size: 2.5rem; font-weight: 800; color: var(--text); line-height: 1; }
+    .bento-sub { font-size: 0.9rem; color: var(--muted); margin-top: 8px; font-weight: 500; }
+
+    /* Specific Bento Cards */
+    .bento-grade { grid-column: span 1; }
+    .bento-grade .bento-value { color: #4f46e5; }
+    .bento-attendance { grid-column: span 1; }
+    .bento-attendance .bento-value { color: #10b981; }
+    .bento-class { grid-column: span 2; display: flex; justify-content: space-between; align-items: center; }
+    .bento-class-info h3 { font-size: 1.4rem; font-weight: 800; color: var(--text); margin-bottom: 4px; }
+    .bento-class-info p { color: var(--muted); font-weight: 500; }
+    .bento-avatar { width: 80px; height: 80px; border-radius: 50%; background: linear-gradient(135deg, #c7d2fe, #a5b4fc); display: flex; align-items: center; justify-content: center; font-size: 2rem; font-weight: 800; color: var(--primary); border: 4px solid #fff; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+
+    /* Main Content Grid */
+    .main-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 24px; }
+    
+    /* Cards */
+    .card { background: var(--glass-bg); backdrop-filter: blur(16px); border: 1px solid var(--glass-border); border-radius: 24px; padding: 28px; box-shadow: 0 10px 30px rgba(0,0,0,0.03); margin-bottom: 24px; animation: slideUp 0.6s ease-out backwards; }
+    .card-title { font-size: 1.2rem; font-weight: 800; color: var(--text); margin-bottom: 20px; display: flex; align-items: center; gap: 10px; }
+    
+    /* Grade Pills */
+    .grade-row { display: flex; justify-content: space-between; align-items: center; padding: 16px; border-radius: 16px; margin-bottom: 12px; background: rgba(255,255,255,0.5); border: 1px solid rgba(255,255,255,0.8); transition: all 0.2s; }
+    .grade-row:hover { background: #fff; transform: scale(1.01); }
+    .grade-subject { font-weight: 700; font-size: 1rem; color: var(--text); }
+    .grade-pill { padding: 6px 16px; border-radius: 99px; font-weight: 800; font-size: 1.1rem; }
+    .pill-excellent { background: #dcfce7; color: #166534; }
+    .pill-good { background: #dbeafe; color: #1e40af; }
+    .pill-average { background: #fef9c3; color: #854d0e; }
+    .pill-low { background: #fee2e2; color: #991b1b; }
+
+    /* Schedule Table */
+    .table-wrap { overflow-x: auto; }
+    table { width: 100%; border-collapse: separate; border-spacing: 0 8px; }
+    th { text-align: left; padding: 12px; font-size: 0.8rem; font-weight: 800; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; }
+    td { padding: 16px 12px; background: rgba(255,255,255,0.6); border-top: 1px solid rgba(255,255,255,0.8); border-bottom: 1px solid rgba(255,255,255,0.8); }
+    td:first-child { border-left: 1px solid rgba(255,255,255,0.8); border-radius: 12px 0 0 12px; font-weight: 700; color: var(--primary); }
+    td:last-child { border-right: 1px solid rgba(255,255,255,0.8); border-radius: 0 12px 12px 0; }
+    .subject-tag { background: #e0e7ff; color: #3730a3; padding: 4px 10px; border-radius: 8px; font-weight: 700; font-size: 0.8rem; display: inline-block; margin-bottom: 4px; }
+
+    /* Circular Progress */
+    .circle-wrap { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; }
+    .progress-ring { width: 140px; height: 140px; position: relative; }
+    .progress-ring circle { fill: none; stroke-width: 12; stroke-linecap: round; }
+    .progress-ring .bg { stroke: rgba(255,255,255,0.5); }
+    .progress-ring .fg { stroke: #4f46e5; stroke-dasharray: 408; stroke-dashoffset: 408; transition: stroke-dashoffset 1.5s ease-out; }
+    .progress-text { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+    .progress-text span:first-child { font-size: 2rem; font-weight: 800; color: var(--primary); }
+    .progress-text span:last-child { font-size: 0.75rem; font-weight: 700; color: var(--muted); text-transform: uppercase; }
+
+    /* Animations */
+    @keyframes slideUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes slideDown { from { opacity: 0; transform: translateY(-30px); } to { opacity: 1; transform: translateY(0); } }
 
     /* Loader */
-    .loader { text-align: center; padding: 60px; color: var(--muted); font-weight: 500; }
-    .spinner { width: 40px; height: 40px; border: 4px solid #e2e8f0; border-top-color: var(--primary); border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 16px; }
+    .loader { position: fixed; inset: 0; background: var(--bg-gradient); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 9999; transition: opacity 0.5s; }
+    .spinner { width: 50px; height: 50px; border: 5px solid rgba(79,70,229,0.2); border-top-color: var(--primary); border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 16px; }
     @keyframes spin { to { transform: rotate(360deg); } }
+
+    @media (max-width: 900px) {
+      .bento-grid { grid-template-columns: 1fr 1fr; }
+      .bento-class { grid-column: span 2; }
+      .main-grid { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 600px) {
+      .bento-grid { grid-template-columns: 1fr; }
+      .bento-class { grid-column: span 1; flex-direction: column; text-align: center; gap: 16px; }
+    }
   </style>
 </head>
 <body>
 
-  <header class="header">
-    <div class="container header-row">
-      <div>
-        <h1><i class="fas fa-graduation-cap"></i> Student Portal</h1>
-        <p id="welcomeSub">Loading your profile...</p>
-      </div>
-      <div class="header-actions">
-        <a href="#" class="btn-top"><i class="fas fa-comments"></i> Messages</a>
-        <a href="#" class="btn-top"><i class="fas fa-qrcode"></i> My QR Profile</a>
-        <button id="btnLogout" class="btn-top" style="background:#dc2626;"><i class="fas fa-sign-out-alt"></i> Logout</button>
-      </div>
-    </div>
-  </header>
+  <!-- Animated Background -->
+  <div class="orb orb-1"></div>
+  <div class="orb orb-2"></div>
 
-  <div class="container" id="mainContent">
-    <div class="loader">
-      <div class="spinner"></div>
-      <div>Loading your dashboard...</div>
-    </div>
+  <!-- Loader -->
+  <div class="loader" id="loader">
+    <div class="spinner"></div>
+    <div style="font-weight: 700; color: var(--primary); font-size: 1.2rem;">Loading your portal...</div>
   </div>
 
-  <!-- Floating Tour Button -->
-  <button class="fab-tour" onclick="alert('Interactive Tour coming soon!')">
-    <i class="fas fa-magic"></i>
-  </button>
+  <div class="container" id="mainContent" style="display: none;">
+    
+    <!-- Header -->
+    <header class="header">
+      <h1><i class="fas fa-graduation-cap" style="color: var(--primary);"></i> SCPHS Portal</h1>
+      <div class="header-actions">
+        <button class="btn-icon" title="Messages"><i class="fas fa-comment-dots"></i></button>
+        <button class="btn-icon" title="QR Profile"><i class="fas fa-qrcode"></i></button>
+        <button class="btn-icon btn-logout" id="btnLogout"><i class="fas fa-sign-out-alt"></i> Logout</button>
+      </div>
+    </header>
+
+    <!-- Welcome Card -->
+    <div class="welcome-card">
+      <h2 id="welcomeName">Hello, Student!</h2>
+      <p id="welcomeMeta">LRN: Loading... | SY: 2026-2027</p>
+      <div class="pill-badge">
+        <i class="fas fa-book-open"></i> <span id="welcomeClass">Loading Class...</span>
+      </div>
+    </div>
+
+    <!-- Bento Grid -->
+    <div class="bento-grid">
+      <div class="bento-item bento-grade">
+        <div class="bento-header">
+          <div class="bento-title">Overall Average</div>
+          <div class="bento-icon">📊</div>
+        </div>
+        <div class="bento-value" id="statAvg">--</div>
+        <div class="bento-sub">Based on current grades</div>
+      </div>
+      
+      <div class="bento-item bento-attendance">
+        <div class="bento-header">
+          <div class="bento-title">Attendance</div>
+          <div class="bento-icon">📅</div>
+        </div>
+        <div class="bento-value" id="statAtt">--%</div>
+        <div class="bento-sub">Coming soon</div>
+      </div>
+
+      <div class="bento-item bento-class">
+        <div class="bento-class-info">
+          <h3 id="bentoClassName">Class Name</h3>
+          <p id="bentoAdviser">Adviser: Loading...</p>
+        </div>
+        <div class="bento-avatar" id="bentoAvatar">S</div>
+      </div>
+    </div>
+
+    <!-- Main Grid -->
+    <div class="main-grid">
+      
+      <!-- Left Column: Grades -->
+      <div>
+        <div class="card">
+          <div class="card-title"><i class="fas fa-star" style="color: #f59e0b;"></i> My Subject Grades</div>
+          <div id="gradesContainer">
+            <!-- Grades injected here -->
+          </div>
+        </div>
+      </div>
+
+      <!-- Right Column: Progress & Schedule -->
+      <div>
+        <!-- Circular Progress -->
+        <div class="card">
+          <div class="card-title"><i class="fas fa-chart-pie" style="color: #4f46e5;"></i> Academic Progress</div>
+          <div class="circle-wrap">
+            <div class="progress-ring">
+              <svg width="140" height="140">
+                <circle class="bg" cx="70" cy="70" r="60"></circle>
+                <circle class="fg" id="progressCircle" cx="70" cy="70" r="60"></circle>
+              </svg>
+              <div class="progress-text">
+                <span id="progressPercent">0%</span>
+                <span>Completed</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Quick Schedule -->
+        <div class="card">
+          <div class="card-title"><i class="fas fa-clock" style="color: #10b981;"></i> Today's Schedule</div>
+          <div class="table-wrap">
+            <table>
+              <tbody id="scheduleBody">
+                <!-- Schedule injected here -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
 
   <script type="module">
     import { auth, db } from "./assets/js/firebase-config.js";
     import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-    import { doc, getDoc, collection, getDocs, query, where } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+    import { doc, getDoc, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
     let CURRENT_USER = null;
     let PROFILE = null;
     let CLASS_INFO = null;
     let STUDENT_INFO = null;
     let GRADES = [];
-    let SCHEDULE = [];
 
     async function init() {
       onAuthStateChanged(auth, async (user) => {
@@ -137,32 +260,27 @@
         try {
           // 1. Load User Profile
           const userSnap = await getDoc(doc(db, "users", user.uid));
-          if (!userSnap.exists()) {
-            document.getElementById("mainContent").innerHTML = `<div class="loader" style="color:red;">User profile not found.</div>`;
-            return;
+          if (userSnap.exists()) {
+            PROFILE = userSnap.data();
+          } else {
+            PROFILE = { name: user.email.split('@')[0], lrn: "—" }; // Fallback
           }
-          PROFILE = userSnap.data();
-          document.getElementById("welcomeSub").textContent = `Welcome back, ${PROFILE.name || user.email}!`;
 
-          // 2. Find Student's Class via LRN or ClassID
-          // (Assuming the student's profile has a 'classId' or 'lrn' field)
+          // 2. Load Class Info
           if (PROFILE.classId) {
             const classSnap = await getDoc(doc(db, "classes", PROFILE.classId));
             if (classSnap.exists()) CLASS_INFO = { id: classSnap.id, ...classSnap.data() };
           }
 
-          // 3. Find Student in Class Roster (to get their specific student document)
+          // 3. Find Student in Class Roster
           if (CLASS_INFO) {
             const rosterSnap = await getDocs(collection(db, "classes", CLASS_INFO.id, "students"));
             const me = rosterSnap.docs.find(d => d.data().lrn === PROFILE.lrn || d.data().email === user.email);
             if (me) STUDENT_INFO = { id: me.id, ...me.data() };
           }
 
-          // 4. Load Grades (if student found in class)
+          // 4. Load Grades
           if (CLASS_INFO && STUDENT_INFO) {
-            // We fetch all grades for this student across all subjects
-            // This requires looping through subjects in the schedule, or knowing the subject list.
-            // For simplicity, we'll just pull the class program to find subjects, then pull grades.
             const progSnap = await getDocs(collection(db, "classes", CLASS_INFO.id, "program"));
             const subjects = [...new Set(progSnap.docs.map(d => d.data().subject).filter(Boolean))];
             
@@ -177,25 +295,40 @@
           }
 
           renderDashboard();
+          document.getElementById("loader").style.opacity = "0";
+          setTimeout(() => {
+            document.getElementById("loader").style.display = "none";
+            document.getElementById("mainContent").style.display = "block";
+          }, 500);
 
         } catch (e) {
           console.error(e);
-          document.getElementById("mainContent").innerHTML = `<div class="loader" style="color:red;">Error loading data: ${e.message}</div>`;
+          document.getElementById("loader").innerHTML = `<div style="color: red; font-weight: bold;">Error loading data: ${e.message}</div>`;
         }
       });
     }
 
     function renderDashboard() {
-      const main = document.getElementById("mainContent");
       const fullName = PROFILE.name || "Student";
+      const firstName = fullName.split(' ')[0];
       const gradeLevel = CLASS_INFO ? CLASS_INFO.gradeLevel : "Not Assigned";
       const className = CLASS_INFO ? CLASS_INFO.classLabel : "";
+      const adviserName = CLASS_INFO ? CLASS_INFO.adviserName : "Not Assigned";
 
-      // Calculate averages
+      // Set Header/Welcome Data
+      document.getElementById("welcomeName").textContent = `Hello, ${firstName}! 👋`;
+      document.getElementById("welcomeMeta").textContent = `LRN: ${STUDENT_INFO?.lrn || PROFILE.lrn || "—"} | SY: ${CLASS_INFO?.schoolYear || "2026-2027"}`;
+      document.getElementById("welcomeClass").textContent = `${gradeLevel} - ${className}`;
+      
+      document.getElementById("bentoClassName").textContent = className;
+      document.getElementById("bentoAdviser").textContent = `Adviser: ${adviserName}`;
+      document.getElementById("bentoAvatar").textContent = fullName.charAt(0).toUpperCase();
+
+      // Calculate Grades
       let totalAvg = 0;
       let validSubjects = 0;
-      let excellentCount = 0;
 
+      let gradesHtml = "";
       GRADES.forEach(g => {
         const vals = [g.q1, g.q2, g.q3, g.q4].filter(v => v !== null && v !== "").map(Number);
         if (vals.length > 0) {
@@ -203,127 +336,46 @@
           g.average = avg;
           totalAvg += avg;
           validSubjects++;
-          if (avg >= 90) excellentCount++;
+          
+          let pillClass = "pill-low";
+          let emoji = "⚠️";
+          if (avg >= 90) { pillClass = "pill-excellent"; emoji = "🏆"; }
+          else if (avg >= 85) { pillClass = "pill-good"; emoji = "👍"; }
+          else if (avg >= 75) { pillClass = "pill-average"; emoji = "📚"; }
+
+          gradesHtml += `
+            <div class="grade-row">
+              <span class="grade-subject">${g.subject}</span>
+              <span class="grade-pill ${pillClass}">${avg} ${emoji}</span>
+            </div>
+          `;
+        } else {
+          gradesHtml += `
+            <div class="grade-row">
+              <span class="grade-subject">${g.subject}</span>
+              <span class="grade-pill" style="background:#e2e8f0; color:#64748b;">—</span>
+            </div>
+          `;
         }
       });
+
+      if (GRADES.length === 0) {
+        gradesHtml = `<div style="text-align:center; padding: 30px; color: #64748b;">No grades encoded yet.</div>`;
+      }
+      document.getElementById("gradesContainer").innerHTML = gradesHtml;
+
+      // Calculate Overall Avg
       const overallAvg = validSubjects > 0 ? Math.round(totalAvg / validSubjects) : 0;
+      document.getElementById("statAvg").textContent = overallAvg > 0 ? overallAvg : "--";
 
-      main.innerHTML = `
-        <!-- Welcome -->
-        <div class="welcome-card">
-          <h2>🌟 Hello, ${fullName}!</h2>
-          <p>LRN: ${STUDENT_INFO?.lrn || PROFILE.lrn || "—"} | SY: 2026-2027</p>
-          <p style="margin-top: 8px;">📚 ${gradeLevel} - ${className}</p>
-        </div>
-
-        <!-- Stats -->
-        <div class="stats-grid">
-          <a href="#gradesSection" class="stat-card">
-            <div class="stat-icon">📊</div>
-            <div class="stat-num">${overallAvg > 0 ? overallAvg + '%' : '--'}</div>
-            <div class="stat-label">Overall Average</div>
-          </a>
-          <a href="#gradesSection" class="stat-card green">
-            <div class="stat-icon">⭐</div>
-            <div class="stat-num">${excellentCount}</div>
-            <div class="stat-label">Excellent Subjects</div>
-          </a>
-          <div class="stat-card purple">
-            <div class="stat-icon">📅</div>
-            <div class="stat-num">—</div>
-            <div class="stat-label">Days Present</div>
-          </div>
-          <div class="stat-card orange">
-            <div class="stat-icon">📈</div>
-            <div class="stat-num">--%</div>
-            <div class="stat-label">Attendance Rate</div>
-          </div>
-        </div>
-
-        <!-- Progress Tracker -->
-        <div class="progress-card">
-          <div class="progress-header">
-            <span><i class="fas fa-chart-simple"></i> My Academic Progress</span>
-            <span class="progress-badge" id="progressPercent">0%</span>
-          </div>
-          <div class="progress-bar-bg">
-            <div class="progress-bar-fill" id="progressFill"></div>
-          </div>
-          <div class="progress-steps">
-            <div class="p-step" id="step1"><div class="p-dot"></div><div class="p-step-label">Attendance</div></div>
-            <div class="p-step" id="step2"><div class="p-dot"></div><div class="p-step-label">Grades</div></div>
-            <div class="p-step" id="step3"><div class="p-dot"></div><div class="p-step-label">Assignments</div></div>
-            <div class="p-step" id="step4"><div class="p-dot"></div><div class="p-step-label">Schedule</div></div>
-            <div class="p-step" id="step5"><div class="p-dot"></div><div class="p-step-label">Achievements</div></div>
-          </div>
-        </div>
-
-        <div class="grid-2">
-          <!-- Subject Grades -->
-          <div class="card" id="gradesSection">
-            <div class="card-title"><i class="fas fa-star"></i> Subject Grades</div>
-            ${GRADES.length === 0 ? `<div style="text-align:center; padding:20px; color:#64748b;">No grades encoded yet.</div>` : 
-              GRADES.map(g => {
-                let cls = "low"; let color = "#ef4444"; let emoji = "⚠️";
-                if (g.average >= 90) { cls = "excellent"; color = "#10b981"; emoji = "🏆"; }
-                else if (g.average >= 85) { cls = "good"; color = "#3b82f6"; emoji = "👍"; }
-                else if (g.average >= 75) { cls = "average"; color = "#f59e0b"; emoji = "📚"; }
-                
-                return `
-                  <div class="grade-item ${cls}">
-                    <span class="grade-subject">${g.subject}</span>
-                    <span class="grade-value" style="color:${color};">${g.average || "—"} ${g.average ? emoji : ""}</span>
-                  </div>
-                `;
-              }).join("")
-            }
-          </div>
-
-          <!-- Attendance Placeholder -->
-          <div class="card">
-            <div class="card-title"><i class="fas fa-calendar-check"></i> Recent Attendance</div>
-            <div style="text-align:center; padding: 30px 10px; color:#64748b;">
-              <div style="font-size: 2rem; margin-bottom: 10px;">📭</div>
-              <p>Attendance module is coming soon.</p>
-              <p style="font-size: 0.8rem; margin-top: 8px;">Please scan the teacher's QR code to mark attendance.</p>
-            </div>
-          </div>
-        </div>
-
-        <!-- Class Schedule -->
-        <div class="card">
-          <div class="card-title"><i class="fas fa-calendar-alt"></i> My Class Schedule</div>
-          <div class="table-wrap">
-            <table>
-              <thead>
-                <tr>
-                  <th>Time / Day</th>
-                  <th>Monday</th>
-                  <th>Tuesday</th>
-                  <th>Wednesday</th>
-                  <th>Thursday</th>
-                  <th>Friday</th>
-                </tr>
-              </thead>
-              <tbody id="scheduleBody">
-                <tr><td colspan="6" style="text-align:center; padding: 20px; color:#64748b;">Loading schedule...</td></tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
-      `;
-
-      // Calculate Progress Tracker UI
+      // Circular Progress Animation (Fake 75% for demo, but you can link to real data)
       setTimeout(() => {
-        let completed = 0;
-        if (overallAvg > 0) { completed++; document.getElementById('step2').classList.add('completed'); }
-        // Fake checks for UI demo
-        if (GRADES.length > 0) { completed++; document.getElementById('step4').classList.add('completed'); }
-        
-        const percent = Math.round((completed / 5) * 100);
-        document.getElementById('progressFill').style.width = percent + "%";
-        document.getElementById('progressPercent').textContent = percent + "%";
-      }, 100);
+        const percent = overallAvg > 0 ? overallAvg : 75; 
+        document.getElementById("progressPercent").textContent = percent + "%";
+        const circle = document.getElementById("progressCircle");
+        const dashoffset = 408 - (408 * percent / 100);
+        circle.style.strokeDashoffset = dashoffset;
+      }, 500);
 
       // Load Schedule
       if (CLASS_INFO) {
@@ -333,34 +385,27 @@
 
     async function loadSchedule(classId) {
       try {
-        // Fetch Term 1 Program
         const snap = await getDocs(collection(db, "classes", classId, "program"));
         const program = snap.docs.map(d => d.data()).filter(p => Number(p.term) === 1);
         
-        if (program.length === 0) {
-          document.getElementById("scheduleBody").innerHTML = `<tr><td colspan="6" style="text-align:center; padding: 20px; color:#64748b;">No schedule set for Term 1.</td></tr>`;
+        // For "Today's Schedule", let's just show Monday's schedule to keep the UI clean
+        const today = "Monday"; 
+        const todayClasses = program.filter(p => p.day === today).sort((a,b) => a.timeSlotId.localeCompare(b.timeSlotId));
+
+        if (todayClasses.length === 0) {
+          document.getElementById("scheduleBody").innerHTML = `<tr><td style="text-align:center; color:#64748b; padding: 20px;">No classes today! 🎉</td></tr>`;
           return;
         }
 
-        const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'];
-        // Group by time slot
-        const slots = {};
-        program.forEach(p => {
-          if (!slots[p.timeSlotId]) slots[p.timeSlotId] = { label: p.timeSlotId, days: {} };
-          slots[p.timeSlotId].days[p.day] = p;
-        });
-
-        const tbody = document.getElementById("scheduleBody");
-        tbody.innerHTML = Object.values(slots).map(slot => {
-          const cells = days.map(day => {
-            const entry = slot.days[day];
-            if (entry) {
-              return `<td><span class="badge-subject">${entry.subject}</span><br><small style="color:#64748b;">${entry.teacherName || "TBA"}</small></td>`;
-            }
-            return `<td style="text-align:center; color:#cbd5e1;">·</td>`;
-          }).join("");
-          return `<tr><td style="font-weight:700; color:#1e3c72;">${slot.label}</td>${cells}</tr>`;
-        }).join("");
+        document.getElementById("scheduleBody").innerHTML = todayClasses.map(c => `
+          <tr>
+            <td style="white-space: nowrap; font-size: 0.8rem; color: #4f46e5;">${c.timeSlotId}</td>
+            <td>
+              <span class="subject-tag">${c.subject}</span>
+              <div style="font-size: 0.75rem; color: #64748b; margin-top: 4px;">${c.teacherName || "TBA"} • ${c.room || "TBA"}</div>
+            </td>
+          </tr>
+        `).join("");
 
       } catch (e) {
         console.error(e);
