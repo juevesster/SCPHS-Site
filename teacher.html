@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Teacher Dashboard — SCPHS</title>
   
-  <!-- Google Fonts -->
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   
   <style>
@@ -56,7 +55,7 @@
     .avatar { width: 42px; height: 42px; border-radius: 50%; background: linear-gradient(135deg, var(--primary), var(--primary-light)); color: #fff; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 1.2rem; box-shadow: 0 2px 8px rgba(30,60,114,0.3); }
 
     /* DASHBOARD CONTENT */
-    .dashboard-scroll { flex: 1; overflow-y: auto; padding: 30px; }
+    .dashboard-scroll { flex: 1; overflow-y: auto; padding: 30px; scroll-behavior: smooth; }
     .grid-layout { display: grid; grid-template-columns: 2fr 1fr; gap: 24px; max-width: 1400px; margin: 0 auto; }
     
     /* CARDS */
@@ -127,7 +126,7 @@
       </select>
     </div>
 
-        <div class="sidebar-menu">
+    <div class="sidebar-menu">
       <a href="teacher.html" class="menu-item active">
         <span class="icon">📊</span> <span>Dashboard</span>
       </a>
@@ -135,12 +134,12 @@
         <span class="icon">📝</span> <span>ILAW Planner</span>
       </a>
       
-      <!-- My Classes: Scrolls to the widget on the dashboard -->
+      <!-- Scroll to My Classes -->
       <a href="#myClassesWidget" class="menu-item" onclick="document.getElementById('myClassesWidget').scrollIntoView({behavior: 'smooth'}); return false;">
         <span class="icon">🏫</span> <span>My Classes</span>
       </a>
       
-      <!-- Gradebook: Opens the gradebook page (currently a placeholder) -->
+      <!-- Gradebook -->
       <a href="gradebook.html" class="menu-item">
         <span class="icon">📊</span> <span>Gradebook</span>
       </a>
@@ -172,7 +171,7 @@
     </header>
 
     <!-- DASHBOARD CONTENT -->
-    <div class="dashboard-scroll">
+    <div class="dashboard-scroll" id="dashboardScroll">
       
       <div id="loading" style="text-align: center; padding: 60px;">
         <div class="spinner"></div>
@@ -218,6 +217,7 @@
                 <div style="color: var(--text-muted); font-size: 0.85rem;">Loading classes...</div>
               </div>
             </div>
+          </div>
 
           <!-- RIGHT COLUMN -->
           <div>
@@ -310,31 +310,26 @@
     document.getElementById("termPicker").addEventListener("change", async (e) => {
       CURRENT_TERM = parseInt(e.target.value, 10);
       
-      // Update UI Badge
       const termText = CURRENT_TERM === 4 ? "Legacy" : `Term ${CURRENT_TERM}`;
       document.getElementById("activeTermBadge").textContent = termText;
 
-      // Show loading states in lists
       document.getElementById("recentLessons").innerHTML = `<div style="color: var(--text-muted); font-size: 0.85rem;">Switching to ${termText}...</div>`;
       document.getElementById("sharedMaterials").innerHTML = `<div style="color: var(--text-muted); font-size: 0.85rem;">Switching to ${termText}...</div>`;
 
-      // Reload data filtered by term
       await loadRecentLessons();
       await loadSharedMaterials();
     });
 
-            // 4. LOAD CLASSES (Automated from Admin)
+    // 4. LOAD CLASSES (With Student Count)
     async function loadMyClasses() {
       const host = document.getElementById("classList");
       try {
-        // Fetch all classes from Firestore
         const snap = await getDocs(collection(db, "classes"));
         const myClasses = [];
 
         snap.forEach(docSnap => {
           const cls = { id: docSnap.id, ...docSnap.data() };
           
-          // Check all possible ways the Admin might have assigned the teacher
           const isAdviser = cls.adviserUid === CURRENT_USER.uid;
           const isTeacher = cls.teacherUids && cls.teacherUids.includes(CURRENT_USER.uid);
           const isSubjectTeacher = cls.subjectTeachers && Object.values(cls.subjectTeachers).includes(CURRENT_USER.uid);
@@ -357,19 +352,21 @@
           return;
         }
 
-        // Sort classes: Adviser classes first
+        // Sort: Adviser first
         myClasses.sort((a, b) => {
           if (a.role !== b.role) return a.role === "Class Adviser" ? -1 : 1;
           return String(a.gradeLevel).localeCompare(String(b.gradeLevel));
         });
 
-        // Build the HTML cards
-        host.innerHTML = myClasses.map(cls => {
-          // Format grade level (e.g., "Grade 7" -> "7")
+        // Fetch student counts for each class
+        const classCards = await Promise.all(myClasses.map(async (cls) => {
+          let studentCount = 0;
+          try {
+            const studentsSnap = await getDocs(collection(db, "classes", cls.id, "students"));
+            studentCount = studentsSnap.size;
+          } catch (e) {}
+
           const gradeDisplay = cls.gradeLevel ? cls.gradeLevel.replace('Grade ', '') : '?';
-          
-          // Use studentCount if it exists, otherwise show a dash
-          const students = cls.studentCount !== undefined ? cls.studentCount : "—";
 
           return `
             <a href="class.html?id=${cls.id}" class="list-item">
@@ -381,7 +378,7 @@
                   <div class="list-item-title">${cls.classLabel || cls.name || "Unnamed Class"}</div>
                   <div class="list-item-sub">
                     <span style="color: ${cls.role === 'Class Adviser' ? '#059669' : '#d97706'}; font-weight: 700;">${cls.role}</span> 
-                    · ${students} Students
+                    · ${studentCount} Students
                   </div>
                 </div>
               </div>
@@ -390,7 +387,9 @@
               </div>
             </a>
           `;
-        }).join("");
+        }));
+
+        host.innerHTML = classCards.join("");
 
       } catch (e) {
         console.error("Error loading classes:", e);
@@ -398,11 +397,10 @@
       }
     }
 
-    // 5. LOAD RECENT LESSONS (Filtered by Term)
+    // 5. LOAD RECENT LESSONS
     async function loadRecentLessons() {
       const host = document.getElementById("recentLessons");
       try {
-        // Query: Lessons created by this teacher for the CURRENT_TERM
         const q = query(
           collection(db, "lessons"),
           where("teacherUid", "==", CURRENT_USER.uid),
@@ -416,7 +414,6 @@
           return;
         }
 
-        // Fallback Sort: Sort by updatedAt in JavaScript
         const lessons = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
         lessons.sort((a, b) => {
           const timeA = a.updatedAt?.toMillis() || 0;
@@ -447,7 +444,7 @@
       }
     }
 
-    // 6. LOAD SHARED MATERIALS (Filtered by Term)
+    // 6. LOAD SHARED MATERIALS
     async function loadSharedMaterials() {
       const host = document.getElementById("sharedMaterials");
       try {
