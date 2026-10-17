@@ -249,7 +249,7 @@
     let STUDENT_INFO = null;
     let GRADES = [];
 
-            async function init() {
+                async function init() {
       onAuthStateChanged(auth, async (user) => {
         if (!user) {
           location.replace("login.html");
@@ -260,39 +260,36 @@
         try {
           // 1. Load User Profile
           const userSnap = await getDoc(doc(db, "users", user.uid));
-          PROFILE = userSnap.exists() ? userSnap.data() : { name: user.email.split('@')[0] };
+          if (userSnap.exists()) {
+            PROFILE = userSnap.data();
+          } else {
+            PROFILE = { name: user.email.split('@')[0] };
+          }
 
-          // 2. SMART SEARCH: If classId is saved on profile, use it directly!
-          if (PROFILE.classId) {
-            const classSnap = await getDoc(doc(db, "classes", PROFILE.classId));
-            if (classSnap.exists()) {
-              CLASS_INFO = { id: classSnap.id, ...classSnap.data() };
-              
-              // Find the student document inside this class
-              const rosterSnap = await getDocs(collection(db, "classes", CLASS_INFO.id, "students"));
-              const me = rosterSnap.docs.find(d => 
-                d.data().email === user.email || 
-                (PROFILE.lrn && d.data().lrn === PROFILE.lrn)
-              );
-              if (me) STUDENT_INFO = { id: me.id, ...me.data() };
-            }
-          } 
+          // 2. SMART SEARCH: Find the class by the student's LRN or Email
+          const classesSnap = await getDocs(collection(db, "classes"));
           
-          // 3. FALLBACK: If no classId on profile, loop through classes to find them
-          if (!CLASS_INFO) {
-            const classesSnap = await getDocs(collection(db, "classes"));
-            for (const classDoc of classesSnap.docs) {
-              const rosterSnap = await getDocs(collection(db, "classes", classDoc.id, "students"));
-              const me = rosterSnap.docs.find(d => d.data().email === user.email);
-              if (me) {
-                CLASS_INFO = { id: classDoc.id, ...classDoc.data() };
-                STUDENT_INFO = { id: me.id, ...me.data() };
-                break;
-              }
+          for (const classDoc of classesSnap.docs) {
+            const clsData = { id: classDoc.id, ...classDoc.data() };
+            const rosterSnap = await getDocs(collection(db, "classes", clsData.id, "students"));
+            
+            const me = rosterSnap.docs.find(d => {
+              const s = d.data();
+              // Match by LRN (if profile has LRN) OR by Email (if roster has email)
+              const matchLrn = PROFILE.lrn && s.lrn && String(s.lrn).trim() === String(PROFILE.lrn).trim();
+              const matchEmail = s.email && s.email.toLowerCase() === user.email.toLowerCase();
+              
+              return matchLrn || matchEmail;
+            });
+
+            if (me) {
+              CLASS_INFO = clsData;
+              STUDENT_INFO = { id: me.id, ...me.data() };
+              break; // Stop searching once found!
             }
           }
 
-          // 4. Load Grades (if student found)
+          // 3. Load Grades (if student found)
           if (CLASS_INFO && STUDENT_INFO) {
             const progSnap = await getDocs(collection(db, "classes", CLASS_INFO.id, "program"));
             const subjects = [...new Set(progSnap.docs.map(d => d.data().subject).filter(Boolean))];
