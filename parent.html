@@ -230,7 +230,7 @@
     </div>
   </div>
 
-  <script type="module">
+    <script type="module">
     import { auth, db } from "./assets/js/firebase-config.js";
     import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
     import { doc, getDoc, collection, getDocs, updateDoc, arrayUnion } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
@@ -240,6 +240,18 @@
     let LINKED_STUDENTS = []; 
     let ACTIVE_STUDENT = null;
     let ALL_CLASSES = []; 
+
+    // Helper: Build a full name from SF1 fields
+    function getStudentName(s) {
+      if (s.name) return s.name; // If "name" exists, use it
+      if (s.last_name || s.first_name) {
+        let n = `${s.last_name || ''}, ${s.first_name || ''}`.trim();
+        if (n.endsWith(',')) n = n.slice(0, -1);
+        if (s.middle_name) n += ` ${s.middle_name.charAt(0)}.`;
+        return n;
+      }
+      return "Unknown Student";
+    }
 
     async function init() {
       onAuthStateChanged(auth, async (user) => {
@@ -275,16 +287,12 @@
       });
     }
 
-    // ============================================================
-    // HYBRID SECURITY LINK LOGIC
-    // ============================================================
     window.linkChild = async function() {
       const lrnInput = document.getElementById("childLrnInput").value.trim();
       const lastNameInput = document.getElementById("parentLastNameInput").value.trim().toLowerCase();
       const errEl = document.getElementById("linkError");
       
       errEl.style.display = "none";
-
       if (!lrnInput) {
         errEl.textContent = "Please enter a valid LRN.";
         errEl.style.display = "block";
@@ -292,55 +300,40 @@
       }
 
       let foundStudent = null;
-      let foundClass = null;
-
-      // 1. Search for the student by LRN
       for (const cls of ALL_CLASSES) {
         const rosterSnap = await getDocs(collection(db, "classes", cls.id, "students"));
         const match = rosterSnap.docs.find(d => String(d.data().lrn).trim() === lrnInput);
-        
         if (match) {
           foundStudent = { id: match.id, ...match.data() };
-          foundClass = cls;
           break;
         }
       }
 
       if (foundStudent) {
-        // 2. HYBRID CHECK: See if SF1 has a parent name listed
         const sf1ParentName = (foundStudent.parentName || foundStudent.guardianName || "").toLowerCase().trim();
-        
         let isAuthorized = false;
 
         if (sf1ParentName !== "") {
-            // If SF1 has a parent name, check if the typed last name matches it
-            if (sf1ParentName.includes(lastNameInput)) {
-                isAuthorized = true;
-            } else {
-                errEl.textContent = "The Last Name you provided does not match the school records for this LRN. Please check with the adviser.";
+            if (sf1ParentName.includes(lastNameInput)) isAuthorized = true;
+            else {
+                errEl.textContent = "The Last Name you provided does not match the school records for this LRN.";
                 errEl.style.display = "block";
                 return;
             }
         } else {
-            // If SF1 has NO parent name, bypass the last name check (trusting the LRN knowledge)
             isAuthorized = true;
         }
 
-        // 3. Link the child
         if (isAuthorized) {
             const currentLinks = PROFILE.linkedStudents || [];
             if (!currentLinks.includes(lrnInput)) {
-            await updateDoc(doc(db, "users", CURRENT_USER.uid), {
-                linkedStudents: arrayUnion(lrnInput)
-            });
-            currentLinks.push(lrnInput);
+              await updateDoc(doc(db, "users", CURRENT_USER.uid), { linkedStudents: arrayUnion(lrnInput) });
+              currentLinks.push(lrnInput);
             }
-            
             PROFILE.linkedStudents = currentLinks;
             document.getElementById("linkChildSection").style.display = "none";
             await loadLinkedChildren(PROFILE.linkedStudents);
         }
-
       } else {
         errEl.textContent = "Student not found. Please check the LRN and try again.";
         errEl.style.display = "block";
@@ -379,14 +372,20 @@
     function renderStudentTabs() {
       const container = document.getElementById("studentTabs");
       container.innerHTML = LINKED_STUDENTS.map((s, index) => {
-        let fullName = s.name || "Student";
+        let fullName = getStudentName(s);
+        
+        // Swap "Lastname, Firstname" to "Firstname Lastname" for the UI
         if (fullName.includes(',')) {
            const parts = fullName.split(',');
            fullName = `${parts[1].trim()} ${parts[0].trim()}`;
         }
+        
+        // Get first name for the avatar
+        const firstNameOnly = fullName.split(' ')[0] || "S";
+
         return `
           <div class="student-btn" onclick="window.selectStudent(LINKED_STUDENTS[${index}])">
-            <div class="avatar">${fullName.charAt(0)}</div>
+            <div class="avatar">${firstNameOnly.charAt(0).toUpperCase()}</div>
             <div class="info">
               <h4>${fullName}</h4>
               <p>LRN: ${s.lrn || 'N/A'}</p>
@@ -407,13 +406,15 @@
           }
       });
 
-      let firstName = student.name.split(',')[1]?.trim().split(' ')[0] || student.name.split(' ')[0];
+      let fullName = getStudentName(student);
+      let firstName = fullName.includes(',') ? fullName.split(',')[1].trim().split(' ')[0] : fullName.split(' ')[0];
+
       document.getElementById("welcomeName").textContent = `Monitoring: ${firstName}`;
-      document.getElementById("welcomeMeta").textContent = `Grade ${student.classData.gradeLevel} • ${student.classData.classLabel}`;
+      document.getElementById("welcomeMeta").textContent = `Grade ${student.classData.gradeLevel || ''} • ${student.classData.classLabel || ''}`;
       
-      document.getElementById("bentoClassName").textContent = student.classData.classLabel;
+      document.getElementById("bentoClassName").textContent = student.classData.classLabel || "Unassigned Class";
       document.getElementById("bentoAdviser").textContent = `Adviser: ${student.classData.adviserName || "Not Assigned"}`;
-      document.getElementById("bentoAvatar").textContent = student.name.charAt(0).toUpperCase();
+      document.getElementById("bentoAvatar").textContent = firstName.charAt(0).toUpperCase();
 
       document.getElementById("gradesContainer").innerHTML = '<div style="text-align:center; padding: 20px; color: #64748b;">Loading grades...</div>';
       document.getElementById("scheduleBody").innerHTML = '<tr><td style="text-align:center; color:#64748b; padding: 20px;">Loading schedule...</td></tr>';
@@ -439,6 +440,7 @@
         renderGrades(GRADES);
       } catch (e) {
         console.error("Error fetching grades:", e);
+        document.getElementById("gradesContainer").innerHTML = '<div style="text-align:center; padding: 20px; color: #e11d48;">Failed to load grades. Check permissions.</div>';
       }
     }
 
@@ -498,11 +500,17 @@
         const snap = await getDocs(collection(db, "classes", classId, "program"));
         const program = snap.docs.map(d => d.data()).filter(p => Number(p.term) === 1);
         
-        const today = "Monday"; 
-        const todayClasses = program.filter(p => p.day === today).sort((a,b) => a.timeSlotId.localeCompare(b.timeSlotId));
+        // Find current day to make the schedule dynamic
+        const daysOfWeek = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+        const today = daysOfWeek[new Date().getDay()]; 
+        
+        // If it's weekend, just show Monday for demonstration
+        const displayDay = (today === "Saturday" || today === "Sunday") ? "Monday" : today;
+
+        const todayClasses = program.filter(p => p.day === displayDay).sort((a,b) => a.timeSlotId.localeCompare(b.timeSlotId));
 
         if (todayClasses.length === 0) {
-          document.getElementById("scheduleBody").innerHTML = `<tr><td style="text-align:center; color:#64748b; padding: 20px;">No classes today! 🎉</td></tr>`;
+          document.getElementById("scheduleBody").innerHTML = `<tr><td style="text-align:center; color:#64748b; padding: 20px;">No classes scheduled for ${displayDay}.</td></tr>`;
           return;
         }
 
@@ -517,6 +525,7 @@
         `).join("");
       } catch (e) {
         console.error("Error fetching schedule:", e);
+        document.getElementById("scheduleBody").innerHTML = `<tr><td style="text-align:center; color:#e11d48; padding: 20px;">Failed to load schedule.</td></tr>`;
       }
     }
 
