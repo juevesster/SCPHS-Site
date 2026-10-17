@@ -241,16 +241,30 @@
     let ACTIVE_STUDENT = null;
     let ALL_CLASSES = []; 
 
-    // Helper: Build a full name from SF1 fields
+    // 🕵️ SUPER DETECTIVE: Find the name no matter what field it is saved in
     function getStudentName(s) {
-      if (s.name) return s.name; // If "name" exists, use it
-      if (s.last_name || s.first_name) {
-        let n = `${s.last_name || ''}, ${s.first_name || ''}`.trim();
-        if (n.endsWith(',')) n = n.slice(0, -1);
-        if (s.middle_name) n += ` ${s.middle_name.charAt(0)}.`;
+      // 1. Try single string fields
+      if (s.name && String(s.name).trim() !== "") return s.name;
+      if (s.fullName && String(s.fullName).trim() !== "") return s.fullName;
+      if (s.studentName && String(s.studentName).trim() !== "") return s.studentName;
+      if (s.NAME && String(s.NAME).trim() !== "") return s.NAME;
+
+      // 2. Try separate first/last name fields (Lowercase, camelCase, UPPERCASE)
+      let last = s.last_name || s.lastName || s.LAST_NAME || "";
+      let first = s.first_name || s.firstName || s.FIRST_NAME || "";
+      let middle = s.middle_name || s.middleName || s.MIDDLE_NAME || "";
+
+      if (last !== "" || first !== "") {
+        let n = `${last}, ${first}`.trim();
+        if (n.endsWith(',')) n = n.slice(0, -1); // Remove trailing comma
+        if (middle !== "") n += ` ${middle.charAt(0)}.`;
         return n;
       }
-      return "Unknown Student";
+
+      // 3. Fallback to Firebase Auth Email if they have an email field in the roster
+      if (s.email) return s.email.split('@')[0];
+
+      return "Student";
     }
 
     async function init() {
@@ -302,7 +316,7 @@
       let foundStudent = null;
       for (const cls of ALL_CLASSES) {
         const rosterSnap = await getDocs(collection(db, "classes", cls.id, "students"));
-        const match = rosterSnap.docs.find(d => String(d.data().lrn).trim() === lrnInput);
+        const match = rosterSnap.docs.find(d => String(d.data().lrn || d.data().LRN).trim() === lrnInput);
         if (match) {
           foundStudent = { id: match.id, ...match.data() };
           break;
@@ -310,7 +324,7 @@
       }
 
       if (foundStudent) {
-        const sf1ParentName = (foundStudent.parentName || foundStudent.guardianName || "").toLowerCase().trim();
+        const sf1ParentName = (foundStudent.parentName || foundStudent.parent_name || foundStudent.guardianName || foundStudent.guardian_name || "").toLowerCase().trim();
         let isAuthorized = false;
 
         if (sf1ParentName !== "") {
@@ -345,7 +359,7 @@
       for (const lrn of lrns) {
         for (const cls of ALL_CLASSES) {
           const rosterSnap = await getDocs(collection(db, "classes", cls.id, "students"));
-          const match = rosterSnap.docs.find(d => String(d.data().lrn).trim() === String(lrn).trim());
+          const match = rosterSnap.docs.find(d => String(d.data().lrn || d.data().LRN).trim() === String(lrn).trim());
           
           if (match) {
             LINKED_STUDENTS.push({
@@ -375,20 +389,20 @@
         let fullName = getStudentName(s);
         
         // Swap "Lastname, Firstname" to "Firstname Lastname" for the UI
+        let displayName = fullName;
         if (fullName.includes(',')) {
            const parts = fullName.split(',');
-           fullName = `${parts[1].trim()} ${parts[0].trim()}`;
+           displayName = `${parts[1].trim()} ${parts[0].trim()}`;
         }
         
-        // Get first name for the avatar
-        const firstNameOnly = fullName.split(' ')[0] || "S";
+        const firstNameOnly = displayName.split(' ')[0] || "S";
 
         return `
           <div class="student-btn" onclick="window.selectStudent(LINKED_STUDENTS[${index}])">
             <div class="avatar">${firstNameOnly.charAt(0).toUpperCase()}</div>
             <div class="info">
-              <h4>${fullName}</h4>
-              <p>LRN: ${s.lrn || 'N/A'}</p>
+              <h4>${displayName}</h4>
+              <p>LRN: ${s.lrn || s.LRN || 'N/A'}</p>
             </div>
           </div>
         `;
@@ -401,7 +415,7 @@
       document.querySelectorAll('.student-btn').forEach(btn => btn.classList.remove('active'));
       const buttons = document.querySelectorAll('.student-btn');
       buttons.forEach(btn => {
-          if(btn.querySelector('.info p').innerText.includes(student.lrn)) {
+          if(btn.querySelector('.info p').innerText.includes(student.lrn || student.LRN)) {
               btn.classList.add('active');
           }
       });
@@ -410,10 +424,10 @@
       let firstName = fullName.includes(',') ? fullName.split(',')[1].trim().split(' ')[0] : fullName.split(' ')[0];
 
       document.getElementById("welcomeName").textContent = `Monitoring: ${firstName}`;
-      document.getElementById("welcomeMeta").textContent = `Grade ${student.classData.gradeLevel || ''} • ${student.classData.classLabel || ''}`;
+      document.getElementById("welcomeMeta").textContent = `Grade ${student.classData.gradeLevel || student.classData.grade_level || ''} • ${student.classData.classLabel || student.classData.class_name || ''}`;
       
-      document.getElementById("bentoClassName").textContent = student.classData.classLabel || "Unassigned Class";
-      document.getElementById("bentoAdviser").textContent = `Adviser: ${student.classData.adviserName || "Not Assigned"}`;
+      document.getElementById("bentoClassName").textContent = student.classData.classLabel || student.classData.class_name || "Unassigned Class";
+      document.getElementById("bentoAdviser").textContent = `Adviser: ${student.classData.adviserName || student.classData.adviser_name || "Not Assigned"}`;
       document.getElementById("bentoAvatar").textContent = firstName.charAt(0).toUpperCase();
 
       document.getElementById("gradesContainer").innerHTML = '<div style="text-align:center; padding: 20px; color: #64748b;">Loading grades...</div>';
@@ -500,11 +514,8 @@
         const snap = await getDocs(collection(db, "classes", classId, "program"));
         const program = snap.docs.map(d => d.data()).filter(p => Number(p.term) === 1);
         
-        // Find current day to make the schedule dynamic
         const daysOfWeek = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
         const today = daysOfWeek[new Date().getDay()]; 
-        
-        // If it's weekend, just show Monday for demonstration
         const displayDay = (today === "Saturday" || today === "Sunday") ? "Monday" : today;
 
         const todayClasses = program.filter(p => p.day === displayDay).sort((a,b) => a.timeSlotId.localeCompare(b.timeSlotId));
