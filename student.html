@@ -238,7 +238,7 @@
     </div>
   </div>
 
-  <script type="module">
+    <script type="module">
     import { auth, db } from "./assets/js/firebase-config.js";
     import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
     import { doc, getDoc, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
@@ -249,7 +249,7 @@
     let STUDENT_INFO = null;
     let GRADES = [];
 
-                async function init() {
+    async function init() {
       onAuthStateChanged(auth, async (user) => {
         if (!user) {
           location.replace("login.html");
@@ -295,7 +295,9 @@
             const subjects = [...new Set(progSnap.docs.map(d => d.data().subject).filter(Boolean))];
             
             for (const subj of subjects) {
-              const gSnap = await getDoc(doc(db, "classes", CLASS_INFO.id, "grades", STUDENT_INFO.id, subj));
+              // FIXED: Added "data" as the final segment to make the path valid
+              const gSnap = await getDoc(doc(db, "classes", CLASS_INFO.id, "grades", STUDENT_INFO.id, subj, "data"));
+              
               if (gSnap.exists()) {
                 GRADES.push({ subject: subj, ...gSnap.data() });
               } else {
