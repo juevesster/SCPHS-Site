@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Teacher Dashboard — SCPHS</title>
+  <link rel="stylesheet" href="assets/css/styles.css" />
+  
+  <style>
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #f0f2f5; margin: 0; }
+    
+    .dash-header { background: linear-gradient(135deg, #1e3c72, #2a5298); color: #fff; padding: 20px 0; box-shadow: 0 2px 8px rgba(0,0,0,.1); }
+    .dash-container { max-width: 1200px; margin: 0 auto; padding: 24px; }
+    
+    .dash-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 20px; }
+    @media (max-width: 900px) { .dash-grid { grid-template-columns: 1fr; } }
+
+    .card { background: #fff; border-radius: 12px; padding: 20px; box-shadow: 0 1px 3px rgba(0,0,0,.06); margin-bottom: 20px; }
+    .card h2 { font-size: 1.1rem; color: #0f2b4f; margin-top: 0; border-bottom: 2px solid #e5e7eb; padding-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
+
+    /* Quick Actions Grid */
+    .quick-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .btn-action { padding: 16px; border-radius: 8px; text-decoration: none; font-weight: 700; text-align: center; color: #fff; transition: all .15s; display: flex; flex-direction: column; align-items: center; gap: 8px; }
+    .btn-action:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,.15); }
+    .btn-action.ilaw { background: #1e3c72; }
+    .btn-action.lm { background: #7c3aed; }
+    .btn-action.las { background: #0891b2; }
+    .btn-action.materials { background: #4f46e5; }
+
+    /* Lists */
+    .list-group { display: flex; flex-direction: column; gap: 10px; }
+    .list-item { padding: 12px; border: 1px solid #e5e7eb; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; text-decoration: none; color: inherit; transition: all .15s; cursor: pointer; }
+    .list-item:hover { background: #f9fafb; border-color: #cbd5e1; }
+    .list-item-title { font-weight: 700; color: #0f2b4f; font-size: 14px; }
+    .list-item-sub { font-size: 12px; color: #6b7280; margin-top: 2px; }
+    
+    /* Badges */
+    .badge { font-size: 10px; padding: 4px 8px; border-radius: 999px; text-transform: uppercase; font-weight: 800; letter-spacing: .03em; }
+    .badge-final { background: #d1fae5; color: #059669; }
+    .badge-draft { background: #fef3c7; color: #d97706; }
+    .badge-shared { background: #dbeafe; color: #1e40af; }
+    .badge-grade { background: #f3f4f6; color: #4b5563; }
+  </style>
+</head>
+<body>
+
+  <header class="dash-header">
+    <div class="dash-container" style="display: flex; justify-content: space-between; align-items: center;">
+      <div>
+        <h1 style="margin: 0; font-size: 1.5rem;">👨‍🏫 Teacher Dashboard</h1>
+        <p id="welcomeText" style="margin: 4px 0 0; opacity: 0.85;">Loading…</p>
+      </div>
+      <div>
+        <a href="admin.html" class="btn btn-outline-white small" style="text-decoration: none; padding: 8px 16px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.3); color: #fff; font-weight: 700;">← Admin</a>
+        <button id="btnLogout" class="btn btn-danger small" style="margin-left: 8px; padding: 8px 16px; border-radius: 6px; border: none; background: #dc2626; color: #fff; font-weight: 700; cursor: pointer;">Logout</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="dash-container">
+    <div id="loading" class="loading" style="text-align: center; padding: 60px; color: #6b7280;">
+      <div class="spinner" style="width: 32px; height: 32px; border: 3px solid #e5e7eb; border-top-color: #1e3c72; border-radius: 50%; animation: spin .8s linear infinite; margin: 0 auto 12px;"></div>
+      <div>Loading your workspace...</div>
+    </div>
+
+    <div id="dashboardContent" style="display: none;">
+      <div class="dash-grid">
+        
+        <!-- LEFT COLUMN -->
+        <div>
+          <!-- Quick Actions -->
+          <div class="card">
+            <h2>🚀 Quick Actions</h2>
+            <div class="quick-actions">
+              <!-- Opens ILAW Planner without specific lesson, ready to create -->
+              <a href="ilaw.html" class="btn-action ilaw" target="_blank">
+                <span style="font-size: 1.5rem;">📝</span>
+                Create ILAW Lesson
+              </a>
+              
+              <!-- Opens ILAW Planner so they can generate a module from a recent lesson -->
+              <a href="ilaw.html" class="btn-action lm" target="_blank">
+                <span style="font-size: 1.5rem;">📘</span>
+                Generate Module
+              </a>
+              
+              <!-- Opens ILAW Planner so they can generate an LAS -->
+              <a href="ilaw.html" class="btn-action las" target="_blank">
+                <span style="font-size: 1.5rem;">📄</span>
+                Generate LAS
+              </a>
+              
+              <!-- Placeholder for Materials Pack (requires a lesson ID, so we prompt them to select a lesson first) -->
+              <a href="#" class="btn-action materials" onclick="alert('Please select a lesson from the Recent Lessons list to open the Materials Pack.'); return false;">
+                <span style="font-size: 1.5rem;">📚</span>
+                Materials Pack
+              </a>
+            </div>
+          </div>
+
+          <!-- My Classes / Advisory -->
+          <div class="card">
+            <h2>🏫 My Classes</h2>
+            <div id="classList" class="list-group">
+              <div style="color: #6b7280; font-size: 13px;">Loading classes...</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- RIGHT COLUMN -->
+        <div>
+          <!-- Recent Lessons -->
+          <div class="card">
+            <h2>
+              📚 Recent Lessons
+              <a href="ilaw.html" style="font-size: 11px; color: #1e3c72; text-decoration: none; background: #eff6ff; padding: 4px 8px; border-radius: 4px;">+ New</a>
+            </h2>
+            <div id="recentLessons" class="list-group">
+              <div style="color: #6b7280; font-size: 13px;">Loading recent lessons...</div>
+            </div>
+          </div>
+          
+          <!-- Shared Materials -->
+          <div class="card">
+            <h2>🌐 Shared Materials</h2>
+            <div id="sharedMaterials" class="list-group">
+              <div style="color: #6b7280; font-size: 13px;">Loading shared items...</div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </main>
+
+  <!-- JAVASCRIPT LOGIC -->
+  <script type="module">
+    import { auth, db } from "./assets/js/firebase-config.js";
+    import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+    import { collection, query, where, getDocs, orderBy, limit, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+    import { getCurrentUserProfile } from "./assets/js/roles.js";
+
+    let CURRENT_USER = null;
+    let CURRENT_PROFILE = null;
+
+    // 1. AUTH CHECK
+    onAuthStateChanged(auth, async (user) => {
+      if (!user) {
+        location.replace("login.html?next=teacher.html");
+        return;
+      }
+
+      CURRENT_USER = user;
+      CURRENT_PROFILE = await getCurrentUserProfile();
+
+      const isStaff = CURRENT_PROFILE?.primaryRole === "teacher" 
+                   || CURRENT_PROFILE?.primaryRole === "admin" 
+                   || CURRENT_PROFILE?.isSuperAdmin;
+
+      if (!isStaff) {
+        alert("Access Denied. Only teachers can view this page.");
+        location.replace("index.html");
+        return;
+      }
+
+      document.getElementById("welcomeText").textContent = `Welcome back, ${CURRENT_PROFILE?.name || user.email}`;
+      
+      document.getElementById("loading").style.display = "none";
+      document.getElementById("dashboardContent").style.display = "block";
+      
+      await loadMyClasses();
+      await loadRecentLessons();
+      await loadSharedMaterials();
+    });
+
+    // 2. LOGOUT
+    document.getElementById("btnLogout").addEventListener("click", () => {
+      if (confirm("Are you sure you want to logout?")) {
+        signOut(auth).then(() => location.replace("login.html"));
+      }
+    });
+
+    // 3. LOAD MY CLASSES
+    async function loadMyClasses() {
+      const host = document.getElementById("classList");
+      try {
+        const snap = await getDocs(collection(db, "classes"));
+        const myClasses = [];
+
+        snap.forEach(docSnap => {
+          const cls = { id: docSnap.id, ...docSnap.data() };
+          const isAdviser = cls.adviserUid === CURRENT_USER.uid;
+          const isTeacher = cls.teacherUids && cls.teacherUids.includes(CURRENT_USER.uid);
+          const isSubjectTeacher = cls.subjectTeachers && Object.values(cls.subjectTeachers).includes(CURRENT_USER.uid);
+
+          if (isAdviser || isTeacher || isSubjectTeacher) {
+            myClasses.push({ ...cls, role: isAdviser ? "Adviser" : "Subject Teacher" });
+          }
+        });
+
+        if (myClasses.length === 0) {
+          host.innerHTML = `<div style="color: #6b7280; font-size: 13px;">No classes assigned yet.</div>`;
+          return;
+        }
+
+        // Make the class clickable to view the student roster (we will build class.html later)
+        host.innerHTML = myClasses.map(cls => `
+          <a href="class.html?id=${cls.id}" class="list-item">
+            <div>
+              <div class="list-item-title">${cls.classLabel || cls.name || "Unnamed Class"}</div>
+              <div class="list-item-sub">${cls.role}</div>
+            </div>
+            <div class="badge badge-grade">
+              Grade ${cls.gradeLevel || "—"}
+            </div>
+          </a>
+        `).join("");
+
+      } catch (e) {
+        console.error("Error loading classes:", e);
+        host.innerHTML = `<div style="color: #b91c1c; font-size: 13px;">Failed to load classes.</div>`;
+      }
+    }
+
+    // 4. LOAD RECENT LESSONS
+    async function loadRecentLessons() {
+      const host = document.getElementById("recentLessons");
+      try {
+        // Query: Lessons created by this teacher, ordered by updatedAt
+        const q = query(
+          collection(db, "lessons"),
+          where("teacherUid", "==", CURRENT_USER.uid),
+          orderBy("updatedAt", "desc"),
+          limit(5)
+        );
+
+        const snap = await getDocs(q);
+        
+        if (snap.empty) {
+          host.innerHTML = `<div style="color: #6b7280; font-size: 13px;">No lessons created yet. Click "Create ILAW Lesson" to start.</div>`;
+          return;
+        }
+
+        // Links directly to ilaw.html with the specific lesson ID loaded!
+        host.innerHTML = snap.docs.map(doc => {
+          const data = doc.data();
+          const isFinal = data.status === "final";
+          
+          return `
+            <a href="ilaw.html?lesson=${doc.id}" class="list-item" target="_blank">
+              <div>
+                <div class="list-item-title">${data.lessonTitle || "Untitled Lesson"}</div>
+                <div class="list-item-sub">Term ${data.term} · Week ${data.week}</div>
+              </div>
+              <div class="badge ${isFinal ? 'badge-final' : 'badge-draft'}">
+                ${data.status || "draft"}
+              </div>
+            </a>
+          `;
+        }).join("");
+
+      } catch (e) {
+        console.error("Error loading lessons:", e);
+        host.innerHTML = `<div style="color: #b91c1c; font-size: 13px;">Failed to load lessons. (Check console for Firestore Index requirement)</div>`;
+      }
+    }
+
+    // 5. LOAD SHARED MATERIALS
+    async function loadSharedMaterials() {
+      const host = document.getElementById("sharedMaterials");
+      try {
+        const q = query(
+          collection(db, "lessons"),
+          where("teacherUid", "==", CURRENT_USER.uid)
+        );
+
+        const snap = await getDocs(q);
+        
+        const shared = [];
+        snap.forEach(doc => {
+          const data = doc.data();
+          // If the Learner Module is shared
+          if (data.isPublic && data.publicSlug) {
+            shared.push({ 
+              type: "Learner Module", 
+              title: data.moduleContent?.lessonTitle || data.lessonTitle, 
+              url: `m.html?slug=${data.publicSlug}`, 
+              views: data.viewCount || 0,
+              icon: "📘"
+            });
+          }
+          // If the LAS is shared
+          if (data.lasIsPublic && data.lasPublicSlug) {
+            shared.push({ 
+              type: "Activity Sheet", 
+              title: data.lasContent?.activityTitle || data.lessonTitle, 
+              url: `las.html?slug=${data.lasPublicSlug}`, 
+              views: 0,
+              icon: "📄"
+            });
+          }
+        });
+
+        if (shared.length === 0) {
+          host.innerHTML = `<div style="color: #6b7280; font-size: 13px;">No shared materials yet.</div>`;
+          return;
+        }
+
+        // Clicking opens the PUBLIC view in a new tab!
+        host.innerHTML = shared.slice(0, 5).map(item => `
+          <a href="${item.url}" class="list-item" target="_blank">
+            <div style="display: flex; gap: 8px; align-items: center;">
+              <div style="font-size: 1.2rem;">${item.icon}</div>
+              <div>
+                <div class="list-item-title">${item.title || "Untitled"}</div>
+                <div class="list-item-sub">${item.type} · ${item.views} views</div>
+              </div>
+            </div>
+            <div class="badge badge-shared">Shared</div>
+          </a>
+        `).join("");
+
+      } catch (e) {
+        console.error("Error loading shared materials:", e);
+        host.innerHTML = `<div style="color: #b91c1c; font-size: 13px;">Failed to load shared items.</div>`;
+      }
+    }
+  </script>
+</body>
+</html>
