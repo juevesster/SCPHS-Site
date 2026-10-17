@@ -278,14 +278,16 @@
       line-height: 1.5;
     }
 
-    /* Tabs */
+        /* Tabs */
     .auth-tabs {
       display: flex;
       background: #f3f4f6;
       border-radius: 10px;
       padding: 4px;
       margin-bottom: 24px;
+      width: 100%; /* Ensure it stays within the container */
     }
+
     .auth-tab {
       flex: 1;
       padding: 10px 12px;
@@ -380,19 +382,19 @@
       font-weight: 600;
     }
 
-    /* Role picker */
+       /* Role picker */
     .role-picker {
       display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 10px;
+      grid-template-columns: 1fr 1fr 1fr; /* Changed from 1fr 1fr to fit 3 roles */
+      gap: 8px;
     }
     .role-option {
-      padding: 12px;
+      padding: 10px 5px; /* Reduced padding slightly to fit 3 buttons */
       border: 2px solid #e5e7eb;
       border-radius: 10px;
       text-align: center;
       cursor: pointer;
-      font-size: 0.85rem;
+      font-size: 0.8rem; /* Slightly smaller font for 3 buttons */
       font-weight: 700;
       color: #4b5563;
       transition: all 0.15s;
@@ -741,8 +743,9 @@
           </div>
         </form>
 
-        <!-- SIGNUP FORM -->
+                <!-- SIGNUP FORM -->
         <form id="formSignup" style="display:none;" novalidate>
+          <!-- Name -->
           <div class="field">
             <label for="signupName">Full Name</label>
             <div class="input-wrap">
@@ -751,6 +754,7 @@
             </div>
           </div>
 
+          <!-- Email -->
           <div class="field">
             <label for="signupEmail">School Email</label>
             <div class="input-wrap">
@@ -759,6 +763,7 @@
             </div>
           </div>
 
+          <!-- Password -->
           <div class="field">
             <label for="signupPassword">Password</label>
             <div class="input-wrap">
@@ -772,7 +777,8 @@
             </div>
           </div>
 
-                    <div class="field">
+          <!-- Role Picker (Added Parent) -->
+          <div class="field">
             <label>I am a…</label>
             <div class="role-picker">
               <label class="role-option selected" data-role="student">
@@ -783,16 +789,14 @@
                 <input type="radio" name="role" value="teacher">
                 <span class="role-emoji">👩‍🏫</span> Teacher
               </label>
-              <!-- 🆕 ADD PARENT HERE -->
               <label class="role-option" data-role="parent">
-              <input type="radio" name="role" value="parent">
-              <span class="role-emoji">👨‍👩‍👧</span> Parent
-            </label>
-              </div>
+                <input type="radio" name="role" value="parent">
+                <span class="role-emoji">👨‍👩‍👧</span> Parent
+              </label>
             </div>
           </div>
 
-          <!-- 🆕 NEW LRN FIELD FOR STUDENTS -->
+          <!-- LRN Field (Hidden by default, shows only for students) -->
           <div class="field" id="signupLrnField">
             <label for="signupLrn">Student LRN</label>
             <div class="input-wrap">
@@ -802,8 +806,10 @@
             <div style="font-size: 11px; color: #6b7280; margin-top: 4px;">Required to match you with your class roster.</div>
           </div>
 
+          <!-- Submit Button -->
           <button class="btn-primary" id="btnSignup" type="submit">Create Account</button>
 
+          <!-- Privacy Notice -->
           <div class="privacy-notice">
             <strong>Privacy Notice:</strong> By creating an account, you agree that your name, email,
             and account activity may be stored on Google Firebase servers and accessed by authorized
