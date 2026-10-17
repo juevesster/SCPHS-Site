@@ -349,6 +349,7 @@
     .mu-badge.guest-teacher { background: #ede9fe; color: #6d28d9; }
     .mu-badge.scphs-teacher { background: #dbeafe; color: #1e40af; }
     .mu-badge.pending { background: #fef3c7; color: #92400e; }
+    .mu-badge.declined { background: #fee2e2; color: #b91c1c; }
 
     .mu-toast {
       position: fixed; bottom: 24px; left: 50%;
@@ -441,6 +442,7 @@
           <option value="scphs-teacher">🏫 SCPHS Teachers</option>
           <option value="guest-teacher">🌐 Guest Teachers</option>
           <option value="admin">Admins</option>
+          <option value="declined">🚫 Declined</option>
         </select>
         <span id="userCount" style="font-size:0.85rem;color:#6b7280;margin-left:auto;"></span>
       </div>
@@ -543,7 +545,7 @@
     function isPending(user) {
       // Pending if explicitly flagged
       if (user.pendingApproval === true) return true;
-      // Or if signed up as student but recent (within 30 days) — treat as pending
+      // Or if signed up as student but recent (within 30 days) AND requesting access
       const role = user.primaryRole || user.role || "student";
       if (role === "student" && user.createdAt) {
         const created = user.createdAt.toDate ? user.createdAt.toDate() : new Date(user.createdAt);
@@ -594,7 +596,6 @@
           titleEl.appendChild(badge);
         }
         badge.textContent = `⏳ ${count} waiting`;
-        // Update page title too
         document.title = `(${count}) Manage Users — SCPHS`;
       } else {
         if (badge) badge.remove();
@@ -664,9 +665,9 @@
             ${message ? `<div class="mu-pending-message">"${esc(message)}"</div>` : ""}
           </div>
           <div class="mu-pending-actions">
-            <button class="mu-btn success" data-pending-action="approve-scphs" data-uid="${u.uid}">🏫 SCPHS Teacher</button>
-            <button class="mu-btn guest" data-pending-action="approve-guest" data-uid="${u.uid}">🌐 Guest Teacher</button>
-            <button class="mu-btn outline" data-pending-action="approve-student" data-uid="${u.uid}">🎓 Student</button>
+            <button class="mu-btn success" data-pending-action="approve-scphs" data-uid="${u.uid}">✅ Approve (SCPHS Teacher)</button>
+            <button class="mu-btn guest" data-pending-action="approve-guest" data-uid="${u.uid}">🌐 Approve (Guest Teacher)</button>
+            <button class="mu-btn outline" data-pending-action="approve-student" data-uid="${u.uid}">🎓 Approve (Student)</button>
             <button class="mu-btn danger" data-pending-action="decline" data-uid="${u.uid}">🚫 Decline</button>
           </div>
         </div>
@@ -704,6 +705,7 @@
           approvedAt: serverTimestamp(),
           approvedBy: CURRENT_ADMIN.email || CURRENT_ADMIN.uid,
           pendingApproval: false,
+          requestingAccess: false,   // ← FIX: clear this so user leaves pending queue
         };
 
         switch (action) {
@@ -717,7 +719,6 @@
             break;
           case "approve-student":
             payload.primaryRole = "student";
-            delete payload.teacherType;
             break;
           case "decline":
             payload.primaryRole = "declined";
@@ -787,7 +788,7 @@
     }
 
     // ============================================================
-    // Render user card (mostly unchanged, adds "Pending" badge)
+    // Render user card (adds Accept button for declined users)
     // ============================================================
     function renderUserCard(user) {
       const isSuper = SUPER_ADMINS.includes(user.email);
@@ -806,6 +807,7 @@
 
       const isTeacher = primaryRole === "teacher";
       const isPendingUser = isPending(user);
+      const isDeclined = primaryRole === "declined";
 
       // Teacher-type badge
       let teacherBadge = "";
@@ -818,6 +820,9 @@
       }
       if (isPendingUser) {
         teacherBadge += '<span class="mu-badge pending">⏳ Pending</span>';
+      }
+      if (isDeclined) {
+        teacherBadge += '<span class="mu-badge declined">🚫 Declined</span>';
       }
 
       // Permission checkboxes
@@ -928,6 +933,11 @@
           </div>
 
           <div class="mu-actions">
+            ${isDeclined ? `
+              <button class="mu-btn success" data-action="accept" ${isSuper ? "disabled" : ""}>
+                ✅ Accept User
+              </button>
+            ` : ""}
             <button class="mu-btn primary" data-action="save" ${isSuper ? "disabled" : ""}>
               💾 Save Changes
             </button>
@@ -984,6 +994,8 @@
         card.querySelector("[data-action='save']")?.addEventListener("click", () => saveUser(card, uid));
         card.querySelector("[data-action='reset']")?.addEventListener("click", () => loadUsers());
 
+        card.querySelector("[data-action='accept']")?.addEventListener("click", () => acceptUser(card, uid));
+
         card.querySelector("[data-action='apply-admin']")?.addEventListener("click", () => applyTemplate(card, "admin"));
         card.querySelector("[data-action='apply-teacher']")?.addEventListener("click", () => applyTemplate(card, "teacher", "scphs"));
         card.querySelector("[data-action='apply-guest-teacher']")?.addEventListener("click", () => applyTemplate(card, "teacher", "external"));
@@ -1009,7 +1021,8 @@
         primaryRole,
         secondaryRoles,
         permissions,
-        pendingApproval: false, // Clear any pending flag on save
+        pendingApproval: false,
+        requestingAccess: false,   // ← FIX: clear pending flag on save too
         updatedAt: serverTimestamp(),
         updatedBy: CURRENT_ADMIN.uid,
       };
@@ -1025,6 +1038,33 @@
       } catch (e) {
         console.error(e);
         toast("⚠️ " + (e.message || "Save failed"), "error");
+      }
+    }
+
+    // ============================================================
+    // Accept a previously declined user
+    // ============================================================
+    async function acceptUser(card, uid) {
+      const email = card.dataset.email || "this user";
+      if (!confirm(`Accept ${email}?\n\nThey will be granted Student access and removed from the declined list.`)) return;
+
+      try {
+        await updateDoc(doc(db, "users", uid), {
+          primaryRole: "student",
+          pendingApproval: false,
+          requestingAccess: false,
+          declinedAt: null,
+          declinedBy: null,
+          approvedAt: serverTimestamp(),
+          approvedBy: CURRENT_ADMIN.email || CURRENT_ADMIN.uid,
+          updatedAt: serverTimestamp(),
+          updatedBy: CURRENT_ADMIN.uid,
+        });
+        toast("✓ User accepted as Student", "success");
+        await loadUsers();
+      } catch (e) {
+        console.error(e);
+        toast("⚠️ " + (e.message || "Accept failed"), "error");
       }
     }
 
