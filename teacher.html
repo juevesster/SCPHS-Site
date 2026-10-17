@@ -4,146 +4,237 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Teacher Dashboard — SCPHS</title>
-  <link rel="stylesheet" href="assets/css/styles.css" />
+  
+  <!-- Google Fonts for a professional look -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   
   <style>
-    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #f0f2f5; margin: 0; }
+    :root {
+      --primary: #1e3c72;
+      --primary-light: #2a5298;
+      --sidebar-bg: #0f172a;
+      --sidebar-hover: #1e293b;
+      --bg-color: #f1f5f9;
+      --text-main: #1e293b;
+      --text-muted: #64748b;
+      --card-bg: #ffffff;
+      --border: #e2e8f0;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Inter', sans-serif; background: var(--bg-color); color: var(--text-main); display: flex; height: 100vh; overflow: hidden; }
+
+    /* ================= SIDEBAR ================= */
+    .sidebar { width: 260px; background: var(--sidebar-bg); color: #fff; display: flex; flex-direction: column; transition: all 0.3s; z-index: 100; }
+    .sidebar-brand { padding: 24px 20px; font-size: 1.2rem; font-weight: 800; border-bottom: 1px solid rgba(255,255,255,0.1); display: flex; align-items: center; gap: 10px; }
+    .sidebar-brand span { font-size: 1.5rem; }
+    .sidebar-menu { flex: 1; padding: 20px 10px; display: flex; flex-direction: column; gap: 8px; }
+    .menu-item { display: flex; align-items: center; gap: 12px; padding: 12px 16px; border-radius: 8px; color: #94a3b8; text-decoration: none; font-weight: 500; transition: all 0.2s; }
+    .menu-item:hover { background: var(--sidebar-hover); color: #fff; }
+    .menu-item.active { background: var(--primary); color: #fff; font-weight: 600; box-shadow: 0 4px 12px rgba(30, 60, 114, 0.3); }
+    .sidebar-footer { padding: 20px; border-top: 1px solid rgba(255,255,255,0.1); }
     
-    .dash-header { background: linear-gradient(135deg, #1e3c72, #2a5298); color: #fff; padding: 20px 0; box-shadow: 0 2px 8px rgba(0,0,0,.1); }
-    .dash-container { max-width: 1200px; margin: 0 auto; padding: 24px; }
+    /* ================= MAIN LAYOUT ================= */
+    .main-content { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
     
-    .dash-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 20px; }
-    @media (max-width: 900px) { .dash-grid { grid-template-columns: 1fr; } }
+    /* TOP NAVBAR */
+    .top-navbar { background: var(--card-bg); height: 70px; padding: 0 30px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); box-shadow: 0 1px 3px rgba(0,0,0,0.02); z-index: 90; }
+    .page-title { font-size: 1.25rem; font-weight: 700; color: var(--primary); }
+    .user-profile { display: flex; align-items: center; gap: 15px; }
+    .user-info { text-align: right; }
+    .user-name { font-weight: 700; font-size: 0.9rem; }
+    .user-role { font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; font-weight: 600; }
+    .avatar { width: 42px; height: 42px; border-radius: 50%; background: linear-gradient(135deg, var(--primary), var(--primary-light)); color: #fff; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 1.2rem; box-shadow: 0 2px 8px rgba(30,60,114,0.3); }
 
-    .card { background: #fff; border-radius: 12px; padding: 20px; box-shadow: 0 1px 3px rgba(0,0,0,.06); margin-bottom: 20px; }
-    .card h2 { font-size: 1.1rem; color: #0f2b4f; margin-top: 0; border-bottom: 2px solid #e5e7eb; padding-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
+    /* DASHBOARD CONTENT */
+    .dashboard-scroll { flex: 1; overflow-y: auto; padding: 30px; }
+    .grid-layout { display: grid; grid-template-columns: 2fr 1fr; gap: 24px; max-width: 1400px; margin: 0 auto; }
+    
+    /* CARDS */
+    .card { background: var(--card-bg); border-radius: 16px; padding: 24px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05), 0 2px 4px -1px rgba(0,0,0,0.03); border: 1px solid var(--border); margin-bottom: 24px; transition: transform 0.2s, box-shadow 0.2s; }
+    .card:hover { box-shadow: 0 10px 15px -3px rgba(0,0,0,0.05); }
+    .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding-bottom: 12px; border-bottom: 1px solid var(--border); }
+    .card-title { font-size: 1.1rem; font-weight: 700; color: var(--text-main); display: flex; align-items: center; gap: 8px; }
 
-    /* Quick Actions Grid */
-    .quick-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-    .btn-action { padding: 16px; border-radius: 8px; text-decoration: none; font-weight: 700; text-align: center; color: #fff; transition: all .15s; display: flex; flex-direction: column; align-items: center; gap: 8px; }
-    .btn-action:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,.15); }
-    .btn-action.ilaw { background: #1e3c72; }
-    .btn-action.lm { background: #7c3aed; }
-    .btn-action.las { background: #0891b2; }
-    .btn-action.materials { background: #4f46e5; }
+    /* QUICK ACTIONS GRID */
+    .quick-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    .btn-action { padding: 20px; border-radius: 12px; text-decoration: none; font-weight: 600; text-align: center; color: #fff; transition: all 0.2s; display: flex; flex-direction: column; align-items: center; gap: 12px; border: none; cursor: pointer; font-family: inherit; }
+    .btn-action:hover { transform: translateY(-3px); box-shadow: 0 8px 16px rgba(0,0,0,0.15); filter: brightness(1.1); }
+    .btn-action .icon { font-size: 2rem; background: rgba(255,255,255,0.2); padding: 12px; border-radius: 50%; width: 60px; height: 60px; display: flex; align-items: center; justify-content: center; }
+    .btn-ilaw { background: linear-gradient(135deg, #1e3c72, #2a5298); }
+    .btn-lm { background: linear-gradient(135deg, #7c3aed, #8b5cf6); }
+    .btn-las { background: linear-gradient(135deg, #0891b2, #06b6d4); }
+    .btn-materials { background: linear-gradient(135deg, #4f46e5, #6366f1); }
 
-    /* Lists */
+    /* LISTS (Recent Lessons & Shared) */
     .list-group { display: flex; flex-direction: column; gap: 10px; }
-    .list-item { padding: 12px; border: 1px solid #e5e7eb; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; text-decoration: none; color: inherit; transition: all .15s; cursor: pointer; }
-    .list-item:hover { background: #f9fafb; border-color: #cbd5e1; }
-    .list-item-title { font-weight: 700; color: #0f2b4f; font-size: 14px; }
-    .list-item-sub { font-size: 12px; color: #6b7280; margin-top: 2px; }
+    .list-item { padding: 14px 16px; border: 1px solid var(--border); border-radius: 10px; display: flex; justify-content: space-between; align-items: center; text-decoration: none; color: inherit; transition: all 0.15s; cursor: pointer; background: #f8fafc; }
+    .list-item:hover { background: #fff; border-color: #cbd5e1; box-shadow: 0 2px 8px rgba(0,0,0,0.04); transform: translateX(4px); }
+    .list-item-title { font-weight: 600; color: var(--text-main); font-size: 0.9rem; }
+    .list-item-sub { font-size: 0.75rem; color: var(--text-muted); margin-top: 4px; }
     
-    /* Badges */
-    .badge { font-size: 10px; padding: 4px 8px; border-radius: 999px; text-transform: uppercase; font-weight: 800; letter-spacing: .03em; }
-    .badge-final { background: #d1fae5; color: #059669; }
-    .badge-draft { background: #fef3c7; color: #d97706; }
+    /* BADGES */
+    .badge { font-size: 0.65rem; padding: 6px 10px; border-radius: 999px; text-transform: uppercase; font-weight: 800; letter-spacing: 0.05em; }
+    .badge-final { background: #dcfce7; color: #166534; }
+    .badge-draft { background: #fef9c3; color: #854d0e; }
     .badge-shared { background: #dbeafe; color: #1e40af; }
-    .badge-grade { background: #f3f4f6; color: #4b5563; }
+    .badge-grade { background: #f1f5f9; color: #475569; border: 1px solid #e2e8f0; }
+
+    /* CHATBOT FAB */
+    .chatbot-fab { position: fixed; bottom: 30px; right: 30px; width: 60px; height: 60px; border-radius: 50%; background: linear-gradient(135deg, #4f46e5, #7c3aed); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 1.8rem; box-shadow: 0 8px 24px rgba(79,70,229,0.4); cursor: pointer; transition: transform 0.2s; z-index: 999; border: none; }
+    .chatbot-fab:hover { transform: scale(1.1); }
+
+    /* LOADING SPINNER */
+    .spinner { width: 40px; height: 40px; border: 4px solid #e2e8f0; border-top-color: var(--primary); border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 16px; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    
+    /* RESPONSIVE */
+    @media (max-width: 1024px) { .grid-layout { grid-template-columns: 1fr; } }
+    @media (max-width: 768px) { 
+      .sidebar { width: 70px; } 
+      .sidebar-brand span, .menu-item span:not(.icon) { display: none; }
+      .menu-item { justify-content: center; padding: 12px; }
+      .user-info { display: none; }
+    }
   </style>
 </head>
 <body>
 
-  <header class="dash-header">
-    <div class="dash-container" style="display: flex; justify-content: space-between; align-items: center;">
-      <div>
-        <h1 style="margin: 0; font-size: 1.5rem;">👨‍🏫 Teacher Dashboard</h1>
-        <p id="welcomeText" style="margin: 4px 0 0; opacity: 0.85;">Loading…</p>
-      </div>
-      <div>
-        <a href="admin.html" class="btn btn-outline-white small" style="text-decoration: none; padding: 8px 16px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.3); color: #fff; font-weight: 700;">← Admin</a>
-        <button id="btnLogout" class="btn btn-danger small" style="margin-left: 8px; padding: 8px 16px; border-radius: 6px; border: none; background: #dc2626; color: #fff; font-weight: 700; cursor: pointer;">Logout</button>
-      </div>
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sidebar-brand">
+      <span>🏫</span> SCPHS Portal
     </div>
-  </header>
-
-  <main class="dash-container">
-    <div id="loading" class="loading" style="text-align: center; padding: 60px; color: #6b7280;">
-      <div class="spinner" style="width: 32px; height: 32px; border: 3px solid #e5e7eb; border-top-color: #1e3c72; border-radius: 50%; animation: spin .8s linear infinite; margin: 0 auto 12px;"></div>
-      <div>Loading your workspace...</div>
+    <div class="sidebar-menu">
+      <a href="teacher.html" class="menu-item active">
+        <span class="icon">📊</span> <span>Dashboard</span>
+      </a>
+      <a href="ilaw.html" class="menu-item">
+        <span class="icon">📝</span> <span>ILAW Planner</span>
+      </a>
+      <a href="#" class="menu-item" onclick="alert('Class Roster coming soon!'); return false;">
+        <span class="icon">🏫</span> <span>My Classes</span>
+      </a>
+      <a href="#" class="menu-item" onclick="alert('Gradebook coming soon!'); return false;">
+        <span class="icon">📊</span> <span>Gradebook</span>
+      </a>
     </div>
+    <div class="sidebar-footer">
+      <a href="admin.html" class="menu-item" style="color: #f87171;">
+        <span class="icon">⚙️</span> <span>Admin Center</span>
+      </a>
+    </div>
+  </aside>
 
-    <div id="dashboardContent" style="display: none;">
-      <div class="dash-grid">
-        
-        <!-- LEFT COLUMN -->
-        <div>
-          <!-- Quick Actions -->
-          <div class="card">
-            <h2>🚀 Quick Actions</h2>
-            <div class="quick-actions">
-              <!-- Opens ILAW Planner without specific lesson, ready to create -->
-              <a href="ilaw.html" class="btn-action ilaw" target="_blank">
-                <span style="font-size: 1.5rem;">📝</span>
-                Create ILAW Lesson
-              </a>
-              
-              <!-- Opens ILAW Planner so they can generate a module from a recent lesson -->
-              <a href="ilaw.html" class="btn-action lm" target="_blank">
-                <span style="font-size: 1.5rem;">📘</span>
-                Generate Module
-              </a>
-              
-              <!-- Opens ILAW Planner so they can generate an LAS -->
-              <a href="ilaw.html" class="btn-action las" target="_blank">
-                <span style="font-size: 1.5rem;">📄</span>
-                Generate LAS
-              </a>
-              
-              <!-- Placeholder for Materials Pack (requires a lesson ID, so we prompt them to select a lesson first) -->
-              <a href="#" class="btn-action materials" onclick="alert('Please select a lesson from the Recent Lessons list to open the Materials Pack.'); return false;">
-                <span style="font-size: 1.5rem;">📚</span>
-                Materials Pack
-              </a>
-            </div>
-          </div>
-
-          <!-- My Classes / Advisory -->
-          <div class="card">
-            <h2>🏫 My Classes</h2>
-            <div id="classList" class="list-group">
-              <div style="color: #6b7280; font-size: 13px;">Loading classes...</div>
-            </div>
-          </div>
+  <!-- MAIN CONTENT -->
+  <main class="main-content">
+    
+    <!-- TOP NAVBAR -->
+    <header class="top-navbar">
+      <div class="page-title">Teacher Dashboard</div>
+      <div class="user-profile">
+        <div class="user-info">
+          <div class="user-name" id="navUserName">Loading...</div>
+          <div class="user-role" id="navUserRole">Teacher</div>
         </div>
+        <div class="avatar" id="navAvatar">?</div>
+        <button id="btnLogout" style="background: #fee2e2; color: #dc2626; border: none; padding: 8px 12px; border-radius: 6px; font-weight: 700; cursor: pointer; font-family: inherit; margin-left: 10px;">Logout</button>
+      </div>
+    </header>
 
-        <!-- RIGHT COLUMN -->
-        <div>
-          <!-- Recent Lessons -->
-          <div class="card">
-            <h2>
-              📚 Recent Lessons
-              <a href="ilaw.html" style="font-size: 11px; color: #1e3c72; text-decoration: none; background: #eff6ff; padding: 4px 8px; border-radius: 4px;">+ New</a>
-            </h2>
-            <div id="recentLessons" class="list-group">
-              <div style="color: #6b7280; font-size: 13px;">Loading recent lessons...</div>
-            </div>
-          </div>
+    <!-- DASHBOARD CONTENT -->
+    <div class="dashboard-scroll">
+      
+      <div id="loading" style="text-align: center; padding: 60px;">
+        <div class="spinner"></div>
+        <div style="color: var(--text-muted);">Loading your workspace...</div>
+      </div>
+
+      <div id="dashboardContent" style="display: none;">
+        <div class="grid-layout">
           
-          <!-- Shared Materials -->
-          <div class="card">
-            <h2>🌐 Shared Materials</h2>
-            <div id="sharedMaterials" class="list-group">
-              <div style="color: #6b7280; font-size: 13px;">Loading shared items...</div>
+          <!-- LEFT COLUMN -->
+          <div>
+            <!-- Quick Actions -->
+            <div class="card">
+              <div class="card-header">
+                <div class="card-title">🚀 Quick Actions</div>
+              </div>
+              <div class="quick-actions">
+                <a href="ilaw.html" class="btn-action btn-ilaw" target="_blank">
+                  <div class="icon">📝</div>
+                  Create ILAW Lesson
+                </a>
+                <a href="ilaw.html" class="btn-action btn-lm" target="_blank">
+                  <div class="icon">📘</div>
+                  Generate Module
+                </a>
+                <a href="ilaw.html" class="btn-action btn-las" target="_blank">
+                  <div class="icon">📄</div>
+                  Generate LAS
+                </a>
+                <a href="#" class="btn-action btn-materials" onclick="alert('Select a lesson from Recent Lessons to open the Materials Pack.'); return false;">
+                  <div class="icon">📚</div>
+                  Materials Pack
+                </a>
+              </div>
+            </div>
+
+            <!-- My Classes -->
+            <div class="card">
+              <div class="card-header">
+                <div class="card-title">🏫 My Classes</div>
+              </div>
+              <div id="classList" class="list-group">
+                <div style="color: var(--text-muted); font-size: 0.85rem;">Loading classes...</div>
+              </div>
             </div>
           </div>
-        </div>
 
+          <!-- RIGHT COLUMN -->
+          <div>
+            <!-- Recent Lessons -->
+            <div class="card">
+              <div class="card-header">
+                <div class="card-title">📚 Recent Lessons</div>
+                <a href="ilaw.html" style="font-size: 0.75rem; color: #fff; background: var(--primary); padding: 6px 12px; border-radius: 6px; text-decoration: none; font-weight: 600;">+ New</a>
+              </div>
+              <div id="recentLessons" class="list-group">
+                <div style="color: var(--text-muted); font-size: 0.85rem;">Loading recent lessons...</div>
+              </div>
+            </div>
+            
+            <!-- Shared Materials -->
+            <div class="card">
+              <div class="card-header">
+                <div class="card-title">🌐 Shared Materials</div>
+              </div>
+              <div id="sharedMaterials" class="list-group">
+                <div style="color: var(--text-muted); font-size: 0.85rem;">Loading shared items...</div>
+              </div>
+            </div>
+          </div>
+
+        </div>
       </div>
     </div>
   </main>
+
+  <!-- CHATBOT FAB -->
+  <button class="chatbot-fab" onclick="alert('ILAW Helper Chatbot: How can I assist you today?');">
+    ❓
+  </button>
 
   <!-- JAVASCRIPT LOGIC -->
   <script type="module">
     import { auth, db } from "./assets/js/firebase-config.js";
     import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-    import { collection, query, where, getDocs, orderBy, limit, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+    import { collection, query, where, getDocs, orderBy, limit } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
     import { getCurrentUserProfile } from "./assets/js/roles.js";
 
     let CURRENT_USER = null;
     let CURRENT_PROFILE = null;
 
-    // 1. AUTH CHECK
     onAuthStateChanged(auth, async (user) => {
       if (!user) {
         location.replace("login.html?next=teacher.html");
@@ -163,7 +254,11 @@
         return;
       }
 
-      document.getElementById("welcomeText").textContent = `Welcome back, ${CURRENT_PROFILE?.name || user.email}`;
+      // Update Top Navbar UI
+      const name = CURRENT_PROFILE?.name || user.email.split('@')[0];
+      document.getElementById("navUserName").textContent = name;
+      document.getElementById("navUserRole").textContent = CURRENT_PROFILE?.primaryRole || "Teacher";
+      document.getElementById("navAvatar").textContent = name.charAt(0).toUpperCase();
       
       document.getElementById("loading").style.display = "none";
       document.getElementById("dashboardContent").style.display = "block";
@@ -173,14 +268,13 @@
       await loadSharedMaterials();
     });
 
-    // 2. LOGOUT
     document.getElementById("btnLogout").addEventListener("click", () => {
       if (confirm("Are you sure you want to logout?")) {
         signOut(auth).then(() => location.replace("login.html"));
       }
     });
 
-    // 3. LOAD MY CLASSES
+    // 1. LOAD CLASSES
     async function loadMyClasses() {
       const host = document.getElementById("classList");
       try {
@@ -199,55 +293,57 @@
         });
 
         if (myClasses.length === 0) {
-          host.innerHTML = `<div style="color: #6b7280; font-size: 13px;">No classes assigned yet.</div>`;
+          host.innerHTML = `<div style="color: var(--text-muted); font-size: 0.85rem;">No classes assigned yet.</div>`;
           return;
         }
 
-        // Make the class clickable to view the student roster (we will build class.html later)
         host.innerHTML = myClasses.map(cls => `
           <a href="class.html?id=${cls.id}" class="list-item">
             <div>
               <div class="list-item-title">${cls.classLabel || cls.name || "Unnamed Class"}</div>
               <div class="list-item-sub">${cls.role}</div>
             </div>
-            <div class="badge badge-grade">
-              Grade ${cls.gradeLevel || "—"}
-            </div>
+            <div class="badge badge-grade">Grade ${cls.gradeLevel || "—"}</div>
           </a>
         `).join("");
 
       } catch (e) {
         console.error("Error loading classes:", e);
-        host.innerHTML = `<div style="color: #b91c1c; font-size: 13px;">Failed to load classes.</div>`;
+        host.innerHTML = `<div style="color: #dc2626; font-size: 0.85rem;">Failed to load classes.</div>`;
       }
     }
 
-    // 4. LOAD RECENT LESSONS
+    // 2. LOAD RECENT LESSONS (With Fallback Sort)
     async function loadRecentLessons() {
       const host = document.getElementById("recentLessons");
       try {
-        // Query: Lessons created by this teacher, ordered by updatedAt
+        // Attempt to fetch with orderBy
         const q = query(
           collection(db, "lessons"),
-          where("teacherUid", "==", CURRENT_USER.uid),
-          orderBy("updatedAt", "desc"),
-          limit(5)
+          where("teacherUid", "==", CURRENT_USER.uid)
         );
 
         const snap = await getDocs(q);
         
         if (snap.empty) {
-          host.innerHTML = `<div style="color: #6b7280; font-size: 13px;">No lessons created yet. Click "Create ILAW Lesson" to start.</div>`;
+          host.innerHTML = `<div style="color: var(--text-muted); font-size: 0.85rem;">No lessons created yet. Click "Create ILAW Lesson" to start.</div>`;
           return;
         }
 
-        // Links directly to ilaw.html with the specific lesson ID loaded!
-        host.innerHTML = snap.docs.map(doc => {
-          const data = doc.data();
+        // Fallback Sort: If Firestore index is missing, we sort in JavaScript by updatedAt
+        const lessons = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        lessons.sort((a, b) => {
+          const timeA = a.updatedAt?.toMillis() || 0;
+          const timeB = b.updatedAt?.toMillis() || 0;
+          return timeB - timeA; // Descending
+        });
+
+        const recent = lessons.slice(0, 5); // Show top 5
+
+        host.innerHTML = recent.map(data => {
           const isFinal = data.status === "final";
-          
           return `
-            <a href="ilaw.html?lesson=${doc.id}" class="list-item" target="_blank">
+            <a href="ilaw.html?lesson=${data.id}" class="list-item" target="_blank">
               <div>
                 <div class="list-item-title">${data.lessonTitle || "Untitled Lesson"}</div>
                 <div class="list-item-sub">Term ${data.term} · Week ${data.week}</div>
@@ -261,11 +357,11 @@
 
       } catch (e) {
         console.error("Error loading lessons:", e);
-        host.innerHTML = `<div style="color: #b91c1c; font-size: 13px;">Failed to load lessons. (Check console for Firestore Index requirement)</div>`;
+        host.innerHTML = `<div style="color: #dc2626; font-size: 0.85rem;">Failed to load lessons.</div>`;
       }
     }
 
-    // 5. LOAD SHARED MATERIALS
+    // 3. LOAD SHARED MATERIALS
     async function loadSharedMaterials() {
       const host = document.getElementById("sharedMaterials");
       try {
@@ -279,7 +375,6 @@
         const shared = [];
         snap.forEach(doc => {
           const data = doc.data();
-          // If the Learner Module is shared
           if (data.isPublic && data.publicSlug) {
             shared.push({ 
               type: "Learner Module", 
@@ -289,7 +384,6 @@
               icon: "📘"
             });
           }
-          // If the LAS is shared
           if (data.lasIsPublic && data.lasPublicSlug) {
             shared.push({ 
               type: "Activity Sheet", 
@@ -302,15 +396,14 @@
         });
 
         if (shared.length === 0) {
-          host.innerHTML = `<div style="color: #6b7280; font-size: 13px;">No shared materials yet.</div>`;
+          host.innerHTML = `<div style="color: var(--text-muted); font-size: 0.85rem;">No shared materials yet.</div>`;
           return;
         }
 
-        // Clicking opens the PUBLIC view in a new tab!
         host.innerHTML = shared.slice(0, 5).map(item => `
           <a href="${item.url}" class="list-item" target="_blank">
-            <div style="display: flex; gap: 8px; align-items: center;">
-              <div style="font-size: 1.2rem;">${item.icon}</div>
+            <div style="display: flex; gap: 12px; align-items: center;">
+              <div style="font-size: 1.5rem; background: #f1f5f9; padding: 8px; border-radius: 8px;">${item.icon}</div>
               <div>
                 <div class="list-item-title">${item.title || "Untitled"}</div>
                 <div class="list-item-sub">${item.type} · ${item.views} views</div>
@@ -322,7 +415,7 @@
 
       } catch (e) {
         console.error("Error loading shared materials:", e);
-        host.innerHTML = `<div style="color: #b91c1c; font-size: 13px;">Failed to load shared items.</div>`;
+        host.innerHTML = `<div style="color: #dc2626; font-size: 0.85rem;">Failed to load shared items.</div>`;
       }
     }
   </script>
