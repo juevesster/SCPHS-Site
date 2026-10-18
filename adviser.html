@@ -4,99 +4,283 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Adviser Dashboard — SCPHS</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   
   <style>
-    :root { --primary: #1e3c72; --primary-light: #2a5298; --bg: #f0f2f5; --card: #fff; --text: #1e293b; --muted: #64748b; --border: #e2e8f0; }
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
-    body { background: var(--bg); color: var(--text); min-height: 100vh; }
+    :root {
+      --sidebar-bg: #0f172a;
+      --sidebar-hover: #1e293b;
+      --bg-color: #f4f7f9;
+      --primary: #4f46e5;
+      --primary-light: #818cf8;
+      --text-main: #1e293b;
+      --text-muted: #64748b;
+      --card-bg: rgba(255, 255, 255, 0.85);
+      --glass-border: rgba(255, 255, 255, 0.5);
+      --shadow-sm: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+      --shadow-lg: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+    }
 
-    /* Header */
-    .header { background: linear-gradient(135deg, var(--primary), var(--primary-light)); color: #fff; padding: 24px 0; margin-bottom: 24px; }
-    .container { max-width: 1400px; margin: 0 auto; padding: 0 20px; }
-    .header-row { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px; }
-    .header h1 { font-size: 1.5rem; font-weight: 800; margin-bottom: 4px; }
-    .header p { opacity: 0.85; font-size: 0.9rem; }
-    .header-actions { display: flex; gap: 10px; flex-wrap: wrap; }
-    .btn-top { background: rgba(255,255,255,0.15); color: #fff; text-decoration: none; padding: 8px 16px; border-radius: 8px; font-weight: 600; font-size: 0.85rem; transition: background 0.2s; display: flex; align-items: center; gap: 6px; border: none; cursor: pointer; }
-    .btn-top:hover { background: rgba(255,255,255,0.25); }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Outfit', sans-serif; }
+    body { background: var(--bg-color); color: var(--text-main); display: flex; height: 100vh; overflow: hidden; }
 
-    /* Stats */
-    .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; margin-bottom: 24px; }
-    .stat-card { background: var(--card); border-radius: 16px; padding: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); border-top: 4px solid var(--primary); text-decoration: none; color: inherit; transition: transform 0.2s; }
-    .stat-card:hover { transform: translateY(-4px); box-shadow: 0 8px 25px rgba(0,0,0,0.1); }
-    .stat-card.green { border-top-color: #10b981; }
-    .stat-card.purple { border-top-color: #7c3aed; }
-    .stat-card.orange { border-top-color: #f59e0b; }
-    .stat-icon { font-size: 1.8rem; margin-bottom: 8px; }
-    .stat-num { font-size: 2rem; font-weight: 800; color: var(--primary); line-height: 1; }
-    .stat-label { font-size: 0.8rem; color: var(--muted); font-weight: 600; margin-top: 4px; text-transform: uppercase; letter-spacing: 0.05em; }
+    /* ================= SIDEBAR ================= */
+    .sidebar { width: 260px; background: var(--sidebar-bg); color: #fff; display: flex; flex-direction: column; z-index: 100; transition: all 0.3s; }
+    .sidebar-brand { padding: 30px 24px; font-size: 1.4rem; font-weight: 800; display: flex; align-items: center; gap: 12px; letter-spacing: -0.5px; border-bottom: 1px solid rgba(255,255,255,0.05); }
+    .sidebar-brand i { color: var(--primary-light); }
+    .sidebar-menu { flex: 1; padding: 24px 16px; display: flex; flex-direction: column; gap: 8px; }
+    .menu-item { display: flex; align-items: center; gap: 14px; padding: 14px 18px; border-radius: 12px; color: #94a3b8; text-decoration: none; font-weight: 500; font-size: 0.95rem; transition: all 0.2s; }
+    .menu-item:hover { background: var(--sidebar-hover); color: #fff; transform: translateX(4px); }
+    .menu-item.active { background: linear-gradient(90deg, var(--primary), var(--primary-light)); color: #fff; box-shadow: 0 4px 15px rgba(79, 70, 229, 0.3); }
+    .menu-item .icon { font-size: 1.2rem; width: 24px; text-align: center; }
+    .sidebar-footer { padding: 20px; border-top: 1px solid rgba(255,255,255,0.05); }
 
-    /* Layout Grid */
-    .grid-layout { display: grid; grid-template-columns: 2fr 1fr; gap: 24px; }
-    @media (max-width: 900px) { .grid-layout { grid-template-columns: 1fr; } }
+    /* ================= MAIN CONTENT ================= */
+    .main-content { flex: 1; display: flex; flex-direction: column; overflow: hidden; position: relative; }
+    
+    /* Animated Background Orbs */
+    .orb { position: absolute; border-radius: 50%; filter: blur(100px); z-index: 0; opacity: 0.4; pointer-events: none; }
+    .orb-1 { width: 500px; height: 500px; background: #c7d2fe; top: -150px; right: -100px; }
+    .orb-2 { width: 400px; height: 400px; background: #fbcfe8; bottom: -100px; left: 20%; }
 
-    /* Cards */
-    .card { background: var(--card); border-radius: 16px; padding: 24px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); margin-bottom: 24px; }
-    .card-title { font-size: 1.1rem; font-weight: 800; color: var(--primary); margin-bottom: 16px; display: flex; align-items: center; gap: 8px; border-bottom: 2px solid var(--border); padding-bottom: 12px; }
+    /* TOP BAR */
+    .topbar { height: 80px; padding: 0 32px; display: flex; justify-content: space-between; align-items: center; background: rgba(255, 255, 255, 0.6); backdrop-filter: blur(20px); border-bottom: 1px solid var(--glass-border); z-index: 10; }
+    .page-title { font-size: 1.5rem; font-weight: 800; color: var(--text-main); letter-spacing: -0.5px; }
+    .user-profile { display: flex; align-items: center; gap: 16px; }
+    .user-info { text-align: right; }
+    .user-name { font-weight: 700; font-size: 0.95rem; }
+    .user-role { font-size: 0.75rem; color: var(--primary); text-transform: uppercase; font-weight: 800; letter-spacing: 1px; }
+    .avatar { width: 46px; height: 46px; border-radius: 50%; background: linear-gradient(135deg, var(--primary), var(--primary-light)); color: #fff; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 1.2rem; box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3); border: 2px solid #fff; }
 
-    /* Class List */
-    .class-item { background: #f8fafc; border: 1px solid var(--border); border-radius: 12px; padding: 16px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; }
-    .class-item:hover { background: #fff; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
-    .class-info h3 { font-size: 1.1rem; color: var(--primary); margin-bottom: 4px; }
-    .class-meta { font-size: 0.85rem; color: var(--muted); display: flex; gap: 12px; }
-    .class-actions { display: flex; gap: 8px; flex-wrap: wrap; }
-    .btn-sm { padding: 6px 12px; border-radius: 6px; font-size: 0.8rem; font-weight: 700; text-decoration: none; display: inline-flex; align-items: center; gap: 4px; border: none; cursor: pointer; }
+    /* DASHBOARD SCROLL AREA */
+    .dashboard-scroll { flex: 1; overflow-y: auto; padding: 32px; z-index: 1; scroll-behavior: smooth; }
+    
+    /* BENTO GRID */
+    .bento-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; margin-bottom: 24px; }
+    
+    .bento-card { background: var(--card-bg); backdrop-filter: blur(16px); border: 1px solid var(--glass-border); border-radius: 24px; padding: 24px; box-shadow: var(--shadow-sm); transition: transform 0.3s, box-shadow 0.3s; position: relative; overflow: hidden; }
+    .bento-card:hover { transform: translateY(-5px); box-shadow: var(--shadow-lg); }
+    
+    .stat-card { display: flex; flex-direction: column; justify-content: space-between; }
+    .stat-icon { width: 48px; height: 48px; border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; margin-bottom: 16px; }
+    .stat-icon.blue { background: #e0e7ff; color: #4338ca; }
+    .stat-icon.green { background: #dcfce7; color: #166534; }
+    .stat-icon.purple { background: #f3e8ff; color: #6b21a8; }
+    .stat-icon.orange { background: #ffedd5; color: #9a3412; }
+    
+    .stat-value { font-size: 2.5rem; font-weight: 800; line-height: 1; color: var(--text-main); margin-bottom: 4px; }
+    .stat-label { font-size: 0.85rem; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
+
+    /* CLASSES SPAN 2 COLUMNS */
+    .classes-card { grid-column: span 2; }
+    .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+    .card-title { font-size: 1.2rem; font-weight: 800; color: var(--text-main); display: flex; align-items: center; gap: 10px; }
+
+    /* CLASS ITEM */
+    .class-item { background: #fff; border: 1px solid #e2e8f0; border-radius: 16px; padding: 16px 20px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; transition: all 0.2s; }
+    .class-item:hover { border-color: var(--primary-light); box-shadow: 0 4px 12px rgba(79,70,229,0.08); }
+    .class-info h3 { font-size: 1.1rem; font-weight: 700; color: var(--text-main); margin-bottom: 4px; }
+    .class-meta { font-size: 0.85rem; color: var(--text-muted); display: flex; gap: 16px; font-weight: 500; }
+    
+    .btn-action { padding: 8px 16px; border-radius: 10px; font-size: 0.85rem; font-weight: 700; text-decoration: none; display: inline-flex; align-items: center; gap: 6px; transition: all 0.2s; border: none; cursor: pointer; }
     .btn-sf1 { background: #eff6ff; color: #1e40af; }
-    .btn-sf1:hover { background: #dbeafe; }
+    .btn-sf1:hover { background: #dbeafe; transform: translateY(-2px); }
     .btn-prog { background: #f3e8ff; color: #6b21a8; }
-    .btn-prog:hover { background: #e9d5ff; }
+    .btn-prog:hover { background: #e9d5ff; transform: translateY(-2px); }
 
-    /* Menu Grid (Mirroring PHP) */
-    .menu-section { margin-bottom: 24px; }
-    .menu-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 12px; }
-    .menu-card { background: #fff; border: 1px solid var(--border); border-radius: 12px; padding: 16px; text-decoration: none; color: inherit; display: flex; align-items: center; gap: 12px; transition: all 0.2s; }
-    .menu-card:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.08); border-color: var(--primary); }
-    .menu-icon { width: 40px; height: 40px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; color: #fff; flex-shrink: 0; }
-    .menu-info h4 { font-size: 0.9rem; color: var(--text); margin-bottom: 2px; }
-    .menu-info p { font-size: 0.75rem; color: var(--muted); }
+    /* MENU GRID FOR FORMS */
+    .menu-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
+    .menu-card { background: #fff; border: 1px solid #e2e8f0; border-radius: 16px; padding: 16px; text-decoration: none; color: inherit; display: flex; align-items: center; gap: 14px; transition: all 0.2s; }
+    .menu-card:hover { transform: translateY(-3px); box-shadow: 0 8px 16px rgba(0,0,0,0.05); border-color: var(--primary-light); }
+    .menu-icon { width: 44px; height: 44px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; color: #fff; flex-shrink: 0; }
+    .menu-info h4 { font-size: 0.95rem; font-weight: 700; color: var(--text-main); margin-bottom: 2px; }
+    .menu-info p { font-size: 0.75rem; color: var(--text-muted); }
 
-    /* Floating Guide */
-    .fab-guide { position: fixed; bottom: 30px; right: 30px; width: 60px; height: 60px; border-radius: 50%; background: linear-gradient(135deg, var(--primary), var(--primary-light)); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; box-shadow: 0 8px 24px rgba(30,60,114,0.4); cursor: pointer; z-index: 1000; transition: transform 0.3s; border: none; }
-    .fab-guide:hover { transform: scale(1.1); }
+    /* CHATBOT FAB */
+    .chatbot-fab { position: fixed; bottom: 30px; right: 30px; width: 60px; height: 60px; border-radius: 50%; background: linear-gradient(135deg, var(--primary), var(--primary-light)); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 1.6rem; box-shadow: 0 8px 24px rgba(79,70,229,0.4); cursor: pointer; transition: transform 0.2s; z-index: 999; border: none; }
+    .chatbot-fab:hover { transform: scale(1.1); }
 
-    .loader { text-align: center; padding: 60px; color: var(--muted); font-weight: 500; }
-    .spinner { width: 40px; height: 40px; border: 4px solid #e2e8f0; border-top-color: var(--primary); border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 16px; }
+    /* LOADING */
+    .loader { position: fixed; inset: 0; background: var(--bg-color); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 9999; transition: opacity 0.5s; }
+    .spinner { width: 50px; height: 50px; border: 5px solid rgba(79,70,229,0.2); border-top-color: var(--primary); border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 16px; }
     @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* RESPONSIVE */
+    @media (max-width: 1200px) {
+      .bento-grid { grid-template-columns: repeat(2, 1fr); }
+      .classes-card { grid-column: span 2; }
+    }
+    @media (max-width: 768px) {
+      .sidebar { width: 80px; }
+      .sidebar-brand span, .menu-item span:not(.icon) { display: none; }
+      .menu-item { justify-content: center; padding: 14px; }
+      .bento-grid { grid-template-columns: 1fr; }
+      .classes-card { grid-column: span 1; }
+      .menu-grid { grid-template-columns: 1fr; }
+      .user-info { display: none; }
+      .topbar { padding: 0 16px; }
+      .dashboard-scroll { padding: 16px; }
+    }
   </style>
 </head>
 <body>
 
-  <header class="header">
-    <div class="container header-row">
-      <div>
-        <h1><i class="fas fa-user-graduate"></i> Adviser Dashboard</h1>
-        <p id="welcomeSub">Loading your advisory classes...</p>
-      </div>
-      <div class="header-actions">
-        <a href="teacher.html" class="btn-top"><i class="fas fa-chalkboard-teacher"></i> Teacher Hub</a>
-        <a href="admin.html" class="btn-top"><i class="fas fa-cog"></i> Admin Center</a>
-        <button id="btnLogout" class="btn-top" style="background:#dc2626;"><i class="fas fa-sign-out-alt"></i> Logout</button>
-      </div>
-    </div>
-  </header>
-
-  <div class="container" id="mainContent">
-    <div class="loader">
-      <div class="spinner"></div>
-      <div>Loading dashboard...</div>
-    </div>
+  <!-- Loader -->
+  <div class="loader" id="loader">
+    <div class="spinner"></div>
+    <div style="font-weight: 700; color: var(--primary); font-size: 1.2rem;">Syncing Adviser Workspace...</div>
   </div>
 
-  <!-- Floating Guide -->
-  <button class="fab-guide" onclick="alert('Adviser Guide coming soon!')">
-    <i class="fas fa-magic"></i>
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="sidebar-brand">
+      <i class="fas fa-shield-alt"></i> <span>SCPHS Hub</span>
+    </div>
+    <div class="sidebar-menu">
+      <a href="adviser.html" class="menu-item active">
+        <i class="fas fa-user-graduate icon"></i> <span>Adviser Home</span>
+      </a>
+      <a href="teacher.html" class="menu-item">
+        <i class="fas fa-chalkboard-teacher icon"></i> <span>Teacher Hub</span>
+      </a>
+      <a href="manage-users.html" class="menu-item">
+        <i class="fas fa-users icon"></i> <span>User Management</span>
+      </a>
+      <a href="admin.html" class="menu-item">
+        <i class="fas fa-cog icon"></i> <span>Admin Center</span>
+      </a>
+    </div>
+    <div class="sidebar-footer">
+      <a href="#" id="btnLogout" class="menu-item" style="color: #f87171; background: rgba(248,113,113,0.1);">
+        <i class="fas fa-sign-out-alt icon"></i> <span>Logout</span>
+      </a>
+    </div>
+  </aside>
+
+  <!-- Main Content -->
+  <main class="main-content">
+    <!-- Animated Background -->
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+
+    <!-- Top Bar -->
+    <header class="topbar">
+      <div class="page-title">Adviser Dashboard</div>
+      <div class="user-profile">
+        <div class="user-info">
+          <div class="user-name" id="navUserName">Loading...</div>
+          <div class="user-role" id="navUserRole">Adviser</div>
+        </div>
+        <div class="avatar" id="navAvatar">A</div>
+      </div>
+    </header>
+
+    <!-- Scrollable Dashboard -->
+    <div class="dashboard-scroll">
+      
+      <!-- Bento Grid -->
+      <div class="bento-grid">
+        
+        <!-- Stat 1 -->
+        <div class="bento-card stat-card">
+          <div class="stat-icon blue"><i class="fas fa-building"></i></div>
+          <div>
+            <div class="stat-value" id="statClasses">0</div>
+            <div class="stat-label">Advisory Classes</div>
+          </div>
+        </div>
+
+        <!-- Stat 2 -->
+        <div class="bento-card stat-card">
+          <div class="stat-icon green"><i class="fas fa-users"></i></div>
+          <div>
+            <div class="stat-value" id="statStudents">0</div>
+            <div class="stat-label">Total Students</div>
+          </div>
+        </div>
+
+        <!-- Stat 3 -->
+        <div class="bento-card stat-card">
+          <div class="stat-icon purple"><i class="fas fa-calendar-alt"></i></div>
+          <div>
+            <div class="stat-value">Term 1</div>
+            <div class="stat-label">Current Term</div>
+          </div>
+        </div>
+
+        <!-- Stat 4 -->
+        <div class="bento-card stat-card">
+          <div class="stat-icon orange"><i class="fas fa-check-circle"></i></div>
+          <div>
+            <div class="stat-value">Active</div>
+            <div class="stat-label">Status</div>
+          </div>
+        </div>
+
+        <!-- Classes Card (Spans 2 columns) -->
+        <div class="bento-card classes-card">
+          <div class="card-header">
+            <div class="card-title"><i class="fas fa-school" style="color: var(--primary);"></i> My Advisory Classes</div>
+          </div>
+          <div id="classListContainer">
+            <!-- Classes injected here -->
+          </div>
+        </div>
+
+        <!-- Forms Card (Spans 1 column) -->
+        <div class="bento-card">
+          <div class="card-header">
+            <div class="card-title"><i class="fas fa-file-alt" style="color: #0ea5e9;"></i> School Forms</div>
+          </div>
+          <div class="menu-grid" style="grid-template-columns: 1fr;">
+            <a href="#" class="menu-card">
+              <div class="menu-icon" style="background: linear-gradient(135deg, #1e3c72, #2a5298);"><i class="fas fa-list"></i></div>
+              <div class="menu-info"><h4>SF1 - Register</h4><p>Master list</p></div>
+            </a>
+            <a href="#" class="menu-card">
+              <div class="menu-icon" style="background: linear-gradient(135deg, #10b981, #34d399);"><i class="fas fa-calendar-check"></i></div>
+              <div class="menu-info"><h4>SF2 - Attendance</h4><p>Daily tracking</p></div>
+            </a>
+            <a href="#" class="menu-card">
+              <div class="menu-icon" style="background: linear-gradient(135deg, #f59e0b, #fbbf24);"><i class="fas fa-graduation-cap"></i></div>
+              <div class="menu-info"><h4>SF5 - Promotion</h4><p>Status</p></div>
+            </a>
+            <a href="#" class="menu-card">
+              <div class="menu-icon" style="background: linear-gradient(135deg, #7c3aed, #a78bfa);"><i class="fas fa-print"></i></div>
+              <div class="menu-info"><h4>SF9 - Report Card</h4><p>Progress</p></div>
+            </a>
+          </div>
+        </div>
+
+        <!-- Tools Card (Spans 1 column) -->
+        <div class="bento-card">
+          <div class="card-header">
+            <div class="card-title"><i class="fas fa-tools" style="color: #ec4899;"></i> Adviser Tools</div>
+          </div>
+          <div class="menu-grid" style="grid-template-columns: 1fr;">
+            <a href="#" class="menu-card">
+              <div class="menu-icon" style="background: linear-gradient(135deg, #0ea5e9, #38bdf8);"><i class="fas fa-calculator"></i></div>
+              <div class="menu-info"><h4>ECR - Class Record</h4><p>Compute grades</p></div>
+            </a>
+            <a href="#" class="menu-card">
+              <div class="menu-icon" style="background: linear-gradient(135deg, #8b5cf6, #c084fc);"><i class="fas fa-comments"></i></div>
+              <div class="menu-info"><h4>Messaging</h4><p>Parents & students</p></div>
+            </a>
+            <a href="teacher.html" class="menu-card">
+              <div class="menu-icon" style="background: linear-gradient(135deg, #10b981, #34d399);"><i class="fas fa-chalkboard-teacher"></i></div>
+              <div class="menu-info"><h4>ILAW Planner</h4><p>Lesson plans</p></div>
+            </a>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </main>
+
+  <!-- Chatbot -->
+  <button class="chatbot-fab" onclick="alert('AI Assistant coming soon!')">
+    <i class="fas fa-robot"></i>
   </button>
 
   <script type="module">
@@ -118,147 +302,80 @@
         CURRENT_USER = user;
         CURRENT_PROFILE = await getCurrentUserProfile();
 
-        // Verify if the user is an Adviser (or Admin acting as adviser)
-        const isStaff = CURRENT_PROFILE?.primaryRole === "teacher" 
-                     || CURRENT_PROFILE?.primaryRole === "admin" 
-                     || CURRENT_PROFILE?.isSuperAdmin;
-        
+        const isStaff = CURRENT_PROFILE?.primaryRole === "teacher" || CURRENT_PROFILE?.primaryRole === "admin" || CURRENT_PROFILE?.isSuperAdmin;
         if (!isStaff) {
-          document.getElementById("mainContent").innerHTML = `<div class="loader" style="color:red;">Access Denied.</div>`;
+          document.getElementById("loader").innerHTML = `<h2 style="color:red;">Access Denied</h2>`;
           return;
         }
 
-        document.getElementById("welcomeSub").textContent = `Welcome back, ${CURRENT_PROFILE.name || user.email}!`;
+        // Update UI Profile
+        const name = CURRENT_PROFILE.name || user.email.split('@')[0];
+        document.getElementById("navUserName").textContent = name;
+        document.getElementById("navUserRole").textContent = CURRENT_PROFILE.primaryRole || "Teacher";
+        document.getElementById("navAvatar").textContent = name.charAt(0).toUpperCase();
 
-        // 1. Fetch classes where this teacher is the adviser
+        // Fetch Advisory Classes
         try {
           const q = query(collection(db, "classes"), where("adviserUid", "==", user.uid));
           const snap = await getDocs(q);
           
           MY_CLASSES = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
 
-          // Fetch student counts for each advisory class
+          // Fetch Student Counts
           for (const cls of MY_CLASSES) {
             const studentsSnap = await getDocs(collection(db, "classes", cls.id, "students"));
             cls.studentCount = studentsSnap.size;
           }
-
         } catch (e) {
-          console.error("Error loading classes:", e);
+          console.error(e);
         }
 
         renderDashboard();
+        document.getElementById("loader").style.opacity = "0";
+        setTimeout(() => document.getElementById("loader").style.display = "none", 500);
       });
     }
 
     function renderDashboard() {
-      const main = document.getElementById("mainContent");
-
-      // Calculate totals
+      // Update Stats
       const totalClasses = MY_CLASSES.length;
       const totalStudents = MY_CLASSES.reduce((sum, c) => sum + (c.studentCount || 0), 0);
-      const currentTerm = 1; // We can make this dynamic later based on system settings
+      
+      document.getElementById("statClasses").textContent = totalClasses;
+      document.getElementById("statStudents").textContent = totalStudents;
 
-      main.innerHTML = `
-        <!-- Stats -->
-        <div class="stats-grid">
-          <div class="stat-card">
-            <div class="stat-icon">🏫</div>
-            <div class="stat-num">${totalClasses}</div>
-            <div class="stat-label">Advisory Classes</div>
+      // Render Classes
+      const container = document.getElementById("classListContainer");
+      if (totalClasses === 0) {
+        container.innerHTML = `
+          <div style="text-align: center; padding: 40px 20px; color: var(--text-muted);">
+            <div style="font-size: 3rem; margin-bottom: 12px;">🏫</div>
+            <div style="font-weight: 700; font-size: 1.1rem; color: var(--text-main);">No Advisory Classes</div>
+            <p style="font-size: 0.9rem;">You are not currently assigned as an adviser.</p>
           </div>
-          <div class="stat-card green">
-            <div class="stat-icon">👥</div>
-            <div class="stat-num">${totalStudents}</div>
-            <div class="stat-label">Total Students</div>
+        `;
+        return;
+      }
+
+      container.innerHTML = MY_CLASSES.map(cls => `
+        <div class="class-item">
+          <div class="class-info">
+            <h3>${cls.classLabel || "Unnamed Class"}</h3>
+            <div class="class-meta">
+              <span><i class="fas fa-layer-group"></i> ${cls.gradeLevel || "N/A"}</span>
+              <span><i class="fas fa-users"></i> ${cls.studentCount} Students</span>
+            </div>
           </div>
-          <div class="stat-card purple">
-            <div class="stat-icon">📅</div>
-            <div class="stat-num">Term ${currentTerm}</div>
-            <div class="stat-label">Current Term</div>
-          </div>
-          <div class="stat-card orange">
-            <div class="stat-icon">✅</div>
-            <div class="stat-num">Active</div>
-            <div class="stat-label">Status</div>
+          <div style="display: flex; gap: 8px;">
+            <a href="sf1-class.html?id=${cls.id}" class="btn-action btn-sf1"><i class="fas fa-list"></i> Roster</a>
+            <a href="program.html?id=${cls.id}" class="btn-action btn-prog"><i class="fas fa-calendar-alt"></i> Program</a>
           </div>
         </div>
-
-        <div class="grid-layout">
-          <!-- Left Column: My Classes & Forms -->
-          <div>
-            <div class="card">
-              <div class="card-title"><i class="fas fa-building" style="color: #1e40af;"></i> My Advisory Classes</div>
-              
-              <div id="classListContainer">
-                ${MY_CLASSES.length === 0 ? `<div style="text-align: center; padding: 20px; color: #64748b;">You are not currently assigned as an adviser to any class.</div>` : ""}
-                ${MY_CLASSES.map(cls => `
-                  <div class="class-item">
-                    <div class="class-info">
-                      <h3>${cls.classLabel || "Unnamed Class"}</h3>
-                      <div class="class-meta">
-                        <span><i class="fas fa-layer-group"></i> ${cls.gradeLevel || "N/A"}</span>
-                        <span><i class="fas fa-users"></i> ${cls.studentCount} Students</span>
-                      </div>
-                    </div>
-                    <div class="class-actions">
-                      <a href="sf1-class.html?id=${cls.id}" class="btn-sm btn-sf1"><i class="fas fa-list"></i> SF1 Roster</a>
-                      <a href="program.html?id=${cls.id}" class="btn-sm btn-prog"><i class="fas fa-calendar-alt"></i> Program</a>
-                    </div>
-                  </div>
-                `).join("")}
-              </div>
-            </div>
-
-            <!-- School Forms Menu (Mirroring PHP) -->
-            <div class="menu-section">
-              <div class="card-title" style="margin-bottom: 12px;"><i class="fas fa-file-alt"></i> School Forms & Records</div>
-              <div class="menu-grid">
-                <a href="#" class="menu-card">
-                  <div class="menu-icon" style="background:#1e3c72;"><i class="fas fa-list"></i></div>
-                  <div class="menu-info"><h4>SF1 - Register</h4><p>Master list of learners</p></div>
-                </a>
-                <a href="#" class="menu-card">
-                  <div class="menu-icon" style="background:#10b981;"><i class="fas fa-calendar-check"></i></div>
-                  <div class="menu-info"><h4>SF2 - Attendance</h4><p>Daily attendance</p></div>
-                </a>
-                <a href="#" class="menu-card">
-                  <div class="menu-icon" style="background:#f59e0b;"><i class="fas fa-graduation-cap"></i></div>
-                  <div class="menu-info"><h4>SF5 - Promotion</h4><p>Promotion status</p></div>
-                </a>
-                <a href="#" class="menu-card">
-                  <div class="menu-icon" style="background:#7c3aed;"><i class="fas fa-print"></i></div>
-                  <div class="menu-info"><h4>SF9 - Report Card</h4><p>Student progress</p></div>
-                </a>
-              </div>
-            </div>
-          </div>
-
-          <!-- Right Column: Tools & Quick Actions -->
-          <div>
-            <div class="card">
-              <div class="card-title"><i class="fas fa-tools"></i> Adviser Tools</div>
-              <div class="menu-grid" style="grid-template-columns: 1fr;">
-                <a href="#" class="menu-card">
-                  <div class="menu-icon" style="background:#0ea5e9;"><i class="fas fa-calculator"></i></div>
-                  <div class="menu-info"><h4>ECR - Class Record</h4><p>Compute final grades</p></div>
-                </a>
-                <a href="#" class="menu-card">
-                  <div class="menu-icon" style="background:#8b5cf6;"><i class="fas fa-comments"></i></div>
-                  <div class="menu-info"><h4>Messaging System</h4><p>Communicate with parents</p></div>
-                </a>
-                <a href="teacher.html" class="menu-card">
-                  <div class="menu-icon" style="background:#10b981;"><i class="fas fa-chalkboard-teacher"></i></div>
-                  <div class="menu-info"><h4>Teacher Dashboard</h4><p>Go to ILAW Planner</p></div>
-                </a>
-              </div>
-            </div>
-          </div>
-        </div>
-      `;
+      `).join("");
     }
 
-    document.getElementById("btnLogout").addEventListener("click", () => {
+    document.getElementById("btnLogout").addEventListener("click", (e) => {
+      e.preventDefault();
       if (confirm("Logout?")) signOut(auth).then(() => location.replace("login.html"));
     });
 
