@@ -46,7 +46,13 @@
 
     /* TOP BAR */
     .topbar { height: 80px; padding: 0 32px; display: flex; justify-content: space-between; align-items: center; background: rgba(255, 255, 255, 0.6); backdrop-filter: blur(20px); border-bottom: 1px solid var(--glass-border); z-index: 10; }
-    .page-title { font-size: 1.5rem; font-weight: 800; color: var(--text-main); letter-spacing: -0.5px; }
+    .page-title { font-size: 1.5rem; font-weight: 800; color: var(--text-main); letter-spacing: -0.5px; display: flex; align-items: center; gap: 16px; }
+    
+    /* TERM SELECTOR */
+    .term-selector-wrap { display: flex; align-items: center; gap: 8px; background: #fff; border: 1px solid var(--border); padding: 6px 12px; border-radius: 10px; box-shadow: var(--shadow-sm); }
+    .term-selector-wrap label { font-size: 0.8rem; font-weight: 700; color: var(--primary); text-transform: uppercase; letter-spacing: 0.5px; }
+    .term-selector-wrap select { border: none; outline: none; font-weight: 700; font-size: 0.95rem; color: var(--text-main); background: transparent; cursor: pointer; font-family: inherit; }
+
     .user-profile { display: flex; align-items: center; gap: 16px; }
     .user-info { text-align: right; }
     .user-name { font-weight: 700; font-size: 0.95rem; }
@@ -119,7 +125,7 @@
       .classes-card { grid-column: span 1; }
       .menu-grid { grid-template-columns: 1fr; }
       .user-info { display: none; }
-      .topbar { padding: 0 16px; }
+      .topbar { padding: 0 16px; flex-wrap: wrap; height: auto; padding-bottom: 16px; gap: 12px; }
       .dashboard-scroll { padding: 16px; }
     }
   </style>
@@ -166,7 +172,18 @@
 
     <!-- Top Bar -->
     <header class="topbar">
-      <div class="page-title">Adviser Dashboard</div>
+      <div class="page-title">
+        Adviser Dashboard
+        <!-- DO 009 s. 2026 Term Selector -->
+        <div class="term-selector-wrap">
+          <label for="termSelector">Term:</label>
+          <select id="termSelector">
+            <option value="1" selected>Term 1</option>
+            <option value="2">Term 2</option>
+            <option value="3">Term 3</option>
+          </select>
+        </div>
+      </div>
       <div class="user-profile">
         <div class="user-info">
           <div class="user-name" id="navUserName">Loading...</div>
@@ -204,7 +221,7 @@
         <div class="bento-card stat-card">
           <div class="stat-icon purple"><i class="fas fa-calendar-alt"></i></div>
           <div>
-            <div class="stat-value">Term 1</div>
+            <div class="stat-value" id="statTerm">Term 1</div>
             <div class="stat-label">Current Term</div>
           </div>
         </div>
@@ -292,6 +309,7 @@
     let CURRENT_USER = null;
     let CURRENT_PROFILE = null;
     let MY_CLASSES = [];
+    let CURRENT_TERM = 1;
 
     async function init() {
       onAuthStateChanged(auth, async (user) => {
@@ -333,6 +351,12 @@
         renderDashboard();
         document.getElementById("loader").style.opacity = "0";
         setTimeout(() => document.getElementById("loader").style.display = "none", 500);
+
+        // 🆕 Term Selector Listener
+        document.getElementById("termSelector").addEventListener("change", (e) => {
+          CURRENT_TERM = parseInt(e.target.value, 10);
+          renderDashboard();
+        });
       });
     }
 
@@ -343,6 +367,9 @@
       
       document.getElementById("statClasses").textContent = totalClasses;
       document.getElementById("statStudents").textContent = totalStudents;
+      
+      // 🆕 Update Term Display
+      document.getElementById("statTerm").textContent = `Term ${CURRENT_TERM}`;
 
       // Render Classes
       const container = document.getElementById("classListContainer");
@@ -357,6 +384,8 @@
         return;
       }
 
+      // In the future, we can filter `MY_CLASSES` based on `CURRENT_TERM` if classes change per term.
+      // For now, it renders the assigned classes and passes the term to the buttons.
       container.innerHTML = MY_CLASSES.map(cls => `
         <div class="class-item">
           <div class="class-info">
@@ -368,7 +397,7 @@
           </div>
           <div style="display: flex; gap: 8px;">
             <a href="sf1-class.html?id=${cls.id}" class="btn-action btn-sf1"><i class="fas fa-list"></i> Roster</a>
-            <a href="program.html?id=${cls.id}" class="btn-action btn-prog"><i class="fas fa-calendar-alt"></i> Program</a>
+            <a href="program.html?id=${cls.id}&term=${CURRENT_TERM}" class="btn-action btn-prog"><i class="fas fa-calendar-alt"></i> Program</a>
           </div>
         </div>
       `).join("");
