@@ -235,7 +235,7 @@
   <script type="module">
     import { auth, db } from "./assets/js/firebase-config.js";
     import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-    import { collection, getDocs } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+    import { collection, getDocs, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
     import { getCurrentUserProfile } from "./assets/js/roles.js";
 
     let CURRENT_USER = null;
@@ -243,19 +243,6 @@
     let MY_SCHEDULE = [];
     let TIME_SLOTS = [];
     const DAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"];
-
-    // Fixed timeslots matching the DO 009 standard
-    const DEFAULT_SLOTS = [
-      { id: "slot-1", label: "7:30 - 8:30", start: "07:30", end: "08:30", type: "class" },
-      { id: "slot-2", label: "8:30 - 9:30", start: "08:30", end: "09:30", type: "class" },
-      { id: "slot-3", label: "9:30 - 9:45", start: "09:30", end: "09:45", type: "break", name: "HEALTH BREAK" },
-      { id: "slot-4", label: "9:45 - 10:45", start: "09:45", end: "10:45", type: "class" },
-      { id: "slot-5", label: "10:45 - 11:45", start: "10:45", end: "11:45", type: "class" },
-      { id: "slot-6", label: "11:45 - 12:45", start: "11:45", end: "12:45", type: "break", name: "LUNCH BREAK" },
-      { id: "slot-7", label: "12:45 - 1:45", start: "12:45", end: "13:45", type: "class" },
-      { id: "slot-8", label: "1:45 - 2:45", start: "13:45", end: "14:45", type: "class" },
-      { id: "slot-9", label: "2:45 - 3:45", start: "14:45", end: "15:45", type: "class" },
-    ];
 
     async function init() {
       onAuthStateChanged(auth, async (user) => {
@@ -265,8 +252,29 @@
 
         document.getElementById("welcomeSub").textContent = `Welcome, ${CURRENT_PROFILE.name || user.email}! | Three-Term System (DO 009 s.2026)`;
         
-        TIME_SLOTS = DEFAULT_SLOTS; // Fallback if no custom timeslots exist
-        
+        // 1. Fetch actual time slots from Firestore
+        try {
+          const tsSnap = await getDoc(doc(db, "config", "time_slots"));
+          if (tsSnap.exists() && Array.isArray(tsSnap.data().slots)) {
+             TIME_SLOTS = tsSnap.data().slots;
+          } else {
+             // Fallback to match program.html defaults if not found
+             TIME_SLOTS = [
+                { id: "period-1", label: "PERIOD 1", start: "07:45", end: "08:45", type: "class" },
+                { id: "period-2", label: "PERIOD 2", start: "08:45", end: "09:45", type: "class" },
+                { id: "break-1", label: "HEALTH BREAK / RECESS", start: "09:45", end: "10:00", type: "break" },
+                { id: "period-3", label: "PERIOD 3", start: "10:00", end: "11:00", type: "class" },
+                { id: "period-4", label: "PERIOD 4", start: "11:00", end: "12:00", type: "class" },
+                { id: "lunch", label: "LUNCH BREAK", start: "12:00", end: "13:00", type: "break" },
+                { id: "period-5", label: "PERIOD 5", start: "13:00", end: "14:00", type: "class" },
+                { id: "period-6", label: "PERIOD 6", start: "14:00", end: "15:00", type: "class" },
+                { id: "period-7", label: "PERIOD 7", start: "15:00", end: "16:00", type: "class" }
+             ];
+          }
+        } catch(e) {
+          console.warn("Could not load timeslots:", e);
+        }
+
         await loadTeacherSchedule();
         document.getElementById("loading").style.display = "none";
         document.getElementById("mainContent").style.display = "block";
@@ -287,7 +295,6 @@
           progSnap.docs.forEach(d => {
             const entry = d.data();
             // Check if this entry belongs to the logged-in teacher
-            // We check teacherUid OR if teacherName matches the profile name
             const isMyClass = entry.teacherUid === CURRENT_USER.uid || 
                               (entry.teacherName && CURRENT_PROFILE.name && entry.teacherName.toLowerCase().includes(CURRENT_PROFILE.name.toLowerCase()));
             
@@ -317,14 +324,17 @@
       let uniqueSubjects = new Set();
       let workload = { Monday: 0, Tuesday: 0, Wednesday: 0, Thursday: 0, Friday: 0 };
 
-      TIME_SLOTS.forEach(slot => {
+      // Sort timeslots by start time to ensure correct order
+      const sortedSlots = [...TIME_SLOTS].sort((a, b) => (a.start || "").localeCompare(b.start || ""));
+
+      sortedSlots.forEach(slot => {
         const tr = document.createElement("tr");
         
         // Time Col
-        tr.innerHTML = `<td class="time-col">${slot.label}</td>`;
+        tr.innerHTML = `<td class="time-col">${slot.start} - ${slot.end}<br><small style="color:#64748b;font-weight:500;">${slot.label}</small></td>`;
 
-        if (slot.type === "break") {
-          tr.innerHTML += `<td colspan="5" class="break-cell">${slot.name}</td>`;
+        if (slot.type === "break" || slot.type === "ceremony") {
+          tr.innerHTML += `<td colspan="5" class="break-cell">${slot.label}</td>`;
         } else {
           DAYS.forEach(day => {
             const match = MY_SCHEDULE.find(s => s.day === day && s.timeSlotId === slot.id);
@@ -389,12 +399,14 @@
       const tbody = document.getElementById("printScheduleBody");
       tbody.innerHTML = "";
 
-      TIME_SLOTS.forEach(slot => {
-        const tr = document.createElement("tr");
-        tr.innerHTML = `<td class="time-col">${slot.label}</td>`;
+      const sortedSlots = [...TIME_SLOTS].sort((a, b) => (a.start || "").localeCompare(b.start || ""));
 
-        if (slot.type === "break") {
-          tr.innerHTML += `<td colspan="5" style="text-align:center; font-weight:bold; font-size: 9pt;">${slot.name}</td>`;
+      sortedSlots.forEach(slot => {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `<td class="time-col">${slot.start} - ${slot.end}<br><small>${slot.label}</small></td>`;
+
+        if (slot.type === "break" || slot.type === "ceremony") {
+          tr.innerHTML += `<td colspan="5" style="text-align:center; font-weight:bold; font-size: 9pt;">${slot.label}</td>`;
         } else {
           DAYS.forEach(day => {
             const match = MY_SCHEDULE.find(s => s.day === day && s.timeSlotId === slot.id);
