@@ -67,12 +67,21 @@
     /* QUESTIONS LIST */
     .question-list { display: flex; flex-direction: column; gap: 15px; }
     .question-item { border: 1px solid var(--border); border-radius: 8px; padding: 15px; background: #f8fafc; position: relative; }
-    .question-item .q-text { font-weight: 600; font-size: 0.95rem; margin-bottom: 10px; line-height: 1.4; }
+    .question-item .q-text { font-weight: 600; font-size: 0.95rem; margin-bottom: 10px; line-height: 1.4; padding-right: 100px; /* Space for buttons */ }
     .question-item .q-type { font-size: 0.65rem; font-weight: 800; text-transform: uppercase; padding: 3px 8px; border-radius: 4px; background: #e2e8f0; color: #475569; margin-bottom: 8px; display: inline-block; }
     .question-item .q-options { font-size: 0.85rem; color: var(--text-muted); margin-left: 15px; margin-bottom: 10px; }
     .question-item .q-answer { font-size: 0.8rem; color: var(--success); font-weight: 700; }
-    .delete-q { position: absolute; top: 15px; right: 15px; background: #fee2e2; color: var(--danger); border: none; width: 30px; height: 30px; border-radius: 6px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: 0.2s; }
-    .delete-q:hover { background: var(--danger); color: #fff; }
+    .question-image-preview { max-height: 100px; margin: 10px 0; border-radius: 6px; border: 1px solid var(--border); }
+    
+    /* ACTION BUTTONS ON CARD */
+    .q-actions { position: absolute; top: 15px; right: 15px; display: flex; gap: 5px; }
+    .q-actions button { width: 30px; height: 30px; border-radius: 6px; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: 0.2s; font-size: 0.8rem; }
+    .btn-edit-q { background: #e0e7ff; color: var(--primary); }
+    .btn-edit-q:hover { background: var(--primary); color: #fff; }
+    .btn-img-q { background: #dcfce7; color: var(--success); }
+    .btn-img-q:hover { background: var(--success); color: #fff; }
+    .btn-del-q { background: #fee2e2; color: var(--danger); }
+    .btn-del-q:hover { background: var(--danger); color: #fff; }
 
     /* MATCHING CONFIG */
     .matching-config { background: #f1f5f9; padding: 15px; border-radius: 8px; margin-top: 10px; display: none; }
@@ -154,7 +163,7 @@
 
       <!-- Manual Question Entry -->
       <div class="card">
-        <div class="card-title"><i class="fas fa-pen"></i> Add Question Manually</div>
+        <div class="card-title"><i class="fas fa-pen"></i> Add / Edit Question</div>
         
         <div class="form-group">
           <label>Question Type</label>
@@ -198,7 +207,12 @@
           <input type="text" id="qAnswer" class="form-control" placeholder="e.g., A, True, Photosynthesis">
         </div>
 
-        <button class="btn btn-primary" onclick="addManualQuestion()"><i class="fas fa-plus"></i> Add Question to Exam</button>
+        <!-- Hidden input for tracking edits -->
+        <input type="hidden" id="editingQuestionId" value="">
+
+        <button class="btn btn-primary" id="btnSaveQuestion" onclick="saveManualQuestion()">
+          <i class="fas fa-plus"></i> Add Question to Exam
+        </button>
       </div>
     </div>
 
@@ -240,57 +254,37 @@
       const urlParams = new URLSearchParams(window.location.search);
       EXAM_ID = urlParams.get('examId');
       CLASS_ID = urlParams.get('classId');
-      const TOS_ID = urlParams.get('tosId'); // ✅ Check for TOS
+      const TOS_ID = urlParams.get('tosId');
       
       if (EXAM_ID) {
-        // Editing an existing exam
         await loadExamFromDB();
       } else {
-        // Creating a new exam
-        EXAM_ID = doc(collection(db, "exams")).id; // Pre-generate ID
+        EXAM_ID = doc(collection(db, "exams")).id;
       }
 
-      // ✅ IF TOS EXISTS, AUTO-GENERATE
       if (TOS_ID) {
         await generateFromTOS(TOS_ID);
       }
     });
 
-    // ✅ NEW FUNCTION: Read TOS and Auto-Generate
+    // 2. TOS AUTO-GENERATE
     async function generateFromTOS(tosId) {
       try {
         const tosSnap = await getDoc(doc(db, "tos_records", tosId));
-        if (!tosSnap.exists()) {
-          alert("TOS not found in database.");
-          return;
-        }
-
+        if (!tosSnap.exists()) { alert("TOS not found."); return; }
         const tosData = tosSnap.data();
         
-        // Build a prompt from the TOS topics
-        let topicString = tosData.subject + " - ";
-        const topics = tosData.tosData.map(t => t.topic).join(", ");
-        topicString += topics;
-
-        // Pre-fill the AI input so the teacher sees what's happening
+        let topicString = tosData.subject + " - " + tosData.tosData.map(t => t.topic).join(", ");
         document.getElementById('aiTopic').value = topicString;
         
-        // Pre-fill counts based on TOS
         document.getElementById('aiCountMC').value = tosData.tosData.reduce((sum, item) => sum + Math.floor(item.items * 0.4), 0);
         document.getElementById('aiCountTF').value = tosData.tosData.reduce((sum, item) => sum + Math.floor(item.items * 0.3), 0);
         document.getElementById('aiCountID').value = tosData.tosData.reduce((sum, item) => sum + Math.floor(item.items * 0.3), 0);
-        document.getElementById('aiCountEssay').value = 0;
-        document.getElementById('aiCountMatching').value = 0;
 
-        // Trigger the AI generation automatically
-        alert("📋 TOS Loaded! Click 'Generate & Add Questions' below to create the questions based on your TOS.");
-        
-        // Scroll to the AI section so they see it
+        alert("📋 TOS Loaded! Click 'Generate & Add Questions' below to create the questions.");
         document.querySelector('.ai-card').scrollIntoView({ behavior: 'smooth' });
-
       } catch (e) {
-        console.error("Error reading TOS:", e);
-        alert("Failed to read TOS data.");
+        console.error(e); alert("Failed to read TOS data.");
       }
     }
 
@@ -305,7 +299,6 @@
         document.getElementById('examDuration').value = EXAM_DATA.duration || 60;
         document.getElementById('examPassing').value = EXAM_DATA.passingScore || 60;
 
-        // Load Questions
         const qSnap = await getDocs(collection(db, "exams", EXAM_ID, "questions"));
         LOCAL_QUESTIONS = qSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
         LOCAL_QUESTIONS.sort((a, b) => (a.order || 0) - (b.order || 0));
@@ -313,7 +306,7 @@
       }
     }
 
-    // 2. SAVE EXAM METADATA
+    // 3. SAVE METADATA
     window.saveExamSettings = async () => {
       const title = document.getElementById('examTitle').value.trim();
       if (!title) { alert("Please enter an exam title."); return; }
@@ -334,43 +327,37 @@
       alert("✅ Exam settings saved successfully!");
     };
 
-    // 3. TOGGLE FORM FIELDS BASED ON QUESTION TYPE
+    // 4. TOGGLE FORM
     window.toggleQuestionType = () => {
       const type = document.getElementById('qType').value;
       const optionsArea = document.getElementById('optionsArea');
       const matchingArea = document.getElementById('matchingArea');
-
       if (type === 'multiple_choice') {
-        optionsArea.style.display = 'block';
-        matchingArea.classList.remove('active');
+        optionsArea.style.display = 'block'; matchingArea.classList.remove('active');
       } else if (type === 'matching') {
-        optionsArea.style.display = 'none';
-        matchingArea.classList.add('active');
+        optionsArea.style.display = 'none'; matchingArea.classList.add('active');
       } else {
-        optionsArea.style.display = 'none';
-        matchingArea.classList.remove('active');
+        optionsArea.style.display = 'none'; matchingArea.classList.remove('active');
       }
     };
 
-    // 4. ADD MANUAL QUESTION
-    window.addManualQuestion = () => {
+    // 5. SAVE / UPDATE QUESTION
+    window.saveManualQuestion = () => {
+      const editId = document.getElementById('editingQuestionId').value;
       const type = document.getElementById('qType').value;
       const text = document.getElementById('qText').value.trim();
       const answer = document.getElementById('qAnswer').value.trim();
 
       if (!text || !answer) { alert("Question text and correct answer are required."); return; }
 
-      let newQ = {
-        id: doc(collection(db, "exams", EXAM_ID, "questions")).id,
+      let qData = {
         type: type,
         question: text,
         correct_answer: answer,
-        order: LOCAL_QUESTIONS.length,
-        points: 1
       };
 
       if (type === 'multiple_choice') {
-        newQ.options = [
+        qData.options = [
           document.getElementById('qOptA').value,
           document.getElementById('qOptB').value,
           document.getElementById('qOptC').value,
@@ -378,22 +365,40 @@
         ];
       } else if (type === 'matching') {
         const numPairs = parseInt(document.getElementById('qMatchPairs').value);
-        newQ.matching_pairs = [];
+        qData.matching_pairs = [];
         for (let i = 1; i <= numPairs; i++) {
-          newQ.matching_pairs.push({ left: `${i}. Term ${i}`, right: `Letter ${String.fromCharCode(64 + i)}. Definition ${i}`, answer: String.fromCharCode(64 + i) });
+          qData.matching_pairs.push({ left: `${i}. Term ${i}`, right: `Letter ${String.fromCharCode(64 + i)}. Def ${i}`, answer: String.fromCharCode(64 + i) });
         }
       }
 
-      LOCAL_QUESTIONS.push(newQ);
+      if (editId) {
+        // Update Existing
+        const index = LOCAL_QUESTIONS.findIndex(q => q.id === editId);
+        if (index > -1) {
+          LOCAL_QUESTIONS[index] = { ...LOCAL_QUESTIONS[index], ...qData };
+        }
+      } else {
+        // Add New
+        qData.id = doc(collection(db, "exams", EXAM_ID, "questions")).id;
+        qData.order = LOCAL_QUESTIONS.length;
+        qData.points = 1;
+        LOCAL_QUESTIONS.push(qData);
+      }
+
       renderQuestions();
-      
-      // Clear form
+      resetForm();
+    };
+
+    function resetForm() {
+      document.getElementById('editingQuestionId').value = '';
       document.getElementById('qText').value = '';
       document.getElementById('qAnswer').value = '';
       ['A','B','C','D'].forEach(l => document.getElementById(`qOpt${l}`).value = '');
-    };
+      document.getElementById('btnSaveQuestion').innerHTML = `<i class="fas fa-plus"></i> Add Question to Exam`;
+      document.getElementById('btnSaveQuestion').style.background = 'var(--primary)';
+    }
 
-    // 5. RENDER QUESTIONS TO UI
+    // 6. RENDER QUESTIONS
     function renderQuestions() {
       const list = document.getElementById('questionList');
       document.getElementById('qCountBadge').textContent = `${LOCAL_QUESTIONS.length} Items`;
@@ -409,28 +414,88 @@
           optsHtml = `<div class="q-options">${q.options.map((o, idx) => `<div>${String.fromCharCode(65+idx)}. ${o}</div>`).join('')}</div>`;
         }
 
+        // Image Preview
+        let imgHtml = '';
+        if (q.imageUrl) {
+          imgHtml = `<img src="${q.imageUrl}" class="question-image-preview" alt="Question Image">`;
+        }
+
         return `
           <div class="question-item" id="qcard_${q.id}">
             <span class="q-type">${q.type.replace('_', ' ')}</span>
             <div class="q-text">${i + 1}. ${q.question}</div>
+            ${imgHtml}
             ${optsHtml}
             <div class="q-answer">Correct Answer: ${q.correct_answer}</div>
-            <button class="delete-q" onclick="deleteQuestion('${q.id}')"><i class="fas fa-trash"></i></button>
+            
+            <!-- ACTION BUTTONS -->
+            <div class="q-actions">
+              <button class="btn-edit-q" onclick="editQuestion('${q.id}')" title="Edit Question"><i class="fas fa-edit"></i></button>
+              <button class="btn-img-q" onclick="addImageToQuestion('${q.id}')" title="Add Image"><i class="fas fa-image"></i></button>
+              <button class="btn-del-q" onclick="deleteQuestion('${q.id}')" title="Delete"><i class="fas fa-trash"></i></button>
+            </div>
           </div>
         `;
       }).join('');
 
-      // Add Save button at bottom if there are questions
       if (LOCAL_QUESTIONS.length > 0) {
         list.innerHTML += `
-          <button class="btn btn-primary" style="margin-top: 15px;" onclick="saveAllQuestionsToDB()">
+          <button id="btnSaveQuestions" class="btn btn-primary" style="margin-top: 15px;" onclick="saveAllQuestionsToDB()">
             <i class="fas fa-cloud-upload-alt"></i> Save All ${LOCAL_QUESTIONS.length} Questions to Exam
           </button>
         `;
       }
     }
 
-    // 6. DELETE LOCAL QUESTION
+    // 7. EDIT QUESTION (Loads into form)
+    window.editQuestion = (qId) => {
+      const q = LOCAL_QUESTIONS.find(q => q.id === qId);
+      if (!q) return;
+
+      document.getElementById('editingQuestionId').value = q.id;
+      document.getElementById('qType').value = q.type;
+      document.getElementById('qText').value = q.question;
+      document.getElementById('qAnswer').value = q.correct_answer;
+
+      if (q.type === 'multiple_choice' && q.options) {
+        document.getElementById('qOptA').value = q.options[0] || '';
+        document.getElementById('qOptB').value = q.options[1] || '';
+        document.getElementById('qOptC').value = q.options[2] || '';
+        document.getElementById('qOptD').value = q.options[3] || '';
+      }
+
+      toggleQuestionType();
+
+      const btn = document.getElementById('btnSaveQuestion');
+      btn.innerHTML = `<i class="fas fa-save"></i> Update Question`;
+      btn.style.background = 'var(--success)';
+
+      // Scroll to form
+      document.querySelector('.card:has(#qType)').scrollIntoView({ behavior: 'smooth' });
+    };
+
+    // 8. ADD IMAGE (Base64)
+    window.addImageToQuestion = (qId) => {
+      const input = document.createElement('input');
+      input.type = 'file';
+      input.accept = 'image/*';
+      input.onchange = (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = (ev) => {
+          const q = LOCAL_QUESTIONS.find(q => q.id === qId);
+          if (q) {
+            q.imageUrl = ev.target.result;
+            renderQuestions();
+          }
+        };
+        reader.readAsDataURL(file);
+      };
+      input.click();
+    };
+
+    // 9. DELETE QUESTION
     window.deleteQuestion = (qId) => {
       if (!confirm("Remove this question?")) return;
       LOCAL_QUESTIONS = LOCAL_QUESTIONS.filter(q => q.id !== qId);
@@ -438,20 +503,12 @@
       renderQuestions();
     };
 
-    // 7. SAVE ALL QUESTIONS TO FIRESTORE
-        // 7. SAVE ALL QUESTIONS TO FIRESTORE (BULLETPROOF VERSION)
+    // 10. BATCH SAVE TO FIRESTORE
     window.saveAllQuestionsToDB = async () => {
-      if (LOCAL_QUESTIONS.length === 0) {
-        alert("No questions to save.");
-        return;
-      }
+      if (LOCAL_QUESTIONS.length === 0) { alert("No questions to save."); return; }
 
-      // Find the save button (safer than relying on event.target)
       const btn = document.getElementById('btnSaveQuestions');
-      if (btn) {
-        btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Saving...`;
-        btn.disabled = true;
-      }
+      if (btn) { btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Saving...`; btn.disabled = true; }
 
       try {
         const batch = writeBatch(db);
@@ -459,51 +516,33 @@
 
         LOCAL_QUESTIONS.forEach((q, index) => {
           const docRef = doc(qRef, q.id);
-          
-          // ✅ Create a CLEAN copy of the question to prevent Firestore errors
           const cleanQ = {
             question: String(q.question || "").trim(),
             type: String(q.type || "multiple_choice"),
             correct_answer: String(q.correct_answer || "").trim(),
             points: Number(q.points) || 1,
-            order: index // Re-index to ensure proper sorting
+            order: index
           };
-
-          // Only add options if it's a multiple choice and array exists
-          if (q.type === 'multiple_choice' && Array.isArray(q.options)) {
-            cleanQ.options = q.options.map(o => String(o || "").trim());
-          }
-
-          // Only add matching pairs if it's matching type
-          if (q.type === 'matching' && Array.isArray(q.matching_pairs)) {
-            cleanQ.matching_pairs = q.matching_pairs;
-          }
+          if (q.options) cleanQ.options = q.options.map(o => String(o || "").trim());
+          if (q.matching_pairs) cleanQ.matching_pairs = q.matching_pairs;
+          if (q.imageUrl) cleanQ.imageUrl = q.imageUrl; // Save image
 
           batch.set(docRef, cleanQ);
         });
 
-        // Update exam meta to reflect total questions
-        batch.update(doc(db, "exams", EXAM_ID), { 
-          questionsCount: LOCAL_QUESTIONS.length 
-        });
+        batch.update(doc(db, "exams", EXAM_ID), { questionsCount: LOCAL_QUESTIONS.length });
 
         await batch.commit();
-        
         alert("✅ All questions saved successfully!");
-        if (btn) {
-          btn.innerHTML = `<i class="fas fa-check"></i> Saved!`;
-        }
+        if (btn) { btn.innerHTML = `<i class="fas fa-check"></i> Saved!`; }
       } catch (error) {
         console.error("Save Error Details:", error);
         alert(`❌ Failed to save.\nError: ${error.message}`);
-        if (btn) {
-          btn.innerHTML = `<i class="fas fa-cloud-upload-alt"></i> Retry Save`;
-          btn.disabled = false;
-        }
+        if (btn) { btn.innerHTML = `<i class="fas fa-cloud-upload-alt"></i> Retry Save`; btn.disabled = false; }
       }
     };
 
-    // 8. DEEPSEEK AI GENERATOR
+    // 11. AI GENERATOR
     window.generateAIQuestions = async () => {
       const topic = document.getElementById('aiTopic').value.trim();
       if (!topic) { alert("Please enter a topic for the AI."); return; }
@@ -538,7 +577,6 @@
       ]`;
 
       try {
-        // ⚠️ REPLACE THIS WITH YOUR ACTUAL DEEPSEEK API KEY
         const response = await fetch("https://api.deepseek.com/v1/chat/completions", {
           method: "POST",
           headers: {
@@ -555,33 +593,27 @@
 
         const data = await response.json();
         const content = data.choices[0].message.content;
-        
         const jsonMatch = content.match(/\[[\s\S]*\]/);
         if (!jsonMatch) throw new Error("No JSON found in AI response");
 
         const aiQuestions = JSON.parse(jsonMatch[0]);
 
-        // ✅ CLEAN UP AI RESPONSE (Strip redundant "A.", "B.", etc.)
         aiQuestions.forEach(q => {
           q.id = doc(collection(db, "exams", EXAM_ID, "questions")).id;
           q.order = LOCAL_QUESTIONS.length;
           q.points = 1;
 
-          // If it's a Multiple Choice and has options, clean them
           if (q.type === 'multiple_choice' && Array.isArray(q.options)) {
             q.options = q.options.map(opt => {
               if (!opt) return "";
-              // Regex: removes leading "A.", "A)", "A ", or "A - " (case insensitive)
               return opt.replace(/^[A-D]\s*[\.\)]\s*/i, '').trim();
             });
           }
-
           LOCAL_QUESTIONS.push(q);
         });
 
         renderQuestions();
         alert(`✅ Successfully generated ${aiQuestions.length} questions! Scroll down to review and save them.`);
-
       } catch (error) {
         console.error("AI Generation Error:", error);
         alert("❌ AI Generation failed. Check the console.");
