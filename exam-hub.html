@@ -5,6 +5,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Assessment Hub — SCPHS</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  
+  <!-- ✅ ADDED FONT AWESOME FOR ICONS -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
   <style>
     :root { --primary: #1e3c72; --primary-light: #2a5298; --bg: #f1f5f9; --card: #fff; --border: #e2e8f0; --text: #1e293b; --muted: #64748b; }
     * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -13,7 +17,7 @@
     /* Header */
     .header { background: linear-gradient(135deg, var(--primary), var(--primary-light)); color: #fff; padding: 25px 30px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
     .header h1 { font-size: 1.4rem; display: flex; align-items: center; gap: 10px; }
-    .btn-back { background: rgba(255,255,255,0.2); color: #fff; border: none; padding: 10px 18px; border-radius: 8px; font-weight: 600; cursor: pointer; text-decoration: none; display: flex; align-items: center; gap: 6px; }
+    .btn-back { background: rgba(255,255,255,0.2); color: #fff; border: none; padding: 10px 18px; border-radius: 8px; font-weight: 600; cursor: pointer; text-decoration: none; display: flex; align-items: center; gap: 6px; transition: 0.2s; }
     .btn-back:hover { background: rgba(255,255,255,0.3); }
 
     /* Container */
@@ -40,7 +44,8 @@
     .exam-meta { font-size: 0.8rem; color: var(--muted); margin-bottom: 15px; }
     
     .exam-actions { display: flex; gap: 8px; margin-top: auto; }
-    .btn-sm { padding: 8px 12px; border-radius: 6px; font-size: 0.75rem; font-weight: 600; cursor: pointer; border: none; text-decoration: none; display: flex; align-items: center; justify-content: center; gap: 4px; }
+    .btn-sm { padding: 8px 12px; border-radius: 6px; font-size: 0.75rem; font-weight: 600; cursor: pointer; border: none; text-decoration: none; display: flex; align-items: center; justify-content: center; gap: 4px; transition: 0.2s; }
+    .btn-sm:hover { transform: translateY(-1px); }
     .btn-edit { background: #e0e7ff; color: #3730a3; }
     .btn-print { background: #f1f5f9; color: #475569; }
     .btn-publish { background: #dcfce7; color: #166534; }
@@ -121,7 +126,7 @@
   <script type="module">
     import { auth, db } from "./assets/js/firebase-config.js";
     import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-    import { collection, query, where, getDocs, addDoc, serverTimestamp, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+    import { collection, query, where, getDocs, addDoc, serverTimestamp, doc, getDoc, updateDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
     let CURRENT_USER = null;
     let CLASS_ID = null;
@@ -143,9 +148,13 @@
 
     // 2. LOAD CLASS INFO FOR HEADER
     async function loadClassInfo() {
-      const snap = await getDoc(doc(db, "classes", CLASS_ID));
-      if (snap.exists()) {
-        document.getElementById("classNameHeader").textContent = snap.data().classLabel || "Class";
+      try {
+        const snap = await getDoc(doc(db, "classes", CLASS_ID));
+        if (snap.exists()) {
+          document.getElementById("classNameHeader").textContent = snap.data().classLabel || "Class";
+        }
+      } catch (e) {
+        console.warn("Class info not found", e);
       }
     }
 
@@ -159,20 +168,25 @@
       }
     });
 
-    // 4. LOAD EXAMS
+    // 4. LOAD EXAMS (FIXED QUERY & FILTER)
     async function loadExams() {
       const list = document.getElementById("examList");
       list.innerHTML = `<div style="text-align:center; padding: 40px; color: var(--muted);">Loading assessments...</div>`;
 
       try {
+        // ✅ QUERY ONLY BY CLASS ID TO AVOID FIRESTORE INDEX ERROR
         const q = query(
           collection(db, "exams"), 
-          where("classId", "==", CLASS_ID),
-          where("term", "==", CURRENT_TERM.toString())
+          where("classId", "==", CLASS_ID)
         );
         const snap = await getDocs(q);
 
-        if (snap.empty) {
+        // ✅ FILTER BY TERM IN JAVASCRIPT
+        const exams = snap.docs
+          .map(d => ({ id: d.id, ...d.data() }))
+          .filter(exam => String(exam.term) === String(CURRENT_TERM));
+
+        if (exams.length === 0) {
           list.innerHTML = `<div style="grid-column: 1/-1; text-align:center; padding: 60px; color: var(--muted);">
             <div style="font-size: 3rem; margin-bottom: 10px;">📝</div>
             <h3>No assessments for Term ${CURRENT_TERM}</h3>
@@ -181,8 +195,7 @@
           return;
         }
 
-        list.innerHTML = snap.docs.map(d => {
-          const data = d.data();
+        list.innerHTML = exams.map(data => {
           const isPub = data.status === 'published';
           return `
             <div class="exam-card">
@@ -194,18 +207,18 @@
               <div class="exam-meta">${data.questionsCount || 0} Items • ${data.duration || 60} Mins</div>
               
               <div class="exam-actions">
-                <a href="exam-editor.html?examId=${d.id}" class="btn-sm btn-edit"><i class="fas fa-edit"></i> Edit</a>
-                <a href="print-exam.html?examId=${d.id}" class="btn-sm btn-print" target="_blank"><i class="fas fa-print"></i> Print</a>
-                ${!isPub ? `<button onclick="publishExam('${d.id}')" class="btn-sm btn-publish"><i class="fas fa-rocket"></i> Publish</button>` : ''}
-                <button onclick="deleteExam('${d.id}')" class="btn-sm btn-delete"><i class="fas fa-trash"></i></button>
+                <a href="exam-editor.html?examId=${data.id}" class="btn-sm btn-edit"><i class="fas fa-edit"></i> Edit</a>
+                <a href="print-exam.html?examId=${data.id}" class="btn-sm btn-print" target="_blank"><i class="fas fa-print"></i> Print</a>
+                ${!isPub ? `<button onclick="publishExam('${data.id}')" class="btn-sm btn-publish"><i class="fas fa-rocket"></i> Publish</button>` : ''}
+                <button onclick="deleteExam('${data.id}')" class="btn-sm btn-delete"><i class="fas fa-trash"></i></button>
               </div>
             </div>
           `;
         }).join("");
 
       } catch (e) {
-        console.error(e);
-        list.innerHTML = `<div style="color:red;">Failed to load exams.</div>`;
+        console.error("Firestore Error:", e);
+        list.innerHTML = `<div style="color:red; grid-column: 1/-1; padding: 20px; background: #fee2e2; border-radius: 8px;">Failed to load exams. Press F12 and check the console for details.</div>`;
       }
     }
 
@@ -240,6 +253,7 @@
           questionsCount: 0
         });
 
+        // Redirect immediately to the exam editor!
         window.location.href = `exam-editor.html?examId=${docRef.id}`;
       } catch (error) {
         console.error(error);
@@ -250,14 +264,12 @@
     // 6. PUBLISH / DELETE
     window.publishExam = async (examId) => {
       if (!confirm("Publish this exam? Students will be able to take it.")) return;
-      const { updateDoc, doc } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js");
       await updateDoc(doc(db, "exams", examId), { status: 'published' });
       loadExams();
     };
 
     window.deleteExam = async (examId) => {
       if (!confirm("Delete this exam permanently?")) return;
-      const { deleteDoc, doc } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js");
       await deleteDoc(doc(db, "exams", examId));
       loadExams();
     };
