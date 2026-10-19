@@ -325,35 +325,61 @@
     });
 
     // 4. LOAD CLASSES (BULLETPROOF ASSIGNMENT CHECK)
+        // 4. LOAD CLASSES (BULLETPROOF ASSIGNMENT CHECK + PROGRAM SCAN)
     async function loadMyClasses() {
       const host = document.getElementById("classList");
       try {
         const snap = await getDocs(collection(db, "classes"));
         const myClasses = [];
 
-        snap.forEach(docSnap => {
+        // We will check each class document
+        for (const docSnap of snap.docs) {
           const cls = { id: docSnap.id, ...docSnap.data() };
           
-          // Check all possible ways the Admin might have assigned this teacher
+          // 1. Check basic class assignments
           const isAdviser = cls.adviserUid === CURRENT_USER.uid;
           const isTeacher = cls.teacherUids && cls.teacherUids.includes(CURRENT_USER.uid);
           const isSubjectTeacher = cls.subjectTeachers && Object.values(cls.subjectTeachers).includes(CURRENT_USER.uid);
           const isGeneralTeacher = cls.teachers && cls.teachers.includes(CURRENT_USER.uid);
 
-          if (isAdviser || isTeacher || isSubjectTeacher || isGeneralTeacher) {
+          let isInProgram = false;
+
+          // 2. IF NOT ASSIGNED DIRECTLY, CHECK THE CLASS PROGRAM
+          if (!isAdviser && !isTeacher && !isSubjectTeacher && !isGeneralTeacher) {
+            try {
+              // Query the program subcollection for entries where teacherUid == current user
+              // We use a simple getDocs and filter because we don't know the exact term, 
+              // but if you want to optimize, you can query by term too.
+              const programSnap = await getDocs(collection(db, "classes", cls.id, "program"));
+              
+              programSnap.forEach(progDoc => {
+                const entry = progDoc.data();
+                // If the logged-in user is the teacher for ANY entry in this class
+                if (entry.teacherUid === CURRENT_USER.uid) {
+                  isInProgram = true;
+                }
+              });
+            } catch (err) {
+              // Ignore errors if subcollection doesn't exist
+            }
+          }
+
+          // If any condition is true, add to my classes
+          if (isAdviser || isTeacher || isSubjectTeacher || isGeneralTeacher || isInProgram) {
             myClasses.push({ 
               ...cls, 
+              // Prioritize Adviser role, otherwise mark as Subject Teacher
               role: isAdviser ? "Class Adviser" : "Subject Teacher" 
             });
           }
-        });
+        }
 
         if (myClasses.length === 0) {
           host.innerHTML = `
             <div style="text-align: center; padding: 30px; color: var(--text-muted);">
               <div style="font-size: 3rem; margin-bottom: 12px;">🏫</div>
               <div style="font-weight: 700; color: var(--text-main); margin-bottom: 4px;">No classes assigned yet</div>
-              <div style="font-size: 0.85rem;">Please contact the Admin Center to assign you to a class.</div>
+              <div style="font-size: 0.85rem;">Please contact the Admin Center to assign you to a class or schedule.</div>
             </div>`;
           return;
         }
@@ -375,7 +401,7 @@
           const gradeDisplay = cls.gradeLevel ? cls.gradeLevel.replace('Grade ', '') : '?';
 
           return `
-            <a href="class.html?id=${cls.id}" class="list-item">
+            <a href="program.html?id=${cls.id}" class="list-item">
               <div style="display: flex; align-items: center; gap: 14px;">
                 <div style="width: 44px; height: 44px; border-radius: 10px; background: #eff6ff; color: #1e40af; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 1.2rem; border: 1px solid #bfdbfe;">
                   ${gradeDisplay}
