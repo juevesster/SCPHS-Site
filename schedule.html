@@ -4,80 +4,133 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>My Schedule & Workload — SCPHS</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   
   <style>
-    :root { --primary: #1e3c72; --primary-light: #2a5298; --bg: #f1f5f9; --card: #fff; --text: #1e293b; --muted: #64748b; --border: #e2e8f0; }
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
+    :root { 
+      --primary: #4f46e5; 
+      --primary-light: #818cf8;
+      --bg: #f8fafc; 
+      --text: #1e293b; 
+      --muted: #64748b; 
+      --border: #e2e8f0;
+      --shadow-sm: 0 1px 3px rgba(0,0,0,0.05);
+      --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.05);
+      --shadow-lg: 0 10px 15px -3px rgba(0,0,0,0.05);
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Outfit', sans-serif; }
     body { background: var(--bg); color: var(--text); min-height: 100vh; padding-bottom: 60px; }
 
-    .header { background: linear-gradient(135deg, var(--primary), var(--primary-light)); color: #fff; padding: 24px 0; margin-bottom: 24px; }
-    .container { max-width: 1400px; margin: 0 auto; padding: 0 20px; }
+    /* Header */
+    .header { background: #fff; border-bottom: 1px solid var(--border); padding: 24px 0; position: sticky; top: 0; z-index: 50; box-shadow: var(--shadow-sm); }
+    .container { max-width: 1400px; margin: 0 auto; padding: 0 24px; }
     .header-row { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px; }
-    .header h1 { font-size: 1.5rem; font-weight: 800; margin-bottom: 4px; }
-    .header p { opacity: 0.85; font-size: 0.9rem; }
-    .header-actions { display: flex; gap: 10px; flex-wrap: wrap; }
-    .btn-top { background: rgba(255,255,255,0.15); color: #fff; text-decoration: none; padding: 8px 16px; border-radius: 8px; font-weight: 600; font-size: 0.85rem; transition: background 0.2s; display: flex; align-items: center; gap: 6px; border: none; cursor: pointer; }
-    .btn-top:hover { background: rgba(255,255,255,0.25); }
-
-    .toolbar { display: flex; gap: 16px; align-items: center; background: #fff; padding: 16px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); margin-bottom: 24px; flex-wrap: wrap; }
-    .toolbar select { padding: 10px 16px; border-radius: 8px; border: 1px solid var(--border); font-family: inherit; font-size: 0.9rem; font-weight: 600; outline: none; cursor: pointer; background: #f8fafc; }
+    .header h1 { font-size: 1.5rem; font-weight: 800; color: var(--primary); display: flex; align-items: center; gap: 12px; }
+    .header p { color: var(--muted); font-size: 0.9rem; margin-top: 4px; }
     
-    .tabs { display: flex; gap: 8px; margin-bottom: 24px; border-bottom: 2px solid var(--border); overflow-x: auto; }
-    .tab { padding: 12px 24px; cursor: pointer; border: none; background: none; font-weight: 700; font-size: 0.95rem; color: var(--muted); transition: all 0.2s; border-bottom: 3px solid transparent; white-space: nowrap; }
-    .tab:hover { color: var(--primary); }
-    .tab.active { color: var(--primary); border-bottom-color: var(--primary); }
+    .header-actions { display: flex; gap: 12px; flex-wrap: wrap; }
+    .btn-top { background: #fff; color: var(--text); border: 1px solid var(--border); padding: 10px 18px; border-radius: 12px; font-weight: 700; font-size: 0.85rem; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 8px; text-decoration: none; }
+    .btn-top:hover { background: #f1f5f9; transform: translateY(-1px); box-shadow: var(--shadow-md); }
+    .btn-top.primary { background: var(--primary); color: #fff; border-color: var(--primary); }
+    .btn-top.primary:hover { background: #4338ca; }
 
-    .tab-content { display: none; }
-    .tab-content.active { display: block; }
+    /* Toolbar */
+    .toolbar-wrap { margin-top: 24px; margin-bottom: 24px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px; }
+    .term-pill { display: flex; align-items: center; background: #fff; border: 1px solid var(--border); border-radius: 14px; padding: 4px; box-shadow: var(--shadow-sm); }
+    .term-pill select { border: none; outline: none; background: transparent; padding: 8px 16px; font-weight: 700; font-size: 0.95rem; color: var(--primary); cursor: pointer; font-family: inherit; }
+    .term-pill .badge { background: #e0e7ff; color: var(--primary); padding: 6px 12px; border-radius: 10px; font-size: 0.75rem; font-weight: 800; margin-right: 8px; text-transform: uppercase; }
 
-    .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 24px; }
-    .stat-card { background: #fff; border-radius: 12px; padding: 20px; text-align: center; box-shadow: 0 2px 8px rgba(0,0,0,0.05); border-top: 4px solid var(--primary); }
-    .stat-num { font-size: 2rem; font-weight: 800; color: var(--primary); line-height: 1; }
-    .stat-label { font-size: 0.85rem; color: var(--muted); font-weight: 600; margin-top: 6px; text-transform: uppercase; }
+    /* Bento Stats */
+    .stats-bento { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; margin-bottom: 32px; }
+    .stat-card { background: #fff; border-radius: 20px; padding: 24px; box-shadow: var(--shadow-sm); display: flex; align-items: center; gap: 20px; border: 1px solid var(--border); transition: transform 0.2s; }
+    .stat-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-lg); }
+    .stat-icon { width: 56px; height: 56px; border-radius: 16px; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; }
+    .icon-blue { background: #e0e7ff; color: #4338ca; }
+    .icon-green { background: #dcfce7; color: #166534; }
+    .icon-purple { background: #f3e8ff; color: #7e22ce; }
+    .stat-info { display: flex; flex-direction: column; }
+    .stat-value { font-size: 2rem; font-weight: 800; color: var(--text); line-height: 1.1; }
+    .stat-label { font-size: 0.8rem; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; margin-top: 4px; }
 
-    .table-wrap { background: #fff; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); overflow-x: auto; margin-bottom: 24px; }
-    table.schedule { width: 100%; border-collapse: collapse; font-size: 0.85rem; min-width: 900px; }
-    th { background: var(--primary); color: #fff; padding: 12px; text-align: left; font-size: 0.75rem; font-weight: 800; text-transform: uppercase; }
-    td { border: 1px solid var(--border); padding: 10px; vertical-align: top; }
-    td.time-col { background: #f8fafc; font-weight: 700; width: 120px; white-space: nowrap; }
-    .entry-box { background: #eff6ff; border-left: 4px solid var(--primary); padding: 8px; border-radius: 4px; margin-bottom: 6px; }
-    .entry-box strong { color: var(--primary); display: block; font-size: 0.9rem; }
-    .entry-box small { color: var(--muted); display: block; font-size: 0.75rem; margin-top: 2px; }
-    .break-cell { background: #fff3cd; text-align: center; font-weight: 700; color: #856404; }
+    /* Tabs */
+    .tabs { display: flex; gap: 8px; margin-bottom: 24px; background: #fff; padding: 6px; border-radius: 14px; border: 1px solid var(--border); display: inline-flex; box-shadow: var(--shadow-sm); }
+    .tab { padding: 10px 24px; cursor: pointer; border: none; background: none; font-weight: 700; font-size: 0.9rem; color: var(--muted); border-radius: 10px; transition: all 0.2s; display: flex; align-items: center; gap: 8px; }
+    .tab:hover { color: var(--primary); background: #f8fafc; }
+    .tab.active { background: var(--primary); color: #fff; box-shadow: 0 2px 4px rgba(79,70,229,0.2); }
 
-    .workload-item { margin-bottom: 16px; }
-    .workload-header { display: flex; justify-content: space-between; font-size: 0.9rem; font-weight: 600; margin-bottom: 6px; }
-    .workload-bar { height: 10px; background: #e2e8f0; border-radius: 5px; overflow: hidden; }
-    .workload-fill { height: 100%; border-radius: 5px; }
-    .fill-normal { background: #10b981; }
-    .fill-high { background: #f59e0b; }
-    .fill-overload { background: #dc2626; }
+    /* Modern Schedule Grid */
+    .grid-container { background: #fff; border-radius: 24px; box-shadow: var(--shadow-md); border: 1px solid var(--border); overflow: hidden; margin-bottom: 32px; }
+    .grid-header { display: grid; grid-template-columns: 120px repeat(5, 1fr); background: #f8fafc; border-bottom: 2px solid var(--border); }
+    .grid-header-cell { padding: 16px; font-weight: 800; font-size: 0.8rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; text-align: center; border-right: 1px solid var(--border); }
+    .grid-header-cell:last-child { border-right: none; }
+    
+    .grid-row { display: grid; grid-template-columns: 120px repeat(5, 1fr); border-bottom: 1px solid var(--border); }
+    .grid-row:last-child { border-bottom: none; }
+    
+    .time-cell { padding: 16px; background: #f8fafc; border-right: 1px solid var(--border); display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; }
+    .time-label { font-weight: 800; font-size: 0.95rem; color: var(--text); }
+    .time-sub { font-weight: 600; font-size: 0.75rem; color: var(--muted); margin-top: 4px; text-transform: uppercase; }
 
-    .loader { text-align: center; padding: 60px; color: var(--muted); font-weight: 500; }
+    .subject-cell { padding: 12px; border-right: 1px solid var(--border); display: flex; align-items: stretch; }
+    .subject-cell:last-child { border-right: none; }
+
+    .subject-card { 
+      width: 100%; border-radius: 12px; padding: 12px; 
+      display: flex; flex-direction: column; justify-content: center;
+      border-left: 4px solid transparent; transition: all 0.2s;
+    }
+    .subject-card:hover { transform: scale(1.02); box-shadow: var(--shadow-md); }
+    .subject-name { font-weight: 800; font-size: 0.95rem; line-height: 1.2; }
+    .subject-class { font-size: 0.8rem; font-weight: 600; margin-top: 4px; opacity: 0.8; }
+
+    /* Dynamic Subject Colors */
+    .subj-math { background: #eff6ff; border-left-color: #3b82f6; color: #1e3a8a; }
+    .subj-science { background: #f0fdf4; border-left-color: #10b981; color: #064e3b; }
+    .subj-filipino { background: #fef2f2; border-left-color: #ef4444; color: #7f1d1d; }
+    .subj-english { background: #faf5ff; border-left-color: #8b5cf6; color: #4c1d95; }
+    .subj-mapeh { background: #fff7ed; border-left-color: #f97316; color: #7c2d12; }
+    .subj-aral { background: #f3f4f6; border-left-color: #6b7280; color: #1f2937; }
+    .subj-default { background: #f1f5f9; border-left-color: #64748b; color: #0f172a; }
+
+    /* Break Banners */
+    .break-banner { 
+      grid-column: 2 / -1; background: #fef3c7; color: #92400e; 
+      display: flex; align-items: center; justify-content: center; 
+      font-weight: 800; font-size: 0.95rem; letter-spacing: 0.05em; padding: 16px;
+    }
+
+    /* Workload */
+    .workload-card { background: #fff; border-radius: 24px; padding: 32px; box-shadow: var(--shadow-md); border: 1px solid var(--border); }
+    .workload-item { margin-bottom: 20px; }
+    .workload-header { display: flex; justify-content: space-between; font-weight: 700; font-size: 0.95rem; margin-bottom: 8px; }
+    .workload-bar { height: 12px; background: #f1f5f9; border-radius: 10px; overflow: hidden; }
+    .workload-fill { height: 100%; border-radius: 10px; transition: width 1s ease-out; }
+    .fill-normal { background: linear-gradient(90deg, #34d399, #10b981); }
+    .fill-high { background: linear-gradient(90deg, #fbbf24, #f59e0b); }
+    .fill-overload { background: linear-gradient(90deg, #f87171, #dc2626); }
+
+    .loader { text-align: center; padding: 60px; color: var(--muted); font-weight: 600; }
     .spinner { width: 40px; height: 40px; border: 4px solid #e2e8f0; border-top-color: var(--primary); border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 16px; }
     @keyframes spin { to { transform: rotate(360deg); } }
 
-    /* PRINT LAYOUT */
+    /* Print Styles (Unchanged) */
     .print-doc { display: none; }
     @media print {
       @page { size: A4 landscape; margin: 10mm; }
       body { background: #fff; padding: 0; }
-      .header, .toolbar, .tabs, .tab-content, .btn-top, .loader { display: none !important; }
+      .header, .toolbar-wrap, .tabs, .stats-bento, .grid-container, .workload-card, .loader { display: none !important; }
       .print-doc { display: block !important; font-family: 'Arial', sans-serif; color: #000; }
-      
+      /* ... Keep your existing print styles here ... */
       .print-header { text-align: center; margin-bottom: 15px; line-height: 1.2; }
       .print-header img { height: 50px; margin-bottom: 5px; }
       .print-header h2 { font-size: 12pt; margin: 0; }
       .print-header p { font-size: 10pt; margin: 0; }
       .print-title { font-size: 14pt; font-weight: bold; text-align: center; margin: 15px 0 10px; text-transform: uppercase; border-bottom: 2px solid #000; padding-bottom: 5px; }
-      
       table.print-table { width: 100%; border-collapse: collapse; font-size: 10pt; margin-bottom: 15px; }
       table.print-table th, table.print-table td { border: 1px solid #000; padding: 4px 6px; text-align: left; vertical-align: top; }
       table.print-table th { background: #f0f0f0; font-weight: bold; text-align: center; font-size: 9pt; }
       table.print-table td.time-col { font-weight: bold; width: 80px; text-align: center; }
-      
       .print-signatories { display: flex; justify-content: space-between; margin-top: 30px; page-break-inside: avoid; }
       .print-sig { text-align: center; width: 30%; }
       .print-sig .label { font-size: 10pt; margin-bottom: 30px; }
@@ -91,12 +144,12 @@
   <header class="header">
     <div class="container header-row">
       <div>
-        <h1><i class="fas fa-calendar-alt"></i> My Teaching Schedule</h1>
+        <h1><i class="fas fa-calendar-alt"></i> My Schedule</h1>
         <p id="welcomeSub">Loading teacher data...</p>
       </div>
       <div class="header-actions">
         <a href="teacher.html" class="btn-top"><i class="fas fa-arrow-left"></i> Dashboard</a>
-        <button onclick="window.print()" class="btn-top"><i class="fas fa-print"></i> Print Schedule</button>
+        <button onclick="window.print()" class="btn-top primary"><i class="fas fa-print"></i> Print Schedule</button>
       </div>
     </div>
   </header>
@@ -104,65 +157,65 @@
   <div class="container">
     <div id="loading" class="loader">
       <div class="spinner"></div>
-      <div>Generating your workload schedule...</div>
+      <div>Generating your schedule...</div>
     </div>
 
     <div id="mainContent" style="display: none;">
       
-      <div class="toolbar">
-        <label style="font-weight: 700; color: var(--text);">Term:</label>
-        <select id="termSelect">
-          <option value="1" selected>📘 Term 1</option>
-          <option value="2">📗 Term 2</option>
-          <option value="3">📕 Term 3</option>
-        </select>
+      <!-- Toolbar -->
+      <div class="toolbar-wrap">
+        <div class="term-pill">
+          <span class="badge">Active Term</span>
+          <select id="termSelect">
+            <option value="1" selected>📘 Term 1</option>
+            <option value="2">📗 Term 2</option>
+            <option value="3">📕 Term 3</option>
+          </select>
+        </div>
       </div>
 
+      <!-- Stats -->
+      <div class="stats-bento">
+        <div class="stat-card">
+          <div class="stat-icon icon-blue"><i class="fas fa-chalkboard-teacher"></i></div>
+          <div class="stat-info">
+            <div class="stat-value" id="statSessions">0</div>
+            <div class="stat-label">Sessions / Week</div>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon icon-green"><i class="fas fa-users"></i></div>
+          <div class="stat-info">
+            <div class="stat-value" id="statClasses">0</div>
+            <div class="stat-label">Classes Handled</div>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon icon-purple"><i class="fas fa-book-open"></i></div>
+          <div class="stat-info">
+            <div class="stat-value" id="statSubjects">0</div>
+            <div class="stat-label">Subjects Taught</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tabs -->
       <div class="tabs">
         <button class="tab active" data-target="schedule"><i class="fas fa-calendar-week"></i> Weekly Schedule</button>
-        <button class="tab" data-target="workload"><i class="fas fa-chart-line"></i> Workload Analysis</button>
+        <button class="tab" data-target="workload"><i class="fas fa-chart-pie"></i> Workload Analysis</button>
       </div>
 
       <!-- TAB 1: SCHEDULE -->
       <div id="schedule" class="tab-content active">
-        <div class="stats-grid">
-          <div class="stat-card">
-            <div class="stat-num" id="statSessions">0</div>
-            <div class="stat-label">Sessions / Week</div>
-          </div>
-          <div class="stat-card" style="border-top-color: #10b981;">
-            <div class="stat-num" id="statClasses">0</div>
-            <div class="stat-label">Classes Handled</div>
-          </div>
-          <div class="stat-card" style="border-top-color: #7c3aed;">
-            <div class="stat-num" id="statSubjects">0</div>
-            <div class="stat-label">Subjects Taught</div>
-          </div>
-        </div>
-
-        <div class="table-wrap">
-          <table class="schedule" id="scheduleTable">
-            <thead>
-              <tr>
-                <th style="width: 120px;">Time</th>
-                <th>Monday</th>
-                <th>Tuesday</th>
-                <th>Wednesday</th>
-                <th>Thursday</th>
-                <th>Friday</th>
-              </tr>
-            </thead>
-            <tbody id="scheduleBody">
-              <!-- Injected via JS -->
-            </tbody>
-          </table>
+        <div class="grid-container" id="scheduleGrid">
+          <!-- Injected via JS -->
         </div>
       </div>
 
       <!-- TAB 2: WORKLOAD -->
-      <div id="workload" class="tab-content">
-        <div style="background: #fff; padding: 24px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.05);">
-          <h3 style="margin-bottom: 20px; color: var(--primary);">Daily Workload Analysis</h3>
+      <div id="workload" class="tab-content" style="display:none;">
+        <div class="workload-card">
+          <h3 style="margin-bottom: 24px; font-size: 1.2rem; font-weight: 800; color: var(--text);">Daily Workload Analysis</h3>
           <div id="workloadContainer"></div>
         </div>
       </div>
@@ -170,7 +223,7 @@
     </div>
   </div>
 
-  <!-- PRINT-ONLY LAYOUT -->
+  <!-- PRINT-ONLY LAYOUT (Keep existing) -->
   <div class="print-doc" id="printDoc">
     <div class="print-header">
       <img src="assets/images/deped-logo.png" alt="DepEd Logo" />
@@ -181,9 +234,7 @@
       <h2 style="margin-top: 10px; font-size: 13pt;">STA. CRUZ PINGKIAN HIGH SCHOOL</h2>
       <p>Brgy. Sta. Cruz, Pingkian, Nueva Vizcaya</p>
     </div>
-
     <div class="print-title">TEACHER'S CLASS PROGRAM</div>
-
     <table class="print-table">
       <tr>
         <td style="width: 15%; font-weight: bold;">Teacher Name:</td>
@@ -198,7 +249,6 @@
         <td id="printDate"></td>
       </tr>
     </table>
-
     <table class="print-table" id="printScheduleTable">
       <thead>
         <tr>
@@ -212,7 +262,6 @@
       </thead>
       <tbody id="printScheduleBody"></tbody>
     </table>
-
     <div class="print-signatories">
       <div class="print-sig">
         <div class="label">Prepared by:</div>
@@ -244,21 +293,31 @@
     let TIME_SLOTS = [];
     const DAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"];
 
+    // Helper to assign nice colors based on subject name
+    function getSubjectColorClass(subject) {
+      const s = String(subject || "").toUpperCase();
+      if (s.includes("MATH")) return "subj-math";
+      if (s.includes("SCI")) return "subj-science";
+      if (s.includes("FIL")) return "subj-filipino";
+      if (s.includes("ENG")) return "subj-english";
+      if (s.includes("MAPEH") || s.includes("PE") || s.includes("MUSIC") || s.includes("ART")) return "subj-mapeh";
+      if (s.includes("ARAL") || s.includes("HGP")) return "subj-aral";
+      return "subj-default";
+    }
+
     async function init() {
       onAuthStateChanged(auth, async (user) => {
         if (!user) { location.replace("login.html"); return; }
         CURRENT_USER = user;
         CURRENT_PROFILE = await getCurrentUserProfile();
 
-        document.getElementById("welcomeSub").textContent = `Welcome, ${CURRENT_PROFILE.name || user.email}! | Three-Term System (DO 009 s.2026)`;
+        document.getElementById("welcomeSub").textContent = `Welcome, ${CURRENT_PROFILE.name || user.email}!`;
         
-        // 1. Fetch actual time slots from Firestore
         try {
           const tsSnap = await getDoc(doc(db, "config", "time_slots"));
           if (tsSnap.exists() && Array.isArray(tsSnap.data().slots)) {
              TIME_SLOTS = tsSnap.data().slots;
           } else {
-             // Fallback to match program.html defaults if not found
              TIME_SLOTS = [
                 { id: "period-1", label: "PERIOD 1", start: "07:45", end: "08:45", type: "class" },
                 { id: "period-2", label: "PERIOD 2", start: "08:45", end: "09:45", type: "class" },
@@ -271,9 +330,7 @@
                 { id: "period-7", label: "PERIOD 7", start: "15:00", end: "16:00", type: "class" }
              ];
           }
-        } catch(e) {
-          console.warn("Could not load timeslots:", e);
-        }
+        } catch(e) {}
 
         await loadTeacherSchedule();
         document.getElementById("loading").style.display = "none";
@@ -283,18 +340,14 @@
 
     async function loadTeacherSchedule() {
       MY_SCHEDULE = [];
-      
       try {
-        // 1. Get all classes
         const classesSnap = await getDocs(collection(db, "classes"));
-        
         for (const classDoc of classesSnap.docs) {
           const cls = { id: classDoc.id, ...classDoc.data() };
           const progSnap = await getDocs(collection(db, "classes", cls.id, "program"));
           
           progSnap.docs.forEach(d => {
             const entry = d.data();
-            // Check if this entry belongs to the logged-in teacher
             const isMyClass = entry.teacherUid === CURRENT_USER.uid || 
                               (entry.teacherName && CURRENT_PROFILE.name && entry.teacherName.toLowerCase().includes(CURRENT_PROFILE.name.toLowerCase()));
             
@@ -310,34 +363,45 @@
       } catch (e) {
         console.error("Error loading schedule:", e);
       }
-
       renderScreenSchedule();
       renderPrintSchedule();
     }
 
     function renderScreenSchedule() {
-      const tbody = document.getElementById("scheduleBody");
-      tbody.innerHTML = "";
-
+      const container = document.getElementById("scheduleGrid");
+      
       let totalSessions = 0;
       let uniqueClasses = new Set();
       let uniqueSubjects = new Set();
       let workload = { Monday: 0, Tuesday: 0, Wednesday: 0, Thursday: 0, Friday: 0 };
 
-      // Sort timeslots by start time to ensure correct order
       const sortedSlots = [...TIME_SLOTS].sort((a, b) => (a.start || "").localeCompare(b.start || ""));
 
-      sortedSlots.forEach(slot => {
-        const tr = document.createElement("tr");
-        
-        // Time Col
-        tr.innerHTML = `<td class="time-col">${slot.start} - ${slot.end}<br><small style="color:#64748b;font-weight:500;">${slot.label}</small></td>`;
+      // Header
+      let html = `
+        <div class="grid-header">
+          <div class="grid-header-cell">TIME</div>
+          ${DAYS.map(day => `<div class="grid-header-cell">${day}</div>`).join("")}
+        </div>
+      `;
 
+      // Rows
+      sortedSlots.forEach(slot => {
         if (slot.type === "break" || slot.type === "ceremony") {
-          tr.innerHTML += `<td colspan="5" class="break-cell">${slot.label}</td>`;
+          html += `
+            <div class="grid-row">
+              <div class="time-cell">
+                <div class="time-label">${slot.start} - ${slot.end}</div>
+                <div class="time-sub">${slot.label}</div>
+              </div>
+              <div class="break-banner">${slot.label}</div>
+            </div>
+          `;
         } else {
+          html += `<div class="grid-row"><div class="time-cell"><div class="time-label">${slot.start} - ${slot.end}</div><div class="time-sub">${slot.label}</div></div>`;
+          
           DAYS.forEach(day => {
-            const match = MY_SCHEDULE.find(s => s.day === day && s.timeSlotId === slot.id);
+            const match = MY_SCHEDULE.find(s => s.day === day && (s.timeSlotId === slot.id || s.timeSlotId === slot.label || s.start === slot.start));
             
             if (match) {
               totalSessions++;
@@ -345,22 +409,24 @@
               uniqueSubjects.add(match.subject);
               workload[day]++;
               
-              tr.innerHTML += `
-                <td>
-                  <div class="entry-box">
-                    <strong>${match.subject}</strong>
-                    <small>${match.classLabel}</small>
-                    ${match.room ? `<small>🏠 ${match.room}</small>` : ""}
+              const colorClass = getSubjectColorClass(match.subject);
+              html += `
+                <div class="subject-cell">
+                  <div class="subject-card ${colorClass}">
+                    <div class="subject-name">${match.subject}</div>
+                    <div class="subject-class">${match.classLabel}</div>
                   </div>
-                </td>
+                </div>
               `;
             } else {
-              tr.innerHTML += `<td style="color: #cbd5e1; text-align: center;">—</td>`;
+              html += `<div class="subject-cell" style="align-items:center;justify-content:center;color:#cbd5e1;">—</div>`;
             }
           });
+          html += `</div>`;
         }
-        tbody.appendChild(tr);
       });
+
+      container.innerHTML = html;
 
       // Update Stats
       document.getElementById("statSessions").textContent = totalSessions;
@@ -391,6 +457,7 @@
     }
 
     function renderPrintSchedule() {
+      // ... (Keep your existing print logic) ...
       document.getElementById("printTeacherName").textContent = CURRENT_PROFILE.name || CURRENT_USER.email;
       document.getElementById("printTerm").textContent = `Term ${document.getElementById("termSelect").value}`;
       document.getElementById("printDate").textContent = new Date().toLocaleDateString('en-PH', { year: 'numeric', month: 'long', day: 'numeric' });
@@ -398,7 +465,6 @@
 
       const tbody = document.getElementById("printScheduleBody");
       tbody.innerHTML = "";
-
       const sortedSlots = [...TIME_SLOTS].sort((a, b) => (a.start || "").localeCompare(b.start || ""));
 
       sortedSlots.forEach(slot => {
@@ -409,7 +475,7 @@
           tr.innerHTML += `<td colspan="5" style="text-align:center; font-weight:bold; font-size: 9pt;">${slot.label}</td>`;
         } else {
           DAYS.forEach(day => {
-            const match = MY_SCHEDULE.find(s => s.day === day && s.timeSlotId === slot.id);
+            const match = MY_SCHEDULE.find(s => s.day === day && (s.timeSlotId === slot.id || s.timeSlotId === slot.label || s.start === slot.start));
             if (match) {
               tr.innerHTML += `
                 <td>
@@ -430,9 +496,10 @@
     document.querySelectorAll(".tab").forEach(tab => {
       tab.addEventListener("click", () => {
         document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
-        document.querySelectorAll(".tab-content").forEach(c => c.classList.remove("active"));
+        document.querySelectorAll(".tab-content").forEach(c => c.style.display = "none");
         tab.classList.add("active");
-        document.getElementById(tab.dataset.target).classList.add("active");
+        const target = document.getElementById(tab.dataset.target);
+        if (target) target.style.display = "block";
       });
     });
 
