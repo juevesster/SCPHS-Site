@@ -74,7 +74,18 @@
         <button class="term-tab" data-term="2">Term 2</button>
         <button class="term-tab" data-term="3">Term 3</button>
       </div>
-      <button class="btn-primary" onclick="openNewExamModal()"><i class="fas fa-plus"></i> New Assessment</button>
+
+           <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+        <!-- Link to the TOS Builder -->
+        <a href="#" id="btnCreateTOS" class="btn-primary" style="background: #4f46e5; text-decoration: none;">
+          <i class="fas fa-table"></i> Create TOS
+        </a>
+        
+        <!-- Existing New Assessment Button -->
+        <button class="btn-primary" onclick="openNewExamModal()">
+          <i class="fas fa-plus"></i> New Assessment
+        </button>
+      </div>
     </div>
 
     <div class="exam-grid" id="examList">
@@ -141,6 +152,12 @@
       CLASS_ID = params.get('classId');
 
       if (!CLASS_ID) { alert("No class selected."); window.location.href = "teacher.html"; return; }
+
+              // ✅ Attach the Class ID to the TOS Builder Link
+      const tosBtn = document.getElementById('btnCreateTOS');
+      if (tosBtn) {
+        tosBtn.href = `tos-builder.html?classId=${CLASS_ID}`;
+      }
 
       await loadClassInfo();
       await loadExams();

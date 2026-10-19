@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>DepEd TOS Builder (CID Form 1A/1B)</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <style>
+    :root { --primary: #1e3c72; --primary-light: #2a5298; --bg: #f1f5f9; --border: #cbd5e1; --text: #1e293b; }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); padding-bottom: 50px; }
+    
+    /* Header */
+    .header { background: linear-gradient(135deg, var(--primary), var(--primary-light)); color: #fff; padding: 20px 30px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 12px rgba(0,0,0,0.1); position: sticky; top: 0; z-index: 100; }
+    .header h1 { font-size: 1.2rem; display: flex; align-items: center; gap: 10px; }
+    .btn-back { background: rgba(255,255,255,0.2); color: #fff; border: none; padding: 10px 18px; border-radius: 8px; font-weight: 600; cursor: pointer; text-decoration: none; }
+
+    /* Layout */
+    .container { max-width: 1200px; margin: 30px auto; padding: 0 20px; }
+    .card { background: #fff; border-radius: 12px; padding: 25px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); margin-bottom: 20px; }
+    
+    /* Form */
+    .form-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 20px; }
+    .form-group label { display: block; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; color: #64748b; margin-bottom: 6px; }
+    .form-control { width: 100%; padding: 10px 14px; border: 2px solid var(--border); border-radius: 8px; font-family: inherit; font-size: 0.95rem; }
+    .form-control:focus { outline: none; border-color: var(--primary); }
+    
+    /* TOS Table */
+    .table-responsive { overflow-x: auto; }
+    table.tos-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; min-width: 900px; }
+    table.tos-table th, table.tos-table td { border: 1px solid #000; padding: 6px; text-align: center; vertical-align: middle; }
+    table.tos-table th { background: #e0e7ff; color: #1e3c72; font-weight: 700; font-size: 0.75rem; }
+    table.tos-table input, table.tos-table textarea { width: 100%; border: 1px solid #e2e8f0; padding: 4px; border-radius: 4px; font-family: inherit; font-size: 0.8rem; text-align: center; }
+    table.tos-table textarea { text-align: left; resize: vertical; min-height: 50px; }
+    table.tos-table input[type="number"] { font-weight: 700; color: #1e3c72; border: 2px solid #93c5fd; }
+    
+    .totals-row { background: #f8fafc; font-weight: 800; color: var(--primary); }
+
+    .btn-primary { background: var(--primary); color: #fff; border: none; padding: 12px 20px; border-radius: 8px; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; }
+    .btn-sm { padding: 6px 12px; font-size: 0.8rem; }
+    .btn-danger { background: #fee2e2; color: #dc2626; }
+    .btn-success { background: #059669; color: #fff; }
+
+    /* Print Styles */
+    @media print {
+      body { background: #fff; padding: 0; }
+      .no-print, .header, .action-bar, .btn-sm { display: none !important; }
+      .container { max-width: 100%; margin: 0; padding: 0; }
+      .card { box-shadow: none; border: none; padding: 0; margin: 0; }
+      
+      table.tos-table input, table.tos-table textarea { border: none !important; background: transparent; pointer-events: none; }
+      table.tos-table th, table.tos-table td { border: 1px solid #000 !important; }
+      table.tos-table th { background: #fff !important; }
+      .signature-section { display: flex !important; justify-content: space-between; margin-top: 40px; }
+    }
+    
+    /* Signature Section for Printing */
+    .signature-section { display: none; margin-top: 40px; }
+    .sig-block { text-align: center; width: 30%; }
+    .sig-line { border-top: 1px solid #000; margin-top: 40px; margin-bottom: 5px; }
+  </style>
+</head>
+<body>
+
+  <header class="header no-print">
+    <h1><i class="fas fa-table"></i> TOS Builder (CID Form 1A/1B)</h1>
+    <a href="exam-hub.html" class="btn-back" id="btnBack"><i class="fas fa-arrow-left"></i> Back to Hub</a>
+  </header>
+
+  <div class="container">
+    <!-- DepEd Print Header (Visible only on print) -->
+    <div style="display: none; text-align: center; margin-bottom: 20px;" class="print-header">
+      <h3 style="margin: 0;">Republic of the Philippines</h3>
+      <h4 style="margin: 0;">Department of Education</h4>
+      <p style="margin: 5px 0;" id="printSchoolName">Sta. Cruz Pingkian High School</p>
+      <h2 style="margin: 15px 0; text-decoration: underline;" id="printFormTitle">CID ASSESSMENT FORM 1A</h2>
+    </div>
+
+    <div class="card">
+      <div class="form-row">
+        <div class="form-group">
+          <label>Subject</label>
+          <input type="text" id="tosSubject" class="form-control" placeholder="e.g., Automotive" required>
+        </div>
+        <div class="form-group">
+          <label>Grade Level</label>
+          <input type="text" id="tosGrade" class="form-control" readonly style="background: #f1f5f9;">
+        </div>
+        <div class="form-group">
+          <label>Time Allotment</label>
+          <input type="text" id="tosTime" class="form-control" value="60 mins">
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+        <h3 style="font-size: 1.1rem; color: var(--primary); margin: 0;">📝 Table of Specifications</h3>
+        <button class="btn-primary btn-sm no-print" onclick="addRow()"><i class="fas fa-plus"></i> Add Row</button>
+      </div>
+
+      <div class="table-responsive">
+        <table class="tos-table">
+          <thead>
+            <tr>
+              <th rowspan="2" style="width: 20%;">Area / Major Topic</th>
+              <th rowspan="2" style="width: 30%;">Learning Competencies</th>
+              <th rowspan="2" style="width: 5%;">Days</th>
+              <th rowspan="2" style="width: 5%;">%</th>
+              <th rowspan="2" style="width: 5%;">Total<br>Items</th>
+              <th colspan="2" id="headerLots">LOTS (60%)</th>
+              <th colspan="2" id="headerHots">HOTS (40%)</th>
+              <th colspan="2" id="headerSolo" style="display: none;">HOTS SOLO (20%)</th>
+              <th rowspan="2" style="width: 3%;" class="no-print"></th>
+            </tr>
+            <tr>
+              <th style="width: 5%;">#</th>
+              <th style="width: 8%;">Placement</th>
+              <th style="width: 5%;">#</th>
+              <th style="width: 8%;">Placement</th>
+              <th style="width: 5%;" class="solo-col" style="display: none;">#</th>
+              <th style="width: 8%;" class="solo-col" style="display: none;">Placement</th>
+            </tr>
+          </thead>
+          <tbody id="tosBody">
+            <!-- Rows generated by JS -->
+          </tbody>
+          <tfoot>
+            <tr class="totals-row">
+              <td colspan="4" style="text-align: right;">TOTAL:</td>
+              <td id="totalItems">0</td>
+              <td id="totalLots">0</td>
+              <td id="lotsPlacement">-</td>
+              <td id="totalHots">0</td>
+              <td id="hotsPlacement">-</td>
+              <td id="totalSolo" class="solo-col" style="display: none;">0</td>
+              <td id="soloPlacement" class="solo-col" style="display: none;">-</td>
+              <td class="no-print"></td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+    </div>
+
+    <div class="action-bar no-print" style="display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px;">
+      <button class="btn-primary" onclick="window.print()" style="background: #475569;"><i class="fas fa-print"></i> Print TOS</button>
+      <button class="btn-primary" onclick="generateExamFromTOS()" style="background: #4f46e5;"><i class="fas fa-robot"></i> Generate Exam from TOS</button>
+    </div>
+
+    <!-- DepEd Signatures (Visible only on print) -->
+    <div class="signature-section">
+      <div class="sig-block">
+        <p>Prepared by:</p>
+        <div class="sig-line"></div>
+        <p style="font-weight: 700;" id="printTeacherName">Teacher Name</p>
+        <p style="font-size: 0.8rem;">Subject Teacher</p>
+      </div>
+      <div class="sig-block">
+        <p>Checked by:</p>
+        <div class="sig-line"></div>
+        <p style="font-weight: 700;">_____________________</p>
+        <p style="font-size: 0.8rem;">Head Teacher / Dept. Head</p>
+      </div>
+      <div class="sig-block">
+        <p>Approved by:</p>
+        <div class="sig-line"></div>
+        <p style="font-weight: 700;">_____________________</p>
+        <p style="font-size: 0.8rem;">School Principal</p>
+      </div>
+    </div>
+  </div>
+
+  <script type="module">
+    import { auth, db } from "./assets/js/firebase-config.js";
+    import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+    import { doc, getDoc, addDoc, collection, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+    let CURRENT_USER = null;
+    let CLASS_ID = null;
+    let GRADE_LEVEL = "";
+    let IS_FORM_1B = false;
+
+    // 1. INITIALIZE & AUTH
+    onAuthStateChanged(auth, async (user) => {
+      if (!user) { window.location.href = "login.html"; return; }
+      CURRENT_USER = user;
+
+      const params = new URLSearchParams(window.location.search);
+      CLASS_ID = params.get('classId');
+      const examId = params.get('examId');
+
+      if (!CLASS_ID) { alert("No class selected."); window.location.href = "teacher.html"; return; }
+
+      // Fetch class info to determine Grade Level & Form Type
+      const classSnap = await getDoc(doc(db, "classes", CLASS_ID));
+      if (classSnap.exists()) {
+        const clsData = classSnap.data();
+        GRADE_LEVEL = clsData.gradeLevel || "Grade 8"; // Default to Grade 8
+        
+        // DepEd Logic: Form 1B is for Grades 9 & 10 (LOTS 50, HOTS 30, Solo 20)
+        // Form 1A is for others (LOTS 60, HOTS 40)
+        const gradeNum = parseInt(GRADE_LEVEL.replace(/\D/g, ''));
+        IS_FORM_1B = (gradeNum === 9 || gradeNum === 10);
+
+        setupFormUI();
+      }
+    });
+
+    // 2. SETUP UI BASED ON FORM TYPE
+    function setupFormUI() {
+      document.getElementById("tosGrade").value = GRADE_LEVEL;
+      
+      if (IS_FORM_1B) {
+        document.getElementById("printFormTitle").textContent = "CID ASSESSMENT FORM 1B (Grades 9-10)";
+        document.getElementById("headerLots").textContent = "LOTS (50%)";
+        document.getElementById("headerHots").textContent = "HOTS (30%)";
+        document.getElementById("headerSolo").style.display = "table-cell";
+        
+        // Show solo columns
+        document.querySelectorAll('.solo-col').forEach(el => el.style.display = 'table-cell');
+      } else {
+        document.getElementById("printFormTitle").textContent = "CID ASSESSMENT FORM 1A (Grades 7-8, 11-12)";
+      }
+      
+      addRow(); // Add initial row
+    }
+
+    // 3. TABLE ROW GENERATION
+    window.addRow = () => {
+      const tbody = document.getElementById("tosBody");
+      const tr = document.createElement("tr");
+      
+      tr.innerHTML = `
+        <td><textarea placeholder="Enter major topic..."></textarea></td>
+        <td><textarea placeholder="Enter learning competency..."></textarea></td>
+        <td><input type="number" value="4" min="0" class="days-input"></td>
+        <td><input type="number" class="percent-input" readonly></td>
+        <td><input type="number" value="10" min="0" class="items-input" oninput="calculateTOS()"></td>
+        <td><input type="number" class="lots-input" readonly></td>
+        <td><input type="number" class="lots-place" readonly></td>
+        <td><input type="number" class="hots-input" readonly></td>
+        <td><input type="number" class="hots-place" readonly></td>
+        <td class="solo-col" style="display: ${IS_FORM_1B ? 'table-cell' : 'none'};"><input type="number" class="solo-input" readonly></td>
+        <td class="solo-col" style="display: ${IS_FORM_1B ? 'table-cell' : 'none'};"><input type="number" class="solo-place" readonly></td>
+        <td class="no-print"><button class="btn-sm btn-danger" onclick="this.closest('tr').remove(); calculateTOS();"><i class="fas fa-trash"></i></button></td>
+      `;
+      
+      tbody.appendChild(tr);
+      calculateTOS();
+    };
+
+    // 4. MATH & CASCADE LOGIC
+    window.calculateTOS = () => {
+      const rows = document.querySelectorAll("#tosBody tr");
+      let totalItems = 0;
+      
+      // First pass: get total items
+      rows.forEach(row => {
+        totalItems += parseInt(row.querySelector(".items-input").value) || 0;
+      });
+      document.getElementById("totalItems").textContent = totalItems;
+
+      let currentItemNumber = 1;
+      let totalLots = 0, totalHots = 0, totalSolo = 0;
+
+      rows.forEach(row => {
+        const items = parseInt(row.querySelector(".items-input").value) || 0;
+        
+        // Percent
+        const percent = totalItems > 0 ? (items / totalItems) * 100 : 0;
+        row.querySelector(".percent-input").value = percent.toFixed(1);
+
+        // LOTS & HOTS Calculations
+        let lots = 0, hots = 0, solo = 0;
+        
+        if (IS_FORM_1B) {
+          lots = Math.round(items * 0.50);
+          hots = Math.round(items * 0.30);
+          solo = items - lots - hots; // Ensure it adds up to exact total
+        } else {
+          lots = Math.round(items * 0.60);
+          hots = items - lots; // Ensure it adds up
+        }
+
+        row.querySelector(".lots-input").value = lots;
+        row.querySelector(".hots-input").value = hots;
+        
+        if (IS_FORM_1B) row.querySelector(".solo-input").value = solo;
+
+        // Placement (Cascading numbers)
+        if (lots > 0) {
+          row.querySelector(".lots-place").value = `${currentItemNumber}-${currentItemNumber + lots - 1}`;
+          currentItemNumber += lots;
+        } else {
+          row.querySelector(".lots-place").value = "-";
+        }
+
+        if (hots > 0) {
+          row.querySelector(".hots-place").value = `${currentItemNumber}-${currentItemNumber + hots - 1}`;
+          currentItemNumber += hots;
+        } else {
+          row.querySelector(".hots-place").value = "-";
+        }
+
+        if (IS_FORM_1B && solo > 0) {
+          row.querySelector(".solo-place").value = `${currentItemNumber}-${currentItemNumber + solo - 1}`;
+          currentItemNumber += solo;
+        } else if (IS_FORM_1B) {
+          row.querySelector(".solo-place").value = "-";
+        }
+
+        totalLots += lots;
+        totalHots += hots;
+        totalSolo += solo;
+      });
+
+      // Update Footer
+      document.getElementById("totalLots").textContent = totalLots;
+      document.getElementById("totalHots").textContent = totalHots;
+      if (IS_FORM_1B) document.getElementById("totalSolo").textContent = totalSolo;
+    };
+
+    // 5. GENERATE EXAM & SAVE
+    window.generateExamFromTOS = async () => {
+      const subject = document.getElementById("tosSubject").value.trim();
+      if (!subject) { alert("Please enter a Subject."); return; }
+
+      const rows = document.querySelectorAll("#tosBody tr");
+      const tosData = [];
+      let totalItems = 0;
+
+      rows.forEach(row => {
+        const topic = row.querySelector("textarea").value.trim();
+        const competency = row.querySelectorAll("textarea")[1].value.trim();
+        const items = parseInt(row.querySelector(".items-input").value) || 0;
+        
+        if (topic && items > 0) {
+          tosData.push({
+            topic, competency, items,
+            lots: parseInt(row.querySelector(".lots-input").value),
+            hots: parseInt(row.querySelector(".hots-input").value)
+          });
+          totalItems += items;
+        }
+      });
+
+      if (tosData.length === 0) { alert("Please fill out at least one row with items."); return; }
+
+      try {
+        // Save the TOS to Firestore
+        const tosRef = await addDoc(collection(db, "tos_records"), {
+          teacherId: CURRENT_USER.uid,
+          classId: CLASS_ID,
+          subject: subject,
+          gradeLevel: GRADE_LEVEL,
+          formType: IS_FORM_1B ? "1B" : "1A",
+          totalItems: totalItems,
+          tosData: tosData,
+          createdAt: serverTimestamp()
+        });
+
+        // Redirect to the Exam Editor with the TOS ID in the URL
+        window.location.href = `exam-editor.html?classId=${CLASS_ID}&tosId=${tosRef.id}`;
+
+      } catch (e) {
+        console.error(e);
+        alert("Failed to save TOS.");
+      }
+    };
+  </script>
+</body>
+</html>
