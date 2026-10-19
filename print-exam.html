@@ -1,81 +1,386 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Print Exam Paper | SCPHS</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
   <style>
-    /* A4 Print Styles */
-    @media print {
-      .no-print { display: none !important; }
-      body { background: white; }
-      .page { page-break-after: always; padding: 20mm; }
+    :root {
+      --primary: #1e3c72;
+      --bg: #f1f5f9;
+      --text: #000;
     }
     
-    /* DepEd Document Styles */
-    .deped-header { text-align: center; margin-bottom: 20px; }
-    .deped-logo { height: 60px; margin: 0 auto 10px; }
-    .school-name { font-weight: bold; font-size: 16px; text-transform: uppercase; }
-    .exam-title { text-align: center; font-size: 18px; font-weight: bold; margin: 20px 0; text-decoration: underline; }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Times New Roman', Times, serif; background: var(--bg); color: var(--text); }
+
+    /* ================= CONTROLS (Hidden on Print) ================= */
+    .no-print {
+      background: #fff;
+      padding: 20px;
+      box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+      margin-bottom: 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .controls-group { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+    .btn { padding: 10px 20px; border: none; border-radius: 8px; font-family: 'Inter', sans-serif; font-weight: 700; font-size: 0.85rem; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; text-decoration: none; transition: 0.2s; }
+    .btn:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
+    .btn-primary { background: var(--primary); color: #fff; }
+    .btn-success { background: #059669; color: #fff; }
+    .btn-outline { background: transparent; border: 2px solid var(--primary); color: var(--primary); }
+    .toggle-label { font-family: 'Inter', sans-serif; font-size: 0.85rem; font-weight: 600; display: flex; align-items: center; gap: 6px; cursor: pointer; }
+
+    /* ================= PAPER STYLES ================= */
+    .paper {
+      background: #fff;
+      width: 210mm; /* A4 Width */
+      min-height: 297mm; /* A4 Height */
+      margin: 0 auto 20px auto;
+      padding: 15mm 20mm;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+      position: relative;
+    }
+
+    /* Header */
+    .deped-header { text-align: center; margin-bottom: 20px; font-size: 11px; line-height: 1.4; }
+    .deped-logo { height: 60px; width: auto; margin: 0 auto 5px auto; display: block; }
+    .deped-header strong { font-size: 11px; }
+    .school-name { font-size: 14px; font-weight: 800; text-transform: uppercase; margin-top: 5px; letter-spacing: 0.5px; }
+    .school-address { font-size: 10px; text-transform: uppercase; }
+    .header-line { border: none; border-top: 2px solid #000; margin: 10px 0; }
+
+    /* Exam Meta */
+    .exam-title { text-align: center; font-size: 15px; font-weight: 800; margin: 15px 0 5px; text-transform: uppercase; }
+    .exam-subtitle { text-align: center; font-size: 11px; margin-bottom: 15px; }
     
+    .student-info {
+      display: flex; justify-content: space-between; border-top: 1px solid #000; border-bottom: 1px solid #000;
+      padding: 8px 0; margin-bottom: 15px; font-size: 11px; flex-wrap: wrap; gap: 10px;
+    }
+    .student-info div { flex: 1; min-width: 150px; }
+    .student-info strong { font-weight: 700; }
+
+    /* Instructions */
+    .instructions { font-size: 10px; background: #f9f9f9; padding: 8px 12px; border-left: 3px solid #000; margin-bottom: 20px; }
+
+    /* Test Sections */
+    .test-section { margin-bottom: 25px; }
+    .test-header { font-size: 12px; font-weight: 800; text-transform: uppercase; margin-bottom: 5px; }
+    .test-direction { font-size: 10px; font-style: italic; margin-bottom: 15px; }
+
+    /* Questions */
+    .question-item { margin-bottom: 15px; display: flex; gap: 10px; font-size: 11px; line-height: 1.4; }
+    .q-num { font-weight: 700; min-width: 20px; }
+    .q-body { flex: 1; }
+    .q-text { margin-bottom: 5px; }
+    
+    /* Options Layout */
+    .options-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 5px 15px; margin-left: 15px; }
+    .option { display: flex; gap: 5px; }
+    .option-letter { font-weight: 700; }
+
+    /* Blank lines for ID / Essay */
+    .blank-line { display: inline-block; border-bottom: 1px solid #000; width: 150px; margin-left: 5px; }
+    .essay-lines { margin-top: 10px; margin-left: 15px; }
+    .essay-line { border-bottom: 1px solid #ccc; height: 25px; }
+
+    /* True/False */
+    .tf-options { margin-left: 15px; display: flex; gap: 20px; }
+    .tf-box { border: 1px solid #000; padding: 2px 10px; font-size: 10px; font-weight: 700; }
+
     /* Signatories */
-    .signatories { display: flex; justify-content: space-between; margin-top: 40px; }
+    .signatories { display: flex; justify-content: space-between; margin-top: 40px; font-size: 11px; page-break-inside: avoid; }
     .sig-block { text-align: center; width: 30%; }
-    .sig-line { border-top: 1px solid #000; margin-top: 30px; margin-bottom: 5px; }
+    .sig-line { border-top: 1px solid #000; margin-top: 35px; margin-bottom: 5px; }
+    .sig-name { font-weight: 700; text-transform: uppercase; }
+    .sig-title { font-size: 10px; }
+
+    /* ================= PRINT MEDIA ================= */
+    @media print {
+      @page { size: A4 portrait; margin: 0; }
+      body { background: #fff; }
+      .no-print { display: none !important; }
+      .paper { width: 100%; min-height: auto; box-shadow: none; margin: 0; padding: 15mm 20mm; }
+      
+      /* Force background colors to print if needed */
+      * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+    }
   </style>
 </head>
 <body>
-  
-  <!-- EDITABLE CONTROLS (Hidden during print) -->
-  <div class="no-print" style="padding: 20px; background: #f1f5f9;">
-    <h2>Print Settings</h2>
-    <label>School Name: <input type="text" id="editSchoolName" value="STA. CRUZ PINGKIAN HIGH SCHOOL"></label>
-    <label>Region: <input type="text" id="editRegion" value="Region II - Cagayan Valley"></label>
-    <label>Adviser Name: <input type="text" id="editAdviser" value="Ricardo E. Jueves Jr."></label>
-    <button onclick="window.print()" style="padding:10px; background:#1e3c72; color:white;">Print / Save as PDF</button>
+
+  <!-- CONTROLS (Hidden on Print) -->
+  <div class="no-print">
+    <div class="controls-group">
+      <a href="javascript:history.back()" class="btn btn-outline"><i class="fas fa-arrow-left"></i> Back to Editor</a>
+      <h3 style="font-family:'Inter'; font-size: 1rem; color: var(--primary); margin-left: 10px;">Exam Preview</h3>
+    </div>
+    
+    <div class="controls-group">
+      <label class="toggle-label">
+        <input type="checkbox" id="toggleAnswerKey" onchange="toggleAnswerKey()">
+        Show Answer Key (Teacher's Copy)
+      </label>
+      <button class="btn btn-success" onclick="window.print()"><i class="fas fa-print"></i> Print / Save PDF</button>
+    </div>
   </div>
 
-  <!-- DOCUMENT TO PRINT -->
-  <div class="page" id="printArea">
-    <div class="deped-header">
-      <img src="./assets/images/deped-logo.png" class="deped-logo">
-      <div>Republic of the Philippines</div>
-      <div>Department of Education</div>
-      <div id="displayRegion">Region II - Cagayan Valley</div>
-      <div class="school-name" id="displaySchool">STA. CRUZ PINGKIAN HIGH SCHOOL</div>
-    </div>
-
-    <div class="exam-title">FIRST QUARTERLY EXAMINATION</div>
+  <!-- PAPER CONTENT -->
+  <div class="paper" id="examPaper">
     
-    <!-- Questions would be loaded here dynamically via JS -->
-    <div id="questionsContainer">
-      <!-- Question 1 -->
+    <!-- DepEd Header -->
+    <div class="deped-header">
+      <!-- Replace with your actual logo path if different -->
+      <img src="./assets/images/deped-logo.png" alt="DepEd Logo" class="deped-logo" onerror="this.style.display='none'">
+      <div>Republic of the Philippines</div>
+      <div><strong>Department of Education</strong></div>
+      <div>Region II - Cagayan Valley</div>
+      <div>Schools Division of Nueva Vizcaya</div>
+      <div class="school-name">Sta. Cruz Pingkian High School</div>
+      <div class="school-address">Pingkian Kayapa, Nueva Vizcaya</div>
+    </div>
+    <hr class="header-line">
+
+    <!-- Exam Info -->
+    <div class="exam-title" id="printExamTitle">Loading Exam Title...</div>
+    <div class="exam-subtitle">
+      <span id="printSubject">Subject</span> | 
+      <span id="printTerm">Term 1</span> | 
+      <span id="printType">Written Work</span>
     </div>
 
+    <div class="student-info">
+      <div><strong>Name:</strong> ______________________________</div>
+      <div><strong>Section:</strong> __________________</div>
+      <div><strong>Date:</strong> ______________</div>
+      <div><strong>Score:</strong> _____ / <span id="printTotalScore">0</span></div>
+    </div>
+
+    <div class="instructions">
+      <strong>GENERAL INSTRUCTIONS:</strong> Read each question carefully. Write your answers clearly on the space provided. Any form of erasure or tampering may invalidate your answer. Use black or blue ink only.
+    </div>
+
+    <!-- Questions Container -->
+    <div id="questionsContainer">
+      <div style="text-align: center; padding: 50px; color: #666;">Loading questions...</div>
+    </div>
+
+    <!-- Signatories -->
     <div class="signatories">
       <div class="sig-block">
         <div>Prepared by:</div>
         <div class="sig-line"></div>
-        <div id="displayAdviser">Ricardo E. Jueves Jr.</div>
-        <div>Teacher</div>
+        <div class="sig-name" id="printTeacherName">Teacher Name</div>
+        <div class="sig-title">Subject Teacher</div>
       </div>
       <div class="sig-block">
         <div>Checked by:</div>
         <div class="sig-line"></div>
-        <div>_____________________</div>
-        <div>Department Head</div>
+        <div class="sig-name">_________________________</div>
+        <div class="sig-title">Head Teacher / Dept. Head</div>
+      </div>
+      <div class="sig-block">
+        <div>Approved by:</div>
+        <div class="sig-line"></div>
+        <div class="sig-name">_________________________</div>
+        <div class="sig-title">School Principal</div>
       </div>
     </div>
+
   </div>
 
-  <script>
-    // Bind live editing to the print area
-    document.getElementById('editSchoolName').addEventListener('input', (e) => {
-      document.getElementById('displaySchool').innerText = e.target.value.toUpperCase();
+  <!-- JAVASCRIPT LOGIC -->
+  <script type="module">
+    import { auth, db } from "./assets/js/firebase-config.js";
+    import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+    import { doc, getDoc, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+    import { getCurrentUserProfile } from "./assets/js/roles.js";
+
+    let QUESTIONS = [];
+    let SHOW_ANSWER_KEY = false;
+
+    onAuthStateChanged(auth, async (user) => {
+      if (!user) { window.location.href = "login.html"; return; }
+
+      const params = new URLSearchParams(window.location.search);
+      const examId = params.get('examId');
+
+      if (!examId) { alert("No exam ID provided."); return; }
+
+      // Fetch Teacher Name
+      const profile = await getCurrentUserProfile();
+      if (profile?.name) document.getElementById('printTeacherName').textContent = profile.name;
+
+      // Fetch Exam Metadata
+      const examSnap = await getDoc(doc(db, "exams", examId));
+      if (examSnap.exists()) {
+        const data = examSnap.data();
+        document.getElementById('printExamTitle').textContent = data.title;
+        document.getElementById('printSubject').textContent = data.subject || "Automotive";
+        document.getElementById('printTerm').textContent = `Term ${data.term}`;
+        document.getElementById('printType').textContent = data.type === 'ww' ? 'Written Work' : (data.type === 'pt' ? 'Performance Task' : 'Quarterly Assessment');
+      }
+
+      // Fetch Questions
+      const qSnap = await getDocs(collection(db, "exams", examId, "questions"));
+      QUESTIONS = qSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+      
+      // Sort by order
+      QUESTIONS.sort((a, b) => (a.order || 0) - (b.order || 0));
+      
+      document.getElementById('printTotalScore').textContent = QUESTIONS.length;
+
+      renderQuestions();
     });
-    document.getElementById('editRegion').addEventListener('input', (e) => {
-      document.getElementById('displayRegion').innerText = e.target.value;
-    });
-    document.getElementById('editAdviser').addEventListener('input', (e) => {
-      document.getElementById('displayAdviser').innerText = e.target.value;
-    });
+
+    function renderQuestions() {
+      const container = document.getElementById('questionsContainer');
+      if (QUESTIONS.length === 0) {
+        container.innerHTML = "<p>No questions found for this exam.</p>";
+        return;
+      }
+
+      // Group Questions by Type
+      const groups = {
+        multiple_choice: [],
+        true_false: [],
+        identification: [],
+        matching: [],
+        essay: []
+      };
+
+      QUESTIONS.forEach(q => {
+        if (groups[q.type]) groups[q.type].push(q);
+      });
+
+      let html = "";
+      let itemCounter = 1;
+
+      // --- 1. MULTIPLE CHOICE ---
+      if (groups.multiple_choice.length > 0) {
+        html += `
+          <div class="test-section">
+            <div class="test-header">I. MULTIPLE CHOICE</div>
+            <div class="test-direction">Direction: Read each question carefully. Choose the letter of the correct answer.</div>
+        `;
+        
+        groups.multiple_choice.forEach(q => {
+          html += `
+            <div class="question-item">
+              <div class="q-num">${itemCounter}.</div>
+              <div class="q-body">
+                <div class="q-text">${q.question}</div>
+                <div class="options-grid">
+                  ${(q.options || []).map((opt, i) => `
+                    <div class="option"><span class="option-letter">${String.fromCharCode(65+i)}.</span> ${opt}</div>
+                  `).join('')}
+                </div>
+                ${SHOW_ANSWER_KEY ? `<div style="color:red; font-size:10px; margin-top:5px;"><strong>Answer: ${q.correct_answer}</strong></div>` : ''}
+              </div>
+            </div>
+          `;
+          itemCounter++;
+        });
+        html += `</div>`;
+      }
+
+      // --- 2. TRUE OR FALSE ---
+      if (groups.true_false.length > 0) {
+        html += `
+          <div class="test-section">
+            <div class="test-header">II. TRUE OR FALSE</div>
+            <div class="test-direction">Direction: Write TRUE if the statement is correct, and FALSE if it is incorrect.</div>
+        `;
+
+        groups.true_false.forEach(q => {
+          html += `
+            <div class="question-item">
+              <div class="q-num">${itemCounter}.</div>
+              <div class="q-body">
+                <div class="q-text">${q.question}</div>
+                <div class="tf-options">
+                  <span class="tf-box">TRUE</span>
+                  <span class="tf-box">FALSE</span>
+                </div>
+                ${SHOW_ANSWER_KEY ? `<div style="color:red; font-size:10px; margin-top:5px;"><strong>Answer: ${q.correct_answer}</strong></div>` : ''}
+              </div>
+            </div>
+          `;
+          itemCounter++;
+        });
+        html += `</div>`;
+      }
+
+      // --- 3. IDENTIFICATION ---
+      if (groups.identification.length > 0) {
+        html += `
+          <div class="test-section">
+            <div class="test-header">III. IDENTIFICATION</div>
+            <div class="test-direction">Direction: Identify what is being described in each statement. Write your answer on the blank.</div>
+        `;
+
+        groups.identification.forEach(q => {
+          html += `
+            <div class="question-item">
+              <div class="q-num">${itemCounter}.</div>
+              <div class="q-body">
+                <div class="q-text">${q.question} <span class="blank-line"></span></div>
+                ${SHOW_ANSWER_KEY ? `<div style="color:red; font-size:10px; margin-top:5px;"><strong>Answer: ${q.correct_answer}</strong></div>` : ''}
+              </div>
+            </div>
+          `;
+          itemCounter++;
+        });
+        html += `</div>`;
+      }
+
+      // --- 4. ESSAY ---
+      if (groups.essay.length > 0) {
+        html += `
+          <div class="test-section">
+            <div class="test-header">IV. ESSAY</div>
+            <div class="test-direction">Direction: Read and analyze the question. Write your answer comprehensively.</div>
+        `;
+
+        groups.essay.forEach(q => {
+          html += `
+            <div class="question-item">
+              <div class="q-num">${itemCounter}.</div>
+              <div class="q-body">
+                <div class="q-text">${q.question}</div>
+                <div class="essay-lines">
+                  <div class="essay-line"></div>
+                  <div class="essay-line"></div>
+                  <div class="essay-line"></div>
+                  <div class="essay-line"></div>
+                  <div class="essay-line"></div>
+                </div>
+                ${SHOW_ANSWER_KEY ? `<div style="color:red; font-size:10px; margin-top:5px; background:#fee2e2; padding:5px; border-radius:4px;"><strong>Grading Rubric / Answer:</strong><br>${q.correct_answer}</div>` : ''}
+              </div>
+            </div>
+          `;
+          itemCounter++;
+        });
+        html += `</div>`;
+      }
+
+      container.innerHTML = html;
+    }
+
+    // Toggle Answer Key
+    window.toggleAnswerKey = () => {
+      SHOW_ANSWER_KEY = document.getElementById('toggleAnswerKey').checked;
+      renderQuestions();
+    };
+
   </script>
 </body>
 </html>

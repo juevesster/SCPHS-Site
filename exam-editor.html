@@ -527,10 +527,21 @@
 
         const aiQuestions = JSON.parse(jsonMatch[0]);
 
+        // ✅ CLEAN UP AI RESPONSE (Strip redundant "A.", "B.", etc.)
         aiQuestions.forEach(q => {
           q.id = doc(collection(db, "exams", EXAM_ID, "questions")).id;
           q.order = LOCAL_QUESTIONS.length;
           q.points = 1;
+
+          // If it's a Multiple Choice and has options, clean them
+          if (q.type === 'multiple_choice' && Array.isArray(q.options)) {
+            q.options = q.options.map(opt => {
+              if (!opt) return "";
+              // Regex: removes leading "A.", "A)", "A ", or "A - " (case insensitive)
+              return opt.replace(/^[A-D]\s*[\.\)]\s*/i, '').trim();
+            });
+          }
+
           LOCAL_QUESTIONS.push(q);
         });
 
