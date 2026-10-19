@@ -41,8 +41,7 @@
     .btn-primary { background: var(--primary); color: #fff; border: none; padding: 12px 20px; border-radius: 8px; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; }
     .btn-sm { padding: 6px 12px; font-size: 0.8rem; }
     .btn-danger { background: #fee2e2; color: #dc2626; }
-    .btn-success { background: #059669; color: #fff; }
-
+    
     /* Print Styles */
     @media print {
       body { background: #fff; padding: 0; }
@@ -56,7 +55,7 @@
       .signature-section { display: flex !important; justify-content: space-between; margin-top: 40px; }
     }
     
-    /* Signature Section for Printing */
+    /* Signature Section */
     .signature-section { display: none; margin-top: 40px; }
     .sig-block { text-align: center; width: 30%; }
     .sig-line { border-top: 1px solid #000; margin-top: 40px; margin-bottom: 5px; }
@@ -70,7 +69,7 @@
   </header>
 
   <div class="container">
-    <!-- DepEd Print Header (Visible only on print) -->
+    <!-- Print Header -->
     <div style="display: none; text-align: center; margin-bottom: 20px;" class="print-header">
       <h3 style="margin: 0;">Republic of the Philippines</h3>
       <h4 style="margin: 0;">Department of Education</h4>
@@ -82,7 +81,10 @@
       <div class="form-row">
         <div class="form-group">
           <label>Subject</label>
-          <input type="text" id="tosSubject" class="form-control" placeholder="e.g., Automotive" required>
+          <!-- Changed to a Dropdown to pull BoW -->
+          <select id="tosSubject" class="form-control">
+            <option value="">-- Loading Subjects... --</option>
+          </select>
         </div>
         <div class="form-group">
           <label>Grade Level</label>
@@ -93,12 +95,24 @@
           <input type="text" id="tosTime" class="form-control" value="60 mins">
         </div>
       </div>
+      
+      <div class="form-group" style="margin-bottom: 0;">
+        <label>Term / Quarter</label>
+        <select id="tosTerm" class="form-control">
+          <option value="1">Term 1</option>
+          <option value="2">Term 2</option>
+          <option value="3">Term 3</option>
+        </select>
+      </div>
     </div>
 
     <div class="card">
       <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
         <h3 style="font-size: 1.1rem; color: var(--primary); margin: 0;">📝 Table of Specifications</h3>
-        <button class="btn-primary btn-sm no-print" onclick="addRow()"><i class="fas fa-plus"></i> Add Row</button>
+        <div style="display: flex; gap: 10px;">
+          <button class="btn-primary btn-sm no-print" style="background: #059669;" onclick="loadBoW()"><i class="fas fa-download"></i> Load from BoW</button>
+          <button class="btn-primary btn-sm no-print" onclick="addRow()"><i class="fas fa-plus"></i> Add Blank Row</button>
+        </div>
       </div>
 
       <div class="table-responsive">
@@ -149,7 +163,7 @@
       <button class="btn-primary" onclick="generateExamFromTOS()" style="background: #4f46e5;"><i class="fas fa-robot"></i> Generate Exam from TOS</button>
     </div>
 
-    <!-- DepEd Signatures (Visible only on print) -->
+    <!-- Signatures -->
     <div class="signature-section">
       <div class="sig-block">
         <p>Prepared by:</p>
@@ -175,7 +189,7 @@
   <script type="module">
     import { auth, db } from "./assets/js/firebase-config.js";
     import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-    import { doc, getDoc, addDoc, collection, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+    import { doc, getDoc, addDoc, collection, serverTimestamp, getDocs, query, where } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
     let CURRENT_USER = null;
     let CLASS_ID = null;
@@ -189,7 +203,6 @@
 
       const params = new URLSearchParams(window.location.search);
       CLASS_ID = params.get('classId');
-      const examId = params.get('examId');
 
       if (!CLASS_ID) { alert("No class selected."); window.location.href = "teacher.html"; return; }
 
@@ -197,18 +210,17 @@
       const classSnap = await getDoc(doc(db, "classes", CLASS_ID));
       if (classSnap.exists()) {
         const clsData = classSnap.data();
-        GRADE_LEVEL = clsData.gradeLevel || "Grade 8"; // Default to Grade 8
+        GRADE_LEVEL = clsData.gradeLevel || "Grade 8";
         
-        // DepEd Logic: Form 1B is for Grades 9 & 10 (LOTS 50, HOTS 30, Solo 20)
-        // Form 1A is for others (LOTS 60, HOTS 40)
         const gradeNum = parseInt(GRADE_LEVEL.replace(/\D/g, ''));
         IS_FORM_1B = (gradeNum === 9 || gradeNum === 10);
 
         setupFormUI();
+        await loadSubjects();
       }
     });
 
-    // 2. SETUP UI BASED ON FORM TYPE
+    // 2. SETUP UI
     function setupFormUI() {
       document.getElementById("tosGrade").value = GRADE_LEVEL;
       
@@ -217,41 +229,109 @@
         document.getElementById("headerLots").textContent = "LOTS (50%)";
         document.getElementById("headerHots").textContent = "HOTS (30%)";
         document.getElementById("headerSolo").style.display = "table-cell";
-        
-        // Show solo columns
         document.querySelectorAll('.solo-col').forEach(el => el.style.display = 'table-cell');
       } else {
         document.getElementById("printFormTitle").textContent = "CID ASSESSMENT FORM 1A (Grades 7-8, 11-12)";
       }
       
-      addRow(); // Add initial row
+      addRow(); // Add initial blank row
     }
 
-    // 3. TABLE ROW GENERATION
+    // 3. LOAD SUBJECTS FROM FIRESTORE
+    async function loadSubjects() {
+      try {
+        const snap = await getDocs(collection(db, "subjects"));
+        const select = document.getElementById("tosSubject");
+        select.innerHTML = '<option value="">-- Select Subject --</option>';
+        
+        snap.forEach(doc => {
+          const data = doc.data();
+          const subjectName = data.name || data.subjectName || doc.id;
+          select.innerHTML += `<option value="${doc.id}">${subjectName}</option>`;
+        });
+      } catch (e) {
+        console.error("Failed to load subjects", e);
+        document.getElementById("tosSubject").innerHTML = '<option value="">Error loading subjects</option>';
+      }
+    }
+
+    // 4. LOAD BUDGET OF WORK (BoW)
+    window.loadBoW = async () => {
+      const subjectId = document.getElementById("tosSubject").value;
+      const term = document.getElementById("tosTerm").value;
+      
+      if (!subjectId) { alert("Please select a subject first."); return; }
+
+      const btn = event.target;
+      btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Loading...';
+      btn.disabled = true;
+
+      try {
+        // Querying the specific BoW path: subjects/{subjectId}/bow_terms/{term}/competencies
+        const bowRef = collection(db, "subjects", subjectId, "bow_terms", term, "competencies");
+        const bowSnap = await getDocs(bowRef);
+
+        if (bowSnap.empty) {
+          alert("No competencies found in the Budget of Work for this Term.");
+          btn.innerHTML = '<i class="fas fa-download"></i> Load from BoW';
+          btn.disabled = false;
+          return;
+        }
+
+        // Clear existing rows
+        document.getElementById("tosBody").innerHTML = "";
+
+        // Loop through the competencies and create rows
+        bowSnap.forEach(docSnap => {
+          const comp = docSnap.data();
+          // Assuming your BoW has fields like 'topic', 'competency', 'days'
+          const topic = comp.topic || comp.majorTopic || "General Topic";
+          const competency = comp.competency || comp.description || comp.code || "";
+          
+          addRowWithData(topic, competency);
+        });
+
+        // Recalculate math and placements
+        calculateTOS();
+
+      } catch (e) {
+        console.error("Error loading BoW:", e);
+        alert("Failed to load Budget of Work. Check the console for details.");
+      } finally {
+        btn.innerHTML = '<i class="fas fa-download"></i> Load from BoW';
+        btn.disabled = false;
+      }
+    };
+
+    // 5. TABLE ROW GENERATION
     window.addRow = () => {
+      addRowWithData("", "");
+      calculateTOS();
+    };
+
+    function addRowWithData(topic, competency) {
       const tbody = document.getElementById("tosBody");
       const tr = document.createElement("tr");
       
       tr.innerHTML = `
-        <td><textarea placeholder="Enter major topic..."></textarea></td>
-        <td><textarea placeholder="Enter learning competency..."></textarea></td>
+        <td><textarea placeholder="Enter major topic...">${topic}</textarea></td>
+        <td><textarea placeholder="Enter learning competency...">${competency}</textarea></td>
         <td><input type="number" value="4" min="0" class="days-input"></td>
         <td><input type="number" class="percent-input" readonly></td>
         <td><input type="number" value="10" min="0" class="items-input" oninput="calculateTOS()"></td>
         <td><input type="number" class="lots-input" readonly></td>
-        <td><input type="number" class="lots-place" readonly></td>
+        <td><input type="text" class="lots-place" readonly></td>
         <td><input type="number" class="hots-input" readonly></td>
-        <td><input type="number" class="hots-place" readonly></td>
+        <td><input type="text" class="hots-place" readonly></td>
         <td class="solo-col" style="display: ${IS_FORM_1B ? 'table-cell' : 'none'};"><input type="number" class="solo-input" readonly></td>
-        <td class="solo-col" style="display: ${IS_FORM_1B ? 'table-cell' : 'none'};"><input type="number" class="solo-place" readonly></td>
+        <td class="solo-col" style="display: ${IS_FORM_1B ? 'table-cell' : 'none'};"><input type="text" class="solo-place" readonly></td>
         <td class="no-print"><button class="btn-sm btn-danger" onclick="this.closest('tr').remove(); calculateTOS();"><i class="fas fa-trash"></i></button></td>
       `;
       
       tbody.appendChild(tr);
-      calculateTOS();
-    };
+    }
 
-    // 4. MATH & CASCADE LOGIC
+    // 6. MATH & CASCADE LOGIC (FIXED FOR AUTO-PLACEMENT)
     window.calculateTOS = () => {
       const rows = document.querySelectorAll("#tosBody tr");
       let totalItems = 0;
@@ -322,10 +402,13 @@
       if (IS_FORM_1B) document.getElementById("totalSolo").textContent = totalSolo;
     };
 
-    // 5. GENERATE EXAM & SAVE
+    // 7. GENERATE EXAM & SAVE
     window.generateExamFromTOS = async () => {
-      const subject = document.getElementById("tosSubject").value.trim();
-      if (!subject) { alert("Please enter a Subject."); return; }
+      const subject = document.getElementById("tosSubject").options[document.getElementById("tosSubject").selectedIndex].text;
+      if (!subject || subject.includes("Loading") || subject.includes("Select")) { 
+        alert("Please select a valid Subject."); 
+        return; 
+      }
 
       const rows = document.querySelectorAll("#tosBody tr");
       const tosData = [];
@@ -340,7 +423,8 @@
           tosData.push({
             topic, competency, items,
             lots: parseInt(row.querySelector(".lots-input").value),
-            hots: parseInt(row.querySelector(".hots-input").value)
+            hots: parseInt(row.querySelector(".hots-input").value),
+            solo: IS_FORM_1B ? parseInt(row.querySelector(".solo-input").value) : 0
           });
           totalItems += items;
         }
@@ -369,6 +453,12 @@
         alert("Failed to save TOS.");
       }
     };
+    
+    // Force initial calculation on load
+    window.onload = () => {
+       setTimeout(() => calculateTOS(), 500);
+    }
+
   </script>
 </body>
 </html>
