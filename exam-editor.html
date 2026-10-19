@@ -228,6 +228,7 @@
 
     let CURRENT_USER = null;
     let EXAM_ID = null;
+    let CLASS_ID = null;
     let EXAM_DATA = {};
     let LOCAL_QUESTIONS = [];
 
@@ -238,6 +239,8 @@
       
       const urlParams = new URLSearchParams(window.location.search);
       EXAM_ID = urlParams.get('examId');
+      CLASS_ID = urlParams.get('classId');
+      const TOS_ID = urlParams.get('tosId'); // ✅ Check for TOS
       
       if (EXAM_ID) {
         // Editing an existing exam
@@ -246,7 +249,50 @@
         // Creating a new exam
         EXAM_ID = doc(collection(db, "exams")).id; // Pre-generate ID
       }
+
+      // ✅ IF TOS EXISTS, AUTO-GENERATE
+      if (TOS_ID) {
+        await generateFromTOS(TOS_ID);
+      }
     });
+
+    // ✅ NEW FUNCTION: Read TOS and Auto-Generate
+    async function generateFromTOS(tosId) {
+      try {
+        const tosSnap = await getDoc(doc(db, "tos_records", tosId));
+        if (!tosSnap.exists()) {
+          alert("TOS not found in database.");
+          return;
+        }
+
+        const tosData = tosSnap.data();
+        
+        // Build a prompt from the TOS topics
+        let topicString = tosData.subject + " - ";
+        const topics = tosData.tosData.map(t => t.topic).join(", ");
+        topicString += topics;
+
+        // Pre-fill the AI input so the teacher sees what's happening
+        document.getElementById('aiTopic').value = topicString;
+        
+        // Pre-fill counts based on TOS
+        document.getElementById('aiCountMC').value = tosData.tosData.reduce((sum, item) => sum + Math.floor(item.items * 0.4), 0);
+        document.getElementById('aiCountTF').value = tosData.tosData.reduce((sum, item) => sum + Math.floor(item.items * 0.3), 0);
+        document.getElementById('aiCountID').value = tosData.tosData.reduce((sum, item) => sum + Math.floor(item.items * 0.3), 0);
+        document.getElementById('aiCountEssay').value = 0;
+        document.getElementById('aiCountMatching').value = 0;
+
+        // Trigger the AI generation automatically
+        alert("📋 TOS Loaded! Click 'Generate & Add Questions' below to create the questions based on your TOS.");
+        
+        // Scroll to the AI section so they see it
+        document.querySelector('.ai-card').scrollIntoView({ behavior: 'smooth' });
+
+      } catch (e) {
+        console.error("Error reading TOS:", e);
+        alert("Failed to read TOS data.");
+      }
+    }
 
     async function loadExamFromDB() {
       const examRef = doc(db, "exams", EXAM_ID);
@@ -278,10 +324,10 @@
         term: document.getElementById('examTerm').value,
         duration: parseInt(document.getElementById('examDuration').value),
         passingScore: parseInt(document.getElementById('examPassing').value),
-        classId: CURRENT_USER.classId || 'CLASS_ID_HERE', // Ensure you pass classId via URL or fetch it
+        classId: CLASS_ID || EXAM_DATA.classId || 'CLASS_ID_HERE',
         createdBy: CURRENT_USER.uid,
         updatedAt: serverTimestamp(),
-        status: 'draft' // Ensure it starts as draft
+        status: 'draft'
       };
 
       await setDoc(doc(db, "exams", EXAM_ID), EXAM_DATA, { merge: true });
@@ -331,7 +377,6 @@
           document.getElementById('qOptD').value
         ];
       } else if (type === 'matching') {
-        // Generate dummy pairs for now, teacher can refine later
         const numPairs = parseInt(document.getElementById('qMatchPairs').value);
         newQ.matching_pairs = [];
         for (let i = 1; i <= numPairs; i++) {
@@ -346,7 +391,6 @@
       document.getElementById('qText').value = '';
       document.getElementById('qAnswer').value = '';
       ['A','B','C','D'].forEach(l => document.getElementById(`qOpt${l}`).value = '');
-      alert("✅ Question added locally! Click 'Save All Questions' to push to database.");
     };
 
     // 5. RENDER QUESTIONS TO UI
@@ -390,7 +434,6 @@
     window.deleteQuestion = (qId) => {
       if (!confirm("Remove this question?")) return;
       LOCAL_QUESTIONS = LOCAL_QUESTIONS.filter(q => q.id !== qId);
-      // Re-order
       LOCAL_QUESTIONS.forEach((q, i) => q.order = i);
       renderQuestions();
     };
@@ -406,9 +449,6 @@
       try {
         const batch = writeBatch(db);
         const qRef = collection(db, "exams", EXAM_ID, "questions");
-
-        // Optional: Clear existing questions first if you want a strict overwrite
-        // (For simplicity, we are just writing the local ones)
 
         LOCAL_QUESTIONS.forEach(q => {
           const docRef = doc(qRef, q.id);
@@ -447,8 +487,6 @@
       btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Generating ${total} Questions...`;
       btn.disabled = true;
 
-      // NOTE: In production, this MUST go through a backend (like Cloud Functions) to hide your API key.
-      // For testing, we are calling the API directly from the browser.
       const prompt = `Generate exactly ${total} exam questions about "${topic}". 
       I need:
       - ${mc} Multiple Choice questions (provide 4 options, answer is A/B/C/D)
@@ -466,12 +504,12 @@
       ]`;
 
       try {
-        // Replace with your actual DeepSeek API key
+        // ⚠️ REPLACE THIS WITH YOUR ACTUAL DEEPSEEK API KEY
         const response = await fetch("https://api.deepseek.com/v1/chat/completions", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            "Authorization": "Bearer sk-569a2c960e7b455b970a6b724398be3e"
+            "Authorization": "Bearer sk-569a2c960e7b455b970a6b724398be3e" 
           },
           body: JSON.stringify({
             model: "deepseek-chat",
@@ -484,13 +522,11 @@
         const data = await response.json();
         const content = data.choices[0].message.content;
         
-        // Extract JSON from the markdown code block
         const jsonMatch = content.match(/\[[\s\S]*\]/);
         if (!jsonMatch) throw new Error("No JSON found in AI response");
 
         const aiQuestions = JSON.parse(jsonMatch[0]);
 
-        // Add to local questions array
         aiQuestions.forEach(q => {
           q.id = doc(collection(db, "exams", EXAM_ID, "questions")).id;
           q.order = LOCAL_QUESTIONS.length;
@@ -503,7 +539,7 @@
 
       } catch (error) {
         console.error("AI Generation Error:", error);
-        alert("❌ AI Generation failed. Check the console. (Did you add your API key?)");
+        alert("❌ AI Generation failed. Check the console.");
       } finally {
         btn.innerHTML = `<i class="fas fa-magic"></i> Generate & Add Questions`;
         btn.disabled = false;
