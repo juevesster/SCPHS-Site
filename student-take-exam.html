@@ -1,0 +1,703 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Secure Exam | SCPHS Portal</title>
+  
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <style>
+    :root {
+      --primary: #1e3c72;
+      --primary-light: #2a5298;
+      --bg-color: #f1f5f9;
+      --text-main: #1e293b;
+      --text-muted: #64748b;
+      --card-bg: #ffffff;
+      --border: #e2e8f0;
+      --danger: #dc2626;
+      --success: #059669;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    
+    body { 
+      font-family: 'Inter', sans-serif; 
+      background: var(--bg-color); 
+      color: var(--text-main); 
+      display: flex; 
+      flex-direction: column;
+      min-height: 100vh;
+      /* Prevent text selection to stop copying */
+      user-select: none; 
+      -webkit-user-select: none;
+    }
+
+    /* ================= HEADER ================= */
+    .exam-header {
+      background: var(--card-bg);
+      padding: 15px 30px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 2px solid var(--border);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    }
+
+    .exam-info h1 { font-size: 1.2rem; font-weight: 700; color: var(--primary); }
+    .exam-info p { font-size: 0.85rem; color: var(--text-muted); margin-top: 4px; }
+
+    .timer-box {
+      background: #fee2e2;
+      color: #991b1b;
+      padding: 8px 16px;
+      border-radius: 8px;
+      font-weight: 800;
+      font-size: 1.2rem;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      border: 1px solid #fecaca;
+      font-variant-numeric: tabular-nums;
+    }
+
+    /* ================= MAIN LAYOUT ================= */
+    .exam-container {
+      max-width: 900px;
+      margin: 30px auto;
+      width: 100%;
+      padding: 0 20px;
+      flex: 1;
+    }
+
+    .question-card {
+      background: var(--card-bg);
+      border-radius: 12px;
+      padding: 25px;
+      margin-bottom: 20px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+      border: 1px solid var(--border);
+    }
+
+    .question-text {
+      font-size: 1.1rem;
+      font-weight: 600;
+      line-height: 1.5;
+      margin-bottom: 20px;
+      color: var(--text-main);
+    }
+
+    .q-number {
+      color: var(--primary);
+      font-weight: 800;
+      margin-right: 8px;
+    }
+
+    /* Options */
+    .options-list { display: flex; flex-direction: column; gap: 10px; }
+
+    .option-label {
+      display: flex;
+      align-items: center;
+      padding: 12px 16px;
+      border: 2px solid var(--border);
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.2s;
+      font-size: 1rem;
+      background: #f8fafc;
+    }
+
+    .option-label:hover { background: #f1f5f9; border-color: #cbd5e1; }
+
+    .option-label input[type="radio"] {
+      margin-right: 12px;
+      width: 18px;
+      height: 18px;
+      cursor: pointer;
+      accent-color: var(--primary);
+    }
+
+    .option-label.selected {
+      background: #e0e7ff;
+      border-color: var(--primary);
+      color: var(--primary);
+      font-weight: 600;
+    }
+
+    /* Inputs for ID/Essay */
+    .text-answer-input {
+      width: 100%;
+      padding: 12px 16px;
+      border: 2px solid var(--border);
+      border-radius: 8px;
+      font-size: 1rem;
+      font-family: inherit;
+      transition: border-color 0.2s;
+    }
+
+    .text-answer-input:focus {
+      outline: none;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(30,60,114,0.1);
+    }
+
+    textarea.text-answer-input {
+      min-height: 120px;
+      resize: vertical;
+    }
+
+    /* Matching Type Table */
+    .matching-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+    }
+
+    .matching-table th {
+      background: #f1f5f9;
+      padding: 10px;
+      text-align: left;
+      font-size: 0.9rem;
+      border-bottom: 2px solid var(--border);
+    }
+
+    .matching-table td {
+      padding: 12px 10px;
+      border-bottom: 1px solid var(--border);
+      vertical-align: middle;
+    }
+
+    .matching-select {
+      width: 100%;
+      padding: 8px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      font-family: inherit;
+      font-size: 0.9rem;
+    }
+
+    /* ================= FOOTER ================= */
+    .exam-footer {
+      background: var(--card-bg);
+      padding: 20px;
+      border-top: 1px solid var(--border);
+      display: flex;
+      justify-content: center;
+      position: sticky;
+      bottom: 0;
+      z-index: 100;
+      box-shadow: 0 -2px 10px rgba(0,0,0,0.05);
+    }
+
+    .btn-submit {
+      background: var(--primary);
+      color: #fff;
+      border: none;
+      padding: 15px 40px;
+      border-radius: 8px;
+      font-size: 1rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .btn-submit:hover { background: var(--primary-light); transform: translateY(-2px); }
+    .btn-submit:disabled { background: #94a3b8; cursor: not-allowed; transform: none; }
+
+    /* ================= OVERLAYS ================= */
+    .overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.95);
+      z-index: 9999;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+      color: #fff;
+      text-align: center;
+    }
+
+    .overlay-content {
+      max-width: 500px;
+      background: #1e293b;
+      padding: 40px;
+      border-radius: 16px;
+      border: 1px solid #334155;
+    }
+
+    .overlay h2 { font-size: 1.8rem; margin-bottom: 15px; color: #f87171; }
+    .overlay p { font-size: 1rem; color: #94a3b8; line-height: 1.6; margin-bottom: 25px; }
+
+    /* Loading Spinner */
+    .spinner {
+      width: 50px; height: 50px;
+      border: 5px solid #334155;
+      border-top-color: var(--primary-light);
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin: 0 auto 20px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* Warning Toast */
+    .toast-warning {
+      position: fixed;
+      top: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #ef4444;
+      color: #fff;
+      padding: 15px 30px;
+      border-radius: 8px;
+      font-weight: 600;
+      box-shadow: 0 4px 20px rgba(239, 68, 68, 0.4);
+      z-index: 10000;
+      display: none;
+      animation: slideDown 0.3s ease;
+    }
+    @keyframes slideDown { from { top: -50px; opacity: 0; } to { top: 20px; opacity: 1; } }
+
+  </style>
+</head>
+<body>
+
+  <!-- Loading Screen -->
+  <div id="loadingOverlay" class="overlay" style="background: var(--bg-color); color: var(--text-main);">
+    <div>
+      <div class="spinner"></div>
+      <h2 style="color: var(--primary); font-size: 1.5rem;">Loading Secure Exam...</h2>
+      <p style="color: var(--text-muted);">Verifying credentials and fetching questions.</p>
+    </div>
+  </div>
+
+  <!-- Anti-Cheat Termination Overlay -->
+  <div id="cheatOverlay" class="overlay" style="display: none;">
+    <div class="overlay-content">
+      <i class="fas fa-shield-alt" style="font-size: 4rem; color: #f87171; margin-bottom: 20px;"></i>
+      <h2>Exam Terminated</h2>
+      <p id="cheatReason">You have violated the secure exam policy multiple times. Your progress has been saved and submitted. The teacher has been notified.</p>
+      <button onclick="window.location.href='teacher.html'" style="background: var(--danger); color: white; border: none; padding: 12px 24px; border-radius: 8px; font-weight: 700; cursor: pointer;">Return to Dashboard</button>
+    </div>
+  </div>
+
+  <!-- Exam Completion Overlay -->
+  <div id="successOverlay" class="overlay" style="display: none; background: rgba(15, 23, 42, 0.9);">
+    <div class="overlay-content" style="border-color: #059669;">
+      <i class="fas fa-check-circle" style="font-size: 4rem; color: #34d399; margin-bottom: 20px;"></i>
+      <h2 style="color: #34d399;">Exam Submitted!</h2>
+      <p>Your answers have been securely recorded. You may now close this window.</p>
+      <button onclick="window.location.href='teacher.html'" style="background: #059669; color: white; border: none; padding: 12px 24px; border-radius: 8px; font-weight: 700; cursor: pointer;">Return to Dashboard</button>
+    </div>
+  </div>
+
+  <!-- Warning Toast -->
+  <div id="warningToast" class="toast-warning">
+    <i class="fas fa-exclamation-triangle"></i> <span id="warningMessage">Warning!</span>
+  </div>
+
+  <!-- Main Exam UI (Hidden initially) -->
+  <div id="examUI" style="display: none; flex-direction: column; min-height: 100vh;">
+    
+    <header class="exam-header">
+      <div class="exam-info">
+        <h1 id="examTitle">Exam Title</h1>
+        <p id="examMeta">Subject • Term 1 • 20 Items</p>
+      </div>
+      <div class="timer-box">
+        <i class="fas fa-stopwatch"></i>
+        <span id="timerDisplay">00:00</span>
+      </div>
+    </header>
+
+    <main class="exam-container" id="questionsContainer">
+      <!-- Questions will be injected here by JS -->
+    </main>
+
+    <footer class="exam-footer">
+      <button class="btn-submit" id="btnSubmitExam" onclick="submitExam()">
+        <i class="fas fa-paper-plane"></i> Submit Final Answers
+      </button>
+    </footer>
+
+  </div>
+
+  <!-- ================= JAVASCRIPT LOGIC ================= -->
+  <script type="module">
+    import { auth, db } from "./assets/js/firebase-config.js";
+    import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+    import { doc, getDoc, collection, getDocs, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+    // State
+    let CURRENT_USER = null;
+    let EXAM_ID = null;
+    let EXAM_DATA = null;
+    let QUESTIONS = [];
+    let STUDENT_ANSWERS = {}; // { questionId: answer }
+    let VIOLATIONS = 0;
+    let TIMER_INTERVAL = null;
+    let TIME_REMAINING = 0;
+
+    // 1. INITIALIZE & AUTH CHECK
+    onAuthStateChanged(auth, async (user) => {
+      if (!user) {
+        alert("You must be logged in to take an exam.");
+        window.location.href = "login.html";
+        return;
+      }
+      
+      CURRENT_USER = user;
+      const urlParams = new URLSearchParams(window.location.search);
+      EXAM_ID = urlParams.get('examId');
+
+      if (!EXAM_ID) {
+        alert("No exam ID provided.");
+        window.location.href = "teacher.html";
+        return;
+      }
+
+      await loadExamData();
+    });
+
+    // 2. LOAD EXAM & QUESTIONS FROM FIRESTORE
+    async function loadExamData() {
+      try {
+        // Fetch Exam Metadata
+        const examRef = doc(db, "exams", EXAM_ID);
+        const examSnap = await getDoc(examRef);
+
+        if (!examSnap.exists()) {
+          alert("Exam not found or has been deleted.");
+          window.location.href = "teacher.html";
+          return;
+        }
+
+        EXAM_DATA = examSnap.data();
+
+        // Check if exam is published
+        if (EXAM_DATA.status !== 'published') {
+          alert("This exam is not yet published. Please contact your teacher.");
+          window.location.href = "teacher.html";
+          return;
+        }
+
+        // Fetch Questions Subcollection
+        const qSnap = await getDocs(collection(db, "exams", EXAM_ID, "questions"));
+        QUESTIONS = qSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+
+        if (QUESTIONS.length === 0) {
+          alert("This exam has no questions yet.");
+          window.location.href = "teacher.html";
+          return;
+        }
+
+        // Sort questions by 'order' field if available
+        QUESTIONS.sort((a, b) => (a.order || 0) - (b.order || 0));
+
+        // Initialize Timer (Duration in minutes)
+        TIME_REMAINING = (EXAM_DATA.duration || 60) * 60; // Convert to seconds
+
+        // Setup UI
+        document.getElementById("examTitle").textContent = EXAM_DATA.title;
+        document.getElementById("examMeta").textContent = `${EXAM_DATA.subject || 'Exam'} • Term ${EXAM_DATA.term} • ${QUESTIONS.length} Items`;
+        
+        renderQuestions();
+        
+        // Hide loading, show exam
+        document.getElementById("loadingOverlay").style.display = "none";
+        document.getElementById("examUI").style.display = "flex";
+
+        // Start Secure Environment & Timer
+        initSecureEnvironment();
+        startTimer();
+
+      } catch (error) {
+        console.error("Error loading exam:", error);
+        alert("Failed to load exam data. Check your connection.");
+      }
+    }
+
+    // 3. RENDER QUESTIONS TO UI
+    function renderQuestions() {
+      const container = document.getElementById("questionsContainer");
+      let html = "";
+
+      QUESTIONS.forEach((q, index) => {
+        const qNum = index + 1;
+        let contentHtml = "";
+
+        if (q.type === 'multiple_choice') {
+          contentHtml = `<div class="options-list">`;
+          q.options.forEach((opt, i) => {
+            const letter = String.fromCharCode(65 + i); // A, B, C, D
+            contentHtml += `
+              <label class="option-label" onclick="selectOption('${q.id}', '${letter}', this)">
+                <input type="radio" name="q_${q.id}" value="${letter}">
+                <span><strong>${letter}.</strong> ${opt}</span>
+              </label>
+            `;
+          });
+          contentHtml += `</div>`;
+        } 
+        else if (q.type === 'true_false') {
+          contentHtml = `
+            <div class="options-list">
+              <label class="option-label" onclick="selectOption('${q.id}', 'True', this)">
+                <input type="radio" name="q_${q.id}" value="True"> <span>True</span>
+              </label>
+              <label class="option-label" onclick="selectOption('${q.id}', 'False', this)">
+                <input type="radio" name="q_${q.id}" value="False"> <span>False</span>
+              </label>
+            </div>
+          `;
+        } 
+        else if (q.type === 'identification') {
+          contentHtml = `
+            <input type="text" class="text-answer-input" placeholder="Type your answer here..." 
+                   oninput="saveAnswer('${q.id}', this.value)">
+          `;
+        } 
+        else if (q.type === 'essay') {
+          contentHtml = `
+            <textarea class="text-answer-input" placeholder="Write your essay answer here..." 
+                      oninput="saveAnswer('${q.id}', this.value)"></textarea>
+          `;
+        }
+        else if (q.type === 'matching') {
+          // Handle matching pairs
+          const pairs = q.matching_pairs || [];
+          const leftItems = pairs.filter(p => p.left !== null);
+          const rightItems = pairs.filter(p => p.right !== null);
+          
+          contentHtml = `
+            <table class="matching-table">
+              <thead>
+                <tr>
+                  <th style="width: 40%;">Column A</th>
+                  <th style="width: 60%;">Column B (Select Answer)</th>
+                </tr>
+              </thead>
+              <tbody>
+          `;
+          
+          leftItems.forEach((leftItem, i) => {
+            contentHtml += `
+              <tr>
+                <td>${leftItem.left}</td>
+                <td>
+                  <select class="matching-select" onchange="saveMatchingAnswer('${q.id}', '${leftItem.left}', this.value)">
+                    <option value="">-- Select Match --</option>
+                    ${rightItems.map(r => `<option value="${r.right}">${r.right}</option>`).join('')}
+                  </select>
+                </td>
+              </tr>
+            `;
+          });
+          
+          contentHtml += `</tbody></table>`;
+        }
+
+        html += `
+          <div class="question-card" id="card_${q.id}">
+            <div class="question-text">
+              <span class="q-number">${qNum}.</span> ${q.question}
+            </div>
+            ${contentHtml}
+          </div>
+        `;
+      });
+
+      container.innerHTML = html;
+    }
+
+    // 4. ANSWER HANDLING
+    window.selectOption = (qId, value, element) => {
+      // Remove 'selected' class from siblings
+      const parent = element.parentElement;
+      parent.querySelectorAll('.option-label').forEach(el => el.classList.remove('selected'));
+      // Add to clicked
+      element.classList.add('selected');
+      // Save
+      STUDENT_ANSWERS[qId] = value;
+    };
+
+    window.saveAnswer = (qId, value) => {
+      STUDENT_ANSWERS[qId] = value;
+    };
+
+    window.saveMatchingAnswer = (qId, leftText, rightText) => {
+      if (!STUDENT_ANSWERS[qId]) STUDENT_ANSWERS[qId] = {};
+      STUDENT_ANSWERS[qId][leftText] = rightText;
+    };
+
+    // 5. SECURE EXAM ENVIRONMENT (ANTI-CHEAT)
+    function initSecureEnvironment() {
+      // Disable Right-Click
+      document.addEventListener('contextmenu', e => e.preventDefault());
+
+      // Disable Copy/Paste
+      document.addEventListener('copy', e => e.preventDefault());
+      document.addEventListener('paste', e => e.preventDefault());
+
+      // Detect Tab Switching
+      document.addEventListener('visibilitychange', () => {
+        if (document.hidden) {
+          logViolation("Tab switched or window minimized");
+        }
+      });
+
+      // Detect Fullscreen Exit (Optional, but highly recommended)
+      // Request fullscreen on first click
+      document.body.addEventListener('click', () => {
+        if (!document.fullscreenElement) {
+          document.documentElement.requestFullscreen().catch(err => {
+            console.log(`Error attempting to enable fullscreen: ${err.message}`);
+          });
+        }
+      }, { once: true });
+
+      document.addEventListener('fullscreenchange', () => {
+        if (!document.fullscreenElement) {
+          logViolation("Exited fullscreen mode");
+        }
+      });
+
+      // Disable DevTools (F12, Ctrl+Shift+I)
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'F12' || (e.ctrlKey && e.shiftKey && e.key === 'I')) {
+          e.preventDefault();
+          logViolation("Attempted to open developer tools");
+        }
+      });
+    }
+
+    function logViolation(reason) {
+      VIOLATIONS++;
+      
+      // Show Warning Toast
+      const toast = document.getElementById("warningToast");
+      const msg = document.getElementById("warningMessage");
+      msg.textContent = `Warning ${VIOLATIONS}/3: ${reason}. Exam will auto-submit on 3rd violation.`;
+      toast.style.display = "block";
+      
+      setTimeout(() => { toast.style.display = "none"; }, 4000);
+
+      // If 3 violations, terminate exam
+      if (VIOLATIONS >= 3) {
+        terminateExam("Too many security violations.");
+      }
+    }
+
+    function terminateExam(reason) {
+      clearInterval(TIMER_INTERVAL);
+      document.getElementById("examUI").style.display = "none";
+      
+      const overlay = document.getElementById("cheatOverlay");
+      document.getElementById("cheatReason").textContent = `Reason: ${reason} Your current progress has been submitted.`;
+      overlay.style.display = "flex";
+      
+      // Auto-submit whatever they have
+      submitExam(true); 
+    }
+
+    // 6. TIMER LOGIC
+    function startTimer() {
+      const display = document.getElementById("timerDisplay");
+      
+      const updateTimer = () => {
+        if (TIME_REMAINING <= 0) {
+          clearInterval(TIMER_INTERVAL);
+          alert("Time is up! Auto-submitting your exam.");
+          submitExam(true);
+          return;
+        }
+
+        TIME_REMAINING--;
+        
+        const hours = Math.floor(TIME_REMAINING / 3600);
+        const minutes = Math.floor((TIME_REMAINING % 3600) / 60);
+        const seconds = TIME_REMAINING % 60;
+
+        display.textContent = `${hours > 0 ? hours + ':' : ''}${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+        
+        // Turn red when less than 5 mins
+        if (TIME_REMAINING < 300) {
+          display.parentElement.style.background = "#fee2e2";
+          display.parentElement.style.color = "#dc2626";
+          display.parentElement.style.animation = "pulse 1s infinite";
+        }
+      };
+
+      updateTimer(); // Initial call
+      TIMER_INTERVAL = setInterval(updateTimer, 1000);
+    }
+
+    // 7. SUBMIT EXAM & GRADING
+    window.submitExam = async (isForced = false) => {
+      if (!isForced && !confirm("Are you sure you want to submit your exam? You cannot change your answers after this.")) {
+        return;
+      }
+
+      const btn = document.getElementById("btnSubmitExam");
+      btn.disabled = true;
+      btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Submitting...`;
+
+      try {
+        // 1. Calculate Score (Basic Auto-Grading)
+        let score = 0;
+        let totalPoints = 0;
+
+        QUESTIONS.forEach(q => {
+          totalPoints += (q.points || 1);
+          const studentAns = STUDENT_ANSWERS[q.id];
+          const correctAns = q.correct_answer;
+
+          if (q.type === 'multiple_choice' || q.type === 'true_false' || q.type === 'identification') {
+            if (studentAns && studentAns.toString().toLowerCase() === correctAns.toString().toLowerCase()) {
+              score += (q.points || 1);
+            }
+          }
+          // Note: Matching and Essay need manual checking by the teacher, 
+          // so they are saved but not auto-scored here.
+        });
+
+        // 2. Save Submission to Firestore
+        const submissionRef = collection(db, "exam_submissions");
+        await addDoc(submissionRef, {
+          examId: EXAM_ID,
+          studentId: CURRENT_USER.uid,
+          studentName: CURRENT_USER.displayName || CURRENT_USER.email,
+          classId: EXAM_DATA.classId,
+          answers: STUDENT_ANSWERS,
+          score: score,
+          totalPoints: totalPoints,
+          violations: VIOLATIONS,
+          status: isForced ? 'forced_submit' : 'submitted',
+          submittedAt: serverTimestamp()
+        });
+
+        // 3. Update UI
+        clearInterval(TIMER_INTERVAL);
+        document.getElementById("examUI").style.display = "none";
+        document.getElementById("successOverlay").style.display = "flex";
+
+      } catch (error) {
+        console.error("Submission failed:", error);
+        alert("Failed to submit exam. Please check your internet connection and try again.");
+        btn.disabled = false;
+        btn.innerHTML = `<i class="fas fa-paper-plane"></i> Submit Final Answers`;
+      }
+    };
+
+  </script>
+</body>
+</html>

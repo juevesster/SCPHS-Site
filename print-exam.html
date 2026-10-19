@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <style>
+    /* A4 Print Styles */
+    @media print {
+      .no-print { display: none !important; }
+      body { background: white; }
+      .page { page-break-after: always; padding: 20mm; }
+    }
+    
+    /* DepEd Document Styles */
+    .deped-header { text-align: center; margin-bottom: 20px; }
+    .deped-logo { height: 60px; margin: 0 auto 10px; }
+    .school-name { font-weight: bold; font-size: 16px; text-transform: uppercase; }
+    .exam-title { text-align: center; font-size: 18px; font-weight: bold; margin: 20px 0; text-decoration: underline; }
+    
+    /* Signatories */
+    .signatories { display: flex; justify-content: space-between; margin-top: 40px; }
+    .sig-block { text-align: center; width: 30%; }
+    .sig-line { border-top: 1px solid #000; margin-top: 30px; margin-bottom: 5px; }
+  </style>
+</head>
+<body>
+  
+  <!-- EDITABLE CONTROLS (Hidden during print) -->
+  <div class="no-print" style="padding: 20px; background: #f1f5f9;">
+    <h2>Print Settings</h2>
+    <label>School Name: <input type="text" id="editSchoolName" value="STA. CRUZ PINGKIAN HIGH SCHOOL"></label>
+    <label>Region: <input type="text" id="editRegion" value="Region II - Cagayan Valley"></label>
+    <label>Adviser Name: <input type="text" id="editAdviser" value="Ricardo E. Jueves Jr."></label>
+    <button onclick="window.print()" style="padding:10px; background:#1e3c72; color:white;">Print / Save as PDF</button>
+  </div>
+
+  <!-- DOCUMENT TO PRINT -->
+  <div class="page" id="printArea">
+    <div class="deped-header">
+      <img src="./assets/images/deped-logo.png" class="deped-logo">
+      <div>Republic of the Philippines</div>
+      <div>Department of Education</div>
+      <div id="displayRegion">Region II - Cagayan Valley</div>
+      <div class="school-name" id="displaySchool">STA. CRUZ PINGKIAN HIGH SCHOOL</div>
+    </div>
+
+    <div class="exam-title">FIRST QUARTERLY EXAMINATION</div>
+    
+    <!-- Questions would be loaded here dynamically via JS -->
+    <div id="questionsContainer">
+      <!-- Question 1 -->
+    </div>
+
+    <div class="signatories">
+      <div class="sig-block">
+        <div>Prepared by:</div>
+        <div class="sig-line"></div>
+        <div id="displayAdviser">Ricardo E. Jueves Jr.</div>
+        <div>Teacher</div>
+      </div>
+      <div class="sig-block">
+        <div>Checked by:</div>
+        <div class="sig-line"></div>
+        <div>_____________________</div>
+        <div>Department Head</div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Bind live editing to the print area
+    document.getElementById('editSchoolName').addEventListener('input', (e) => {
+      document.getElementById('displaySchool').innerText = e.target.value.toUpperCase();
+    });
+    document.getElementById('editRegion').addEventListener('input', (e) => {
+      document.getElementById('displayRegion').innerText = e.target.value;
+    });
+    document.getElementById('editAdviser').addEventListener('input', (e) => {
+      document.getElementById('displayAdviser').innerText = e.target.value;
+    });
+  </script>
+</body>
+</html>
