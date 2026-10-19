@@ -151,7 +151,6 @@
       </div>
       <div class="header-actions">
         <a href="teacher.html" class="btn-top"><i class="fas fa-arrow-left"></i> Dashboard</a>
-        <!-- 🆕 Print button now opens modal -->
         <button id="btnOpenPrintModal" class="btn-top primary"><i class="fas fa-print"></i> Print Schedule</button>
       </div>
     </div>
@@ -291,7 +290,6 @@
       <tbody id="printScheduleBody"></tbody>
     </table>
     
-    <!-- 🆕 Added IDs to signature elements for easier JS targeting -->
     <div class="print-signatories">
       <div class="print-sig">
         <div class="label">Prepared by:</div>
@@ -347,7 +345,9 @@
           if (tsSnap.exists() && Array.isArray(tsSnap.data().slots)) {
              TIME_SLOTS = tsSnap.data().slots;
           } else {
+             // 🆕 ADDED FLAG CEREMONY 7:20 - 7:45
              TIME_SLOTS = [
+                { id: "flag", label: "FLAG CEREMONY", start: "07:20", end: "07:45", type: "ceremony" },
                 { id: "period-1", label: "PERIOD 1", start: "07:45", end: "08:45", type: "class" },
                 { id: "period-2", label: "PERIOD 2", start: "08:45", end: "09:45", type: "class" },
                 { id: "break-1", label: "HEALTH BREAK / RECESS", start: "09:45", end: "10:00", type: "break" },
@@ -365,7 +365,6 @@
         document.getElementById("loading").style.display = "none";
         document.getElementById("mainContent").style.display = "block";
         
-        // 🆕 Wire Print Buttons
         setupPrintLogic();
       });
     }
@@ -401,6 +400,7 @@
 
     function renderScreenSchedule() {
       const container = document.getElementById("scheduleGrid");
+      
       let totalSessions = 0;
       let uniqueClasses = new Set();
       let uniqueSubjects = new Set();
@@ -488,7 +488,6 @@
       document.getElementById("printTerm").textContent = `Term ${document.getElementById("termSelect").value}`;
       document.getElementById("printDate").textContent = new Date().toLocaleDateString('en-PH', { year: 'numeric', month: 'long', day: 'numeric' });
       
-      // Pre-fill the modal inputs
       document.getElementById("p-preparedName").value = CURRENT_PROFILE.name || "";
       document.getElementById("p-notedName").value = "SATURNINO P. CALANSI EdD";
 
@@ -522,7 +521,6 @@
       });
     }
 
-    // 🆕 Print Logic
     function setupPrintLogic() {
       const modal = document.getElementById("printModal");
       
@@ -543,12 +541,10 @@
         const checkName = document.getElementById("p-checkedName").value || "____________________";
         const noteName = document.getElementById("p-notedName").value || "____________________";
 
-        // Update the print document
         document.getElementById("printSigPrepared").textContent = prepName;
         document.getElementById("printSigChecked").textContent = checkName;
         document.getElementById("printSigNoted").textContent = noteName;
 
-        // Trigger Print
         modal.style.display = "none";
         setTimeout(() => window.print(), 200);
       });
