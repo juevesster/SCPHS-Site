@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>My Schedule & Workload — SCPHS</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <style>
+    :root { 
+      --primary: #1e3c72; 
+      --primary-light: #2a5298;
+      --bg: #f1f5f9; 
+      --card: #fff; 
+      --text: #1e293b; 
+      --muted: #64748b; 
+      --border: #e2e8f0;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
+    body { background: var(--bg); color: var(--text); min-height: 100vh; padding-bottom: 60px; }
+
+    /* Header */
+    .header { background: linear-gradient(135deg, var(--primary), var(--primary-light)); color: #fff; padding: 24px 0; margin-bottom: 24px; }
+    .container { max-width: 1400px; margin: 0 auto; padding: 0 20px; }
+    .header-row { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px; }
+    .header h1 { font-size: 1.5rem; font-weight: 800; margin-bottom: 4px; }
+    .header p { opacity: 0.85; font-size: 0.9rem; }
+    .header-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+    .btn-top { background: rgba(255,255,255,0.15); color: #fff; text-decoration: none; padding: 8px 16px; border-radius: 8px; font-weight: 600; font-size: 0.85rem; transition: background 0.2s; display: flex; align-items: center; gap: 6px; border: none; cursor: pointer; }
+    .btn-top:hover { background: rgba(255,255,255,0.25); }
+
+    /* Layout */
+    .toolbar { display: flex; gap: 16px; align-items: center; background: #fff; padding: 16px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); margin-bottom: 24px; flex-wrap: wrap; }
+    .toolbar select { padding: 10px 16px; border-radius: 8px; border: 1px solid var(--border); font-family: inherit; font-size: 0.9rem; font-weight: 600; outline: none; cursor: pointer; background: #f8fafc; }
+    
+    .tabs { display: flex; gap: 8px; margin-bottom: 24px; border-bottom: 2px solid var(--border); overflow-x: auto; }
+    .tab { padding: 12px 24px; cursor: pointer; border: none; background: none; font-weight: 700; font-size: 0.95rem; color: var(--muted); transition: all 0.2s; border-bottom: 3px solid transparent; white-space: nowrap; }
+    .tab:hover { color: var(--primary); }
+    .tab.active { color: var(--primary); border-bottom-color: var(--primary); }
+
+    .tab-content { display: none; animation: fadeIn 0.3s; }
+    .tab-content.active { display: block; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+    /* Stats */
+    .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 24px; }
+    .stat-card { background: #fff; border-radius: 12px; padding: 20px; text-align: center; box-shadow: 0 2px 8px rgba(0,0,0,0.05); border-top: 4px solid var(--primary); }
+    .stat-num { font-size: 2rem; font-weight: 800; color: var(--primary); line-height: 1; }
+    .stat-label { font-size: 0.85rem; color: var(--muted); font-weight: 600; margin-top: 6px; text-transform: uppercase; letter-spacing: 0.05em; }
+
+    /* Schedule Table */
+    .table-wrap { background: #fff; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); overflow-x: auto; margin-bottom: 24px; }
+    table.schedule { width: 100%; border-collapse: collapse; font-size: 0.85rem; min-width: 900px; }
+    th { background: var(--primary); color: #fff; padding: 12px; text-align: left; font-size: 0.75rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; }
+    td { border: 1px solid var(--border); padding: 10px; vertical-align: top; }
+    td.time-col { background: #f8fafc; font-weight: 700; width: 120px; white-space: nowrap; }
+    .entry-box { background: #eff6ff; border-left: 4px solid var(--primary); padding: 8px; border-radius: 4px; margin-bottom: 6px; }
+    .entry-box strong { color: var(--primary); display: block; font-size: 0.9rem; }
+    .entry-box small { color: var(--muted); display: block; font-size: 0.75rem; margin-top: 2px; }
+    .break-cell { background: #fff3cd; text-align: center; font-weight: 700; color: #856404; }
+
+    /* Workload */
+    .workload-item { margin-bottom: 16px; }
+    .workload-header { display: flex; justify-content: space-between; font-size: 0.9rem; font-weight: 600; margin-bottom: 6px; }
+    .workload-bar { height: 10px; background: #e2e8f0; border-radius: 5px; overflow: hidden; }
+    .workload-fill { height: 100%; border-radius: 5px; transition: width 0.5s; }
+    .fill-normal { background: #10b981; }
+    .fill-high { background: #f59e0b; }
+    .fill-overload { background: #dc2626; }
+
+    .loader { text-align: center; padding: 60px; color: var(--muted); font-weight: 500; }
+    .spinner { width: 40px; height: 40px; border: 4px solid #e2e8f0; border-top-color: var(--primary); border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 16px; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ============================================================ */
+    /* PRINT LAYOUT (DepEd Format) */
+    /* ============================================================ */
+    .print-doc { display: none; }
+    
+    @media print {
+      @page { size: A4 landscape; margin: 10mm; }
+      body { background: #fff; padding: 0; }
+      .header, .toolbar, .tabs, .tab-content, .btn-top, .loader { display: none !important; }
+      .print-doc { display: block !important; font-family: 'Arial', sans-serif; color: #000; }
+      
+      .print-header { text-align: center; margin-bottom: 15px; line-height: 1.2; }
+      .print-header img { height: 50px; margin-bottom: 5px; }
+      .print-header h2 { font-size: 12pt; margin: 0; }
+      .print-header p { font-size: 10pt; margin: 0; }
+      .print-title { font-size: 14pt; font-weight: bold; text-align: center; margin: 15px 0 10px; text-transform: uppercase; border-bottom: 2px solid #000; padding-bottom: 5px; }
+      
+      table.print-table { width: 100%; border-collapse: collapse; font-size: 10pt; margin-bottom: 15px; }
+      table.print-table th, table.print-table td { border: 1px solid #000; padding: 4px 6px; text-align: left; vertical-align: top; }
+      table.print-table th { background: #f0f0f0; font-weight: bold; text-align: center; font-size: 9pt; }
+      table.print-table td.time-col { font-weight: bold; width: 80px; text-align: center; }
+      
+      .print-signatories { display: flex; justify-content: space-between; margin-top: 30px; page-break-inside: avoid; }
+      .print-sig { text-align: center; width: 30%; }
+      .print-sig .label { font-size: 10pt; margin-bottom: 30px; }
+      .print-sig .name { font-weight: bold; font-size: 11pt; border-top: 1px solid #000; padding-top: 3px; }
+      .print-sig .pos { font-size: 9pt; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- SCREEN HEADER -->
+  <header class="header">
+    <div class="container header-row">
+      <div>
+        <h1><i class="fas fa-calendar-alt"></i> My Teaching Schedule</h1>
+        <p id="welcomeSub">Loading teacher data...</p>
+      </div>
+      <div class="header-actions">
+        <a href="teacher.html" class="btn-top"><i class="fas fa-arrow-left"></i> Dashboard</a>
+        <button onclick="window.print()" class="btn-top"><i class="fas fa-print"></i> Print Schedule</button>
+      </div>
+    </div>
+  </header>
+
+  <div class="container">
+    <div id="loading" class="loader">
+      <div class="spinner"></div>
+      <div>Generating your workload schedule...</div>
+    </div>
+
+    <div id="mainContent" style="display: none;">
+      
+      <!-- TOOLBAR -->
+      <div class="toolbar">
+        <label style="font-weight: 700; color: var(--text);">Term:</label>
+        <select id="termSelect">
+          <option value="1" selected>📘 Term 1</option>
+          <option value="2">📗 Term 2</option>
+          <option value="3">📕 Term 3</option>
+        </select>
+      </div>
+
+      <!-- TABS -->
+      <div class="tabs">
+        <button class="tab active" data-target="schedule"><i class="fas fa-calendar-week"></i> Weekly Schedule</button>
+        <button class="tab" data-target="workload"><i class="fas fa-chart-line"></i> Workload Analysis</button>
+      </div>
+
+      <!-- TAB 1: SCHEDULE -->
+      <div id="schedule" class="tab-content active">
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-num" id="statSessions">0</div>
+            <div class="stat-label">Sessions / Week</div>
+          </div>
+          <div class="stat-card" style="border-top-color: #10b981;">
+            <div class="stat-num" id="statClasses">0</div>
+            <div class="stat-label">Classes Handled</div>
+          </div>
+          <div class="stat-card" style="border-top-color: #7c3aed;">
+            <div class="stat-num" id="statSubjects">0</div>
+            <div class="stat-label">Subjects Taught</div>
+          </div>
+        </div>
+
+        <div class="table-wrap">
+          <table class="schedule" id="scheduleTable">
+            <thead>
+              <tr>
+                <th style="width: 120px;">Time</th>
+                <th>Monday</th>
+                <th>Tuesday</th>
+                <th>Wednesday</th>
+                <th>Thursday</th>
+                <th>Friday</th>
+              </tr>
+            </thead>
+            <tbody id="scheduleBody">
+              <!-- Injected via JS -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- TAB 2: WORKLOAD -->
+      <div id="workload" class="tab-content">
+        <div style="background: #fff; padding: 24px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.05);">
+          <h3 style="margin-bottom: 20px; color: var(--primary);">Daily Workload Analysis</h3>
+          <div id="workloadContainer">
+            <!-- Injected via JS -->
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ========================================== -->
+  <!-- PRINT-ONLY LAYOUT (DepEd Standard)         -->
+  <!-- ========================================== -->
+  <div class="print-doc" id="printDoc">
+    <div class="print-header">
+      <img src="assets/images/deped-logo.png" alt="DepEd Logo" />
+      <h2>Republic of the Philippines</h2>
+      <h2>Department of Education</h2>
+      <p>Region II — Cagayan Valley</p>
+      <p>Schools Division of Nueva Vizcaya</p>
+      <h2 style="margin-top: 10px; font-size: 13pt;">STA. CRUZ PINGKIAN HIGH SCHOOL</h2>
+      <p>Brgy. Sta. Cruz, Pingkian, Nueva Vizcaya</p>
+    </div>
+
+    <div class="print-title">TEACHER'S CLASS PROGRAM</div>
+
+    <table class="print-table">
+      <tr>
+        <td style="width: 15%; font-weight: bold;">Teacher Name:</td>
+        <td style="width: 35%;" id="printTeacherName"></td>
+        <td style="width: 15%; font-weight: bold;">School Year:</td>
+        <td style="width: 35%;">2026-2027</td>
+      </tr>
+      <tr>
+        <td style="font-weight: bold;">Term:</td>
+        <td id="printTerm"></td>
+        <td style="font-weight: bold;">Date Generated:</td>
+        <td id="printDate"></td>
+      </tr>
+    </table>
+
+    <table class="print-table" id="printScheduleTable">
+      <thead>
+        <tr>
+          <th style="width: 80px;">TIME</th>
+          <th>MONDAY</th>
+          <th>TUESDAY</th>
+          <th>WEDNESDAY</th>
+          <th>THURSDAY</th>
+          <th>FRIDAY</th>
+        </tr>
+      </thead>
+      <tbody id="printScheduleBody">
+        <!-- Injected via JS -->
+      </tbody>
+    </table>
+
+    <div class="print-signatories">
+      <div class="print-sig">
+        <div class="label">Prepared by:</div>
+        <div class="name" id="printSigName"></div>
+        <div class="pos">Teacher</div>
+      </div>
+      <div class="print-sig">
+        <div class="label">Checked by:</div>
+        <div class="name"></div>
+        <div class="pos">Head Teacher / Master Teacher</div>
+      </div>
+      <div class="print-sig">
+        <div class="label">Noted by:</div>
+        <div class="name">SATURNINO P. CALANSI EdD</div>
+        <div class="pos">Principal IV / School Head</div>
+      </div>
+    </div>
+  </div>
+
+  <script type="module">
+    import { auth, db } from "./assets/js/firebase-config.js";
+    import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+    import { collection, getDocs, query, where } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+    import { getCurrentUserProfile } from "./assets/js/roles.js";
+
+    let CURRENT_USER = null;
+    let CURRENT_PROFILE = null;
+    let MY_SCHEDULE = [];
+    let TIME_SLOTS = [];
+    const DAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"];
+
+    // Fixed timeslots matching the DO 009 standard (can be pulled from Firestore later)
+    const DEFAULT_SLOTS = [
+      { id: "slot-1", label: "7:30 - 8:30", start: "07:30", end: "08:30", type: "class" },
+      { id: "slot-2", label: "8:30 - 9:30", start: "08:30", end: "09:30", type: "class" },
+      { id: "slot-3", label: "9:30 - 9:45", start: "09:30", end: "09:45", type: "break", name: "HEALTH BREAK" },
+      { id: "slot-4", label: "9:45 - 10:45", start: "09:45", end: "10:45", type: "class" },
+      { id: "slot-5", label: "10:45 - 11:45", start: "10:45", end: "11:45", type: "class" },
+      { id: "slot-6", label: "11:45 - 12:45", start: "11:45", end: "12:45", type: "break", name: "LUNCH BREAK" },
+      { id: "slot-7", label: "12:45 - 1:45", start: "12:45", end: "13:45", type: "class" },
+      { id: "slot-8", label: "1:45 - 2:45", start: "13:45", end: "14:45", type: "class" },
+      { id: "slot-9", label: "2:45 - 3:45", start: "14:45", end: "15:45", type: "class" },
+    ];
+
+    async function init() {
+      onAuthStateChanged(auth, async (user) => {
+        if (!user) { location.replace("login.html"); return; }
+        CURRENT_USER = user;
+        CURRENT_PROFILE = await getCurrentUserProfile();
+
+        document.getElementById("welcomeSub").textContent = `Welcome, ${CURRENT_PROFILE.name || user.email}! | Three-Term System (DO 009 s.2026)`;
+        
+        TIME_SLOTS = DEFAULT_SLOTS; // In the future, fetch from Firestore `config/time_slots`
+        
+        await loadTeacherSchedule();
+        document.getElementById("loading").style.display = "none";
+        document.getElementById("mainContent").style.display = "block";
+      });
+    }
+
+    async function loadTeacherSchedule() {
+      MY_SCHEDULE = [];
+      
+      try {
+        // 1. Get all classes to find where this teacher is assigned
+        const classesSnap = await getDocs(collection(db, "classes"));
+        
+        for (const classDoc of classesSnap.docs) {
+          const cls = { id: classDoc.id, ...classDoc.data() };
+          const progSnap = await getDocs(collection(db, "classes", cls.id, "program"));
+          
+          progSnap.docs.forEach(d => {
+            const entry = d.data();
+            // Check if this entry belongs to the logged-in teacher
+            if (entry.teacherUid === CURRENT_USER.uid || entry.teacherName === CURRENT_PROFILE.name) {
+              MY_SCHEDULE.push({
+                ...entry,
+                classLabel: cls.classLabel || "Unnamed Class",
+                gradeLevel: cls.gradeLevel || ""
+              });
+            }
+          });
+        }
+      } catch (e) {
+        console.error("Error loading schedule:", e);
+      }
+
+      renderScreenSchedule();
+      renderPrintSchedule();
+    }
+
+    function renderScreenSchedule() {
+      const tbody = document.getElementById("scheduleBody");
+      tbody.innerHTML = "";
+
+      let totalSessions = 0;
+      let uniqueClasses = new Set();
+      let uniqueSubjects = new Set();
+      let workload = { Monday: 0, Tuesday: 0, Wednesday: 0, Thursday: 0, Friday: 0 };
+
+      TIME_SLOTS.forEach(slot => {
+        const tr = document.createElement("tr");
+        
+        // Time Col
+        tr.innerHTML = `<td class="time-col">${slot.label}</td>`;
+
+        if (slot.type === "break") {
+          tr.innerHTML += `<td colspan="5" class="break-cell">${slot.name}</td>`;
+        } else {
+          DAYS.forEach(day => {
+            const match = MY_SCHEDULE.find(s => s.day === day && s.timeSlotId === slot.id);
+            
+            if (match) {
+              totalSessions++;
+              uniqueClasses.add(match.classLabel);
+              uniqueSubjects.add(match.subject);
+              workload[day]++;
+              
+              tr.innerHTML += `
+                <td>
+                  <div class="entry-box">
+                    <strong>${match.subject}</strong>
+                    <small>${match.classLabel}</small>
+                    ${match.room ? `<small>🏠 ${match.room}</small>` : ""}
+                  </div>
+                </td>
+              `;
+            } else {
+              tr.innerHTML += `<td style="color: #cbd5e1; text-align: center;">—</td>`;
+            }
+          });
+        }
+        tbody.appendChild(tr);
+      });
+
+      // Update Stats
+      document.getElementById("statSessions").textContent = totalSessions;
+      document.getElementById("statClasses").textContent = uniqueClasses.size;
+      document.getElementById("statSubjects").textContent = uniqueSubjects.size;
+
+      // Render Workload
+      const wlContainer = document.getElementById("workloadContainer");
+      wlContainer.innerHTML = DAYS.map(day => {
+        const count = workload[day];
+        const pct = Math.min((count / 8) * 100, 100);
+        let fillClass = "fill-normal";
+        if (count > 6) fillClass = "fill-high";
+        if (count > 8) fillClass = "fill-overload";
+
+        return `
+          <div class="workload-item">
+            <div class="workload-header">
+              <span>${day}</span>
+              <span>${count} sessions</span>
+            </div>
+            <div class="workload-bar">
+              <div class="workload-fill ${fillClass}" style="width: ${pct}%"></div>
+            </div>
+          </div>
+        `;
+      }).join("");
+    }
+
+    function renderPrintSchedule() {
+      // Populate Print Header
+      document.getElementById("printTeacherName").textContent = CURRENT_PROFILE.name || CURRENT_USER.email;
+      document.getElementById("printTerm").textContent = `Term ${document.getElementById("termSelect").value}`;
+      document.getElementById("printDate").textContent = new Date().toLocaleDateString('en-PH', { year: 'numeric', month: 'long', day: 'numeric' });
+      document.getElementById("printSigName").textContent = (CURRENT_PROFILE.name || "").toUpperCase();
+
+      // Populate Print Table
+      const tbody = document.getElementById("printScheduleBody");
+      tbody.innerHTML = "";
+
+      TIME_SLOTS.forEach(slot => {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `<td class="time-col">${slot.label}</td>`;
+
+        if (slot.type === "break") {
+          tr.innerHTML += `<td colspan="5" style="text-align:center; font-weight:bold; font-size: 9pt;">${slot.name}</td>`;
+        } else {
+          DAYS.forEach(day => {
+            const match = MY_SCHEDULE.find(s => s.day === day && s.timeSlotId === slot.id);
+            if (match) {
+              tr.innerHTML += `
+                <td>
+                  <div style="font-weight:bold; font-size:10pt;">${match.subject}</div>
+                  <div style="font-size:9pt;">${match.classLabel}</div>
+                  ${match.room ? `<div style="font-size:8pt; color:#333;">📍 ${match.room}</div>` : ""}
+                </td>
+              `;
+            } else {
+              tr.innerHTML += `<td style="text-align:center;">—</td>`;
+            }
+          });
+        }
+        tbody.appendChild(tr);
+      });
+    }
+
+    // Tab Switching
+    document.querySelectorAll(".tab").forEach(tab => {
+      tab.addEventListener("click", () => {
+        document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
+        document.querySelectorAll(".tab-content").forEach(c => c.classList.remove("active"));
+        tab.classList.add("active");
+        document.getElementById(tab.dataset.target).classList.add("active");
+      });
+    });
+
+    init();
+  </script>
+</body>
+</html>
