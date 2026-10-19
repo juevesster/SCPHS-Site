@@ -325,20 +325,26 @@
     });
 
     // 4. LOAD CLASSES (With Student Count)
+        // 4. LOAD CLASSES (Automated from Admin)
     async function loadMyClasses() {
       const host = document.getElementById("classList");
       try {
+        // Fetch all classes from Firestore
         const snap = await getDocs(collection(db, "classes"));
         const myClasses = [];
 
         snap.forEach(docSnap => {
           const cls = { id: docSnap.id, ...docSnap.data() };
           
+          // Check all possible ways the Admin might have assigned you
           const isAdviser = cls.adviserUid === CURRENT_USER.uid;
           const isTeacher = cls.teacherUids && cls.teacherUids.includes(CURRENT_USER.uid);
           const isSubjectTeacher = cls.subjectTeachers && Object.values(cls.subjectTeachers).includes(CURRENT_USER.uid);
 
-          if (isAdviser || isTeacher || isSubjectTeacher) {
+          // 🆕 Also check if your UID is in a general 'teachers' array (if one exists)
+          const isGeneralTeacher = cls.teachers && cls.teachers.includes(CURRENT_USER.uid);
+
+          if (isAdviser || isTeacher || isSubjectTeacher || isGeneralTeacher) {
             myClasses.push({ 
               ...cls, 
               role: isAdviser ? "Class Adviser" : "Subject Teacher" 
@@ -356,21 +362,19 @@
           return;
         }
 
-        // Sort: Adviser first
+        // Sort classes: Adviser first
         myClasses.sort((a, b) => {
           if (a.role !== b.role) return a.role === "Class Adviser" ? -1 : 1;
           return String(a.gradeLevel).localeCompare(String(b.gradeLevel));
         });
 
-        // Fetch student counts for each class
-        const classCards = await Promise.all(myClasses.map(async (cls) => {
-          let studentCount = 0;
-          try {
-            const studentsSnap = await getDocs(collection(db, "classes", cls.id, "students"));
-            studentCount = studentsSnap.size;
-          } catch (e) {}
-
+        // Build the HTML cards
+        host.innerHTML = myClasses.map(cls => {
           const gradeDisplay = cls.gradeLevel ? cls.gradeLevel.replace('Grade ', '') : '?';
+          
+          // We can't easily get live student count here without another query, 
+          // so we default to "—" if the class doc doesn't have it saved.
+          const students = cls.studentCount !== undefined ? cls.studentCount : "—";
 
           return `
             <a href="class.html?id=${cls.id}" class="list-item">
@@ -382,7 +386,7 @@
                   <div class="list-item-title">${cls.classLabel || cls.name || "Unnamed Class"}</div>
                   <div class="list-item-sub">
                     <span style="color: ${cls.role === 'Class Adviser' ? '#059669' : '#d97706'}; font-weight: 700;">${cls.role}</span> 
-                    · ${studentCount} Students
+                    · ${students} Students
                   </div>
                 </div>
               </div>
@@ -391,9 +395,7 @@
               </div>
             </a>
           `;
-        }));
-
-        host.innerHTML = classCards.join("");
+        }).join("");
 
       } catch (e) {
         console.error("Error loading classes:", e);
