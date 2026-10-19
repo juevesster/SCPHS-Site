@@ -439,33 +439,67 @@
     };
 
     // 7. SAVE ALL QUESTIONS TO FIRESTORE
+        // 7. SAVE ALL QUESTIONS TO FIRESTORE (BULLETPROOF VERSION)
     window.saveAllQuestionsToDB = async () => {
-      if (LOCAL_QUESTIONS.length === 0) return;
+      if (LOCAL_QUESTIONS.length === 0) {
+        alert("No questions to save.");
+        return;
+      }
 
-      const btn = event.target;
-      btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Saving...`;
-      btn.disabled = true;
+      // Find the save button (safer than relying on event.target)
+      const btn = document.getElementById('btnSaveQuestions');
+      if (btn) {
+        btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Saving...`;
+        btn.disabled = true;
+      }
 
       try {
         const batch = writeBatch(db);
         const qRef = collection(db, "exams", EXAM_ID, "questions");
 
-        LOCAL_QUESTIONS.forEach(q => {
+        LOCAL_QUESTIONS.forEach((q, index) => {
           const docRef = doc(qRef, q.id);
-          batch.set(docRef, q);
+          
+          // ✅ Create a CLEAN copy of the question to prevent Firestore errors
+          const cleanQ = {
+            question: String(q.question || "").trim(),
+            type: String(q.type || "multiple_choice"),
+            correct_answer: String(q.correct_answer || "").trim(),
+            points: Number(q.points) || 1,
+            order: index // Re-index to ensure proper sorting
+          };
+
+          // Only add options if it's a multiple choice and array exists
+          if (q.type === 'multiple_choice' && Array.isArray(q.options)) {
+            cleanQ.options = q.options.map(o => String(o || "").trim());
+          }
+
+          // Only add matching pairs if it's matching type
+          if (q.type === 'matching' && Array.isArray(q.matching_pairs)) {
+            cleanQ.matching_pairs = q.matching_pairs;
+          }
+
+          batch.set(docRef, cleanQ);
         });
 
         // Update exam meta to reflect total questions
-        batch.update(doc(db, "exams", EXAM_ID), { questionsCount: LOCAL_QUESTIONS.length });
+        batch.update(doc(db, "exams", EXAM_ID), { 
+          questionsCount: LOCAL_QUESTIONS.length 
+        });
 
         await batch.commit();
-        alert("✅ All questions saved to the database successfully!");
-        btn.innerHTML = `<i class="fas fa-check"></i> Saved!`;
+        
+        alert("✅ All questions saved successfully!");
+        if (btn) {
+          btn.innerHTML = `<i class="fas fa-check"></i> Saved!`;
+        }
       } catch (error) {
-        console.error(error);
-        alert("❌ Failed to save. Check console.");
-        btn.innerHTML = `<i class="fas fa-cloud-upload-alt"></i> Retry Save`;
-        btn.disabled = false;
+        console.error("Save Error Details:", error);
+        alert(`❌ Failed to save.\nError: ${error.message}`);
+        if (btn) {
+          btn.innerHTML = `<i class="fas fa-cloud-upload-alt"></i> Retry Save`;
+          btn.disabled = false;
+        }
       }
     };
 
