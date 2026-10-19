@@ -319,6 +319,7 @@
     let CURRENT_PROFILE = null;
     let MY_SCHEDULE = [];
     let TIME_SLOTS = [];
+    let SELECTED_TERM = 1; // 🆕 ADD THIS LINE
     const DAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"];
 
     function getSubjectColorClass(subject) {
@@ -369,7 +370,7 @@
       });
     }
 
-    async function loadTeacherSchedule() {
+        async function loadTeacherSchedule() {
       MY_SCHEDULE = [];
       try {
         const classesSnap = await getDocs(collection(db, "classes"));
@@ -379,6 +380,10 @@
           
           progSnap.docs.forEach(d => {
             const entry = d.data();
+            
+            // 🆕 Check if this entry is for the SELECTED_TERM
+            if (Number(entry.term) !== SELECTED_TERM) return;
+
             const isMyClass = entry.teacherUid === CURRENT_USER.uid || 
                               (entry.teacherName && CURRENT_PROFILE.name && entry.teacherName.toLowerCase().includes(CURRENT_PROFILE.name.toLowerCase()));
             
@@ -485,7 +490,7 @@
 
     function renderPrintSchedule() {
       document.getElementById("printTeacherName").textContent = CURRENT_PROFILE.name || CURRENT_USER.email;
-      document.getElementById("printTerm").textContent = `Term ${document.getElementById("termSelect").value}`;
+      document.getElementById("printTerm").textContent = `Term ${SELECTED_TERM}`;
       document.getElementById("printDate").textContent = new Date().toLocaleDateString('en-PH', { year: 'numeric', month: 'long', day: 'numeric' });
       
       document.getElementById("p-preparedName").value = CURRENT_PROFILE.name || "";
@@ -558,6 +563,20 @@
         const target = document.getElementById(tab.dataset.target);
         if (target) target.style.display = "block";
       });
+    });
+
+        // 🆕 Term Selector Listener
+    document.getElementById("termSelect").addEventListener("change", async (e) => {
+      SELECTED_TERM = parseInt(e.target.value, 10);
+      
+      // Show a quick loading state on the grid
+      document.getElementById("scheduleGrid").innerHTML = `
+        <div style="text-align:center; padding: 60px; color: #64748b; font-weight:600;">
+          Loading Term ${SELECTED_TERM} schedule...
+        </div>
+      `;
+      
+      await loadTeacherSchedule();
     });
 
     init();
