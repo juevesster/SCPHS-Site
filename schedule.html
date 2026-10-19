@@ -8,19 +8,10 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   
   <style>
-    :root { 
-      --primary: #1e3c72; 
-      --primary-light: #2a5298;
-      --bg: #f1f5f9; 
-      --card: #fff; 
-      --text: #1e293b; 
-      --muted: #64748b; 
-      --border: #e2e8f0;
-    }
+    :root { --primary: #1e3c72; --primary-light: #2a5298; --bg: #f1f5f9; --card: #fff; --text: #1e293b; --muted: #64748b; --border: #e2e8f0; }
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
     body { background: var(--bg); color: var(--text); min-height: 100vh; padding-bottom: 60px; }
 
-    /* Header */
     .header { background: linear-gradient(135deg, var(--primary), var(--primary-light)); color: #fff; padding: 24px 0; margin-bottom: 24px; }
     .container { max-width: 1400px; margin: 0 auto; padding: 0 20px; }
     .header-row { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px; }
@@ -30,7 +21,6 @@
     .btn-top { background: rgba(255,255,255,0.15); color: #fff; text-decoration: none; padding: 8px 16px; border-radius: 8px; font-weight: 600; font-size: 0.85rem; transition: background 0.2s; display: flex; align-items: center; gap: 6px; border: none; cursor: pointer; }
     .btn-top:hover { background: rgba(255,255,255,0.25); }
 
-    /* Layout */
     .toolbar { display: flex; gap: 16px; align-items: center; background: #fff; padding: 16px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); margin-bottom: 24px; flex-wrap: wrap; }
     .toolbar select { padding: 10px 16px; border-radius: 8px; border: 1px solid var(--border); font-family: inherit; font-size: 0.9rem; font-weight: 600; outline: none; cursor: pointer; background: #f8fafc; }
     
@@ -39,20 +29,17 @@
     .tab:hover { color: var(--primary); }
     .tab.active { color: var(--primary); border-bottom-color: var(--primary); }
 
-    .tab-content { display: none; animation: fadeIn 0.3s; }
+    .tab-content { display: none; }
     .tab-content.active { display: block; }
-    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-    /* Stats */
     .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 24px; }
     .stat-card { background: #fff; border-radius: 12px; padding: 20px; text-align: center; box-shadow: 0 2px 8px rgba(0,0,0,0.05); border-top: 4px solid var(--primary); }
     .stat-num { font-size: 2rem; font-weight: 800; color: var(--primary); line-height: 1; }
-    .stat-label { font-size: 0.85rem; color: var(--muted); font-weight: 600; margin-top: 6px; text-transform: uppercase; letter-spacing: 0.05em; }
+    .stat-label { font-size: 0.85rem; color: var(--muted); font-weight: 600; margin-top: 6px; text-transform: uppercase; }
 
-    /* Schedule Table */
     .table-wrap { background: #fff; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); overflow-x: auto; margin-bottom: 24px; }
     table.schedule { width: 100%; border-collapse: collapse; font-size: 0.85rem; min-width: 900px; }
-    th { background: var(--primary); color: #fff; padding: 12px; text-align: left; font-size: 0.75rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; }
+    th { background: var(--primary); color: #fff; padding: 12px; text-align: left; font-size: 0.75rem; font-weight: 800; text-transform: uppercase; }
     td { border: 1px solid var(--border); padding: 10px; vertical-align: top; }
     td.time-col { background: #f8fafc; font-weight: 700; width: 120px; white-space: nowrap; }
     .entry-box { background: #eff6ff; border-left: 4px solid var(--primary); padding: 8px; border-radius: 4px; margin-bottom: 6px; }
@@ -60,11 +47,10 @@
     .entry-box small { color: var(--muted); display: block; font-size: 0.75rem; margin-top: 2px; }
     .break-cell { background: #fff3cd; text-align: center; font-weight: 700; color: #856404; }
 
-    /* Workload */
     .workload-item { margin-bottom: 16px; }
     .workload-header { display: flex; justify-content: space-between; font-size: 0.9rem; font-weight: 600; margin-bottom: 6px; }
     .workload-bar { height: 10px; background: #e2e8f0; border-radius: 5px; overflow: hidden; }
-    .workload-fill { height: 100%; border-radius: 5px; transition: width 0.5s; }
+    .workload-fill { height: 100%; border-radius: 5px; }
     .fill-normal { background: #10b981; }
     .fill-high { background: #f59e0b; }
     .fill-overload { background: #dc2626; }
@@ -73,11 +59,8 @@
     .spinner { width: 40px; height: 40px; border: 4px solid #e2e8f0; border-top-color: var(--primary); border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 16px; }
     @keyframes spin { to { transform: rotate(360deg); } }
 
-    /* ============================================================ */
-    /* PRINT LAYOUT (DepEd Format) */
-    /* ============================================================ */
+    /* PRINT LAYOUT */
     .print-doc { display: none; }
-    
     @media print {
       @page { size: A4 landscape; margin: 10mm; }
       body { background: #fff; padding: 0; }
@@ -105,7 +88,6 @@
 </head>
 <body>
 
-  <!-- SCREEN HEADER -->
   <header class="header">
     <div class="container header-row">
       <div>
@@ -127,7 +109,6 @@
 
     <div id="mainContent" style="display: none;">
       
-      <!-- TOOLBAR -->
       <div class="toolbar">
         <label style="font-weight: 700; color: var(--text);">Term:</label>
         <select id="termSelect">
@@ -137,7 +118,6 @@
         </select>
       </div>
 
-      <!-- TABS -->
       <div class="tabs">
         <button class="tab active" data-target="schedule"><i class="fas fa-calendar-week"></i> Weekly Schedule</button>
         <button class="tab" data-target="workload"><i class="fas fa-chart-line"></i> Workload Analysis</button>
@@ -183,18 +163,14 @@
       <div id="workload" class="tab-content">
         <div style="background: #fff; padding: 24px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.05);">
           <h3 style="margin-bottom: 20px; color: var(--primary);">Daily Workload Analysis</h3>
-          <div id="workloadContainer">
-            <!-- Injected via JS -->
-          </div>
+          <div id="workloadContainer"></div>
         </div>
       </div>
 
     </div>
   </div>
 
-  <!-- ========================================== -->
-  <!-- PRINT-ONLY LAYOUT (DepEd Standard)         -->
-  <!-- ========================================== -->
+  <!-- PRINT-ONLY LAYOUT -->
   <div class="print-doc" id="printDoc">
     <div class="print-header">
       <img src="assets/images/deped-logo.png" alt="DepEd Logo" />
@@ -234,9 +210,7 @@
           <th>FRIDAY</th>
         </tr>
       </thead>
-      <tbody id="printScheduleBody">
-        <!-- Injected via JS -->
-      </tbody>
+      <tbody id="printScheduleBody"></tbody>
     </table>
 
     <div class="print-signatories">
@@ -261,7 +235,7 @@
   <script type="module">
     import { auth, db } from "./assets/js/firebase-config.js";
     import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-    import { collection, getDocs, query, where } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+    import { collection, getDocs } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
     import { getCurrentUserProfile } from "./assets/js/roles.js";
 
     let CURRENT_USER = null;
@@ -270,7 +244,7 @@
     let TIME_SLOTS = [];
     const DAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"];
 
-    // Fixed timeslots matching the DO 009 standard (can be pulled from Firestore later)
+    // Fixed timeslots matching the DO 009 standard
     const DEFAULT_SLOTS = [
       { id: "slot-1", label: "7:30 - 8:30", start: "07:30", end: "08:30", type: "class" },
       { id: "slot-2", label: "8:30 - 9:30", start: "08:30", end: "09:30", type: "class" },
@@ -291,7 +265,7 @@
 
         document.getElementById("welcomeSub").textContent = `Welcome, ${CURRENT_PROFILE.name || user.email}! | Three-Term System (DO 009 s.2026)`;
         
-        TIME_SLOTS = DEFAULT_SLOTS; // In the future, fetch from Firestore `config/time_slots`
+        TIME_SLOTS = DEFAULT_SLOTS; // Fallback if no custom timeslots exist
         
         await loadTeacherSchedule();
         document.getElementById("loading").style.display = "none";
@@ -303,7 +277,7 @@
       MY_SCHEDULE = [];
       
       try {
-        // 1. Get all classes to find where this teacher is assigned
+        // 1. Get all classes
         const classesSnap = await getDocs(collection(db, "classes"));
         
         for (const classDoc of classesSnap.docs) {
@@ -313,7 +287,11 @@
           progSnap.docs.forEach(d => {
             const entry = d.data();
             // Check if this entry belongs to the logged-in teacher
-            if (entry.teacherUid === CURRENT_USER.uid || entry.teacherName === CURRENT_PROFILE.name) {
+            // We check teacherUid OR if teacherName matches the profile name
+            const isMyClass = entry.teacherUid === CURRENT_USER.uid || 
+                              (entry.teacherName && CURRENT_PROFILE.name && entry.teacherName.toLowerCase().includes(CURRENT_PROFILE.name.toLowerCase()));
+            
+            if (isMyClass) {
               MY_SCHEDULE.push({
                 ...entry,
                 classLabel: cls.classLabel || "Unnamed Class",
@@ -403,13 +381,11 @@
     }
 
     function renderPrintSchedule() {
-      // Populate Print Header
       document.getElementById("printTeacherName").textContent = CURRENT_PROFILE.name || CURRENT_USER.email;
       document.getElementById("printTerm").textContent = `Term ${document.getElementById("termSelect").value}`;
       document.getElementById("printDate").textContent = new Date().toLocaleDateString('en-PH', { year: 'numeric', month: 'long', day: 'numeric' });
       document.getElementById("printSigName").textContent = (CURRENT_PROFILE.name || "").toUpperCase();
 
-      // Populate Print Table
       const tbody = document.getElementById("printScheduleBody");
       tbody.innerHTML = "";
 
@@ -439,7 +415,6 @@
       });
     }
 
-    // Tab Switching
     document.querySelectorAll(".tab").forEach(tab => {
       tab.addEventListener("click", () => {
         document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
