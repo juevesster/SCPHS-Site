@@ -23,6 +23,7 @@
 
     * { box-sizing: border-box; margin: 0; padding: 0; }
     
+    /* Prevent text selection to stop copying */
     body { 
       font-family: 'Inter', sans-serif; 
       background: var(--bg-color); 
@@ -30,7 +31,6 @@
       display: flex; 
       flex-direction: column;
       min-height: 100vh;
-      /* Prevent text selection to stop copying */
       user-select: none; 
       -webkit-user-select: none;
     }
@@ -64,6 +64,15 @@
       gap: 8px;
       border: 1px solid #fecaca;
       font-variant-numeric: tabular-nums;
+      transition: 0.3s;
+    }
+    .timer-box.danger {
+      animation: pulse 1s infinite;
+    }
+    @keyframes pulse {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.05); background: #fca5a5; }
+      100% { transform: scale(1); }
     }
 
     /* ================= MAIN LAYOUT ================= */
@@ -313,7 +322,7 @@
         <h1 id="examTitle">Exam Title</h1>
         <p id="examMeta">Subject • Term 1 • 20 Items</p>
       </div>
-      <div class="timer-box">
+      <div class="timer-box" id="timerBox">
         <i class="fas fa-stopwatch"></i>
         <span id="timerDisplay">00:00</span>
       </div>
@@ -371,7 +380,6 @@
     // 2. LOAD EXAM & QUESTIONS FROM FIRESTORE
     async function loadExamData() {
       try {
-        // Fetch Exam Metadata
         const examRef = doc(db, "exams", EXAM_ID);
         const examSnap = await getDoc(examRef);
 
@@ -383,16 +391,15 @@
 
         EXAM_DATA = examSnap.data();
 
-        // Check if exam is published
         if (EXAM_DATA.status !== 'published') {
           alert("This exam is not yet published. Please contact your teacher.");
           window.location.href = "teacher.html";
           return;
         }
 
-        // Fetch Questions Subcollection
         const qSnap = await getDocs(collection(db, "exams", EXAM_ID, "questions"));
         QUESTIONS = qSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        QUESTIONS.sort((a, b) => (a.order || 0) - (b.order || 0));
 
         if (QUESTIONS.length === 0) {
           alert("This exam has no questions yet.");
@@ -400,23 +407,16 @@
           return;
         }
 
-        // Sort questions by 'order' field if available
-        QUESTIONS.sort((a, b) => (a.order || 0) - (b.order || 0));
+        TIME_REMAINING = (EXAM_DATA.duration || 60) * 60;
 
-        // Initialize Timer (Duration in minutes)
-        TIME_REMAINING = (EXAM_DATA.duration || 60) * 60; // Convert to seconds
-
-        // Setup UI
         document.getElementById("examTitle").textContent = EXAM_DATA.title;
         document.getElementById("examMeta").textContent = `${EXAM_DATA.subject || 'Exam'} • Term ${EXAM_DATA.term} • ${QUESTIONS.length} Items`;
         
         renderQuestions();
         
-        // Hide loading, show exam
         document.getElementById("loadingOverlay").style.display = "none";
         document.getElementById("examUI").style.display = "flex";
 
-        // Start Secure Environment & Timer
         initSecureEnvironment();
         startTimer();
 
@@ -426,7 +426,7 @@
       }
     }
 
-    // 3. RENDER QUESTIONS TO UI
+    // 3. RENDER QUESTIONS
     function renderQuestions() {
       const container = document.getElementById("questionsContainer");
       let html = "";
@@ -437,8 +437,8 @@
 
         if (q.type === 'multiple_choice') {
           contentHtml = `<div class="options-list">`;
-          q.options.forEach((opt, i) => {
-            const letter = String.fromCharCode(65 + i); // A, B, C, D
+          (q.options || []).forEach((opt, i) => {
+            const letter = String.fromCharCode(65 + i);
             contentHtml += `
               <label class="option-label" onclick="selectOption('${q.id}', '${letter}', this)">
                 <input type="radio" name="q_${q.id}" value="${letter}">
@@ -473,7 +473,6 @@
           `;
         }
         else if (q.type === 'matching') {
-          // Handle matching pairs
           const pairs = q.matching_pairs || [];
           const leftItems = pairs.filter(p => p.left !== null);
           const rightItems = pairs.filter(p => p.right !== null);
@@ -511,6 +510,7 @@
             <div class="question-text">
               <span class="q-number">${qNum}.</span> ${q.question}
             </div>
+            ${q.imageUrl ? `<img src="${q.imageUrl}" style="max-height:150px; margin-bottom: 15px; border-radius: 6px;">` : ''}
             ${contentHtml}
           </div>
         `;
@@ -521,12 +521,9 @@
 
     // 4. ANSWER HANDLING
     window.selectOption = (qId, value, element) => {
-      // Remove 'selected' class from siblings
       const parent = element.parentElement;
       parent.querySelectorAll('.option-label').forEach(el => el.classList.remove('selected'));
-      // Add to clicked
       element.classList.add('selected');
-      // Save
       STUDENT_ANSWERS[qId] = value;
     };
 
@@ -539,28 +536,22 @@
       STUDENT_ANSWERS[qId][leftText] = rightText;
     };
 
-    // 5. SECURE EXAM ENVIRONMENT (ANTI-CHEAT)
+    // 5. SECURE EXAM ENVIRONMENT
     function initSecureEnvironment() {
-      // Disable Right-Click
       document.addEventListener('contextmenu', e => e.preventDefault());
-
-      // Disable Copy/Paste
       document.addEventListener('copy', e => e.preventDefault());
       document.addEventListener('paste', e => e.preventDefault());
 
-      // Detect Tab Switching
       document.addEventListener('visibilitychange', () => {
         if (document.hidden) {
           logViolation("Tab switched or window minimized");
         }
       });
 
-      // Detect Fullscreen Exit (Optional, but highly recommended)
-      // Request fullscreen on first click
       document.body.addEventListener('click', () => {
         if (!document.fullscreenElement) {
           document.documentElement.requestFullscreen().catch(err => {
-            console.log(`Error attempting to enable fullscreen: ${err.message}`);
+            console.log(`Fullscreen error: ${err.message}`);
           });
         }
       }, { once: true });
@@ -571,7 +562,6 @@
         }
       });
 
-      // Disable DevTools (F12, Ctrl+Shift+I)
       document.addEventListener('keydown', (e) => {
         if (e.key === 'F12' || (e.ctrlKey && e.shiftKey && e.key === 'I')) {
           e.preventDefault();
@@ -582,16 +572,13 @@
 
     function logViolation(reason) {
       VIOLATIONS++;
-      
-      // Show Warning Toast
       const toast = document.getElementById("warningToast");
       const msg = document.getElementById("warningMessage");
-      msg.textContent = `Warning ${VIOLATIONS}/3: ${reason}. Exam will auto-submit on 3rd violation.`;
+      msg.textContent = `Warning ${VIOLATIONS}/3: ${reason}. Exam auto-submits on 3rd violation.`;
       toast.style.display = "block";
       
       setTimeout(() => { toast.style.display = "none"; }, 4000);
 
-      // If 3 violations, terminate exam
       if (VIOLATIONS >= 3) {
         terminateExam("Too many security violations.");
       }
@@ -600,18 +587,15 @@
     function terminateExam(reason) {
       clearInterval(TIMER_INTERVAL);
       document.getElementById("examUI").style.display = "none";
-      
-      const overlay = document.getElementById("cheatOverlay");
+      document.getElementById("cheatOverlay").style.display = "flex";
       document.getElementById("cheatReason").textContent = `Reason: ${reason} Your current progress has been submitted.`;
-      overlay.style.display = "flex";
-      
-      // Auto-submit whatever they have
       submitExam(true); 
     }
 
-    // 6. TIMER LOGIC
+    // 6. TIMER
     function startTimer() {
       const display = document.getElementById("timerDisplay");
+      const timerBox = document.getElementById("timerBox");
       
       const updateTimer = () => {
         if (TIME_REMAINING <= 0) {
@@ -629,30 +613,28 @@
 
         display.textContent = `${hours > 0 ? hours + ':' : ''}${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
         
-        // Turn red when less than 5 mins
         if (TIME_REMAINING < 300) {
-          display.parentElement.style.background = "#fee2e2";
-          display.parentElement.style.color = "#dc2626";
-          display.parentElement.style.animation = "pulse 1s infinite";
+          timerBox.classList.add('danger');
         }
       };
 
-      updateTimer(); // Initial call
+      updateTimer(); 
       TIMER_INTERVAL = setInterval(updateTimer, 1000);
     }
 
-    // 7. SUBMIT EXAM & GRADING
+    // 7. SUBMIT & AUTO-GRADE
     window.submitExam = async (isForced = false) => {
       if (!isForced && !confirm("Are you sure you want to submit your exam? You cannot change your answers after this.")) {
         return;
       }
 
       const btn = document.getElementById("btnSubmitExam");
-      btn.disabled = true;
-      btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Submitting...`;
+      if(btn) {
+        btn.disabled = true;
+        btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Submitting...`;
+      }
 
       try {
-        // 1. Calculate Score (Basic Auto-Grading)
         let score = 0;
         let totalPoints = 0;
 
@@ -662,15 +644,12 @@
           const correctAns = q.correct_answer;
 
           if (q.type === 'multiple_choice' || q.type === 'true_false' || q.type === 'identification') {
-            if (studentAns && studentAns.toString().toLowerCase() === correctAns.toString().toLowerCase()) {
+            if (studentAns && studentAns.toString().toLowerCase().trim() === correctAns.toString().toLowerCase().trim()) {
               score += (q.points || 1);
             }
           }
-          // Note: Matching and Essay need manual checking by the teacher, 
-          // so they are saved but not auto-scored here.
         });
 
-        // 2. Save Submission to Firestore
         const submissionRef = collection(db, "exam_submissions");
         await addDoc(submissionRef, {
           examId: EXAM_ID,
@@ -685,16 +664,18 @@
           submittedAt: serverTimestamp()
         });
 
-        // 3. Update UI
         clearInterval(TIMER_INTERVAL);
         document.getElementById("examUI").style.display = "none";
+        document.getElementById("cheatOverlay").style.display = "none"; // Hide if forced
         document.getElementById("successOverlay").style.display = "flex";
 
       } catch (error) {
         console.error("Submission failed:", error);
-        alert("Failed to submit exam. Please check your internet connection and try again.");
-        btn.disabled = false;
-        btn.innerHTML = `<i class="fas fa-paper-plane"></i> Submit Final Answers`;
+        alert("Failed to submit exam. Check your connection and try again.");
+        if(btn) {
+          btn.disabled = false;
+          btn.innerHTML = `<i class="fas fa-paper-plane"></i> Submit Final Answers`;
+        }
       }
     };
 
