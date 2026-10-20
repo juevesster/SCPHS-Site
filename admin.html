@@ -2942,6 +2942,13 @@
         });
       });
 
+            // ✅ NEW: Link to Catalog handler
+      host.querySelectorAll("[data-link-subject]").forEach(btn => {
+        btn.addEventListener("click", () => {
+          openLinkModal(btn.dataset.linkSubject, btn.dataset.subjectName);
+        });
+      });
+
       host.querySelectorAll("[data-edit-subject]").forEach(btn => {
         btn.addEventListener("click", () => {
           const s = getAllSubjectRecords().find(x => x.code === btn.dataset.editSubject);
@@ -3107,6 +3114,7 @@
           <td class="col-actions">
         <button class="ac-btn outline small" data-detail-subject="${esc(s.code)}">🔍</button>
         ${isAdminViewer ? `
+          ${!s.managed ? `<button class="ac-btn info small" data-link-subject="${esc(s.code)}" data-subject-name="${esc(s.displayName || s.code)}" title="Link to an existing catalog subject">🔗</button>` : ''}
           ${!s.family ? `<button class="ac-btn warning small" data-categorize-subject="${esc(s.code)}" data-subject-name="${esc(s.displayName || s.code)}" title="Categorize this subject">📂</button>` : ''}
           <button class="ac-btn warning small" data-bow-upload="${esc(s.code)}" data-bow-name="${esc(s.displayName || s.code)}" title="Upload Budget of Work">📤</button>
           <button class="ac-btn primary small" data-edit-subject="${esc(s.code)}">✏️</button>
@@ -4961,6 +4969,122 @@ async function renderAISettingsTab(main) {
           toast("⚠️ " + (e.message || "Save failed"), "error");
           btn.disabled = false;
           btn.textContent = "💾 Save";
+        }
+      });
+    }
+
+
+        // ============================================================
+    // LINK MODAL — Map a program subject to an official catalog entry
+    // ============================================================
+    function openLinkModal(programSubjectName, displayName) {
+      // Get all managed (catalog) subjects grouped by family
+      const allRecords = getAllSubjectRecords();
+      const catalogSubjects = allRecords.filter(s => s.managed);
+
+      // Group them by family
+      const grouped = {};
+      catalogSubjects.forEach(s => {
+        const fam = s.family || "(uncategorized)";
+        if (!grouped[fam]) grouped[fam] = [];
+        grouped[fam].push(s);
+      });
+
+      // Sort families alphabetically
+      const sortedFamilies = Object.keys(grouped).sort();
+
+      // Build dropdown options
+      const options = sortedFamilies.map(family => {
+        const opts = grouped[family]
+          .sort((a, b) => (a.displayName || "").localeCompare(b.displayName || ""))
+          .map(s => `<option value="${esc(s.code)}">${esc(s.displayName)} (${esc(s.code)})</option>`)
+          .join("");
+        return `<optgroup label="${esc(family)}">${opts}</optgroup>`;
+      }).join("");
+
+      const modal = document.createElement("div");
+      modal.className = "modal show";
+      modal.style.cssText = "position:fixed;inset:0;background:rgba(0,0,0,0.5);display:flex;align-items:center;justify-content:center;z-index:9999;padding:20px;";
+      modal.innerHTML = `
+        <div style="background:#fff;border-radius:12px;max-width:620px;width:100%;padding:24px;">
+          <h3 style="margin:0 0 14px;color:#0f2b4f;">🔗 Link to Catalog</h3>
+          <p style="color:#6b7280;font-size:13px;margin-bottom:16px;">
+            Map the program subject <strong>${esc(displayName || programSubjectName)}</strong> 
+            to an official catalog entry. This will merge its usage data and BoW.
+          </p>
+
+          <div style="margin-bottom:14px;">
+            <label style="display:block;font-size:11px;font-weight:700;color:#374151;text-transform:uppercase;margin-bottom:6px;">
+              Official Catalog Subject
+            </label>
+            <select id="linkCatalogCode" style="width:100%;padding:10px 12px;border:1px solid #d1d5db;border-radius:6px;font-size:14px;font-family:inherit;">
+              <option value="">-- Select a catalog subject --</option>
+              ${options}
+            </select>
+            <div style="font-size:11px;color:#6b7280;margin-top:6px;">
+              💡 Tip: Look under <strong>TechPro</strong> for automotive subjects, or <strong>Mathematics</strong> for math.
+            </div>
+          </div>
+
+          <div style="background:#fef3c7;border:1px solid #fcd34d;border-radius:8px;padding:12px;margin-bottom:16px;font-size:12px;color:#92400e;">
+            <strong>⚠️ What happens next:</strong>
+            <ul style="margin:6px 0 0 18px;padding:0;">
+              <li>Program entries using "<strong>${esc(programSubjectName)}</strong>" will still be preserved</li>
+              <li>The program subject will be hidden (moved to catalog)</li>
+              <li>Future additions will use the catalog code</li>
+              <li>The BoW from the catalog will be used</li>
+            </ul>
+          </div>
+
+          <div style="display:flex;gap:10px;justify-content:flex-end;">
+            <button class="ac-btn outline" data-close-link>Cancel</button>
+            <button class="ac-btn success" data-confirm-link>🔗 Link Now</button>
+          </div>
+        </div>
+      `;
+      document.body.appendChild(modal);
+
+      modal.querySelectorAll("[data-close-link]").forEach(b => b.addEventListener("click", () => modal.remove()));
+      modal.addEventListener("click", e => { if (e.target === modal) modal.remove(); });
+
+      modal.querySelector("[data-confirm-link]").addEventListener("click", async () => {
+        const catalogCode = document.getElementById("linkCatalogCode").value;
+        if (!catalogCode) { toast("⚠️ Please select a catalog subject", "error"); return; }
+
+        const btn = modal.querySelector("[data-confirm-link]");
+        btn.disabled = true;
+        btn.textContent = "Linking…";
+
+        try {
+          const { doc, setDoc, deleteDoc, serverTimestamp } = await import(
+            "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js"
+          );
+
+          const catalogEntry = allRecords.find(s => s.code === catalogCode);
+
+          // 1. Save the link on the program subject
+          await setDoc(doc(db, "subjects", programSubjectName), {
+            linkedTo: catalogCode,
+            linkedToName: catalogEntry?.displayName || catalogCode,
+            family: catalogEntry?.family || "TechPro",
+            level: catalogEntry?.level || "",
+            type: catalogEntry?.type || "techpro",
+            curriculum: catalogEntry?.curriculum || "MATATAG",
+            active: false, // Hide from program view (merged into catalog)
+            linkedAt: serverTimestamp(),
+            linkedBy: CURRENT_USER?.email || "",
+          }, { merge: true });
+
+          toast(`✓ Linked "${displayName || programSubjectName}" → "${catalogEntry?.displayName || catalogCode}"`, "success");
+          modal.remove();
+          await loadSubjects();
+          renderSubjectList();
+
+        } catch (e) {
+          console.error(e);
+          toast("⚠️ " + (e.message || "Link failed"), "error");
+          btn.disabled = false;
+          btn.textContent = "🔗 Link Now";
         }
       });
     }
