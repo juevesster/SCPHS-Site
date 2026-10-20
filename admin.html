@@ -2934,6 +2934,14 @@
       host.querySelectorAll("[data-detail-subject]").forEach(btn => {
         btn.addEventListener("click", () => showSubjectDetail(btn.dataset.detailSubject));
       });
+
+            // ✅ NEW: Categorize handler for uncategorized subjects
+      host.querySelectorAll("[data-categorize-subject]").forEach(btn => {
+        btn.addEventListener("click", () => {
+          openCategorizeModal(btn.dataset.categorizeSubject, btn.dataset.subjectName);
+        });
+      });
+
       host.querySelectorAll("[data-edit-subject]").forEach(btn => {
         btn.addEventListener("click", () => {
           const s = getAllSubjectRecords().find(x => x.code === btn.dataset.editSubject);
@@ -3096,9 +3104,10 @@
           <td>${renderBoWPill(s.code)}</td>
           <td>${classes}</td>
           <td>${teachers}</td>
-                <td class="col-actions">
+          <td class="col-actions">
         <button class="ac-btn outline small" data-detail-subject="${esc(s.code)}">🔍</button>
         ${isAdminViewer ? `
+          ${!s.family ? `<button class="ac-btn warning small" data-categorize-subject="${esc(s.code)}" data-subject-name="${esc(s.displayName || s.code)}" title="Categorize this subject">📂</button>` : ''}
           <button class="ac-btn warning small" data-bow-upload="${esc(s.code)}" data-bow-name="${esc(s.displayName || s.code)}" title="Upload Budget of Work">📤</button>
           <button class="ac-btn primary small" data-edit-subject="${esc(s.code)}">✏️</button>
           <button class="ac-btn danger small"
@@ -3509,7 +3518,7 @@
       return list;
     }
 
-    // ------------------------------------------------------------
+        // ------------------------------------------------------------
     // FAMILY / LEVEL DETECTION
     // ------------------------------------------------------------
     function detectFamily(code) {
@@ -3531,6 +3540,42 @@
       if (c.startsWith("K-GMRC")) return "GMRC";
       if (c.startsWith("SHS-ACAD") || c.startsWith("SHS-TECH")) return c.startsWith("SHS-TECH") ? "TechPro" : "SHS Academic";
       if (c.startsWith("SHS-")) return "SHS Core";
+      return "";
+    }
+
+    // ✅ NEW: Enhanced detector for auto-detected subjects from program
+    function detectFamilyEnhanced(code, specializations = []) {
+      // First try the strict detector
+      const strict = detectFamily(code);
+      if (strict) return strict;
+
+      // Then try matching against specializations
+      const allSpecs = (specializations || []).join(" ").toUpperCase();
+      if (allSpecs.includes("AUTOMOTIVE")) return "TechPro";
+      if (allSpecs.includes("COOKERY") || allSpecs.includes("FOOD")) return "TechPro";
+      if (allSpecs.includes("ICT") || allSpecs.includes("COMPUTER")) return "TechPro";
+      if (allSpecs.includes("DRESSMAKING") || allSpecs.includes("TAILORING")) return "TechPro";
+      if (allSpecs.includes("CARPENTRY") || allSpecs.includes("WELDING")) return "TechPro";
+      if (allSpecs.includes("AGRI") || allSpecs.includes("AGRICULTURE")) return "TechPro";
+      if (allSpecs.includes("ELECTRONICS")) return "TechPro";
+
+      // Then try inspecting the code itself
+      const n = String(code || "").toUpperCase();
+      if (n.includes("MATH")) return "Mathematics";
+      if (n.includes("SCIENCE") || n.startsWith("SCI")) return "Science";
+      if (n.includes("ENGLISH") || n.startsWith("ENG")) return "English";
+      if (n.includes("FILIPINO") || n.startsWith("FIL")) return "Filipino";
+      if (n.includes("ARALING") || n.startsWith("AP")) return "Araling Panlipunan";
+      if (n.includes("MAPEH")) return "MAPEH";
+      if (n.includes("VALUES") || n.includes("ESP") || n.includes("GMRC")) return "Values Education";
+      if (n.includes("TLE")) return "TLE";
+      if (n.includes("EPP")) return "EPP";
+      if (n.includes("HOMEROOM")) return "Homeroom Guidance";
+      if (n.includes("ARAL")) return "ARAL";
+      if (n.includes("RESEARCH") || n.includes("PR1") || n.includes("PR2")) return "SHS Core";
+      if (n.includes("PHILOSOPHY") || n.includes("UNDERSTANDING")) return "SHS Core";
+      if (n.includes("TECH") || n.includes("AUTOMOTIVE") || n.includes("COOKERY")) return "TechPro";
+
       return "";
     }
 
@@ -4816,6 +4861,109 @@ async function renderAISettingsTab(main) {
     }
   });
 }
+
+
+    // ============================================================
+    // CATEGORIZE MODAL — Manually assign a family to an Uncategorized subject
+    // ============================================================
+    function openCategorizeModal(code, displayName) {
+      const families = [
+        "Mathematics", "English", "Science", "Filipino", "Araling Panlipunan",
+        "MAPEH", "Values Education", "GMRC", "TLE", "EPP", "TechPro",
+        "STEM", "ABM", "HUMSS", "Sports", "Homeroom Guidance", "ARAL",
+        "Languages", "Reading & Literacy", "Makabansa",
+        "Physical & Natural Environment", "SHS Core"
+      ];
+
+      const modal = document.createElement("div");
+      modal.className = "modal show";
+      modal.style.cssText = "position:fixed;inset:0;background:rgba(0,0,0,0.5);display:flex;align-items:center;justify-content:center;z-index:9999;padding:20px;";
+      modal.innerHTML = `
+        <div style="background:#fff;border-radius:12px;max-width:500px;width:100%;padding:24px;">
+          <h3 style="margin:0 0 14px;color:#0f2b4f;">📂 Categorize Subject</h3>
+          <p style="color:#6b7280;font-size:13px;margin-bottom:16px;">
+            Assign a family to <strong>${esc(displayName || code)}</strong>. This will move it out of "(uncategorized)".
+          </p>
+          <div style="margin-bottom:14px;">
+            <label style="display:block;font-size:11px;font-weight:700;color:#374151;text-transform:uppercase;margin-bottom:6px;">Family</label>
+            <select id="catFamily" style="width:100%;padding:10px 12px;border:1px solid #d1d5db;border-radius:6px;font-size:14px;font-family:inherit;">
+              <option value="">-- Select Family --</option>
+              ${families.map(f => `<option value="${esc(f)}">${esc(f)}</option>`).join("")}
+            </select>
+          </div>
+          <div style="margin-bottom:14px;">
+            <label style="display:block;font-size:11px;font-weight:700;color:#374151;text-transform:uppercase;margin-bottom:6px;">Level (optional)</label>
+            <select id="catLevel" style="width:100%;padding:10px 12px;border:1px solid #d1d5db;border-radius:6px;font-size:14px;font-family:inherit;">
+              <option value="">-- None --</option>
+              <option value="K">Kindergarten</option>
+              ${[1,2,3,4,5,6,7,8,9,10,11,12].map(n => `<option value="${n}">Grade ${n}</option>`).join("")}
+            </select>
+          </div>
+          <div style="margin-bottom:14px;">
+            <label style="display:block;font-size:11px;font-weight:700;color:#374151;text-transform:uppercase;margin-bottom:6px;">Type</label>
+            <select id="catType" style="width:100%;padding:10px 12px;border:1px solid #d1d5db;border-radius:6px;font-size:14px;font-family:inherit;">
+              <option value="core">Core</option>
+              <option value="tle">TLE</option>
+              <option value="techpro">TechPro</option>
+              <option value="elective">Elective</option>
+              <option value="shs-core">SHS Core</option>
+              <option value="shs-elective">SHS Elective</option>
+              <option value="hgp">HGP</option>
+              <option value="aral">ARAL</option>
+            </select>
+          </div>
+          <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:20px;">
+            <button class="ac-btn outline" data-close>Cancel</button>
+            <button class="ac-btn success" data-save-cat>💾 Save</button>
+          </div>
+        </div>
+      `;
+      document.body.appendChild(modal);
+
+      modal.querySelectorAll("[data-close]").forEach(b => b.addEventListener("click", () => modal.remove()));
+      modal.addEventListener("click", e => { if (e.target === modal) modal.remove(); });
+
+      modal.querySelector("[data-save-cat]").addEventListener("click", async () => {
+        const family = document.getElementById("catFamily").value;
+        const level = document.getElementById("catLevel").value;
+        const type = document.getElementById("catType").value;
+
+        if (!family) { toast("⚠️ Please select a family", "error"); return; }
+
+        const btn = modal.querySelector("[data-save-cat]");
+        btn.disabled = true;
+        btn.textContent = "Saving…";
+
+        try {
+          const { doc, setDoc, serverTimestamp } = await import(
+            "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js"
+          );
+
+          await setDoc(doc(db, "subjects", code), {
+            displayName: displayName || code,
+            family: family,
+            level: level,
+            type: type,
+            curriculum: "MATATAG",
+            active: true,
+            managed: true,
+            seedSource: "manual-categorize",
+            updatedAt: serverTimestamp(),
+            updatedBy: CURRENT_USER?.email || "",
+          }, { merge: true });
+
+          toast(`✓ Categorized as "${family}"`, "success");
+          modal.remove();
+          await loadSubjects();
+          renderSubjectList();
+        } catch (e) {
+          console.error(e);
+          toast("⚠️ " + (e.message || "Save failed"), "error");
+          btn.disabled = false;
+          btn.textContent = "💾 Save";
+        }
+      });
+    }
     
   </script>
 
