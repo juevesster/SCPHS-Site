@@ -1,14 +1,16 @@
 // program-store.js — Firestore data layer for class program (schedule grid).
 // Supports: multi-teacher entries (TLE rotation), term switching, subject+specialization.
+// UPDATED: Auto-creates subject metadata in `subjects` collection to prevent "Uncategorized" bugs in admin.html
 
 import { db, auth } from "./firebase-config.js";
 import {
   collection, doc, getDoc, getDocs, addDoc, updateDoc, deleteDoc,
-  query, where, orderBy, serverTimestamp, writeBatch
+  query, where, orderBy, serverTimestamp, writeBatch, setDoc
 } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
 const CLASSES = "classes";
 const PROGRAM = "program";
+const SUBJECTS = "subjects";
 
 // ------------------------------------------------------------
 // Helpers
@@ -32,13 +34,99 @@ function entryToObj(snap) {
     teacherName: d.teacherName || "",
     specialization: d.specialization || "",
     room: d.room || "",
-    entryType: d.entryType || "primary",   // "primary" | "additional"
+    entryType: d.entryType || "primary",
     groupIndex: d.groupIndex || 0,
     notes: d.notes || "",
     createdAt: d.createdAt?.toMillis?.() ?? 0,
     updatedAt: d.updatedAt?.toMillis?.() ?? 0,
     createdBy: d.createdBy || "",
   };
+}
+
+// ------------------------------------------------------------
+// Auto-detect subject family (for admin.html grouping)
+// ------------------------------------------------------------
+function detectFamilyFromName(name) {
+  const n = String(name || "").toUpperCase();
+  if (n.includes("MATH")) return "Mathematics";
+  if (n.includes("SCIENCE") || n.startsWith("SCI")) return "Science";
+  if (n.includes("ENGLISH") || n.startsWith("ENG")) return "English";
+  if (n.includes("FILIPINO") || n.startsWith("FIL")) return "Filipino";
+  if (n.includes("ARALING") || n.startsWith("AP")) return "Araling Panlipunan";
+  if (n.includes("MAPEH")) return "MAPEH";
+  if (n.includes("VALUES") || n.includes("ESP") || n.includes("GMRC")) return "Values Education";
+  if (n.includes("AUTOMOTIVE") || n.includes("AUTO")) return "TechPro";
+  if (n.includes("COOKERY") || n.includes("FOOD")) return "TechPro";
+  if (n.includes("ICT") || n.includes("COMPUTER")) return "TechPro";
+  if (n.includes("DRESSMAKING") || n.includes("TAILORING")) return "TechPro";
+  if (n.includes("CARPENTRY") || n.includes("WELDING")) return "TechPro";
+  if (n.includes("AGRICULTURE") || n.includes("AGRI")) return "TechPro";
+  if (n.includes("ELECTRONICS")) return "TechPro";
+  if (n.includes("TLE")) return "TLE";
+  if (n.includes("EPP")) return "EPP";
+  if (n.includes("HOMEROOM")) return "Homeroom Guidance";
+  if (n.includes("ARAL")) return "ARAL";
+  if (n.includes("RESEARCH") || n.includes("PR1") || n.includes("PR2")) return "SHS Core";
+  if (n.includes("PHILOSOPHY") || n.includes("UNDERSTANDING")) return "SHS Core";
+  return ""; // Return empty so admin can manually categorize
+}
+
+function detectLevelFromName(name, classGrade) {
+  const n = String(name || "").toUpperCase();
+  const m = n.match(/(\d{1,2})/);
+  if (m && parseInt(m[1]) >= 1 && parseInt(m[1]) <= 12) return m[1];
+  if (classGrade) {
+    const cg = String(classGrade).match(/(\d{1,2})/);
+    if (cg && parseInt(cg[1]) >= 1 && parseInt(cg[1]) <= 12) return cg[1];
+  }
+  if (n.includes("SHS") || n.includes("GRADE 11") || n.includes("GRADE 12")) return "11";
+  return "";
+}
+
+// ------------------------------------------------------------
+// Auto-create subject metadata if missing
+// (prevent "Uncategorized" in admin.html)
+// ------------------------------------------------------------
+async function ensureSubjectMetadata(subjectName, subjectData, classGrade, classCurriculum) {
+  if (!subjectName || !subjectName.trim()) return;
+  const code = subjectName.trim();
+
+  try {
+    const subjRef = doc(db, SUBJECTS, code);
+    const subjSnap = await getDoc(subjRef);
+
+    if (subjSnap.exists()) {
+      // Subject already exists — do nothing
+      return;
+    }
+
+    // Auto-detect family and level
+    const family = detectFamilyFromName(code);
+    const level = detectLevelFromName(code, classGrade);
+
+    const user = auth.currentUser;
+    const data = {
+      displayName: code,
+      shortName: code,
+      family: family,
+      level: level,
+      type: subjectData?.specialization ? "tle" : "core",
+      curriculum: classCurriculum || "MATATAG",
+      cluster: subjectData?.specialization || "",
+      description: "Auto-created from class program assignment",
+      active: true,
+      managed: false, // Auto-created, not from official catalog
+      seedSource: "auto-from-program",
+      createdAt: serverTimestamp(),
+      createdBy: user?.email || "system",
+    };
+
+    await setDoc(subjRef, data);
+    console.log(`[program-store] ✅ Auto-created subject metadata: ${code}`);
+  } catch (e) {
+    console.warn("[program-store] Auto-create subject failed:", e);
+    // Don't throw — this is a non-critical enhancement
+  }
 }
 
 // ------------------------------------------------------------
@@ -91,6 +179,21 @@ async function addEntry(classId, data) {
     updatedAt: serverTimestamp(),
     createdBy: user.email || "",
   });
+
+  // ✅ Auto-create subject metadata if missing
+  try {
+    const classSnap = await getDoc(doc(db, CLASSES, classId));
+    const classData = classSnap.exists() ? classSnap.data() : {};
+    await ensureSubjectMetadata(
+      data.subject,
+      data,
+      classData.gradeLevel || "",
+      classData.curriculum || "MATATAG"
+    );
+  } catch (e) {
+    // Silent fail
+  }
+
   return ref.id;
 }
 
@@ -113,6 +216,22 @@ async function updateEntry(classId, entryId, updates) {
   clean.updatedAt = serverTimestamp();
 
   await updateDoc(doc(db, CLASSES, classId, PROGRAM, entryId), clean);
+
+  // ✅ Auto-create subject metadata if changed to a new subject
+  if (updates.subject && updates.subject.trim()) {
+    try {
+      const classSnap = await getDoc(doc(db, CLASSES, classId));
+      const classData = classSnap.exists() ? classSnap.data() : {};
+      await ensureSubjectMetadata(
+        updates.subject,
+        updates,
+        classData.gradeLevel || "",
+        classData.curriculum || "MATATAG"
+      );
+    } catch (e) {
+      // Silent fail
+    }
+  }
 }
 
 // ------------------------------------------------------------
@@ -177,6 +296,24 @@ async function bulkAddEntries(classId, entries) {
   });
 
   await batch.commit();
+
+  // ✅ Auto-create subject metadata for all unique subjects
+  try {
+    const classSnap = await getDoc(doc(db, CLASSES, classId));
+    const classData = classSnap.exists() ? classSnap.data() : {};
+    const uniqueSubjects = [...new Set(entries.map(e => (e.subject || "").trim()).filter(Boolean))];
+    for (const subj of uniqueSubjects) {
+      await ensureSubjectMetadata(
+        subj,
+        entries.find(e => e.subject === subj) || {},
+        classData.gradeLevel || "",
+        classData.curriculum || "MATATAG"
+      );
+    }
+  } catch (e) {
+    // Silent fail
+  }
+
   return entries.length;
 }
 
@@ -211,21 +348,6 @@ async function listAssignedTeachers(classId, term = 1) {
 }
 
 // ------------------------------------------------------------
-// Expose globally
-// ------------------------------------------------------------
-window.ProgramStore = {
-  listProgram,
-  getEntry,
-  addEntry,
-  updateEntry,
-  deleteEntry,
-  clearProgram,
-  bulkAddEntries,
-  listAssignedTeachers,
-  copyTerm,   // ← ADD THIS
-};
-
-// ------------------------------------------------------------
 // COPY TERM — Duplicate all entries from one term to another
 // ------------------------------------------------------------
 async function copyTerm(classId, fromTerm, toTerm) {
@@ -237,7 +359,6 @@ async function copyTerm(classId, fromTerm, toTerm) {
 
   const colRef = collection(db, CLASSES, classId, PROGRAM);
 
-  // 1. Load all entries
   const allSnap = await getDocs(colRef);
   const all = allSnap.docs.map(entryToObj);
 
@@ -248,13 +369,11 @@ async function copyTerm(classId, fromTerm, toTerm) {
     return { copied: 0, skipped: 0, sourceCount: 0 };
   }
 
-  // 2. Build dedupe set from existing target entries
   const targetKeys = new Set();
   targetEntries.forEach(e => {
     targetKeys.add(`${e.day}|${e.timeSlotId}|${e.subject}|${e.teacherUid || ""}`);
   });
 
-  // 3. Copy each source entry
   let copied = 0, skipped = 0, errors = 0;
 
   for (const e of sourceEntries) {
@@ -288,5 +407,41 @@ async function copyTerm(classId, fromTerm, toTerm) {
     }
   }
 
+  // ✅ Auto-create subject metadata for all unique subjects copied
+  try {
+    const classSnap = await getDoc(doc(db, CLASSES, classId));
+    const classData = classSnap.exists() ? classSnap.data() : {};
+    const uniqueSubjects = [...new Set(sourceEntries.map(e => (e.subject || "").trim()).filter(Boolean))];
+    for (const subj of uniqueSubjects) {
+      await ensureSubjectMetadata(
+        subj,
+        sourceEntries.find(e => e.subject === subj) || {},
+        classData.gradeLevel || "",
+        classData.curriculum || "MATATAG"
+      );
+    }
+  } catch (e) {
+    // Silent fail
+  }
+
   return { copied, skipped, errors, sourceCount: sourceEntries.length };
 }
+
+// ------------------------------------------------------------
+// Expose globally
+// ------------------------------------------------------------
+window.ProgramStore = {
+  listProgram,
+  getEntry,
+  addEntry,
+  updateEntry,
+  deleteEntry,
+  clearProgram,
+  bulkAddEntries,
+  listAssignedTeachers,
+  copyTerm,
+  // Expose helper for testing
+  ensureSubjectMetadata,
+  detectFamilyFromName,
+  detectLevelFromName,
+};

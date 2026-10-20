@@ -2805,20 +2805,20 @@
         };
       });
 
-      // 2. From program usage (if not already in metadata)
+          // 2. From program usage (if not already in metadata)
       Object.values(SUBJECT_USAGE).forEach(u => {
         if (!byCode[u.code]) {
           byCode[u.code] = {
             code: u.code,
             displayName: u.code,
             shortName: "",
-            family: detectFamily(u.code),
-            type: "core",
+            family: detectFamilyEnhanced(u.code, u.specializations), // ✅ Enhanced detector
+            type: u.specializations?.length ? "tle" : "core",
             level: detectLevel(u.code),
             curriculum: "MATATAG",
-            cluster: "",
+            cluster: u.specializations?.[0] || "",
             requiredFor: [],
-            description: "",
+            description: "Auto-detected from program usage",
             active: true,
             colorTag: "",
             managed: false,
