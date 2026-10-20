@@ -193,8 +193,17 @@
     <!-- Main Grid -->
     <div class="main-grid">
       
-      <!-- Left Column: Grades -->
+      <!-- Left Column: EXAMS + Grades -->
       <div>
+        <!-- ✅ NEW: Available Exams Card -->
+        <div class="card" style="background: linear-gradient(135deg, #f0f0ff, #e8e8ff); border: 2px solid var(--primary);">
+          <div class="card-title"><i class="fas fa-file-alt" style="color: #4f46e5;"></i> My Available Exams</div>
+          <div id="examsContainer">
+            <div style="text-align: center; padding: 20px; color: #64748b;">Loading exams...</div>
+          </div>
+        </div>
+
+        <!-- Grades Card -->
         <div class="card">
           <div class="card-title"><i class="fas fa-star" style="color: #f59e0b;"></i> My Subject Grades</div>
           <div id="gradesContainer">
@@ -238,16 +247,18 @@
     </div>
   </div>
 
-      <script type="module">
+  <script type="module">
     import { auth, db } from "./assets/js/firebase-config.js";
     import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-    import { doc, getDoc, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+    // ✅ ADDED query and where to imports
+    import { doc, getDoc, collection, getDocs, query, where } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
     let CURRENT_USER = null;
     let PROFILE = null;
     let CLASS_INFO = null;
     let STUDENT_INFO = null;
     let GRADES = [];
+    let MY_EXAMS = [];
 
     async function init() {
       onAuthStateChanged(auth, async (user) => {
@@ -258,7 +269,7 @@
         CURRENT_USER = user;
 
         try {
-          // 1. Load User Profile (This now contains the LRN from signup)
+          // 1. Load User Profile
           const userSnap = await getDoc(doc(db, "users", user.uid));
           if (userSnap.exists()) {
             PROFILE = userSnap.data();
@@ -266,7 +277,7 @@
             PROFILE = { name: user.email.split('@')[0] };
           }
 
-          // 2. SMART SEARCH: Find the class by the student's LRN or Email
+          // 2. SMART SEARCH: Find class by LRN or Email
           const classesSnap = await getDocs(collection(db, "classes"));
           
           for (const classDoc of classesSnap.docs) {
@@ -275,17 +286,15 @@
             
             const me = rosterSnap.docs.find(d => {
               const s = d.data();
-              // Match by LRN (if saved in profile) OR by Email
               const matchLrn = PROFILE.lrn && s.lrn && String(s.lrn).trim() === String(PROFILE.lrn).trim();
               const matchEmail = s.email && s.email.toLowerCase() === user.email.toLowerCase();
-              
               return matchLrn || matchEmail;
             });
 
             if (me) {
               CLASS_INFO = clsData;
               STUDENT_INFO = { id: me.id, ...me.data() };
-              break; // Stop searching once found!
+              break;
             }
           }
 
@@ -296,13 +305,17 @@
             
             for (const subj of subjects) {
               const gSnap = await getDoc(doc(db, "classes", CLASS_INFO.id, "grades", STUDENT_INFO.id, subj, "data"));
-              
               if (gSnap.exists()) {
                 GRADES.push({ subject: subj, ...gSnap.data() });
               } else {
                 GRADES.push({ subject: subj, q1: null, q2: null, q3: null, q4: null });
               }
             }
+          }
+
+          // 4. Fetch Exams
+          if (CLASS_INFO) {
+            await loadMyExams(CLASS_INFO.id);
           }
 
           renderDashboard();
@@ -320,18 +333,14 @@
     }
 
     function renderDashboard() {
-      // 1. Get the best name available (Prioritize the roster name, then account name)
       const rosterName = STUDENT_INFO?.name || "";
       const profileName = PROFILE.name || "Student";
       const displayName = rosterName || profileName;
 
-      // 2. Format the name beautifully (Fixes "AGUINALDO, JESSIREE" to just "JESSIREE")
       let firstName = "Student";
       if (displayName.includes(',')) {
-        // If it's "Lastname, Firstname", grab the part after the comma
         firstName = displayName.split(',')[1].trim().split(' ')[0];
       } else {
-        // If it's "Firstname Lastname", grab the first word
         firstName = displayName.split(' ')[0];
       }
 
@@ -339,15 +348,10 @@
       const className = CLASS_INFO ? CLASS_INFO.classLabel : "";
       const adviserName = CLASS_INFO ? CLASS_INFO.adviserName : "Not Assigned";
 
-      // Set Header/Welcome Data
       document.getElementById("welcomeName").textContent = `Hello, ${firstName}! 👋`;
-      
-      // Use the LRN from the profile, roster, or show a fallback
       const displayLrn = STUDENT_INFO?.lrn || PROFILE.lrn || "Not Linked";
       document.getElementById("welcomeMeta").textContent = `LRN: ${displayLrn} | SY: ${CLASS_INFO?.schoolYear || "2026-2027"}`;
-      
       document.getElementById("welcomeClass").textContent = `${gradeLevel} - ${className}`;
-      
       document.getElementById("bentoClassName").textContent = className;
       document.getElementById("bentoAdviser").textContent = `Adviser: ${adviserName}`;
       document.getElementById("bentoAvatar").textContent = firstName.charAt(0).toUpperCase();
@@ -355,8 +359,8 @@
       // Calculate Grades
       let totalAvg = 0;
       let validSubjects = 0;
-
       let gradesHtml = "";
+
       GRADES.forEach(g => {
         const vals = [g.q1, g.q2, g.q3, g.q4].filter(v => v !== null && v !== "").map(Number);
         if (vals.length > 0) {
@@ -392,11 +396,9 @@
       }
       document.getElementById("gradesContainer").innerHTML = gradesHtml;
 
-      // Calculate Overall Avg
       const overallAvg = validSubjects > 0 ? Math.round(totalAvg / validSubjects) : 0;
       document.getElementById("statAvg").textContent = overallAvg > 0 ? overallAvg : "--";
 
-      // Circular Progress Animation
       setTimeout(() => {
         const percent = overallAvg > 0 ? overallAvg : 75; 
         document.getElementById("progressPercent").textContent = percent + "%";
@@ -405,7 +407,6 @@
         circle.style.strokeDashoffset = dashoffset;
       }, 500);
 
-      // Load Schedule
       if (CLASS_INFO) {
         loadSchedule(CLASS_INFO.id);
       }
@@ -416,7 +417,6 @@
         const snap = await getDocs(collection(db, "classes", classId, "program"));
         const program = snap.docs.map(d => d.data()).filter(p => Number(p.term) === 1);
         
-        // For "Today's Schedule", let's just show Monday's schedule to keep the UI clean
         const today = "Monday"; 
         const todayClasses = program.filter(p => p.day === today).sort((a,b) => a.timeSlotId.localeCompare(b.timeSlotId));
 
@@ -437,6 +437,59 @@
 
       } catch (e) {
         console.error(e);
+      }
+    }
+
+    // ✅ LOAD AVAILABLE EXAMS FOR THE STUDENT'S CLASS
+    async function loadMyExams(classId) {
+      try {
+        // ✅ ONLY QUERY BY CLASS ID (No index required!)
+        const q = query(collection(db, "exams"), where("classId", "==", classId));
+        const snap = await getDocs(q);
+        
+        // ✅ FILTER BY STATUS IN JAVASCRIPT
+        MY_EXAMS = snap.docs
+          .map(d => ({ id: d.id, ...d.data() }))
+          .filter(exam => exam.status === 'published');
+        
+        const container = document.getElementById("examsContainer");
+        
+        if (MY_EXAMS.length === 0) {
+          container.innerHTML = `<div style="text-align: center; padding: 20px; color: #64748b;">
+            <i class="fas fa-check-circle" style="font-size: 2rem; color: #10b981; margin-bottom: 10px;"></i>
+            <p>You have no pending exams. Great job!</p>
+          </div>`;
+          return;
+        }
+
+        container.innerHTML = MY_EXAMS.map(exam => `
+          <div class="grade-row" style="background: linear-gradient(135deg, #ffffff, #f8fafc); border: 1px solid #e2e8f0; padding: 20px; margin-bottom: 12px; flex-wrap: wrap;">
+            <div style="flex: 1; min-width: 200px;">
+              <div style="font-weight: 800; font-size: 1.1rem; color: #1e1b4b; margin-bottom: 4px;">${exam.title}</div>
+              <div style="font-size: 0.85rem; color: #64748b; margin-bottom: 8px;">
+                <span style="background:#e0e7ff; color:#3730a3; padding: 2px 8px; border-radius: 4px; font-weight: 700; margin-right: 8px;">
+                  ${exam.type === 'ww' ? 'Written Work' : exam.type === 'pt' ? 'Performance Task' : 'Quarterly'}
+                </span>
+                • ${exam.questionsCount || 0} Items • ${exam.duration || 60} Mins
+              </div>
+            </div>
+            <div style="display: flex; gap: 10px; align-items: center;">
+              <a href="student-take-exam.html?examId=${exam.id}" target="_blank" 
+                 style="background: var(--primary); color: #fff; padding: 10px 20px; border-radius: 8px; font-weight: 700; text-decoration: none; font-size: 0.9rem; transition: 0.2s; box-shadow: 0 4px 12px rgba(79,70,229,0.3);"
+                 onmouseover="this.style.transform='translateY(-2px)'" 
+                 onmouseout="this.style.transform='translateY(0)'">
+                <i class="fas fa-play"></i> Take Exam
+              </a>
+            </div>
+          </div>
+        `).join("");
+
+      } catch (e) {
+        console.error("Error loading exams:", e);
+        document.getElementById("examsContainer").innerHTML = `
+          <div style="color: red; padding: 15px; background: #fee2e2; border-radius: 8px; font-size: 0.85rem;">
+            Failed to load exams. Check console.
+          </div>`;
       }
     }
 
