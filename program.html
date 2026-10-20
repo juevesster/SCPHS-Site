@@ -902,13 +902,75 @@
       });
     }
 
-    function populateSpecializationDropdown() {
+          function populateSpecializationDropdown() {
       const sel = $("f-specialization");
       sel.innerHTML = '<option value="">— None / Not applicable —</option>';
-      Object.entries(SPECIALIZATION_GROUPS).forEach(([key, group]) => {
+      
+      // ============================================================
+      // DO 009, s. 2026 — Strengthened SHS TechPro Industry Clusters
+      // ============================================================
+      const TECHPRO_CLUSTERS = {
+        "Agriculture & Agri-Fishery": [
+          "Agricultural Crops Production",
+          "Aquaculture",
+          "Fish Capture",
+          "Agro-Entrepreneurship"
+        ],
+        "Automotive & Small Engine Technologies": [
+          "Automotive Servicing (Engine and Chassis Repairs)",
+          "Automotive Servicing (Electrical Repair)",
+          "Motorcycle and Small Engine Servicing",
+          "Driving Automotive Servicing"
+        ],
+        "Construction & Building Technologies": [
+          "Carpentry",
+          "Technical Drafting",
+          "Masonry",
+          "Plumbing"
+        ],
+        "Creative Arts & Design Technologies": [
+          "Animation",
+          "Visual Arts",
+          "Graphic Design"
+        ],
+        "Hospitality & Tourism": [
+          "Cookery",
+          "Bread and Pastry Production",
+          "Food and Beverage Services",
+          "Housekeeping"
+        ],
+        "ICT Support & Computer Programming": [
+          "Computer Systems Servicing",
+          "Programming (.NET)",
+          "Programming (Java)",
+          "Web Development"
+        ],
+        "Industrial Technologies": [
+          "Electrical Installation and Maintenance",
+          "Electronics",
+          "Welding",
+          "Refrigeration and Air Conditioning"
+        ],
+        "Maritime Transport": [
+          "Maritime Technology",
+          "Seafaring"
+        ],
+        "Aesthetic, Wellness & Human Care": [
+          "Beauty Care",
+          "Wellness and Massage",
+          "Caregiving"
+        ],
+        "Artisany & Creative Enterprise": [
+          "Dressmaking",
+          "Tailoring",
+          "Handicrafts"
+        ]
+      };
+
+      Object.entries(TECHPRO_CLUSTERS).forEach(([cluster, items]) => {
         const optgroup = document.createElement("optgroup");
-        optgroup.label = group.label;
-        group.items.forEach(item => {
+        optgroup.label = cluster;
+        items.forEach(item => {
           const opt = document.createElement("option");
           opt.value = item;
           opt.textContent = item;
@@ -916,6 +978,23 @@
         });
         sel.appendChild(optgroup);
       });
+    }
+    
+    // Helper: Extract specialization keyword from a subject name
+    function extractSpecializationFromName(name) {
+      const n = String(name || "").toUpperCase();
+      const keywords = [
+        "Automotive", "Cookery", "Dressmaking", "Tailoring", "Carpentry",
+        "Welding", "Electronics", "Electrical", "ICT", "Computer",
+        "Animation", "Programming", "Web", "Food", "Beverage",
+        "Hospitality", "Tourism", "Agriculture", "Agri",
+        "Construction", "Drafting", "Beauty", "Wellness",
+        "Refrigeration", "Plumbing", "Masonry"
+      ];
+      for (const kw of keywords) {
+        if (n.includes(kw.toUpperCase())) return kw;
+      }
+      return null;
     }
 
     function populateUserDropdown() {
@@ -1202,8 +1281,11 @@ $("printModal").addEventListener("click", e => {
       });
 
       // Also add a starter list of common TLE specializations
-      const starterSpecs = ["Cookery", "Electronics", "Dressmaking", "Carpentry", "ICT", "Automotive"];
-      starterSpecs.forEach(s => usedSpecs.add(s));
+      // Use the same specializations as the dropdown (not hardcoded)
+      const availableSpecs = Array.from($("f-specialization").options)
+        .map(o => o.value)
+        .filter(Boolean);
+      availableSpecs.slice(0, 6).forEach(s => usedSpecs.add(s));
 
       const list = Array.from(usedSpecs).slice(0, 10);
 
