@@ -37,7 +37,8 @@
     .doc-subtitle { text-align: center; font-size: 12px; font-style: italic; margin-bottom: 20px; }
 
     /* Tables */
-    table { width: 100%; border-collapse: collapse; margin-bottom: 25px; font-size: 11px; table-layout: fixed; }
+    .table-wrapper { width: 100%; overflow-x: auto; margin-bottom: 25px; }
+    table { width: 100%; border-collapse: collapse; font-size: 11px; table-layout: fixed; }
     th, td { border: 1px solid #000; padding: 8px 4px; text-align: center; vertical-align: middle; word-wrap: break-word; }
     th { background: #f1f5f9; font-weight: 800; text-transform: uppercase; font-size: 10px; }
     .text-left { text-align: left; }
@@ -100,8 +101,9 @@
       .paper { box-shadow: none; padding: 0; border-radius: 0; }
       .ai-summary { display: none !important; }
       td input { pointer-events: none; }
-      /* Hide the delete column completely on print */
+      /* Hide the delete column entirely */
       .col-delete { display: none !important; }
+      th.col-delete { display: none !important; }
     }
   </style>
 </head>
@@ -129,7 +131,7 @@
 
   <div class="paper-wrap">
     
-    <!-- AI Analysis Summary -->
+    <!-- AI Analysis Summary (Screen Only) -->
     <div class="ai-summary" id="aiSummary" style="display: none;">
       <div class="ai-stat"><div class="val" id="statMastered">0</div><div class="lbl">Mastered Competencies</div></div>
       <div class="ai-stat"><div class="val" id="statDeveloping" style="color: #d97706;">0</div><div class="lbl">Developing</div></div>
@@ -153,48 +155,69 @@
       <div class="doc-subtitle">Form 23 (Least Learned Competencies) & Form 24 (Class Performance)</div>
 
       <!-- FORM 23 -->
-      <table>
-        <thead>
-          <tr>
-            <th colspan="8" style="background: #1e3c72; color: #fff; padding: 10px; font-size: 12px;">PART I: REPORT ON LEAST LEARNED COMPETENCIES (Form 23)</th>
-          </tr>
-          <tr>
-            <th style="width: 15%;">Subject</th>
-            <th style="width: 10%;">Grade Level</th>
-            <th style="width: 8%;">No. of MELCs</th>
-            <th style="width: 8%;">No. Delivered</th>
-            <th style="width: 25%;">Least Learned MELC</th>
-            <th style="width: 15%;">Code</th>
-            <th style="width: 8%;">% Passed</th>
-            <th style="width: 8%;">% Failed</th>
-            <th class="no-print col-delete" style="width: 30px;"></th>
-          </tr>
-        </thead>
-        <tbody id="form23Body">
-          <!-- Rows injected here -->
-        </tbody>
-      </table>
+      <div class="table-wrapper">
+        <table>
+          <colgroup>
+            <col style="width: 15%;">
+            <col style="width: 10%;">
+            <col style="width: 8%;">
+            <col style="width: 8%;">
+            <col style="width: 25%;">
+            <col style="width: 15%;">
+            <col style="width: 8%;">
+            <col style="width: 8%;">
+            <col class="col-delete" style="width: 35px;">
+          </colgroup>
+          <thead>
+            <tr>
+              <th colspan="8" style="background: #1e3c72; color: #fff; padding: 10px; font-size: 12px;">PART I: REPORT ON LEAST LEARNED COMPETENCIES (Form 23)</th>
+            </tr>
+            <tr>
+              <th>Subject</th>
+              <th>Grade Level</th>
+              <th>No. of MELCs</th>
+              <th>No. Delivered</th>
+              <th>Least Learned MELC</th>
+              <th>Code</th>
+              <th>% Passed</th>
+              <th>% Failed</th>
+              <th class="no-print col-delete"></th>
+            </tr>
+          </thead>
+          <tbody id="form23Body">
+            <!-- Rows injected here -->
+          </tbody>
+        </table>
+      </div>
       <button class="btn btn-primary no-print" style="margin-bottom: 30px; padding: 6px 12px; font-size: 0.75rem;" onclick="addForm23Row()">
         <i class="fas fa-plus"></i> Add Subject Row
       </button>
 
       <!-- FORM 24 -->
-      <table>
-        <thead>
-          <tr>
-            <th colspan="4" style="background: #1e3c72; color: #fff; padding: 10px; font-size: 12px;">PART II: CLASS PERFORMANCE BY SUBJECT (Form 24)</th>
-          </tr>
-          <tr>
-            <th style="width: 40%;">Subject</th>
-            <th style="width: 20%;">Class Section</th>
-            <th style="width: 20%;">Term</th>
-            <th style="width: 20%;">Average Grade</th>
-          </tr>
-        </thead>
-        <tbody id="form24Body">
-          <!-- Rows injected here -->
-        </tbody>
-      </table>
+      <div class="table-wrapper">
+        <table>
+          <colgroup>
+            <col style="width: 40%;">
+            <col style="width: 20%;">
+            <col style="width: 20%;">
+            <col style="width: 20%;">
+          </colgroup>
+          <thead>
+            <tr>
+              <th colspan="4" style="background: #1e3c72; color: #fff; padding: 10px; font-size: 12px;">PART II: CLASS PERFORMANCE BY SUBJECT (Form 24)</th>
+            </tr>
+            <tr>
+              <th>Subject</th>
+              <th>Class Section</th>
+              <th>Term</th>
+              <th>Average Grade</th>
+            </tr>
+          </thead>
+          <tbody id="form24Body">
+            <!-- Rows injected here -->
+          </tbody>
+        </table>
+      </div>
 
       <!-- Signatories -->
       <div class="signatories">
