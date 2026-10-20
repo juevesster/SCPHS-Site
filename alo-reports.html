@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ALO Report (Form 23 & 24) | SCPHS Portal</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <style>
+    :root { --primary: #1e3c72; --bg: #f1f5f9; --border: #e2e8f0; --text: #1e293b; }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); }
+
+    /* Header & Controls */
+    .no-print { background: #fff; padding: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px; margin-bottom: 20px; position: sticky; top: 0; z-index: 100; }
+    .header-title { font-size: 1.2rem; font-weight: 800; color: var(--primary); display: flex; align-items: center; gap: 10px; }
+    .controls { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+    .form-select { padding: 10px 14px; border: 2px solid var(--border); border-radius: 8px; font-family: inherit; font-weight: 600; font-size: 0.9rem; outline: none; }
+    .btn { padding: 10px 20px; border-radius: 8px; border: none; font-family: inherit; font-weight: 700; font-size: 0.85rem; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; transition: 0.2s; text-decoration: none; }
+    .btn:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+    .btn-primary { background: var(--primary); color: #fff; }
+    .btn-success { background: #059669; color: #fff; }
+    .btn-warning { background: #d97706; color: #fff; }
+    .btn-danger { background: #dc2626; color: #fff; }
+
+    /* Paper UI */
+    .paper-wrap { max-width: 1100px; margin: 0 auto 50px; }
+    .paper { background: #fff; padding: 40px; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); font-family: 'Times New Roman', Times, serif; }
+
+    /* DepEd Header */
+    .deped-header { text-align: center; margin-bottom: 20px; font-size: 12px; line-height: 1.4; }
+    .deped-header img { height: 70px; margin-bottom: 5px; }
+    .deped-header .school-name { font-size: 16px; font-weight: 800; text-transform: uppercase; margin-top: 8px; }
+    
+    .doc-title { text-align: center; font-size: 16px; font-weight: 800; text-transform: uppercase; margin: 20px 0 5px; }
+    .doc-subtitle { text-align: center; font-size: 12px; font-style: italic; margin-bottom: 20px; }
+
+    /* Tables */
+    table { width: 100%; border-collapse: collapse; margin-bottom: 25px; font-size: 11px; }
+    th, td { border: 1px solid #000; padding: 8px; text-align: center; vertical-align: middle; }
+    th { background: #f1f5f9; font-weight: 800; text-transform: uppercase; font-size: 10px; }
+    .text-left { text-align: left; }
+    
+    /* Editable Inputs in Table */
+    td input { width: 100%; border: none; background: transparent; padding: 4px; font-family: inherit; font-size: 11px; text-align: center; outline: none; }
+    td input:focus { background: #e0e7ff; border-radius: 4px; }
+    td input.text-left { text-align: left; }
+    .delete-row { color: var(--danger); cursor: pointer; border: none; background: none; }
+
+    /* Signatories */
+    .signatories { display: flex; justify-content: space-between; margin-top: 40px; font-size: 12px; page-break-inside: avoid; }
+    .sig-block { text-align: center; width: 30%; }
+    .sig-line { border-top: 1px solid #000; margin-top: 40px; margin-bottom: 5px; }
+    .sig-name { font-weight: 800; text-transform: uppercase; }
+    .sig-title { font-size: 11px; }
+
+    /* AI Analysis Summary (Screen Only) */
+    .ai-summary { background: #f0fdf4; border: 2px solid #bbf7d0; padding: 20px; border-radius: 8px; margin-bottom: 20px; display: flex; gap: 20px; }
+    .ai-stat { flex: 1; text-align: center; }
+    .ai-stat .val { font-size: 1.8rem; font-weight: 800; color: #065f46; }
+    .ai-stat .lbl { font-size: 0.8rem; font-weight: 700; color: #166534; text-transform: uppercase; }
+
+    /* Print Settings */
+    @media print {
+      @page { size: A4 portrait; margin: 15mm; }
+      body { background: #fff; }
+      .no-print { display: none !important; }
+      .paper-wrap { margin: 0; max-width: 100%; }
+      .paper { box-shadow: none; padding: 0; border-radius: 0; }
+      .ai-summary { display: none !important; }
+      td input { pointer-events: none; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- TOP CONTROLS (Hidden on Print) -->
+  <div class="no-print">
+    <div class="header-title">
+      <i class="fas fa-file-signature"></i> ALO Reports (Form 23 & 24)
+    </div>
+    <div class="controls">
+      <select id="classSelect" class="form-select" onchange="loadALOData()">
+        <option value="">-- Loading Classes... --</option>
+      </select>
+      <select id="termSelect" class="form-select" onchange="loadALOData()">
+        <option value="1">Term 1</option>
+        <option value="2">Term 2</option>
+        <option value="3">Term 3</option>
+      </select>
+      <button class="btn btn-warning" onclick="syncFromExams()"><i class="fas fa-sync"></i> Auto-Sync from Exams</button>
+      <button class="btn btn-success" onclick="saveALOData()"><i class="fas fa-save"></i> Save Changes</button>
+      <button class="btn btn-primary" onclick="window.print()"><i class="fas fa-print"></i> Print ALO</button>
+    </div>
+  </div>
+
+  <div class="paper-wrap">
+    
+    <!-- AI Analysis Summary (Screen Only) -->
+    <div class="ai-summary" id="aiSummary" style="display: none;">
+      <div class="ai-stat"><div class="val" id="statMastered">0</div><div class="lbl">Mastered Competencies</div></div>
+      <div class="ai-stat"><div class="val" id="statDeveloping" style="color: #d97706;">0</div><div class="lbl">Developing</div></div>
+      <div class="ai-stat"><div class="val" id="statLeastLearned" style="color: #dc2626;">0</div><div class="lbl">Least Learned</div></div>
+    </div>
+
+    <div class="paper" id="printArea">
+      
+      <!-- DepEd Header -->
+      <div class="deped-header">
+        <img src="./assets/images/deped-logo.png" alt="DepEd Logo" onerror="this.style.display='none'">
+        <div>Republic of the Philippines</div>
+        <div><strong>Department of Education</strong></div>
+        <div>Region II - Cagayan Valley</div>
+        <div>Schools Division of Nueva Vizcaya</div>
+        <div class="school-name">Sta. Cruz Pingkian High School</div>
+        <div>Pingkian Kayapa, Nueva Vizcaya</div>
+      </div>
+
+      <div class="doc-title">Assessment of Learning Outcomes (ALO)</div>
+      <div class="doc-subtitle">Form 23 (Least Learned Competencies) & Form 24 (Class Performance)</div>
+
+      <!-- FORM 23 -->
+      <table>
+        <thead>
+          <tr>
+            <th colspan="8" style="background: #1e3c72; color: #fff; padding: 10px; font-size: 12px;">PART I: REPORT ON LEAST LEARNED COMPETENCIES (Form 23)</th>
+          </tr>
+          <tr>
+            <th style="width: 15%;">Subject</th>
+            <th style="width: 10%;">Grade Level</th>
+            <th style="width: 8%;">No. of MELCs</th>
+            <th style="width: 8%;">No. Delivered</th>
+            <th style="width: 25%;">Least Learned MELC</th>
+            <th style="width: 15%;">Code</th>
+            <th style="width: 8%;">% Passed</th>
+            <th style="width: 8%;">% Failed</th>
+            <th class="no-print" style="width: 3%;"></th>
+          </tr>
+        </thead>
+        <tbody id="form23Body">
+          <!-- Rows injected here -->
+        </tbody>
+      </table>
+      <button class="btn btn-primary no-print" style="margin-bottom: 30px; padding: 6px 12px; font-size: 0.75rem;" onclick="addForm23Row()">
+        <i class="fas fa-plus"></i> Add Subject Row
+      </button>
+
+      <!-- FORM 24 -->
+      <table>
+        <thead>
+          <tr>
+            <th colspan="4" style="background: #1e3c72; color: #fff; padding: 10px; font-size: 12px;">PART II: CLASS PERFORMANCE BY SUBJECT (Form 24)</th>
+          </tr>
+          <tr>
+            <th style="width: 40%;">Subject</th>
+            <th style="width: 20%;">Class Section</th>
+            <th style="width: 20%;">Term</th>
+            <th style="width: 20%;">Average Grade</th>
+          </tr>
+        </thead>
+        <tbody id="form24Body">
+          <!-- Rows injected here -->
+        </tbody>
+      </table>
+
+      <!-- Signatories -->
+      <div class="signatories">
+        <div class="sig-block">
+          <div>Prepared by:</div>
+          <div class="sig-line"></div>
+          <div class="sig-name" id="teacherNameDisplay">Teacher Name</div>
+          <div class="sig-title">Subject Teacher</div>
+        </div>
+        <div class="sig-block">
+          <div>Checked by:</div>
+          <div class="sig-line"></div>
+          <div class="sig-name">_________________________</div>
+          <div class="sig-title">Department Head</div>
+        </div>
+        <div class="sig-block">
+          <div>Approved by:</div>
+          <div class="sig-line"></div>
+          <div class="sig-name">_________________________</div>
+          <div class="sig-title">School Principal</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <script type="module">
+    import { auth, db } from "./assets/js/firebase-config.js";
+    import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+    import { collection, getDocs, doc, getDoc, query, where, setDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+    import { getCurrentUserProfile } from "./assets/js/roles.js";
+
+    let CURRENT_USER = null;
+    let CURRENT_PROFILE = null;
+    let CLASSES = [];
+
+    // 1. INITIALIZATION
+    onAuthStateChanged(auth, async (user) => {
+      if (!user) { window.location.href = "login.html"; return; }
+      CURRENT_USER = user;
+      CURRENT_PROFILE = await getCurrentUserProfile();
+
+      if (CURRENT_PROFILE?.name) {
+        document.getElementById("teacherNameDisplay").textContent = CURRENT_PROFILE.name;
+      }
+
+      await loadClasses();
+    });
+
+    // 2. LOAD CLASSES FOR DROPDOWN
+    async function loadClasses() {
+      try {
+        const snap = await getDocs(collection(db, "classes"));
+        const select = document.getElementById("classSelect");
+        
+        // Filter to only show classes where the current user is the adviser or teacher
+        CLASSES = snap.docs
+          .map(d => ({ id: d.id, ...d.data() }))
+          .filter(c => 
+            c.adviserUid === CURRENT_USER.uid || 
+            (c.teacherUids && c.teacherUids.includes(CURRENT_USER.uid)) ||
+            CURRENT_PROFILE?.primaryRole === 'admin'
+          );
+
+        select.innerHTML = '<option value="">-- Select Class --</option>';
+        CLASSES.forEach(c => {
+          select.innerHTML += `<option value="${c.id}">${c.classLabel || c.name || 'Class'}</option>`;
+        });
+      } catch (e) {
+        console.error("Failed to load classes", e);
+      }
+    }
+
+    // 3. LOAD ALO DATA FROM FIRESTORE
+    window.loadALOData = async () => {
+      const classId = document.getElementById("classSelect").value;
+      const term = document.getElementById("termSelect").value;
+      
+      if (!classId) return;
+
+      const form23Body = document.getElementById("form23Body");
+      const form24Body = document.getElementById("form24Body");
+      
+      form23Body.innerHTML = `<tr><td colspan="9" style="text-align: center; padding: 20px;">Loading ALO data...</td></tr>`;
+      form24Body.innerHTML = `<tr><td colspan="4" style="text-align: center; padding: 20px;">Loading...</td></tr>`;
+
+      try {
+        // Fetch ALO Report from Firestore (alo_reports collection)
+        const aloRef = doc(db, "alo_reports", `${classId}_${term}`);
+        const aloSnap = await getDoc(aloRef);
+
+        if (aloSnap.exists()) {
+          const data = aloSnap.data();
+          renderForm23(data.form23 || []);
+          renderForm24(data.form24 || []);
+        } else {
+          // If no data exists, start with empty rows
+          renderForm23([{}]);
+          renderForm24([{}]);
+        }
+      } catch (e) {
+        console.error("Error loading ALO:", e);
+        alert("Failed to load ALO data.");
+      }
+    };
+
+    // 4. RENDER TABLES
+    function renderForm23(rows) {
+      const tbody = document.getElementById("form23Body");
+      tbody.innerHTML = rows.map((row, i) => `
+        <tr>
+          <td><input type="text" class="text-left" value="${row.subject || ''}" onchange="updateData(${i}, 'form23', 'subject', this.value)"></td>
+          <td><input type="text" value="${row.gradeLevel || ''}" onchange="updateData(${i}, 'form23', 'gradeLevel', this.value)"></td>
+          <td><input type="number" value="${row.melcs || 0}" onchange="updateData(${i}, 'form23', 'melcs', this.value)"></td>
+          <td><input type="number" value="${row.delivered || 0}" onchange="updateData(${i}, 'form23', 'delivered', this.value)"></td>
+          <td><input type="text" class="text-left" value="${row.leastLearned || ''}" onchange="updateData(${i}, 'form23', 'leastLearned', this.value)"></td>
+          <td><input type="text" value="${row.code || ''}" onchange="updateData(${i}, 'form23', 'code', this.value)"></td>
+          <td><input type="number" value="${row.passed || 0}" onchange="updateData(${i}, 'form23', 'passed', this.value)"></td>
+          <td><input type="number" value="${row.failed || 0}" onchange="updateData(${i}, 'form23', 'failed', this.value)"></td>
+          <td class="no-print"><button class="delete-row" onclick="this.closest('tr').remove()"><i class="fas fa-trash"></i></button></td>
+        </tr>
+      `).join("");
+    }
+
+    function renderForm24(rows) {
+      const tbody = document.getElementById("form24Body");
+      tbody.innerHTML = rows.map((row, i) => `
+        <tr>
+          <td><input type="text" class="text-left" value="${row.subject || ''}" onchange="updateData(${i}, 'form24', 'subject', this.value)"></td>
+          <td><input type="text" value="${row.section || ''}" onchange="updateData(${i}, 'form24', 'section', this.value)"></td>
+          <td><input type="text" value="${row.term || ''}" onchange="updateData(${i}, 'form24', 'term', this.value)"></td>
+          <td><input type="number" value="${row.average || 0}" onchange="updateData(${i}, 'form24', 'average', this.value)"></td>
+        </tr>
+      `).join("");
+    }
+
+    // 5. ADD ROWS
+    window.addForm23Row = () => {
+      const tbody = document.getElementById("form23Body");
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td><input type="text" class="text-left"></td>
+        <td><input type="text"></td>
+        <td><input type="number" value="0"></td>
+        <td><input type="number" value="0"></td>
+        <td><input type="text" class="text-left"></td>
+        <td><input type="text"></td>
+        <td><input type="number" value="0"></td>
+        <td><input type="number" value="0"></td>
+        <td class="no-print"><button class="delete-row" onclick="this.closest('tr').remove()"><i class="fas fa-trash"></i></button></td>
+      `;
+      tbody.appendChild(tr);
+    };
+
+    // 6. SAVE DATA
+    window.saveALOData = async () => {
+      const classId = document.getElementById("classSelect").value;
+      const term = document.getElementById("termSelect").value;
+      if (!classId) { alert("Please select a class first."); return; }
+
+      const form23 = [];
+      document.querySelectorAll("#form23Body tr").forEach(tr => {
+        const inputs = tr.querySelectorAll("input");
+        if (inputs[0].value.trim()) { // Only save if subject is not empty
+          form23.push({
+            subject: inputs[0].value,
+            gradeLevel: inputs[1].value,
+            melcs: parseInt(inputs[2].value) || 0,
+            delivered: parseInt(inputs[3].value) || 0,
+            leastLearned: inputs[4].value,
+            code: inputs[5].value,
+            passed: parseFloat(inputs[6].value) || 0,
+            failed: parseFloat(inputs[7].value) || 0
+          });
+        }
+      });
+
+      const form24 = [];
+      document.querySelectorAll("#form24Body tr").forEach(tr => {
+        const inputs = tr.querySelectorAll("input");
+        if (inputs[0].value.trim()) {
+          form24.push({
+            subject: inputs[0].value,
+            section: inputs[1].value,
+            term: inputs[2].value,
+            average: parseFloat(inputs[3].value) || 0
+          });
+        }
+      });
+
+      try {
+        await setDoc(doc(db, "alo_reports", `${classId}_${term}`), {
+          classId, term, form23, form24,
+          updatedBy: CURRENT_USER.uid,
+          updatedAt: serverTimestamp()
+        });
+        alert("✅ ALO Data saved successfully!");
+      } catch (e) {
+        console.error("Error saving ALO:", e);
+        alert("❌ Failed to save ALO data.");
+      }
+    };
+
+    // 7. AUTO-SYNC FROM EXAMS (The Magic!)
+    window.syncFromExams = async () => {
+      const classId = document.getElementById("classSelect").value;
+      const term = document.getElementById("termSelect").value;
+      if (!classId) { alert("Please select a class first."); return; }
+
+      if (!confirm("This will analyze all published exams for this class and auto-fill the ALO data. Continue?")) return;
+
+      try {
+        // 1. Get all exams for this class + term
+        const q = query(collection(db, "exams"), where("classId", "==", classId), where("term", "==", term));
+        const examSnap = await getDocs(q);
+        
+        const exams = examSnap.docs.map(d => ({ id: d.id, ...d.data() })).filter(e => e.status === 'published');
+        
+        if (exams.length === 0) {
+          alert("No published exams found for this class/term.");
+          return;
+        }
+
+        const form23Data = [];
+        const form24Data = [];
+
+        // 2. For each exam, get the submissions
+        for (const exam of exams) {
+          const subQ = query(collection(db, "exam_submissions"), where("examId", "==", exam.id));
+          const subSnap = await getDocs(subQ);
+          
+          if (subSnap.empty) continue;
+
+          const submissions = subSnap.docs.map(d => d.data());
+          let totalScore = 0;
+          
+          submissions.forEach(s => {
+            totalScore += s.score || 0;
+          });
+
+          const avgScore = totalScore / submissions.length;
+          const totalPoints = submissions[0].totalPoints || exam.questionsCount || 1;
+          const percentPassed = Math.round((avgScore / totalPoints) * 100);
+
+          // Add to Form 24 (Class Performance)
+          form24Data.push({
+            subject: exam.subject || "General Subject",
+            section: CLASSES.find(c => c.id === classId)?.classLabel || "Class",
+            term: `Term ${term}`,
+            average: percentPassed
+          });
+
+          // Add to Form 23 (Least Learned)
+          form23Data.push({
+            subject: exam.subject || "General Subject",
+            gradeLevel: CLASSES.find(c => c.id === classId)?.gradeLevel || "",
+            melcs: exam.questionsCount || 0,
+            delivered: exam.questionsCount || 0,
+            leastLearned: exam.title + " (Based on Exam Data)",
+            code: "EXAM-" + exam.id.substring(0, 5),
+            passed: percentPassed,
+            failed: 100 - percentPassed
+          });
+        }
+
+        renderForm23(form23Data);
+        renderForm24(form24Data);
+        
+        // Update AI Summary stats
+        document.getElementById("aiSummary").style.display = "flex";
+        document.getElementById("statMastered").textContent = form23Data.filter(f => f.passed >= 80).length;
+        document.getElementById("statDeveloping").textContent = form23Data.filter(f => f.passed >= 50 && f.passed < 80).length;
+        document.getElementById("statLeastLearned").textContent = form23Data.filter(f => f.passed < 50).length;
+
+        alert("✅ Successfully synced data from exams!");
+
+      } catch (e) {
+        console.error("Sync error:", e);
+        alert("❌ Failed to sync data.");
+      }
+    };
+
+  </script>
+</body>
+</html>
