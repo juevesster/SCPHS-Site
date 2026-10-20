@@ -2705,8 +2705,8 @@
           position: fixed;
           bottom: 20px;
           right: 20px;
-          width: 400px;
-          max-height: 50vh;
+          width: 420px;
+          max-height: 60vh;
           overflow-y: auto;
           background: #111827;
           color: #f9fafb;
@@ -2756,15 +2756,33 @@
               `).join("")}
           </div>
           
+          <div style="margin-bottom:10px;padding-bottom:8px;border-bottom:1px solid #374151;color:#fbbf24;">
+            <strong style="color:#60a5fa;">🔄 Scan status</strong>
+            <div style="margin-top:4px;">
+              SUBJECT_SCAN_DONE: ${SUBJECT_SCAN_DONE ? "✅ true" : "⏳ false"}
+            </div>
+            <div>SUBJECT_USAGE entries: ${Object.keys(SUBJECT_USAGE).length}</div>
+          </div>
+          
           <div style="color:#9ca3af;">
             Total subjects: ${all.length} |
             Managed: ${all.filter(s => s.managed).length} |
             Unmanaged: ${all.filter(s => !s.managed).length}
           </div>
+          
+          <button onclick="window.__refreshDebug()" style="margin-top:10px;width:100%;background:#3b82f6;color:#fff;border:none;border-radius:4px;padding:6px;cursor:pointer;font-size:11px;font-weight:700;">
+            🔄 Refresh Debug Info
+          </button>
         `;
         
         document.body.appendChild(panel);
-      }, 1000);
+        
+        // Make refresh button work
+        window.__refreshDebug = () => {
+          document.getElementById("__debugPanel")?.remove();
+          renderSubjectsTab(document.getElementById("acMain"));
+        };
+      }, 2500); // ← Wait 2.5s for scan to finish
     }
 
     // ------------------------------------------------------------
