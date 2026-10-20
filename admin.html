@@ -2746,6 +2746,27 @@
           
           <div style="margin-bottom:10px;padding-bottom:8px;border-bottom:1px solid #374151;">
             <strong style="color:#60a5fa;">📊 Subjects WITH usage (${withUsage.length})</strong>
+                      <div style="margin-bottom:10px;padding-bottom:8px;border-bottom:1px solid #374151;">
+            <strong style="color:#60a5fa;">🔍 Search "Automotive" in all data</strong>
+            ${(() => {
+              const automotiveRelated = all.filter(s => 
+                (s.code || "").toLowerCase().includes("automotive") ||
+                (s.displayName || "").toLowerCase().includes("automotive") ||
+                (s.code || "").toLowerCase().includes("servicing")
+              );
+              return automotiveRelated.length === 0 
+                ? `<div style="color:#fbbf24;margin-top:4px;">❌ No automotive subjects found</div>`
+                : automotiveRelated.map(s => `
+                  <div style="margin-top:4px;padding:4px 6px;background:#1f2937;border-radius:4px;border-left:3px solid #60a5fa;">
+                    <strong style="color:#34d399;">"${esc(s.code)}"</strong>
+                    <div style="color:#9ca3af;font-size:10px;">
+                      Display: ${esc(s.displayName)}<br>
+                      Uses: ${s.usage?.count || 0} | Classes: ${s.usage?.classes?.length || 0} | Managed: ${s.managed ? "✅" : "❌"}
+                    </div>
+                  </div>
+                `).join("");
+            })()}
+          </div>
             ${withUsage.length === 0 
               ? `<div style="color:#fbbf24;margin-top:4px;">❌ None</div>`
               : withUsage.map(s => `
@@ -2756,6 +2777,18 @@
               `).join("")}
           </div>
           
+                    <div style="margin-bottom:10px;padding-bottom:8px;border-bottom:1px solid #374151;">
+            <strong style="color:#f87171;">⚠️ Unmanaged Subjects (${all.filter(s => !s.managed).length})</strong>
+            ${all.filter(s => !s.managed).length === 0
+              ? `<div style="color:#34d399;margin-top:4px;">✅ All subjects are managed</div>`
+              : all.filter(s => !s.managed).map(s => `
+                <div style="margin-top:4px;padding:4px 6px;background:#1f2937;border-radius:4px;border-left:3px solid #f87171;">
+                  <strong style="color:#fbbf24;">"${esc(s.code)}"</strong>
+                  <div style="color:#9ca3af;font-size:10px;">Family: ${esc(s.family || "(none)")} | Uses: ${s.usage?.count || 0}</div>
+                </div>
+              `).join("")}
+          </div>
+
           <div style="margin-bottom:10px;padding-bottom:8px;border-bottom:1px solid #374151;color:#fbbf24;">
             <strong style="color:#60a5fa;">🔄 Scan status</strong>
             <div style="margin-top:4px;">
@@ -2782,7 +2815,7 @@
           document.getElementById("__debugPanel")?.remove();
           renderSubjectsTab(document.getElementById("acMain"));
         };
-      }, 2500); // ← Wait 2.5s for scan to finish
+        }, 8000); // ← Wait 8s for scan to finish (large datasets)
     }
 
     // ------------------------------------------------------------
