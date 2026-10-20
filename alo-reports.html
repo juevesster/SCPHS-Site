@@ -37,8 +37,8 @@
     .doc-subtitle { text-align: center; font-size: 12px; font-style: italic; margin-bottom: 20px; }
 
     /* Tables */
-    table { width: 100%; border-collapse: collapse; margin-bottom: 25px; font-size: 11px; table-layout: fixed; }
-    th, td { border: 1px solid #000; padding: 8px 4px; text-align: center; vertical-align: middle; word-wrap: break-word; }
+    table { width: 100%; border-collapse: collapse; margin-bottom: 25px; font-size: 11px; }
+    th, td { border: 1px solid #000; padding: 8px; text-align: center; vertical-align: middle; }
     th { background: #f1f5f9; font-weight: 800; text-transform: uppercase; font-size: 10px; }
     .text-left { text-align: left; }
     
@@ -48,7 +48,7 @@
     td input.text-left { text-align: left; }
     .delete-row { color: var(--danger); cursor: pointer; border: none; background: none; }
 
-    /* Signatories */
+        /* Signatories */
     .signatories { 
       display: grid; 
       grid-template-columns: repeat(3, 1fr); 
@@ -60,7 +60,7 @@
     .sig-block { text-align: center; }
     .sig-label { font-size: 11px; margin-bottom: 30px; }
     
-    /* Editable Signature Lines */
+    /* Editable Signature */
     .sig-input-name { 
       width: 100%; 
       border: none; 
@@ -85,7 +85,7 @@
       margin-top: 4px;
     }
 
-    /* AI Analysis Summary */
+    /* AI Analysis Summary (Screen Only) */
     .ai-summary { background: #f0fdf4; border: 2px solid #bbf7d0; padding: 20px; border-radius: 8px; margin-bottom: 20px; display: flex; gap: 20px; }
     .ai-stat { flex: 1; text-align: center; }
     .ai-stat .val { font-size: 1.8rem; font-weight: 800; color: #065f46; }
@@ -100,8 +100,10 @@
       .paper { box-shadow: none; padding: 0; border-radius: 0; }
       .ai-summary { display: none !important; }
       td input { pointer-events: none; }
-      /* Hide the delete column completely on print */
-      .col-delete { display: none !important; }
+      /* ... existing print styles ... */
+      .no-print, .delete-row, .add-row-btn { display: none !important; }
+      th.no-print { display: none !important; }
+      table { table-layout: fixed; }
     }
   </style>
 </head>
@@ -129,7 +131,7 @@
 
   <div class="paper-wrap">
     
-    <!-- AI Analysis Summary -->
+    <!-- AI Analysis Summary (Screen Only) -->
     <div class="ai-summary" id="aiSummary" style="display: none;">
       <div class="ai-stat"><div class="val" id="statMastered">0</div><div class="lbl">Mastered Competencies</div></div>
       <div class="ai-stat"><div class="val" id="statDeveloping" style="color: #d97706;">0</div><div class="lbl">Developing</div></div>
@@ -167,7 +169,7 @@
             <th style="width: 15%;">Code</th>
             <th style="width: 8%;">% Passed</th>
             <th style="width: 8%;">% Failed</th>
-            <th class="no-print col-delete" style="width: 30px;"></th>
+            <th class="no-print" style="width: 30px;"></th>
           </tr>
         </thead>
         <tbody id="form23Body">
@@ -196,7 +198,7 @@
         </tbody>
       </table>
 
-      <!-- Signatories -->
+            <!-- Signatories -->
       <div class="signatories">
         <div class="sig-block">
           <div class="sig-label">Prepared by:</div>
@@ -214,9 +216,6 @@
           <div class="sig-label">Approved by:</div>
           <input type="text" class="sig-input-name" placeholder="Principal Name">
           <input type="text" class="sig-input-title" value="School Principal" placeholder="Position">
-        </div>
-      </div>
-
     </div>
   </div>
 
@@ -237,18 +236,19 @@
       CURRENT_PROFILE = await getCurrentUserProfile();
 
       if (CURRENT_PROFILE?.name) {
-        document.getElementById("sigTeacher").value = CURRENT_PROFILE.name.toUpperCase();
+        document.getElementById("teacherNameDisplay").textContent = CURRENT_PROFILE.name;
       }
 
       await loadClasses();
     });
 
-    // 2. LOAD CLASSES
+    // 2. LOAD CLASSES FOR DROPDOWN
     async function loadClasses() {
       try {
         const snap = await getDocs(collection(db, "classes"));
         const select = document.getElementById("classSelect");
         
+        // Filter to only show classes where the current user is the adviser or teacher
         CLASSES = snap.docs
           .map(d => ({ id: d.id, ...d.data() }))
           .filter(c => 
@@ -266,7 +266,7 @@
       }
     }
 
-    // 3. LOAD ALO DATA
+    // 3. LOAD ALO DATA FROM FIRESTORE
     window.loadALOData = async () => {
       const classId = document.getElementById("classSelect").value;
       const term = document.getElementById("termSelect").value;
@@ -280,14 +280,16 @@
       form24Body.innerHTML = `<tr><td colspan="4" style="text-align: center; padding: 20px;">Loading...</td></tr>`;
 
       try {
+        // Fetch ALO Report from Firestore (alo_reports collection)
         const aloRef = doc(db, "alo_reports", `${classId}_${term}`);
         const aloSnap = await getDoc(aloRef);
 
         if (aloSnap.exists()) {
           const data = aloSnap.data();
-          renderForm23(data.form23 || [{}]);
-          renderForm24(data.form24 || [{}]);
+          renderForm23(data.form23 || []);
+          renderForm24(data.form24 || []);
         } else {
+          // If no data exists, start with empty rows
           renderForm23([{}]);
           renderForm24([{}]);
         }
@@ -302,15 +304,15 @@
       const tbody = document.getElementById("form23Body");
       tbody.innerHTML = rows.map((row, i) => `
         <tr>
-          <td><input type="text" class="text-left" value="${row.subject || ''}"></td>
-          <td><input type="text" value="${row.gradeLevel || ''}"></td>
-          <td><input type="number" value="${row.melcs || 0}"></td>
-          <td><input type="number" value="${row.delivered || 0}"></td>
-          <td><input type="text" class="text-left" value="${row.leastLearned || ''}"></td>
-          <td><input type="text" value="${row.code || ''}"></td>
-          <td><input type="number" value="${row.passed || 0}"></td>
-          <td><input type="number" value="${row.failed || 0}"></td>
-          <td class="no-print col-delete"><button class="delete-row" onclick="this.closest('tr').remove()"><i class="fas fa-trash"></i></button></td>
+          <td><input type="text" class="text-left" value="${row.subject || ''}" onchange="updateData(${i}, 'form23', 'subject', this.value)"></td>
+          <td><input type="text" value="${row.gradeLevel || ''}" onchange="updateData(${i}, 'form23', 'gradeLevel', this.value)"></td>
+          <td><input type="number" value="${row.melcs || 0}" onchange="updateData(${i}, 'form23', 'melcs', this.value)"></td>
+          <td><input type="number" value="${row.delivered || 0}" onchange="updateData(${i}, 'form23', 'delivered', this.value)"></td>
+          <td><input type="text" class="text-left" value="${row.leastLearned || ''}" onchange="updateData(${i}, 'form23', 'leastLearned', this.value)"></td>
+          <td><input type="text" value="${row.code || ''}" onchange="updateData(${i}, 'form23', 'code', this.value)"></td>
+          <td><input type="number" value="${row.passed || 0}" onchange="updateData(${i}, 'form23', 'passed', this.value)"></td>
+          <td><input type="number" value="${row.failed || 0}" onchange="updateData(${i}, 'form23', 'failed', this.value)"></td>
+          <td class="no-print"><button class="delete-row" onclick="this.closest('tr').remove()"><i class="fas fa-trash"></i></button></td>
         </tr>
       `).join("");
     }
@@ -319,15 +321,15 @@
       const tbody = document.getElementById("form24Body");
       tbody.innerHTML = rows.map((row, i) => `
         <tr>
-          <td><input type="text" class="text-left" value="${row.subject || ''}"></td>
-          <td><input type="text" value="${row.section || ''}"></td>
-          <td><input type="text" value="${row.term || ''}"></td>
-          <td><input type="number" value="${row.average || 0}"></td>
+          <td><input type="text" class="text-left" value="${row.subject || ''}" onchange="updateData(${i}, 'form24', 'subject', this.value)"></td>
+          <td><input type="text" value="${row.section || ''}" onchange="updateData(${i}, 'form24', 'section', this.value)"></td>
+          <td><input type="text" value="${row.term || ''}" onchange="updateData(${i}, 'form24', 'term', this.value)"></td>
+          <td><input type="number" value="${row.average || 0}" onchange="updateData(${i}, 'form24', 'average', this.value)"></td>
         </tr>
       `).join("");
     }
 
-    // 5. ADD ROW
+    // 5. ADD ROWS
     window.addForm23Row = () => {
       const tbody = document.getElementById("form23Body");
       const tr = document.createElement("tr");
@@ -340,7 +342,7 @@
         <td><input type="text"></td>
         <td><input type="number" value="0"></td>
         <td><input type="number" value="0"></td>
-        <td class="no-print col-delete"><button class="delete-row" onclick="this.closest('tr').remove()"><i class="fas fa-trash"></i></button></td>
+        <td class="no-print"><button class="delete-row" onclick="this.closest('tr').remove()"><i class="fas fa-trash"></i></button></td>
       `;
       tbody.appendChild(tr);
     };
@@ -354,7 +356,7 @@
       const form23 = [];
       document.querySelectorAll("#form23Body tr").forEach(tr => {
         const inputs = tr.querySelectorAll("input");
-        if (inputs[0].value.trim()) {
+        if (inputs[0].value.trim()) { // Only save if subject is not empty
           form23.push({
             subject: inputs[0].value,
             gradeLevel: inputs[1].value,
@@ -394,7 +396,7 @@
       }
     };
 
-    // 7. AUTO-SYNC
+    // 7. AUTO-SYNC FROM EXAMS (The Magic!)
     window.syncFromExams = async () => {
       const classId = document.getElementById("classSelect").value;
       const term = document.getElementById("termSelect").value;
@@ -403,6 +405,7 @@
       if (!confirm("This will analyze all published exams for this class and auto-fill the ALO data. Continue?")) return;
 
       try {
+        // 1. Get all exams for this class + term
         const q = query(collection(db, "exams"), where("classId", "==", classId), where("term", "==", term));
         const examSnap = await getDocs(q);
         
@@ -416,6 +419,7 @@
         const form23Data = [];
         const form24Data = [];
 
+        // 2. For each exam, get the submissions
         for (const exam of exams) {
           const subQ = query(collection(db, "exam_submissions"), where("examId", "==", exam.id));
           const subSnap = await getDocs(subQ);
@@ -433,6 +437,7 @@
           const totalPoints = submissions[0].totalPoints || exam.questionsCount || 1;
           const percentPassed = Math.round((avgScore / totalPoints) * 100);
 
+          // Add to Form 24 (Class Performance)
           form24Data.push({
             subject: exam.subject || "General Subject",
             section: CLASSES.find(c => c.id === classId)?.classLabel || "Class",
@@ -440,6 +445,7 @@
             average: percentPassed
           });
 
+          // Add to Form 23 (Least Learned)
           form23Data.push({
             subject: exam.subject || "General Subject",
             gradeLevel: CLASSES.find(c => c.id === classId)?.gradeLevel || "",
@@ -455,6 +461,7 @@
         renderForm23(form23Data);
         renderForm24(form24Data);
         
+        // Update AI Summary stats
         document.getElementById("aiSummary").style.display = "flex";
         document.getElementById("statMastered").textContent = form23Data.filter(f => f.passed >= 80).length;
         document.getElementById("statDeveloping").textContent = form23Data.filter(f => f.passed >= 50 && f.passed < 80).length;
