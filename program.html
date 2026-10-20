@@ -842,20 +842,54 @@
       });
     }
 
-    function populateSubjectDropdown() {
+        async function populateSubjectDropdown() {
       const sel = $("f-subject");
-      sel.innerHTML = '<option value="">-- Select Subject --</option>';
-      Object.entries(SUBJECT_GROUPS).forEach(([key, group]) => {
-        const optgroup = document.createElement("optgroup");
-        optgroup.label = group.label;
-        group.items.forEach(item => {
-          const opt = document.createElement("option");
-          opt.value = item;
-          opt.textContent = item;
-          optgroup.appendChild(opt);
+      sel.innerHTML = '<option value="">-- Loading subjects... --</option>';
+
+      try {
+        // Fetch from Firestore instead of hardcoded list
+        const snap = await getDocs(collection(db, "subjects"));
+        const subjects = snap.docs
+          .map(d => ({ id: d.id, ...d.data() }))
+          .filter(s => s.active !== false)
+          .sort((a, b) => (a.family || "").localeCompare(b.family || ""));
+
+        // Group by family (matches admin.html grouping)
+        const grouped = {};
+        subjects.forEach(s => {
+          const fam = s.family || "Other Subjects";
+          if (!grouped[fam]) grouped[fam] = [];
+          grouped[fam].push(s);
         });
-        sel.appendChild(optgroup);
-      });
+
+        sel.innerHTML = '<option value="">-- Select Subject --</option>';
+
+        // Sort families alphabetically (matches DepEd order)
+        Object.keys(grouped).sort().forEach(family => {
+          const optgroup = document.createElement("optgroup");
+          optgroup.label = family;
+
+          grouped[family].forEach(s => {
+            const opt = document.createElement("option");
+            opt.value = s.code || s.id;
+            opt.textContent = `${s.displayName || s.id} (${s.code || s.id})`;
+            opt.dataset.family = s.family || "";
+            optgroup.appendChild(opt);
+          });
+
+          sel.appendChild(optgroup);
+        });
+
+        // Add Custom option as a fallback
+        const customOpt = document.createElement("option");
+        customOpt.value = "__CUSTOM__";
+        customOpt.textContent = "+ Add Custom Subject (not in catalog)";
+        sel.appendChild(customOpt);
+
+      } catch (e) {
+        console.error("Failed to load subjects:", e);
+        sel.innerHTML = '<option value="">Error loading subjects — check console</option>';
+      }
 
       // Handle Custom selection
       sel.addEventListener("change", () => {
@@ -1127,15 +1161,23 @@ $("printModal").addEventListener("click", e => {
       $("f-day").value = entry.day || "";
       $("f-timeSlotId").value = entry.timeSlotId || "";
 
-      // Handle subject — if not in list, use custom
+            // Handle subject — check if it exists in the current dropdown
       const subjectOptions = Array.from($("f-subject").options).map(o => o.value);
       if (entry.subject && subjectOptions.includes(entry.subject)) {
         $("f-subject").value = entry.subject;
         $("customSubjectGroup").style.display = "none";
       } else if (entry.subject) {
-        $("f-subject").value = "__CUSTOM__";
-        $("customSubjectGroup").style.display = "block";
-        $("f-customSubject").value = entry.subject;
+        // Legacy subject not in catalog — add a temporary option so it doesn't break
+        const legacyOpt = document.createElement("option");
+        legacyOpt.value = entry.subject;
+        legacyOpt.textContent = `⚠️ ${entry.subjectName || entry.subject} (legacy — not in catalog)`;
+        legacyOpt.style.color = "#dc2626";
+        $("f-subject").appendChild(legacyOpt);
+        $("f-subject").value = entry.subject;
+        $("customSubjectGroup").style.display = "none";
+        
+        // Warn the admin
+        console.warn(`Legacy subject "${entry.subject}" not in catalog. User should re-link this to a catalog subject.`);
       } else {
         $("f-subject").value = "";
         $("customSubjectGroup").style.display = "none";
@@ -1219,10 +1261,23 @@ $("printModal").addEventListener("click", e => {
         const day = $("f-day").value;
         const timeSlotId = $("f-timeSlotId").value;
 
-        // Resolve subject
+        // Resolve subject — save code, not display name
         let subject = $("f-subject").value;
+        let subjectName = subject; // Default
+
         if (subject === "__CUSTOM__") {
           subject = $("f-customSubject").value.trim();
+          subjectName = subject;
+        } else {
+          // Extract display name from the selected option
+          const selectedOption = $("f-subject").selectedOptions[0];
+          if (selectedOption) {
+            // Format is "Display Name (CODE)"
+            const match = selectedOption.textContent.match(/^(.*?)\s+\((.*?)\)\s*$/);
+            if (match) {
+              subjectName = match[1].trim();
+            }
+          }
         }
 
         const teacherUid = $("f-teacherUid").value;
@@ -1241,9 +1296,9 @@ $("printModal").addEventListener("click", e => {
           if (t) teacherName = t.name || t.email;
         }
 
-        const data = {
+          const data = {
           day, timeSlotId, term: SELECTED_TERM,
-          subject, subjectName: subject,
+          subject, subjectName,   // ← Now saves BOTH code and display name
           teacherUid, teacherName,
           specialization, room, entryType,
         };
