@@ -37,11 +37,22 @@
     .doc-subtitle { text-align: center; font-size: 12px; font-style: italic; margin-bottom: 20px; }
 
     /* Tables */
-    .table-wrapper { width: 100%; overflow-x: auto; margin-bottom: 25px; }
-    table { width: 100%; border-collapse: collapse; font-size: 11px; table-layout: fixed; }
+    .table-wrapper { width: 100%; margin-bottom: 25px; }
+    table { width: 100%; border-collapse: collapse; font-size: 11px; }
     th, td { border: 1px solid #000; padding: 8px 4px; text-align: center; vertical-align: middle; word-wrap: break-word; }
     th { background: #f1f5f9; font-weight: 800; text-transform: uppercase; font-size: 10px; }
     .text-left { text-align: left; }
+    
+    /* Column Widths */
+    th.col-subject { width: 15%; }
+    th.col-grade { width: 10%; }
+    th.col-melcs { width: 8%; }
+    th.col-delivered { width: 8%; }
+    th.col-least { width: 25%; }
+    th.col-code { width: 15%; }
+    th.col-passed { width: 8%; }
+    th.col-failed { width: 8%; }
+    th.col-delete { width: 3%; }
     
     /* Editable Inputs in Table */
     td input { width: 100%; border: none; background: transparent; padding: 4px; font-family: inherit; font-size: 11px; text-align: center; outline: none; }
@@ -157,30 +168,20 @@
       <!-- FORM 23 -->
       <div class="table-wrapper">
         <table>
-          <colgroup>
-            <col style="width: 15%;">
-            <col style="width: 10%;">
-            <col style="width: 8%;">
-            <col style="width: 8%;">
-            <col style="width: 25%;">
-            <col style="width: 15%;">
-            <col style="width: 8%;">
-            <col style="width: 8%;">
-            <col class="col-delete" style="width: 35px;">
-          </colgroup>
           <thead>
             <tr>
               <th colspan="8" style="background: #1e3c72; color: #fff; padding: 10px; font-size: 12px;">PART I: REPORT ON LEAST LEARNED COMPETENCIES (Form 23)</th>
+              <th class="no-print col-delete" style="background: #1e3c72;"></th>
             </tr>
             <tr>
-              <th>Subject</th>
-              <th>Grade Level</th>
-              <th>No. of MELCs</th>
-              <th>No. Delivered</th>
-              <th>Least Learned MELC</th>
-              <th>Code</th>
-              <th>% Passed</th>
-              <th>% Failed</th>
+              <th class="col-subject">Subject</th>
+              <th class="col-grade">Grade Level</th>
+              <th class="col-melcs">No. of MELCs</th>
+              <th class="col-delivered">No. Delivered</th>
+              <th class="col-least">Least Learned MELC</th>
+              <th class="col-code">Code</th>
+              <th class="col-passed">% Passed</th>
+              <th class="col-failed">% Failed</th>
               <th class="no-print col-delete"></th>
             </tr>
           </thead>
@@ -196,21 +197,15 @@
       <!-- FORM 24 -->
       <div class="table-wrapper">
         <table>
-          <colgroup>
-            <col style="width: 40%;">
-            <col style="width: 20%;">
-            <col style="width: 20%;">
-            <col style="width: 20%;">
-          </colgroup>
           <thead>
             <tr>
               <th colspan="4" style="background: #1e3c72; color: #fff; padding: 10px; font-size: 12px;">PART II: CLASS PERFORMANCE BY SUBJECT (Form 24)</th>
             </tr>
             <tr>
-              <th>Subject</th>
-              <th>Class Section</th>
-              <th>Term</th>
-              <th>Average Grade</th>
+              <th style="width: 40%;">Subject</th>
+              <th style="width: 20%;">Class Section</th>
+              <th style="width: 20%;">Term</th>
+              <th style="width: 20%;">Average Grade</th>
             </tr>
           </thead>
           <tbody id="form24Body">
@@ -299,7 +294,7 @@
       const form23Body = document.getElementById("form23Body");
       const form24Body = document.getElementById("form24Body");
       
-      form23Body.innerHTML = `<tr><td colspan="9" style="text-align: center; padding: 20px;">Loading ALO data...</td></tr>`;
+      form23Body.innerHTML = `<tr><td colspan="8" style="text-align: center; padding: 20px;">Loading ALO data...</td></tr>`;
       form24Body.innerHTML = `<tr><td colspan="4" style="text-align: center; padding: 20px;">Loading...</td></tr>`;
 
       try {
