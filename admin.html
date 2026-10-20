@@ -2805,31 +2805,62 @@
         };
       });
 
-          // 2. From program usage (if not already in metadata)
+                // 2. From program usage (if not already in metadata)
+      // 🎯 NEW: Try to match to a catalog subject first, and merge usage if found
+      const catalogSubjects = Object.values(byCode).filter(s => s.managed);
+      const merges = []; // Track for UI display
+
       Object.values(SUBJECT_USAGE).forEach(u => {
-        if (!byCode[u.code]) {
-          byCode[u.code] = {
-            code: u.code,
-            displayName: u.code,
-            shortName: "",
-            family: detectFamilyEnhanced(u.code, u.specializations), // ✅ Enhanced detector
-            type: u.specializations?.length ? "tle" : "core",
-            level: detectLevel(u.code),
-            curriculum: "MATATAG",
-            cluster: u.specializations?.[0] || "",
-            requiredFor: [],
-            description: "Auto-detected from program usage",
-            active: true,
-            colorTag: "",
-            managed: false,
-            seedSource: "auto-detected",
-            usage: u,
-          };
-        } else {
-          // Enrich metadata-only entries with usage
+        // If exact catalog match exists, just merge usage
+        if (byCode[u.code]) {
           byCode[u.code].usage = u;
+          return;
         }
+
+        // 🔍 Try to find a matching catalog subject
+        const match = findMatchingCatalogSubject(u.code, u.code, catalogSubjects);
+
+        if (match) {
+          // ✅ Merge usage into the catalog subject
+          const target = byCode[match.subject.code];
+          if (target) {
+            target.usage = mergeUsageInto(target.usage, u);
+            // Track the merge for UI display
+            merges.push({
+              from: u.code,
+              to: target.code,
+              toName: target.displayName,
+              confidence: match.confidence,
+              reason: match.reason,
+              count: u.count,
+            });
+          }
+          // Don't create a duplicate entry — the unmanaged subject is now "merged"
+          return;
+        }
+
+        // ⚠️ No match → keep as standalone unmanaged subject
+        byCode[u.code] = {
+          code: u.code,
+          displayName: u.code,
+          shortName: "",
+          family: detectFamilyEnhanced(u.code, u.specializations),
+          type: u.specializations?.length ? "tle" : "core",
+          level: detectLevel(u.code),
+          curriculum: "MATATAG",
+          cluster: u.specializations?.[0] || "",
+          requiredFor: [],
+          description: "Auto-detected from program usage",
+          active: true,
+          colorTag: "",
+          managed: false,
+          seedSource: "auto-detected",
+          usage: u,
+        };
       });
+
+      // Store merges for later display
+      window.__LAST_MERGES = merges;
 
       return Object.values(byCode).sort((a, b) => {
         // Sort: managed first, then by level, then code
@@ -2854,6 +2885,30 @@
       $("statFamilies").textContent = families.size || "—";
       $("statManaged").textContent = managed;
       $("statInPrograms").textContent = inPrograms;
+
+          function renderSubjectStats() {
+      const all = getAllSubjectRecords();
+      const families = new Set(all.map(s => s.family).filter(Boolean));
+      const managed = all.filter(s => s.managed).length;
+      const inPrograms = all.filter(s => (s.usage?.count || 0) > 0).length;
+
+      $("statTotalSubjects").textContent = all.length || "—";
+      $("statFamilies").textContent = families.size || "—";
+      $("statManaged").textContent = managed;
+      $("statInPrograms").textContent = inPrograms;
+
+      // 🎯 Show merge summary if any merges happened
+      const merges = window.__LAST_MERGES || [];
+      if (merges.length > 0) {
+        const total = merges.reduce((sum, m) => sum + m.count, 0);
+        setTimeout(() => {
+          toast(
+            `🔗 Auto-merged ${merges.length} subject${merges.length > 1 ? "s" : ""} (${total} total uses) into catalog`,
+            "success"
+          );
+        }, 500);
+      }
+    }
     }
 
     // ------------------------------------------------------------
@@ -3105,6 +3160,20 @@
         <tr>
           <td>${statusDot} <strong>${esc(s.code)}</strong></td>
           <td>${esc(s.displayName || s.code)}${specHtml}</td>
+
+            <td>
+            ${esc(s.displayName || s.code)}
+            ${(() => {
+              const merged = (window.__LAST_MERGES || []).filter(m => m.to === s.code);
+              if (merged.length === 0) return "";
+              return merged.map(m => 
+                `<div style="font-size:10.5px;color:#059669;margin-top:3px;background:#f0fdf4;padding:2px 8px;border-radius:4px;display:inline-block;" title="${esc(m.reason)}">
+                  🔗 Merged: "${esc(m.from)}" (${m.count} use${m.count > 1 ? "s" : ""})
+                </div>`
+              ).join("");
+            })()}
+            ${specHtml}
+          </td>
           <td>${esc(s.level || "—")}</td>
           <td>${typeBadge}</td>
           <td>${curricBadge}</td>
@@ -3593,6 +3662,115 @@
       const m = c.match(/(\d{1,2})/);
       if (m) return m[1];
       return "";
+    }
+
+        // ============================================================
+    // SMART MATCHER — Find the best catalog subject for an unmanaged subject
+    // Uses code/name exact match first, then fuzzy keyword match
+    // ============================================================
+    function findMatchingCatalogSubject(unmanagedCode, unmanagedDisplayName, catalogSubjects) {
+      if (!catalogSubjects?.length) return null;
+
+      const normalize = (s) => String(s || "").toLowerCase().replace(/[^a-z0-9]/g, "");
+      const unmanagedKey = normalize(unmanagedCode);
+      const unmanagedName = normalize(unmanagedDisplayName || "");
+
+      // ---- 1. Exact code match (e.g., "SHS-TECH-AUTOMOTIVE" === "SHS-TECH-AUTOMOTIVE")
+      const exactCode = catalogSubjects.find(s => normalize(s.code) === unmanagedKey);
+      if (exactCode) return { subject: exactCode, confidence: "exact", reason: "Code matches" };
+
+      // ---- 2. Exact display name match
+      const exactName = catalogSubjects.find(s => normalize(s.displayName) === unmanagedKey);
+      if (exactName) return { subject: exactName, confidence: "exact", reason: "Name matches" };
+
+      // ---- 3. Cross-match: unmanaged code vs catalog display name
+      const codeVsName = catalogSubjects.find(s => normalize(s.displayName) === unmanagedKey);
+      if (codeVsName) return { subject: codeVsName, confidence: "exact", reason: "Code matches catalog name" };
+
+      // ---- 4. Cross-match: unmanaged name vs catalog code
+      const nameVsCode = catalogSubjects.find(s => normalize(s.code) === unmanagedName);
+      if (nameVsCode) return { subject: nameVsCode, confidence: "exact", reason: "Name matches catalog code" };
+
+      // ---- 5. Fuzzy keyword match (for legacy names like "Automotive Servicing NC II")
+      const KEYWORDS = [
+        "automotive", "cookery", "food", "ict", "computer", "dressmaking",
+        "tailoring", "carpentry", "welding", "electronics", "agri", "agriculture",
+        "construction", "drafting", "hospitality", "tourism", "maritime", "stem",
+        "abm", "humss", "sports", "research", "philosophy"
+      ];
+
+      const combined = normalize((unmanagedCode || "") + " " + (unmanagedDisplayName || ""));
+      
+      for (const kw of KEYWORDS) {
+        if (!combined.includes(kw)) continue;
+
+        // Find catalog subjects whose code OR display name contains this keyword
+        const candidates = catalogSubjects.filter(s =>
+          normalize(s.code).includes(kw) || normalize(s.displayName).includes(kw)
+        );
+
+        if (candidates.length === 0) continue;
+
+        // Prefer candidates that share MORE words with the unmanaged subject
+        const scored = candidates.map(s => {
+          const target = normalize(s.code + " " + s.displayName);
+          let score = 0;
+          if (target.includes(unmanagedKey)) score += 10;
+          if (target.includes(kw)) score += 5;
+          if (unmanagedName && target.includes(unmanagedName.slice(0, 6))) score += 3;
+          return { subject: s, score };
+        }).sort((a, b) => b.score - a.score);
+
+        if (scored[0]?.score > 0) {
+          return { 
+            subject: scored[0].subject, 
+            confidence: "fuzzy", 
+            reason: `Matched keyword "${kw}"` 
+          };
+        }
+      }
+
+      return null;
+    }
+
+
+        // ============================================================
+    // MERGE USAGE — Combine two usage objects safely
+    // ============================================================
+    function mergeUsageInto(target, source) {
+      const safeTarget = target || { classes: [], teachers: [], specializations: [], count: 0 };
+      const safeSource = source || { classes: [], teachers: [], specializations: [], count: 0 };
+
+      // Merge classes (dedupe by classId)
+      const classMap = new Map();
+      (safeTarget.classes || []).forEach(c => classMap.set(c.classId, c));
+      (safeSource.classes || []).forEach(c => {
+        if (!classMap.has(c.classId)) classMap.set(c.classId, c);
+        else {
+          // If same class appears in both, merge counts
+          const existing = classMap.get(c.classId);
+          classMap.set(c.classId, existing);
+        }
+      });
+
+      // Merge teachers (dedupe by name)
+      const teacherSet = new Set([
+        ...(safeTarget.teachers || []),
+        ...(safeSource.teachers || []),
+      ]);
+
+      // Merge specializations
+      const specSet = new Set([
+        ...(safeTarget.specializations || []),
+        ...(safeSource.specializations || []),
+      ]);
+
+      return {
+        classes: Array.from(classMap.values()),
+        teachers: Array.from(teacherSet),
+        specializations: Array.from(specSet),
+        count: (safeTarget.count || 0) + (safeSource.count || 0),
+      };
     }
 
     // ============================================================
