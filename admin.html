@@ -2815,7 +2815,7 @@
           document.getElementById("__debugPanel")?.remove();
           renderSubjectsTab(document.getElementById("acMain"));
         };
-        }, 8000); // ← Wait 8s for scan to finish (large datasets)
+        }, 12000); // ← Wait 12s for scan to finish
     }
 
     // ------------------------------------------------------------
@@ -3818,6 +3818,36 @@
       // ---- 4. Cross-match: unmanaged name vs catalog code
       const nameVsCode = catalogSubjects.find(s => normalize(s.code) === unmanagedName);
       if (nameVsCode) return { subject: nameVsCode, confidence: "exact", reason: "Name matches catalog code" };
+            // ---- 4.5: Special handling for ARAL and HGP (grade-agnostic subjects)
+      const ARAL_KEYWORDS = ["aral", "homeroom", "hgp", "guidance"];
+      const isAralOrHGP = ARAL_KEYWORDS.some(kw => 
+        unmanagedKey.includes(kw) || unmanagedName.includes(kw)
+      );
+
+      if (isAralOrHGP) {
+        // Find all ARAL or HGP catalog subjects
+        const candidates = catalogSubjects.filter(s => {
+          const code = normalize(s.code);
+          const name = normalize(s.displayName);
+          return (
+            code.includes("aral") || name.includes("aral") ||
+            code.includes("hgp") || name.includes("homeroom") ||
+            name.includes("guidance")
+          );
+        });
+
+        if (candidates.length > 0) {
+          // Prefer the shortest code (generic ARAL over ARAL7)
+          const sorted = candidates.sort((a, b) => 
+            (a.code || "").length - (b.code || "").length
+          );
+          return { 
+            subject: sorted[0], 
+            confidence: "fuzzy", 
+            reason: "Matched ARAL/HGP generic subject"
+          };
+        }
+      }
 
       // ---- 5. Fuzzy keyword match (for legacy names like "Automotive Servicing NC II")
       const KEYWORDS = [
