@@ -44,7 +44,7 @@
       background: #ffffff;
       width: 210mm;
       height: 297mm;
-      padding: 25mm 20mm;
+      padding: 25mm 20mm 30mm 20mm; /* Adjusted bottom padding slightly */
       box-sizing: border-box;
       box-shadow: 0 10px 30px rgba(0,0,0,0.15);
       position: relative;
@@ -80,47 +80,12 @@
       margin-bottom: 10px;
     }
 
-    .header .republic {
-      font-size: 11pt;
-      font-weight: 400;
-      margin: 0 0 2px 0;
-      letter-spacing: 0.05em;
-      text-transform: uppercase;
-    }
-    
-    .header .department {
-      font-size: 14pt;
-      font-weight: 700;
-      margin: 0 0 2px 0;
-      letter-spacing: 0.05em;
-      text-transform: uppercase;
-      color: #0f2b4f;
-    }
-    
-    .header .region {
-      font-size: 11pt;
-      margin: 0 0 2px 0;
-    }
-    
-    .header .division {
-      font-size: 11pt;
-      margin: 0 0 15px 0;
-    }
-
-    .header .school {
-      font-size: 16pt;
-      font-weight: 800;
-      margin: 0;
-      text-transform: uppercase;
-      letter-spacing: 0.02em;
-      color: #0f2b4f;
-    }
-
-    .header .address {
-      font-size: 10pt;
-      font-style: italic;
-      margin: 4px 0 0 0;
-    }
+    .header .republic { font-size: 11pt; font-weight: 400; margin: 0 0 2px 0; letter-spacing: 0.05em; text-transform: uppercase; }
+    .header .department { font-size: 14pt; font-weight: 700; margin: 0 0 2px 0; letter-spacing: 0.05em; text-transform: uppercase; color: #0f2b4f; }
+    .header .region { font-size: 11pt; margin: 0 0 2px 0; }
+    .header .division { font-size: 11pt; margin: 0 0 15px 0; }
+    .header .school { font-size: 16pt; font-weight: 800; margin: 0; text-transform: uppercase; letter-spacing: 0.02em; color: #0f2b4f; }
+    .header .address { font-size: 10pt; font-style: italic; margin: 4px 0 0 0; }
 
     /* Title Section */
     .title-section {
@@ -146,7 +111,7 @@
     .title-section h2 {
       font-size: 20pt;
       font-weight: 700;
-      color: #c8102e; /* DepEd Red */
+      color: #c8102e;
       letter-spacing: 0.1em;
       margin: 10px 0 0 0;
       text-transform: uppercase;
@@ -160,7 +125,6 @@
       line-height: 2.2;
       position: relative;
       z-index: 1;
-      flex-grow: 1;
     }
 
     .meta-row {
@@ -184,26 +148,19 @@
       color: #000;
       border-bottom: 2px solid #000;
       padding-left: 10px;
-      outline: none; /* Removes the ugly focus ring */
+      outline: none;
       transition: background 0.2s;
     }
 
     /* Make it obvious that fields are editable on screen */
     @media screen {
-      [contenteditable="true"]:hover {
-        background: #f0f9ff;
-        border-radius: 4px;
-        cursor: text;
-      }
-      [contenteditable="true"]:focus {
-        background: #e0f2fe;
-        border-radius: 4px;
-      }
+      [contenteditable="true"]:hover { background: #f0f9ff; border-radius: 4px; cursor: text; }
+      [contenteditable="true"]:focus { background: #e0f2fe; border-radius: 4px; }
     }
 
     /* Footer / Signatories Section */
     .footer {
-      margin-top: auto;
+      margin-top: 50px;
       padding-bottom: 20px;
       text-align: center;
       position: relative;
@@ -215,7 +172,14 @@
       text-transform: uppercase;
       letter-spacing: 0.1em;
       color: #6b7280;
-      margin-bottom: 5px;
+      margin-bottom: 0; /* Removed bottom margin */
+    }
+
+    /* 🆕 Signature Line Area */
+    .signature-line {
+      width: 300px;
+      border-bottom: 1.5px solid #000;
+      margin: 50px auto 5px auto; /* 50px top margin creates the physical space for signing */
     }
 
     .teacher-name {
@@ -252,14 +216,12 @@
 </head>
 <body>
 
-  <!-- Floating Print Button -->
   <button class="print-btn" onclick="window.print()">🖨️ Print Cover Page</button>
 
   <div class="a4-page">
     
     <!-- HEADER -->
     <div class="header">
-      <!-- You can also make the logo editable if you want by adding contenteditable to an img tag (though it behaves differently) -->
       <img src="assets/images/deped-logo.png" alt="DepEd Logo" onerror="this.src='https://upload.wikimedia.org/wikipedia/commons/thumb/8/89/Department_of_Education_%28DepEd%29_Logo.svg/1200px-Department_of_Education_%28DepEd%29_Logo.svg.png'">
       
       <p class="republic">Republic of the Philippines</p>
@@ -268,9 +230,8 @@
       <p class="division" contenteditable="true">Schools Division of Nueva Vizcaya</p>
       
       <h2 class="school" contenteditable="true">Sta. Cruz Pingkian High School</h2>
-      <p class="address" contenteditable="true">Brgy. Sta. Cruz, Pingkian, Nueva Vizcaya</p>
+      <p class="address" contenteditable="true">Pingkian, Kayapa, Nueva Vizcaya, Philippines</p>
     </div>
-
     <!-- TITLE -->
     <div class="title-section">
       <h1 contenteditable="true">ILAW</h1>
@@ -297,9 +258,13 @@
       </div>
     </div>
 
-    <!-- FOOTER -->
+    <!-- FOOTER / SIGNATURE -->
     <div class="footer">
       <p class="prepared-by">Prepared by:</p>
+      
+      <!-- 🆕 Signature Line -->
+      <div class="signature-line"></div>
+      
       <p class="teacher-name" contenteditable="true">Ricardo E. Jueves Jr.</p>
       <p class="teacher-pos" contenteditable="true">Teacher III</p>
     </div>
