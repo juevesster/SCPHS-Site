@@ -69,24 +69,28 @@ function cellNum(row, idx) {
   return isNaN(n) ? null : n;
 }
 
-// 🆕 Convert Excel serial number dates (e.g. 39454) to MM/DD/YYYY
+// 🆕 Convert Excel serial number dates (e.g. 39454 or 39454.0) to MM/DD/YYYY
 function formatExcelDate(val) {
-  if (!val) return "";
+  if (val == null || val === "") return "";
   const str = String(val).trim();
-  
-  // If it's already a date format like 05/07/2009 or 2009-05-07, return as-is
-  if (/[\/\-]/.test(str)) return str;
-  
-  // If it's a 5-digit number (Excel serial date)
-  const num = parseInt(str, 10);
+
+  // If it's a real date format (has a slash or a dash), just return it
+  if (str.includes("/") || str.includes("-")) {
+    return str;
+  }
+
+  // Otherwise, try to parse it as an Excel serial number
+  const num = parseFloat(str);
   if (!isNaN(num) && num > 20000 && num < 60000) {
-    // Excel epoch is Dec 30, 1899
-    const date = new Date(Math.round((num - 25569) * 86400 * 1000));
-    const mm = String(date.getUTCMonth() + 1).padStart(2, "0");
-    const dd = String(date.getUTCDate()).padStart(2, "0");
-    const yyyy = date.getUTCFullYear();
+    // Excel epoch starts at Dec 30, 1899
+    // 25569 is the offset in days to Unix epoch (Jan 1, 1970)
+    const utcDate = new Date(Math.round((num - 25569) * 86400 * 1000));
+    const mm = String(utcDate.getUTCMonth() + 1).padStart(2, "0");
+    const dd = String(utcDate.getUTCDate()).padStart(2, "0");
+    const yyyy = utcDate.getUTCFullYear();
     return `${mm}/${dd}/${yyyy}`;
   }
+
   return str;
 }
 
