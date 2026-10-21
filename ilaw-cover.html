@@ -19,38 +19,42 @@
       print-color-adjust: exact;
     }
 
-    /* 🖨️ Print Button */
-    .print-btn {
+    /* Floating Action Buttons */
+    .toolbar {
       position: fixed;
       top: 20px;
       right: 20px;
+      display: flex;
+      gap: 10px;
+      z-index: 100;
+      font-family: system-ui, -apple-system, sans-serif;
+    }
+
+    .btn {
       background: #0f2b4f;
       color: #fff;
       border: none;
-      padding: 12px 24px;
+      padding: 12px 20px;
       border-radius: 8px;
-      font-size: 16px;
+      font-size: 14px;
       font-weight: bold;
       cursor: pointer;
       box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-      font-family: system-ui, -apple-system, sans-serif;
-      transition: background 0.2s;
-      z-index: 100;
+      transition: all 0.2s;
     }
-    .print-btn:hover { background: #c8102e; }
+    .btn:hover { background: #c8102e; }
+    .btn.success { background: #059669; }
+    .btn.success:hover { background: #047857; }
 
     /* A4 Page styling */
     .a4-page {
       background: #ffffff;
       width: 210mm;
-      /* Using min-height instead of fixed height prevents overlap */
       min-height: 297mm; 
       padding: 25mm 20mm; 
       box-sizing: border-box;
       box-shadow: 0 10px 30px rgba(0,0,0,0.15);
       position: relative;
-      
-      /* Grid layout pushes the footer to the bottom automatically */
       display: grid;
       grid-template-rows: auto auto auto 1fr auto;
       color: #000;
@@ -153,12 +157,6 @@
       transition: background 0.2s;
     }
 
-    /* Make it obvious that fields are editable on screen */
-    @media screen {
-      [contenteditable="true"]:hover { background: #f0f9ff; border-radius: 4px; cursor: text; }
-      [contenteditable="true"]:focus { background: #e0f2fe; border-radius: 4px; }
-    }
-
     /* Footer / Signatories Section */
     .footer {
       text-align: center;
@@ -175,11 +173,10 @@
       margin-bottom: 0;
     }
 
-    /* Signature Line Area */
     .signature-line {
       width: 300px;
       border-bottom: 1.5px solid #000;
-      margin: 60px auto 5px auto; /* Space for signing */
+      margin: 60px auto 5px auto;
     }
 
     .teacher-name {
@@ -198,10 +195,30 @@
       outline: none;
     }
 
+    /* ============================================================
+       EDITING HIGHLIGHTS (Only visible on screen)
+       ============================================================ */
+    .editing [contenteditable="true"] {
+      background: #f0f9ff;
+      border: 1px dashed #3b82f6;
+      border-radius: 4px;
+      cursor: text;
+      padding: 2px 6px;
+    }
+    
+    .editing [contenteditable="true"]:hover {
+      background: #e0f2fe;
+    }
+    
+    .editing [contenteditable="true"]:focus {
+      background: #dbeafe;
+      outline: none;
+    }
+
     /* Print Specific Rules */
     @media print {
-      body { background: #fff; padding: 0; margin: 0; }
-      .print-btn { display: none !important; }
+      body { background: #fff; padding: 0; margin: 0; display: block; }
+      .toolbar { display: none !important; }
       .a4-page { 
         box-shadow: none; 
         width: 100%; 
@@ -209,70 +226,100 @@
         padding: 15mm 20mm; 
       }
       .a4-page::before { top: 5mm; bottom: 5mm; left: 5mm; right: 5mm; }
-      [contenteditable="true"]:hover, [contenteditable="true"]:focus { background: transparent; }
+      .editing [contenteditable="true"] { background: transparent; border: none; padding: 0; }
       @page { size: A4 portrait; margin: 0; }
     }
   </style>
 </head>
 <body>
 
-  <button class="print-btn" onclick="window.print()">🖨️ Print Cover Page</button>
+  <!-- Floating Toolbar -->
+  <div class="toolbar">
+    <button class="btn success" id="btnToggleEdit" onclick="toggleEdit()">✏️ Enable Edit Mode</button>
+    <button class="btn" onclick="window.print()">🖨️ Print Cover</button>
+  </div>
 
-  <div class="a4-page">
+  <div class="a4-page" id="coverPage">
     
-    <!-- ROW 1: HEADER -->
+    <!-- HEADER -->
     <div class="header">
       <img src="assets/images/deped-logo.png" alt="DepEd Logo" onerror="this.src='https://upload.wikimedia.org/wikipedia/commons/thumb/8/89/Department_of_Education_%28DepEd%29_Logo.svg/1200px-Department_of_Education_%28DepEd%29_Logo.svg.png'">
       
       <p class="republic">Republic of the Philippines</p>
       <p class="department">Department of Education</p>
-      <p class="region" contenteditable="true">Region II – Cagayan Valley</p>
-      <p class="division" contenteditable="true">Schools Division of Nueva Vizcaya</p>
+      <p class="region">Region II – Cagayan Valley</p>
+      <p class="division">Schools Division of Nueva Vizcaya</p>
       
-      <h2 class="school" contenteditable="true">Sta. Cruz Pingkian High School</h2>
-      <p class="address" contenteditable="true">Pingkian, Kayapa, Nueva Vizcaya, Philippines</p>
+      <h2 class="school">Sta. Cruz Pingkian High School</h2>
+      <p class="address">Pingkian, Kayapa, Nueva Vizcaya, Philippines</p>
     </div>
 
-    <!-- ROW 2: TITLE -->
+    <!-- TITLE -->
     <div class="title-section">
-      <h1 contenteditable="true">ILAW</h1>
-      <h2 contenteditable="true">Lesson Plan</h2>
+      <h1>ILAW</h1>
+      <h2>Lesson Plan</h2>
     </div>
 
-    <!-- ROW 3: DETAILS -->
+    <!-- DETAILS -->
     <div class="meta-container">
       <div class="meta-row">
         <div class="meta-label">Learning Area:</div>
-        <div class="meta-value" contenteditable="true">Inquiries, Investigations and Immersion</div>
+        <div class="meta-value">Inquiries, Investigations and Immersion</div>
       </div>
       <div class="meta-row">
         <div class="meta-label">Grade Level & Section:</div>
-        <div class="meta-value" contenteditable="true">Grade 12 – STEM A</div>
+        <div class="meta-value">Grade 12 – STEM A</div>
       </div>
       <div class="meta-row">
         <div class="meta-label">Term / Week:</div>
-        <div class="meta-value" contenteditable="true">Term 3 – Week 1</div>
+        <div class="meta-value">Term 3 – Week 1</div>
       </div>
       <div class="meta-row">
         <div class="meta-label">School Year:</div>
-        <div class="meta-value" contenteditable="true">2026 - 2027</div>
+        <div class="meta-value">2026 - 2027</div>
       </div>
     </div>
 
-    <!-- ROW 4: SPACER (Takes up remaining space automatically) -->
+    <!-- SPACER -->
     <div></div>
 
-    <!-- ROW 5: FOOTER / SIGNATURE -->
+    <!-- FOOTER -->
     <div class="footer">
       <p class="prepared-by">Prepared by:</p>
-      
       <div class="signature-line"></div>
-      
-      <p class="teacher-name" contenteditable="true">Ricardo E. Jueves Jr.</p>
-      <p class="teacher-pos" contenteditable="true">Teacher III</p>
+      <p class="teacher-name">Ricardo E. Jueves Jr.</p>
+      <p class="teacher-pos">Teacher III</p>
     </div>
 
   </div>
+
+  <script>
+    // Simple toggle for Edit Mode
+    function toggleEdit() {
+      const page = document.getElementById('coverPage');
+      const btn = document.getElementById('btnToggleEdit');
+      const isEditing = page.classList.contains('editing');
+
+      if (isEditing) {
+        // Turn OFF editing
+        page.classList.remove('editing');
+        const fields = page.querySelectorAll('[contenteditable="true"]');
+        fields.forEach(f => f.setAttribute('contenteditable', 'false'));
+        btn.textContent = '✏️ Enable Edit Mode';
+        btn.classList.remove('success');
+        btn.classList.add('btn');
+      } else {
+        // Turn ON editing
+        page.classList.add('editing');
+        // Make specific text fields editable
+        const fieldsToEdit = page.querySelectorAll('.meta-value, .teacher-name, .teacher-pos, .region, .division, .school, .address');
+        fieldsToEdit.forEach(f => f.setAttribute('contenteditable', 'true'));
+        btn.textContent = '💾 Save & Lock';
+        btn.classList.remove('btn');
+        btn.classList.add('success');
+      }
+    }
+  </script>
 
 </body>
 </html>
