@@ -338,10 +338,9 @@ export function parseLISFile(arrayBuffer) {
   const header = extractHeader(rows, format);
 
   // Find student rows with total tracking
-    // Find student rows with total tracking
   const students = [];
+  const seenLRNs = new Set(); // 🆕 Track duplicates
   let stopMarker = null;
-  let expectedTotal = null;
 
   for (let i = 0; i < rows.length; i++) {
     const row = rows[i];
@@ -349,21 +348,12 @@ export function parseLISFile(arrayBuffer) {
 
     const joined = row.map(c => String(c || "")).join(" ").toUpperCase();
 
-    // Skip marker/total rows completely (don't break yet — we might still be in the header)
-    const isCombinedMarker =
-      joined.includes("COMBINED") &&
-      (joined.includes("<===") || joined.includes("==="));
-
-    const isLegendRow =
-      joined.includes("LEGEND:") ||
-      joined.includes("LEGEND ") ||
-      (joined.includes("INDICATOR") && joined.includes("CODE"));
-
-    // Only stop on COMBINED or LEGEND if we've already collected at least one student
+    // 1. Check for Hard Stops (Only if we've already found students)
     if (students.length > 0) {
+      const isCombinedMarker = joined.includes("COMBINED") && (joined.includes("<===") || joined.includes("==="));
+      const isLegendRow = joined.includes("LEGEND:") || joined.includes("LEGEND ") || (joined.includes("INDICATOR") && joined.includes("CODE"));
+
       if (isCombinedMarker) {
-        const numMatch = String(row[0] || "").match(/\d+/);
-        if (numMatch) expectedTotal = parseInt(numMatch[0], 10);
         stopMarker = "COMBINED";
         break;
       }
@@ -373,7 +363,7 @@ export function parseLISFile(arrayBuffer) {
       }
     }
 
-    // Skip TOTAL MALE / TOTAL FEMALE / any marker rows — keep reading
+    // 2. Skip ALL marker/total rows (TOTAL MALE, TOTAL FEMALE, COMBINED, etc.)
     if (joined.includes("<===") ||
         joined.includes("TOTAL MALE") ||
         joined.includes("TOTAL FEMALE") ||
@@ -381,12 +371,18 @@ export function parseLISFile(arrayBuffer) {
       continue;
     }
 
-    // Parse student rows
+    // 3. Parse student rows
     if (isStudentRow(row, colMap)) {
       try {
         const student = parseStudentRow(row, colMap);
         if (student.lrn && student.lastName) {
-          students.push(student);
+          // 🆕 Only add if we haven't seen this LRN yet
+          if (!seenLRNs.has(student.lrn)) {
+            seenLRNs.add(student.lrn);
+            students.push(student);
+          } else {
+            console.log(`[xls-parser] Skipping duplicate LRN: ${student.lrn}`);
+          }
         }
       } catch (e) {
         console.warn(`[xls-parser] Skipped row ${i}:`, e.message);
@@ -394,11 +390,7 @@ export function parseLISFile(arrayBuffer) {
     }
   }
 
-  // Defensive trim
-  if (expectedTotal != null && students.length > expectedTotal) {
-    console.log(`[xls-parser] Trimming ${students.length} → ${expectedTotal} (using COMBINED marker)`);
-    students.length = expectedTotal;
-  }
+  console.log(`[xls-parser] Parsed ${students.length} unique students (stopped at: ${stopMarker || "end of file"})`);
 
   return {
     header,
