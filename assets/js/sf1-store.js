@@ -261,25 +261,34 @@ async function importStudents(classId, studentsList) {
 
   // Get existing LRNs to prevent duplicates
   const existing = await listStudents(classId);
-  const existingLRNs = new Set(existing.map(s => s.lrn));
+  const existingLRNs = new Set(existing.map(s => s.lrn).filter(Boolean));
 
   let imported = 0;
   let skipped = 0;
   const errors = [];
 
   for (const student of studentsList) {
-    if (!student.lrn) {
-      errors.push(`Missing LRN for ${student.fullName}`);
-      continue;
-    }
-    if (existingLRNs.has(student.lrn)) {
-      skipped++;
-      continue;
+    // 🆕 Allow blank LRNs — they will be saved and the adviser can fix them later
+    if (student.lrn) {
+      if (existingLRNs.has(student.lrn)) {
+        skipped++;
+        continue;
+      }
+      // Track LRN so we don't import the same one twice in this batch
+      existingLRNs.add(student.lrn);
     }
 
     const docRef = doc(studentCol);
+    
+    // 🆕 Ensure empty strings are explicitly set so Firestore doesn't drop the field
+    const cleanData = {};
+    for (const [key, val] of Object.entries(student)) {
+      cleanData[key] = (val === null || val === undefined) ? "" : val;
+    }
+
     batch.set(docRef, {
-      ...student,
+      ...cleanData,
+      lrn: student.lrn || "",
       active: true,
       addedAt: serverTimestamp(),
       addedBy: user.email || "",
