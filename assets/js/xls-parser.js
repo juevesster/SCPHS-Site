@@ -110,14 +110,20 @@ function isStudentRow(row, colMap) {
   const name = cellStr(row, colMap.NAME);
   const sex = cellStr(row, colMap.SEX);
 
-  // Valid LRN is 12 digits
-  const lrnValid = /^\d{12}$/.test(lrn);
-  // Name has a comma (Last, First format)
-  const nameValid = name.includes(",");
-  // Sex is M or F
-  const sexValid = /^[MF]$/i.test(sex) || /^(MALE|FEMALE)$/i.test(sex);
+  // Valid LRN is exactly 12 digits
+  if (!/^\d{12}$/.test(lrn)) return false;
 
-  return lrnValid && nameValid && sexValid;
+  // Name must contain a comma AND be a reasonable length (real names are 5+ chars)
+  if (!name.includes(",") || name.length < 5) return false;
+
+  // 🆕 Reject names that contain weird corruption characters (from broken Excel cells)
+  // A real name only contains letters, commas, spaces, periods, hyphens, and apostrophes
+  if (/[^A-Za-zÀ-ÿ\s,.'\-]/.test(name)) return false;
+
+  // Sex must be M or F (case-insensitive)
+  if (!/^[MF]$/i.test(sex) && !/^(MALE|FEMALE)$/i.test(sex)) return false;
+
+  return true;
 }
 
 // ============================================================
@@ -340,10 +346,24 @@ export function parseLISFile(arrayBuffer) {
   // Extract header info
   const header = extractHeader(rows, format);
 
-  // Find student rows
+   // Find student rows
   const students = [];
   for (let i = 0; i < rows.length; i++) {
     const row = rows[i];
+    if (!row) continue;
+
+    // 🆕 HARD STOP: check if this row is a "TOTAL" or "Legend" marker
+    const joined = row.map(c => String(c || "")).join(" ").toUpperCase();
+    if (
+      joined.includes("TOTAL FEMALE") ||
+      joined.includes("TOTAL MALE") ||
+      joined.includes("LEGEND:") ||
+      joined.includes("INDICATOR")
+    ) {
+      console.log(`[xls-parser] Stopping at row ${i}: "${joined.slice(0, 60)}"`);
+      break; // Stop reading — everything after is not student data
+    }
+
     if (isStudentRow(row, colMap)) {
       try {
         const student = parseStudentRow(row, colMap);
