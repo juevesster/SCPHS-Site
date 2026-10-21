@@ -342,9 +342,18 @@ export function parseLISFile(arrayBuffer) {
   const seenLRNs = new Set(); // 🆕 Track duplicates
   let stopMarker = null;
 
-  for (let i = 0; i < rows.length; i++) {
+    for (let i = 0; i < rows.length; i++) {
     const row = rows[i];
     if (!row) continue;
+
+    // 🆕 Check if the Adviser hid this row in Excel!
+    const isRowHidden = sheet['!rows'] && sheet['!rows'][i] && sheet['!rows'][i].hidden === true;
+    
+    // If hidden, completely skip it (bypass it)
+    if (isRowHidden) {
+      console.log(`[xls-parser] Bypassed hidden row ${i}`);
+      continue; 
+    }
 
     const joined = row.map(c => String(c || "")).join(" ").toUpperCase();
 
