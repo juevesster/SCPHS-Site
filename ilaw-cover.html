@@ -43,13 +43,16 @@
     .a4-page {
       background: #ffffff;
       width: 210mm;
-      height: 297mm;
-      padding: 25mm 20mm 30mm 20mm; /* Adjusted bottom padding slightly */
+      /* Using min-height instead of fixed height prevents overlap */
+      min-height: 297mm; 
+      padding: 25mm 20mm; 
       box-sizing: border-box;
       box-shadow: 0 10px 30px rgba(0,0,0,0.15);
       position: relative;
-      display: flex;
-      flex-direction: column;
+      
+      /* Grid layout pushes the footer to the bottom automatically */
+      display: grid;
+      grid-template-rows: auto auto auto 1fr auto;
       color: #000;
     }
 
@@ -75,10 +78,7 @@
       z-index: 1;
     }
     
-    .header img {
-      height: 75px;
-      margin-bottom: 10px;
-    }
+    .header img { height: 75px; margin-bottom: 10px; }
 
     .header .republic { font-size: 11pt; font-weight: 400; margin: 0 0 2px 0; letter-spacing: 0.05em; text-transform: uppercase; }
     .header .department { font-size: 14pt; font-weight: 700; margin: 0 0 2px 0; letter-spacing: 0.05em; text-transform: uppercase; color: #0f2b4f; }
@@ -119,12 +119,13 @@
 
     /* Meta Details Table */
     .meta-container {
-      max-width: 80%;
+      max-width: 85%;
       margin: 0 auto;
       font-size: 14pt;
       line-height: 2.2;
       position: relative;
       z-index: 1;
+      width: 100%;
     }
 
     .meta-row {
@@ -160,11 +161,10 @@
 
     /* Footer / Signatories Section */
     .footer {
-      margin-top: 50px;
-      padding-bottom: 20px;
       text-align: center;
       position: relative;
       z-index: 1;
+      margin-bottom: 10px;
     }
 
     .prepared-by {
@@ -172,14 +172,14 @@
       text-transform: uppercase;
       letter-spacing: 0.1em;
       color: #6b7280;
-      margin-bottom: 0; /* Removed bottom margin */
+      margin-bottom: 0;
     }
 
-    /* 🆕 Signature Line Area */
+    /* Signature Line Area */
     .signature-line {
       width: 300px;
       border-bottom: 1.5px solid #000;
-      margin: 50px auto 5px auto; /* 50px top margin creates the physical space for signing */
+      margin: 60px auto 5px auto; /* Space for signing */
     }
 
     .teacher-name {
@@ -205,8 +205,8 @@
       .a4-page { 
         box-shadow: none; 
         width: 100%; 
-        height: 100%; 
-        padding: 20mm; 
+        min-height: 100vh; 
+        padding: 15mm 20mm; 
       }
       .a4-page::before { top: 5mm; bottom: 5mm; left: 5mm; right: 5mm; }
       [contenteditable="true"]:hover, [contenteditable="true"]:focus { background: transparent; }
@@ -220,7 +220,7 @@
 
   <div class="a4-page">
     
-    <!-- HEADER -->
+    <!-- ROW 1: HEADER -->
     <div class="header">
       <img src="assets/images/deped-logo.png" alt="DepEd Logo" onerror="this.src='https://upload.wikimedia.org/wikipedia/commons/thumb/8/89/Department_of_Education_%28DepEd%29_Logo.svg/1200px-Department_of_Education_%28DepEd%29_Logo.svg.png'">
       
@@ -232,13 +232,14 @@
       <h2 class="school" contenteditable="true">Sta. Cruz Pingkian High School</h2>
       <p class="address" contenteditable="true">Pingkian, Kayapa, Nueva Vizcaya, Philippines</p>
     </div>
-    <!-- TITLE -->
+
+    <!-- ROW 2: TITLE -->
     <div class="title-section">
       <h1 contenteditable="true">ILAW</h1>
       <h2 contenteditable="true">Lesson Plan</h2>
     </div>
 
-    <!-- DETAILS -->
+    <!-- ROW 3: DETAILS -->
     <div class="meta-container">
       <div class="meta-row">
         <div class="meta-label">Learning Area:</div>
@@ -258,11 +259,13 @@
       </div>
     </div>
 
-    <!-- FOOTER / SIGNATURE -->
+    <!-- ROW 4: SPACER (Takes up remaining space automatically) -->
+    <div></div>
+
+    <!-- ROW 5: FOOTER / SIGNATURE -->
     <div class="footer">
       <p class="prepared-by">Prepared by:</p>
       
-      <!-- 🆕 Signature Line -->
       <div class="signature-line"></div>
       
       <p class="teacher-name" contenteditable="true">Ricardo E. Jueves Jr.</p>
