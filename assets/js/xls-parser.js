@@ -69,6 +69,27 @@ function cellNum(row, idx) {
   return isNaN(n) ? null : n;
 }
 
+// 🆕 Convert Excel serial number dates (e.g. 39454) to MM/DD/YYYY
+function formatExcelDate(val) {
+  if (!val) return "";
+  const str = String(val).trim();
+  
+  // If it's already a date format like 05/07/2009 or 2009-05-07, return as-is
+  if (/[\/\-]/.test(str)) return str;
+  
+  // If it's a 5-digit number (Excel serial date)
+  const num = parseInt(str, 10);
+  if (!isNaN(num) && num > 20000 && num < 60000) {
+    // Excel epoch is Dec 30, 1899
+    const date = new Date(Math.round((num - 25569) * 86400 * 1000));
+    const mm = String(date.getUTCMonth() + 1).padStart(2, "0");
+    const dd = String(date.getUTCDate()).padStart(2, "0");
+    const yyyy = date.getUTCFullYear();
+    return `${mm}/${dd}/${yyyy}`;
+  }
+  return str;
+}
+
 // ============================================================
 // NAME SPLITTER
 // "LASTNAME,FIRSTNAME, MIDDLENAME" → parts
@@ -147,7 +168,8 @@ function parseStudentRow(row, colMap) {
     middleName:        nameParts.middleName,
     fullName:          nameParts.fullName,
     sex:               sex,
-    birthDate:         cellStr(row, colMap.BIRTHDATE),
+    // 🆕 Apply the Excel serial date fix here
+    birthDate:         formatExcelDate(cellStr(row, colMap.BIRTHDATE)),
     age:               cellNum(row, colMap.AGE),
     motherTongue:      cellStr(row, colMap.MOTHER_TONGUE),
     ip:                cellStr(row, colMap.IP),
@@ -336,10 +358,10 @@ export function parseLISFile(arrayBuffer) {
 
   // Find student rows with total tracking
   const students = [];
-  const seenLRNs = new Set(); // 🆕 Track duplicates
+  const seenLRNs = new Set(); // Track duplicates
   let stopMarker = null;
 
-    for (let i = 0; i < rows.length; i++) {
+  for (let i = 0; i < rows.length; i++) {
     const row = rows[i];
     if (!row) continue;
 
@@ -378,7 +400,6 @@ export function parseLISFile(arrayBuffer) {
     }
 
     // 3. Parse student rows
-        // Parse student rows
     if (isStudentRow(row, colMap)) {
       try {
         const student = parseStudentRow(row, colMap);
