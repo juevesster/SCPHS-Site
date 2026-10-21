@@ -356,7 +356,6 @@ export function parseLISFile(arrayBuffer) {
     const joined = row.map(c => String(c || "")).join(" ").toUpperCase();
     if (
       joined.includes("TOTAL FEMALE") ||
-      joined.includes("TOTAL MALE") ||
       joined.includes("LEGEND:") ||
       joined.includes("INDICATOR")
     ) {
