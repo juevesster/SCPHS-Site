@@ -90,6 +90,32 @@ function formatExcelDate(val) {
   return str;
 }
 
+// 🆕 Calculate age based on Birth Date and current date
+function calculateAge(birthDateStr) {
+  if (!birthDateStr) return null;
+  
+  // The birthDate is now formatted as MM/DD/YYYY by formatExcelDate
+  const parts = birthDateStr.split("/");
+  if (parts.length !== 3) return null;
+  
+  const birthMonth = parseInt(parts[0], 10) - 1;
+  const birthDay = parseInt(parts[1], 10);
+  const birthYear = parseInt(parts[2], 10);
+
+  if (isNaN(birthMonth) || isNaN(birthDay) || isNaN(birthYear)) return null;
+
+  const today = new Date();
+  let age = today.getFullYear() - birthYear;
+  const monthDiff = today.getMonth() - birthMonth;
+  
+  // Adjust age if birthday hasn't happened yet this year
+  if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDay)) {
+    age--;
+  }
+  
+  return age >= 0 ? age : null;
+}
+
 // ============================================================
 // NAME SPLITTER
 // "LASTNAME,FIRSTNAME, MIDDLENAME" → parts
@@ -161,6 +187,16 @@ function parseStudentRow(row, colMap) {
   const remarksRaw = cellStr(row, colMap.REMARKS);
   const remarks = remarksRaw.replace(/<br\s*\/?>/gi, " | ").replace(/\s+/g, " ").trim();
 
+    // 🆕 Extract birth date first
+  const rawBirthDate = cellStr(row, colMap.BIRTHDATE);
+  const finalBirthDate = formatExcelDate(rawBirthDate);
+  
+  // 🆕 Extract age, or compute it if missing
+  let finalAge = cellNum(row, colMap.AGE);
+  if (finalAge === null || finalAge === 0) {
+    finalAge = calculateAge(finalBirthDate);
+  }
+
   return {
     lrn:               cellStr(row, colMap.LRN),
     lastName:          nameParts.lastName,
@@ -169,8 +205,8 @@ function parseStudentRow(row, colMap) {
     fullName:          nameParts.fullName,
     sex:               sex,
     // 🆕 Apply the Excel serial date fix here
-    birthDate:         formatExcelDate(cellStr(row, colMap.BIRTHDATE)),
-    age:               cellNum(row, colMap.AGE),
+    birthDate:         finalBirthDate,
+    age:               finalAge,
     motherTongue:      cellStr(row, colMap.MOTHER_TONGUE),
     ip:                cellStr(row, colMap.IP),
     religion:          cellStr(row, colMap.RELIGION),
