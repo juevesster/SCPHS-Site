@@ -338,6 +338,7 @@ export function parseLISFile(arrayBuffer) {
   const header = extractHeader(rows, format);
 
   // Find student rows with total tracking
+    // Find student rows with total tracking
   const students = [];
   let stopMarker = null;
   let expectedTotal = null;
@@ -348,26 +349,35 @@ export function parseLISFile(arrayBuffer) {
 
     const joined = row.map(c => String(c || "")).join(" ").toUpperCase();
 
-    // Detect the "COMBINED" marker (the very last total row) — hard stop
-    if (joined.includes("<===") && joined.includes("COMBINED")) {
-      const numMatch = String(row[0] || "").match(/\d+/);
-      if (numMatch) {
-        expectedTotal = parseInt(numMatch[0], 10);
+    // Skip marker/total rows completely (don't break yet — we might still be in the header)
+    const isCombinedMarker =
+      joined.includes("COMBINED") &&
+      (joined.includes("<===") || joined.includes("==="));
+
+    const isLegendRow =
+      joined.includes("LEGEND:") ||
+      joined.includes("LEGEND ") ||
+      (joined.includes("INDICATOR") && joined.includes("CODE"));
+
+    // Only stop on COMBINED or LEGEND if we've already collected at least one student
+    if (students.length > 0) {
+      if (isCombinedMarker) {
+        const numMatch = String(row[0] || "").match(/\d+/);
+        if (numMatch) expectedTotal = parseInt(numMatch[0], 10);
         stopMarker = "COMBINED";
+        break;
       }
-      break;
+      if (isLegendRow) {
+        stopMarker = "LEGEND";
+        break;
+      }
     }
 
-    // Stop at LEGEND / INDICATOR blocks (only appear after the student list)
-    if (joined.includes("LEGEND") || joined.includes("INDICATOR")) {
-      stopMarker = "LEGEND";
-      break;
-    }
-
-    // Skip other marker rows (TOTAL MALE, TOTAL FEMALE) but keep reading
+    // Skip TOTAL MALE / TOTAL FEMALE / any marker rows — keep reading
     if (joined.includes("<===") ||
         joined.includes("TOTAL MALE") ||
-        joined.includes("TOTAL FEMALE")) {
+        joined.includes("TOTAL FEMALE") ||
+        joined.includes("COMBINED")) {
       continue;
     }
 
@@ -384,13 +394,11 @@ export function parseLISFile(arrayBuffer) {
     }
   }
 
-  // 🆕 Defensive trim: if the COMBINED marker said "27", make sure we only keep 27
+  // Defensive trim
   if (expectedTotal != null && students.length > expectedTotal) {
     console.log(`[xls-parser] Trimming ${students.length} → ${expectedTotal} (using COMBINED marker)`);
     students.length = expectedTotal;
   }
-
-  console.log(`[xls-parser] Parsed ${students.length} students (stopped at: ${stopMarker || "end of file"})`);
 
   return {
     header,
