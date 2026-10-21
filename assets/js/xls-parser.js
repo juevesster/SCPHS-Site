@@ -116,7 +116,7 @@ function isStudentRow(row, colMap) {
   // Name must contain a comma AND be a reasonable length (real names are 5+ chars)
   if (!name.includes(",") || name.length < 5) return false;
 
-  // 🆕 Reject names that contain weird corruption characters (from broken Excel cells)
+  // Reject names that contain weird corruption characters (from broken Excel cells)
   // A real name only contains letters, commas, spaces, periods, hyphens, and apostrophes
   if (/[^A-Za-zÀ-ÿ\s,.'\-]/.test(name)) return false;
 
@@ -152,8 +152,8 @@ function parseStudentRow(row, colMap) {
     sex:               sex,
     birthDate:         cellStr(row, colMap.BIRTHDATE),
     age:               cellNum(row, colMap.AGE),
-    motherTongue:      cellStr(row, colMap.MOTHER_TONGUE),   // SHS may be empty — fine
-    ip:                cellStr(row, colMap.IP),              // SHS may be empty — fine
+    motherTongue:      cellStr(row, colMap.MOTHER_TONGUE),
+    ip:                cellStr(row, colMap.IP),
     religion:          cellStr(row, colMap.RELIGION),
     addressHouse:      cellStr(row, colMap.ADDR_HOUSE),
     addressBarangay:   cellStr(row, colMap.ADDR_BARANGAY),
@@ -171,7 +171,6 @@ function parseStudentRow(row, colMap) {
 
 // ============================================================
 // FORMAT DETECTION
-// Scans the first 20 rows for clues that identify the format.
 // ============================================================
 function detectFormat(rows) {
   const scanLimit = Math.min(20, rows.length);
@@ -197,7 +196,6 @@ function extractHeader(rows, format) {
                  gradeLevel: "", section: "", region: "", division: "",
                  semester: "", track: "" };
 
-  // Scan a larger range for SHS because headers are further down
   const scanLimit = format === "SHS" ? Math.min(20, rows.length) : Math.min(10, rows.length);
 
   for (let i = 0; i < scanLimit; i++) {
@@ -275,7 +273,6 @@ function extractHeader(rows, format) {
 
     // SHS-specific: Semester, Section, Track and Strand
     if (format === "SHS") {
-      // Semester
       if (joined.includes("semester") && !info.semester) {
         const idx = row.findIndex(c => String(c || "").toLowerCase().includes("semester"));
         for (let j = idx + 1; j < row.length; j++) {
@@ -287,7 +284,6 @@ function extractHeader(rows, format) {
         }
       }
 
-      // Section (label may be alone in one cell, value in the next non-empty cell)
       if (joined.includes("section") && !info.section) {
         const idx = row.findIndex(c => String(c || "").toLowerCase() === "section");
         if (idx >= 0) {
@@ -298,7 +294,6 @@ function extractHeader(rows, format) {
         }
       }
 
-      // Track and Strand
       if (joined.includes("track and strand") && !info.track) {
         const idx = row.findIndex(c => String(c || "").toLowerCase().includes("track"));
         if (idx >= 0) {
@@ -325,12 +320,10 @@ export function parseLISFile(arrayBuffer) {
     throw new Error("SheetJS (XLSX) library not loaded. Add the CDN script first.");
   }
 
-  // Read the workbook
   const workbook = XLSX.read(arrayBuffer, { type: "array" });
   const sheetName = workbook.SheetNames[0];
   const sheet = workbook.Sheets[sheetName];
 
-  // Convert to array of arrays
   const rows = XLSX.utils.sheet_to_json(sheet, {
     header: 1,
     raw: true,
@@ -338,16 +331,13 @@ export function parseLISFile(arrayBuffer) {
     blankrows: false,
   });
 
-  // Detect format
   const format = detectFormat(rows);
   const colMap = format === "SHS" ? SHS_COL : JHS_COL;
   console.log(`[xls-parser] Detected format: ${format}`);
 
-  // Extract header info
   const header = extractHeader(rows, format);
 
-   // Find student rows
-    // Find student rows
+  // Find student rows with total tracking
   const students = [];
   let stopMarker = null;
   let expectedTotal = null;
@@ -358,31 +348,27 @@ export function parseLISFile(arrayBuffer) {
 
     const joined = row.map(c => String(c || "")).join(" ").toUpperCase();
 
-    // If we hit a TOTAL marker, record it
-    if (joined.includes("TOTAL FEMALE") || joined.includes("TOTAL MALE") || joined.includes("<===")) {
-      // Extract number from the row, e.g. "17" from "<=== TOTAL FEMALE"
+    // Detect the "COMBINED" marker (the very last total row) — hard stop
+    if (joined.includes("<===") && joined.includes("COMBINED")) {
       const numMatch = String(row[0] || "").match(/\d+/);
-      if (joined.includes("COMBINED") && numMatch) {
-        // COMBINED marker — we have all students, stop right here
+      if (numMatch) {
         expectedTotal = parseInt(numMatch[0], 10);
         stopMarker = "COMBINED";
-        break;
       }
-      if (joined.includes("TOTAL FEMALE") && numMatch) {
-        stopMarker = "TOTAL FEMALE";
-        // Don't break — keep reading in case COMBINED comes next
-      }
-      continue;
-    }
-
-    // If we've already passed TOTAL FEMALE and hit LEGEND, stop
-    if (stopMarker === "TOTAL FEMALE" && (joined.includes("LEGEND") || joined.includes("INDICATOR"))) {
       break;
     }
 
-    // Also stop at LEGEND even without TOTAL FEMALE
+    // Stop at LEGEND / INDICATOR blocks (only appear after the student list)
     if (joined.includes("LEGEND") || joined.includes("INDICATOR")) {
+      stopMarker = "LEGEND";
       break;
+    }
+
+    // Skip other marker rows (TOTAL MALE, TOTAL FEMALE) but keep reading
+    if (joined.includes("<===") ||
+        joined.includes("TOTAL MALE") ||
+        joined.includes("TOTAL FEMALE")) {
+      continue;
     }
 
     // Parse student rows
@@ -396,6 +382,12 @@ export function parseLISFile(arrayBuffer) {
         console.warn(`[xls-parser] Skipped row ${i}:`, e.message);
       }
     }
+  }
+
+  // 🆕 Defensive trim: if the COMBINED marker said "27", make sure we only keep 27
+  if (expectedTotal != null && students.length > expectedTotal) {
+    console.log(`[xls-parser] Trimming ${students.length} → ${expectedTotal} (using COMBINED marker)`);
+    students.length = expectedTotal;
   }
 
   console.log(`[xls-parser] Parsed ${students.length} students (stopped at: ${stopMarker || "end of file"})`);
