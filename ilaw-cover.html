@@ -293,15 +293,14 @@
 
   </div>
 
-  <script>
-    // Simple toggle for Edit Mode
+    <script>
+    // 1. Toggle Edit Mode
     function toggleEdit() {
       const page = document.getElementById('coverPage');
       const btn = document.getElementById('btnToggleEdit');
       const isEditing = page.classList.contains('editing');
 
       if (isEditing) {
-        // Turn OFF editing
         page.classList.remove('editing');
         const fields = page.querySelectorAll('[contenteditable="true"]');
         fields.forEach(f => f.setAttribute('contenteditable', 'false'));
@@ -309,9 +308,7 @@
         btn.classList.remove('success');
         btn.classList.add('btn');
       } else {
-        // Turn ON editing
         page.classList.add('editing');
-        // Make specific text fields editable
         const fieldsToEdit = page.querySelectorAll('.meta-value, .teacher-name, .teacher-pos, .region, .division, .school, .address');
         fieldsToEdit.forEach(f => f.setAttribute('contenteditable', 'true'));
         btn.textContent = '💾 Save & Lock';
@@ -319,6 +316,29 @@
         btn.classList.add('success');
       }
     }
+
+    // 2. Auto-fill from URL Parameters
+    window.addEventListener('DOMContentLoaded', () => {
+      const params = new URLSearchParams(window.location.search);
+      
+      // Helper function to safely set text if the parameter exists
+      const setVal = (selector, paramName) => {
+        const val = params.get(paramName);
+        if (val && val.trim() !== "") {
+          const el = document.querySelector(selector);
+          if (el) el.textContent = val;
+        }
+      };
+
+      // Map URL parameters to the HTML elements
+      setVal('.meta-row:nth-child(1) .meta-value', 'subject');
+      setVal('.meta-row:nth-child(2) .meta-value', 'section');
+      setVal('.meta-row:nth-child(3) .meta-value', 'termweek');
+      setVal('.meta-row:nth-child(4) .meta-value', 'schoolyear');
+      setVal('.teacher-name', 'teacher');
+      
+      // Note: If you want to pass the teacher's position, you can add it to the URL in ilaw.html
+    });
   </script>
 
 </body>
