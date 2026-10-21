@@ -347,22 +347,45 @@ export function parseLISFile(arrayBuffer) {
   const header = extractHeader(rows, format);
 
    // Find student rows
+    // Find student rows
   const students = [];
+  let stopMarker = null;
+  let expectedTotal = null;
+
   for (let i = 0; i < rows.length; i++) {
     const row = rows[i];
     if (!row) continue;
 
-    // 🆕 HARD STOP: check if this row is a "TOTAL" or "Legend" marker
     const joined = row.map(c => String(c || "")).join(" ").toUpperCase();
-    if (
-      joined.includes("TOTAL FEMALE") ||
-      joined.includes("LEGEND:") ||
-      joined.includes("INDICATOR")
-    ) {
-      console.log(`[xls-parser] Stopping at row ${i}: "${joined.slice(0, 60)}"`);
-      break; // Stop reading — everything after is not student data
+
+    // If we hit a TOTAL marker, record it
+    if (joined.includes("TOTAL FEMALE") || joined.includes("TOTAL MALE") || joined.includes("<===")) {
+      // Extract number from the row, e.g. "17" from "<=== TOTAL FEMALE"
+      const numMatch = String(row[0] || "").match(/\d+/);
+      if (joined.includes("COMBINED") && numMatch) {
+        // COMBINED marker — we have all students, stop right here
+        expectedTotal = parseInt(numMatch[0], 10);
+        stopMarker = "COMBINED";
+        break;
+      }
+      if (joined.includes("TOTAL FEMALE") && numMatch) {
+        stopMarker = "TOTAL FEMALE";
+        // Don't break — keep reading in case COMBINED comes next
+      }
+      continue;
     }
 
+    // If we've already passed TOTAL FEMALE and hit LEGEND, stop
+    if (stopMarker === "TOTAL FEMALE" && (joined.includes("LEGEND") || joined.includes("INDICATOR"))) {
+      break;
+    }
+
+    // Also stop at LEGEND even without TOTAL FEMALE
+    if (joined.includes("LEGEND") || joined.includes("INDICATOR")) {
+      break;
+    }
+
+    // Parse student rows
     if (isStudentRow(row, colMap)) {
       try {
         const student = parseStudentRow(row, colMap);
@@ -374,6 +397,8 @@ export function parseLISFile(arrayBuffer) {
       }
     }
   }
+
+  console.log(`[xls-parser] Parsed ${students.length} students (stopped at: ${stopMarker || "end of file"})`);
 
   return {
     header,
