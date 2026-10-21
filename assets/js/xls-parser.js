@@ -110,18 +110,15 @@ function isStudentRow(row, colMap) {
   const name = cellStr(row, colMap.NAME);
   const sex = cellStr(row, colMap.SEX);
 
-  // Valid LRN is exactly 12 digits
-  if (!/^\d{12}$/.test(lrn)) return false;
-
-  // Name must contain a comma AND be a reasonable length (real names are 5+ chars)
+  // 🆕 Name and Sex are the only absolute requirements
   if (!name.includes(",") || name.length < 5) return false;
-
-  // Reject names that contain weird corruption characters (from broken Excel cells)
-  // A real name only contains letters, commas, spaces, periods, hyphens, and apostrophes
+  if (!/^[MF]$/i.test(sex) && !/^(MALE|FEMALE)$/i.test(sex)) return false;
   if (/[^A-Za-zÀ-ÿ\s,.'\-]/.test(name)) return false;
 
-  // Sex must be M or F (case-insensitive)
-  if (!/^[MF]$/i.test(sex) && !/^(MALE|FEMALE)$/i.test(sex)) return false;
+  // 🆕 LRN is optional for now (adviser will fix later)
+  // If they DO provide one, it must be 12 digits (ignoring trailing dots/spaces)
+  const cleanLrn = String(lrn).replace(/\D/g, "");
+  if (cleanLrn.length > 0 && cleanLrn.length !== 12) return false;
 
   return true;
 }
@@ -381,16 +378,27 @@ export function parseLISFile(arrayBuffer) {
     }
 
     // 3. Parse student rows
+        // Parse student rows
     if (isStudentRow(row, colMap)) {
       try {
         const student = parseStudentRow(row, colMap);
-        if (student.lrn && student.lastName) {
-          // 🆕 Only add if we haven't seen this LRN yet
-          if (!seenLRNs.has(student.lrn)) {
-            seenLRNs.add(student.lrn);
+        
+        if (student.lastName) {
+          // 🆕 Normalize the LRN (removes trailing periods/spaces)
+          const normalizedLrn = String(student.lrn).replace(/\D/g, "");
+          
+          // 🆕 If LRN is blank, just push them (no dedupe possible)
+          if (!normalizedLrn) {
+            student.lrn = ""; 
+            students.push(student);
+          } 
+          // 🆕 If LRN exists, dedupe it as usual
+          else if (!seenLRNs.has(normalizedLrn)) {
+            seenLRNs.add(normalizedLrn);
+            student.lrn = normalizedLrn; 
             students.push(student);
           } else {
-            console.log(`[xls-parser] Skipping duplicate LRN: ${student.lrn}`);
+            console.log(`[xls-parser] 🚫 Ignored duplicate LRN: ${normalizedLrn} (Name: ${student.fullName})`);
           }
         }
       } catch (e) {

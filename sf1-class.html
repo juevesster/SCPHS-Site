@@ -682,7 +682,9 @@
         return `
           <tr data-id="${esc(s.id)}">
             <td>${i + 1}</td>
-            <td class="lrn">${esc(s.lrn)}</td>
+            <td class="lrn" style="${!s.lrn ? 'color:#dc2626; font-weight:bold;' : ''}">
+            ${esc(s.lrn) || '⚠️ NO LRN'}
+            </td>
             <td class="name">${esc(s.fullName || (s.lastName + ", " + s.firstName))}</td>
             <td><span class="sex-badge ${sexClass}">${sexLabel}</span></td>
             <td>${esc(s.birthDate || "—")}</td>
@@ -801,8 +803,9 @@
         const firstName = $("f-firstName").value.trim();
         const middleName = $("f-middleName").value.trim();
 
-        if (!lrn || !/^\d{12}$/.test(lrn)) {
-          toast("⚠️ LRN must be 12 digits", "error");
+        // 🆕 Allow blank LRN (Adviser can add later), but if filled, enforce 12 digits
+        if (lrn && !/^\d{12}$/.test(lrn)) {
+          toast("⚠️ LRN must be exactly 12 digits if provided", "error");
           return;
         }
         if (!lastName || !firstName) {
@@ -876,9 +879,9 @@
         $("previewMale").textContent = parsed.maleCount;
         $("previewFemale").textContent = parsed.femaleCount;
 
-        $("previewList").innerHTML = parsed.students.map(s => `
-          <div class="row">
-            <span class="lrn">${esc(s.lrn)}</span>
+          $("previewList").innerHTML = parsed.students.map(s => `
+          <div class="row" style="${!s.lrn ? 'background:#fef2f2; border-left:3px solid #dc2626;' : ''}">
+            <span class="lrn" style="${!s.lrn ? 'color:#dc2626; font-weight:bold;' : ''}">${esc(s.lrn) || '⚠️ NO LRN'}</span>
             <span class="name">${esc(s.fullName)}</span>
             <span class="sex ${s.sex === "M" ? "m" : "f"}">${esc(s.sex)}</span>
           </div>
