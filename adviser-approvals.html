@@ -189,17 +189,39 @@
       });
     });
 
-    async function loadECRs() {
+        async function loadECRs() {
       ALL_ECRS = [];
       try {
-        for (const cls of MY_CLASSES) {
+        // ✅ FIX: Determine if user is Admin or Adviser
+        const isAdmin = CURRENT_PROFILE?.primaryRole === "admin" || CURRENT_PROFILE?.isSuperAdmin;
+        
+        // If Admin, fetch ALL classes. If Adviser, fetch only classes where they are the adviser.
+        let q;
+        if (isAdmin) {
+          q = query(collection(db, "classes"));
+        } else {
+          q = query(collection(db, "classes"), where("adviserUid", "==", CURRENT_USER.uid));
+        }
+        
+        const clsSnap = await getDocs(q);
+        
+        if (clsSnap.empty) {
+          document.getElementById("loading").innerHTML = "<h3>You are not an adviser to any class, and you are not an admin.</h3>";
+          return;
+        }
+
+        for (const docSnap of clsSnap.docs) {
+          const cls = { id: docSnap.id, ...docSnap.data() };
+          
+          // Fetch ECRs for this class
           const ecrSnap = await getDocs(collection(db, "classes", cls.id, "ecr"));
+          
           ecrSnap.forEach(d => {
             const data = d.data();
-            // Check terms
             if (data.terms) {
               Object.keys(data.terms).forEach(termStr => {
                 const termData = data.terms[termStr];
+                // Only show if submitted or approved
                 if (termData.status === 'submitted' || termData.status === 'approved') {
                   ALL_ECRS.push({
                     classId: cls.id,
