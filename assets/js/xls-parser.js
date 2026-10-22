@@ -191,15 +191,14 @@ function parseStudentRow(row, colMap) {
   const remarksRaw = cellStr(row, colMap.REMARKS);
   const remarks = remarksRaw.replace(/<br\s*\/?>/gi, " | ").replace(/\s+/g, " ").trim();
 
-    // 🆕 Extract birth date first
+  // Extract birth date
   const rawBirthDate = cellStr(row, colMap.BIRTHDATE);
   const finalBirthDate = formatExcelDate(rawBirthDate);
   
-  // 🆕 Extract age, or compute it if missing
-  let finalAge = cellNum(row, colMap.AGE);
-  if (finalAge === null || finalAge === 0) {
-    finalAge = calculateAge(finalBirthDate);
-  }
+  // 🆕 ALWAYS compute age from birthdate if possible. 
+  // Only use the Excel value if the birthdate calculation fails.
+  let computedAge = calculateAge(finalBirthDate);
+  let finalAge = computedAge !== null ? computedAge : cellNum(row, colMap.AGE);
 
   return {
     lrn:               cellStr(row, colMap.LRN),
@@ -208,7 +207,6 @@ function parseStudentRow(row, colMap) {
     middleName:        nameParts.middleName,
     fullName:          nameParts.fullName,
     sex:               sex,
-    // 🆕 Apply the Excel serial date fix here
     birthDate:         finalBirthDate,
     age:               finalAge,
     motherTongue:      cellStr(row, colMap.MOTHER_TONGUE),
