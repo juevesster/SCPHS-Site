@@ -247,11 +247,12 @@
     </div>
   </div>
 
-  <script type="module">
+    <script type="module">
     import { auth, db } from "./assets/js/firebase-config.js";
     import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-    // ✅ ADDED query and where to imports
     import { doc, getDoc, collection, getDocs, query, where } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+    // ✅ Import the ECR helper to calculate scores correctly
+    import { computeECR, getWeights } from "./assets/js/ecr-weights.js";
 
     let CURRENT_USER = null;
     let PROFILE = null;
@@ -262,24 +263,16 @@
 
     async function init() {
       onAuthStateChanged(auth, async (user) => {
-        if (!user) {
-          location.replace("login.html");
-          return;
-        }
+        if (!user) { location.replace("login.html"); return; }
         CURRENT_USER = user;
 
         try {
           // 1. Load User Profile
           const userSnap = await getDoc(doc(db, "users", user.uid));
-          if (userSnap.exists()) {
-            PROFILE = userSnap.data();
-          } else {
-            PROFILE = { name: user.email.split('@')[0] };
-          }
+          PROFILE = userSnap.exists() ? userSnap.data() : { name: user.email.split('@')[0] };
 
-          // 2. SMART SEARCH: Find class by LRN or Email
+          // 2. Find Class (by LRN or Email)
           const classesSnap = await getDocs(collection(db, "classes"));
-          
           for (const classDoc of classesSnap.docs) {
             const clsData = { id: classDoc.id, ...classDoc.data() };
             const rosterSnap = await getDocs(collection(db, "classes", clsData.id, "students"));
@@ -298,22 +291,30 @@
             }
           }
 
-          // 3. Load Grades
+          // 3. Load Grades from NEW ECR Structure
           if (CLASS_INFO && STUDENT_INFO) {
             const progSnap = await getDocs(collection(db, "classes", CLASS_INFO.id, "program"));
             const subjects = [...new Set(progSnap.docs.map(d => d.data().subject).filter(Boolean))];
             
-            for (const subj of subjects) {
-              const gSnap = await getDoc(doc(db, "classes", CLASS_INFO.id, "grades", STUDENT_INFO.id, subj, "data"));
-              if (gSnap.exists()) {
-                GRADES.push({ subject: subj, ...gSnap.data() });
+            for (const subjCode of subjects) {
+              // Look in ECR -> Term 1 scores
+              const scoreSnap = await getDoc(doc(db, "classes", CLASS_INFO.id, "ecr", subjCode, "terms", "1", "scores", STUDENT_INFO.id));
+              
+              if (scoreSnap.exists()) {
+                const data = scoreSnap.data();
+                // If it has computed scores, use them
+                if (data.computed) {
+                  GRADES.push({ subject: subjCode, q1: data.computed.termGrade });
+                } else {
+                  GRADES.push({ subject: subjCode, q1: null });
+                }
               } else {
-                GRADES.push({ subject: subj, q1: null, q2: null, q3: null, q4: null });
+                GRADES.push({ subject: subjCode, q1: null });
               }
             }
           }
 
-          // 4. Fetch Exams
+          // 4. Fetch Exams & Submissions
           if (CLASS_INFO) {
             await loadMyExams(CLASS_INFO.id);
           }
@@ -440,14 +441,12 @@
       }
     }
 
-    // ✅ LOAD AVAILABLE EXAMS FOR THE STUDENT'S CLASS
-        // ✅ LOAD AVAILABLE EXAMS FOR THE STUDENT'S CLASS
+    // ✅ LOAD AVAILABLE EXAMS & CHECK FOR SUBMISSIONS
     async function loadMyExams(classId) {
       try {
         const container = document.getElementById("examsContainer");
-        container.innerHTML = `<div style="text-align:center; padding: 20px; color: #64748b;">Loading exams...</div>`;
-
-        // 1. Get published exams for this class
+        
+        // 1. Get all exams for this class
         const q = query(collection(db, "exams"), where("classId", "==", classId));
         const snap = await getDocs(q);
         
@@ -463,27 +462,15 @@
           return;
         }
 
-        // 2. Fetch this student's submissions to see which ones they finished
-        const subQ = query(
-          collection(db, "exam_submissions"), 
-          where("examId", "in", MY_EXAMS.map(e => e.id)), 
-          where("studentId", "==", CURRENT_USER.uid)
-        );
-        
-        // (Note: If "in" query fails due to array length limits, we fall back to fetching all and filtering)
-        let submissions = [];
-        try {
-          const subSnap = await getDocs(subQ);
-          submissions = subSnap.docs.map(d => d.data());
-        } catch (e) {
-          console.warn("Fallback: fetching all submissions");
-          const allSubs = await getDocs(query(collection(db, "exam_submissions"), where("studentId", "==", CURRENT_USER.uid)));
-          submissions = allSubs.docs.map(d => d.data());
-        }
+        // 2. Check if the student has already submitted these exams
+        // We fetch ALL submissions for this student and filter in JS to avoid index limits
+        const subQ = query(collection(db, "exam_submissions"), where("studentId", "==", CURRENT_USER.uid));
+        const subSnap = await getDocs(subQ);
+        const submissions = subSnap.docs.map(d => ({ id: d.id, ...d.data() }));
 
         const submittedExamIds = submissions.map(s => s.examId);
 
-        // 3. Render
+        // 3. Render Cards
         container.innerHTML = MY_EXAMS.map(exam => {
           const isSubmitted = submittedExamIds.includes(exam.id);
           const sub = submissions.find(s => s.examId === exam.id);
@@ -496,16 +483,14 @@
             let scoreColor = percent >= 75 ? "#059669" : "#dc2626";
             
             actionHtml = `
-              <div style="display: flex; gap: 10px; align-items: center;">
-                <div style="text-align: right; margin-right: 10px;">
-                  <div style="font-size: 0.75rem; color: #64748b; font-weight: 600; text-transform: uppercase;">Score</div>
-                  <div style="font-size: 1.2rem; font-weight: 800; color: ${scoreColor};">${sub.score} / ${sub.totalPoints}</div>
+              <div style="display: flex; gap: 10px; align-items: center; background: #f8fafc; padding: 8px 12px; border-radius: 12px; border: 1px solid #e2e8f0;">
+                <div style="text-align: right;">
+                  <div style="font-size: 0.7rem; color: #64748b; font-weight: 700; text-transform: uppercase;">Score</div>
+                  <div style="font-size: 1.2rem; font-weight: 800; color: ${scoreColor};">${sub.score}/${sub.totalPoints}</div>
                 </div>
                 <a href="student-exam-results.html?examId=${exam.id}&submissionId=${sub.id}" 
-                   style="background: #e0e7ff; color: #3730a3; padding: 10px 20px; border-radius: 8px; font-weight: 700; text-decoration: none; font-size: 0.9rem; transition: 0.2s;"
-                   onmouseover="this.style.transform='translateY(-2px)'" 
-                   onmouseout="this.style.transform='translateY(0)'">
-                  <i class="fas fa-eye"></i> View Results
+                   style="background: #e0e7ff; color: #3730a3; padding: 8px 16px; border-radius: 8px; font-weight: 700; text-decoration: none; font-size: 0.85rem; border: 1px solid #c7d2fe;">
+                  <i class="fas fa-eye"></i> View
                 </a>
               </div>
             `;
