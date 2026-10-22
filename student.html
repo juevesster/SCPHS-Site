@@ -291,20 +291,37 @@
           }
 
           // 3. Load Grades from NEW ECR Structure
+                    // 3. Load Grades from NEW ECR Structure
           if (CLASS_INFO && STUDENT_INFO) {
             const progSnap = await getDocs(collection(db, "classes", CLASS_INFO.id, "program"));
             const subjects = [...new Set(progSnap.docs.map(d => d.data().subject).filter(Boolean))];
             
             for (const subjCode of subjects) {
-              // Look in ECR -> Term 1 scores
-              const scoreSnap = await getDoc(doc(db, "classes", CLASS_INFO.id, "ecr", subjCode, "terms", "1", "scores", STUDENT_INFO.id));
+              // 1. Get the ECR document to check status
+              const ecrDoc = await getDoc(doc(db, "classes", CLASS_INFO.id, "ecr", subjCode));
               
-              if (scoreSnap.exists()) {
-                const data = scoreSnap.data();
-                if (data.computed) {
-                  GRADES.push({ subject: subjCode, q1: data.computed.termGrade });
+              // Only proceed if the ECR exists AND Term 1 is approved
+              if (ecrDoc.exists()) {
+                const ecrData = ecrDoc.data();
+                const term1Status = ecrData.terms?.["1"]?.status;
+                
+                if (term1Status === "approved") {
+                  // 2. Get the student's score
+                  const scoreSnap = await getDoc(doc(db, "classes", CLASS_INFO.id, "ecr", subjCode, "terms", "1", "scores", STUDENT_INFO.id));
+                  
+                  if (scoreSnap.exists()) {
+                    const data = scoreSnap.data();
+                    if (data.computed) {
+                      GRADES.push({ subject: subjCode, q1: data.computed.termGrade });
+                    } else {
+                      GRADES.push({ subject: subjCode, q1: null });
+                    }
+                  } else {
+                    GRADES.push({ subject: subjCode, q1: null });
+                  }
                 } else {
-                  GRADES.push({ subject: subjCode, q1: null });
+                  // Grade exists but not approved yet
+                  GRADES.push({ subject: subjCode, q1: null }); 
                 }
               } else {
                 GRADES.push({ subject: subjCode, q1: null });

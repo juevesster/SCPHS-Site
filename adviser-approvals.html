@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Adviser Grade Approvals — SCPHS</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <style>
+    :root { 
+      --primary: #1e3c72; 
+      --primary-light: #2a5298; 
+      --bg: #f1f5f9; 
+      --card: #ffffff; 
+      --border: #e2e8f0; 
+      --text: #1e293b; 
+      --muted: #64748b; 
+      --success: #059669;
+      --danger: #dc2626;
+      --warning: #d97706;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); }
+    
+    .header { background: linear-gradient(135deg, var(--primary), var(--primary-light)); color: #fff; padding: 25px 30px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+    .header h1 { font-size: 1.4rem; display: flex; align-items: center; gap: 10px; }
+    .btn-back { background: rgba(255,255,255,0.2); color: #fff; border: none; padding: 10px 18px; border-radius: 8px; font-weight: 600; cursor: pointer; text-decoration: none; display: flex; align-items: center; gap: 6px; transition: 0.2s; }
+    .btn-back:hover { background: rgba(255,255,255,0.3); }
+
+    .container { max-width: 1200px; margin: 30px auto; padding: 0 20px; }
+
+    /* Tabs */
+    .tabs { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; }
+    .tab { padding: 10px 20px; border-radius: 30px; background: #fff; border: 1px solid var(--border); color: var(--text); font-weight: 600; cursor: pointer; transition: 0.2s; }
+    .tab.active { background: var(--primary); color: #fff; border-color: var(--primary); }
+
+    /* Cards */
+    .card { background: var(--card); border-radius: 12px; padding: 20px; margin-bottom: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); border: 1px solid var(--border); }
+    
+    .table-wrap { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+    th { text-align: left; padding: 12px; background: #f8fafc; color: var(--muted); font-weight: 700; font-size: 0.75rem; text-transform: uppercase; border-bottom: 2px solid var(--border); }
+    td { padding: 14px 12px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+    tr:hover { background: #f8fafc; }
+
+    .badge { display: inline-block; padding: 4px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; }
+    .badge-submitted { background: #fef3c7; color: var(--warning); border: 1px solid #fcd34d; }
+    .badge-approved { background: #dcfce7; color: var(--success); border: 1px solid #86efac; }
+
+    .btn { padding: 8px 16px; border-radius: 8px; font-weight: 600; font-size: 0.85rem; cursor: pointer; border: none; display: inline-flex; align-items: center; gap: 6px; transition: 0.2s; }
+    .btn-approve { background: var(--success); color: #fff; }
+    .btn-approve:hover { background: #047857; }
+    .btn-view { background: var(--primary); color: #fff; }
+    .btn-view:hover { background: var(--primary-light); }
+
+    /* Modal */
+    .modal { display: none; position: fixed; inset: 0; background: rgba(15,23,42,0.6); z-index: 1000; justify-content: center; align-items: center; padding: 20px; }
+    .modal.show { display: flex; }
+    .modal-content { background: #fff; border-radius: 16px; max-width: 900px; width: 100%; max-height: 90vh; overflow-y: auto; box-shadow: 0 20px 60px rgba(0,0,0,0.3); }
+    .modal-header { padding: 20px; border-bottom: 2px solid var(--border); display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; background: #fff; z-index: 10; }
+    .modal-body { padding: 20px; }
+    
+    .ecr-table { width: 100%; border-collapse: collapse; font-size: 0.8rem; margin-top: 10px; }
+    .ecr-table th { background: var(--primary); color: #fff; padding: 8px; text-align: center; }
+    .ecr-table td { padding: 8px; text-align: center; border-bottom: 1px solid #e2e8f0; }
+    .ecr-table td.name { text-align: left; font-weight: 600; }
+    .grade-big { font-size: 1.1rem; font-weight: 800; color: var(--primary); }
+    .grade-pass { color: var(--success); }
+    .grade-fail { color: var(--danger); }
+
+    .loading { text-align: center; padding: 50px; color: var(--muted); }
+    .spinner { border: 4px solid #e2e8f0; border-top-color: var(--primary); border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin: 0 auto 15px; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+  </style>
+</head>
+<body>
+
+  <header class="header">
+    <h1><i class="fas fa-check-double"></i> Adviser Grade Approvals</h1>
+    <a href="teacher.html" class="btn-back"><i class="fas fa-arrow-left"></i> Dashboard</a>
+  </header>
+
+  <div class="container">
+    <div class="tabs">
+      <button class="tab active" data-status="submitted">📥 Pending Review</button>
+      <button class="tab" data-status="approved">✅ Approved Grades</button>
+    </div>
+
+    <div id="loading" class="loading">
+      <div class="spinner"></div>
+      Loading ECRs...
+    </div>
+
+    <div id="content" style="display: none;">
+      <div class="card">
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Subject</th>
+                <th>Class</th>
+                <th>Teacher</th>
+                <th>Term</th>
+                <th>Status</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody id="ecrTableBody">
+              <!-- Rows injected here -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Review Modal -->
+  <div class="modal" id="reviewModal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <div>
+          <h3 id="modalTitle" style="color: var(--primary);">Review Grades</h3>
+          <p id="modalSubtitle" style="font-size: 0.85rem; color: var(--muted);">Subject • Class • Term</p>
+        </div>
+        <button onclick="closeModal()" style="background: none; border: none; font-size: 1.5rem; cursor: pointer; color: var(--muted);">&times;</button>
+      </div>
+      <div class="modal-body" id="modalBody">
+        <!-- Table injected here -->
+      </div>
+      <div style="padding: 20px; border-top: 1px solid var(--border); display: flex; justify-content: flex-end; gap: 10px; background: #fafbfc; border-radius: 0 0 16px 16px;">
+        <button class="btn btn-back" style="background: #e2e8f0; color: #333;" onclick="closeModal()">Close</button>
+        <button class="btn btn-approve" id="btnApproveAction" onclick="approveGrades()"><i class="fas fa-check"></i> Approve Grades</button>
+      </div>
+    </div>
+  </div>
+
+  <script type="module">
+    import { auth, db } from "./assets/js/firebase-config.js";
+    import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+    import { collection, getDocs, query, where, doc, updateDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+    let CURRENT_USER = null;
+    let CURRENT_PROFILE = null;
+    let MY_CLASSES = [];
+    let ALL_ECRS = [];
+    let CURRENT_FILTER = "submitted";
+    let SELECTED_ECR = null;
+
+    onAuthStateChanged(auth, async (user) => {
+      if (!user) { window.location.href = "login.html"; return; }
+      CURRENT_USER = user;
+
+      // 1. Get Profile
+      const pSnap = await getDocs(query(collection(db, "users"), where("__name__", "==", user.uid)));
+      if (!pSnap.empty) CURRENT_PROFILE = pSnap.docs[0].data();
+
+      // 2. Find Classes where I am Adviser
+      const clsSnap = await getDocs(collection(db, "classes"));
+      clsSnap.forEach(d => {
+        const c = d.data();
+        if (c.adviserUid === CURRENT_USER.uid) {
+          MY_CLASSES.push({ id: d.id, ...c });
+        }
+      });
+
+      if (MY_CLASSES.length === 0) {
+        document.getElementById("loading").innerHTML = "<h3>You are not an adviser to any class.</h3>";
+        return;
+      }
+
+      await loadECRs();
+    });
+
+    // Tab Switching
+    document.querySelectorAll(".tab").forEach(tab => {
+      tab.addEventListener("click", (e) => {
+        document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
+        e.target.classList.add("active");
+        CURRENT_FILTER = e.target.dataset.status;
+        renderTable();
+      });
+    });
+
+    async function loadECRs() {
+      ALL_ECRS = [];
+      try {
+        for (const cls of MY_CLASSES) {
+          const ecrSnap = await getDocs(collection(db, "classes", cls.id, "ecr"));
+          ecrSnap.forEach(d => {
+            const data = d.data();
+            // Check terms
+            if (data.terms) {
+              Object.keys(data.terms).forEach(termStr => {
+                const termData = data.terms[termStr];
+                if (termData.status === 'submitted' || termData.status === 'approved') {
+                  ALL_ECRS.push({
+                    classId: cls.id,
+                    className: cls.classLabel,
+                    subjectCode: d.id,
+                    subjectName: data.subjectName || d.id,
+                    term: termStr,
+                    status: termData.status,
+                    submittedAt: termData.submittedAt,
+                    rawData: data
+                  });
+                }
+              });
+            }
+          });
+        }
+
+        // Sort by newest
+        ALL_ECRS.sort((a, b) => {
+          const timeA = a.submittedAt?.toMillis() || 0;
+          const timeB = b.submittedAt?.toMillis() || 0;
+          return timeB - timeA;
+        });
+
+        document.getElementById("loading").style.display = "none";
+        document.getElementById("content").style.display = "block";
+        renderTable();
+
+      } catch (err) {
+        console.error(err);
+        document.getElementById("loading").textContent = "Error loading data.";
+      }
+    }
+
+    function renderTable() {
+      const tbody = document.getElementById("ecrTableBody");
+      const filtered = ALL_ECRS.filter(e => e.status === CURRENT_FILTER);
+
+      if (filtered.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; padding: 30px; color: var(--muted);">No ECRs found for this status.</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = filtered.map(e => {
+        const isApproved = e.status === 'approved';
+        const badge = isApproved 
+          ? `<span class="badge badge-approved">Approved</span>`
+          : `<span class="badge badge-submitted">Pending Review</span>`;
+        
+        return `
+          <tr>
+            <td><strong>${e.subjectName}</strong><br><span style="font-size:0.75rem; color:var(--muted);">${e.subjectCode}</span></td>
+            <td>${e.className}</td>
+            <td>Teacher</td>
+            <td>Term ${e.term}</td>
+            <td>${badge}</td>
+            <td>
+              <button class="btn ${isApproved ? 'btn-view' : 'btn-approve'}" onclick="openReview('${e.classId}', '${e.subjectCode}', '${e.term}')">
+                ${isApproved ? '<i class="fas fa-eye"></i> View' : '<i class="fas fa-check"></i> Review & Approve'}
+              </button>
+            </td>
+          </tr>
+        `;
+      }).join("");
+    }
+
+    window.openReview = async (classId, subjectCode, term) => {
+      const ecr = ALL_ECRS.find(e => e.classId === classId && e.subjectCode === subjectCode && e.term === term);
+      if (!ecr) return;
+      SELECTED_ECR = ecr;
+
+      document.getElementById("modalTitle").textContent = `Review: ${ecr.subjectName}`;
+      document.getElementById("modalSubtitle").textContent = `${ecr.className} • Term ${ecr.term}`;
+      document.getElementById("modalBody").innerHTML = "<div class='loading'><div class='spinner'></div>Loading scores...</div>";
+      document.getElementById("reviewModal").classList.add("show");
+
+      // Hide approve button if already approved
+      document.getElementById("btnApproveAction").style.display = ecr.status === 'approved' ? 'none' : 'inline-flex';
+
+      try {
+        // Fetch Students
+        const stSnap = await getDocs(collection(db, "classes", classId, "students"));
+        const students = stSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+
+        // Fetch Scores
+        const scSnap = await getDocs(collection(db, "classes", classId, "ecr", subjectCode, "terms", term, "scores"));
+        const scores = {};
+        scSnap.forEach(d => scores[d.id] = d.data());
+
+        let html = `
+          <table class="ecr-table">
+            <thead>
+              <tr>
+                <th class="name">Student Name</th>
+                <th>WW</th>
+                <th>PT</th>
+                <th>EX</th>
+                <th>Initial</th>
+                <th>Term Grade</th>
+              </tr>
+            </thead>
+            <tbody>
+        `;
+
+        students.forEach(s => {
+          const sc = scores[s.id] || {};
+          const comp = sc.computed || {};
+          const tg = comp.termGrade || 0;
+          const gradeClass = tg >= 75 ? "grade-pass" : "grade-fail";
+
+          html += `
+            <tr>
+              <td class="name">${s.fullName || s.lastName + ", " + s.firstName}</td>
+              <td>${comp.wwWs || 0}</td>
+              <td>${comp.ptWs || 0}</td>
+              <td>${comp.exWs || 0}</td>
+              <td>${comp.initialGrade || 0}</td>
+              <td class="grade-big ${gradeClass}">${tg}</td>
+            </tr>
+          `;
+        });
+
+        html += `</tbody></table>`;
+        document.getElementById("modalBody").innerHTML = html;
+
+      } catch (err) {
+        console.error(err);
+        document.getElementById("modalBody").innerHTML = `<div style="color:red;">Failed to load scores.</div>`;
+      }
+    };
+
+    window.approveGrades = async () => {
+      if (!SELECTED_ECR) return;
+      if (!confirm("Approve these grades? Once approved, they will be visible to students and cascade to SF1.")) return;
+
+      const btn = document.getElementById("btnApproveAction");
+      btn.disabled = true;
+      btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Approving...';
+
+      try {
+        // Update ECR Status
+        const ecrRef = doc(db, "classes", SELECTED_ECR.classId, "ecr", SELECTED_ECR.subjectCode);
+        
+        // We need to merge the specific term's status
+        // Firestore merge requires dot notation for nested fields
+        const updateData = {};
+        updateData[`terms.${SELECTED_ECR.term}.status`] = "approved";
+        updateData[`terms.${SELECTED_ECR.term}.approvedAt`] = serverTimestamp();
+        updateData[`terms.${SELECTED_ECR.term}.approvedBy`] = CURRENT_USER.uid;
+
+        await updateDoc(ecrRef, updateData);
+
+        alert("✓ Grades Approved! Students can now see their grades.");
+        closeModal();
+        await loadECRs(); // Refresh list
+
+      } catch (err) {
+        console.error(err);
+        alert("Error approving grades: " + err.message);
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fas fa-check"></i> Approve Grades';
+      }
+    };
+
+    window.closeModal = () => {
+      document.getElementById("reviewModal").classList.remove("show");
+      SELECTED_ECR = null;
+    };
+  </script>
+</body>
+</html>

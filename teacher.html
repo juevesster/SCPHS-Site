@@ -144,10 +144,14 @@
       </a>
       
       <!-- Gradebook -->
-      <a href="gradebook.html" class="menu-item">
-        <span class="icon">📊</span> <span>Gradebook</span>
+      <a href="teacher-ecr.html" class="menu-item">
+      <span class="icon">📊</span> <span>ECR / Gradebook</span>
       </a>
-    </div>
+
+      <a href="adviser-approvals.html" class="menu-item" style="color: #34d399;">
+      <span class="icon">✅</span> <span>Grade Approvals</span>
+      </a>
+    
     <div class="sidebar-footer">
       <a href="admin.html" class="menu-item" style="color: #f87171;">
         <span class="icon">⚙️</span> <span>Admin Center</span>
@@ -212,6 +216,9 @@
                 <a href="alo-reports.html" class="btn-action" style="background: linear-gradient(135deg, #059669, #10b981);" target="_blank">
                   <div class="icon">📈</div>
                   ALO Reports (Form 23 & 24)
+                </a>
+                <a href="adviser-approvals.html" class="btn-action" style="background: linear-gradient(135deg, #059669, #10b981); display: none;" id="btnAdviserApprovals">
+                <div class="icon">✅</div> Grade Approvals
                 </a>
               </div>
             </div>
@@ -379,6 +386,11 @@
         }
 
         if (myClasses.length === 0) {
+          // Add this right after it:
+        const isAdviser = myClasses.some(c => c.role === "Class Adviser");
+        if (isAdviser) {
+        document.getElementById("btnAdviserApprovals").style.display = "flex";
+        }
           host.innerHTML = `
             <div style="text-align: center; padding: 30px; color: var(--text-muted);">
               <div style="font-size: 3rem; margin-bottom: 12px;">🏫</div>
