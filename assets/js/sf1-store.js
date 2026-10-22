@@ -231,6 +231,69 @@ async function deleteStudent(classId, studentId) {
 }
 
 // ------------------------------------------------------------
+// BULK IMPORT — for LIS file uploads
+// ------------------------------------------------------------
+async function importStudents(classId, studentsList, forceUpdate = false) {
+  const user = requireUser();
+  if (!classId || !studentsList?.length) {
+    throw new Error("Missing class ID or students.");
+  }
+
+  const batch = writeBatch(db);
+  const studentCol = collection(db, CLASSES, classId, "students");
+
+  // Get existing students to prevent duplicates and map them by LRN
+  const existing = await listStudents(classId);
+  const existingMap = new Map();
+  existing.forEach(s => {
+    if (s.lrn) existingMap.set(s.lrn, s.id);
+  });
+
+  let imported = 0;
+  let updated = 0;
+  let skipped = 0;
+  const errors = [];
+
+  for (const student of studentsList) {
+    const cleanData = {};
+    for (const [key, val] of Object.entries(student)) {
+      cleanData[key] = (val === null || val === undefined) ? "" : val;
+    }
+    cleanData.lrn = student.lrn || "";
+    cleanData.active = true;
+    cleanData.addedAt = serverTimestamp();
+    cleanData.addedBy = user.email || "";
+
+    if (cleanData.lrn && existingMap.has(cleanData.lrn)) {
+      // 🆕 If it exists and forceUpdate is ON, overwrite it
+      if (forceUpdate) {
+        const existingId = existingMap.get(cleanData.lrn);
+        const docRef = doc(db, CLASSES, classId, "students", existingId);
+        batch.set(docRef, cleanData, { merge: true });
+        updated++;
+      } else {
+        skipped++;
+      }
+    } else {
+      // 🆕 New student
+      const docRef = doc(studentCol);
+      batch.set(docRef, cleanData);
+      imported++;
+    }
+  }
+
+  await batch.commit();
+
+  return {
+    imported,
+    updated,
+    skipped,
+    errors,
+    total: studentsList.length,
+  };
+}
+
+// ------------------------------------------------------------
 // Expose globally
 // ------------------------------------------------------------
 window.SF1 = {
@@ -244,64 +307,5 @@ window.SF1 = {
   addStudent,
   updateStudent,
   deleteStudent,
-  importStudents,   // ← ADD THIS LINE
+  importStudents,
 };
-
-// ------------------------------------------------------------
-// BULK IMPORT — for LIS file uploads
-// ------------------------------------------------------------
-async function importStudents(classId, studentsList) {
-  const user = requireUser();
-  if (!classId || !studentsList?.length) {
-    throw new Error("Missing class ID or students.");
-  }
-
-  const batch = writeBatch(db);
-  const studentCol = collection(db, CLASSES, classId, "students");
-
-  // Get existing LRNs to prevent duplicates
-  const existing = await listStudents(classId);
-  const existingLRNs = new Set(existing.map(s => s.lrn).filter(Boolean));
-
-  let imported = 0;
-  let skipped = 0;
-  const errors = [];
-
-  for (const student of studentsList) {
-    // 🆕 Allow blank LRNs — they will be saved and the adviser can fix them later
-    if (student.lrn) {
-      if (existingLRNs.has(student.lrn)) {
-        skipped++;
-        continue;
-      }
-      // Track LRN so we don't import the same one twice in this batch
-      existingLRNs.add(student.lrn);
-    }
-
-    const docRef = doc(studentCol);
-    
-    // 🆕 Ensure empty strings are explicitly set so Firestore doesn't drop the field
-    const cleanData = {};
-    for (const [key, val] of Object.entries(student)) {
-      cleanData[key] = (val === null || val === undefined) ? "" : val;
-    }
-
-    batch.set(docRef, {
-      ...cleanData,
-      lrn: student.lrn || "",
-      active: true,
-      addedAt: serverTimestamp(),
-      addedBy: user.email || "",
-    });
-    imported++;
-  }
-
-  await batch.commit();
-
-  return {
-    imported,
-    skipped,
-    errors,
-    total: studentsList.length,
-  };
-}

@@ -352,6 +352,13 @@
         <input type="file" id="fileInput" accept=".xls,.xlsx" style="display:none" />
       </div>
 
+        <div style="margin-top:12px; display:flex; align-items:center; gap:8px;">
+        <input type="checkbox" id="chkForceUpdate" style="width:16px; height:16px; cursor:pointer;">
+        <label for="chkForceUpdate" style="font-size:0.85rem; color:#4b5563; cursor:pointer; user-select:none;">
+        Overwrite existing students (update their data if already imported)
+        </label>
+        </div>
+
       <!-- Students Section -->
 <div class="sc-card">
   <div class="sc-toolbar">
@@ -873,6 +880,7 @@
         }
 
         PENDING_IMPORT = parsed;
+        PENDING_IMPORT.forceUpdate = $("chkForceUpdate").checked;
 
         // Show preview
         $("previewTotal").textContent = parsed.totalFound;
@@ -902,10 +910,11 @@
       btn.textContent = "Importing…";
 
       try {
-        const result = await window.SF1.importStudents(CLASS_ID, PENDING_IMPORT.students);
+        const result = await window.SF1.importStudents(CLASS_ID, PENDING_IMPORT.students, PENDING_IMPORT.forceUpdate);
         $("previewModal").classList.remove("show");
 
         let msg = `✓ Imported ${result.imported} students`;
+        if (result.updated) msg += `, ${result.updated} updated`;
         if (result.skipped) msg += `, ${result.skipped} skipped (duplicate)`;
         toast(msg, "success");
 
