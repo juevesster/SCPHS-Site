@@ -11,7 +11,7 @@ export async function pushExamToECR({
   highestPossibleScore = 100,
 }) {
   try {
-    // 1. Load exam results from the CORRECT collection (exam_submissions)
+    // 1. Load exam results from the exam_submissions collection
     const q = query(collection(db, "exam_submissions"), where("examId", "==", examId));
     const resultsSnap = await getDocs(q);
     
@@ -27,7 +27,7 @@ export async function pushExamToECR({
       ww: [], pt: [], st: [], status: "draft"
     };
 
-    // 3. Determine assessment slot (same as before)
+    // 3. Determine assessment slot (ww, pt, or st)
     let assessmentId, assessmentName, maxScore = highestPossibleScore;
 
     if (component === "ww") {
@@ -74,7 +74,7 @@ export async function pushExamToECR({
       throw new Error("Invalid component: " + component);
     }
 
-    // 4. Save ECR config
+    // 4. Save ECR config (assessment structure)
     await setDoc(ecrRef, {
       subjectCode,
       terms: { [String(term)]: termConfig },
@@ -85,11 +85,11 @@ export async function pushExamToECR({
     let pushed = 0;
     for (const docSnap of resultsSnap.docs) {
       const r = docSnap.data();
-      const studentId = r.studentId; // exam_submissions uses studentId
+      const studentId = r.studentId; 
       
-      if (!studentId) continue; // Skip if no student ID
+      if (!studentId) continue; 
 
-      // Get student name from SF1 (fallback to submission name)
+      // Get student name
       let studentName = r.studentName || "";
       try {
         const sSnap = await getDoc(doc(db, "classes", classId, "students", studentId));
@@ -99,9 +99,7 @@ export async function pushExamToECR({
         }
       } catch {}
 
-      // Calculate percentage score (0-100)
-      // If highestPossibleScore is 20, and raw score is 14, percentage is 70.
-      // We push the PERCENTAGE score to the ECR so it aligns with the WW weight.
+      // Calculate percentage score (e.g., 14/20 = 70)
       const percentScore = r.totalPoints > 0 
         ? Math.round((r.score / r.totalPoints) * maxScore * 100) / 100 
         : 0;
@@ -116,18 +114,18 @@ export async function pushExamToECR({
         wwItems: [], ptItems: [], stItems: {}
       };
 
-      // Insert/update score
+      // Insert/update score (matching the ECR table's expected format)
       if (component === "ww") {
         const idx = termConfig.ww.findIndex(a => a.id === assessmentId);
         existing.wwItems = existing.wwItems || [];
-        existing.wwItems[idx] = { name: assessmentName, max: maxScore, score: percentScore, examId };
+        existing.wwItems[idx] = { score: percentScore, max: maxScore };
       } else if (component === "pt") {
         const idx = termConfig.pt.findIndex(a => a.id === assessmentId);
         existing.ptItems = existing.ptItems || [];
-        existing.ptItems[idx] = { name: assessmentName, max: maxScore, score: percentScore, examId };
+        existing.ptItems[idx] = { score: percentScore, max: maxScore };
       } else if (component === "st") {
         existing.stItems = existing.stItems || {};
-        existing.stItems[stType] = { name: assessmentName, max: maxScore, score: percentScore, examId };
+        existing.stItems[stType] = { score: percentScore, max: maxScore };
       }
 
       await setDoc(scoreRef, {
