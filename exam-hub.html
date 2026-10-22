@@ -5,8 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Assessment Hub — SCPHS</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  
-  <!-- ✅ ADDED FONT AWESOME FOR ICONS -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   
   <style>
@@ -43,21 +41,27 @@
     .exam-title { font-size: 1.1rem; font-weight: 700; margin-bottom: 5px; line-height: 1.3; }
     .exam-meta { font-size: 0.8rem; color: var(--muted); margin-bottom: 15px; }
     
-    .exam-actions { display: flex; gap: 8px; margin-top: auto; }
-    .btn-sm { padding: 8px 12px; border-radius: 6px; font-size: 0.75rem; font-weight: 600; cursor: pointer; border: none; text-decoration: none; display: flex; align-items: center; justify-content: center; gap: 4px; transition: 0.2s; }
+    .exam-actions { display: flex; gap: 8px; margin-top: auto; flex-wrap: wrap; }
+    .btn-sm { padding: 8px 12px; border-radius: 6px; font-size: 0.75rem; font-weight: 600; cursor: pointer; border: none; text-decoration: none; display: inline-flex; align-items: center; justify-content: center; gap: 4px; transition: 0.2s; }
     .btn-sm:hover { transform: translateY(-1px); }
     .btn-edit { background: #e0e7ff; color: #3730a3; }
     .btn-print { background: #f1f5f9; color: #475569; }
     .btn-publish { background: #dcfce7; color: #166534; }
     .btn-delete { background: #fee2e2; color: #dc2626; }
+    .btn-push { background: #dcfce7; color: #166534; }
+    .btn-push:hover { background: #bbf7d0; }
 
     /* Modal */
     .modal { display: none; position: fixed; inset: 0; background: rgba(15,23,42,0.6); z-index: 1000; justify-content: center; align-items: center; padding: 20px; }
-    .modal-content { background: #fff; border-radius: 16px; max-width: 500px; width: 100%; padding: 30px; }
+    .modal.show { display: flex; }
+    .modal-content { background: #fff; border-radius: 16px; max-width: 500px; width: 100%; padding: 30px; max-height: 90vh; overflow-y: auto; }
     .form-group { margin-bottom: 15px; }
     .form-group label { display: block; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; color: var(--muted); margin-bottom: 6px; }
     .form-control { width: 100%; padding: 10px 14px; border: 2px solid var(--border); border-radius: 8px; font-family: inherit; font-size: 0.95rem; outline: none; }
+    .form-control:focus { border-color: var(--primary); }
     .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+    .alert-error { background: #fee2e2; color: #991b1b; padding: 12px; border-radius: 8px; font-size: 0.85rem; margin-bottom: 12px; border-left: 3px solid #dc2626; }
+    .alert-info { background: #eff6ff; color: #1e40af; padding: 10px 14px; border-radius: 8px; font-size: 0.8rem; margin-bottom: 12px; border-left: 3px solid #3b82f6; }
   </style>
 </head>
 <body>
@@ -75,7 +79,7 @@
         <button class="term-tab" data-term="3">Term 3</button>
       </div>
 
-           <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+      <div style="display: flex; gap: 10px; flex-wrap: wrap;">
         <!-- Link to the TOS Builder -->
         <a href="#" id="btnCreateTOS" class="btn-primary" style="background: #4f46e5; text-decoration: none;">
           <i class="fas fa-table"></i> Create TOS
@@ -107,9 +111,10 @@
         <div class="form-group">
           <label>Category</label>
           <select id="newExamCategory" class="form-control">
-            <option value="ww">Written Work (30%)</option>
-            <option value="pt">Performance Task (50%)</option>
-            <option value="qa">Quarterly (20%)</option>
+            <option value="ww">Written Work (WW)</option>
+            <option value="pt">Performance Task (PT)</option>
+            <option value="st">Summative Test (ST)</option>
+            <option value="qa">Quarterly (QA)</option>
           </select>
         </div>
         <div class="form-group">
@@ -134,14 +139,77 @@
     </div>
   </div>
 
+  <!-- ✅ NEW: PUSH TO ECR MODAL -->
+  <div id="pushECRModal" class="modal">
+    <div class="modal-content">
+      <h2 style="color: var(--primary); margin-bottom: 6px;">📊 Push to ECR</h2>
+      <p style="color: var(--muted); font-size: 0.85rem; margin-bottom: 18px;">
+        Copy each student's score from <strong id="pushExamTitle">this exam</strong> into the ECR gradebook.
+      </p>
+
+      <div class="alert-info">
+        <i class="fas fa-info-circle"></i>
+        Scores will auto-fill the ECR. You can still review and adjust before submitting to the adviser.
+      </div>
+
+      <div class="form-group">
+        <label>Subject</label>
+        <select id="pushSubject" class="form-control">
+          <option value="">Loading subjects…</option>
+        </select>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>Component</label>
+          <select id="pushComponent" class="form-control">
+            <option value="ww">Written Work (WW)</option>
+            <option value="pt">Performance Task (PT)</option>
+            <option value="st">Summative Test (ST)</option>
+          </select>
+        </div>
+        <div class="form-group" id="pushSTGroup" style="display:none;">
+          <label>ST Type</label>
+          <select id="pushSTType" class="form-control">
+            <option value="st1">Summative Test 1</option>
+            <option value="st2">Summative Test 2</option>
+            <option value="te">Term Exam</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>Assessment Name (in ECR)</label>
+          <input type="text" id="pushName" class="form-control" placeholder="e.g., Quiz 1">
+        </div>
+        <div class="form-group">
+          <label>Highest Possible Score</label>
+          <input type="number" id="pushMax" class="form-control" value="100" min="1">
+        </div>
+      </div>
+
+      <div id="pushError" class="alert-error" style="display:none;"></div>
+
+      <div style="display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px;">
+        <button onclick="closePushModal()" style="padding: 10px 20px; border: none; background: #f1f5f9; color: #475569; border-radius: 8px; font-weight: 700; cursor: pointer;">Cancel</button>
+        <button id="btnConfirmPush" onclick="confirmPush()" style="padding: 10px 20px; border: none; background: var(--primary); color: #fff; border-radius: 8px; font-weight: 700; cursor: pointer;">
+          <i class="fas fa-share-square"></i> Push to ECR
+        </button>
+      </div>
+    </div>
+  </div>
+
   <script type="module">
     import { auth, db } from "./assets/js/firebase-config.js";
     import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
     import { collection, query, where, getDocs, addDoc, serverTimestamp, doc, getDoc, updateDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+    import { pushExamToECR } from "./assets/js/ecr-bridge.js";
 
     let CURRENT_USER = null;
     let CLASS_ID = null;
     let CURRENT_TERM = 1;
+    let PUSH_STATE = null;
 
     // 1. AUTH & INIT
     onAuthStateChanged(auth, async (user) => {
@@ -153,7 +221,7 @@
 
       if (!CLASS_ID) { alert("No class selected."); window.location.href = "teacher.html"; return; }
 
-              // ✅ Attach the Class ID to the TOS Builder Link
+      // ✅ Attach the Class ID to the TOS Builder Link
       const tosBtn = document.getElementById('btnCreateTOS');
       if (tosBtn) {
         tosBtn.href = `tos-builder.html?classId=${CLASS_ID}`;
@@ -185,20 +253,18 @@
       }
     });
 
-    // 4. LOAD EXAMS (FIXED QUERY & FILTER)
+    // 4. LOAD EXAMS
     async function loadExams() {
       const list = document.getElementById("examList");
       list.innerHTML = `<div style="text-align:center; padding: 40px; color: var(--muted);">Loading assessments...</div>`;
 
       try {
-        // ✅ QUERY ONLY BY CLASS ID TO AVOID FIRESTORE INDEX ERROR
         const q = query(
           collection(db, "exams"), 
           where("classId", "==", CLASS_ID)
         );
         const snap = await getDocs(q);
 
-        // ✅ FILTER BY TERM IN JAVASCRIPT
         const exams = snap.docs
           .map(d => ({ id: d.id, ...d.data() }))
           .filter(exam => String(exam.term) === String(CURRENT_TERM));
@@ -214,6 +280,7 @@
 
         list.innerHTML = exams.map(data => {
           const isPub = data.status === 'published';
+          const safeTitle = (data.title || '').replace(/'/g, "\\'").replace(/"/g, '&quot;');
           return `
             <div class="exam-card">
               <div class="exam-header">
@@ -223,12 +290,20 @@
               <div class="exam-title">${data.title}</div>
               <div class="exam-meta">${data.questionsCount || 0} Items • ${data.duration || 60} Mins</div>
               
-                <div class="exam-actions">
+              <div class="exam-actions">
                 <a href="exam-editor.html?examId=${data.id}" class="btn-sm btn-edit"><i class="fas fa-edit"></i> Edit</a>
                 <a href="print-exam.html?examId=${data.id}" class="btn-sm btn-print" target="_blank"><i class="fas fa-print"></i> Print</a>
-                
-                <!-- Results Button -->
                 <a href="exam-results.html?examId=${data.id}" class="btn-sm" style="background:#e0e7ff; color:#3730a3;"><i class="fas fa-chart-bar"></i> Results</a>
+
+                <!-- ✅ NEW: Push to ECR (only for published exams) -->
+                ${isPub 
+                  ? `<button onclick="openPushToECR('${data.id}', '${safeTitle}', '${data.type}')" 
+                              class="btn-sm btn-push" 
+                              title="Push scores into the ECR gradebook">
+                       <i class="fas fa-share-square"></i> Push to ECR
+                     </button>` 
+                  : ""
+                }
 
                 <!-- Conditional Publish OR Preview -->
                 ${!isPub 
@@ -251,11 +326,11 @@
 
     // 5. NEW EXAM MODAL
     window.openNewExamModal = () => {
-      document.getElementById('newExamModal').style.display = 'flex';
+      document.getElementById('newExamModal').classList.add('show');
       document.getElementById('newExamTitle').focus();
     };
     window.closeNewExamModal = () => {
-      document.getElementById('newExamModal').style.display = 'none';
+      document.getElementById('newExamModal').classList.remove('show');
       document.getElementById('newExamTitle').value = '';
     };
 
@@ -280,7 +355,6 @@
           questionsCount: 0
         });
 
-        // Redirect immediately to the exam editor!
         window.location.href = `exam-editor.html?examId=${docRef.id}`;
       } catch (error) {
         console.error(error);
@@ -300,6 +374,145 @@
       await deleteDoc(doc(db, "exams", examId));
       loadExams();
     };
+
+    // ============================================================
+    // ✅ NEW: PUSH TO ECR
+    // ============================================================
+    window.openPushToECR = async (examId, examTitle, examType) => {
+      const modal = document.getElementById('pushECRModal');
+      const subjectSel = document.getElementById('pushSubject');
+      const titleEl = document.getElementById('pushExamTitle');
+      const nameInput = document.getElementById('pushName');
+      const errorBox = document.getElementById('pushError');
+
+      modal.classList.add('show');
+      titleEl.textContent = examTitle;
+      nameInput.value = examTitle;
+      errorBox.style.display = 'none';
+
+      // Load subjects from this class's program (filtered by term)
+      subjectSel.innerHTML = '<option value="">Loading subjects…</option>';
+      try {
+        const progSnap = await getDocs(collection(db, "classes", CLASS_ID, "program"));
+        const subjects = new Map();
+        progSnap.docs.forEach(d => {
+          const e = d.data();
+          if (Number(e.term) !== CURRENT_TERM) return;
+          if (e.subject && !subjects.has(e.subject)) {
+            subjects.set(e.subject, e.subjectName || e.subject);
+          }
+        });
+
+        if (subjects.size === 0) {
+          subjectSel.innerHTML = '<option value="">⚠️ No subjects in this term — add one in Class Program</option>';
+          return;
+        }
+
+        subjectSel.innerHTML = '<option value="">— Select Subject —</option>' +
+          Array.from(subjects.entries()).map(([code, name]) =>
+            `<option value="${code}">${name} (${code})</option>`
+          ).join('');
+      } catch (e) {
+        subjectSel.innerHTML = `<option value="">Error: ${e.message}</option>`;
+        return;
+      }
+
+      // Suggest component based on exam type
+      const compSel = document.getElementById('pushComponent');
+      if (examType === 'ww') compSel.value = 'ww';
+      else if (examType === 'pt') compSel.value = 'pt';
+      else if (examType === 'qa' || examType === 'st') {
+        compSel.value = 'st';
+        // Suggest QA → TE, since QA is typically the Term Exam
+        if (examType === 'qa') document.getElementById('pushSTType').value = 'te';
+      }
+
+      updatePushSTVisibility();
+
+      PUSH_STATE = { examId, examTitle };
+    };
+
+    window.closePushModal = () => {
+      document.getElementById('pushECRModal').classList.remove('show');
+      PUSH_STATE = null;
+    };
+
+    function updatePushSTVisibility() {
+      const comp = document.getElementById('pushComponent').value;
+      document.getElementById('pushSTGroup').style.display = comp === 'st' ? 'block' : 'none';
+    }
+
+    document.getElementById('pushComponent')?.addEventListener('change', updatePushSTVisibility);
+
+    window.confirmPush = async () => {
+      if (!PUSH_STATE) return;
+
+      const subjectCode = document.getElementById('pushSubject').value;
+      const component = document.getElementById('pushComponent').value;
+      const stType = document.getElementById('pushSTType').value;
+      const name = document.getElementById('pushName').value.trim();
+      const max = parseFloat(document.getElementById('pushMax').value);
+      const btn = document.getElementById('btnConfirmPush');
+      const errorBox = document.getElementById('pushError');
+
+      errorBox.style.display = 'none';
+
+      if (!subjectCode) {
+        errorBox.textContent = 'Please select a subject.';
+        errorBox.style.display = 'block';
+        return;
+      }
+      if (!name || !(max > 0)) {
+        errorBox.textContent = 'Please provide a name and a valid max score.';
+        errorBox.style.display = 'block';
+        return;
+      }
+
+      btn.disabled = true;
+      btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Pushing…';
+
+      try {
+        const result = await pushExamToECR({
+          examId: PUSH_STATE.examId,
+          classId: CLASS_ID,
+          subjectCode,
+          term: CURRENT_TERM,
+          component,
+          stType,
+          examTitle: name,
+          highestPossibleScore: max,
+        });
+
+        btn.innerHTML = '✓ Pushed!';
+        setTimeout(() => {
+          closePushModal();
+          alert(
+            `✓ Pushed ${result.pushed} student score${result.pushed === 1 ? '' : 's'} to ECR\n\n` +
+            `Subject: ${subjectCode}\n` +
+            `Component: ${component.toUpperCase()}${component === 'st' ? ' (' + stType + ')' : ''}\n` +
+            `Term: ${CURRENT_TERM}\n\n` +
+            `Open teacher-ecr.html to review and submit for adviser approval.`
+          );
+          btn.disabled = false;
+          btn.innerHTML = '<i class="fas fa-share-square"></i> Push to ECR';
+        }, 600);
+      } catch (e) {
+        console.error('[push-to-ecr]', e);
+        errorBox.textContent = e.message || 'Failed to push. Check console for details.';
+        errorBox.style.display = 'block';
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fas fa-share-square"></i> Push to ECR';
+      }
+    };
+
+    // Close modals on backdrop click
+    document.querySelectorAll('.modal').forEach(m => {
+      m.addEventListener('click', e => {
+        if (e.target === m) {
+          m.classList.remove('show');
+        }
+      });
+    });
 
   </script>
 </body>

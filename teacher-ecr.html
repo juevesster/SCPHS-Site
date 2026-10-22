@@ -1,0 +1,931 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ECR — Electronic Class Record — SCPHS</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --primary: #1e3c72;
+      --primary-light: #2a5298;
+      --sidebar-bg: #0f172a;
+      --sidebar-hover: #1e293b;
+      --bg-color: #f1f5f9;
+      --text-main: #1e293b;
+      --text-muted: #64748b;
+      --card-bg: #ffffff;
+      --border: #e2e8f0;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Inter', sans-serif; background: var(--bg-color); color: var(--text-main); display: flex; height: 100vh; overflow: hidden; }
+
+    /* SIDEBAR (matches teacher.html) */
+    .sidebar { width: 260px; background: var(--sidebar-bg); color: #fff; display: flex; flex-direction: column; z-index: 100; }
+    .sidebar-brand { padding: 24px 20px; font-size: 1.2rem; font-weight: 800; border-bottom: 1px solid rgba(255,255,255,0.1); display: flex; align-items: center; gap: 10px; }
+    .sidebar-brand span { font-size: 1.5rem; }
+    .sidebar-menu { flex: 1; padding: 20px 10px; display: flex; flex-direction: column; gap: 8px; overflow-y: auto; }
+    .menu-item { display: flex; align-items: center; gap: 12px; padding: 12px 16px; border-radius: 8px; color: #94a3b8; text-decoration: none; font-weight: 500; transition: all 0.2s; font-size: 0.9rem; }
+    .menu-item:hover { background: var(--sidebar-hover); color: #fff; }
+    .menu-item.active { background: var(--primary); color: #fff; font-weight: 600; box-shadow: 0 4px 12px rgba(30, 60, 114, 0.3); }
+    .term-selector { padding: 16px 20px; background: rgba(0,0,0,0.2); border-bottom: 1px solid rgba(255,255,255,0.1); border-top: 1px solid rgba(255,255,255,0.1); margin-bottom: 10px; }
+    .term-selector label { display: block; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.05em; color: #94a3b8; margin-bottom: 8px; font-weight: 700; }
+    .term-selector select { width: 100%; padding: 10px; border-radius: 6px; background: #1e293b; color: #fff; border: 1px solid #334155; font-family: inherit; font-size: 0.9rem; cursor: pointer; outline: none; }
+    .sidebar-footer { padding: 20px; border-top: 1px solid rgba(255,255,255,0.1); }
+
+    /* MAIN */
+    .main-content { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+    .top-navbar { background: var(--card-bg); height: 70px; padding: 0 30px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); z-index: 90; }
+    .page-title { font-size: 1.25rem; font-weight: 700; color: var(--primary); display: flex; align-items: center; gap: 10px; }
+    .term-badge { background: #e0e7ff; color: #3730a3; font-size: 0.75rem; padding: 4px 10px; border-radius: 999px; font-weight: 700; border: 1px solid #c7d2fe; }
+    .user-profile { display: flex; align-items: center; gap: 15px; }
+    .user-info { text-align: right; }
+    .user-name { font-weight: 700; font-size: 0.9rem; }
+    .user-role { font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; font-weight: 600; }
+    .avatar { width: 42px; height: 42px; border-radius: 50%; background: linear-gradient(135deg, var(--primary), var(--primary-light)); color: #fff; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 1.2rem; }
+
+    .dashboard-scroll { flex: 1; overflow-y: auto; padding: 24px; }
+
+    /* ECR */
+    .ecr-header { background: linear-gradient(135deg, var(--primary), var(--primary-light)); color: #fff; border-radius: 16px; padding: 20px 24px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px; }
+    .ecr-header h1 { font-size: 1.3rem; margin-bottom: 4px; }
+    .ecr-header p { opacity: 0.9; font-size: 0.85rem; }
+
+    .toolbar { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-bottom: 16px; }
+    .btn { padding: 10px 18px; border-radius: 8px; border: none; cursor: pointer; font-weight: 700; font-size: 0.85rem; font-family: inherit; display: inline-flex; align-items: center; gap: 6px; text-decoration: none; transition: all 0.15s; }
+    .btn:hover:not(:disabled) { transform: translateY(-1px); }
+    .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+    .btn-primary { background: var(--primary); color: #fff; }
+    .btn-success { background: #059669; color: #fff; }
+    .btn-warning { background: #d97706; color: #fff; }
+    .btn-danger { background: #dc2626; color: #fff; }
+    .btn-outline { background: #fff; color: var(--primary); border: 1px solid var(--primary); }
+    .btn-sm { padding: 6px 12px; font-size: 0.75rem; }
+
+    /* Term tabs */
+    .term-tabs { display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; }
+    .term-tab { padding: 10px 20px; border-radius: 999px; border: 1px solid #d1d5db; background: #fff; color: #374151; font-weight: 700; font-size: 0.85rem; cursor: pointer; font-family: inherit; transition: all 0.15s; }
+    .term-tab:hover { border-color: var(--primary); color: var(--primary); }
+    .term-tab.active { background: var(--primary); color: #fff; border-color: var(--primary); }
+
+    /* Selector card */
+    .select-card { background: var(--card-bg); border-radius: 16px; padding: 20px; margin-bottom: 20px; border: 1px solid var(--border); }
+    .select-card h3 { font-size: 1rem; margin-bottom: 12px; color: var(--primary); }
+    .select-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; }
+    .select-grid select { padding: 10px 12px; border-radius: 8px; border: 1px solid #d1d5db; font-family: inherit; font-size: 0.9rem; background: #fff; }
+
+    /* Weight banner */
+    .weight-banner { background: linear-gradient(135deg, #f0fdf4, #dcfce7); border: 1px solid #86efac; border-radius: 12px; padding: 14px 18px; margin-bottom: 16px; display: flex; gap: 20px; flex-wrap: wrap; align-items: center; }
+    .weight-chip { background: #fff; border-radius: 8px; padding: 8px 14px; text-align: center; border: 1px solid #bbf7d0; min-width: 90px; }
+    .weight-chip .lbl { font-size: 10px; color: #166534; text-transform: uppercase; font-weight: 700; letter-spacing: 0.03em; }
+    .weight-chip .val { font-size: 1.1rem; font-weight: 800; color: #166534; }
+
+    /* Status */
+    .status-banner { padding: 12px 16px; border-radius: 12px; margin-bottom: 16px; border-left: 4px solid; font-size: 0.85rem; }
+    .status-draft { background: #f1f5f9; border-left-color: #64748b; }
+    .status-submitted { background: #fef3c7; border-left-color: #d97706; }
+    .status-approved { background: #dcfce7; border-left-color: #059669; }
+    .status-returned { background: #fee2e2; border-left-color: #dc2626; }
+
+    /* Table */
+    .table-wrap { background: #fff; border-radius: 12px; border: 1px solid var(--border); overflow: auto; max-height: 70vh; }
+    table.ecr { width: 100%; border-collapse: collapse; font-size: 0.78rem; min-width: 1100px; }
+    table.ecr thead th { background: var(--primary); color: #fff; padding: 8px 4px; text-align: center; font-size: 0.7rem; font-weight: 700; text-transform: uppercase; position: sticky; top: 0; z-index: 5; white-space: nowrap; }
+    table.ecr thead th.grp-ww { background: #1e40af; }
+    table.ecr thead th.grp-pt { background: #92400e; }
+    table.ecr thead th.grp-ex { background: #991b1b; }
+    table.ecr tbody td { padding: 5px 4px; border-bottom: 1px solid #f3f4f6; text-align: center; vertical-align: middle; }
+    table.ecr tbody td.name { text-align: left; padding-left: 12px; font-weight: 600; color: var(--primary); position: sticky; left: 0; background: #fff; z-index: 3; min-width: 170px; max-width: 200px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    table.ecr tbody td.num { width: 30px; font-weight: 700; background: #f8fafc; }
+    table.ecr tbody tr:hover td { background: #f8fafc; }
+    table.ecr tbody tr:hover td.name { background: #f8fafc; }
+
+    .score-input { width: 52px; padding: 4px 2px; text-align: center; border: 1px solid #e5e7eb; border-radius: 4px; font-size: 0.78rem; font-family: inherit; background: #fff; }
+    .score-input:focus { outline: 2px solid var(--primary-light); border-color: transparent; }
+    .score-input:disabled { background: #f1f5f9; color: #94a3b8; cursor: not-allowed; }
+
+    .max-row td { background: #fef3c7 !important; font-weight: 700; color: #92400e; font-size: 0.72rem; }
+    .calc-cell { background: #eff6ff; font-weight: 600; color: #1e40af; font-size: 0.75rem; }
+    .grade-cell { font-weight: 800; font-size: 0.85rem; }
+    .desc-cell { font-size: 0.68rem; font-weight: 700; }
+
+    /* Empty / Loading */
+    .empty-state { text-align: center; padding: 60px 24px; color: var(--text-muted); background: #fff; border-radius: 12px; }
+    .empty-state .icon { font-size: 3rem; margin-bottom: 12px; opacity: 0.5; }
+    .spinner { width: 36px; height: 36px; border: 3px solid #e2e8f0; border-top-color: var(--primary); border-radius: 50%; animation: spin 0.8s linear infinite; margin: 0 auto 12px; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* Toast */
+    .toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(20px); background: #111827; color: #fff; padding: 12px 22px; border-radius: 8px; font-size: 0.9rem; font-weight: 500; box-shadow: 0 8px 24px rgba(0,0,0,0.2); opacity: 0; transition: all 0.25s; z-index: 10000; pointer-events: none; }
+    .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+    .toast.success { background: #059669; }
+    .toast.error { background: #b91c1c; }
+    .toast.warning { background: #d97706; }
+
+    /* Modal */
+    .modal { position: fixed; inset: 0; background: rgba(0,0,0,0.55); display: none; align-items: center; justify-content: center; z-index: 9999; padding: 20px; }
+    .modal.show { display: flex; }
+    .modal-panel { background: #fff; border-radius: 14px; max-width: 500px; width: 100%; overflow: hidden; }
+    .modal-head { padding: 18px 22px; border-bottom: 1px solid #e5e7eb; display: flex; justify-content: space-between; align-items: center; }
+    .modal-head h3 { font-size: 1.05rem; color: var(--primary); }
+    .modal-head button { background: none; border: none; font-size: 1.4rem; color: #6b7280; cursor: pointer; }
+    .modal-body { padding: 20px 22px; }
+    .modal-foot { padding: 14px 22px; border-top: 1px solid #e5e7eb; display: flex; justify-content: flex-end; gap: 10px; background: #fafbfc; }
+    .form-group { margin-bottom: 14px; }
+    .form-group label { display: block; font-size: 0.72rem; font-weight: 700; color: #374151; text-transform: uppercase; margin-bottom: 6px; }
+    .form-group input, .form-group select { width: 100%; padding: 9px 12px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 0.9rem; font-family: inherit; }
+  </style>
+</head>
+<body>
+
+  <!-- SIDEBAR (same as teacher.html) -->
+  <aside class="sidebar">
+    <div class="sidebar-brand"><span>🏫</span> SCPHS Portal</div>
+    <div class="term-selector">
+      <label>Active Term</label>
+      <select id="termPicker">
+        <option value="1" selected>Term 1</option>
+        <option value="2">Term 2</option>
+        <option value="3">Term 3</option>
+        <option value="4">Term 4 (Legacy)</option>
+      </select>
+    </div>
+    <div class="sidebar-menu">
+      <a href="teacher.html" class="menu-item"><span class="icon">📊</span> <span>Dashboard</span></a>
+      <a href="ilaw.html" class="menu-item"><span class="icon">📝</span> <span>ILAW Planner</span></a>
+      <a href="schedule.html" class="menu-item"><span class="icon">🗓️</span> <span>My Schedule</span></a>
+      <a href="teacher-ecr.html" class="menu-item active"><span class="icon">📊</span> <span>ECR / Gradebook</span></a>
+    </div>
+    <div class="sidebar-footer">
+      <a href="admin.html" class="menu-item" style="color: #f87171;"><span class="icon">⚙️</span> <span>Admin Center</span></a>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <main class="main-content">
+    <header class="top-navbar">
+      <div class="page-title">
+        📊 Electronic Class Record
+        <span class="term-badge" id="activeTermBadge">Term 1</span>
+      </div>
+      <div class="user-profile">
+        <div class="user-info">
+          <div class="user-name" id="navUserName">Loading…</div>
+          <div class="user-role" id="navUserRole">Teacher</div>
+        </div>
+        <div class="avatar" id="navAvatar">?</div>
+      </div>
+    </header>
+
+    <div class="dashboard-scroll">
+      <div id="loading" style="text-align:center;padding:60px;">
+        <div class="spinner"></div>
+        <div style="color:var(--text-muted);">Loading ECR…</div>
+      </div>
+
+      <div id="content" style="display:none;">
+        <!-- ECR header -->
+        <div class="ecr-header">
+          <div>
+            <h1 id="ecrTitle">📊 ECR</h1>
+            <p id="ecrSubtitle">Select a class and subject to begin</p>
+          </div>
+          <div>
+            <span class="term-badge" id="statusBadge" style="background:#fff;color:#0f2b4f;">Draft</span>
+          </div>
+        </div>
+
+        <!-- Selectors -->
+        <div class="select-card">
+          <h3>🎯 Select Subject</h3>
+          <div class="select-grid">
+            <select id="classSelect"><option>Loading classes…</option></select>
+            <select id="subjectSelect" disabled><option>Select class first</option></select>
+          </div>
+        </div>
+
+        <div id="ecrBody" style="display:none;">
+          <!-- Weight banner -->
+          <div class="weight-banner" id="weightBanner"></div>
+
+          <!-- Status -->
+          <div class="status-banner status-draft" id="statusBanner">
+            📝 <strong>Draft</strong> — Save your scores and submit for review when ready.
+          </div>
+
+          <!-- Toolbar -->
+          <div class="toolbar">
+            <button class="btn btn-success" id="btnSave">💾 Save Scores</button>
+            <button class="btn btn-warning" id="btnSubmit">📤 Submit for Review</button>
+            <button class="btn btn-outline" id="btnAddAssessment">➕ Add Assessment</button>
+            <button class="btn btn-outline" id="btnPrint">🖨 Print</button>
+            <span id="statText" style="margin-left:auto;color:var(--text-muted);font-size:0.8rem;"></span>
+          </div>
+
+          <!-- Table -->
+          <div class="table-wrap">
+            <table class="ecr" id="ecrTable">
+              <thead id="ecrThead"></thead>
+              <tbody id="ecrTbody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Add Assessment modal -->
+  <div class="modal" id="addModal">
+    <div class="modal-panel">
+      <div class="modal-head">
+        <h3>➕ Add Assessment</h3>
+        <button onclick="document.getElementById('addModal').classList.remove('show')">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label>Component</label>
+          <select id="newType">
+            <option value="ww">Written / Oral Works (WW)</option>
+            <option value="pt">Product / Performance Tasks (PT)</option>
+            <option value="st">Summative Test / Term Exam (EX)</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Assessment Name</label>
+          <input type="text" id="newName" placeholder="e.g., Quiz 1, Performance Task 2" />
+        </div>
+        <div class="form-group">
+          <label>Highest Possible Score</label>
+          <input type="number" id="newMax" value="100" min="1" max="1000" />
+        </div>
+        <div class="form-group" id="stSubGroup" style="display:none;">
+          <label>Summative Type</label>
+          <select id="newStType">
+            <option value="st1">Summative Test 1</option>
+            <option value="st2">Summative Test 2</option>
+            <option value="te">Term Exam</option>
+          </select>
+        </div>
+      </div>
+      <div class="modal-foot">
+        <button class="btn btn-outline" onclick="document.getElementById('addModal').classList.remove('show')">Cancel</button>
+        <button class="btn btn-success" id="btnConfirmAdd">Add</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast" class="toast"></div>
+
+  <script type="module">
+    import { auth, db } from "./assets/js/firebase-config.js";
+    import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+    import {
+      collection, doc, getDoc, getDocs, setDoc, serverTimestamp
+    } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+    import { getCurrentUserProfile } from "./assets/js/roles.js";
+    import {
+      WEIGHTS, getSubjectGroup, getWeights, computeECR, transmute, describe
+    } from "./assets/js/ecr-weights.js";
+
+    const $ = id => document.getElementById(id);
+    const params = new URLSearchParams(location.search);
+    const INITIAL_CLASS_ID = params.get("classId");
+    const INITIAL_TERM = parseInt(params.get("term") || "1", 10);
+
+    let CURRENT_USER = null;
+    let CURRENT_PROFILE = null;
+    let CURRENT_TERM = INITIAL_TERM;
+    let MY_CLASSES = [];
+    let SELECTED_CLASS = null;
+    let SELECTED_SUBJECT = null;
+    let SUBJECT_META = null;    // from subjects/{code}
+    let WEIGHTS_CONFIG = null;  // { ww, pt, ex, exSplit }
+    let STUDENTS = [];
+    let SCORES = {};            // { studentId: { wwItems:[], ptItems:[], stItems:{} } }
+    let ASSESSMENTS = { ww: [], pt: [], st: [] };  // config of items
+    let STATUS = "draft";
+    let CAN_EDIT = true;
+
+    function esc(s) {
+      return String(s == null ? "" : s)
+        .replace(/&/g, "&amp;").replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+    }
+
+    let toastTimer;
+    function toast(msg, type = "") {
+      const t = $("toast");
+      t.textContent = msg;
+      t.className = "toast show " + type;
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => t.className = "toast", 3000);
+    }
+
+    // ---------- Auth ----------
+    onAuthStateChanged(auth, async (user) => {
+      if (!user) {
+        location.replace("login.html?next=" + encodeURIComponent(location.pathname + location.search));
+        return;
+      }
+      CURRENT_USER = user;
+      CURRENT_PROFILE = await getCurrentUserProfile();
+
+      const isStaff = CURRENT_PROFILE?.primaryRole === "teacher"
+                   || CURRENT_PROFILE?.primaryRole === "admin"
+                   || CURRENT_PROFILE?.isSuperAdmin;
+      if (!isStaff) {
+        location.replace("index.html");
+        return;
+      }
+
+      $("navUserName").textContent = CURRENT_PROFILE?.name || user.email.split("@")[0];
+      $("navUserRole").textContent = (CURRENT_PROFILE?.primaryRole || "teacher").toUpperCase();
+      $("navAvatar").textContent = (CURRENT_PROFILE?.name || user.email)[0].toUpperCase();
+
+      $("termPicker").value = String(CURRENT_TERM);
+      $("activeTermBadge").textContent = CURRENT_TERM === 4 ? "Legacy" : `Term ${CURRENT_TERM}`;
+
+      await loadMyClasses();
+
+      $("loading").style.display = "none";
+      $("content").style.display = "block";
+
+      if (INITIAL_CLASS_ID) {
+        $("classSelect").value = INITIAL_CLASS_ID;
+        await loadSubjectsForClass(INITIAL_CLASS_ID);
+      }
+    });
+
+    $("termPicker")?.addEventListener("change", (e) => {
+      CURRENT_TERM = parseInt(e.target.value, 10);
+      $("activeTermBadge").textContent = CURRENT_TERM === 4 ? "Legacy" : `Term ${CURRENT_TERM}`;
+      if (SELECTED_CLASS && SELECTED_SUBJECT) {
+        loadECR();
+      }
+    });
+
+    // ---------- Load my classes (matching teacher.html logic) ----------
+    async function loadMyClasses() {
+      const sel = $("classSelect");
+      sel.innerHTML = "<option>Loading…</option>";
+
+      const snap = await getDocs(collection(db, "classes"));
+      MY_CLASSES = [];
+
+      for (const docSnap of snap.docs) {
+        const cls = { id: docSnap.id, ...docSnap.data() };
+        const isAdviser = cls.adviserUid === CURRENT_USER.uid;
+        const isTeacher = cls.teacherUids?.includes(CURRENT_USER.uid);
+        let isInProgram = false;
+
+        if (!isAdviser && !isTeacher) {
+          try {
+            const progSnap = await getDocs(collection(db, "classes", cls.id, "program"));
+            progSnap.forEach(p => {
+              if (p.data().teacherUid === CURRENT_USER.uid) isInProgram = true;
+            });
+          } catch {}
+        }
+
+        if (isAdviser || isTeacher || isInProgram) {
+          MY_CLASSES.push({ ...cls, role: isAdviser ? "adviser" : "teacher" });
+        }
+      }
+
+      MY_CLASSES.sort((a, b) => {
+        if (a.role !== b.role) return a.role === "adviser" ? -1 : 1;
+        return String(a.gradeLevel || "").localeCompare(String(b.gradeLevel || ""));
+      });
+
+      if (!MY_CLASSES.length) {
+        sel.innerHTML = '<option value="">No classes assigned</option>';
+        return;
+      }
+
+      sel.innerHTML = '<option value="">— Select Class —</option>' +
+        MY_CLASSES.map(c =>
+          `<option value="${esc(c.id)}">${esc(c.classLabel || c.id)} (${esc(c.gradeLevel || "")})</option>`
+        ).join("");
+
+      sel.addEventListener("change", async () => {
+        const id = sel.value;
+        if (!id) {
+          $("ecrBody").style.display = "none";
+          $("subjectSelect").innerHTML = '<option>Select class first</option>';
+          $("subjectSelect").disabled = true;
+          return;
+        }
+        SELECTED_CLASS = MY_CLASSES.find(c => c.id === id);
+        await loadSubjectsForClass(id);
+      });
+    }
+
+    // ---------- Load subjects for class (from program) ----------
+    async function loadSubjectsForClass(classId) {
+      const subSel = $("subjectSelect");
+      subSel.innerHTML = "<option>Loading…</option>";
+      subSel.disabled = true;
+
+      SELECTED_CLASS = MY_CLASSES.find(c => c.id === classId);
+      if (!SELECTED_CLASS) return;
+
+      // Load program entries for this class + term
+      let programEntries = [];
+      try {
+        const progSnap = await getDocs(collection(db, "classes", classId, "program"));
+        programEntries = progSnap.docs
+          .map(d => ({ id: d.id, ...d.data() }))
+          .filter(e => Number(e.term) === CURRENT_TERM);
+      } catch {}
+
+      // Filter to entries taught by current user (or all if adviser)
+      const isAdviser = SELECTED_CLASS.adviserUid === CURRENT_USER.uid;
+      const myEntries = isAdviser
+        ? programEntries
+        : programEntries.filter(e => e.teacherUid === CURRENT_USER.uid);
+
+      // Dedupe by subject code
+      const subjectMap = new Map();
+      myEntries.forEach(e => {
+        if (!e.subject) return;
+        if (!subjectMap.has(e.subject)) {
+          subjectMap.set(e.subject, {
+            code: e.subject,
+            name: e.subjectName || e.subject,
+            teacherUid: e.teacherUid,
+            teacherName: e.teacherName,
+          });
+        }
+      });
+
+      if (!subjectMap.size) {
+        subSel.innerHTML = '<option value="">No subjects assigned in this term</option>';
+        return;
+      }
+
+      subSel.disabled = false;
+      subSel.innerHTML = '<option value="">— Select Subject —</option>' +
+        Array.from(subjectMap.values()).map(s =>
+          `<option value="${esc(s.code)}">${esc(s.name)}</option>`
+        ).join("");
+
+      subSel.onchange = async () => {
+        const code = subSel.value;
+        if (!code) { $("ecrBody").style.display = "none"; return; }
+        SELECTED_SUBJECT = subjectMap.get(code);
+        await loadECR();
+      };
+    }
+
+    // ---------- Load ECR data ----------
+    async function loadECR() {
+      if (!SELECTED_CLASS || !SELECTED_SUBJECT) return;
+
+      $("ecrBody").style.display = "none";
+      $("loading").style.display = "block";
+      $("loading").innerHTML = '<div class="spinner"></div><div style="color:var(--text-muted);">Loading ECR data…</div>';
+
+      try {
+        // 1. Load subject metadata (family, type, curriculum, level)
+        const subjSnap = await getDoc(doc(db, "subjects", SELECTED_SUBJECT.code));
+        SUBJECT_META = subjSnap.exists() ? subjSnap.data() : {};
+        // Fallback: use class curriculum
+        if (!SUBJECT_META.curriculum) SUBJECT_META.curriculum = SELECTED_CLASS.curriculum;
+        if (!SUBJECT_META.level) SUBJECT_META.level = String(SELECTED_CLASS.gradeLevel || "").match(/\d+/)?.[0] || "";
+
+        // 2. Determine weights
+        const subjectGroup = getSubjectGroup(SUBJECT_META);
+        WEIGHTS_CONFIG = WEIGHTS[subjectGroup];
+        renderWeightBanner(subjectGroup);
+
+        // 3. Load students
+        const studentsSnap = await getDocs(collection(db, "classes", SELECTED_CLASS.id, "students"));
+        STUDENTS = studentsSnap.docs.map(d => ({ id: d.id, ...d.data() }))
+          .sort((a, b) => {
+            const ga = a.sex === "M" ? 0 : 1;
+            const gb = b.sex === "M" ? 0 : 1;
+            if (ga !== gb) return ga - gb;
+            return (a.fullName || a.lastName || "").localeCompare(b.fullName || b.lastName || "");
+          });
+
+        // 4. Load ECR config (assessments + status)
+        const ecrRef = doc(db, "classes", SELECTED_CLASS.id, "ecr", SELECTED_SUBJECT.code);
+        const ecrSnap = await getDoc(ecrRef);
+        if (ecrSnap.exists()) {
+          const data = ecrSnap.data();
+          const termData = data.terms?.[String(CURRENT_TERM)] || {};
+          ASSESSMENTS = {
+            ww: termData.ww || [],
+            pt: termData.pt || [],
+            st: termData.st || [],
+          };
+          STATUS = termData.status || "draft";
+        } else {
+          // Initialize with default assessments (matching Excel structure)
+          ASSESSMENTS = {
+            ww: [
+              { id: "ww1", name: "WW1", max: 15 },
+              { id: "ww2", name: "WW2", max: 20 },
+              { id: "ww3", name: "WW3", max: 100 },
+              { id: "ww4", name: "WW4", max: 100 },
+              { id: "ww5", name: "WW5", max: 100 },
+            ],
+            pt: [
+              { id: "pt1", name: "PT1", max: 50 },
+              { id: "pt2", name: "PT2", max: 100 },
+              { id: "pt3", name: "PT3", max: 100 },
+            ],
+            st: WEIGHTS_CONFIG.ex > 0 ? [
+              { id: "st1", name: "ST1", max: 50 },
+              { id: "st2", name: "ST2", max: 50 },
+              { id: "te",  name: "TE",  max: 60 },
+            ] : [],
+          };
+          STATUS = "draft";
+        }
+
+        // 5. Load scores
+        const scoresSnap = await getDocs(collection(db, "classes", SELECTED_CLASS.id, "ecr", SELECTED_SUBJECT.code, "terms", String(CURRENT_TERM), "scores"));
+        SCORES = {};
+        scoresSnap.forEach(d => {
+          const data = d.data();
+          SCORES[d.id] = {
+            wwItems: data.wwItems || [],
+            ptItems: data.ptItems || [],
+            stItems: data.stItems || {},
+          };
+        });
+
+        // 6. Render
+        $("loading").style.display = "none";
+        $("ecrBody").style.display = "block";
+        renderHeader();
+        renderTable();
+        updateStatus();
+
+      } catch (e) {
+        console.error("[ecr] load failed:", e);
+        $("loading").innerHTML = `<div style="color:#dc2626;text-align:center;padding:40px;">Failed to load ECR: ${esc(e.message)}</div>`;
+      }
+    }
+
+    function renderWeightBanner(group) {
+      const groupLabels = {
+        elem_jhs_core: "Elementary / JHS — Core Subject",
+        elem_jhs_mapeh: "Elementary / JHS — MAPEH",
+        elem_jhs_epp: "Elementary / JHS — EPP / TLE",
+        shs_core: "Strengthened SHS — Core / Academic Elective",
+        shs_arts_sports: "Strengthened SHS — Arts / Sports / Health",
+        shs_techpro: "Strengthened SHS — TechPro",
+        shs_field_exposure: "Strengthened SHS — Field Exposure / Arts Apprenticeship",
+        shs_research: "Strengthened SHS — Research / Design & Innovation",
+        shs_work_immersion: "Strengthened SHS — Work Immersion",
+      };
+      $("weightBanner").innerHTML = `
+        <div style="font-weight:800;color:#166534;font-size:0.85rem;">📐 ${esc(groupLabels[group] || group)}</div>
+        <div class="weight-chip"><div class="lbl">WW</div><div class="val">${WEIGHTS_CONFIG.ww}%</div></div>
+        <div class="weight-chip"><div class="lbl">PT</div><div class="val">${WEIGHTS_CONFIG.pt}%</div></div>
+        <div class="weight-chip"><div class="lbl">EX</div><div class="val">${WEIGHTS_CONFIG.ex}%</div></div>
+        ${WEIGHTS_CONFIG.ex > 0 ? `<div style="font-size:0.7rem;color:#166534;">EX split: ST1 30% · ST2 30% · TE 40%</div>` : ""}
+      `;
+    }
+
+    function renderHeader() {
+      $("ecrTitle").textContent = `📊 ${SELECTED_SUBJECT.name}`;
+      $("ecrSubtitle").textContent = `${SELECTED_CLASS.classLabel} · ${CURRENT_TERM === 4 ? "Legacy Term" : `Term ${CURRENT_TERM}`} · ${STUDENTS.length} students`;
+    }
+
+    function renderTable() {
+      const thead = $("ecrThead");
+      const tbody = $("ecrTbody");
+
+      const wwCount = ASSESSMENTS.ww.length;
+      const ptCount = ASSESSMENTS.pt.length;
+      const stCount = ASSESSMENTS.st.length;
+
+      // Header row 1 — component groups
+      thead.innerHTML = `
+        <tr>
+          <th rowspan="2" style="width:30px;">#</th>
+          <th rowspan="2" style="text-align:left;padding-left:10px;">Student</th>
+          <th colspan="${wwCount + 2}" class="grp-ww">WW (${WEIGHTS_CONFIG.ww}%)</th>
+          <th colspan="${ptCount + 2}" class="grp-pt">PT (${WEIGHTS_CONFIG.pt}%)</th>
+          <th colspan="${stCount + 2}" class="grp-ex">EX (${WEIGHTS_CONFIG.ex}%)</th>
+          <th rowspan="2" style="min-width:80px;">Initial</th>
+          <th rowspan="2" style="min-width:70px;">Term Grade</th>
+          <th rowspan="2" style="min-width:90px;">Descriptor</th>
+        </tr>
+        <tr>
+          ${ASSESSMENTS.ww.map(a => `<th style="min-width:56px;">${esc(a.name)}</th>`).join("")}
+          <th style="min-width:44px;">Tot</th><th style="min-width:44px;">WS</th>
+          ${ASSESSMENTS.pt.map(a => `<th style="min-width:56px;">${esc(a.name)}</th>`).join("")}
+          <th style="min-width:44px;">Tot</th><th style="min-width:44px;">WS</th>
+          ${ASSESSMENTS.st.map(a => `<th style="min-width:56px;">${esc(a.name)}</th>`).join("")}
+          <th style="min-width:44px;">Tot</th><th style="min-width:44px;">WS</th>
+        </tr>
+      `;
+
+      // Max row
+      const maxRow = `
+        <tr class="max-row">
+          <td></td>
+          <td class="name">Highest Possible</td>
+          ${ASSESSMENTS.ww.map(a => `<td>${a.max}</td>`).join("")}
+          <td>${ASSESSMENTS.ww.reduce((s, a) => s + a.max, 0)}</td><td>100%</td>
+          ${ASSESSMENTS.pt.map(a => `<td>${a.max}</td>`).join("")}
+          <td>${ASSESSMENTS.pt.reduce((s, a) => s + a.max, 0)}</td><td>100%</td>
+          ${ASSESSMENTS.st.map(a => `<td>${a.max}</td>`).join("")}
+          <td>${ASSESSMENTS.st.reduce((s, a) => s + a.max, 0)}</td><td>100%</td>
+          <td></td><td></td><td></td>
+        </tr>
+      `;
+
+      // Student rows
+      let idx = 1;
+      let lastSex = null;
+      const studentRows = STUDENTS.map(s => {
+        const sexHeader = s.sex !== lastSex
+          ? `<tr><td colspan="${3 + wwCount + 2 + ptCount + 2 + stCount + 2 + 3}" style="background:#f1f5f9;color:#475569;text-align:left;padding:6px 12px;font-weight:700;font-size:0.7rem;text-transform:uppercase;letter-spacing:0.04em;">${s.sex === "M" ? "MALE" : s.sex === "F" ? "FEMALE" : "STUDENTS"}</td></tr>`
+          : "";
+        lastSex = s.sex;
+
+        const sc = SCORES[s.id] || { wwItems: [], ptItems: [], stItems: {} };
+        const computed = computeECR({
+          wwItems: ASSESSMENTS.ww.map((a, i) => ({ score: sc.wwItems[i]?.score ?? "", max: a.max })),
+          ptItems: ASSESSMENTS.pt.map((a, i) => ({ score: sc.ptItems[i]?.score ?? "", max: a.max })),
+          stItems: Object.fromEntries(ASSESSMENTS.st.map(a => [a.id, {
+            score: sc.stItems[a.id]?.score ?? "", max: a.max
+          }])),
+          weights: WEIGHTS_CONFIG,
+        });
+
+        const gradeColor = computed.termGrade >= 90 ? "#059669"
+                         : computed.termGrade >= 80 ? "#1e40af"
+                         : computed.termGrade >= 75 ? "#d97706"
+                         : computed.termGrade >= 65 ? "#f97316" : "#dc2626";
+
+        const disabled = CAN_EDIT && (STATUS === "draft" || STATUS === "returned") ? "" : "disabled";
+
+        return sexHeader + `
+          <tr data-student-id="${esc(s.id)}">
+            <td class="num">${idx++}</td>
+            <td class="name">${esc(s.fullName || (s.lastName + ", " + s.firstName) || s.id)}</td>
+            ${ASSESSMENTS.ww.map((a, i) => `
+              <td><input class="score-input" type="number" data-type="ww" data-index="${i}" data-student="${esc(s.id)}"
+                  value="${sc.wwItems[i]?.score ?? ""}" max="${a.max}" ${disabled}></td>
+            `).join("")}
+            <td class="calc-cell">${computed.wwTotal}</td>
+            <td class="calc-cell">${computed.wwWs}</td>
+            ${ASSESSMENTS.pt.map((a, i) => `
+              <td><input class="score-input" type="number" data-type="pt" data-index="${i}" data-student="${esc(s.id)}"
+                  value="${sc.ptItems[i]?.score ?? ""}" max="${a.max}" ${disabled}></td>
+            `).join("")}
+            <td class="calc-cell">${computed.ptTotal}</td>
+            <td class="calc-cell">${computed.ptWs}</td>
+            ${ASSESSMENTS.st.map((a) => `
+              <td><input class="score-input" type="number" data-type="st" data-index="${a.id}" data-student="${esc(s.id)}"
+                  value="${sc.stItems[a.id]?.score ?? ""}" max="${a.max}" ${disabled}></td>
+            `).join("")}
+            <td class="calc-cell">${computed.stTotal}</td>
+            <td class="calc-cell">${computed.exWs}</td>
+            <td class="calc-cell" style="font-weight:700;">${computed.initialGrade}</td>
+            <td class="grade-cell" style="color:${gradeColor};">${computed.termGrade}</td>
+            <td class="desc-cell" style="color:${gradeColor};">${computed.descriptor}</td>
+          </tr>
+        `;
+      }).join("");
+
+      tbody.innerHTML = maxRow + studentRows;
+
+      // Wire input changes
+      tbody.querySelectorAll(".score-input").forEach(inp => {
+        inp.addEventListener("input", onScoreChange);
+      });
+
+      // Stats
+      const graded = Object.keys(SCORES).length;
+      $("statText").textContent = `${STUDENTS.length} students · ${graded} with scores`;
+    }
+
+    // ---------- Live computation on input ----------
+    function onScoreChange(e) {
+      const inp = e.target;
+      const studentId = inp.dataset.student;
+      const type = inp.dataset.type;
+      const index = inp.dataset.index;
+      const value = inp.value === "" ? "" : Number(inp.value);
+
+      if (!SCORES[studentId]) SCORES[studentId] = { wwItems: [], ptItems: [], stItems: {} };
+
+      if (type === "ww") {
+        if (!SCORES[studentId].wwItems[index]) SCORES[studentId].wwItems[index] = {};
+        SCORES[studentId].wwItems[index].score = value;
+      } else if (type === "pt") {
+        if (!SCORES[studentId].ptItems[index]) SCORES[studentId].ptItems[index] = {};
+        SCORES[studentId].ptItems[index].score = value;
+      } else if (type === "st") {
+        if (!SCORES[studentId].stItems[index]) SCORES[studentId].stItems[index] = {};
+        SCORES[studentId].stItems[index].score = value;
+      }
+
+      // Recompute this row
+      recomputeRow(studentId);
+    }
+
+    function recomputeRow(studentId) {
+      const row = document.querySelector(`tr[data-student-id="${studentId}"]`);
+      if (!row) return;
+      const sc = SCORES[studentId] || { wwItems: [], ptItems: [], stItems: {} };
+      const computed = computeECR({
+        wwItems: ASSESSMENTS.ww.map((a, i) => ({ score: sc.wwItems[i]?.score ?? "", max: a.max })),
+        ptItems: ASSESSMENTS.pt.map((a, i) => ({ score: sc.ptItems[i]?.score ?? "", max: a.max })),
+        stItems: Object.fromEntries(ASSESSMENTS.st.map(a => [a.id, {
+          score: sc.stItems[a.id]?.score ?? "", max: a.max
+        }])),
+        weights: WEIGHTS_CONFIG,
+      });
+
+      const cells = row.querySelectorAll(".calc-cell, .grade-cell, .desc-cell");
+      // [wwTot, wwWs, ptTot, ptWs, stTot, exWs, initial, grade, desc]
+      if (cells[0]) cells[0].textContent = computed.wwTotal;
+      if (cells[1]) cells[1].textContent = computed.wwWs;
+      if (cells[2]) cells[2].textContent = computed.ptTotal;
+      if (cells[3]) cells[3].textContent = computed.ptWs;
+      if (cells[4]) cells[4].textContent = computed.stTotal;
+      if (cells[5]) cells[5].textContent = computed.exWs;
+      if (cells[6]) cells[6].textContent = computed.initialGrade;
+      if (cells[7]) cells[7].textContent = computed.termGrade;
+      if (cells[8]) cells[8].textContent = computed.descriptor;
+
+      const gradeColor = computed.termGrade >= 90 ? "#059669"
+                       : computed.termGrade >= 80 ? "#1e40af"
+                       : computed.termGrade >= 75 ? "#d97706"
+                       : computed.termGrade >= 65 ? "#f97316" : "#dc2626";
+      if (cells[7]) cells[7].style.color = gradeColor;
+      if (cells[8]) cells[8].style.color = gradeColor;
+    }
+
+    function updateStatus() {
+      const banner = $("statusBanner");
+      const badge = $("statusBadge");
+
+      const map = {
+        draft:     { cls: "status-draft",     text: "📝 <strong>Draft</strong> — Save your scores and submit for review when ready.", badge: "Draft" },
+        submitted: { cls: "status-submitted", text: "⏳ <strong>Submitted</strong> — Waiting for adviser review.", badge: "Submitted" },
+        approved:  { cls: "status-approved",  text: "✅ <strong>Approved</strong> — Grades are final.", badge: "Approved" },
+        returned:  { cls: "status-returned",  text: "🔄 <strong>Returned</strong> — Adviser returned for revision.", badge: "Returned" },
+      };
+      const s = map[STATUS] || map.draft;
+      banner.className = "status-banner " + s.cls;
+      banner.innerHTML = s.text;
+      badge.textContent = s.badge;
+
+      CAN_EDIT = STATUS === "draft" || STATUS === "returned";
+      $("btnSave").disabled = !CAN_EDIT;
+      $("btnSubmit").disabled = !CAN_EDIT;
+      $("btnAddAssessment").disabled = !CAN_EDIT;
+    }
+
+    // ---------- Save ----------
+    $("btnSave").addEventListener("click", async () => {
+      if (!SELECTED_CLASS || !SELECTED_SUBJECT) return;
+      const btn = $("btnSave");
+      btn.disabled = true;
+      btn.textContent = "Saving…";
+
+      try {
+        // 1. Save ECR config (assessments + status)
+        const ecrRef = doc(db, "classes", SELECTED_CLASS.id, "ecr", SELECTED_SUBJECT.code);
+        await setDoc(ecrRef, {
+          subjectCode: SELECTED_SUBJECT.code,
+          subjectName: SELECTED_SUBJECT.name,
+          curriculum: SUBJECT_META.curriculum || SELECTED_CLASS.curriculum,
+          subjectGroup: getSubjectGroup(SUBJECT_META),
+          weights: WEIGHTS_CONFIG,
+          terms: {
+            [String(CURRENT_TERM)]: {
+              ww: ASSESSMENTS.ww,
+              pt: ASSESSMENTS.pt,
+              st: ASSESSMENTS.st,
+              status: STATUS,
+            },
+          },
+          updatedAt: serverTimestamp(),
+        }, { merge: true });
+
+        // 2. Save each student's scores
+        for (const student of STUDENTS) {
+          const sc = SCORES[student.id];
+          if (!sc) continue;
+
+          const computed = computeECR({
+            wwItems: ASSESSMENTS.ww.map((a, i) => ({ score: sc.wwItems[i]?.score ?? "", max: a.max })),
+            ptItems: ASSESSMENTS.pt.map((a, i) => ({ score: sc.ptItems[i]?.score ?? "", max: a.max })),
+            stItems: Object.fromEntries(ASSESSMENTS.st.map(a => [a.id, {
+              score: sc.stItems[a.id]?.score ?? "", max: a.max
+            }])),
+            weights: WEIGHTS_CONFIG,
+          });
+
+          const scoreRef = doc(db, "classes", SELECTED_CLASS.id, "ecr", SELECTED_SUBJECT.code, "terms", String(CURRENT_TERM), "scores", student.id);
+          await setDoc(scoreRef, {
+            studentName: student.fullName || "",
+            lrn: student.lrn || "",
+            sex: student.sex || "",
+            wwItems: ASSESSMENTS.ww.map((a, i) => ({ name: a.name, max: a.max, score: sc.wwItems[i]?.score ?? null })),
+            ptItems: ASSESSMENTS.pt.map((a, i) => ({ name: a.name, max: a.max, score: sc.ptItems[i]?.score ?? null })),
+            stItems: Object.fromEntries(ASSESSMENTS.st.map(a => [a.id, {
+              name: a.name, max: a.max, score: sc.stItems[a.id]?.score ?? null
+            }])),
+            computed,
+            updatedAt: serverTimestamp(),
+          }, { merge: true });
+        }
+
+        toast(`✓ Saved ${STUDENTS.length} students · ${CURRENT_TERM === 4 ? "Legacy" : `Term ${CURRENT_TERM}`}`, "success");
+      } catch (e) {
+        console.error(e);
+        toast("⚠️ " + (e.message || "Save failed"), "error");
+      } finally {
+        btn.disabled = false;
+        btn.textContent = "💾 Save Scores";
+      }
+    });
+
+    // ---------- Submit for review ----------
+    $("btnSubmit").addEventListener("click", async () => {
+      if (!confirm("Submit these grades for adviser review?\n\nYou won't be able to edit them after submission.")) return;
+
+      try {
+        const ecrRef = doc(db, "classes", SELECTED_CLASS.id, "ecr", SELECTED_SUBJECT.code);
+        await setDoc(ecrRef, {
+          terms: {
+            [String(CURRENT_TERM)]: {
+              ww: ASSESSMENTS.ww, pt: ASSESSMENTS.pt, st: ASSESSMENTS.st,
+              status: "submitted",
+              submittedAt: serverTimestamp(),
+              submittedBy: CURRENT_USER.uid,
+            },
+          },
+        }, { merge: true });
+        STATUS = "submitted";
+        updateStatus();
+        toast("✓ Submitted for review", "success");
+      } catch (e) {
+        toast("⚠️ " + (e.message || "Submit failed"), "error");
+      }
+    });
+
+    // ---------- Add assessment ----------
+    $("btnAddAssessment").addEventListener("click", () => {
+      const modal = $("addModal");
+      modal.classList.add("show");
+      $("newName").value = "";
+      $("newMax").value = 100;
+      $("newType").value = "ww";
+      $("stSubGroup").style.display = "none";
+    });
+
+    $("newType")?.addEventListener("change", (e) => {
+      $("stSubGroup").style.display = e.target.value === "st" ? "block" : "none";
+    });
+
+    $("btnConfirmAdd").addEventListener("click", () => {
+      const type = $("newType").value;
+      const name = $("newName").value.trim();
+      const max = parseFloat($("newMax").value);
+      if (!name || !(max > 0)) {
+        toast("⚠️ Name and max score required", "error");
+        return;
+      }
+
+      if (type === "st") {
+        const stType = $("newStType").value;
+        ASSESSMENTS.st = ASSESSMENTS.st.filter(a => a.id !== stType);
+        ASSESSMENTS.st.push({ id: stType, name: name || stType.toUpperCase(), max });
+      } else {
+        const list = ASSESSMENTS[type];
+        if (list.length >= 10) {
+          toast("⚠️ Maximum 10 items per component", "error");
+          return;
+        }
+        const id = type + (list.length + 1);
+        list.push({ id, name: name || `${type.toUpperCase()}${list.length + 1}`, max });
+      }
+
+      $("addModal").classList.remove("show");
+      renderTable();
+      toast("✓ Assessment added — save to persist", "success");
+    });
+
+    $("btnPrint")?.addEventListener("click", () => {
+      const orig = document.title;
+      document.title = `ECR_${SELECTED_SUBJECT.code}_T${CURRENT_TERM}_${SELECTED_CLASS.classLabel}`;
+      window.print();
+      setTimeout(() => { document.title = orig; }, 1000);
+    });
+  </script>
+</body>
+</html>
