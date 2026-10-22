@@ -187,18 +187,20 @@ function parseStudentRow(row, colMap) {
             : sexRaw === "F" || sexRaw === "FEMALE" ? "F"
             : sexRaw;
 
-  // Clean remarks (may contain <br> tags)
+  // Clean remarks
   const remarksRaw = cellStr(row, colMap.REMARKS);
   const remarks = remarksRaw.replace(/<br\s*\/?>/gi, " | ").replace(/\s+/g, " ").trim();
 
-  // Extract birth date
+  // 🆕 Extract and format the birth date first
   const rawBirthDate = cellStr(row, colMap.BIRTHDATE);
   const finalBirthDate = formatExcelDate(rawBirthDate);
   
-  // 🆕 ALWAYS compute age from birthdate if possible. 
-  // Only use the Excel value if the birthdate calculation fails.
-  let computedAge = calculateAge(finalBirthDate);
-  let finalAge = computedAge !== null ? computedAge : cellNum(row, colMap.AGE);
+  // 🆕 ALWAYS calculate the age from the birthdate
+  const computedAge = calculateAge(finalBirthDate);
+  
+  // 🆕 Use the computed age. If somehow the birthdate is missing, fallback to the Excel value.
+  const excelAge = cellNum(row, colMap.AGE);
+  const finalAge = computedAge !== null ? computedAge : excelAge;
 
   return {
     lrn:               cellStr(row, colMap.LRN),
@@ -208,7 +210,7 @@ function parseStudentRow(row, colMap) {
     fullName:          nameParts.fullName,
     sex:               sex,
     birthDate:         finalBirthDate,
-    age:               finalAge,
+    age:               finalAge,   // 👈 Always uses the smart-calculated age
     motherTongue:      cellStr(row, colMap.MOTHER_TONGUE),
     ip:                cellStr(row, colMap.IP),
     religion:          cellStr(row, colMap.RELIGION),
