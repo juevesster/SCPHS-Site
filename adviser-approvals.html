@@ -156,16 +156,20 @@
       if (!pSnap.empty) CURRENT_PROFILE = pSnap.docs[0].data();
 
       // 2. Find Classes where I am Adviser
+            // 2. Find Classes (Adviser sees their own, Admin sees ALL)
+      const isAdmin = CURRENT_PROFILE?.primaryRole === "admin" || CURRENT_PROFILE?.isSuperAdmin;
+      
       const clsSnap = await getDocs(collection(db, "classes"));
       clsSnap.forEach(d => {
         const c = d.data();
-        if (c.adviserUid === CURRENT_USER.uid) {
+        // If Admin, push all classes. If Adviser, only push their assigned class.
+        if (isAdmin || c.adviserUid === CURRENT_USER.uid) {
           MY_CLASSES.push({ id: d.id, ...c });
         }
       });
 
       if (MY_CLASSES.length === 0) {
-        document.getElementById("loading").innerHTML = "<h3>You are not an adviser to any class.</h3>";
+        document.getElementById("loading").innerHTML = "<h3>No classes found.</h3>";
         return;
       }
 
