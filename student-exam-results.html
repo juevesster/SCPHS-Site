@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>My Exam Results — SCPHS</title>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <style>
+    :root { 
+      --primary: #4f46e5; 
+      --bg: #f1f5f9; 
+      --text: #1e293b; 
+      --muted: #64748b; 
+      --success: #059669; 
+      --danger: #dc2626; 
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Outfit', sans-serif; }
+    body { background: var(--bg); color: var(--text); padding: 20px; }
+    
+    .container { max-width: 800px; margin: 0 auto; }
+    
+    .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+    .header h1 { font-size: 1.5rem; color: var(--primary); font-weight: 800; }
+    .btn-back { background: #fff; color: var(--primary); border: 1px solid #cbd5e1; padding: 8px 16px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 0.85rem; display: inline-flex; align-items: center; gap: 6px; transition: 0.2s; }
+    .btn-back:hover { background: #f8fafc; border-color: var(--primary); }
+
+    .card { background: #fff; border-radius: 16px; padding: 24px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); margin-bottom: 20px; border: 1px solid #e2e8f0; }
+    
+    .score-header { text-align: center; padding: 30px 0; border-bottom: 2px dashed #e2e8f0; margin-bottom: 20px; }
+    .score-title { font-size: 1rem; color: var(--muted); text-transform: uppercase; font-weight: 700; letter-spacing: 0.05em; margin-bottom: 10px; }
+    .score-value { font-size: 4rem; font-weight: 800; line-height: 1; }
+    .score-total { font-size: 1.5rem; color: var(--muted); font-weight: 600; }
+    .score-percent { font-size: 1.1rem; font-weight: 700; margin-top: 8px; padding: 4px 12px; border-radius: 20px; display: inline-block; }
+    
+    .percent-high { background: #dcfce7; color: var(--success); }
+    .percent-low { background: #fee2e2; color: var(--danger); }
+
+    .answer-row { display: flex; gap: 15px; padding: 15px; border-radius: 12px; margin-bottom: 10px; border: 1px solid #e2e8f0; background: #f8fafc; }
+    .answer-row.correct { border-color: #86efac; background: #f0fdf4; }
+    .answer-row.wrong { border-color: #fca5a5; background: #fef2f2; }
+    .answer-q { font-weight: 600; font-size: 0.95rem; margin-bottom: 6px; color: var(--text); }
+    .answer-detail { font-size: 0.85rem; color: var(--muted); }
+    .answer-detail strong { color: var(--text); }
+    
+    .loading { text-align: center; padding: 40px; color: var(--muted); font-weight: 600; }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <div class="header">
+      <h1><i class="fas fa-file-signature"></i> My Exam Results</h1>
+      <a href="student.html" class="btn-back"><i class="fas fa-arrow-left"></i> Back to Portal</a>
+    </div>
+
+    <div id="loading" class="loading">Loading your results...</div>
+
+    <div id="content" style="display: none;">
+      <!-- Score Card -->
+      <div class="card">
+        <div class="score-header">
+          <div class="score-title" id="examTitleDisplay">Exam Title</div>
+          <div>
+            <span class="score-value" id="scoreDisplay">0</span>
+            <span class="score-total" id="totalDisplay">/ 0</span>
+          </div>
+          <div class="score-percent" id="percentDisplay">0%</div>
+        </div>
+        
+        <div style="display: flex; justify-content: space-between; font-size: 0.9rem; color: var(--muted);">
+          <div><strong>Status:</strong> <span id="statusDisplay">Submitted</span></div>
+          <div><strong>Violations:</strong> <span id="violationsDisplay">0</span></div>
+        </div>
+      </div>
+
+      <!-- Answer Review -->
+      <div class="card">
+        <h2 style="font-size: 1.1rem; margin-bottom: 15px; color: var(--primary);"><i class="fas fa-list-check"></i> Answer Review</h2>
+        <div id="answersContainer"></div>
+      </div>
+    </div>
+  </div>
+
+  <script type="module">
+    import { auth, db } from "./assets/js/firebase-config.js";
+    import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+    import { doc, getDoc, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+    const params = new URLSearchParams(window.location.search);
+    const EXAM_ID = params.get('examId');
+    const SUBMISSION_ID = params.get('submissionId');
+
+    let EXAM_DATA = null;
+    let QUESTIONS = [];
+
+    onAuthStateChanged(auth, async (user) => {
+      if (!user) { window.location.href = "login.html"; return; }
+      if (!EXAM_ID || !SUBMISSION_ID) { alert("Missing exam or submission ID."); window.location.href = "student.html"; return; }
+
+      try {
+        // 1. Fetch Exam Info
+        const examSnap = await getDoc(doc(db, "exams", EXAM_ID));
+        if (examSnap.exists()) {
+          EXAM_DATA = examSnap.data();
+          document.getElementById("examTitleDisplay").textContent = EXAM_DATA.title;
+        }
+
+        // 2. Fetch Questions
+        const qSnap = await getDocs(collection(db, "exams", EXAM_ID, "questions"));
+        QUESTIONS = qSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+        QUESTIONS.sort((a, b) => (a.order || 0) - (b.order || 0));
+
+        // 3. Fetch Submission
+        const subSnap = await getDoc(doc(db, "exam_submissions", SUBMISSION_ID));
+        if (!subSnap.exists()) {
+          alert("Result not found.");
+          window.location.href = "student.html";
+          return;
+        }
+        const sub = subSnap.data();
+
+        // 4. Render Score
+        const percent = sub.totalPoints > 0 ? Math.round((sub.score / sub.totalPoints) * 100) : 0;
+        document.getElementById("scoreDisplay").textContent = sub.score;
+        document.getElementById("totalDisplay").textContent = `/ ${sub.totalPoints}`;
+        
+        const percentEl = document.getElementById("percentDisplay");
+        percentEl.textContent = `${percent}%`;
+        percentEl.className = `score-percent ${percent >= 75 ? 'percent-high' : 'percent-low'}`;
+        
+        document.getElementById("scoreDisplay").style.color = percent >= 75 ? 'var(--success)' : 'var(--danger)';
+        document.getElementById("statusDisplay").textContent = sub.status === 'forced_submit' ? 'Auto-Submitted (Violation)' : 'Submitted';
+        document.getElementById("violationsDisplay").textContent = sub.violations || 0;
+
+        // 5. Render Answers
+        renderAnswers(sub);
+
+        document.getElementById("loading").style.display = "none";
+        document.getElementById("content").style.display = "block";
+
+      } catch (e) {
+        console.error(e);
+        document.getElementById("loading").textContent = "Error loading results.";
+      }
+    });
+
+    function renderAnswers(sub) {
+      const container = document.getElementById("answersContainer");
+      let html = "";
+
+      QUESTIONS.forEach((q, i) => {
+        const studentAns = sub.answers ? sub.answers[q.id] : null;
+        
+        // Simple check for correct answer
+        let isCorrect = false;
+        if (studentAns && q.correct_answer) {
+          isCorrect = studentAns.toString().toLowerCase().trim() === q.correct_answer.toString().toLowerCase().trim();
+        }
+
+        // If it's an essay or matching, we don't auto-grade (mark as neutral)
+        if (q.type === 'essay' || q.type === 'matching') {
+          isCorrect = null; // Neutral
+        }
+
+        const rowClass = isCorrect === true ? "correct" : isCorrect === false ? "wrong" : "";
+        const icon = isCorrect === true ? '<i class="fas fa-check-circle" style="color: var(--success);"></i>' 
+                   : isCorrect === false ? '<i class="fas fa-times-circle" style="color: var(--danger);"></i>' 
+                   : '<i class="fas fa-circle-info" style="color: var(--muted);"></i>';
+        
+        let correctAnsDisplay = q.correct_answer || "N/A";
+        if (q.type === 'essay') correctAnsDisplay = "Manually graded by teacher";
+
+        html += `
+          <div class="answer-row ${rowClass}">
+            <div style="flex: 1;">
+              <div class="answer-q">${icon} ${i + 1}. ${q.question}</div>
+              <div class="answer-detail">
+                <strong>Your Answer:</strong> ${studentAns || "<em style='color:#999'>Not answered</em>"} <br>
+                ${isCorrect !== null ? `<strong>Correct Answer:</strong> ${correctAnsDisplay}` : `<strong>Points:</strong> ${q.points || 1} (Subjectively graded)`}
+              </div>
+            </div>
+          </div>
+        `;
+      });
+
+      container.innerHTML = html;
+    }
+  </script>
+</body>
+</html>
