@@ -296,9 +296,42 @@
             const progSnap = await getDocs(collection(db, "classes", CLASS_INFO.id, "program"));
             const subjects = [...new Set(progSnap.docs.map(d => d.data().subject).filter(Boolean))];
             
-                        for (const subjCode of subjects) {
-              // Get the ECR document
+                                    for (const subjCode of subjects) {
+              // Look up the Subject Name
+              let subjName = subjCode;
+              try {
+                const subjSnap = await getDoc(doc(db, "subjects", subjCode));
+                if (subjSnap.exists()) subjName = subjSnap.data().displayName || subjCode;
+              } catch {}
+
+              // 1. Get the ECR document to check status
               const ecrDoc = await getDoc(doc(db, "classes", CLASS_INFO.id, "ecr", subjCode));
+              
+              // Only proceed if the ECR exists AND Term 1 is approved
+              if (ecrDoc.exists()) {
+                const ecrData = ecrDoc.data();
+                const term1Status = ecrData.terms?.["1"]?.status;
+                
+                if (term1Status === "approved") {
+                  const scoreSnap = await getDoc(doc(db, "classes", CLASS_INFO.id, "ecr", subjCode, "terms", "1", "scores", STUDENT_INFO.id));
+                  
+                  if (scoreSnap.exists()) {
+                    const data = scoreSnap.data();
+                    if (data.computed && data.computed.termGrade && !isNaN(data.computed.termGrade)) {
+                      GRADES.push({ subject: subjName, q1: Number(data.computed.termGrade) });
+                    } else {
+                      GRADES.push({ subject: subjName, q1: null });
+                    }
+                  } else {
+                    GRADES.push({ subject: subjName, q1: null });
+                  }
+                } else {
+                  GRADES.push({ subject: subjName, q1: null }); 
+                }
+              } else {
+                GRADES.push({ subject: subjName, q1: null });
+              }
+            }
               
               // Look up the subject metadata to get the real name
               const subjMeta = await getDoc(doc(db, "subjects", subjCode));
@@ -379,11 +412,38 @@
       let validSubjects = 0;
       let gradesHtml = "";
 
-      GRADES.forEach(g => {
-        const vals = [g.q1, g.q2, g.q3, g.q4].filter(v => v !== null && v !== "").map(Number);
+            GRADES.forEach(g => {
+        // Safely parse the grade, ignoring NaN or null
+        const rawVals = [g.q1, g.q2, g.q3, g.q4].filter(v => v !== null && v !== "" && v !== undefined);
+        const vals = rawVals.map(Number).filter(n => !isNaN(n)); // Keep only real numbers
+        
         if (vals.length > 0) {
           const avg = Math.round(vals.reduce((a,b)=>a+b, 0) / vals.length);
           g.average = avg;
+          totalAvg += avg;
+          validSubjects++;
+          
+          let pillClass = "pill-low";
+          let emoji = "⚠️";
+          if (avg >= 90) { pillClass = "pill-excellent"; emoji = "🏆"; }
+          else if (avg >= 85) { pillClass = "pill-good"; emoji = "👍"; }
+          else if (avg >= 75) { pillClass = "pill-average"; emoji = "📚"; }
+
+          gradesHtml += `
+            <div class="grade-row">
+              <span class="grade-subject">${g.subject}</span>
+              <span class="grade-pill ${pillClass}">${avg} ${emoji}</span>
+            </div>
+          `;
+        } else {
+          gradesHtml += `
+            <div class="grade-row">
+              <span class="grade-subject">${g.subject}</span>
+              <span class="grade-pill" style="background:#e2e8f0; color:#64748b;">—</span>
+            </div>
+          `;
+        }
+      });
           totalAvg += avg;
           validSubjects++;
           
