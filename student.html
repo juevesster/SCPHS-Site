@@ -296,38 +296,40 @@
             const progSnap = await getDocs(collection(db, "classes", CLASS_INFO.id, "program"));
             const subjects = [...new Set(progSnap.docs.map(d => d.data().subject).filter(Boolean))];
             
-            for (const subjCode of subjects) {
-              // 1. Get the ECR document to check status
+                        for (const subjCode of subjects) {
+              // Get the ECR document
               const ecrDoc = await getDoc(doc(db, "classes", CLASS_INFO.id, "ecr", subjCode));
               
-              // Only proceed if the ECR exists AND Term 1 is approved
+              // Look up the subject metadata to get the real name
+              const subjMeta = await getDoc(doc(db, "subjects", subjCode));
+              const realSubjectName = subjMeta.exists() ? (subjMeta.data().displayName || subjCode) : subjCode;
+
               if (ecrDoc.exists()) {
                 const ecrData = ecrDoc.data();
                 const term1Status = ecrData.terms?.["1"]?.status;
                 
                 if (term1Status === "approved") {
-                  // 2. Get the student's score
                   const scoreSnap = await getDoc(doc(db, "classes", CLASS_INFO.id, "ecr", subjCode, "terms", "1", "scores", STUDENT_INFO.id));
                   
                   if (scoreSnap.exists()) {
                     const data = scoreSnap.data();
-                    if (data.computed) {
-                      GRADES.push({ subject: subjCode, q1: data.computed.termGrade });
+                    if (data.computed && data.computed.termGrade) {
+                      // ✅ Use the real name and ensure it's a number
+                      GRADES.push({ subject: realSubjectName, q1: Number(data.computed.termGrade) });
                     } else {
-                      GRADES.push({ subject: subjCode, q1: null });
+                      GRADES.push({ subject: realSubjectName, q1: null });
                     }
                   } else {
-                    GRADES.push({ subject: subjCode, q1: null });
+                    GRADES.push({ subject: realSubjectName, q1: null });
                   }
                 } else {
                   // Grade exists but not approved yet
-                  GRADES.push({ subject: subjCode, q1: null }); 
+                  GRADES.push({ subject: realSubjectName, q1: null }); 
                 }
               } else {
-                GRADES.push({ subject: subjCode, q1: null });
+                GRADES.push({ subject: realSubjectName, q1: null });
               }
             }
-          }
 
           // 4. Fetch Exams & Submissions
           if (CLASS_INFO) {
