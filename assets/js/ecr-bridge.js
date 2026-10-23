@@ -15,9 +15,7 @@ export async function pushExamToECR({
     const q = query(collection(db, "exam_submissions"), where("examId", "==", examId));
     const resultsSnap = await getDocs(q);
     
-    if (resultsSnap.empty) {
-      throw new Error("No results found — has the exam been taken?");
-    }
+    if (resultsSnap.empty) throw new Error("No results found — has the exam been taken?");
 
     // 2. Load ECR config
     const ecrRef = doc(db, "classes", classId, "ecr", subjectCode);
@@ -33,12 +31,10 @@ export async function pushExamToECR({
     if (component === "ww") {
       const existing = termConfig.ww.find(a => a.examId === examId);
       if (existing) {
-        assessmentId = existing.id;
-        assessmentName = existing.name;
-        maxScore = existing.max;
+        assessmentId = existing.id; assessmentName = existing.name; maxScore = existing.max;
       } else {
         const nextIdx = termConfig.ww.length + 1;
-        if (nextIdx > 10) throw new Error("Maximum 10 Written Works already reached");
+        if (nextIdx > 10) throw new Error("Max 10 Written Works reached");
         assessmentId = `ww${nextIdx}`;
         assessmentName = examTitle || `WW${nextIdx}`;
         termConfig.ww.push({ id: assessmentId, name: assessmentName, max: maxScore, examId });
@@ -46,25 +42,18 @@ export async function pushExamToECR({
     } else if (component === "pt") {
       const existing = termConfig.pt.find(a => a.examId === examId);
       if (existing) {
-        assessmentId = existing.id;
-        assessmentName = existing.name;
-        maxScore = existing.max;
+        assessmentId = existing.id; assessmentName = existing.name; maxScore = existing.max;
       } else {
         const nextIdx = termConfig.pt.length + 1;
-        if (nextIdx > 10) throw new Error("Maximum 10 Performance Tasks already reached");
+        if (nextIdx > 10) throw new Error("Max 10 Performance Tasks reached");
         assessmentId = `pt${nextIdx}`;
         assessmentName = examTitle || `PT${nextIdx}`;
         termConfig.pt.push({ id: assessmentId, name: assessmentName, max: maxScore, examId });
       }
     } else if (component === "st") {
-      if (!["st1", "st2", "te"].includes(stType)) {
-        throw new Error("stType must be st1, st2, or te");
-      }
       const existing = termConfig.st.find(a => a.id === stType);
       if (existing) {
-        assessmentId = stType;
-        assessmentName = existing.name;
-        maxScore = existing.max;
+        assessmentId = stType; assessmentName = existing.name; maxScore = existing.max;
       } else {
         assessmentId = stType;
         assessmentName = stType === "te" ? "Term Exam" : `Summative Test ${stType.slice(-1)}`;
@@ -86,7 +75,7 @@ export async function pushExamToECR({
       const studentId = r.studentId; 
       if (!studentId) continue; 
 
-      // ✅ FIX: Ensure studentName is always a string, never undefined
+      // Safely get student name
       let studentName = r.studentName || "";
       try {
         const sSnap = await getDoc(doc(db, "classes", classId, "students", studentId));
@@ -109,32 +98,40 @@ export async function pushExamToECR({
         wwItems: [], ptItems: [], stItems: {}
       };
 
+      // Update the specific component
       if (component === "ww") {
         const idx = termConfig.ww.findIndex(a => a.id === assessmentId);
         existing.wwItems = existing.wwItems || [];
-        existing.wwItems[idx] = { score: percentScore, max: maxScore };
+        existing.wwItems[idx] = { score: percentScore || 0, max: maxScore };
       } else if (component === "pt") {
         const idx = termConfig.pt.findIndex(a => a.id === assessmentId);
         existing.ptItems = existing.ptItems || [];
-        existing.ptItems[idx] = { score: percentScore, max: maxScore };
+        existing.ptItems[idx] = { score: percentScore || 0, max: maxScore };
       } else if (component === "st") {
         existing.stItems = existing.stItems || {};
-        existing.stItems[stType] = { score: percentScore, max: maxScore };
+        existing.stItems[stType] = { score: percentScore || 0, max: maxScore };
       }
 
-      // ✅ FIX: Only save defined fields
-      const saveData = {
-        studentName: String(studentName || "Unknown Student"),
-        updatedAt: serverTimestamp(),
+      // ✅ THE MAGIC SANITIZER: Converts any 'undefined' to 'null'
+      const sanitize = (obj) => {
+        if (obj === undefined) return null;
+        if (obj === null || typeof obj !== 'object') return obj;
+        if (Array.isArray(obj)) return obj.map(sanitize);
+        return Object.keys(obj).reduce((acc, key) => {
+          acc[key] = sanitize(obj[key]);
+          return acc;
+        }, {});
       };
-      
-      if (existing.wwItems) saveData.wwItems = existing.wwItems;
-      if (existing.ptItems) saveData.ptItems = existing.ptItems;
-      if (existing.stItems) saveData.stItems = existing.stItems;
-      if (existing.computed) saveData.computed = existing.computed;
+
+      const saveData = sanitize({
+        studentName: studentName || "Unknown Student",
+        wwItems: existing.wwItems || [],
+        ptItems: existing.ptItems || [],
+        stItems: existing.stItems || {},
+        updatedAt: serverTimestamp(),
+      });
 
       await setDoc(scoreRef, saveData, { merge: true });
-
       pushed++;
     }
 
