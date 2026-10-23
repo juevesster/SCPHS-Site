@@ -530,7 +530,11 @@
           batch.set(docRef, cleanQ);
         });
 
-        batch.update(doc(db, "exams", EXAM_ID), { questionsCount: LOCAL_QUESTIONS.length });
+                // ✅ Use set with merge:true so it creates the doc if missing, or updates it if it exists
+        batch.set(doc(db, "exams", EXAM_ID), { 
+          questionsCount: LOCAL_QUESTIONS.length,
+          updatedAt: serverTimestamp()
+        }, { merge: true });
 
         await batch.commit();
         alert("✅ All questions saved successfully!");
