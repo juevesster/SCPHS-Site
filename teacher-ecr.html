@@ -782,6 +782,7 @@
       `;
 
       // Student rows
+            // Student rows
       let idx = 1;
       let lastSex = null;
       const studentRows = STUDENTS.map(s => {
@@ -805,28 +806,39 @@
                          : computed.termGrade >= 75 ? "#d97706"
                          : computed.termGrade >= 65 ? "#f97316" : "#dc2626";
 
-                // ✅ FIXED: Only lock the inputs if it is NOT a draft or returned
+        // ✅ FIXED: Only lock the inputs if it is NOT a draft or returned
         const disabled = (STATUS === "draft" || STATUS === "returned") ? "" : "disabled";
 
         return sexHeader + `
           <tr data-student-id="${esc(s.id)}">
             <td class="num">${idx++}</td>
             <td class="name">${esc(s.fullName || (s.lastName + ", " + s.firstName) || s.id)}</td>
+            
+            <!-- ✅ ADDED THE <td> TAGS AROUND WW INPUTS -->
             ${ASSESSMENTS.ww.map((a, i) => `
-            <input class="score-input" type="number" data-type="ww" data-index="${i}" data-student="${esc(s.id)}"
-            value="${sc.wwItems?.[i]?.score ?? sc.wwItems?.[i] ?? ""}" max="${a.max}" ${disabled}>
+              <td>
+                <input class="score-input" type="number" data-type="ww" data-index="${i}" data-student="${esc(s.id)}"
+                  value="${sc.wwItems?.[i]?.score ?? sc.wwItems?.[i] ?? ""}" max="${a.max}" ${disabled}>
+              </td>
             `).join("")}
             <td class="calc-cell">${computed.wwTotal}</td>
             <td class="calc-cell">${computed.wwWs}</td>
+            
+            <!-- ✅ ADDED THE <td> TAGS AROUND PT INPUTS -->
             ${ASSESSMENTS.pt.map((a, i) => `
-            <input class="score-input" type="number" data-type="pt" data-index="${i}" data-student="${esc(s.id)}"
-            value="${sc.ptItems?.[i]?.score ?? sc.ptItems?.[i] ?? ""}" max="${a.max}" ${disabled}>
+              <td>
+                <input class="score-input" type="number" data-type="pt" data-index="${i}" data-student="${esc(s.id)}"
+                  value="${sc.ptItems?.[i]?.score ?? sc.ptItems?.[i] ?? ""}" max="${a.max}" ${disabled}>
+              </td>
             `).join("")}
             <td class="calc-cell">${computed.ptTotal}</td>
             <td class="calc-cell">${computed.ptWs}</td>
+            
             ${ASSESSMENTS.st.map((a) => `
-              <td><input class="score-input" type="number" data-type="st" data-index="${a.id}" data-student="${esc(s.id)}"
-                  value="${sc.stItems[a.id]?.score ?? ""}" max="${a.max}" ${disabled}></td>
+              <td>
+                <input class="score-input" type="number" data-type="st" data-index="${a.id}" data-student="${esc(s.id)}"
+                  value="${sc.stItems[a.id]?.score ?? ""}" max="${a.max}" ${disabled}>
+              </td>
             `).join("")}
             <td class="calc-cell">${computed.stTotal}</td>
             <td class="calc-cell">${computed.exWs}</td>
