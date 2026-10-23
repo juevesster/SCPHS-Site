@@ -258,33 +258,37 @@
       </div>`;
     });
 
-        onAuthStateChanged(auth, async (user) => {
+            onAuthStateChanged(auth, async (user) => {
       if (!user) { window.location.href = "login.html"; return; }
       CURRENT_USER = user;
 
       try {
         // 1. Get Profile
-        const pSnap = await getDocs(collection(db, "users"));
-        const myProfile = pSnap.docs.find(d => d.id === user.uid);
-        if (myProfile) CURRENT_PROFILE = myProfile.data();
+        const pSnap = await getDocs(query(collection(db, "users"), where("__name__", "==", user.uid)));
+        if (!pSnap.empty) CURRENT_PROFILE = pSnap.docs[0].data();
 
         const isAdmin = CURRENT_PROFILE?.primaryRole === "admin" || CURRENT_PROFILE?.isSuperAdmin;
         
-        // ✅ FIX: Check UID, Name, and Email to find her classes
-        const myEmail = (CURRENT_PROFILE?.email || user.email || "").toLowerCase();
-        const myName = (CURRENT_PROFILE?.name || "").toLowerCase();
+        // Safely get names/emails, defaulting to empty strings
+        const myEmail = (CURRENT_PROFILE?.email || user.email || "").trim().toLowerCase();
+        const myName = (CURRENT_PROFILE?.name || "").trim().toLowerCase();
         
-        // 2. Find Classes (Admin sees all, Adviser sees their own)
+        // 2. Find Classes 
+        // We fetch ALL classes and filter in JS. This prevents permission errors 
+        // because the rule `allow read: if isSignedIn()` permits listing all classes.
         const clsSnap = await getDocs(collection(db, "classes"));
+        
         clsSnap.forEach(d => {
           const c = d.data();
-          const classAdviser = (c.adviserName || "").toLowerCase();
-          const classEmail = (c.adviserEmail || "").toLowerCase();
+          const classAdviserUid = (c.adviserUid || "").trim();
+          const classAdviserName = (c.adviserName || "").trim().toLowerCase();
+          const classAdviserEmail = (c.adviserEmail || "").trim().toLowerCase();
           
+          // Robust matching: UID, Name, or Email
           const isMyClass = 
-            c.adviserUid === CURRENT_USER.uid || 
-            (classAdviser && classAdviser === myName) ||
-            (classEmail && classEmail === myEmail);
+            (classAdviserUid && classAdviserUid === CURRENT_USER.uid) || 
+            (classAdviserName && classAdviserName === myName) ||
+            (classAdviserEmail && classAdviserEmail === myEmail);
 
           if (isAdmin || isMyClass) {
             MY_CLASSES.push({ id: d.id, ...c });
@@ -292,7 +296,8 @@
         });
 
         if (MY_CLASSES.length === 0) {
-          document.getElementById("loading").innerHTML = "<h3>No classes found. You are not assigned as an adviser.</h3>";
+          document.getElementById("loading").innerHTML = `<h3>No classes found for ${CURRENT_PROFILE?.name || "this user"}.</h3>
+          <p style="font-size:0.85rem; color:#666; margin-top:10px;">Please ensure your Name or Email matches the Adviser field in the Class settings.</p>`;
           return;
         }
 
@@ -317,37 +322,39 @@
       });
     });
 
-    async function loadECRs() {
+        async function loadECRs() {
       ALL_ECRS = [];
       try {
         for (const cls of MY_CLASSES) {
-          // Fetch ECRs for this class
-          const ecrSnap = await getDocs(collection(db, "classes", cls.id, "ecr"));
-          
-          ecrSnap.forEach(d => {
-            const data = d.data();
-            if (data.terms) {
-              Object.keys(data.terms).forEach(termStr => {
-                const termData = data.terms[termStr];
-                // Only show if submitted or approved
-                if (termData.status === 'submitted' || termData.status === 'approved') {
-                  ALL_ECRS.push({
-                    classId: cls.id,
-                    className: cls.classLabel || cls.name,
-                    subjectCode: d.id,
-                    subjectName: data.subjectName || d.id,
-                    term: termStr,
-                    status: termData.status,
-                    submittedAt: termData.submittedAt,
-                    rawData: data
-                  });
-                }
-              });
-            }
-          });
+          try {
+            // Fetch ECRs for this class
+            const ecrSnap = await getDocs(collection(db, "classes", cls.id, "ecr"));
+            
+            ecrSnap.forEach(d => {
+              const data = d.data();
+              if (data.terms) {
+                Object.keys(data.terms).forEach(termStr => {
+                  const termData = data.terms[termStr];
+                  if (termData.status === 'submitted' || termData.status === 'approved') {
+                    ALL_ECRS.push({
+                      classId: cls.id,
+                      className: cls.classLabel || cls.name || "Unknown Class",
+                      subjectCode: d.id,
+                      subjectName: data.subjectName || d.id,
+                      term: termStr,
+                      status: termData.status,
+                      submittedAt: termData.submittedAt,
+                      rawData: data
+                    });
+                  }
+                });
+              }
+            });
+          } catch (err) {
+            console.warn(`Skipping ECR for class ${cls.id} due to permissions or missing data.`);
+          }
         }
 
-        // Sort by newest
         ALL_ECRS.sort((a, b) => {
           const timeA = a.submittedAt?.toMillis() || 0;
           const timeB = b.submittedAt?.toMillis() || 0;
