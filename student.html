@@ -247,7 +247,7 @@
     </div>
   </div>
 
-    <script type="module">
+      <script type="module">
     import { auth, db } from "./assets/js/firebase-config.js";
     import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
     import { doc, getDoc, collection, getDocs, query, where } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
@@ -290,13 +290,12 @@
             }
           }
 
-          // 3. Load Grades from NEW ECR Structure
-                    // 3. Load Grades from NEW ECR Structure
+          // 3. Load Grades from ECR Structure
           if (CLASS_INFO && STUDENT_INFO) {
             const progSnap = await getDocs(collection(db, "classes", CLASS_INFO.id, "program"));
             const subjects = [...new Set(progSnap.docs.map(d => d.data().subject).filter(Boolean))];
             
-                                    for (const subjCode of subjects) {
+            for (const subjCode of subjects) {
               // Look up the Subject Name
               let subjName = subjCode;
               try {
@@ -304,10 +303,9 @@
                 if (subjSnap.exists()) subjName = subjSnap.data().displayName || subjCode;
               } catch {}
 
-              // 1. Get the ECR document to check status
+              // Get the ECR document
               const ecrDoc = await getDoc(doc(db, "classes", CLASS_INFO.id, "ecr", subjCode));
               
-              // Only proceed if the ECR exists AND Term 1 is approved
               if (ecrDoc.exists()) {
                 const ecrData = ecrDoc.data();
                 const term1Status = ecrData.terms?.["1"]?.status;
@@ -317,6 +315,7 @@
                   
                   if (scoreSnap.exists()) {
                     const data = scoreSnap.data();
+                    // ✅ Ensure the grade is a valid number, not NaN
                     if (data.computed && data.computed.termGrade && !isNaN(data.computed.termGrade)) {
                       GRADES.push({ subject: subjName, q1: Number(data.computed.termGrade) });
                     } else {
@@ -332,37 +331,7 @@
                 GRADES.push({ subject: subjName, q1: null });
               }
             }
-              
-              // Look up the subject metadata to get the real name
-              const subjMeta = await getDoc(doc(db, "subjects", subjCode));
-              const realSubjectName = subjMeta.exists() ? (subjMeta.data().displayName || subjCode) : subjCode;
-
-              if (ecrDoc.exists()) {
-                const ecrData = ecrDoc.data();
-                const term1Status = ecrData.terms?.["1"]?.status;
-                
-                if (term1Status === "approved") {
-                  const scoreSnap = await getDoc(doc(db, "classes", CLASS_INFO.id, "ecr", subjCode, "terms", "1", "scores", STUDENT_INFO.id));
-                  
-                  if (scoreSnap.exists()) {
-                    const data = scoreSnap.data();
-                    if (data.computed && data.computed.termGrade) {
-                      // ✅ Use the real name and ensure it's a number
-                      GRADES.push({ subject: realSubjectName, q1: Number(data.computed.termGrade) });
-                    } else {
-                      GRADES.push({ subject: realSubjectName, q1: null });
-                    }
-                  } else {
-                    GRADES.push({ subject: realSubjectName, q1: null });
-                  }
-                } else {
-                  // Grade exists but not approved yet
-                  GRADES.push({ subject: realSubjectName, q1: null }); 
-                }
-              } else {
-                GRADES.push({ subject: realSubjectName, q1: null });
-              }
-            }
+          }
 
           // 4. Fetch Exams & Submissions
           if (CLASS_INFO) {
@@ -412,38 +381,14 @@
       let validSubjects = 0;
       let gradesHtml = "";
 
-            GRADES.forEach(g => {
+      GRADES.forEach(g => {
         // Safely parse the grade, ignoring NaN or null
         const rawVals = [g.q1, g.q2, g.q3, g.q4].filter(v => v !== null && v !== "" && v !== undefined);
-        const vals = rawVals.map(Number).filter(n => !isNaN(n)); // Keep only real numbers
+        const vals = rawVals.map(Number).filter(n => !isNaN(n)); 
         
         if (vals.length > 0) {
           const avg = Math.round(vals.reduce((a,b)=>a+b, 0) / vals.length);
           g.average = avg;
-          totalAvg += avg;
-          validSubjects++;
-          
-          let pillClass = "pill-low";
-          let emoji = "⚠️";
-          if (avg >= 90) { pillClass = "pill-excellent"; emoji = "🏆"; }
-          else if (avg >= 85) { pillClass = "pill-good"; emoji = "👍"; }
-          else if (avg >= 75) { pillClass = "pill-average"; emoji = "📚"; }
-
-          gradesHtml += `
-            <div class="grade-row">
-              <span class="grade-subject">${g.subject}</span>
-              <span class="grade-pill ${pillClass}">${avg} ${emoji}</span>
-            </div>
-          `;
-        } else {
-          gradesHtml += `
-            <div class="grade-row">
-              <span class="grade-subject">${g.subject}</span>
-              <span class="grade-pill" style="background:#e2e8f0; color:#64748b;">—</span>
-            </div>
-          `;
-        }
-      });
           totalAvg += avg;
           validSubjects++;
           
@@ -518,16 +463,11 @@
       }
     }
 
-    // ✅ LOAD AVAILABLE EXAMS & CHECK FOR SUBMISSIONS (FIXED)
-        async function loadMyExams(classId) {
+    async function loadMyExams(classId) {
       try {
         const container = document.getElementById("examsContainer");
         
-        // 1. Get all exams for this class (No compound queries to avoid indexes)
-        const q = query(
-          collection(db, "exams"), 
-          where("classId", "==", classId)
-        );
+        const q = query(collection(db, "exams"), where("classId", "==", classId));
         const snap = await getDocs(q);
         
         MY_EXAMS = snap.docs
@@ -542,15 +482,10 @@
           return;
         }
 
-        // 2. Fetch ALL submissions for this student (Simpler query, no index needed)
-        const subQ = query(
-          collection(db, "exam_submissions"), 
-          where("studentId", "==", CURRENT_USER.uid)
-        );
+        const subQ = query(collection(db, "exam_submissions"), where("studentId", "==", CURRENT_USER.uid));
         const subSnap = await getDocs(subQ);
         const allSubmissions = subSnap.docs.map(d => ({ id: d.id, ...d.data() }));
 
-        // Filter in JS just in case they took it with a different name
         const studentName = (STUDENT_INFO?.fullName || PROFILE.name || "").toLowerCase();
         const submissions = allSubmissions.filter(s => 
           s.studentId === CURRENT_USER.uid || 
@@ -559,7 +494,6 @@
 
         const submittedExamIds = submissions.map(s => s.examId);
 
-        // 3. Render Cards
         container.innerHTML = MY_EXAMS.map(exam => {
           const isSubmitted = submittedExamIds.includes(exam.id);
           const sub = submissions.find(s => s.examId === exam.id);
