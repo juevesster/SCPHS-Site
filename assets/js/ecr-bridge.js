@@ -75,7 +75,6 @@ export async function pushExamToECR({
       const studentId = r.studentId; 
       if (!studentId) continue; 
 
-      // Safely get student name
       let studentName = r.studentName || "";
       try {
         const sSnap = await getDoc(doc(db, "classes", classId, "students", studentId));
@@ -99,39 +98,30 @@ export async function pushExamToECR({
       };
 
       // Update the specific component
+      let wwItems = Array.isArray(existing.wwItems) ? [...existing.wwItems] : [];
+      let ptItems = Array.isArray(existing.ptItems) ? [...existing.ptItems] : [];
+      let stItems = typeof existing.stItems === 'object' && existing.stItems !== null ? { ...existing.stItems } : {};
+
       if (component === "ww") {
         const idx = termConfig.ww.findIndex(a => a.id === assessmentId);
-        existing.wwItems = existing.wwItems || [];
-        existing.wwItems[idx] = { score: percentScore || 0, max: maxScore };
+        while (wwItems.length <= idx) wwItems.push({ score: 0, max: 0 });
+        wwItems[idx] = { score: percentScore || 0, max: maxScore };
       } else if (component === "pt") {
         const idx = termConfig.pt.findIndex(a => a.id === assessmentId);
-        existing.ptItems = existing.ptItems || [];
-        existing.ptItems[idx] = { score: percentScore || 0, max: maxScore };
+        while (ptItems.length <= idx) ptItems.push({ score: 0, max: 0 });
+        ptItems[idx] = { score: percentScore || 0, max: maxScore };
       } else if (component === "st") {
-        existing.stItems = existing.stItems || {};
-        existing.stItems[stType] = { score: percentScore || 0, max: maxScore };
+        stItems[stType] = { score: percentScore || 0, max: maxScore };
       }
 
-      // ✅ THE MAGIC SANITIZER: Converts any 'undefined' to 'null'
-      const sanitize = (obj) => {
-        if (obj === undefined) return null;
-        if (obj === null || typeof obj !== 'object') return obj;
-        if (Array.isArray(obj)) return obj.map(sanitize);
-        return Object.keys(obj).reduce((acc, key) => {
-          acc[key] = sanitize(obj[key]);
-          return acc;
-        }, {});
-      };
-
-      const saveData = sanitize({
+      await setDoc(scoreRef, {
         studentName: studentName || "Unknown Student",
-        wwItems: existing.wwItems || [],
-        ptItems: existing.ptItems || [],
-        stItems: existing.stItems || {},
+        wwItems: wwItems,
+        ptItems: ptItems,
+        stItems: stItems,
         updatedAt: serverTimestamp(),
-      });
+      }, { merge: true });
 
-      await setDoc(scoreRef, saveData, { merge: true });
       pushed++;
     }
 
