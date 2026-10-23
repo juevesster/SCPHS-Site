@@ -11,7 +11,7 @@ export async function pushExamToECR({
   highestPossibleScore = 100,
 }) {
   try {
-    // 1. Load exam results from the exam_submissions collection
+    // 1. Load exam results
     const q = query(collection(db, "exam_submissions"), where("examId", "==", examId));
     const resultsSnap = await getDocs(q);
     
@@ -27,7 +27,7 @@ export async function pushExamToECR({
       ww: [], pt: [], st: [], status: "draft"
     };
 
-    // 3. Determine assessment slot (ww, pt, or st)
+    // 3. Determine assessment slot
     let assessmentId, assessmentName, maxScore = highestPossibleScore;
 
     if (component === "ww") {
@@ -70,11 +70,9 @@ export async function pushExamToECR({
         assessmentName = stType === "te" ? "Term Exam" : `Summative Test ${stType.slice(-1)}`;
         termConfig.st.push({ id: stType, name: assessmentName, max: maxScore, examId });
       }
-    } else {
-      throw new Error("Invalid component: " + component);
     }
 
-    // 4. Save ECR config (assessment structure)
+    // 4. Save ECR config
     await setDoc(ecrRef, {
       subjectCode,
       terms: { [String(term)]: termConfig },
@@ -86,10 +84,9 @@ export async function pushExamToECR({
     for (const docSnap of resultsSnap.docs) {
       const r = docSnap.data();
       const studentId = r.studentId; 
-      
       if (!studentId) continue; 
 
-      // Get student name
+      // ✅ FIX: Ensure studentName is always a string, never undefined
       let studentName = r.studentName || "";
       try {
         const sSnap = await getDoc(doc(db, "classes", classId, "students", studentId));
@@ -99,12 +96,10 @@ export async function pushExamToECR({
         }
       } catch {}
 
-      // Calculate percentage score (e.g., 14/20 = 70)
       const percentScore = r.totalPoints > 0 
         ? Math.round((r.score / r.totalPoints) * maxScore * 100) / 100 
         : 0;
 
-      // Load existing scores doc
       const scoreRef = doc(
         db, "classes", classId, "ecr", subjectCode,
         "terms", String(term), "scores", studentId
@@ -114,7 +109,6 @@ export async function pushExamToECR({
         wwItems: [], ptItems: [], stItems: {}
       };
 
-      // Insert/update score (matching the ECR table's expected format)
       if (component === "ww") {
         const idx = termConfig.ww.findIndex(a => a.id === assessmentId);
         existing.wwItems = existing.wwItems || [];
@@ -128,11 +122,18 @@ export async function pushExamToECR({
         existing.stItems[stType] = { score: percentScore, max: maxScore };
       }
 
-      await setDoc(scoreRef, {
-        studentName,
-        ...existing,
+      // ✅ FIX: Only save defined fields
+      const saveData = {
+        studentName: String(studentName || "Unknown Student"),
         updatedAt: serverTimestamp(),
-      }, { merge: true });
+      };
+      
+      if (existing.wwItems) saveData.wwItems = existing.wwItems;
+      if (existing.ptItems) saveData.ptItems = existing.ptItems;
+      if (existing.stItems) saveData.stItems = existing.stItems;
+      if (existing.computed) saveData.computed = existing.computed;
+
+      await setDoc(scoreRef, saveData, { merge: true });
 
       pushed++;
     }
@@ -141,9 +142,6 @@ export async function pushExamToECR({
 
   } catch (err) {
     console.error("[pushExamToECR] failed:", err);
-    if (err.message.includes("permissions")) {
-      throw new Error("Permission denied. Ensure your Firestore rules allow writing to 'ecr'.");
-    }
     throw err;
   }
 }
