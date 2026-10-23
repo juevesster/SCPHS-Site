@@ -457,19 +457,17 @@
     }
 
     // ✅ LOAD AVAILABLE EXAMS & CHECK FOR SUBMISSIONS (FIXED)
-    async function loadMyExams(classId) {
+        async function loadMyExams(classId) {
       try {
         const container = document.getElementById("examsContainer");
         
-        // 1. Get all exams for this class
-                // 1. Get all exams for this class (REMOVED status from query to avoid index error)
+        // 1. Get all exams for this class (No compound queries to avoid indexes)
         const q = query(
           collection(db, "exams"), 
           where("classId", "==", classId)
         );
         const snap = await getDocs(q);
         
-        // 2. Filter for published exams IN JAVASCRIPT instead
         MY_EXAMS = snap.docs
           .map(d => ({ id: d.id, ...d.data() }))
           .filter(exam => exam.status === "published");
@@ -482,13 +480,15 @@
           return;
         }
 
-        // 2. Check if the student has already submitted these exams
-        // We fetch ALL submissions for this student and filter in JS
-        const subQ = query(collection(db, "exam_submissions"), where("examId", "in", MY_EXAMS.map(e => e.id)));
+        // 2. Fetch ALL submissions for this student (Simpler query, no index needed)
+        const subQ = query(
+          collection(db, "exam_submissions"), 
+          where("studentId", "==", CURRENT_USER.uid)
+        );
         const subSnap = await getDocs(subQ);
         const allSubmissions = subSnap.docs.map(d => ({ id: d.id, ...d.data() }));
-        
-        // ✅ FALLBACK: Match by UID OR by Student Name (for testing)
+
+        // Filter in JS just in case they took it with a different name
         const studentName = (STUDENT_INFO?.fullName || PROFILE.name || "").toLowerCase();
         const submissions = allSubmissions.filter(s => 
           s.studentId === CURRENT_USER.uid || 
@@ -505,7 +505,6 @@
           let actionHtml = "";
           
           if (isSubmitted) {
-            // Calculate score for display
             const percent = sub.totalPoints > 0 ? Math.round((sub.score / sub.totalPoints) * 100) : 0;
             let scoreColor = percent >= 75 ? "#059669" : "#dc2626";
             
