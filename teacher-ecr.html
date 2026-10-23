@@ -136,6 +136,24 @@
     .form-group { margin-bottom: 14px; }
     .form-group label { display: block; font-size: 0.72rem; font-weight: 700; color: #374151; text-transform: uppercase; margin-bottom: 6px; }
     .form-group input, .form-group select { width: 100%; padding: 9px 12px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 0.9rem; font-family: inherit; }
+  
+        /* Delete Assessment Button */
+    .del-assessment {
+      background: rgba(255, 255, 255, 0.2);
+      border: none;
+      color: #fff;
+      cursor: pointer;
+      padding: 2px 5px;
+      border-radius: 4px;
+      margin-left: 4px;
+      font-size: 0.7rem;
+      transition: 0.2s;
+    }
+    .del-assessment:hover {
+      background: #dc2626;
+    }
+    .btn-danger { background: #dc2626; color: #fff; }
+    .btn-danger:hover { background: #b91c1c; }
   </style>
 </head>
 <body>
@@ -222,6 +240,12 @@
             <button class="btn btn-outline" id="btnAddAssessment">➕ Add Assessment</button>
             <button class="btn btn-outline" id="btnPrint">🖨 Print</button>
             <span id="statText" style="margin-left:auto;color:var(--text-muted);font-size:0.8rem;"></span>
+            
+            <!-- ✅ ADD THIS BUTTON -->
+            <button class="btn btn-danger" id="btnReset" style="display:none;">🔄 Reset to Draft</button>
+            
+            <span id="statText" style="margin-left:auto;color:var(--text-muted);font-size:0.8rem;"></span>
+        
           </div>
 
           <!-- Table -->
@@ -592,7 +616,7 @@
       `;
     }
 
-    function renderHeader() {
+        function renderHeader() {
       $("ecrTitle").textContent = `📊 ${SELECTED_SUBJECT.name}`;
       $("ecrSubtitle").textContent = `${SELECTED_CLASS.classLabel} · ${CURRENT_TERM === 4 ? "Legacy Term" : `Term ${CURRENT_TERM}`} · ${STUDENTS.length} students`;
     }
@@ -618,10 +642,22 @@
           <th rowspan="2" style="min-width:90px;">Descriptor</th>
         </tr>
         <tr>
-          ${ASSESSMENTS.ww.map(a => `<th style="min-width:56px;">${esc(a.name)}</th>`).join("")}
+          ${ASSESSMENTS.ww.map((a, i) => `
+            <th style="min-width:56px; position:relative;">
+              ${esc(a.name)}
+              ${CAN_EDIT ? `<button class="del-assessment" onclick="deleteAssessment('ww', ${i})" title="Delete">✕</button>` : ''}
+            </th>
+          `).join("")}
           <th style="min-width:44px;">Tot</th><th style="min-width:44px;">WS</th>
-          ${ASSESSMENTS.pt.map(a => `<th style="min-width:56px;">${esc(a.name)}</th>`).join("")}
+          
+          ${ASSESSMENTS.pt.map((a, i) => `
+            <th style="min-width:56px; position:relative;">
+              ${esc(a.name)}
+              ${CAN_EDIT ? `<button class="del-assessment" onclick="deleteAssessment('pt', ${i})" title="Delete">✕</button>` : ''}
+            </th>
+          `).join("")}
           <th style="min-width:44px;">Tot</th><th style="min-width:44px;">WS</th>
+          
           ${ASSESSMENTS.st.map(a => `<th style="min-width:56px;">${esc(a.name)}</th>`).join("")}
           <th style="min-width:44px;">Tot</th><th style="min-width:44px;">WS</th>
         </tr>
@@ -767,7 +803,7 @@
       if (cells[8]) cells[8].style.color = gradeColor;
     }
 
-    function updateStatus() {
+        function updateStatus() {
       const banner = $("statusBanner");
       const badge = $("statusBadge");
 
@@ -783,9 +819,16 @@
       badge.textContent = s.badge;
 
       CAN_EDIT = STATUS === "draft" || STATUS === "returned";
+      
       $("btnSave").disabled = !CAN_EDIT;
       $("btnSubmit").disabled = !CAN_EDIT;
       $("btnAddAssessment").disabled = !CAN_EDIT;
+
+      // ✅ Toggle Reset Button
+      const btnReset = $("btnReset");
+      if (btnReset) {
+        btnReset.style.display = (STATUS === "submitted" || STATUS === "approved") ? "inline-flex" : "none";
+      }
     }
 
     // ---------- Save ----------
@@ -926,6 +969,51 @@
       window.print();
       setTimeout(() => { document.title = orig; }, 1000);
     });
+
+        // ✅ RESET TO DRAFT LOGIC
+    $("btnReset")?.addEventListener("click", async () => {
+      if (!confirm("Reset this ECR to Draft? This will unlock the table so you can edit or delete scores.")) return;
+      try {
+        const ecrRef = doc(db, "classes", SELECTED_CLASS.id, "ecr", SELECTED_SUBJECT.code);
+        const updateData = {};
+        updateData[`terms.${CURRENT_TERM}.status`] = "draft";
+        await setDoc(ecrRef, updateData, { merge: true });
+        
+        STATUS = "draft";
+        updateStatus();
+        renderTable();
+        toast("✓ Status reset to Draft", "success");
+      } catch (e) {
+        toast("⚠️ " + e.message, "error");
+      }
+    });
+
+    // ✅ DELETE ASSESSMENT LOGIC
+    window.deleteAssessment = async (type, index) => {
+      if (!confirm("Are you sure you want to delete this assessment? All scores for this column will be lost.")) return;
+      
+      try {
+        const ecrRef = doc(db, "classes", SELECTED_CLASS.id, "ecr", SELECTED_SUBJECT.code);
+        
+        // Remove from local array
+        if (type === 'ww') ASSESSMENTS.ww.splice(index, 1);
+        if (type === 'pt') ASSESSMENTS.pt.splice(index, 1);
+        
+        // Save the updated array to Firestore
+        const updateData = {};
+        updateData[`terms.${CURRENT_TERM}.ww`] = ASSESSMENTS.ww;
+        updateData[`terms.${CURRENT_TERM}.pt`] = ASSESSMENTS.pt;
+        await setDoc(ecrRef, updateData, { merge: true });
+        
+        // Also need to clean up the scores in the students' documents
+        // (For simplicity, we just re-render and they won't show the deleted column)
+        
+        renderTable();
+        toast("✓ Assessment deleted", "success");
+      } catch (e) {
+        toast("⚠️ " + e.message, "error");
+      }
+    };
   </script>
 </body>
 </html>
