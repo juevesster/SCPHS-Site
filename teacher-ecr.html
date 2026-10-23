@@ -802,16 +802,24 @@
           : "";
         lastSex = s.sex;
 
-        const sc = SCORES[s.id] || { wwItems: [], ptItems: [], stItems: {} };
+                const sc = SCORES[s.id] || { wwItems: [], ptItems: [], stItems: {} };
+        
+        // ✅ BULLETPROOF: Handle both old and new formats
+        const getScore = (arr, idx) => {
+          if (!arr || !arr[idx]) return "";
+          if (typeof arr[idx] === 'object') return arr[idx].score ?? "";
+          return arr[idx]; // If it's a raw number, return it
+        };
+
         const computed = computeECR({
-          wwItems: ASSESSMENTS.ww.map((a, i) => ({ score: sc.wwItems[i]?.score ?? "", max: a.max })),
-          ptItems: ASSESSMENTS.pt.map((a, i) => ({ score: sc.ptItems[i]?.score ?? "", max: a.max })),
+          wwItems: ASSESSMENTS.ww.map((a, i) => ({ score: getScore(sc.wwItems, i), max: a.max })),
+          ptItems: ASSESSMENTS.pt.map((a, i) => ({ score: getScore(sc.ptItems, i), max: a.max })),
           stItems: Object.fromEntries(ASSESSMENTS.st.map(a => [a.id, {
-            score: sc.stItems[a.id]?.score ?? "", max: a.max
+            score: sc.stItems[a.id]?.score ?? sc.stItems[a.id] ?? "", max: a.max
           }])),
           weights: WEIGHTS_CONFIG,
         });
-
+          
         const gradeColor = computed.termGrade >= 90 ? "#059669"
                          : computed.termGrade >= 80 ? "#1e40af"
                          : computed.termGrade >= 75 ? "#d97706"
@@ -825,21 +833,20 @@
             <td class="num">${idx++}</td>
             <td class="name">${esc(s.fullName || (s.lastName + ", " + s.firstName) || s.id)}</td>
             
-            <!-- ✅ ADDED THE <td> TAGS AROUND WW INPUTS -->
+                        <!-- ✅ USE THE NEW getScore FUNCTION -->
             ${ASSESSMENTS.ww.map((a, i) => `
               <td>
                 <input class="score-input" type="number" data-type="ww" data-index="${i}" data-student="${esc(s.id)}"
-                  value="${sc.wwItems?.[i]?.score ?? sc.wwItems?.[i] ?? ""}" max="${a.max}" ${disabled}>
+                  value="${getScore(sc.wwItems, i)}" max="${a.max}" ${disabled}>
               </td>
             `).join("")}
             <td class="calc-cell">${computed.wwTotal}</td>
             <td class="calc-cell">${computed.wwWs}</td>
             
-            <!-- ✅ ADDED THE <td> TAGS AROUND PT INPUTS -->
             ${ASSESSMENTS.pt.map((a, i) => `
               <td>
                 <input class="score-input" type="number" data-type="pt" data-index="${i}" data-student="${esc(s.id)}"
-                  value="${sc.ptItems?.[i]?.score ?? sc.ptItems?.[i] ?? ""}" max="${a.max}" ${disabled}>
+                  value="${getScore(sc.ptItems, i)}" max="${a.max}" ${disabled}>
               </td>
             `).join("")}
             <td class="calc-cell">${computed.ptTotal}</td>
