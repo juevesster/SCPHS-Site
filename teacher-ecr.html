@@ -300,6 +300,109 @@
     </div>
   </div>
 
+  <style>
+  /* Workflow Guide Styles */
+  .workflow-guide {
+    background: linear-gradient(135deg, #f0fdf4, #dcfce7);
+    border: 1px solid #86efac;
+    border-radius: 12px;
+    margin-bottom: 20px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+  }
+  
+  .workflow-header {
+    padding: 15px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: pointer;
+    background: rgba(255,255,255,0.4);
+    font-weight: 700;
+    color: #166534;
+    transition: background 0.2s;
+  }
+  
+  .workflow-header:hover { background: rgba(255,255,255,0.7); }
+  
+  .workflow-content {
+    padding: 0 20px 20px 20px;
+    display: none; /* Hidden by default */
+  }
+  
+  .workflow-content.show { display: block; }
+  
+  .workflow-steps {
+    display: flex;
+    gap: 15px;
+    flex-wrap: wrap;
+    margin-top: 15px;
+  }
+  
+  .wf-step {
+    flex: 1;
+    min-width: 200px;
+    background: #fff;
+    border-radius: 10px;
+    padding: 15px;
+    border-left: 4px solid #3b82f6;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.03);
+  }
+  
+  .wf-step.adviser { border-left-color: #d97706; }
+  .wf-step.student { border-left-color: #8b5cf6; }
+  
+  .wf-step h4 {
+    margin: 0 0 8px 0;
+    font-size: 0.9rem;
+    color: #1e293b;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  
+  .wf-step p {
+    margin: 0;
+    font-size: 0.8rem;
+    color: #64748b;
+    line-height: 1.4;
+  }
+</style>
+
+<!-- The Guide Component -->
+<div class="workflow-guide">
+  <div class="workflow-header" onclick="this.nextElementSibling.classList.toggle('show'); this.querySelector('.toggle-icon').innerText = this.nextElementSibling.classList.contains('show') ? '▲' : '▼';">
+    <div><i class="fas fa-info-circle"></i> How the Grading Workflow Works</div>
+    <span class="toggle-icon">▼</span>
+  </div>
+  
+  <div class="workflow-content">
+    <p style="font-size: 0.85rem; color: #14532d; margin-bottom: 15px;">
+      Follow these steps to ensure grades are calculated, reviewed, and released correctly according to DepEd DO 015.
+    </p>
+    
+    <div class="workflow-steps">
+      <!-- Step 1: Teacher -->
+      <div class="wf-step">
+        <h4><i class="fas fa-chalkboard-teacher" style="color: #3b82f6;"></i> 1. Teacher (You)</h4>
+        <p>Enter scores manually or click <strong>"Push to ECR"</strong> from the Assessment Hub. Once complete, click <strong>Save Scores</strong>, then click <strong>Submit for Review</strong>.</p>
+      </div>
+      
+      <!-- Step 2: Adviser -->
+      <div class="wf-step adviser">
+        <h4><i class="fas fa-user-check" style="color: #d97706;"></i> 2. Adviser</h4>
+        <p>The Adviser goes to the Approvals page, reviews the computed grades, and clicks <strong>Approve</strong>. (If there is an error, they click <strong>Return for Revision</strong>).</p>
+      </div>
+      
+      <!-- Step 3: Student -->
+      <div class="wf-step student">
+        <h4><i class="fas fa-user-graduate" style="color: #8b5cf6;"></i> 3. Student</h4>
+        <p>Only after the Adviser approves will the grades become visible on the Student's Portal Dashboard and Report Card.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
   <div id="toast" class="toast"></div>
 
   <script type="module">
@@ -702,21 +805,22 @@
                          : computed.termGrade >= 75 ? "#d97706"
                          : computed.termGrade >= 65 ? "#f97316" : "#dc2626";
 
-        const disabled = CAN_EDIT && (STATUS === "draft" || STATUS === "returned") ? "" : "disabled";
+                // ✅ FIXED: Only lock the inputs if it is NOT a draft or returned
+        const disabled = (STATUS === "draft" || STATUS === "returned") ? "" : "disabled";
 
         return sexHeader + `
           <tr data-student-id="${esc(s.id)}">
             <td class="num">${idx++}</td>
             <td class="name">${esc(s.fullName || (s.lastName + ", " + s.firstName) || s.id)}</td>
             ${ASSESSMENTS.ww.map((a, i) => `
-            <td><input class="score-input" type="number" data-type="ww" data-index="${i}" data-student="${esc(s.id)}"
-            value="${sc.wwItems?.[i]?.score ?? sc.wwItems?.[i] ?? ""}" max="${a.max}" ${disabled}></td>
+            <input class="score-input" type="number" data-type="ww" data-index="${i}" data-student="${esc(s.id)}"
+            value="${sc.wwItems?.[i]?.score ?? sc.wwItems?.[i] ?? ""}" max="${a.max}" ${disabled}>
             `).join("")}
             <td class="calc-cell">${computed.wwTotal}</td>
             <td class="calc-cell">${computed.wwWs}</td>
             ${ASSESSMENTS.pt.map((a, i) => `
-            <td><input class="score-input" type="number" data-type="pt" data-index="${i}" data-student="${esc(s.id)}"
-            value="${sc.ptItems?.[i]?.score ?? sc.ptItems?.[i] ?? ""}" max="${a.max}" ${disabled}></td>
+            <input class="score-input" type="number" data-type="pt" data-index="${i}" data-student="${esc(s.id)}"
+            value="${sc.ptItems?.[i]?.score ?? sc.ptItems?.[i] ?? ""}" max="${a.max}" ${disabled}>
             `).join("")}
             <td class="calc-cell">${computed.ptTotal}</td>
             <td class="calc-cell">${computed.ptWs}</td>
