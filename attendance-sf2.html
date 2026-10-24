@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SF2 Attendance | DO 009, s. 2026</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <style>
+    :root { --primary: #1e3c72; --primary-light: #2a5298; --bg: #f0f2f5; --text: #1e293b; }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); }
+    
+    .header { background: linear-gradient(135deg, var(--primary), var(--primary-light)); color: #fff; padding: 20px; }
+    .container { max-width: 1400px; margin: 0 auto; padding: 20px; }
+    .card { background: #fff; border-radius: 12px; padding: 20px; margin-bottom: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+    
+    /* Term Tabs */
+    .term-tabs { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; }
+    .term-tab { padding: 8px 20px; background: #fff; border-radius: 30px; text-decoration: none; color: #333; font-weight: 600; font-size: 14px; border: 1px solid #e2e8f0; cursor: pointer; }
+    .term-tab.active { background: var(--primary); color: #fff; border-color: var(--primary); }
+    
+    /* Stats */
+    .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px; margin-bottom: 20px; }
+    .stat-card { text-align: center; padding: 15px; border-radius: 10px; color: #fff; }
+    .stat-present { background: linear-gradient(135deg, #10b981, #059669); }
+    .stat-late { background: linear-gradient(135deg, #f59e0b, #d97706); }
+    .stat-absent { background: linear-gradient(135deg, #ef4444, #dc2626); }
+    .stat-number { font-size: 28px; font-weight: 800; }
+    
+    /* View Tabs */
+    .view-tabs { display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 2px solid #e2e8f0; padding-bottom: 10px; }
+    .view-tab { padding: 8px 20px; background: #f8fafc; border-radius: 30px; cursor: pointer; font-weight: 600; color: #64748b; }
+    .view-tab.active { background: var(--primary); color: #fff; }
+    
+    /* Table */
+    table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    th, td { padding: 10px; text-align: left; border-bottom: 1px solid #e2e8f0; }
+    th { background: #f8fafc; color: #475569; font-weight: 700; font-size: 11px; text-transform: uppercase; }
+    
+    .status-select { padding: 6px 10px; border-radius: 6px; border: 1px solid #cbd5e1; font-family: inherit; }
+    .time-input { padding: 6px; border-radius: 6px; border: 1px solid #cbd5e1; width: 100px; }
+    
+    /* Monthly Matrix */
+    .matrix-wrap { overflow-x: auto; max-height: 600px; }
+    .matrix-table { width: 100%; border-collapse: collapse; font-size: 11px; }
+    .matrix-table th, .matrix-table td { border: 1px solid #e2e8f0; padding: 4px; text-align: center; }
+    .matrix-table th { background: #f8fafc; }
+    .matrix-table .name-col { position: sticky; left: 0; background: #fff; text-align: left; min-width: 150px; font-weight: 600; z-index: 2; }
+    .matrix-table th.name-col { background: #f8fafc; z-index: 3; }
+    .cell-present { background: #d1fae5; color: #065f46; }
+    .cell-late { background: #fef3c7; color: #92400e; }
+    .cell-absent { background: #fee2e2; color: #991b1b; }
+    
+    /* Buttons */
+    .btn { padding: 8px 16px; border-radius: 6px; border: none; font-weight: 600; cursor: pointer; font-family: inherit; font-size: 13px; display: inline-flex; align-items: center; gap: 6px; }
+    .btn-primary { background: var(--primary); color: #fff; }
+    .btn-success { background: #10b981; color: #fff; }
+    .btn-warning { background: #f59e0b; color: #fff; }
+    
+    .filter-bar { display: flex; gap: 15px; align-items: flex-end; margin-bottom: 15px; flex-wrap: wrap; }
+    .filter-bar label { font-size: 11px; font-weight: 700; color: #64748b; text-transform: uppercase; display: block; margin-bottom: 4px; }
+    .filter-bar select, .filter-bar input { padding: 8px 12px; border-radius: 6px; border: 1px solid #cbd5e1; font-family: inherit; font-size: 13px; }
+  </style>
+</head>
+<body>
+
+  <header class="header">
+    <div class="container" style="display: flex; justify-content: space-between; align-items: center;">
+      <div>
+        <h2><i class="fas fa-clipboard-check"></i> SF2 - Daily Attendance Record</h2>
+        <p style="font-size: 13px; opacity: 0.9;">MATATAG Curriculum | DO 009, s. 2026 | 3-Term System</p>
+      </div>
+      <a href="teacher.html" class="btn" style="background: rgba(255,255,255,0.2); color: #fff;"><i class="fas fa-arrow-left"></i> Dashboard</a>
+    </div>
+  </header>
+
+  <div class="container">
+    
+    <!-- Controls -->
+    <div class="card">
+      <div class="filter-bar">
+        <div>
+          <label>Select Class</label>
+          <select id="classSelect" onchange="loadClassData()">
+            <option value="">— Select Class —</option>
+          </select>
+        </div>
+        <div>
+          <label>Select Term</label>
+          <select id="termSelect" onchange="loadClassData()">
+            <option value="1">🌱 Term 1</option>
+            <option value="2">🌿 Term 2</option>
+            <option value="3">🌾 Term 3</option>
+          </select>
+        </div>
+        <div id="viewSelector" style="display: none;">
+          <label>View Mode</label>
+          <select id="viewMode" onchange="toggleView()">
+            <option value="daily">Daily Entry</option>
+            <option value="monthly">Monthly Summary</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <!-- Daily Entry View -->
+    <div id="dailyView" style="display: none;">
+      <div class="card">
+        <div class="filter-bar">
+          <div>
+            <label>Date</label>
+            <input type="date" id="attendanceDate" onchange="loadDailyAttendance()">
+          </div>
+          <button class="btn btn-warning" onclick="markAllPresent()"><i class="fas fa-check-double"></i> Mark All Present</button>
+          <button class="btn btn-success" onclick="saveDailyAttendance()" style="margin-left: auto;"><i class="fas fa-save"></i> Save Attendance</button>
+        </div>
+
+        <div class="stats-grid" id="statsGrid">
+          <div class="stat-card stat-present"><div class="stat-number" id="statPresent">0</div>Present</div>
+          <div class="stat-card stat-late"><div class="stat-number" id="statLate">0</div>Late</div>
+          <div class="stat-card stat-absent"><div class="stat-number" id="statAbsent">0</div>Absent</div>
+          <div class="stat-card" style="background: linear-gradient(135deg, #64748b, #475569);"><div class="stat-number" id="statTotal">0</div>Total</div>
+        </div>
+
+        <table id="dailyTable">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Student Name</th>
+              <th>LRN</th>
+              <th>Status</th>
+              <th>Time In</th>
+            </tr>
+          </thead>
+          <tbody id="dailyTableBody">
+            <!-- Injected by JS -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Monthly Summary View -->
+    <div id="monthlyView" style="display: none;">
+      <div class="card">
+        <div class="filter-bar">
+          <div>
+            <label>Month</label>
+            <input type="month" id="summaryMonth" onchange="loadMonthlySummary()">
+          </div>
+        </div>
+        <div class="matrix-wrap">
+          <table class="matrix-table" id="matrixTable">
+            <thead id="matrixThead"></thead>
+            <tbody id="matrixTbody"></tbody>
+          </table>
+        </div>
+        <p style="margin-top: 15px; font-size: 12px; color: #64748b;"><strong>Legend:</strong> ✓ = Present | ⏰ = Late | ✗ = Absent | - = No Record</p>
+      </div>
+    </div>
+
+  </div>
+
+  <script type="module">
+    import { auth, db } from "./assets/js/firebase-config.js";
+    import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+    import { collection, getDocs, doc, getDoc, setDoc, query, where } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+    let CURRENT_USER = null;
+    let MY_CLASSES = [];
+    let SELECTED_CLASS = null;
+    let STUDENTS = [];
+    let ATTENDANCE_DATA = {}; // { studentId: { status, timeIn } }
+    let IS_MONTHLY_VIEW = false;
+
+    // Set default dates
+    const today = new Date().toISOString().split('T')[0];
+    document.getElementById("attendanceDate").value = today;
+    document.getElementById("summaryMonth").value = today.slice(0, 7);
+
+    onAuthStateChanged(auth, async (user) => {
+      if (!user) { window.location.href = "login.html"; return; }
+      CURRENT_USER = user;
+
+      try {
+        // Get Profile to find classes
+        const pSnap = await getDoc(doc(db, "users", user.uid));
+        const profile = pSnap.exists() ? pSnap.data() : {};
+        const myName = (profile?.name || "").toLowerCase();
+        const myEmail = (profile?.email || user.email || "").toLowerCase();
+        
+        const clsSnap = await getDocs(collection(db, "classes"));
+        clsSnap.forEach(d => {
+          const c = d.data();
+          const isMyClass = c.adviserUid === CURRENT_USER.uid || 
+            (c.adviserName && c.adviserName.toLowerCase() === myName) ||
+            (c.adviserEmail && c.adviserEmail.toLowerCase() === myEmail);
+
+          if (isMyClass) MY_CLASSES.push({ id: d.id, ...c });
+        });
+
+        const select = document.getElementById("classSelect");
+        MY_CLASSES.forEach(c => {
+          select.innerHTML += `<option value="${c.id}">${c.classLabel}</option>`;
+        });
+      } catch (err) {
+        console.error(err);
+      }
+    });
+
+    window.loadClassData = async () => {
+      const classId = document.getElementById("classSelect").value;
+      if (!classId) return;
+
+      SELECTED_CLASS = MY_CLASSES.find(c => c.id === classId);
+      
+      // Fetch students
+      const stSnap = await getDocs(collection(db, "classes", classId, "students"));
+      STUDENTS = stSnap.docs.map(d => ({ id: d.id, ...d.data() })).sort((a,b) => (a.fullName || "").localeCompare(b.fullName || ""));
+
+      document.getElementById("viewSelector").style.display = "block";
+      document.getElementById("dailyView").style.display = "none";
+      document.getElementById("monthlyView").style.display = "none";
+
+      toggleView();
+    };
+
+    window.toggleView = () => {
+      const mode = document.getElementById("viewMode").value;
+      IS_MONTHLY_VIEW = mode === "monthly";
+      
+      document.getElementById("dailyView").style.display = IS_MONTHLY_VIEW ? "none" : "block";
+      document.getElementById("monthlyView").style.display = IS_MONTHLY_VIEW ? "block" : "none";
+
+      if (IS_MONTHLY_VIEW) loadMonthlySummary();
+      else loadDailyAttendance();
+    };
+
+    // ============ DAILY VIEW LOGIC ============
+    window.loadDailyAttendance = async () => {
+      const classId = document.getElementById("classSelect").value;
+      const dateVal = document.getElementById("attendanceDate").value;
+      const term = document.getElementById("termSelect").value;
+      if (!classId || !dateVal) return;
+
+      const attSnap = await getDoc(doc(db, "classes", classId, "attendance", dateVal));
+      ATTENDANCE_DATA = {};
+      
+      if (attSnap.exists() && attSnap.data().term === term) {
+        ATTENDANCE_DATA = attSnap.data().records || {};
+      }
+
+      renderDailyTable();
+    };
+
+    function renderDailyTable() {
+      const tbody = document.getElementById("dailyTableBody");
+      tbody.innerHTML = "";
+      
+      let presentCount = 0, lateCount = 0, absentCount = 0;
+
+      STUDENTS.forEach((s, i) => {
+        const record = ATTENDANCE_DATA[s.id] || { status: "Absent", timeIn: "" };
+        const status = record.status;
+        const timeIn = record.timeIn || "";
+
+        if (status === "Present") presentCount++;
+        else if (status === "Late") lateCount++;
+        else absentCount++;
+
+        tbody.innerHTML += `
+          <tr>
+            <td>${i + 1}</td>
+            <td style="font-weight: 600;">${s.fullName || s.lastName + ", " + s.firstName}</td>
+            <td>${s.lrn || ""}</td>
+            <td>
+              <select class="status-select" onchange="updateStatus('${s.id}', this.value)">
+                <option value="Present" ${status === 'Present' ? 'selected' : ''}>✅ Present</option>
+                <option value="Late" ${status === 'Late' ? 'selected' : ''}>⏰ Late</option>
+                <option value="Absent" ${status === 'Absent' ? 'selected' : ''}>❌ Absent</option>
+              </select>
+            </td>
+            <td>
+              <input type="time" class="time-input" value="${timeIn}" onchange="updateTime('${s.id}', this.value)" ${status === 'Absent' ? 'disabled' : ''}>
+            </td>
+          </tr>
+        `;
+      });
+
+      document.getElementById("statPresent").textContent = presentCount;
+      document.getElementById("statLate").textContent = lateCount;
+      document.getElementById("statAbsent").textContent = absentCount;
+      document.getElementById("statTotal").textContent = STUDENTS.length;
+    }
+
+    window.updateStatus = (studentId, status) => {
+      if (!ATTENDANCE_DATA[studentId]) ATTENDANCE_DATA[studentId] = { status: "Absent", timeIn: "" };
+      ATTENDANCE_DATA[studentId].status = status;
+      
+      // Auto-fill time if Present/Late and empty
+      if ((status === "Present" || status === "Late") && !ATTENDANCE_DATA[studentId].timeIn) {
+        const now = new Date();
+        ATTENDANCE_DATA[studentId].timeIn = now.toTimeString().slice(0, 5);
+      }
+      renderDailyTable();
+    };
+
+    window.updateTime = (studentId, time) => {
+      if (!ATTENDANCE_DATA[studentId]) ATTENDANCE_DATA[studentId] = { status: "Absent", timeIn: "" };
+      ATTENDANCE_DATA[studentId].timeIn = time;
+    };
+
+    window.markAllPresent = () => {
+      const now = new Date();
+      const currentTime = now.toTimeString().slice(0, 5);
+      STUDENTS.forEach(s => {
+        ATTENDANCE_DATA[s.id] = { status: "Present", timeIn: currentTime };
+      });
+      renderDailyTable();
+    };
+
+    window.saveDailyAttendance = async () => {
+      const classId = document.getElementById("classSelect").value;
+      const dateVal = document.getElementById("attendanceDate").value;
+      const term = document.getElementById("termSelect").value;
+
+      try {
+        await setDoc(doc(db, "classes", classId, "attendance", dateVal), {
+          date: dateVal,
+          term: term,
+          records: ATTENDANCE_DATA,
+          updatedAt: new Date().toISOString(),
+          updatedBy: CURRENT_USER.uid
+        });
+        alert("✓ Attendance saved successfully!");
+      } catch (err) {
+        console.error(err);
+        alert("Error: " + err.message);
+      }
+    };
+
+    // ============ MONTHLY SUMMARY LOGIC ============
+    window.loadMonthlySummary = async () => {
+      const classId = document.getElementById("classSelect").value;
+      const monthVal = document.getElementById("summaryMonth").value; // "2026-10"
+      const term = document.getElementById("termSelect").value;
+      if (!classId || !monthVal) return;
+
+      const [year, month] = monthVal.split("-");
+      const daysInMonth = new Date(year, month, 0).getDate();
+
+      // Fetch all attendance for this month
+      const attSnap = await getDocs(collection(db, "classes", classId, "attendance"));
+      const allData = {};
+      attSnap.forEach(d => {
+        const data = d.data();
+        if (data.date.startsWith(monthVal) && data.term === term) {
+          allData[data.date] = data.records;
+        }
+      });
+
+      // Build Table Header
+      const thead = document.getElementById("matrixThead");
+      let headerHtml = `<tr><th class="name-col">Student Name</th>`;
+      for (let d = 1; d <= daysInMonth; d++) {
+        const dayStr = `${year}-${month}-${String(d).padStart(2, '0')}`;
+        const dateObj = new Date(dayStr);
+        const dayName = dateObj.toLocaleDateString('en-US', { weekday: 'short' }).charAt(0);
+        headerHtml += `<th>${d}<br><small>${dayName}</small></th>`;
+      }
+      headerHtml += `<th>✅</th><th>⏰</th><th>❌</th></tr>`;
+      thead.innerHTML = headerHtml;
+
+      // Build Table Body
+      const tbody = document.getElementById("matrixTbody");
+      tbody.innerHTML = "";
+
+      STUDENTS.forEach(s => {
+        let rowHtml = `<tr><td class="name-col">${s.fullName || s.lastName + ", " + s.firstName}</td>`;
+        let totalPresent = 0, totalLate = 0, totalAbsent = 0;
+
+        for (let d = 1; d <= daysInMonth; d++) {
+          const dayStr = `${year}-${month}-${String(d).padStart(2, '0')}`;
+          const dayRecord = allData[dayStr]?.[s.id];
+          const status = dayRecord?.status || "";
+          
+          let cellClass = "", display = "-";
+          if (status === "Present") { cellClass = "cell-present"; display = "✓"; totalPresent++; }
+          else if (status === "Late") { cellClass = "cell-late"; display = "⏰"; totalLate++; }
+          else if (status === "Absent") { cellClass = "cell-absent"; display = "✗"; totalAbsent++; }
+
+          rowHtml += `<td class="${cellClass}">${display}</td>`;
+        }
+
+        rowHtml += `<td style="font-weight:700; color:#059669;">${totalPresent}</td><td style="font-weight:700; color:#d97706;">${totalLate}</td><td style="font-weight:700; color:#dc2626;">${totalAbsent}</td></tr>`;
+        tbody.innerHTML += rowHtml;
+      });
+    };
+  </script>
+</body>
+</html>
