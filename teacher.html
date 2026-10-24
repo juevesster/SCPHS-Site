@@ -24,7 +24,7 @@
     body { font-family: 'Inter', sans-serif; background: var(--bg-color); color: var(--text-main); display: flex; height: 100vh; overflow: hidden; }
 
     /* ================= SIDEBAR ================= */
-    .sidebar { width: 260px; background: var(--sidebar-bg); color: #fff; display: flex; flex-direction: column; transition: all 0.3s; z-index: 100; }
+    .sidebar { width: 260px; background: var(--sidebar-bg); color: #fff; display: flex; flex-direction: column; transition: all 0.3s; z-index: 1000; position: relative; }
     .sidebar-brand { padding: 24px 20px; font-size: 1.2rem; font-weight: 800; border-bottom: 1px solid rgba(255,255,255,0.1); display: flex; align-items: center; gap: 10px; }
     .sidebar-brand span { font-size: 1.5rem; }
     .sidebar-menu { flex: 1; padding: 20px 10px; display: flex; flex-direction: column; gap: 8px; overflow-y: auto; }
@@ -41,11 +41,15 @@
     .sidebar-footer { padding: 20px; border-top: 1px solid rgba(255,255,255,0.1); }
     
     /* ================= MAIN LAYOUT ================= */
-    .main-content { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+    .main-content { flex: 1; display: flex; flex-direction: column; overflow: hidden; width: 100%; }
     
     /* TOP NAVBAR */
     .top-navbar { background: var(--card-bg); height: 70px; padding: 0 30px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); box-shadow: 0 1px 3px rgba(0,0,0,0.02); z-index: 90; }
     .page-title { font-size: 1.25rem; font-weight: 700; color: var(--primary); display: flex; align-items: center; gap: 10px; }
+    
+    /* MOBILE MENU TOGGLE */
+    .mobile-toggle { display: none; background: none; border: none; font-size: 1.5rem; color: var(--primary); cursor: pointer; margin-right: 12px; }
+
     .term-badge { background: #e0e7ff; color: #3730a3; font-size: 0.75rem; padding: 4px 10px; border-radius: 999px; font-weight: 700; border: 1px solid #c7d2fe; }
     
     .user-profile { display: flex; align-items: center; gap: 15px; }
@@ -96,21 +100,31 @@
     .spinner { width: 40px; height: 40px; border: 4px solid #e2e8f0; border-top-color: var(--primary); border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 16px; }
     @keyframes spin { to { transform: rotate(360deg); } }
     
-    /* RESPONSIVE */
-    @media (max-width: 1024px) { .grid-layout { grid-template-columns: 1fr; } }
+    /* ================= RESPONSIVE ================= */
+    @media (max-width: 1024px) { 
+      .grid-layout { grid-template-columns: 1fr; } 
+    }
     @media (max-width: 768px) { 
-      .sidebar { width: 70px; } 
-      .sidebar-brand span, .menu-item span:not(.icon), .term-selector { display: none; }
-      .menu-item { justify-content: center; padding: 12px; }
-      .user-info { display: none; }
-      .top-navbar { padding: 0 15px; }
+      .sidebar { position: fixed; left: -260px; height: 100vh; }
+      .sidebar.open { left: 0; }
+      .mobile-toggle { display: block; }
+      
+      .top-navbar { flex-direction: column; align-items: flex-start; gap: 16px; height: auto; padding: 16px; }
+      .user-profile { width: 100%; justify-content: space-between; }
+      .page-title { width: 100%; justify-content: space-between; font-size: 1.1rem; }
+      .dashboard-scroll { padding: 16px; }
+      
+      /* Make quick actions single column on very small screens if needed, but 2 columns usually fit */
+      .quick-actions { grid-template-columns: 1fr 1fr; gap: 10px; }
+      .btn-action { padding: 16px 10px; font-size: 0.85rem; }
+      .btn-action .icon { width: 50px; height: 50px; font-size: 1.5rem; }
     }
   </style>
 </head>
 <body>
 
   <!-- SIDEBAR -->
-  <aside class="sidebar">
+  <aside class="sidebar" id="sidebar">
     <div class="sidebar-brand">
       <span>🏫</span> SCPHS Portal
     </div>
@@ -142,20 +156,18 @@
       <span class="icon">📅</span> <span>SF2 Attendance</span>
       </a>
       
-      <!-- Scroll to My Classes -->
       <a href="#myClassesWidget" class="menu-item" onclick="document.getElementById('myClassesWidget').scrollIntoView({behavior: 'smooth'}); return false;">
         <span class="icon">🏫</span> <span>My Classes</span>
       </a>
       
-             <!-- Gradebook -->
       <a href="teacher-ecr.html" class="menu-item">
         <span class="icon">📊</span> <span>ECR / Gradebook</span>
       </a>
 
-      <!-- ✅ ADDED: Adviser Approvals (Hidden by default) -->
       <a href="adviser-approvals.html" class="menu-item" id="menuAdviserApprovals" style="display: none;">
         <span class="icon">✅</span> <span>Grade Approvals</span>
       </a>
+    </div>
     
     <div class="sidebar-footer">
       <a href="admin.html" class="menu-item" style="color: #f87171;">
@@ -170,7 +182,10 @@
     <!-- TOP NAVBAR -->
     <header class="top-navbar">
       <div class="page-title">
-        Teacher Dashboard
+        <div style="display: flex; align-items: center;">
+          <button class="mobile-toggle" onclick="document.getElementById('sidebar').classList.toggle('open')">☰</button>
+          Teacher Dashboard
+        </div>
         <span class="term-badge" id="activeTermBadge">Term 1</span>
       </div>
       <div class="user-profile">
@@ -282,9 +297,8 @@
 
     let CURRENT_USER = null;
     let CURRENT_PROFILE = null;
-    let CURRENT_TERM = 1; // Default
+    let CURRENT_TERM = 1;
 
-    // 1. AUTH CHECK
     onAuthStateChanged(auth, async (user) => {
       if (!user) {
         location.replace("login.html?next=teacher.html");
@@ -304,7 +318,6 @@
         return;
       }
 
-      // Update Top Navbar UI
       const name = CURRENT_PROFILE?.name || user.email.split('@')[0];
       document.getElementById("navUserName").textContent = name;
       document.getElementById("navUserRole").textContent = CURRENT_PROFILE?.primaryRole || "Teacher";
@@ -313,20 +326,17 @@
       document.getElementById("loading").style.display = "none";
       document.getElementById("dashboardContent").style.display = "block";
       
-      // Initial Load
       await loadMyClasses();
       await loadRecentLessons();
       await loadSharedMaterials();
     });
 
-    // 2. LOGOUT
     document.getElementById("btnLogout").addEventListener("click", () => {
       if (confirm("Are you sure you want to logout?")) {
         signOut(auth).then(() => location.replace("login.html"));
       }
     });
 
-    // 3. TERM SELECTOR HANDLER
     document.getElementById("termPicker").addEventListener("change", async (e) => {
       CURRENT_TERM = parseInt(e.target.value, 10);
       
@@ -340,19 +350,15 @@
       await loadSharedMaterials();
     });
 
-    // 4. LOAD CLASSES (BULLETPROOF ASSIGNMENT CHECK)
-        // 4. LOAD CLASSES (BULLETPROOF ASSIGNMENT CHECK + PROGRAM SCAN)
     async function loadMyClasses() {
       const host = document.getElementById("classList");
       try {
         const snap = await getDocs(collection(db, "classes"));
         const myClasses = [];
 
-        // We will check each class document
         for (const docSnap of snap.docs) {
           const cls = { id: docSnap.id, ...docSnap.data() };
           
-          // 1. Check basic class assignments
           const isAdviser = cls.adviserUid === CURRENT_USER.uid;
           const isTeacher = cls.teacherUids && cls.teacherUids.includes(CURRENT_USER.uid);
           const isSubjectTeacher = cls.subjectTeachers && Object.values(cls.subjectTeachers).includes(CURRENT_USER.uid);
@@ -360,37 +366,26 @@
 
           let isInProgram = false;
 
-          // 2. IF NOT ASSIGNED DIRECTLY, CHECK THE CLASS PROGRAM
           if (!isAdviser && !isTeacher && !isSubjectTeacher && !isGeneralTeacher) {
             try {
-              // Query the program subcollection for entries where teacherUid == current user
-              // We use a simple getDocs and filter because we don't know the exact term, 
-              // but if you want to optimize, you can query by term too.
               const programSnap = await getDocs(collection(db, "classes", cls.id, "program"));
-              
               programSnap.forEach(progDoc => {
                 const entry = progDoc.data();
-                // If the logged-in user is the teacher for ANY entry in this class
                 if (entry.teacherUid === CURRENT_USER.uid) {
                   isInProgram = true;
                 }
               });
-            } catch (err) {
-              // Ignore errors if subcollection doesn't exist
-            }
+            } catch (err) {}
           }
 
-          // If any condition is true, add to my classes
           if (isAdviser || isTeacher || isSubjectTeacher || isGeneralTeacher || isInProgram) {
             myClasses.push({ 
               ...cls, 
-              // Prioritize Adviser role, otherwise mark as Subject Teacher
               role: isAdviser ? "Class Adviser" : "Subject Teacher" 
             });
           }
         }
 
-                // ✅ 1. Check for Admin OR Adviser to show the Approvals button
         const isAdmin = CURRENT_PROFILE?.primaryRole === "admin" || CURRENT_PROFILE?.isSuperAdmin;
         const isAdviser = myClasses.some(c => c.role === "Class Adviser");
         
@@ -399,7 +394,6 @@
           if (btn) btn.style.display = "flex";
         }
 
-        // 2. Handle empty state
         if (myClasses.length === 0) {
           host.innerHTML = `
             <div style="text-align: center; padding: 30px; color: var(--text-muted);">
@@ -410,13 +404,11 @@
           return;
         }
 
-        // Sort classes: Adviser first
         myClasses.sort((a, b) => {
           if (a.role !== b.role) return a.role === "Class Adviser" ? -1 : 1;
           return String(a.gradeLevel).localeCompare(String(b.gradeLevel));
         });
 
-        // Fetch live student count and build cards
         const cards = await Promise.all(myClasses.map(async cls => {
           let studentCount = 0;
           try {
@@ -455,7 +447,6 @@
       }
     }
 
-    // 5. LOAD RECENT LESSONS
     async function loadRecentLessons() {
       const host = document.getElementById("recentLessons");
       try {
@@ -502,7 +493,6 @@
       }
     }
 
-    // 6. LOAD SHARED MATERIALS
     async function loadSharedMaterials() {
       const host = document.getElementById("sharedMaterials");
       try {

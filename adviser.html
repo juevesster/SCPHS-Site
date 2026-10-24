@@ -26,10 +26,10 @@
     body { background: var(--bg-color); color: var(--text-main); display: flex; height: 100vh; overflow: hidden; }
 
     /* ================= SIDEBAR ================= */
-    .sidebar { width: 260px; background: var(--sidebar-bg); color: #fff; display: flex; flex-direction: column; z-index: 100; transition: all 0.3s; }
+    .sidebar { width: 260px; background: var(--sidebar-bg); color: #fff; display: flex; flex-direction: column; z-index: 1000; transition: all 0.3s; position: relative; }
     .sidebar-brand { padding: 30px 24px; font-size: 1.4rem; font-weight: 800; display: flex; align-items: center; gap: 12px; letter-spacing: -0.5px; border-bottom: 1px solid rgba(255,255,255,0.05); }
     .sidebar-brand i { color: var(--primary-light); }
-    .sidebar-menu { flex: 1; padding: 24px 16px; display: flex; flex-direction: column; gap: 8px; }
+    .sidebar-menu { flex: 1; padding: 24px 16px; display: flex; flex-direction: column; gap: 8px; overflow-y: auto; }
     .menu-item { display: flex; align-items: center; gap: 14px; padding: 14px 18px; border-radius: 12px; color: #94a3b8; text-decoration: none; font-weight: 500; font-size: 0.95rem; transition: all 0.2s; }
     .menu-item:hover { background: var(--sidebar-hover); color: #fff; transform: translateX(4px); }
     .menu-item.active { background: linear-gradient(90deg, var(--primary), var(--primary-light)); color: #fff; box-shadow: 0 4px 15px rgba(79, 70, 229, 0.3); }
@@ -48,8 +48,11 @@
     .topbar { height: 80px; padding: 0 32px; display: flex; justify-content: space-between; align-items: center; background: rgba(255, 255, 255, 0.6); backdrop-filter: blur(20px); border-bottom: 1px solid var(--glass-border); z-index: 10; }
     .page-title { font-size: 1.5rem; font-weight: 800; color: var(--text-main); letter-spacing: -0.5px; display: flex; align-items: center; gap: 16px; }
     
+    /* MOBILE MENU TOGGLE */
+    .mobile-toggle { display: none; background: none; border: none; font-size: 1.5rem; color: var(--primary); cursor: pointer; margin-right: 12px; }
+
     /* TERM SELECTOR */
-    .term-selector-wrap { display: flex; align-items: center; gap: 8px; background: #fff; border: 1px solid var(--border); padding: 6px 12px; border-radius: 10px; box-shadow: var(--shadow-sm); }
+    .term-selector-wrap { display: flex; align-items: center; gap: 8px; background: #fff; border: 1px solid #e2e8f0; padding: 6px 12px; border-radius: 10px; box-shadow: var(--shadow-sm); }
     .term-selector-wrap label { font-size: 0.8rem; font-weight: 700; color: var(--primary); text-transform: uppercase; letter-spacing: 0.5px; }
     .term-selector-wrap select { border: none; outline: none; font-weight: 700; font-size: 0.95rem; color: var(--text-main); background: transparent; cursor: pointer; font-family: inherit; }
 
@@ -112,21 +115,25 @@
     .spinner { width: 50px; height: 50px; border: 5px solid rgba(79,70,229,0.2); border-top-color: var(--primary); border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 16px; }
     @keyframes spin { to { transform: rotate(360deg); } }
 
-    /* RESPONSIVE */
-    @media (max-width: 1200px) {
+    /* ================= RESPONSIVE ================= */
+    @media (max-width: 1024px) {
       .bento-grid { grid-template-columns: repeat(2, 1fr); }
       .classes-card { grid-column: span 2; }
     }
     @media (max-width: 768px) {
-      .sidebar { width: 80px; }
-      .sidebar-brand span, .menu-item span:not(.icon) { display: none; }
-      .menu-item { justify-content: center; padding: 14px; }
+      .sidebar { position: fixed; left: -260px; height: 100vh; }
+      .sidebar.open { left: 0; }
+      .mobile-toggle { display: block; }
       .bento-grid { grid-template-columns: 1fr; }
       .classes-card { grid-column: span 1; }
       .menu-grid { grid-template-columns: 1fr; }
-      .user-info { display: none; }
-      .topbar { padding: 0 16px; flex-wrap: wrap; height: auto; padding-bottom: 16px; gap: 12px; }
+      .topbar { flex-direction: column; align-items: flex-start; gap: 16px; height: auto; padding: 16px; }
+      .user-profile { width: 100%; justify-content: space-between; }
+      .page-title { width: 100%; justify-content: space-between; flex-wrap: wrap; gap: 10px; font-size: 1.2rem; }
       .dashboard-scroll { padding: 16px; }
+      .class-item { flex-direction: column; align-items: flex-start; gap: 16px; }
+      .class-item > div:last-child { width: 100%; display: flex; gap: 8px; }
+      .btn-action { flex: 1; justify-content: center; }
     }
   </style>
 </head>
@@ -139,7 +146,7 @@
   </div>
 
   <!-- Sidebar -->
-  <aside class="sidebar">
+  <aside class="sidebar" id="sidebar">
     <div class="sidebar-brand">
       <i class="fas fa-shield-alt"></i> <span>SCPHS Hub</span>
     </div>
@@ -166,15 +173,15 @@
 
   <!-- Main Content -->
   <main class="main-content">
-    <!-- Animated Background -->
     <div class="orb orb-1"></div>
     <div class="orb orb-2"></div>
 
-    <!-- Top Bar -->
     <header class="topbar">
       <div class="page-title">
-        Adviser Dashboard
-        <!-- DO 009 s. 2026 Term Selector -->
+        <div style="display: flex; align-items: center;">
+          <button class="mobile-toggle" onclick="document.getElementById('sidebar').classList.toggle('open')"><i class="fas fa-bars"></i></button>
+          Adviser Dashboard
+        </div>
         <div class="term-selector-wrap">
           <label for="termSelector">Term:</label>
           <select id="termSelector">
@@ -193,13 +200,8 @@
       </div>
     </header>
 
-    <!-- Scrollable Dashboard -->
     <div class="dashboard-scroll">
-      
-      <!-- Bento Grid -->
       <div class="bento-grid">
-        
-        <!-- Stat 1 -->
         <div class="bento-card stat-card">
           <div class="stat-icon blue"><i class="fas fa-building"></i></div>
           <div>
@@ -207,8 +209,6 @@
             <div class="stat-label">Advisory Classes</div>
           </div>
         </div>
-
-        <!-- Stat 2 -->
         <div class="bento-card stat-card">
           <div class="stat-icon green"><i class="fas fa-users"></i></div>
           <div>
@@ -216,8 +216,6 @@
             <div class="stat-label">Total Students</div>
           </div>
         </div>
-
-        <!-- Stat 3 -->
         <div class="bento-card stat-card">
           <div class="stat-icon purple"><i class="fas fa-calendar-alt"></i></div>
           <div>
@@ -225,8 +223,6 @@
             <div class="stat-label">Current Term</div>
           </div>
         </div>
-
-        <!-- Stat 4 -->
         <div class="bento-card stat-card">
           <div class="stat-icon orange"><i class="fas fa-check-circle"></i></div>
           <div>
@@ -235,17 +231,13 @@
           </div>
         </div>
 
-        <!-- Classes Card (Spans 2 columns) -->
         <div class="bento-card classes-card">
           <div class="card-header">
             <div class="card-title"><i class="fas fa-school" style="color: var(--primary);"></i> My Advisory Classes</div>
           </div>
-          <div id="classListContainer">
-            <!-- Classes injected here -->
-          </div>
+          <div id="classListContainer"></div>
         </div>
 
-        <!-- Forms Card (Spans 1 column) -->
         <div class="bento-card">
           <div class="card-header">
             <div class="card-title"><i class="fas fa-file-alt" style="color: #0ea5e9;"></i> School Forms</div>
@@ -270,41 +262,32 @@
           </div>
         </div>
 
-        <!-- Tools Card (Spans 1 column) -->
-                <!-- Tools Card (Spans 1 column) -->
         <div class="bento-card">
           <div class="card-header">
             <div class="card-title"><i class="fas fa-tools" style="color: #ec4899;"></i> Adviser Tools</div>
           </div>
           <div class="menu-grid" style="grid-template-columns: 1fr;">
-            
-            <!-- ✅ CHANGED: Link this to the approval page -->
             <a href="adviser-approvals.html" class="menu-card">
               <div class="menu-icon" style="background: linear-gradient(135deg, #10b981, #34d399);"><i class="fas fa-check-double"></i></div>
               <div class="menu-info"><h4>Grade Approvals</h4><p>Review & approve ECRs</p></div>
             </a>
-
             <a href="teacher-ecr.html" class="menu-card">
               <div class="menu-icon" style="background: linear-gradient(135deg, #0ea5e9, #38bdf8);"><i class="fas fa-calculator"></i></div>
               <div class="menu-info"><h4>ECR - Class Record</h4><p>View grades</p></div>
             </a>
-            
             <a href="#" class="menu-card">
               <div class="menu-icon" style="background: linear-gradient(135deg, #8b5cf6, #c084fc);"><i class="fas fa-comments"></i></div>
               <div class="menu-info"><h4>Messaging</h4><p>Parents & students</p></div>
             </a>
-
             <a href="schedule.html" class="menu-card">
             <div class="menu-icon" style="background: linear-gradient(135deg, #f59e0b, #fbbf24);"><i class="fas fa-calendar-alt"></i></div>
             <div class="menu-info"><h4>My Schedule</h4><p>Weekly teaching load</p></div>
             </a>
-
             <a href="teacher.html" class="menu-card">
               <div class="menu-icon" style="background: linear-gradient(135deg, #10b981, #34d399);"><i class="fas fa-chalkboard-teacher"></i></div>
               <div class="menu-info"><h4>ILAW Planner</h4><p>Lesson plans</p></div>
             </a>
-
-              <a href="adviser-consolidation.html" class="menu-card">
+            <a href="adviser-consolidation.html" class="menu-card">
               <div class="menu-icon" style="background: linear-gradient(135deg, #8b5cf6, #a78bfa);"><i class="fas fa-file-invoice"></i></div>
               <div class="menu-info"><h4>Class Consolidation</h4><p>Generate SF9 Report Cards</p></div>
             </a>
@@ -314,7 +297,6 @@
     </div>
   </main>
 
-  <!-- Chatbot -->
   <button class="chatbot-fab" onclick="alert('AI Assistant coming soon!')">
     <i class="fas fa-robot"></i>
   </button>
@@ -345,20 +327,16 @@
           return;
         }
 
-        // Update UI Profile
         const name = CURRENT_PROFILE.name || user.email.split('@')[0];
         document.getElementById("navUserName").textContent = name;
         document.getElementById("navUserRole").textContent = CURRENT_PROFILE.primaryRole || "Teacher";
         document.getElementById("navAvatar").textContent = name.charAt(0).toUpperCase();
 
-        // Fetch Advisory Classes
         try {
           const q = query(collection(db, "classes"), where("adviserUid", "==", user.uid));
           const snap = await getDocs(q);
-          
           MY_CLASSES = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
 
-          // Fetch Student Counts
           for (const cls of MY_CLASSES) {
             const studentsSnap = await getDocs(collection(db, "classes", cls.id, "students"));
             cls.studentCount = studentsSnap.size;
@@ -371,7 +349,6 @@
         document.getElementById("loader").style.opacity = "0";
         setTimeout(() => document.getElementById("loader").style.display = "none", 500);
 
-        // 🆕 Term Selector Listener
         document.getElementById("termSelector").addEventListener("change", (e) => {
           CURRENT_TERM = parseInt(e.target.value, 10);
           renderDashboard();
@@ -380,17 +357,13 @@
     }
 
     function renderDashboard() {
-      // Update Stats
       const totalClasses = MY_CLASSES.length;
       const totalStudents = MY_CLASSES.reduce((sum, c) => sum + (c.studentCount || 0), 0);
       
       document.getElementById("statClasses").textContent = totalClasses;
       document.getElementById("statStudents").textContent = totalStudents;
-      
-      // 🆕 Update Term Display
       document.getElementById("statTerm").textContent = `Term ${CURRENT_TERM}`;
 
-      // Render Classes
       const container = document.getElementById("classListContainer");
       if (totalClasses === 0) {
         container.innerHTML = `
@@ -403,8 +376,6 @@
         return;
       }
 
-      // In the future, we can filter `MY_CLASSES` based on `CURRENT_TERM` if classes change per term.
-      // For now, it renders the assigned classes and passes the term to the buttons.
       container.innerHTML = MY_CLASSES.map(cls => `
         <div class="class-item">
           <div class="class-info">
@@ -414,7 +385,7 @@
               <span><i class="fas fa-users"></i> ${cls.studentCount} Students</span>
             </div>
           </div>
-          <div style="display: flex; gap: 8px;">
+          <div>
             <a href="sf1-class.html?id=${cls.id}" class="btn-action btn-sf1"><i class="fas fa-list"></i> Roster</a>
             <a href="program.html?id=${cls.id}&term=${CURRENT_TERM}" class="btn-action btn-prog"><i class="fas fa-calendar-alt"></i> Program</a>
           </div>
