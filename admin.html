@@ -659,6 +659,9 @@
         <button class="ac-nav-item admin-only-tab" data-tab="ai-settings">
         <span class="ico">🤖</span> AI Settings
         </button>
+        <button class="ac-nav-item admin-only-tab" data-tab="security">
+          <span class="ico">🎥</span> Security Monitor
+        </button>
       </nav>
 
         <div class="ac-sidebar-footer">
@@ -873,9 +876,10 @@
       renderActiveTab();
     }
 
-    function handleUrlHash() {
+      function handleUrlHash() {
       const hash = location.hash.replace("#", "");
-      if (hash && ["classes", "advisers", "subjects", "rooms", "conflicts"].includes(hash)) {
+      if (hash && ["classes", "advisers", "subjects", "rooms", "conflicts",
+                   "ilaw-settings", "ai-settings", "security"].includes(hash)) {
         switchTab(hash);
       }
     }
@@ -893,9 +897,11 @@
         case "ai-settings": renderAISettingsTab(main); break;
         case "rooms":    renderRoomsTab(main); break;
         case "conflicts":renderConflictsTab(main); break;
+        case "security": renderSecurityTab(main); break;   // 🆕 ADD THIS
         default:         renderClassesTab(main);
       }
     }
+    
 
     function renderComingSoonTab(main, name) {
       main.innerHTML = `
@@ -5059,6 +5065,92 @@
       });
     }
 
+    // ============================================================
+    // TAB: SECURITY MONITOR
+    // ============================================================
+    function renderSecurityTab(main) {
+      // Double-check role — blocks forced URL hash access
+      const isAdmin = CURRENT_PROFILE?.isSuperAdmin
+        || CURRENT_PROFILE?.primaryRole === "admin";
+
+      if (!isAdmin) {
+        main.innerHTML = `
+          <div class="ac-card" style="text-align:center;padding:60px;">
+            <h2 style="color:#b91c1c;">🚫 Admin Only</h2>
+            <p>Only administrators can access the facility security monitors.</p>
+            <a href="index.html" class="ac-btn primary" style="margin-top:14px;">← Back to Portal</a>
+          </div>`;
+        return;
+      }
+
+      main.innerHTML = `
+        <div class="ac-page-header">
+          <h2>🎥 Security Monitor</h2>
+          <p>Live feeds for the Computer Lab, Automotive Lab, and Admin Office.</p>
+        </div>
+
+        <div class="ac-card">
+          <h3>Live Camera Access</h3>
+          <p style="color:#4b5563; font-size:14px; margin-bottom:20px;">
+            Click the button below to open the secure Tapo Web Viewer.
+            You will need to log in with the school's camera account to view
+            the live feeds and playback recordings.
+          </p>
+
+          <div style="display:flex; gap:12px; flex-wrap:wrap;">
+            <a href="https://www.tapo.com" target="_blank" rel="noopener"
+               class="ac-btn primary" style="padding:12px 24px; font-size:15px;">
+              🔗 Open Live Monitor
+            </a>
+            <a href="https://www.tplinkcloud.com" target="_blank" rel="noopener"
+               class="ac-btn outline" style="padding:12px 24px; font-size:15px;">
+              ☁️ TP-Link Cloud Backup
+            </a>
+          </div>
+
+          <div style="margin-top:24px; padding:16px; background:#eff6ff;
+                      border:1px solid #bfdbfe; border-radius:8px;
+                      font-size:13px; color:#1e40af;">
+            <strong>💡 Security Tip:</strong> The live feed requires a secure login.
+            Do not save the camera password on shared public computers.
+            If the internet goes down in the lab, the cameras will still record
+            to their internal microSD cards.
+          </div>
+        </div>
+
+        <div class="ac-card">
+          <h3>Facility Status</h3>
+          <div class="ac-table-wrap">
+            <table class="ac-table">
+              <thead>
+                <tr>
+                  <th>Location</th>
+                  <th>Camera Model</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><strong>Computer Lab</strong></td>
+                  <td>Tapo C200C (Indoor Pan/Tilt)</td>
+                  <td><span class="ac-badge success">Online</span></td>
+                </tr>
+                <tr>
+                  <td><strong>Automotive Lab</strong></td>
+                  <td>Tapo C210 (Indoor Pan/Tilt)</td>
+                  <td><span class="ac-badge success">Online</span></td>
+                </tr>
+                <tr>
+                  <td><strong>Admin Office</strong></td>
+                  <td>Tapo C200C (Indoor Pan/Tilt)</td>
+                  <td><span class="ac-badge success">Online</span></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      `;
+    }
     // ============================================================
 // TAB: AI SETTINGS
 // ============================================================
