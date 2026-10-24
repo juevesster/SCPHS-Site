@@ -83,7 +83,6 @@
 
     /* ============================================================
        ROLE QUICK-ACCESS BANNER (Animated Info Drive)
-       Shows for ALL visitors — cards adapt to role.
        ============================================================ */
     .role-cta {
       max-width: 1200px;
@@ -241,136 +240,69 @@
       position: absolute;
       top: 0; left: -100%;
       width: 100%; height: 100%;
-      background: linear-gradient(90deg,
-        transparent 0%,
-        rgba(255,255,255,0.28) 50%,
-        transparent 100%);
+      background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.28) 50%, transparent 100%);
       z-index: 2;
       pointer-events: none;
     }
-    .role-card:hover .shimmer {
-      animation: shimmerSwipe 1.1s ease-out;
-    }
-    @keyframes shimmerSwipe {
-      to { left: 100%; }
-    }
+    .role-card:hover .shimmer { animation: shimmerSwipe 1.1s ease-out; }
+    @keyframes shimmerSwipe { to { left: 100%; } }
 
     /* Role-based visibility */
-.role-only-teacher,
-.role-only-admin,
-.role-only-scphs-teacher,
-.role-only-guest-teacher { display: none; }
-
-/* Base teacher visibility — any teacher sees SOME teacher card */
-/* Base: hide all role-specific cards */
-.role-only-admin,
-.role-only-scphs-teacher,
-.role-only-guest-teacher { display: none; }
-
-/* Admin cards */
-body.is-admin .role-only-admin { display: block; }
-
-/* Teacher-type exclusive cards (Option A) */
-body.is-scphs-teacher .role-only-scphs-teacher { display: block; }
-body.is-guest-teacher .role-only-guest-teacher { display: block; }
-
-/* Admin sees BOTH teacher cards */
-body.is-admin .role-only-scphs-teacher,
-body.is-admin .role-only-guest-teacher { display: block; }
+    .role-only-teacher, .role-only-admin, .role-only-scphs-teacher, .role-only-guest-teacher { display: none; }
+    .role-only-admin, .role-only-scphs-teacher, .role-only-guest-teacher { display: none; }
+    body.is-admin .role-only-admin { display: block; }
+    body.is-scphs-teacher .role-only-scphs-teacher { display: block; }
+    body.is-guest-teacher .role-only-guest-teacher { display: block; }
+    body.is-admin .role-only-scphs-teacher, body.is-admin .role-only-guest-teacher { display: block; }
 
     /* ============================================================
-   TABLET & MOBILE — Stack the page grid + polish Quick Access
-   ============================================================ */
-@media (max-width: 900px) {
-  /* Force 3-column page grid to stack vertically */
-  .content-grid {
-    display: block !important;
-    grid-template-columns: 1fr !important;
-    gap: 16px !important;
-  }
+       MOBILE & TABLET FIXES (CRITICAL UPDATES)
+       ============================================================ */
+    @media (max-width: 900px) {
+      .content-grid {
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 16px !important;
+      }
+      .content-grid > aside, .content-grid > section {
+        width: 100% !important;
+        max-width: 100% !important;
+        margin-bottom: 16px;
+      }
+      body { overflow-x: hidden; }
+      .wrap { max-width: 100%; padding-left: 12px; padding-right: 12px; }
+      .grid-2 { grid-template-columns: 1fr !important; }
+      .widget { width: 100%; }
+      .role-cta__grid { grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 14px; }
+      
+      /* Fix Slider Height */
+      #home-slider { height: 320px !important; }
+      .welcome-badge { display: none !important; }
+    }
 
-  .content-grid > aside,
-  .content-grid > section {
-    width: 100% !important;
-    max-width: 100% !important;
-    margin-bottom: 16px;
-  }
+    @media (max-width: 640px) {
+      .role-cta { margin-top: 20px; }
+      .role-cta__grid { grid-template-columns: 1fr 1fr; gap: 10px; }
+      .role-card { padding: 14px 12px; border-radius: 12px; }
+      .role-card__body { flex-direction: column; align-items: flex-start; gap: 10px; }
+      .role-card__icon { width: 42px; height: 42px; font-size: 20px; border-radius: 10px; }
+      .role-card__title { font-size: 13px; line-height: 1.25; margin-bottom: 2px; }
+      .role-card__desc { display: none; }
+      .role-card__cta { margin-top: 8px; font-size: 10.5px; letter-spacing: 0.03em; }
+      
+      /* Fix Slider Captions */
+      #home-slider { height: 240px !important; }
+      .slide-caption h2 { font-size: 1.3rem !important; margin-bottom: 4px !important; }
+      .slide-caption p { font-size: 0.85rem !important; display: block !important; }
+    }
 
-  /* Prevent horizontal overflow */
-  body { overflow-x: hidden; }
-  .wrap {
-    max-width: 100%;
-    padding-left: 12px;
-    padding-right: 12px;
-  }
-
-  /* About section — stack */
-  .grid-2 { grid-template-columns: 1fr !important; }
-
-  /* Full-width widgets */
-  .widget { width: 100%; }
-
-  /* Quick Access — 2 columns on tablet too */
-  .role-cta__grid {
-    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-    gap: 14px;
-  }
-}
-
-@media (max-width: 640px) {
-  .role-cta { margin-top: 20px; }
-
-  /* Quick Access — keep 2 cards per row */
-  .role-cta__grid {
-    grid-template-columns: 1fr 1fr;
-    gap: 10px;
-  }
-
-  /* Compact cards with vertical layout */
-  .role-card {
-    padding: 14px 12px;
-    border-radius: 12px;
-  }
-
-  .role-card__body {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 10px;
-  }
-
-  .role-card__icon {
-    width: 42px;
-    height: 42px;
-    font-size: 20px;
-    border-radius: 10px;
-  }
-
-  .role-card__title {
-    font-size: 13px;
-    line-height: 1.25;
-    margin-bottom: 2px;
-  }
-
-  /* Hide long description on mobile — keeps cards clean */
-  .role-card__desc {
-    display: none;
-  }
-
-  .role-card__cta {
-    margin-top: 8px;
-    font-size: 10.5px;
-    letter-spacing: 0.03em;
-  }
-}
-
-/* Extra-small phones — tighten further */
-@media (max-width: 380px) {
-  .role-cta__grid { gap: 8px; }
-  .role-card { padding: 12px 10px; }
-  .role-card__icon { width: 38px; height: 38px; font-size: 18px; }
-  .role-card__title { font-size: 12px; }
-  .role-card__cta { font-size: 10px; }
-}
+    @media (max-width: 380px) {
+      .role-cta__grid { gap: 8px; }
+      .role-card { padding: 12px 10px; }
+      .role-card__icon { width: 38px; height: 38px; font-size: 18px; }
+      .role-card__title { font-size: 12px; }
+      .role-card__cta { font-size: 10px; }
+    }
   </style>
 </head>
 <body>
@@ -425,22 +357,18 @@ body.is-admin .role-only-guest-teacher { display: block; }
     to access student or staff features.
   </div>
 
-  <!-- ⏳ PENDING APPROVAL BANNER (for new signups awaiting approval) -->
-<div id="pending-banner" style="display:none;background:#fef3c7;border-bottom:1px solid #fcd34d;color:#92400e;padding:12px 16px;text-align:center;font-size:14px;font-weight:600;">
-  ⏳ <strong>Your account is pending admin approval.</strong>
-  <span id="pending-banner-details" style="font-weight:400;">You'll get access to ILAW once approved — usually within 24 hours.</span>
-</div>
+  <!-- ⏳ PENDING APPROVAL BANNER -->
+  <div id="pending-banner" style="display:none;background:#fef3c7;border-bottom:1px solid #fcd34d;color:#92400e;padding:12px 16px;text-align:center;font-size:14px;font-weight:600;">
+    ⏳ <strong>Your account is pending admin approval.</strong>
+    <span id="pending-banner-details" style="font-weight:400;">You'll get access to ILAW once approved — usually within 24 hours.</span>
+  </div>
 
   <!-- ===================== NAVIGATION ===================== -->
   <nav aria-label="Primary">
     <ul class="menu wrap" role="menubar">
-
       <li role="none"><a role="menuitem" href="#home" class="active">Home</a></li>
-
       <li class="has-dropdown" role="none">
-        <button class="menu-toggle" aria-haspopup="true" aria-expanded="false" aria-controls="menu-school" type="button">
-          The School <span class="chev" aria-hidden="true">▾</span>
-        </button>
+        <button class="menu-toggle" aria-haspopup="true" aria-expanded="false" aria-controls="menu-school" type="button">The School <span class="chev" aria-hidden="true">▾</span></button>
         <ul id="menu-school" class="dropdown" role="menu">
           <li role="none"><a role="menuitem" href="#history">History</a></li>
           <li role="none"><a role="menuitem" href="#school-profile">School Profile</a></li>
@@ -452,56 +380,42 @@ body.is-admin .role-only-guest-teacher { display: block; }
           <li role="none"><a role="menuitem" href="#deped-qps">DepEd Quality Policy Statement</a></li>
         </ul>
       </li>
-
       <li class="has-dropdown" role="none">
-        <button class="menu-toggle" aria-haspopup="true" aria-expanded="false" aria-controls="menu-officials" type="button">
-          DepEd Officials <span class="chev" aria-hidden="true">▾</span>
-        </button>
+        <button class="menu-toggle" aria-haspopup="true" aria-expanded="false" aria-controls="menu-officials" type="button">DepEd Officials <span class="chev" aria-hidden="true">▾</span></button>
         <ul id="menu-officials" class="dropdown dropdown--mega" role="menu" aria-label="Officials">
           <li class="menu-col" role="none">
             <div class="menu-heading">National</div>
             <ul class="menu-col-list" role="none">
-              <li role="none"><a role="menuitem" class="menu-item--thumb" href="officials/president.html">
-                <img class="thumb" src="assets/images/officials/president.jpg" alt=""><span>President of the Philippines</span></a></li>
-              <li role="none"><a role="menuitem" class="menu-item--thumb" href="officials/deped-secretary.html">
-                <img class="thumb" src="assets/images/officials/deped-secretary.jpg" alt=""><span>DepEd Secretary</span></a></li>
+              <li role="none"><a role="menuitem" class="menu-item--thumb" href="officials/president.html"><img class="thumb" src="assets/images/officials/president.jpg" alt=""><span>President of the Philippines</span></a></li>
+              <li role="none"><a role="menuitem" class="menu-item--thumb" href="officials/deped-secretary.html"><img class="thumb" src="assets/images/officials/deped-secretary.jpg" alt=""><span>DepEd Secretary</span></a></li>
             </ul>
           </li>
           <li class="menu-col" role="none">
             <div class="menu-heading">Regional</div>
             <ul class="menu-col-list" role="none">
-              <li role="none"><a role="menuitem" class="menu-item--thumb" href="officials/regional-director.html">
-                <img class="thumb" src="assets/images/officials/regional-director.jpg" alt=""><span>Regional Director</span></a></li>
-              <li role="none"><a role="menuitem" class="menu-item--thumb" href="officials/assistant-regional-director.html">
-                <img class="thumb" src="assets/images/officials/assistant-regional-director.jpg" alt=""><span>Assistant Regional Director</span></a></li>
+              <li role="none"><a role="menuitem" class="menu-item--thumb" href="officials/regional-director.html"><img class="thumb" src="assets/images/officials/regional-director.jpg" alt=""><span>Regional Director</span></a></li>
+              <li role="none"><a role="menuitem" class="menu-item--thumb" href="officials/assistant-regional-director.html"><img class="thumb" src="assets/images/officials/assistant-regional-director.jpg" alt=""><span>Assistant Regional Director</span></a></li>
             </ul>
           </li>
           <li class="menu-col" role="none">
             <div class="menu-heading">Schools Division of Nueva Vizcaya</div>
             <ul class="menu-col-list" role="none">
-              <li role="none"><a role="menuitem" class="menu-item--thumb" href="officials/sds.html">
-                <img class="thumb" src="assets/images/officials/sds.jpg" alt=""><span>Schools Division Superintendent</span></a></li>
-              <li role="none"><a role="menuitem" class="menu-item--thumb" href="officials/asds.html">
-                <img class="thumb" src="assets/images/officials/asds.jpg" alt=""><span>Assistant Schools Division Superintendent</span></a></li>
+              <li role="none"><a role="menuitem" class="menu-item--thumb" href="officials/sds.html"><img class="thumb" src="assets/images/officials/sds.jpg" alt=""><span>Schools Division Superintendent</span></a></li>
+              <li role="none"><a role="menuitem" class="menu-item--thumb" href="officials/asds.html"><img class="thumb" src="assets/images/officials/asds.jpg" alt=""><span>Assistant Schools Division Superintendent</span></a></li>
             </ul>
           </li>
           <li class="menu-col" role="none">
             <div class="menu-heading">School</div>
             <ul class="menu-col-list" role="none">
               <li class="menu-label" aria-hidden="true">Administrators</li>
-              <li role="none"><a role="menuitem" class="menu-item--thumb" href="officials/principal.html">
-                <img class="thumb" src="assets/images/officials/principal.jpg" alt=""><span>School Principal</span></a></li>
-              <li role="none"><a role="menuitem" class="menu-item--thumb" href="officials/assistant-principal.html">
-                <img class="thumb" src="assets/images/officials/assistant-principal.jpg" alt=""><span>Assistant Principal</span></a></li>
+              <li role="none"><a role="menuitem" class="menu-item--thumb" href="officials/principal.html"><img class="thumb" src="assets/images/officials/principal.jpg" alt=""><span>School Principal</span></a></li>
+              <li role="none"><a role="menuitem" class="menu-item--thumb" href="officials/assistant-principal.html"><img class="thumb" src="assets/images/officials/assistant-principal.jpg" alt=""><span>Assistant Principal</span></a></li>
             </ul>
           </li>
         </ul>
       </li>
-
       <li class="has-dropdown" role="none">
-        <button class="menu-toggle" aria-haspopup="true" aria-expanded="false" aria-controls="menu-faculty" type="button">
-          Faculty <span class="chev" aria-hidden="true">▾</span>
-        </button>
+        <button class="menu-toggle" aria-haspopup="true" aria-expanded="false" aria-controls="menu-faculty" type="button">Faculty <span class="chev" aria-hidden="true">▾</span></button>
         <ul id="menu-faculty" class="dropdown" role="menu" aria-label="Faculty">
           <li role="none"><a role="menuitem" href="faculty/index.html">Faculty Home</a></li>
           <li role="none"><a role="menuitem" href="sf1.html">📚 SF1 — School Register</a></li>
@@ -514,36 +428,23 @@ body.is-admin .role-only-guest-teacher { display: block; }
           <li role="none"><a role="menuitem" href="faculty/assessment-tools.html">Assessment Tools</a></li>
         </ul>
       </li>
-
-            <li class="has-dropdown" role="none">
-        <button class="menu-toggle" aria-haspopup="true" aria-expanded="false" aria-controls="menu-students" type="button">
-          Students <span class="chev" aria-hidden="true">▾</span>
-        </button>
+      <li class="has-dropdown" role="none">
+        <button class="menu-toggle" aria-haspopup="true" aria-expanded="false" aria-controls="menu-students" type="button">Students <span class="chev" aria-hidden="true">▾</span></button>
         <ul id="menu-students" class="dropdown" role="menu" aria-label="Students">
-          <!-- Portals & Dashboards -->
           <li role="none"><a role="menuitem" href="students/index.html">🏠 Student Portal Home</a></li>
           <li role="none"><a role="menuitem" href="student.html">🎓 Student Dashboard</a></li>
           <li role="none"><a role="menuitem" href="parent.html">👨‍👩‍👧 Parent / Guardian Dashboard</a></li>
-          
           <li role="separator" class="menu-sep" aria-hidden="true"></li>
-          
-          <!-- Student Life -->
           <li role="none"><a role="menuitem" href="students/curricular.html">📖 Curricular Activities</a></li>
           <li role="none"><a role="menuitem" href="students/non-curricular.html">⚽ Non‑Curricular Activities</a></li>
           <li role="none"><a role="menuitem" href="students/academics.html">🏅 Academic / Non‑Academic Awards</a></li>
           <li role="none"><a role="menuitem" href="students/organizations.html">🤝 Student Organizations</a></li>
-          
           <li role="separator" class="menu-sep" aria-hidden="true"></li>
-          
-          <!-- Academics -->
           <li role="none"><a role="menuitem" href="curriculum/subjects.html">📚 Curriculum &amp; Subjects</a></li>
         </ul>
       </li>
-
       <li class="has-dropdown" role="none">
-        <button class="menu-toggle" aria-haspopup="true" aria-expanded="false" aria-controls="menu-bulletin" type="button">
-          Bulletin <span class="chev" aria-hidden="true">▾</span>
-        </button>
+        <button class="menu-toggle" aria-haspopup="true" aria-expanded="false" aria-controls="menu-bulletin" type="button">Bulletin <span class="chev" aria-hidden="true">▾</span></button>
         <ul id="menu-bulletin" class="dropdown" role="menu" aria-label="Bulletin Board">
           <li role="none"><a role="menuitem" href="bulletin.html">Bulletin Home</a></li>
           <li role="separator" class="menu-sep" aria-hidden="true"></li>
@@ -557,11 +458,8 @@ body.is-admin .role-only-guest-teacher { display: block; }
           <li role="none" class="admin-only-link"><a role="menuitem" href="bulletin.html?view=manage">Manage Posts (Admin)</a></li>
         </ul>
       </li>
-
       <li class="has-dropdown" role="none">
-        <button class="menu-toggle" aria-haspopup="true" aria-expanded="false" aria-controls="menu-support" type="button">
-          Support Services <span class="chev" aria-hidden="true">▾</span>
-        </button>
+        <button class="menu-toggle" aria-haspopup="true" aria-expanded="false" aria-controls="menu-support" type="button">Support Services <span class="chev" aria-hidden="true">▾</span></button>
         <ul id="menu-support" class="dropdown dropdown--panel" role="menu" aria-label="Support Services">
           <li role="none"><a role="menuitem" href="support-services/transparency/index.html">Transparency Board</a></li>
           <li role="none"><a role="menuitem" href="support-services/administration/index.html">Administration Office</a></li>
@@ -574,11 +472,8 @@ body.is-admin .role-only-guest-teacher { display: block; }
           <li role="none"><a role="menuitem" href="support-services/registrar/index.html">Registrar</a></li>
         </ul>
       </li>
-
       <li class="has-dropdown" role="none">
-        <button class="menu-toggle" aria-haspopup="true" aria-expanded="false" aria-controls="menu-linkages" type="button">
-          School Linkages <span class="chev" aria-hidden="true">▾</span>
-        </button>
+        <button class="menu-toggle" aria-haspopup="true" aria-expanded="false" aria-controls="menu-linkages" type="button">School Linkages <span class="chev" aria-hidden="true">▾</span></button>
         <ul id="menu-linkages" class="dropdown dropdown--columns" role="menu" aria-label="School & Community Linkages">
           <li role="none"><a role="menuitem" href="linkages/municipality-of-kayapa.html">Municipality of Kayapa</a></li>
           <li class="menu-label" aria-hidden="true">Barangays</li>
@@ -614,15 +509,13 @@ body.is-admin .role-only-guest-teacher { display: block; }
           <li role="none"><a role="menuitem" href="linkages/barangays/tidang-village.html">Tidang Village</a></li>
         </ul>
       </li>
-
       <li role="none"><a role="menuitem" href="contact/index.html">Contact Us</a></li>
     </ul>
   </nav>
 
-    <!-- ===================== HERO / SLIDER ===================== -->
+  <!-- ===================== HERO / SLIDER ===================== -->
   <section class="hero" id="home">
     <div class="wrap inner">
-      
       <!-- Left Side: Slider -->
       <div>
         <div class="slider" id="home-slider" aria-label="SCPHS Highlights" data-interval="5000">
@@ -644,7 +537,6 @@ body.is-admin .role-only-guest-teacher { display: block; }
               <p>Announcements, issuances, forms &amp; resources for our community.</p>
             </div>
           </div>
-
           <div class="slide" role="group" aria-roledescription="slide" aria-label="2 of 3">
             <img src="assets/images/Matatag.png" alt="MATATAG">
             <div class="slide-overlay"></div>
@@ -653,7 +545,6 @@ body.is-admin .role-only-guest-teacher { display: block; }
               <p>Stronger foundations for learning and nation‑building.</p>
             </div>
           </div>
-
           <div class="slide" role="group" aria-roledescription="slide" aria-label="3 of 3">
             <img src="assets/images/58founding-anniversary.png" alt="58th Founding Anniversary">
             <div class="slide-overlay"></div>
@@ -662,7 +553,6 @@ body.is-admin .role-only-guest-teacher { display: block; }
               <p>Celebrating excellence and community since 1968.</p>
             </div>
           </div>
-
           <button class="nav prev" aria-label="Previous slide" type="button">‹</button>
           <button class="nav next" aria-label="Next slide" type="button">›</button>
           <div class="dots" role="tablist" aria-label="Slide indicators"></div>
@@ -678,221 +568,149 @@ body.is-admin .role-only-guest-teacher { display: block; }
       <div class="card" style="margin: 0;">
         <h3>Quick Links</h3>
         <div style="padding:16px; display:grid; grid-template-columns:repeat(auto-fit, minmax(130px, 1fr)); gap:12px;">
-          
-          <a class="btn outline" href="adviser.html" style="display:flex; align-items:center; justify-content:center; gap:8px; padding:12px; text-align:center; height:100%;">
-            <span style="font-size:18px;">👨‍🏫</span> Adviser Dashboard
-          </a>
+          <a class="btn outline" href="adviser.html" style="display:flex; align-items:center; justify-content:center; gap:8px; padding:12px; text-align:center; height:100%;"><span style="font-size:18px;">👨‍🏫</span> Adviser Dashboard</a>
+          <a class="btn outline" href="teacher.html" style="display:flex; align-items:center; justify-content:center; gap:8px; padding:12px; text-align:center; height:100%;"><span style="font-size:18px;">👨‍🏫</span> Teacher Dashboard</a>
+          <a class="btn outline" href="student.html" style="display:flex; align-items:center; justify-content:center; gap:8px; padding:12px; text-align:center; height:100%;"><span style="font-size:18px;">🎓</span> Student Dashboard</a>
+          <a class="btn outline" href="parent.html" style="display:flex; align-items:center; justify-content:center; gap:8px; padding:12px; text-align:center; height:100%;"><span style="font-size:18px;">👨‍👩‍👧</span> Parent Dashboard</a>
+          <a class="btn outline" href="faculty/index.html" style="display:flex; align-items:center; justify-content:center; gap:8px; padding:12px; text-align:center; height:100%;"><span style="font-size:18px;">🏫</span> Faculty Portal</a>
+          <a class="btn outline" href="students/index.html" style="display:flex; align-items:center; justify-content:center; gap:8px; padding:12px; text-align:center; height:100%;"><span style="font-size:18px;">🎒</span> Student Portal</a>
+          <a class="btn outline" href="issuances.html?level=school" style="display:flex; align-items:center; justify-content:center; gap:8px; padding:12px; text-align:center; height:100%;"><span style="font-size:18px;">📄</span> School Issuances</a>
+          <a class="btn outline" href="#calendar" style="display:flex; align-items:center; justify-content:center; gap:8px; padding:12px; text-align:center; height:100%;"><span style="font-size:18px;">📅</span> School Calendar</a>
+          <a class="btn outline" href="#enrollment" style="display:flex; align-items:center; justify-content:center; gap:8px; padding:12px; text-align:center; height:100%;"><span style="font-size:18px;">📝</span> Enrollment</a>
 
-          <a class="btn outline" href="teacher.html" style="display:flex; align-items:center; justify-content:center; gap:8px; padding:12px; text-align:center; height:100%;">
-            <span style="font-size:18px;">👨‍🏫</span> Teacher Dashboard
-          </a>
-          
-          <a class="btn outline" href="student.html" style="display:flex; align-items:center; justify-content:center; gap:8px; padding:12px; text-align:center; height:100%;">
-            <span style="font-size:18px;">🎓</span> Student Dashboard
-          </a>
-          
-          <a class="btn outline" href="parent.html" style="display:flex; align-items:center; justify-content:center; gap:8px; padding:12px; text-align:center; height:100%;">
-            <span style="font-size:18px;">👨‍👩‍👧</span> Parent Dashboard
-          </a>
-          
-          <a class="btn outline" href="faculty/index.html" style="display:flex; align-items:center; justify-content:center; gap:8px; padding:12px; text-align:center; height:100%;">
-            <span style="font-size:18px;">🏫</span> Faculty Portal
-          </a>
-          
-          <a class="btn outline" href="students/index.html" style="display:flex; align-items:center; justify-content:center; gap:8px; padding:12px; text-align:center; height:100%;">
-            <span style="font-size:18px;">🎒</span> Student Portal
-          </a>
-
-          <a class="btn outline" href="issuances.html?level=school" style="display:flex; align-items:center; justify-content:center; gap:8px; padding:12px; text-align:center; height:100%;">
-            <span style="font-size:18px;">📄</span> School Issuances
-          </a>
-          
-          <a class="btn outline" href="#calendar" style="display:flex; align-items:center; justify-content:center; gap:8px; padding:12px; text-align:center; height:100%;">
-            <span style="font-size:18px;">📅</span> School Calendar
-          </a>
-          
-          <a class="btn outline" href="#enrollment" style="display:flex; align-items:center; justify-content:center; gap:8px; padding:12px; text-align:center; height:100%;">
-            <span style="font-size:18px;">📝</span> Enrollment
-          </a>
-
-          <!-- Admin Only Link -->
+          <!-- Admin Only Link (Fixed Duplicate) -->
           <a class="btn outline admin-only-link" href="school-memorandum.html" style="display:flex; align-items:center; justify-content:center; gap:8px; padding:12px; text-align:center; border-color:#fca5a5; color:#991b1b; background:#fef2f2; grid-column: 1 / -1; height:100%;">
             <span style="font-size:18px;">🔒</span> Admin Upload
           </a>
 
+          <!-- 🆕 Security Monitor (Admin only) -->
+          <a class="btn outline admin-only-link" href="admin.html#security" style="display:flex; align-items:center; justify-content:center; gap:8px; padding:12px; text-align:center; border-color:#fca5a5; color:#991b1b; background:#fef2f2; grid-column: 1 / -1; height:100%;">
+            <span style="font-size:18px;">🎥</span> Security Monitor
+          </a>
         </div>
       </div>
-
-    </div> <!-- Closes .wrap.inner -->
-  </section> <!-- Closes .hero -->
+    </div>
+  </section>
 
   <!-- ============================================================
        ROLE QUICK-ACCESS BANNER
-       Visible to ALL visitors — cards adapt by role.
        ============================================================ -->
   <section class="role-cta" id="role-cta" aria-label="Quick access by role">
-
     <div class="role-cta__head">
       <h3>⚡ Quick Access</h3>
       <p class="sub" id="role-cta-sub">Welcome — pick a card to get started.</p>
     </div>
 
     <div class="role-cta__grid">
-
-      <!-- ========== PUBLIC CARD (everyone) ========== -->
-      <a href="#issuances"
-         class="role-card public-card"
-         id="role-card-public"
-         style="--c1:#0f766e; --c2:#059669;"
-         aria-label="Public information — issuances, bulletins, downloads">
+      <!-- PUBLIC CARD -->
+      <a href="#issuances" class="role-card public-card" id="role-card-public" style="--c1:#0f766e; --c2:#059669;" aria-label="Public information — issuances, bulletins, downloads">
         <span class="shimmer"></span>
         <div class="role-card__body">
           <div class="role-card__icon">📢</div>
           <div class="role-card__text">
             <p class="role-card__title">Public Info &amp; Issuances</p>
-            <p class="role-card__desc">
-              Browse the latest DepEd memoranda, school advisories, and community bulletins.
-            </p>
-            <span class="role-card__cta">
-              EXPLORE <span class="arrow">→</span>
-            </span>
+            <p class="role-card__desc">Browse the latest DepEd memoranda, school advisories, and community bulletins.</p>
+            <span class="role-card__cta">EXPLORE <span class="arrow">→</span></span>
           </div>
         </div>
       </a>
 
-      <!-- ========== LEARNER MODULES (everyone) ========== -->
-      <a href="m.html"
-         class="role-card modules-card"
-         id="role-card-modules"
-         style="--c1:#0891b2; --c2:#0e7490;"
-         aria-label="Learner Modules — home-based learning during class suspension">
+      <!-- LEARNER MODULES -->
+      <a href="m.html" class="role-card modules-card" id="role-card-modules" style="--c1:#0891b2; --c2:#0e7490;" aria-label="Learner Modules — home-based learning during class suspension">
         <span class="shimmer"></span>
         <div class="role-card__body">
           <div class="role-card__icon">📘</div>
           <div class="role-card__text">
             <p class="role-card__title">Learner Modules</p>
-            <p class="role-card__desc">
-              Access home-learning modules during class suspensions. No login needed — scan or click.
-            </p>
-            <span class="role-card__cta">
-              OPEN <span class="arrow">→</span>
-            </span>
+            <p class="role-card__desc">Access home-learning modules during class suspensions. No login needed — scan or click.</p>
+            <span class="role-card__cta">OPEN <span class="arrow">→</span></span>
           </div>
         </div>
       </a>
 
-      <!-- ========== SCPHS TEACHER CARD (exclusive — ilaw.html) ========== -->
-      <a href="ilaw.html"
-         class="role-card teacher-card role-only-scphs-teacher"
-         id="role-card-teacher-scphs"
-         style="--c1:#1e3c72; --c2:#2a5298;"
-         aria-label="ILAW Lesson Planner — SCPHS assigned classes">
+      <!-- SCPHS TEACHER CARD -->
+      <a href="ilaw.html" class="role-card teacher-card role-only-scphs-teacher" id="role-card-teacher-scphs" style="--c1:#1e3c72; --c2:#2a5298;" aria-label="ILAW Lesson Planner — SCPHS assigned classes">
         <span class="shimmer"></span>
         <div class="role-card__body">
           <div class="role-card__icon">👩‍🏫</div>
           <div class="role-card__text">
             <p class="role-card__title">ILAW Lesson Planner</p>
-            <p class="role-card__desc">
-              Create lesson plans for your assigned classes and subjects. Access the full BoW curriculum.
-            </p>
-            <span class="role-card__cta">
-              START TEACHING <span class="arrow">→</span>
-            </span>
+            <p class="role-card__desc">Create lesson plans for your assigned classes and subjects. Access the full BoW curriculum.</p>
+            <span class="role-card__cta">START TEACHING <span class="arrow">→</span></span>
           </div>
         </div>
       </a>
 
-      <!-- ========== GUEST TEACHER CARD (exclusive — ilaw-open.html) ========== -->
-      <a href="ilaw-open.html"
-         class="role-card teacher-card role-only-guest-teacher"
-         id="role-card-teacher-open"
-         style="--c1:#7c3aed; --c2:#4f46e5;"
-         aria-label="ILAW Open Workspace — any subject, any grade">
+      <!-- GUEST TEACHER CARD -->
+      <a href="ilaw-open.html" class="role-card teacher-card role-only-guest-teacher" id="role-card-teacher-open" style="--c1:#7c3aed; --c2:#4f46e5;" aria-label="ILAW Open Workspace — any subject, any grade">
         <span class="shimmer"></span>
         <div class="role-card__body">
           <div class="role-card__icon">🌐</div>
           <div class="role-card__text">
             <p class="role-card__title">ILAW Open Workspace</p>
-            <p class="role-card__desc">
-              Create lesson plans for any subject or grade. Generate Learner Modules and share with your students during suspensions.
-            </p>
-            <span class="role-card__cta">
-              START CREATING <span class="arrow">→</span>
-            </span>
+            <p class="role-card__desc">Create lesson plans for any subject or grade. Generate Learner Modules and share with your students during suspensions.</p>
+            <span class="role-card__cta">START CREATING <span class="arrow">→</span></span>
           </div>
         </div>
       </a>
 
-      <!-- ========== ADMIN CARD ========== -->
-      <a href="admin.html"
-         class="role-card admin-card role-only-admin"
-         id="role-card-admin"
-         style="--c1:#0f2b4f; --c2:#1e3c72;"
-         aria-label="Admin Center — class programs, users, schedules">
+      <!-- ADMIN CARD -->
+      <a href="admin.html" class="role-card admin-card role-only-admin" id="role-card-admin" style="--c1:#0f2b4f; --c2:#1e3c72;" aria-label="Admin Center — class programs, users, schedules">
         <span class="shimmer"></span>
         <div class="role-card__body">
           <div class="role-card__icon">🛡️</div>
           <div class="role-card__text">
             <p class="role-card__title">Admin Center</p>
-            <p class="role-card__desc">
-              Manage class programs, users, rooms, time slots, and schedules — everything administrative in one place.
-            </p>
-            <span class="role-card__cta">
-              OPEN ADMIN <span class="arrow">→</span>
-            </span>
+            <p class="role-card__desc">Manage class programs, users, rooms, time slots, and schedules — everything administrative in one place.</p>
+            <span class="role-card__cta">OPEN ADMIN <span class="arrow">→</span></span>
           </div>
         </div>
       </a>
 
-      <!-- ========== BULK TOOLS (Admin only) ========== -->
-      <a href="admin-bulk.html"
-         class="role-card bulk-card role-only-admin"
-         id="role-card-bulk"
-         style="--c1:#9333ea; --c2:#6d28d9;"
-         aria-label="Bulk Tools — Word to Excel, multi-class import">
+      <!-- BULK TOOLS -->
+      <a href="admin-bulk.html" class="role-card bulk-card role-only-admin" id="role-card-bulk" style="--c1:#9333ea; --c2:#6d28d9;" aria-label="Bulk Tools — Word to Excel, multi-class import">
         <span class="shimmer"></span>
         <div class="role-card__body">
           <div class="role-card__icon">🚀</div>
           <div class="role-card__text">
             <p class="role-card__title">Bulk Tools</p>
-            <p class="role-card__desc">
-              Convert Word to Excel, bulk import schedules, and copy class programs across sections.
-            </p>
-            <span class="role-card__cta">
-              OPEN TOOLS <span class="arrow">→</span>
-            </span>
+            <p class="role-card__desc">Convert Word to Excel, bulk import schedules, and copy class programs across sections.</p>
+            <span class="role-card__cta">OPEN TOOLS <span class="arrow">→</span></span>
           </div>
         </div>
       </a>
 
-      <!-- ========== MANAGE USERS (Admin only) ========== -->
-      <a href="manage-users.html"
-         class="role-card users-card role-only-admin"
-         id="role-card-users"
-         style="--c1:#be185d; --c2:#9d174d;"
-         aria-label="Manage Users — roles and access">
+      <!-- MANAGE USERS -->
+      <a href="manage-users.html" class="role-card users-card role-only-admin" id="role-card-users" style="--c1:#be185d; --c2:#9d174d;" aria-label="Manage Users — roles and access">
         <span class="shimmer"></span>
         <div class="role-card__body">
           <div class="role-card__icon">👥</div>
           <div class="role-card__text">
             <p class="role-card__title">Manage Users</p>
-            <p class="role-card__desc">
-              Assign roles, activate accounts, and control access to portal features.
-            </p>
-            <span class="role-card__cta">
-              MANAGE <span class="arrow">→</span>
-            </span>
+            <p class="role-card__desc">Assign roles, activate accounts, and control access to portal features.</p>
+            <span class="role-card__cta">MANAGE <span class="arrow">→</span></span>
           </div>
         </div>
       </a>
 
+      <!-- SECURITY MONITOR -->
+      <a href="admin.html#security" class="role-card security-card role-only-admin" id="role-card-security" style="--c1:#b91c1c; --c2:#7f1d1d;" aria-label="Security Monitor — live facility cameras">
+        <span class="shimmer"></span>
+        <div class="role-card__body">
+          <div class="role-card__icon">🎥</div>
+          <div class="role-card__text">
+            <p class="role-card__title">Security Monitor</p>
+            <p class="role-card__desc">View live feeds from the Computer Lab, Automotive Lab, and Admin Office — even when travelling.</p>
+            <span class="role-card__cta">WATCH <span class="arrow">→</span></span>
+          </div>
+        </div>
+      </a>
     </div>
   </section>
 
   <!-- ===================== MAIN: 3-COLUMN GRID ===================== -->
   <main class="wrap">
     <div class="content-grid">
-
       <aside aria-label="Sidebar (left)">
         <div class="widget">
           <h4>Search</h4>
@@ -925,7 +743,6 @@ body.is-admin .role-only-guest-teacher { display: block; }
       <section id="issuances" aria-labelledby="issuances-title" class="center-feed">
         <div class="card">
           <h3 id="issuances-title">Latest Issuances &amp; Advisories</h3>
-
           <div class="filter-bar" role="tablist" aria-label="Filter issuances">
             <button class="pill active" data-level="">All</button>
             <button class="pill" data-level="national">National (DepEd)</button>
@@ -982,7 +799,6 @@ body.is-admin .role-only-guest-teacher { display: block; }
           </ul>
         </div>
       </aside>
-
     </div>
   </main>
 
@@ -1266,7 +1082,7 @@ body.is-admin .role-only-guest-teacher { display: block; }
       document.addEventListener('keydown', e => { if (e.key === 'Escape') closeAll(); });
     })();
 
-        // Hero slider — exposed globally for Firestore reload
+    // Hero slider — exposed globally for Firestore reload
     window.initSlider = function initSlider() {
       const slider = document.getElementById('home-slider');
       if (!slider) return;
@@ -1278,7 +1094,6 @@ body.is-admin .role-only-guest-teacher { display: block; }
       const nextBtn  = slider.querySelector('.next');
       const interval = parseInt(slider.dataset.interval, 10) || 5000;
 
-      // Clear any existing dots to avoid duplicates on re-init
       if (dotsHost) dotsHost.innerHTML = '';
 
       const dots = slides.map((_, i) => {
@@ -1314,7 +1129,6 @@ body.is-admin .role-only-guest-teacher { display: block; }
       start();
     };
 
-    // Call once on page load
     window.initSlider();
 
     // Helpers
@@ -1573,84 +1387,31 @@ body.is-admin .role-only-guest-teacher { display: block; }
        ADMIN FLOATING ACTION BUTTONS
        ============================================================ -->
   <div id="admin-fab-stack">
-
-    <a href="admin.html"
-       id="fab-admin-center"
-       class="fab"
-       title="Admin Control Center"
-       style="background:#0f2b4f;"
-    >🏛️</a>
-
-    <a href="admin-bulk.html"
-       id="fab-bulk"
-       class="fab"
-       title="Bulk Tools — Word to Excel, Multi-Class Import, Bulk Copy"
-       style="background:#7c3aed;"
-    >🚀</a>
-
-    <a href="admin-import-program.html"
-       id="fab-import"
-       class="fab"
-       title="Import Class Program"
-       style="background:#dc2626;"
-    >📥</a>
-
-    <a href="schedule-config.html"
-       id="fab-schedule"
-       class="fab"
-       title="Configure Time Slots"
-       style="background:#d97706;"
-    >⚙️</a>
-
-    <a href="manage-users.html"
-       id="fab-users"
-       class="fab"
-       title="Manage User Roles"
-       style="background:#6f42c1;"
-    >👥</a>
-
-    <a href="sf1.html"
-       id="fab-sf1"
-       class="fab"
-       title="SF1 — School Register"
-       style="background:#059669;"
-    >📚</a>
-
-    <a href="school-memorandum.html"
-       id="fab-memo"
-       class="fab"
-       title="School Memorandum Admin"
-       aria-label="Open School Memorandum admin page"
-       style="background:#0f4c81;"
-    >🔒</a>
-
-    <a href="manage-slides.html"
-      id="fab-slides"
-      class="fab"
-      title="Manage Homepage Slides"
-      style="background:#0891b2;"
-      >📸</a>
+    <a href="admin.html" id="fab-admin-center" class="fab" title="Admin Control Center" style="background:#0f2b4f;">🏛️</a>
+    <a href="admin-bulk.html" id="fab-bulk" class="fab" title="Bulk Tools — Word to Excel, Multi-Class Import, Bulk Copy" style="background:#7c3aed;">🚀</a>
+    <a href="admin-import-program.html" id="fab-import" class="fab" title="Import Class Program" style="background:#dc2626;">📥</a>
+    <a href="schedule-config.html" id="fab-schedule" class="fab" title="Configure Time Slots" style="background:#d97706;">⚙️</a>
+    <a href="manage-users.html" id="fab-users" class="fab" title="Manage User Roles" style="background:#6f42c1;">👥</a>
+    <a href="sf1.html" id="fab-sf1" class="fab" title="SF1 — School Register" style="background:#059669;">📚</a>
+    <a href="school-memorandum.html" id="fab-memo" class="fab" title="School Memorandum Admin" aria-label="Open School Memorandum admin page" style="background:#0f4c81;">🔒</a>
+    <a href="manage-slides.html" id="fab-slides" class="fab" title="Manage Homepage Slides" style="background:#0891b2;">📸</a>
+    <a href="admin.html#security" id="fab-security" class="fab" title="Security Monitor — Live Camera Feeds" aria-label="Open Security Monitor" style="background:#b91c1c;">🎥</a>
   </div>
 
   <!-- ===================== AUTH + ROLE ===================== -->
   <script type="module">
     import { auth, db } from "./assets/js/firebase-config.js";
-    import { onAuthStateChanged, signOut }
-      from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-    import { doc, getDoc }
-      from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+    import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+    import { doc, getDoc, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
     const welcome = document.getElementById("user-welcome");
     const logout  = document.getElementById("btn-logout");
     const banner  = document.getElementById("guest-banner");
 
     onAuthStateChanged(auth, async (user) => {
-      document.body.classList.remove("is-admin");
-      document.body.classList.remove("is-teacher");
-      document.body.classList.remove("is-guest");
+      document.body.classList.remove("is-admin", "is-teacher", "is-guest", "is-scphs-teacher", "is-guest-teacher");
 
       if (!user) {
-        // ---------- Guest ----------
         if (welcome) welcome.textContent = "Welcome, visitor!";
         if (logout) {
           logout.textContent = "Sign In";
@@ -1658,7 +1419,6 @@ body.is-admin .role-only-guest-teacher { display: block; }
         }
         if (banner) banner.style.display = "block";
 
-        // Show quick-access banner for guests
         const roleCTA = document.getElementById("role-cta");
         const roleSub = document.getElementById("role-cta-sub");
         if (roleCTA) roleCTA.classList.add("is-visible");
@@ -1667,25 +1427,17 @@ body.is-admin .role-only-guest-teacher { display: block; }
         return;
       }
 
-      // Check if user is pending
-if (user) {
-  try {
-    const { doc, getDoc } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js");
-    const userSnap = await getDoc(doc(db, "users", user.uid));
-    if (userSnap.exists()) {
-      const userData = userSnap.data();
-      const isPending = userData.pendingApproval === true;
-      if (isPending) {
-        const pb = document.getElementById("pending-banner");
-        if (pb) pb.style.display = "block";
+      // Check pending approval
+      try {
+        const userSnap = await getDoc(doc(db, "users", user.uid));
+        if (userSnap.exists() && userSnap.data().pendingApproval === true) {
+          const pb = document.getElementById("pending-banner");
+          if (pb) pb.style.display = "block";
+        }
+      } catch (e) {
+        console.warn("[index] pending check failed:", e);
       }
-    }
-  } catch (e) {
-    console.warn("[index] pending check failed:", e);
-  }
-}
 
-      // ---------- Signed-in user ----------
       const name = user.displayName || user.email || "User";
       if (welcome) welcome.textContent = "Signed in as " + name;
       if (logout) {
@@ -1694,7 +1446,7 @@ if (user) {
       }
       if (banner) banner.style.display = "none";
 
-            // Determine role — robust, case-insensitive, multiple field names
+      // Role determination
       const ADMIN_EMAILS = [
         "ricardo.jueves@deped.gov.ph",
         "juevesster@gmail.com",
@@ -1702,14 +1454,12 @@ if (user) {
         "puyaoarman@gmail.com",
         "shereen.paraguas@deped.gov.ph",
         "darna.bugnay@deped.gov.ph",
-      ];
-      const ADMIN_EMAILS_LOWER = ADMIN_EMAILS.map(e => e.toLowerCase());
+      ].map(e => e.toLowerCase());
 
-      // Role values we recognize as "teacher" or "admin"
       const TEACHER_ROLES = ["teacher", "faculty", "instructor", "adviser", "advisor", "educator"];
       const ADMIN_ROLES = ["admin", "administrator", "superadmin", "principal", "head", "director"];
 
-      let isAdmin = ADMIN_EMAILS_LOWER.includes((user.email || "").toLowerCase());
+      let isAdmin = ADMIN_EMAILS.includes((user.email || "").toLowerCase());
       let isTeacher = false;
       let detectedRole = "(none)";
 
@@ -1717,129 +1467,81 @@ if (user) {
         const snap = await getDoc(doc(db, "users", user.uid));
         if (snap.exists()) {
           const data = snap.data();
-          // Check multiple possible role fields
-          const rawRole =
-            data.primaryRole ||
-            data.role ||
-            data.userRole ||
-            data.type ||
-            "";
+          const rawRole = data.primaryRole || data.role || data.userRole || data.type || "";
           detectedRole = String(rawRole).toLowerCase().trim();
 
           if (ADMIN_ROLES.includes(detectedRole)) isAdmin = true;
           if (TEACHER_ROLES.includes(detectedRole)) isTeacher = true;
 
-          // Also check permissions flags
           if (data.isSuperAdmin === true) isAdmin = true;
           if (data.permissions?.canEnterGrades === true) isTeacher = true;
           if (data.permissions?.canManageClasses === true) { isAdmin = true; isTeacher = true; }
-        } else {
-          console.warn("[role] No users doc found for uid:", user.uid);
         }
-            } catch (e) {
+      } catch (e) {
         console.warn("[role] lookup failed:", e?.code || e?.message);
       }
 
-      // Fallback: any @deped.gov.ph email is treated as teacher
-      // This runs OUTSIDE the catch — handles "no doc" and "wrong role value" cases
       if (!isAdmin && !isTeacher) {
         const email = String(user.email || "").toLowerCase();
-        if (email.endsWith("@deped.gov.ph")) {
-          isTeacher = true;
-          console.log("[role] Fallback: treating @deped.gov.ph email as teacher");
+        if (email.endsWith("@deped.gov.ph")) isTeacher = true;
+      }
+      if (isAdmin) isTeacher = true;
+
+      if (isAdmin) {
+        document.body.classList.add("is-admin");
+      } else if (isTeacher) {
+        document.body.classList.add("is-teacher");
+        let teacherType = "guest"; // Default
+
+        try {
+          const snap = await getDoc(doc(db, "users", user.uid));
+          if (snap.exists()) {
+            const data = snap.data();
+            const t = String(data.teacherType || "").toLowerCase();
+            if (t === "scphs" || t === "internal") {
+              teacherType = "scphs";
+            } else if (t === "external" || t === "guest") {
+              teacherType = "guest";
+            } else {
+              // Fallback: check class assignments
+              let hasAssignedClasses = false;
+              try {
+                const classesSnap = await getDocs(collection(db, "classes"));
+                for (const classDoc of classesSnap.docs) {
+                  const c = classDoc.data();
+                  if (c.adviserUid === user.uid) { hasAssignedClasses = true; break; }
+                  if (Array.isArray(c.teacherUids) && c.teacherUids.includes(user.uid)) { hasAssignedClasses = true; break; }
+                  if (c.subjectTeachers && Object.values(c.subjectTeachers).includes(user.uid)) { hasAssignedClasses = true; break; }
+                  
+                  try {
+                    const progSnap = await getDocs(collection(db, "classes", classDoc.id, "program"));
+                    if (progSnap.docs.some(d => d.data().teacherUid === user.uid)) {
+                      hasAssignedClasses = true; break;
+                    }
+                  } catch (err) {}
+                }
+              } catch (e) {
+                console.warn("[role] class lookup failed:", e);
+              }
+              teacherType = hasAssignedClasses ? "scphs" : "guest";
+            }
+          }
+        } catch (e) {
+          console.warn("[role] teacherType lookup failed:", e);
+        }
+
+        if (teacherType === "scphs") {
+          document.body.classList.add("is-scphs-teacher");
+        } else {
+          document.body.classList.add("is-guest-teacher");
         }
       }
 
-      // If admin, they're also implicitly a teacher
-      if (isAdmin) isTeacher = true;
-
-      console.log("[role] Detected:", { email: user.email, isAdmin, isTeacher, rawRole: detectedRole });
-
-      // ---------- Apply role classes ----------
-if (isAdmin) {
-  document.body.classList.add("is-admin");
-  console.log("[role] Admin — showing all cards");
-} else if (isTeacher) {
-  document.body.classList.add("is-teacher");
-
-  // ---------- Distinguish SCPHS teacher from Guest teacher ----------
-  let teacherType = "guest";   // safest default: treat unknown as guest
-
-  try {
-    const snap = await getDoc(doc(db, "users", user.uid));
-    if (snap.exists()) {
-      const data = snap.data();
-      const t = String(data.teacherType || "").toLowerCase();
-
-      if (t === "scphs" || t === "internal") {
-        teacherType = "scphs";
-      } else if (t === "external" || t === "guest") {
-        teacherType = "guest";
-      } else {
-        // No teacherType field — check if they have any class assignments
-        // If admin explicitly approved them as a teacher without a type,
-        // we assume SCPHS by default ONLY if they have classes.
-        // Otherwise treat as guest.
-        // No teacherType field — check if they have any class assignments
-let hasAssignedClasses = false;
-try {
-  const classesSnap = await getDocs(collection(db, "classes"));
-
-  for (const classDoc of classesSnap.docs) {
-    const c = classDoc.data();
-
-    // 1) Adviser check
-    if (c.adviserUid === user.uid) { hasAssignedClasses = true; break; }
-
-    // 2) teacherUids array check
-    if (Array.isArray(c.teacherUids) && c.teacherUids.includes(user.uid)) {
-      hasAssignedClasses = true; break;
-    }
-
-    // 3) subjectTeachers map check
-    if (c.subjectTeachers && typeof c.subjectTeachers === "object") {
-      if (Object.values(c.subjectTeachers).includes(user.uid)) {
-        hasAssignedClasses = true; break;
-      }
-    }
-
-    // 4) program subcollection check — matches how ilaw.html's loadSectionsForTeacher works
-    try {
-      const progSnap = await getDocs(collection(db, "classes", classDoc.id, "program"));
-      const hasProg = progSnap.docs.some(d => {
-        const e = d.data();
-        return e.teacherUid === user.uid;
-      });
-      if (hasProg) { hasAssignedClasses = true; break; }
-    } catch (err) {
-      // subcollection read may fail if rules block it — ignore
-    }
-  }
-} catch (e) {
-  console.warn("[role] class lookup failed:", e);
-}
-teacherType = hasAssignedClasses ? "scphs" : "guest";
-console.log("[role] Fallback class detection:", hasAssignedClasses ? "SCPHS" : "Guest");
-      }
-    }
-  } catch (e) {
-    console.warn("[role] teacherType lookup failed:", e);
-  }
-
-  if (teacherType === "scphs") {
-    document.body.classList.add("is-scphs-teacher");
-    console.log("[role] SCPHS teacher — showing ILAW card");
-  } else {
-    document.body.classList.add("is-guest-teacher");
-    console.log("[role] Guest teacher — showing Open Workspace card");
-  }
-}
-
-      // Show quick-access banner
+      // Update Role Banner text
       const roleCTA = document.getElementById("role-cta");
       const roleSub = document.getElementById("role-cta-sub");
       if (roleCTA) roleCTA.classList.add("is-visible");
-            if (roleSub) {
+      if (roleSub) {
         if (isAdmin) {
           roleSub.textContent = "Welcome back, Admin. Your tools are ready.";
         } else if (isTeacher && document.body.classList.contains("is-guest-teacher")) {
@@ -1856,8 +1558,8 @@ console.log("[role] Fallback class detection:", hasAssignedClasses ? "SCPHS" : "
             roleSub.textContent = "Welcome! Explore our portal features.";
           }
         }
-      }   // ← closes if (roleSub) — WAS MISSING
-    });   // ← closes onAuthStateChanged callback — WAS MISSING
+      }
+    });
 
     // Logout / Sign In button
     const btnLogout = document.getElementById("btn-logout");
@@ -1875,76 +1577,57 @@ console.log("[role] Fallback class detection:", hasAssignedClasses ? "SCPHS" : "
         }
       });
     }
-    
   </script>
-<!-- ============================================================ -->
-<!-- Homepage Slider — load from Firestore (with fallback) -->
-<!-- ============================================================ -->
-<script type="module">
-  import { db } from "./assets/js/firebase-config.js";
-  import { doc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
-  (async function loadDynamicSlides() {
-    try {
-      const snap = await getDoc(doc(db, "config", "homepage_slides"));
-      if (!snap.exists()) {
-        console.log("[slider] No Firestore slides — using hardcoded defaults");
-        return;
-      }
+  <!-- Homepage Slider — load from Firestore (with fallback) -->
+  <script type="module">
+    import { db } from "./assets/js/firebase-config.js";
+    import { doc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
-      const data = snap.data();
-      const slides = (data.slides || [])
-      .filter(s => s.active !== false && (s.base64 || s.imageUrl))
-        .filter(s => s.active !== false)
-        .sort((a, b) => (a.order || 0) - (b.order || 0));
+    (async function loadDynamicSlides() {
+      try {
+        const snap = await getDoc(doc(db, "config", "homepage_slides"));
+        if (!snap.exists()) return;
 
-      if (!slides.length) {
-        console.log("[slider] Empty slides array — using defaults");
-        return;
-      }
+        const data = snap.data();
+        const slides = (data.slides || [])
+          .filter(s => s.active !== false && (s.base64 || s.imageUrl))
+          .sort((a, b) => (a.order || 0) - (b.order || 0));
 
-      const slider = document.getElementById("home-slider");
-      if (!slider) return;
+        if (!slides.length) return;
 
-      // Preserve the welcome badge only on the first slide if wanted
-      const esc = s => String(s == null ? "" : s)
-        .replace(/&/g, "&amp;").replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+        const slider = document.getElementById("home-slider");
+        if (!slider) return;
 
-      // Rebuild slides HTML
-      const slidesHTML = slides.map((s, i) => `
-        <div class="slide ${i === 0 ? "is-active" : ""}" role="group" aria-roledescription="slide" aria-label="${i + 1} of ${slides.length}">
-          <img src="${esc(s.base64 || s.imageUrl || "")}" alt="${esc(s.alt || s.title || "")}" loading="${i === 0 ? "eager" : "lazy"}">
-          <div class="slide-overlay"></div>
-          <div class="slide-caption">
-            ${s.title ? `<h2>${esc(s.title)}</h2>` : ""}
-            ${s.subtitle ? `<p>${esc(s.subtitle)}</p>` : ""}
+        const esc = s => String(s == null ? "" : s)
+          .replace(/&/g, "&amp;").replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+
+        const slidesHTML = slides.map((s, i) => `
+          <div class="slide ${i === 0 ? "is-active" : ""}" role="group" aria-roledescription="slide" aria-label="${i + 1} of ${slides.length}">
+            <img src="${esc(s.base64 || s.imageUrl || "")}" alt="${esc(s.alt || s.title || "")}" loading="${i === 0 ? "eager" : "lazy"}">
+            <div class="slide-overlay"></div>
+            <div class="slide-caption">
+              ${s.title ? `<h2>${esc(s.title)}</h2>` : ""}
+              ${s.subtitle ? `<p>${esc(s.subtitle)}</p>` : ""}
+            </div>
           </div>
-        </div>
-      `).join("");
+        `).join("");
 
-      // Keep nav buttons + dots host
-      slider.innerHTML = slidesHTML + `
-        <button class="nav prev" aria-label="Previous slide" type="button">‹</button>
-        <button class="nav next" aria-label="Next slide" type="button">›</button>
-        <div class="dots" role="tablist" aria-label="Slide indicators"></div>
-      `;
+        slider.innerHTML = slidesHTML + `
+          <button class="nav prev" aria-label="Previous slide" type="button">‹</button>
+          <button class="nav next" aria-label="Next slide" type="button">›</button>
+          <div class="dots" role="tablist" aria-label="Slide indicators"></div>
+        `;
 
-      console.log("[slider] Loaded", slides.length, "slides from Firestore");
-
-      // Re-init slider (reuse your existing initSlider logic if exposed)
-      if (typeof window.initSlider === "function") {
-        window.initSlider();
-      } else {
-        // Minimal fallback re-init
-        window.dispatchEvent(new Event("slider:reload"));
+        if (typeof window.initSlider === "function") {
+          window.initSlider();
+        }
+      } catch (e) {
+        console.warn("[slider] Falling back to hardcoded slides:", e.message);
       }
-
-    } catch (e) {
-      console.warn("[slider] Falling back to hardcoded slides:", e.message);
-    }
-  })();
-</script>
+    })();
+  </script>
 
   <!-- ===================== COUNTER + CHATBOT ===================== -->
   <script type="module" src="assets/js/counter.js"></script>
