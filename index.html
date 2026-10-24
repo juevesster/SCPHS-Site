@@ -76,13 +76,8 @@
     .admin-only-link { display: none; }
     body.is-admin .admin-only-link { display: inline-flex; }
 
-    @media (max-width: 480px) {
-      #admin-fab-stack { right: 16px; gap: 6px; }
-      #admin-fab-stack .fab { width: 48px; height: 48px; font-size: 20px; }
-    }
-
     /* ============================================================
-       ROLE QUICK-ACCESS BANNER (Animated Info Drive)
+       ROLE QUICK-ACCESS BANNER
        ============================================================ */
     .role-cta {
       max-width: 1200px;
@@ -256,7 +251,7 @@
     body.is-admin .role-only-scphs-teacher, body.is-admin .role-only-guest-teacher { display: block; }
 
     /* ============================================================
-       MOBILE & TABLET FIXES (CRITICAL UPDATES)
+       MOBILE & TABLET FIXES (FIXED BLANK SPACES)
        ============================================================ */
     @media (max-width: 900px) {
       .content-grid {
@@ -275,8 +270,9 @@
       .widget { width: 100%; }
       .role-cta__grid { grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 14px; }
       
-      /* Fix Slider Height */
-      #home-slider { height: 320px !important; }
+      /* Fix Hero Section blank spaces */
+      .hero .inner { display: flex; flex-direction: column; gap: 20px; }
+      #home-slider { height: 250px !important; aspect-ratio: 16/9; }
       .welcome-badge { display: none !important; }
     }
 
@@ -290,10 +286,16 @@
       .role-card__desc { display: none; }
       .role-card__cta { margin-top: 8px; font-size: 10.5px; letter-spacing: 0.03em; }
       
-      /* Fix Slider Captions */
-      #home-slider { height: 240px !important; }
-      .slide-caption h2 { font-size: 1.3rem !important; margin-bottom: 4px !important; }
-      .slide-caption p { font-size: 0.85rem !important; display: block !important; }
+      /* Fix Slider Captions and Height on Phones */
+      #home-slider { height: 200px !important; }
+      .slide-caption { padding: 10px !important; }
+      .slide-caption h2 { font-size: 1.1rem !important; margin-bottom: 2px !important; }
+      .slide-caption p { font-size: 0.75rem !important; display: block !important; margin: 0 !important; }
+      
+      /* Fix Nav Menu padding */
+      .menu { flex-direction: column; gap: 0; }
+      .menu > li { width: 100%; border-bottom: 1px solid rgba(255,255,255,0.1); }
+      .menu > li > a, .menu-toggle { width: 100%; text-align: left; padding: 12px 16px; }
     }
 
     @media (max-width: 380px) {
@@ -515,7 +517,7 @@
 
   <!-- ===================== HERO / SLIDER ===================== -->
   <section class="hero" id="home">
-    <div class="wrap inner">
+    <div class="wrap inner" style="display: flex; flex-direction: column; gap: 20px;">
       <!-- Left Side: Slider -->
       <div>
         <div class="slider" id="home-slider" aria-label="SCPHS Highlights" data-interval="5000">
@@ -578,7 +580,7 @@
           <a class="btn outline" href="#calendar" style="display:flex; align-items:center; justify-content:center; gap:8px; padding:12px; text-align:center; height:100%;"><span style="font-size:18px;">📅</span> School Calendar</a>
           <a class="btn outline" href="#enrollment" style="display:flex; align-items:center; justify-content:center; gap:8px; padding:12px; text-align:center; height:100%;"><span style="font-size:18px;">📝</span> Enrollment</a>
 
-          <!-- Admin Only Link (Fixed Duplicate) -->
+          <!-- Admin Only Link -->
           <a class="btn outline admin-only-link" href="school-memorandum.html" style="display:flex; align-items:center; justify-content:center; gap:8px; padding:12px; text-align:center; border-color:#fca5a5; color:#991b1b; background:#fef2f2; grid-column: 1 / -1; height:100%;">
             <span style="font-size:18px;">🔒</span> Admin Upload
           </a>
