@@ -95,7 +95,7 @@
             <option value="3">🌾 Term 3</option>
           </select>
         </div>
-        <div id="viewSelector" style="display: none;">
+        <div id="viewSelector">
           <label>View Mode</label>
           <select id="viewMode" onchange="toggleView()">
             <option value="daily">Daily Entry</option>
@@ -106,7 +106,7 @@
     </div>
 
     <!-- Daily Entry View -->
-    <div id="dailyView" style="display: none;">
+    <div id="dailyView">
       <div class="card">
         <div class="filter-bar">
           <div>
@@ -245,6 +245,7 @@
           students = stSnap.docs.map(d => ({ id: d.id, ...d.data() }));
         } catch (err) {
           console.warn("Could not read students subcollection, trying root...");
+        alert("DEBUG: Found " + students.length + " students in the subcollection. Class ID is: " + classId);
         }
 
         if (students.length === 0) {
