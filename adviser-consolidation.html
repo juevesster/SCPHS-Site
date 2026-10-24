@@ -84,7 +84,38 @@
         @page{size:landscape;margin:0.3in}
         .page{page-break-after:always;page-break-inside:avoid;min-height:auto;padding:10px;margin:0}
     }
-    @media(max-width:1024px){.two-col{grid-template-columns:1fr}}
+        /* ✅ MOBILE RESPONSIVENESS */
+    @media (max-width: 1024px) {
+      .two-col { 
+        grid-template-columns: 1fr !important; 
+        gap: 15px;
+      }
+    }
+
+    @media (max-width: 768px) {
+      body { padding: 5px; font-size: 9pt; }
+      .page { padding: 10px 15px; min-height: auto; }
+      .controls { flex-direction: column; align-items: stretch; }
+      .controls select, .controls button { width: 100%; margin: 5px 0; }
+
+    .controls select, .controls button { padding: 8px 12px; margin: 3px; border: 1px solid #ddd; border-radius: 5px; font-size: 13px; font-family: inherit; }
+    .controls > div { display: flex; flex-direction: column; }
+      
+      /* Make tables scrollable horizontally on mobile */
+      .table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+      .att-table, .grades-table, .values-table, .desc-table { min-width: 500px; }
+      
+      /* Fix the font size for the SF9 header on mobile */
+      .doc-title { font-size: 10pt; margin: 10px 0; }
+      .school-name { font-size: 9pt; }
+      .learner-info { font-size: 8.5pt; line-height: 2; }
+      .learner-info .underline { min-width: 180px; }
+      .learner-info .med-underline { min-width: 100px; }
+      
+      /* Adjust signature blocks */
+      .sig-row { flex-direction: column; gap: 20px; }
+      .cert-sig-row { flex-direction: column; gap: 20px; }
+    }
   </style>
 </head>
 <body>
