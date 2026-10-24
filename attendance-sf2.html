@@ -162,7 +162,7 @@
 
   </div>
 
-    <script type="module">
+      <script type="module">
     import { auth, db } from "./assets/js/firebase-config.js";
     import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
     import { collection, getDocs, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
@@ -171,6 +171,7 @@
     let MY_CLASSES = [];
     let STUDENTS = [];
     let ATTENDANCE_DATA = {}; 
+    let CURRENT_VIEW = "daily";
 
     // Set default dates
     const today = new Date().toISOString().split('T')[0];
@@ -187,8 +188,6 @@
         const myName = (profile?.name || "").toLowerCase();
         const myEmail = (profile?.email || user.email || "").toLowerCase();
         
-        console.log("Logged in as:", myName, myEmail);
-
         const clsSnap = await getDocs(collection(db, "classes"));
         clsSnap.forEach(d => {
           const c = d.data();
@@ -210,22 +209,28 @@
         MY_CLASSES.forEach(c => {
           select.innerHTML += `<option value="${c.id}">${c.classLabel}</option>`;
         });
+
+        // ✅ AUTO-SELECT FIRST CLASS AND LOAD DATA
+        select.value = MY_CLASSES[0].id;
+        await loadClassData(); 
+
       } catch (err) {
         console.error("Error loading classes:", err);
       }
     });
 
-    // ✅ ATTACH EVENT LISTENERS
+    // ✅ EVENT LISTENERS
     document.getElementById("classSelect").addEventListener("change", loadClassData);
-    document.getElementById("termSelect").addEventListener("change", loadClassData);
+    document.getElementById("termSelect").addEventListener("change", () => {
+      if (CURRENT_VIEW === "daily") loadDailyAttendance();
+      else loadMonthlySummary();
+    });
     document.getElementById("viewMode").addEventListener("change", toggleView);
     document.getElementById("attendanceDate").addEventListener("change", loadDailyAttendance);
     document.getElementById("summaryMonth").addEventListener("change", loadMonthlySummary);
 
     async function loadClassData() {
       const classId = document.getElementById("classSelect").value;
-      const term = document.getElementById("termSelect").value;
-      
       if (!classId) {
         document.getElementById("viewSelector").style.display = "none";
         document.getElementById("dailyView").style.display = "none";
@@ -234,20 +239,23 @@
       }
 
       try {
-        console.log("Fetching students for class:", classId);
-        
-        // Fetch students from SF1 (checking both potential subcollections)
         let students = [];
-        const stSnap = await getDocs(collection(db, "classes", classId, "students"));
-        students = stSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+        try {
+          const stSnap = await getDocs(collection(db, "classes", classId, "students"));
+          students = stSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+        } catch (err) {
+          console.warn("Could not read students subcollection, trying root...");
+        }
 
-        // Fallback if no students in subcollection
         if (students.length === 0) {
-          console.log("No students in subcollection, checking root SF1...");
-          const sf1Snap = await getDocs(collection(db, "sf1_school_register"));
-          students = sf1Snap.docs
-            .map(d => ({ id: d.id, ...d.data() }))
-            .filter(s => s.classId === classId && s.isActive !== false);
+          try {
+            const sf1Snap = await getDocs(collection(db, "sf1_school_register"));
+            students = sf1Snap.docs
+              .map(d => ({ id: d.id, ...d.data() }))
+              .filter(s => s.classId === classId);
+          } catch (err) {
+            console.warn("Could not read sf1_school_register.");
+          }
         }
 
         STUDENTS = students.sort((a,b) => {
@@ -256,32 +264,29 @@
           return nameA.localeCompare(nameB);
         });
 
-        console.log(`Found ${STUDENTS.length} students`);
-
         document.getElementById("viewSelector").style.display = "block";
         
-        if (document.getElementById("viewMode").value === "monthly") {
-          loadMonthlySummary();
+        // ✅ Refresh based on current view mode
+        if (CURRENT_VIEW === "monthly") {
+          await loadMonthlySummary();
         } else {
-          loadDailyAttendance();
+          await loadDailyAttendance();
         }
 
       } catch (err) {
         console.error("Error loading students:", err);
-        alert("Error loading students: " + err.message);
       }
     }
 
     function toggleView() {
-      const mode = document.getElementById("viewMode").value;
-      document.getElementById("dailyView").style.display = mode === "daily" ? "block" : "none";
-      document.getElementById("monthlyView").style.display = mode === "monthly" ? "block" : "none";
+      CURRENT_VIEW = document.getElementById("viewMode").value;
+      document.getElementById("dailyView").style.display = CURRENT_VIEW === "daily" ? "block" : "none";
+      document.getElementById("monthlyView").style.display = CURRENT_VIEW === "monthly" ? "block" : "none";
 
-      if (mode === "monthly") loadMonthlySummary();
+      if (CURRENT_VIEW === "monthly") loadMonthlySummary();
       else loadDailyAttendance();
     }
 
-    // ============ DAILY VIEW LOGIC ============
     async function loadDailyAttendance() {
       const classId = document.getElementById("classSelect").value;
       const dateVal = document.getElementById("attendanceDate").value;
@@ -292,7 +297,7 @@
         const attSnap = await getDoc(doc(db, "classes", classId, "attendance", dateVal));
         ATTENDANCE_DATA = {};
         
-        if (attSnap.exists() && attSnap.data().term === term) {
+        if (attSnap.exists() && String(attSnap.data().term) === String(term)) {
           ATTENDANCE_DATA = attSnap.data().records || {};
         }
 
@@ -381,7 +386,7 @@
       try {
         await setDoc(doc(db, "classes", classId, "attendance", dateVal), {
           date: dateVal,
-          term: term,
+          term: String(term), // ✅ Store term as string for easy comparison
           records: ATTENDANCE_DATA,
           updatedAt: new Date().toISOString(),
           updatedBy: CURRENT_USER.uid
@@ -393,7 +398,6 @@
       }
     };
 
-    // ============ MONTHLY SUMMARY LOGIC ============
     async function loadMonthlySummary() {
       const classId = document.getElementById("classSelect").value;
       const monthVal = document.getElementById("summaryMonth").value; 
@@ -409,7 +413,8 @@
         
         attSnap.forEach(d => {
           const data = d.data();
-          if (data.date.startsWith(monthVal) && data.term === term) {
+          // ✅ Only include records from the selected term and month
+          if (data.date.startsWith(monthVal) && String(data.term) === String(term)) {
             allData[data.date] = data.records;
           }
         });
