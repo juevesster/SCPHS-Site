@@ -319,115 +319,196 @@
     <i class="fas fa-robot"></i>
   </button>
 
-  <script type="module">
+    <script type="module">
     import { auth, db } from "./assets/js/firebase-config.js";
-    import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-    import { collection, getDocs, query, where } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
-    import { getCurrentUserProfile } from "./assets/js/roles.js";
+    import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+    import { collection, getDocs, query, where, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
     let CURRENT_USER = null;
-    let CURRENT_PROFILE = null;
     let MY_CLASSES = [];
-    let CURRENT_TERM = 1;
+    let SELECTED_CLASS = null;
+    let ALL_STUDENTS = [];
+    
+    // Hardcoded DO 015 Descriptor logic
+    function getDescriptor(grade) {
+      if (grade >= 90) return "Advancing";
+      if (grade >= 80) return "Benchmarking";
+      if (grade >= 75) return "Connecting";
+      if (grade >= 65) return "Developing";
+      return "Emerging";
+    }
 
-    async function init() {
-      onAuthStateChanged(auth, async (user) => {
-        if (!user) {
-          location.replace("login.html");
-          return;
-        }
-        CURRENT_USER = user;
-        CURRENT_PROFILE = await getCurrentUserProfile();
+    onAuthStateChanged(auth, async (user) => {
+      if (!user) { window.location.href = "login.html"; return; }
+      CURRENT_USER = user;
 
-        const isStaff = CURRENT_PROFILE?.primaryRole === "teacher" || CURRENT_PROFILE?.primaryRole === "admin" || CURRENT_PROFILE?.isSuperAdmin;
-        if (!isStaff) {
-          document.getElementById("loader").innerHTML = `<h2 style="color:red;">Access Denied</h2>`;
-          return;
-        }
-
-        // Update UI Profile
-        const name = CURRENT_PROFILE.name || user.email.split('@')[0];
-        document.getElementById("navUserName").textContent = name;
-        document.getElementById("navUserRole").textContent = CURRENT_PROFILE.primaryRole || "Teacher";
-        document.getElementById("navAvatar").textContent = name.charAt(0).toUpperCase();
-
-        // Fetch Advisory Classes
-        try {
-          const q = query(collection(db, "classes"), where("adviserUid", "==", user.uid));
-          const snap = await getDocs(q);
+      try {
+        // 1. Get Profile
+        const pSnap = await getDocs(collection(db, "users"));
+        const myProfile = pSnap.docs.find(d => d.id === user.uid);
+        const currentProfile = myProfile ? myProfile.data() : {};
+        
+        const isAdmin = currentProfile?.primaryRole === "admin" || currentProfile?.isSuperAdmin;
+        const myEmail = (currentProfile?.email || user.email || "").toLowerCase();
+        const myName = (currentProfile?.name || "").toLowerCase();
+        
+        // 2. Find Classes (Robust matching)
+        const clsSnap = await getDocs(collection(db, "classes"));
+        clsSnap.forEach(d => {
+          const c = d.data();
+          const classAdviser = (c.adviserName || "").toLowerCase();
+          const classEmail = (c.adviserEmail || "").toLowerCase();
           
-          MY_CLASSES = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+          const isMyClass = 
+            c.adviserUid === CURRENT_USER.uid || 
+            (classAdviser && classAdviser === myName) ||
+            (classEmail && classEmail === myEmail);
 
-          // Fetch Student Counts
-          for (const cls of MY_CLASSES) {
-            const studentsSnap = await getDocs(collection(db, "classes", cls.id, "students"));
-            cls.studentCount = studentsSnap.size;
+          if (isAdmin || isMyClass) {
+            MY_CLASSES.push({ id: d.id, ...c });
           }
-        } catch (e) {
-          console.error(e);
+        });
+
+        const select = document.getElementById("classSelect");
+        select.innerHTML = '<option value="">— Select Advisory Class —</option>';
+        
+        if (MY_CLASSES.length === 0) {
+          select.innerHTML = '<option value="">⚠️ No advisory classes found</option>';
+          return;
         }
 
-        renderDashboard();
-        document.getElementById("loader").style.opacity = "0";
-        setTimeout(() => document.getElementById("loader").style.display = "none", 500);
-
-        // 🆕 Term Selector Listener
-        document.getElementById("termSelector").addEventListener("change", (e) => {
-          CURRENT_TERM = parseInt(e.target.value, 10);
-          renderDashboard();
+        MY_CLASSES.forEach(c => {
+          select.innerHTML += `<option value="${c.id}">${c.classLabel}</option>`;
         });
-      });
-    }
 
-    function renderDashboard() {
-      // Update Stats
-      const totalClasses = MY_CLASSES.length;
-      const totalStudents = MY_CLASSES.reduce((sum, c) => sum + (c.studentCount || 0), 0);
-      
-      document.getElementById("statClasses").textContent = totalClasses;
-      document.getElementById("statStudents").textContent = totalStudents;
-      
-      // 🆕 Update Term Display
-      document.getElementById("statTerm").textContent = `Term ${CURRENT_TERM}`;
-
-      // Render Classes
-      const container = document.getElementById("classListContainer");
-      if (totalClasses === 0) {
-        container.innerHTML = `
-          <div style="text-align: center; padding: 40px 20px; color: var(--text-muted);">
-            <div style="font-size: 3rem; margin-bottom: 12px;">🏫</div>
-            <div style="font-weight: 700; font-size: 1.1rem; color: var(--text-main);">No Advisory Classes</div>
-            <p style="font-size: 0.9rem;">You are not currently assigned as an adviser.</p>
-          </div>
-        `;
-        return;
+      } catch (err) {
+        console.error("Init Error:", err);
+        document.getElementById("classSelect").innerHTML = `<option value="">❌ Error loading classes</option>`;
       }
-
-      // In the future, we can filter `MY_CLASSES` based on `CURRENT_TERM` if classes change per term.
-      // For now, it renders the assigned classes and passes the term to the buttons.
-      container.innerHTML = MY_CLASSES.map(cls => `
-        <div class="class-item">
-          <div class="class-info">
-            <h3>${cls.classLabel || "Unnamed Class"}</h3>
-            <div class="class-meta">
-              <span><i class="fas fa-layer-group"></i> ${cls.gradeLevel || "N/A"}</span>
-              <span><i class="fas fa-users"></i> ${cls.studentCount} Students</span>
-            </div>
-          </div>
-          <div style="display: flex; gap: 8px;">
-            <a href="sf1-class.html?id=${cls.id}" class="btn-action btn-sf1"><i class="fas fa-list"></i> Roster</a>
-            <a href="program.html?id=${cls.id}&term=${CURRENT_TERM}" class="btn-action btn-prog"><i class="fas fa-calendar-alt"></i> Program</a>
-          </div>
-        </div>
-      `).join("");
-    }
-
-    document.getElementById("btnLogout").addEventListener("click", (e) => {
-      e.preventDefault();
-      if (confirm("Logout?")) signOut(auth).then(() => location.replace("login.html"));
     });
 
-    init();
+    window.loadConsolidatedData = async () => {
+      const classId = document.getElementById("classSelect").value;
+      if (!classId) return alert("Please select a class.");
+
+      SELECTED_CLASS = MY_CLASSES.find(c => c.id === classId);
+      document.getElementById("loading").style.display = "block";
+      document.getElementById("reportContainer").style.display = "none";
+
+      try {
+        // 1. Get all Students in the class
+        const stSnap = await getDocs(collection(db, "classes", classId, "students"));
+        ALL_STUDENTS = stSnap.docs.map(d => ({ id: d.id, ...d.data() })).sort((a,b) => (a.fullName || "").localeCompare(b.fullName || ""));
+
+        if (ALL_STUDENTS.length === 0) {
+          alert("No students found in this class.");
+          document.getElementById("loading").style.display = "none";
+          return;
+        }
+
+        // 2. Get all approved ECR subjects for this class
+        const ecrSnap = await getDocs(collection(db, "classes", classId, "ecr"));
+        const approvedSubjects = [];
+        
+        for (const ecrDoc of ecrSnap.docs) {
+          const ecrData = ecrDoc.data();
+          const subjectCode = ecrDoc.id;
+          
+          // Check if Term 1 is approved
+          const term1Status = ecrData.terms?.["1"]?.status;
+          
+          if (term1Status === "approved") {
+            // Get subject metadata for real name
+            let subjName = subjectCode;
+            try {
+              const subjMeta = await getDoc(doc(db, "subjects", subjectCode));
+              if (subjMeta.exists()) subjName = subjMeta.data().displayName || subjectCode;
+            } catch {}
+
+            approvedSubjects.push({ code: subjectCode, name: subjName, data: ecrData });
+          }
+        }
+
+        if (approvedSubjects.length === 0) {
+          alert("No approved ECRs found for this class yet. Please approve teacher submissions first.");
+          document.getElementById("loading").style.display = "none";
+          return;
+        }
+
+        // For this demo, we will only render the SF9 for the FIRST student in the class
+        const student = ALL_STUDENTS[0]; 
+        
+        document.getElementById("studentNameDisplay").textContent = student.fullName || "Unknown";
+        document.getElementById("studentLrnDisplay").textContent = student.lrn || "N/A";
+        document.getElementById("classNameDisplay").textContent = SELECTED_CLASS.classLabel;
+        document.getElementById("schoolYearDisplay").textContent = SELECTED_CLASS.schoolYear || "2026-2027";
+
+        let tableHtml = "";
+        let totalFinalGrades = 0;
+        let validSubjects = 0;
+
+        // Loop through all approved subjects
+        for (const subj of approvedSubjects) {
+          // Fetch this student's score for Term 1
+          const scoreSnap = await getDoc(doc(db, "classes", classId, "ecr", subj.code, "terms", "1", "scores", student.id));
+          
+          let term1Grade = "-";
+          let finalGrade = "-";
+          let descriptor = "-";
+          let remarks = "-";
+          
+          if (scoreSnap.exists()) {
+            const scoreData = scoreSnap.data();
+            if (scoreData.computed && scoreData.computed.termGrade && !isNaN(scoreData.computed.termGrade)) {
+              const gradeNum = Number(scoreData.computed.termGrade);
+              term1Grade = gradeNum;
+              finalGrade = gradeNum; // For now, since we only have Term 1
+              descriptor = getDescriptor(gradeNum);
+              remarks = gradeNum >= 75 ? "PASSED" : "FAILED";
+              
+              totalFinalGrades += gradeNum;
+              validSubjects++;
+            }
+          }
+
+          const remColor = remarks === "PASSED" ? "grade-pass" : remarks === "FAILED" ? "grade-fail" : "";
+
+          tableHtml += `
+            <tr>
+              <td class="subject-name">${subj.name}</td>
+              <td>${term1Grade}</td>
+              <td>-</td>
+              <td>-</td>
+              <td><strong>${finalGrade}</strong></td>
+              <td>${descriptor}</td>
+              <td class="${remColor}">${remarks}</td>
+            </tr>
+          `;
+        }
+
+        document.getElementById("sf9TableBody").innerHTML = tableHtml;
+
+        // Compute General Average
+        if (validSubjects > 0) {
+          const genAvg = Math.round(totalFinalGrades / validSubjects);
+          document.getElementById("generalAverageDisplay").textContent = genAvg;
+          document.getElementById("generalDescriptorDisplay").textContent = getDescriptor(genAvg);
+          document.getElementById("generalDescriptorDisplay").style.color = genAvg >= 75 ? "var(--success)" : "var(--danger)";
+        } else {
+          document.getElementById("generalAverageDisplay").textContent = "--";
+          document.getElementById("generalDescriptorDisplay").textContent = "--";
+        }
+
+        document.getElementById("loading").style.display = "none";
+        document.getElementById("reportContainer").style.display = "block";
+        document.getElementById("btnPrint").disabled = false;
+
+      } catch (err) {
+        console.error(err);
+        alert("Error generating report: " + err.message);
+        document.getElementById("loading").style.display = "none";
+      }
+    };
   </script>
 </body>
 </html>
