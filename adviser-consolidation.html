@@ -143,7 +143,7 @@
 
   </div>
 
-  <script type="module">
+    <script type="module">
     import { auth, db } from "./assets/js/firebase-config.js";
     import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
     import { collection, getDocs, query, where, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
@@ -171,19 +171,22 @@
         const pSnap = await getDocs(collection(db, "users"));
         const myProfile = pSnap.docs.find(d => d.id === user.uid);
         const currentProfile = myProfile ? myProfile.data() : {};
-        const isAdmin = currentProfile?.primaryRole === "admin" || currentProfile?.isSuperAdmin;
         
-        // 2. Find Classes
+        const isAdmin = currentProfile?.primaryRole === "admin" || currentProfile?.isSuperAdmin;
         const myEmail = (currentProfile?.email || user.email || "").toLowerCase();
         const myName = (currentProfile?.name || "").toLowerCase();
         
+        // 2. Find Classes (Robust matching)
         const clsSnap = await getDocs(collection(db, "classes"));
         clsSnap.forEach(d => {
           const c = d.data();
+          const classAdviser = (c.adviserName || "").toLowerCase();
+          const classEmail = (c.adviserEmail || "").toLowerCase();
+          
           const isMyClass = 
             c.adviserUid === CURRENT_USER.uid || 
-            (c.adviserName && c.adviserName.toLowerCase() === myName) ||
-            (c.adviserEmail && c.adviserEmail.toLowerCase() === myEmail);
+            (classAdviser && classAdviser === myName) ||
+            (classEmail && classEmail === myEmail);
 
           if (isAdmin || isMyClass) {
             MY_CLASSES.push({ id: d.id, ...c });
@@ -192,13 +195,19 @@
 
         const select = document.getElementById("classSelect");
         select.innerHTML = '<option value="">— Select Advisory Class —</option>';
+        
+        if (MY_CLASSES.length === 0) {
+          select.innerHTML = '<option value="">⚠️ No advisory classes found</option>';
+          return;
+        }
+
         MY_CLASSES.forEach(c => {
           select.innerHTML += `<option value="${c.id}">${c.classLabel}</option>`;
         });
 
       } catch (err) {
-        console.error(err);
-        alert("Failed to load classes.");
+        console.error("Init Error:", err);
+        document.getElementById("classSelect").innerHTML = `<option value="">❌ Error loading classes</option>`;
       }
     });
 
@@ -215,6 +224,12 @@
         const stSnap = await getDocs(collection(db, "classes", classId, "students"));
         ALL_STUDENTS = stSnap.docs.map(d => ({ id: d.id, ...d.data() })).sort((a,b) => (a.fullName || "").localeCompare(b.fullName || ""));
 
+        if (ALL_STUDENTS.length === 0) {
+          alert("No students found in this class.");
+          document.getElementById("loading").style.display = "none";
+          return;
+        }
+
         // 2. Get all approved ECR subjects for this class
         const ecrSnap = await getDocs(collection(db, "classes", classId, "ecr"));
         const approvedSubjects = [];
@@ -223,7 +238,7 @@
           const ecrData = ecrDoc.data();
           const subjectCode = ecrDoc.id;
           
-          // Check if Term 1, 2, 3 are approved (For this example, we'll just check Term 1)
+          // Check if Term 1 is approved
           const term1Status = ecrData.terms?.["1"]?.status;
           
           if (term1Status === "approved") {
@@ -245,7 +260,6 @@
         }
 
         // For this demo, we will only render the SF9 for the FIRST student in the class
-        // In a real system, you would loop through ALL_STUDENTS and generate a separate printable page for each.
         const student = ALL_STUDENTS[0]; 
         
         document.getElementById("studentNameDisplay").textContent = student.fullName || "Unknown";
