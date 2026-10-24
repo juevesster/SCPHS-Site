@@ -7,7 +7,7 @@
   <meta name="description" content="SCPHS – Official school community portal for announcements, issuances, downloads, and stakeholder info." />
   <link rel="stylesheet" href="assets/css/styles.css" />
 
-  <style>
+    <style>
     .ph-time-box {
       display: flex;
       gap: 6px;
@@ -278,6 +278,18 @@
       }
       #home-slider { height: 250px !important; }
       .welcome-badge { display: none !important; }
+
+      /* 🆕 FIX: Stack the Header items on Mobile */
+      .brandbar {
+        flex-direction: column !important;
+        align-items: center !important;
+        text-align: center !important;
+        gap: 12px;
+      }
+      .brandtext h1 { font-size: 1.4rem !important; line-height: 1.2; }
+      .brandtext p { font-size: 0.85rem !important; }
+      .logos-left, .logos-right { justify-content: center !important; }
+      #user-area { align-items: center !important; margin-right: 0 !important; margin-top: 10px; }
     }
 
     @media (max-width: 640px) {
@@ -300,6 +312,22 @@
       .menu { flex-direction: column; gap: 0; }
       .menu > li { width: 100%; border-bottom: 1px solid rgba(255,255,255,0.1); }
       .menu > li > a, .menu-toggle { width: 100%; text-align: left; padding: 12px 16px; }
+
+      /* 🆕 FIX: Make FAB buttons smaller & hide some on mobile to prevent header overlap */
+      #admin-fab-stack {
+        bottom: 20px !important;
+        right: 12px !important;
+        gap: 6px !important;
+      }
+      #admin-fab-stack .fab {
+        width: 44px !important;
+        height: 44px !important;
+        font-size: 18px !important;
+      }
+      /* Hide the less critical FABs on small screens so they don't block the view */
+      #fab-bulk, #fab-import, #fab-schedule, #fab-users, #fab-sf1, #fab-memo, #fab-slides {
+        display: none !important; 
+      }
     }
 
     @media (max-width: 380px) {
