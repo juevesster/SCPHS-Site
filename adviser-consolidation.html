@@ -124,24 +124,31 @@
       <div class="two-col">
         <div class="attendance-section">
           <div class="section-title">ATTENDANCE RECORD (<span id="displayTermName">Term 1</span>)</div>
-          <table class="att-table">
+                    <table class="att-table">
             <thead>
-              <tr><th></th><th>JUN</th><th>JUL</th><th>AUG</th><th>SEP</th><th>OCT</th><th>NOV</th><th>DEC</th><th>JAN</th><th>FEB</th><th>MAR</th><th>APR</th><th>MAY</th><th>TOTAL</th></tr>
+              <tr>
+                <th></th>
+                <th>JUN</th><th>JUL</th><th>AUG</th><th>SEP</th><th>OCT</th>
+                <th>NOV</th><th>DEC</th><th>JAN</th><th>FEB</th><th>MAR</th><th>APR</th><th>MAY</th><th>TOTAL</th>
+              </tr>
             </thead>
             <tbody>
-                            <tr>
+              <tr>
                 <td class="text-left text-bold">No. of School Days</td>
-                <td colspan="12" style="color:#666; font-style:italic;">Total days for the term</td>
+                <td id="sd-jun">0</td><td id="sd-jul">0</td><td id="sd-aug">0</td><td id="sd-sep">0</td><td id="sd-oct">0</td>
+                <td id="sd-nov">0</td><td id="sd-dec">0</td><td id="sd-jan">0</td><td id="sd-feb">0</td><td id="sd-mar">0</td><td id="sd-apr">0</td><td id="sd-may">0</td>
                 <td class="text-bold" id="totalSchoolDays">0</td>
               </tr>
               <tr>
                 <td class="text-left text-bold">No. of Days Present</td>
-                <td colspan="12" style="color:#666; font-style:italic;">Total present days</td>
+                <td id="pr-jun">0</td><td id="pr-jul">0</td><td id="pr-aug">0</td><td id="pr-sep">0</td><td id="pr-oct">0</td>
+                <td id="pr-nov">0</td><td id="pr-dec">0</td><td id="pr-jan">0</td><td id="pr-feb">0</td><td id="pr-mar">0</td><td id="pr-apr">0</td><td id="pr-may">0</td>
                 <td class="text-bold" id="totalPresentDays">0</td>
               </tr>
               <tr>
                 <td class="text-left text-bold">No. of Days Absent</td>
-                <td colspan="12" style="color:#666; font-style:italic;">Total absent days</td>
+                <td id="ab-jun">0</td><td id="ab-jul">0</td><td id="ab-aug">0</td><td id="ab-sep">0</td><td id="ab-oct">0</td>
+                <td id="ab-nov">0</td><td id="ab-dec">0</td><td id="ab-jan">0</td><td id="ab-feb">0</td><td id="ab-mar">0</td><td id="ab-apr">0</td><td id="ab-may">0</td>
                 <td class="text-bold" id="totalAbsentDays">0</td>
               </tr>
             </tbody>
@@ -396,19 +403,35 @@
       }
     }
 
-    // ✅ 3. FETCH ATTENDANCE DATA FOR THE SELECTED TERM
+        // ✅ 3. FETCH ATTENDANCE DATA FOR THE SELECTED TERM
+    const monthNames = ["jan", "feb", "mar", "apr", "may", "jun", "jul", "aug", "sep", "oct", "nov", "dec"];
     let attendanceTotals = { present: 0, absent: 0, schoolDays: 0 };
+    let monthlyData = {};
+
     try {
       const attSnap = await getDocs(collection(db, "classes", classId, "attendance"));
       attSnap.forEach(d => {
         const data = d.data();
         // Check if this record is for the current term
         if (String(data.term) === String(term)) {
+          // Get the month (0-11)
+          const monthIdx = new Date(data.date).getMonth();
+          const monthKey = monthNames[monthIdx];
+
+          if (!monthlyData[monthKey]) monthlyData[monthKey] = { sd: 0, pr: 0, ab: 0 };
+          
+          monthlyData[monthKey].sd++;
           attendanceTotals.schoolDays++;
+
           if (data.records && data.records[studentId]) {
             const status = data.records[studentId].status;
-            if (status === "Present" || status === "Late") attendanceTotals.present++;
-            else if (status === "Absent") attendanceTotals.absent++;
+            if (status === "Present" || status === "Late") {
+              monthlyData[monthKey].pr++;
+              attendanceTotals.present++;
+            } else if (status === "Absent") {
+              monthlyData[monthKey].ab++;
+              attendanceTotals.absent++;
+            }
           }
         }
       });
@@ -417,13 +440,18 @@
     }
 
     // ✅ 4. POPULATE ATTENDANCE TOTALS ON THE SF9
-    const elSchoolDays = document.getElementById("totalSchoolDays");
-    const elPresent = document.getElementById("totalPresentDays");
-    const elAbsent = document.getElementById("totalAbsentDays");
-    
-    if (elSchoolDays) elSchoolDays.textContent = attendanceTotals.schoolDays;
-    if (elPresent) elPresent.textContent = attendanceTotals.present;
-    if (elAbsent) elAbsent.textContent = attendanceTotals.absent;
+    // Totals
+    if (document.getElementById("totalSchoolDays")) document.getElementById("totalSchoolDays").textContent = attendanceTotals.schoolDays;
+    if (document.getElementById("totalPresentDays")) document.getElementById("totalPresentDays").textContent = attendanceTotals.present;
+    if (document.getElementById("totalAbsentDays")) document.getElementById("totalAbsentDays").textContent = attendanceTotals.absent;
+
+    // Monthly breakdown
+    monthNames.forEach(m => {
+      const mData = monthlyData[m] || { sd: 0, pr: 0, ab: 0 };
+      if (document.getElementById(`sd-${m}`)) document.getElementById(`sd-${m}`).textContent = mData.sd;
+      if (document.getElementById(`pr-${m}`)) document.getElementById(`pr-${m}`).textContent = mData.pr;
+      if (document.getElementById(`ab-${m}`)) document.getElementById(`ab-${m}`).textContent = mData.ab;
+    });
 
     // 5. Populate Header Info
     document.getElementById("infoName").textContent = student.fullName || "Unknown";
