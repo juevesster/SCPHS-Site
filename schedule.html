@@ -54,13 +54,20 @@
     .time-cell { padding: 16px; background: #f8fafc; border-right: 1px solid var(--border); display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; }
     .time-label { font-weight: 800; font-size: 0.95rem; color: var(--text); }
     .time-sub { font-weight: 600; font-size: 0.75rem; color: var(--muted); margin-top: 4px; text-transform: uppercase; }
-    .subject-cell { padding: 12px; border-right: 1px solid var(--border); display: flex; align-items: stretch; }
+    .subject-cell { padding: 12px; border-right: 1px solid var(--border); display: flex; align-items: stretch; position: relative; cursor: pointer; transition: background 0.2s; }
     .subject-cell:last-child { border-right: none; }
-    .subject-card { width: 100%; border-radius: 12px; padding: 12px; display: flex; flex-direction: column; justify-content: center; border-left: 4px solid transparent; transition: all 0.2s; }
+    .subject-cell:hover { background: #f8fafc; }
+    
+    .subject-card { width: 100%; border-radius: 12px; padding: 12px; display: flex; flex-direction: column; justify-content: center; border-left: 4px solid transparent; transition: all 0.2s; position: relative; }
     .subject-card:hover { transform: scale(1.02); box-shadow: var(--shadow-md); }
     .subject-name { font-weight: 800; font-size: 0.95rem; line-height: 1.2; }
     .subject-class { font-size: 0.8rem; font-weight: 600; margin-top: 4px; opacity: 0.8; }
     
+    /* Custom Task Styles */
+    .custom-task { background: #fdf4ff; border-left-color: #d946ef; color: #86198f; }
+    .custom-task-delete { position: absolute; top: 4px; right: 4px; background: #fff; border: 1px solid #fbcfe8; color: #ef4444; border-radius: 50%; width: 20px; height: 20px; display: flex; align-items: center; justify-content: center; font-size: 10px; cursor: pointer; opacity: 0; transition: opacity 0.2s; }
+    .subject-card:hover .custom-task-delete { opacity: 1; }
+
     .subj-math { background: #eff6ff; border-left-color: #3b82f6; color: #1e3a8a; }
     .subj-science { background: #f0fdf4; border-left-color: #10b981; color: #064e3b; }
     .subj-filipino { background: #fef2f2; border-left-color: #ef4444; color: #7f1d1d; }
@@ -84,11 +91,26 @@
     .spinner { width: 40px; height: 40px; border: 4px solid #e2e8f0; border-top-color: var(--primary); border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 16px; }
     @keyframes spin { to { transform: rotate(360deg); } }
 
+    /* Modal Base */
+    .modal-bg { position: fixed; inset: 0; background: rgba(0,0,0,0.5); display: none; align-items: center; justify-content: center; z-index: 9999; padding: 20px; }
+    .modal-bg.show { display: flex; }
+    .modal-box { background: #fff; border-radius: 14px; max-width: 500px; width: 100%; box-shadow: 0 24px 48px rgba(0,0,0,.25); overflow: hidden; }
+    .modal-head { padding: 18px 22px; border-bottom: 1px solid #e5e7eb; display: flex; justify-content: space-between; align-items: center; }
+    .modal-head h3 { margin: 0; font-size: 1.1rem; color: #0f2b4f; }
+    .modal-body { padding: 20px 22px; }
+    .modal-body label { display: block; font-size: 11px; font-weight: 700; color: #374151; text-transform: uppercase; margin-bottom: 4px; }
+    .modal-body input, .modal-body select { width: 100%; padding: 9px 12px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 14px; font-family: inherit; margin-bottom: 12px; }
+    .modal-foot { padding: 14px 22px; border-top: 1px solid #e5e7eb; display: flex; justify-content: flex-end; gap: 10px; background: #fafbfc; }
+    .btn { padding: 10px 18px; border: none; border-radius: 6px; font-weight: 700; cursor: pointer; font-family: inherit; }
+    .btn-outline { background: #fff; border: 1px solid #d1d5db; color: #374151; }
+    .btn-primary { background: var(--primary); color: #fff; }
+    .btn-danger { background: #ef4444; color: #fff; }
+
     .print-doc { display: none; }
     @media print {
       @page { size: A4 landscape; margin: 10mm; }
       body { background: #fff; padding: 0; }
-      .header, .toolbar-wrap, .tabs, .stats-bento, .grid-container, .workload-card, .loader, #printModal { display: none !important; }
+      .header, .toolbar-wrap, .tabs, .stats-bento, .grid-container, .workload-card, .loader, .modal-bg { display: none !important; }
       .print-doc { display: block !important; font-family: 'Arial', sans-serif; color: #000; }
       .print-header { text-align: center; margin-bottom: 15px; line-height: 1.2; }
       .print-header img { height: 50px; margin-bottom: 5px; }
@@ -117,6 +139,7 @@
       </div>
       <div class="header-actions">
         <a href="teacher.html" class="btn-top"><i class="fas fa-arrow-left"></i> Dashboard</a>
+        <button id="btnAddTask" class="btn-top" style="background:#fdf4ff; color:#86198f; border-color:#fbcfe8;"><i class="fas fa-plus"></i> Add Task</button>
         <button id="btnOpenPrintModal" class="btn-top primary"><i class="fas fa-print"></i> Print Schedule</button>
       </div>
     </div>
@@ -138,6 +161,9 @@
             <option value="2">📗 Term 2</option>
             <option value="3">📕 Term 3</option>
           </select>
+        </div>
+        <div style="font-size: 12px; color: var(--muted); font-weight: 600;">
+          <i class="fas fa-info-circle"></i> Tip: Click any empty slot to add a task. Click a purple task to remove it.
         </div>
       </div>
 
@@ -184,34 +210,60 @@
     </div>
   </div>
 
+  <!-- TASK MODAL -->
+  <div class="modal-bg" id="taskModal">
+    <div class="modal-box">
+      <div class="modal-head">
+        <h3>➕ Add Custom Task</h3>
+        <button id="btnCloseTaskModal" style="background:none;border:none;font-size:20px;cursor:pointer;color:#6b7280;">✕</button>
+      </div>
+      <div class="modal-body">
+        <p style="margin:0 0 16px;font-size:13px;color:#6b7280;">Add ancillary tasks, meetings, or other duties to your schedule. These will appear on your printout.</p>
+        
+        <label>Task Name / Title</label>
+        <input type="text" id="taskName" placeholder="e.g., Canteen Duty, Lesson Planning, Parent Conf." />
+
+        <label>Day</label>
+        <select id="taskDay">
+          <option value="Monday">Monday</option>
+          <option value="Tuesday">Tuesday</option>
+          <option value="Wednesday">Wednesday</option>
+          <option value="Thursday">Thursday</option>
+          <option value="Friday">Friday</option>
+        </select>
+
+        <label>Time Slot</label>
+        <select id="taskSlot"></select>
+      </div>
+      <div class="modal-foot">
+        <button class="btn btn-outline" id="btnCancelTask">Cancel</button>
+        <button class="btn btn-primary" id="btnSaveTask">💾 Save Task</button>
+      </div>
+    </div>
+  </div>
+
   <!-- PRINT OPTIONS MODAL -->
-  <div id="printModal" style="position:fixed;inset:0;background:rgba(0,0,0,0.5);display:none;align-items:center;justify-content:center;z-index:9999;padding:20px;">
-    <div style="background:#fff;border-radius:14px;max-width:600px;width:100%;box-shadow:0 24px 48px rgba(0,0,0,.25);overflow:hidden;">
-      <div style="padding:18px 22px;border-bottom:1px solid #e5e7eb;display:flex;justify-content:space-between;align-items:center;">
-        <h3 style="margin:0;font-size:1.1rem;color:#0f2b4f;">🖨 Print Options</h3>
+  <div id="printModal" class="modal-bg">
+    <div class="modal-box">
+      <div class="modal-head">
+        <h3>🖨 Print Options</h3>
         <button id="btnClosePrintModal" style="background:none;border:none;font-size:20px;cursor:pointer;color:#6b7280;">✕</button>
       </div>
-      <div style="padding:20px 22px;">
+      <div class="modal-body">
         <p style="margin:0 0 16px;font-size:13px;color:#6b7280;">You can edit the signatories below before printing. These edits apply to this specific printout only.</p>
         
-        <div style="margin-bottom:14px;">
-          <label style="display:block;font-size:11px;font-weight:700;color:#374151;text-transform:uppercase;margin-bottom:4px;">Prepared by</label>
-          <input type="text" id="p-preparedName" style="width:100%;padding:9px 12px;border:1px solid #d1d5db;border-radius:6px;font-size:14px;" />
-        </div>
+        <label>Prepared by</label>
+        <input type="text" id="p-preparedName" />
 
-        <div style="margin-bottom:14px;">
-          <label style="display:block;font-size:11px;font-weight:700;color:#374151;text-transform:uppercase;margin-bottom:4px;">Checked by (Name)</label>
-          <input type="text" id="p-checkedName" placeholder="e.g., Master Teacher I" style="width:100%;padding:9px 12px;border:1px solid #d1d5db;border-radius:6px;font-size:14px;" />
-        </div>
+        <label>Checked by (Name)</label>
+        <input type="text" id="p-checkedName" placeholder="e.g., Master Teacher I" />
 
-        <div style="margin-bottom:14px;">
-          <label style="display:block;font-size:11px;font-weight:700;color:#374151;text-transform:uppercase;margin-bottom:4px;">Noted by (Name)</label>
-          <input type="text" id="p-notedName" style="width:100%;padding:9px 12px;border:1px solid #d1d5db;border-radius:6px;font-size:14px;" />
-        </div>
+        <label>Noted by (Name)</label>
+        <input type="text" id="p-notedName" />
       </div>
-      <div style="padding:14px 22px;border-top:1px solid #e5e7eb;display:flex;justify-content:flex-end;gap:10px;background:#fafbfc;">
-        <button id="btnCancelPrint" style="padding:10px 18px;border:1px solid #d1d5db;background:#fff;border-radius:8px;font-weight:700;cursor:pointer;">Cancel</button>
-        <button id="btnExecutePrint" style="padding:10px 18px;border:none;background:#4f46e5;color:#fff;border-radius:8px;font-weight:700;cursor:pointer;">🖨 Print Now</button>
+      <div class="modal-foot">
+        <button class="btn btn-outline" id="btnCancelPrint">Cancel</button>
+        <button class="btn btn-primary" id="btnExecutePrint">🖨 Print Now</button>
       </div>
     </div>
   </div>
@@ -278,15 +330,19 @@
   <script type="module">
     import { auth, db } from "./assets/js/firebase-config.js";
     import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-    import { collection, getDocs, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+    import { collection, getDocs, doc, getDoc, setDoc, deleteDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
     import { getCurrentUserProfile } from "./assets/js/roles.js";
 
     let CURRENT_USER = null;
     let CURRENT_PROFILE = null;
-    let MY_SCHEDULE = [];
+    let MY_SCHEDULE = [];      // Program entries
+    let CUSTOM_TASKS = [];     // Custom entries
     let TIME_SLOTS = [];
     let SELECTED_TERM = 1;
     const DAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"];
+
+    // Modal state
+    let editingTaskId = null; // null = adding new, string = editing existing
 
     function getSubjectColorClass(subject) {
       const s = String(subject || "").toUpperCase();
@@ -307,6 +363,7 @@
 
         document.getElementById("welcomeSub").textContent = `Welcome, ${CURRENT_PROFILE.name || user.email}!`;
         
+        // Load Global Time Slots
         try {
           const tsSnap = await getDoc(doc(db, "config", "time_slots"));
           if (tsSnap.exists() && Array.isArray(tsSnap.data().slots)) {
@@ -327,11 +384,18 @@
           }
         } catch(e) {}
 
+        // Populate task slot dropdown
+        const slotSelect = document.getElementById("taskSlot");
+        slotSelect.innerHTML = TIME_SLOTS.filter(s => s.type === "class").map(s => 
+          `<option value="${s.id}">${s.label} (${s.start} - ${s.end})</option>`
+        ).join("");
+
         await loadTeacherSchedule();
         document.getElementById("loading").style.display = "none";
         document.getElementById("mainContent").style.display = "block";
         
         setupPrintLogic();
+        setupTaskLogic();
 
         document.getElementById("termSelect").addEventListener("change", async (e) => {
           SELECTED_TERM = parseInt(e.target.value, 10);
@@ -343,13 +407,14 @@
 
     async function loadTeacherSchedule() {
       MY_SCHEDULE = [];
+      CUSTOM_TASKS = [];
+
+      // 1. Load Program Entries
       try {
         const classesSnap = await getDocs(collection(db, "classes"));
-        
         for (const classDoc of classesSnap.docs) {
           const cls = { id: classDoc.id, ...classDoc.data() };
           
-          // Check overall class assignment
           const isAdviser = cls.adviserUid === CURRENT_USER.uid;
           const isTeacher = cls.teacherUids && cls.teacherUids.includes(CURRENT_USER.uid);
           const isSubjectTeacher = cls.subjectTeachers && Object.values(cls.subjectTeachers).includes(CURRENT_USER.uid);
@@ -361,7 +426,6 @@
             const entry = d.data();
             if (Number(entry.term) !== SELECTED_TERM) return;
 
-            // Match by specific teacherUid, specific teacherName, OR if you are assigned to the class overall
             const entryMatchesMe = entry.teacherUid === CURRENT_USER.uid || 
                                    (entry.teacherName && CURRENT_PROFILE.name && entry.teacherName.toLowerCase().includes(CURRENT_PROFILE.name.toLowerCase()));
             
@@ -375,8 +439,22 @@
           });
         }
       } catch (e) {
-        console.error("Error loading schedule:", e);
+        console.error("Error loading program:", e);
       }
+
+      // 2. Load Custom Tasks from Firestore
+      try {
+        const tasksSnap = await getDocs(collection(db, "teacher_schedules", CURRENT_USER.uid, "entries"));
+        tasksSnap.forEach(d => {
+          const data = d.data();
+          if (Number(data.term) === SELECTED_TERM) {
+            CUSTOM_TASKS.push({ id: d.id, ...data });
+          }
+        });
+      } catch (e) {
+        console.warn("Could not load custom tasks:", e);
+      }
+
       renderScreenSchedule();
       renderPrintSchedule();
     }
@@ -413,25 +491,48 @@
           html += `<div class="grid-row"><div class="time-cell"><div class="time-label">${slot.start} - ${slot.end}</div><div class="time-sub">${slot.label}</div></div>`;
           
           DAYS.forEach(day => {
-            const match = MY_SCHEDULE.find(s => s.day === day && (s.timeSlotId === slot.id || s.timeSlotId === slot.label || s.start === slot.start));
-            
-            if (match) {
+            // Look for program entry first
+            const progMatch = MY_SCHEDULE.find(s => s.day === day && (s.timeSlotId === slot.id || s.timeSlotId === slot.label || s.start === slot.start));
+            // Look for custom task second
+            const taskMatch = CUSTOM_TASKS.find(t => t.day === day && t.timeSlotId === slot.id);
+
+            if (progMatch) {
               totalSessions++;
-              uniqueClasses.add(match.classLabel);
-              uniqueSubjects.add(match.subject);
+              uniqueClasses.add(progMatch.classLabel);
+              uniqueSubjects.add(progMatch.subject);
               workload[day]++;
               
-              const colorClass = getSubjectColorClass(match.subject);
+              const colorClass = getSubjectColorClass(progMatch.subject);
               html += `
                 <div class="subject-cell">
                   <div class="subject-card ${colorClass}">
-                    <div class="subject-name">${match.subject}</div>
-                    <div class="subject-class">${match.classLabel}</div>
+                    <div class="subject-name">${progMatch.subject}</div>
+                    <div class="subject-class">${progMatch.classLabel}</div>
+                  </div>
+                </div>
+              `;
+            } else if (taskMatch) {
+              totalSessions++;
+              workload[day]++;
+              
+              html += `
+                <div class="subject-cell" onclick="removeTask('${taskMatch.id}')" title="Click to remove">
+                  <div class="subject-card custom-task">
+                    <button class="custom-task-delete" title="Remove">✕</button>
+                    <div class="subject-name">${taskMatch.taskName}</div>
+                    <div class="subject-class">Ancillary Task</div>
                   </div>
                 </div>
               `;
             } else {
-              html += `<div class="subject-cell" style="align-items:center;justify-content:center;color:#cbd5e1;">—</div>`;
+              // Empty cell — clickable to add
+              html += `
+                <div class="subject-cell" onclick="openTaskModal('${day}', '${slot.id}')" title="Click to add task">
+                  <div style="width:100%; display:flex; align-items:center; justify-content:center; color:#cbd5e1;">
+                    <i class="fas fa-plus" style="font-size:12px; margin-right:6px; opacity:0;"></i> —
+                  </div>
+                </div>
+              `;
             }
           });
           html += `</div>`;
@@ -439,6 +540,18 @@
       });
 
       container.innerHTML = html;
+
+      // Show + icon on hover for empty cells
+      container.querySelectorAll('.subject-cell').forEach(cell => {
+        cell.addEventListener('mouseenter', () => {
+          const icon = cell.querySelector('.fa-plus');
+          if (icon) icon.style.opacity = '1';
+        });
+        cell.addEventListener('mouseleave', () => {
+          const icon = cell.querySelector('.fa-plus');
+          if (icon) icon.style.opacity = '0';
+        });
+      });
 
       document.getElementById("statSessions").textContent = totalSessions;
       document.getElementById("statClasses").textContent = uniqueClasses.size;
@@ -486,13 +599,22 @@
           tr.innerHTML += `<td colspan="5" style="text-align:center; font-weight:bold; font-size: 9pt;">${slot.label}</td>`;
         } else {
           DAYS.forEach(day => {
-            const match = MY_SCHEDULE.find(s => s.day === day && (s.timeSlotId === slot.id || s.timeSlotId === slot.label || s.start === slot.start));
-            if (match) {
+            const progMatch = MY_SCHEDULE.find(s => s.day === day && (s.timeSlotId === slot.id || s.timeSlotId === slot.label || s.start === slot.start));
+            const taskMatch = CUSTOM_TASKS.find(t => t.day === day && t.timeSlotId === slot.id);
+            
+            if (progMatch) {
               tr.innerHTML += `
                 <td>
-                  <div style="font-weight:bold; font-size:10pt;">${match.subject}</div>
-                  <div style="font-size:9pt;">${match.classLabel}</div>
-                  ${match.room ? `<div style="font-size:8pt; color:#333;">📍 ${match.room}</div>` : ""}
+                  <div style="font-weight:bold; font-size:10pt;">${progMatch.subject}</div>
+                  <div style="font-size:9pt;">${progMatch.classLabel}</div>
+                  ${progMatch.room ? `<div style="font-size:8pt; color:#333;">📍 ${progMatch.room}</div>` : ""}
+                </td>
+              `;
+            } else if (taskMatch) {
+              tr.innerHTML += `
+                <td style="background:#fdf4ff;">
+                  <div style="font-weight:bold; font-size:10pt; color:#86198f;">${taskMatch.taskName}</div>
+                  <div style="font-size:8pt; color:#86198f;">Ancillary Task</div>
                 </td>
               `;
             } else {
@@ -504,19 +626,101 @@
       });
     }
 
+    // ============================================================
+    // CUSTOM TASK LOGIC
+    // ============================================================
+    
+    window.openTaskModal = (day, slotId) => {
+      editingTaskId = null;
+      document.getElementById("taskName").value = "";
+      document.getElementById("taskDay").value = day;
+      document.getElementById("taskSlot").value = slotId;
+      document.getElementById("taskModal").classList.add("show");
+      document.getElementById("taskName").focus();
+    };
+
+    window.removeTask = async (taskId) => {
+      if (!confirm("Remove this custom task from your schedule?")) return;
+      try {
+        await deleteDoc(doc(db, "teacher_schedules", CURRENT_USER.uid, "entries", taskId));
+        await loadTeacherSchedule();
+      } catch (e) {
+        alert("Error removing task: " + e.message);
+      }
+    };
+
+    function setupTaskLogic() {
+      const modal = document.getElementById("taskModal");
+      
+      // Add Task button opens modal with empty day/slot
+      document.getElementById("btnAddTask").addEventListener("click", () => {
+        editingTaskId = null;
+        document.getElementById("taskName").value = "";
+        document.getElementById("taskDay").value = "Monday";
+        document.getElementById("taskSlot").selectedIndex = 0;
+        modal.classList.add("show");
+        document.getElementById("taskName").focus();
+      });
+
+      document.getElementById("btnCloseTaskModal").addEventListener("click", () => {
+        modal.classList.remove("show");
+      });
+
+      document.getElementById("btnCancelTask").addEventListener("click", () => {
+        modal.classList.remove("show");
+      });
+
+      document.getElementById("btnSaveTask").addEventListener("click", async () => {
+        const taskName = document.getElementById("taskName").value.trim();
+        const day = document.getElementById("taskDay").value;
+        const slotId = document.getElementById("taskSlot").value;
+
+        if (!taskName) {
+          alert("Please enter a task name.");
+          return;
+        }
+
+        const btn = document.getElementById("btnSaveTask");
+        btn.disabled = true;
+        btn.textContent = "Saving...";
+
+        try {
+          const docRef = doc(collection(db, "teacher_schedules", CURRENT_USER.uid, "entries"));
+          await setDoc(docRef, {
+            taskName,
+            day,
+            timeSlotId: slotId,
+            term: SELECTED_TERM,
+            createdAt: serverTimestamp(),
+            updatedAt: serverTimestamp(),
+            createdBy: CURRENT_USER.email || ""
+          });
+
+          modal.classList.remove("show");
+          await loadTeacherSchedule();
+        } catch (e) {
+          console.error(e);
+          alert("Failed to save: " + e.message);
+        } finally {
+          btn.disabled = false;
+          btn.textContent = "💾 Save Task";
+        }
+      });
+    }
+
     function setupPrintLogic() {
       const modal = document.getElementById("printModal");
       
       document.getElementById("btnOpenPrintModal").addEventListener("click", () => {
-        modal.style.display = "flex";
+        modal.classList.add("show");
       });
       
       document.getElementById("btnClosePrintModal").addEventListener("click", () => {
-        modal.style.display = "none";
+        modal.classList.remove("show");
       });
       
       document.getElementById("btnCancelPrint").addEventListener("click", () => {
-        modal.style.display = "none";
+        modal.classList.remove("show");
       });
 
       document.getElementById("btnExecutePrint").addEventListener("click", () => {
@@ -528,7 +732,7 @@
         document.getElementById("printSigChecked").textContent = checkName;
         document.getElementById("printSigNoted").textContent = noteName;
 
-        modal.style.display = "none";
+        modal.classList.remove("show");
         setTimeout(() => window.print(), 200);
       });
     }
