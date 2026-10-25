@@ -1,0 +1,1032 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SF9 Consolidated Grade Manager</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    *{margin:0;padding:0;box-sizing:border-box}
+    body{
+      font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+      background:#f0f2f5;padding:0;font-size:14px;color:#111827;
+    }
+
+    /* -------- Top bar -------- */
+    .topbar{
+      background:linear-gradient(135deg,#0f2b4f,#1e3c72);
+      color:#fff;padding:14px 20px;
+      display:flex;align-items:center;justify-content:space-between;
+      flex-wrap:wrap;gap:10px;
+      position:sticky;top:0;z-index:100;
+      box-shadow:0 2px 12px rgba(0,0,0,.15);
+    }
+    .topbar h1{font-size:1.1rem;font-weight:800;display:flex;align-items:center;gap:8px}
+    .topbar .actions{display:flex;gap:8px;flex-wrap:wrap}
+    .topbar a,.topbar button{
+      padding:8px 14px;border:none;border-radius:6px;cursor:pointer;
+      font-size:12px;font-weight:700;text-decoration:none;font-family:inherit;
+      transition:all .15s;
+    }
+    .topbar a{background:rgba(255,255,255,.15);color:#fff}
+    .topbar a:hover{background:rgba(255,255,255,.25)}
+    .topbar button.primary{background:#059669;color:#fff}
+    .topbar button.primary:hover{background:#047857}
+    .topbar button.secondary{background:rgba(255,255,255,.15);color:#fff}
+
+    /* -------- Filter bar -------- */
+    .filters{
+      max-width:1600px;margin:16px auto;padding:0 16px;
+      display:flex;gap:10px;flex-wrap:wrap;align-items:center;
+    }
+    .filters select,.filters input{
+      padding:9px 12px;border:1px solid #d1d5db;border-radius:6px;
+      font-size:13px;font-family:inherit;background:#fff;
+      min-width:150px;
+    }
+    .filters label{font-size:12px;font-weight:700;color:#374151}
+    .filters .spacer{flex:1}
+
+    /* -------- Stats strip -------- */
+    .stats{
+      max-width:1600px;margin:0 auto 16px;padding:0 16px;
+      display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));
+      gap:10px;
+    }
+    .stat{
+      background:#fff;border-radius:10px;padding:14px;
+      text-align:center;box-shadow:0 1px 3px rgba(0,0,0,.05);
+    }
+    .stat-value{font-size:1.5rem;font-weight:800;color:#1e3c72;line-height:1}
+    .stat-label{font-size:11px;color:#6b7280;margin-top:4px;text-transform:uppercase;letter-spacing:.04em}
+
+    /* -------- Grid table -------- */
+    .grid-wrap{
+      max-width:1600px;margin:0 auto 40px;padding:0 16px;
+    }
+    .grid-card{
+      background:#fff;border-radius:12px;
+      box-shadow:0 1px 4px rgba(0,0,0,.07);
+      overflow:hidden;
+    }
+    .grid-toolbar{
+      padding:14px 18px;display:flex;gap:10px;flex-wrap:wrap;align-items:center;
+      border-bottom:1px solid #e5e7eb;background:#fafbfc;
+    }
+    .grid-toolbar h3{margin:0;font-size:.95rem;color:#0f2b4f}
+
+    .table-scroll{overflow-x:auto;-webkit-overflow-scrolling:touch}
+    table.grades{
+      width:100%;border-collapse:separate;border-spacing:0;font-size:13px;
+      min-width:900px;
+    }
+    table.grades th,table.grades td{
+      padding:10px 8px;border-bottom:1px solid #f3f4f6;text-align:center;
+      white-space:nowrap;vertical-align:middle;
+    }
+    table.grades thead th{
+      background:#1e3c72;color:#fff;
+      font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;
+      position:sticky;top:0;z-index:5;
+    }
+    table.grades thead th.student-col,
+    table.grades td.student-col{
+      text-align:left;padding-left:14px;
+      position:sticky;left:0;background:#fff;z-index:2;
+      box-shadow:1px 0 0 #e5e7eb;
+      min-width:200px;
+    }
+    table.grades thead th.student-col{background:#1e3c72;z-index:6}
+    table.grades tbody tr:hover td{background:#f9fafb}
+    table.grades tbody tr:hover td.student-col{background:#f9fafb}
+
+    td.score{
+      font-weight:700;cursor:pointer;
+      position:relative;
+    }
+    td.score:hover{background:#eff6ff !important}
+    td.score.empty{color:#9ca3af;font-weight:400}
+    td.score.empty::after{content:"—"}
+    td.score.has-value::before{content:"";}
+    td.score.edit-mode{padding:0}
+
+    td.score input{
+      width:100%;border:2px solid #1e6bb8;
+      padding:8px 6px;text-align:center;
+      font-size:13px;font-weight:700;font-family:inherit;
+      outline:none;background:#fff;
+      border-radius:0;
+    }
+
+    .avg-cell{
+      font-weight:800;background:#f0fdf4 !important;color:#065f46;
+    }
+    .avg-cell.failing{background:#fef2f2 !important;color:#991b1b}
+    .avg-cell.empty{color:#9ca3af;font-weight:400;background:#fafafa !important}
+
+    .row-actions{
+      display:flex;gap:4px;justify-content:center;
+    }
+    .row-actions button{
+      width:28px;height:28px;padding:0;
+      border-radius:6px;border:1px solid #e5e7eb;
+      background:#fff;cursor:pointer;
+      font-size:12px;display:flex;align-items:center;justify-content:center;
+      transition:all .15s;
+    }
+    .row-actions button:hover{background:#eff6ff;border-color:#1e6bb8}
+    .row-actions button.del:hover{background:#fef2f2;border-color:#dc2626;color:#991b1b}
+
+    .student-name{font-weight:700;color:#0f2b4f}
+    .student-lrn{font-size:11px;color:#6b7280;font-family:monospace;margin-top:2px}
+
+    .subject-header{min-width:80px}
+    .subject-header .code{font-family:monospace;font-size:10px;opacity:.85;display:block;margin-top:2px}
+
+    /* -------- Empty / loading -------- */
+    .empty{
+      padding:60px 20px;text-align:center;color:#6b7280;
+    }
+    .empty .icon{font-size:3rem;margin-bottom:10px}
+    .empty h3{color:#374151;margin:10px 0 4px;font-size:1.05rem}
+
+    .spinner{
+      width:32px;height:32px;border:3px solid #e5e7eb;
+      border-top-color:#1e3c72;border-radius:50%;
+      animation:spin .8s linear infinite;margin:0 auto 12px;
+    }
+    @keyframes spin{to{transform:rotate(360deg)}}
+
+    /* -------- Toast -------- */
+    .toast{
+      position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(20px);
+      background:#111827;color:#fff;padding:12px 22px;border-radius:8px;
+      font-size:14px;font-weight:500;box-shadow:0 8px 24px rgba(0,0,0,.2);
+      opacity:0;transition:all .25s;z-index:10000;pointer-events:none;
+    }
+    .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+    .toast.success{background:#059669}
+    .toast.error{background:#b91c1c}
+
+    /* -------- Modal -------- */
+    .modal-bg{
+      position:fixed;inset:0;background:rgba(0,0,0,.5);
+      display:none;align-items:center;justify-content:center;
+      z-index:9999;padding:20px;
+    }
+    .modal-bg.show{display:flex}
+    .modal-box{
+      background:#fff;border-radius:12px;width:100%;max-width:500px;
+      max-height:92vh;overflow-y:auto;box-shadow:0 24px 48px rgba(0,0,0,.25);
+    }
+    .modal-head{
+      padding:16px 20px;border-bottom:1px solid #e5e7eb;
+      display:flex;justify-content:space-between;align-items:center;
+    }
+    .modal-head h3{margin:0;font-size:1.05rem;color:#0f2b4f}
+    .modal-body{padding:20px}
+    .modal-body label{
+      display:block;font-size:11px;font-weight:700;color:#374151;
+      text-transform:uppercase;letter-spacing:.03em;margin-bottom:5px;margin-top:12px;
+    }
+    .modal-body label:first-child{margin-top:0}
+    .modal-body input,.modal-body select{
+      width:100%;padding:9px 12px;border:1px solid #d1d5db;
+      border-radius:6px;font-size:14px;font-family:inherit;
+    }
+    .modal-foot{
+      padding:14px 20px;border-top:1px solid #e5e7eb;
+      display:flex;justify-content:flex-end;gap:10px;background:#fafbfc;
+    }
+    .btn{
+      padding:9px 18px;border:none;border-radius:6px;cursor:pointer;
+      font-size:13px;font-weight:700;font-family:inherit;
+    }
+    .btn-outline{background:#fff;color:#1e3c72;border:1px solid #1e3c72}
+    .btn-primary{background:#1e3c72;color:#fff}
+    .btn-success{background:#059669;color:#fff}
+    .btn-danger{background:#dc2626;color:#fff}
+    .btn:hover{opacity:.9}
+    .btn:disabled{opacity:.5;cursor:not-allowed}
+
+    /* -------- Mobile -------- */
+    @media(max-width:768px){
+      .filters{padding:0 10px}
+      .filters select,.filters input{width:100%;min-width:0}
+      .filters .spacer{display:none}
+      .stats{grid-template-columns:repeat(2,1fr);padding:0 10px}
+      .grid-wrap{padding:0 10px}
+      .topbar{padding:12px 14px}
+      .topbar h1{font-size:.95rem}
+      table.grades td.student-col{min-width:150px;padding-left:10px}
+      table.grades th,table.grades td{padding:8px 6px}
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ============= TOP BAR ============= -->
+  <div class="topbar">
+    <h1>📊 SF9 Consolidated Grade Manager</h1>
+    <div class="actions">
+      <a href="teacher.html">← Dashboard</a>
+      <button class="primary" id="btnAddStudent">➕ Add Student</button>
+      <button class="secondary" id="btnRefresh">🔄 Refresh</button>
+      <button class="secondary" id="btnExportCsv">📥 CSV</button>
+    </div>
+  </div>
+
+  <!-- ============= FILTERS ============= -->
+  <div class="filters">
+    <label>Class:</label>
+    <select id="classSelect">
+      <option value="">-- Select Class --</option>
+    </select>
+
+    <label>Term:</label>
+    <select id="termSelect">
+      <option value="1">🌱 Term 1</option>
+      <option value="2">🌿 Term 2</option>
+      <option value="3">🌾 Term 3</option>
+    </select>
+
+    <input type="search" id="searchBox" placeholder="🔍 Search student name…" style="min-width:220px;">
+
+    <div class="spacer"></div>
+
+    <span style="font-size:12px;color:#6b7280;" id="statusText">Select a class to begin.</span>
+  </div>
+
+  <!-- ============= STATS ============= -->
+  <div class="stats" id="statsBar" style="display:none;">
+    <div class="stat"><div class="stat-value" id="statStudents">—</div><div class="stat-label">Students</div></div>
+    <div class="stat"><div class="stat-value" id="statSubjects">—</div><div class="stat-label">Approved Subjects</div></div>
+    <div class="stat"><div class="stat-value" id="statGrades" style="color:#059669;">—</div><div class="stat-label">Grades Entered</div></div>
+    <div class="stat"><div class="stat-value" id="statMissing" style="color:#dc2626;">—</div><div class="stat-label">Missing Grades</div></div>
+    <div class="stat"><div class="stat-value" id="statClassAvg">—</div><div class="stat-label">Class Average</div></div>
+  </div>
+
+  <!-- ============= GRID ============= -->
+  <div class="grid-wrap" id="gridWrap">
+    <div class="grid-card">
+      <div class="empty" id="emptyState">
+        <div class="icon">📋</div>
+        <h3>No class selected</h3>
+        <p>Choose a class above to load all student grades.</p>
+      </div>
+
+      <div id="gridContent" style="display:none;">
+        <div class="grid-toolbar">
+          <h3 id="gridTitle"></h3>
+          <span style="font-size:12px;color:#6b7280;margin-left:auto;">
+            💡 Click any grade cell to edit. Press Enter to save, Esc to cancel.
+          </span>
+        </div>
+        <div class="table-scroll">
+          <table class="grades" id="gradesTable">
+            <thead id="gradesHead"></thead>
+            <tbody id="gradesBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============= ADD STUDENT MODAL ============= -->
+  <div class="modal-bg" id="addStudentModal">
+    <div class="modal-box">
+      <div class="modal-head">
+        <h3>➕ Add New Student</h3>
+        <button class="btn btn-outline" onclick="closeModal()">✕</button>
+      </div>
+      <div class="modal-body">
+        <label>Full Name *</label>
+        <input id="addFullName" type="text" placeholder="Dela Cruz, Juan M." />
+
+        <label>LRN (12 digits)</label>
+        <input id="addLrn" type="text" placeholder="123456789012" maxlength="12" />
+
+        <label>Sex</label>
+        <select id="addSex">
+          <option value="">—</option>
+          <option value="M">Male</option>
+          <option value="F">Female</option>
+        </select>
+
+        <label>Date of Birth</label>
+        <input id="addDob" type="date" />
+
+        <div id="addError" style="margin-top:12px;font-size:12px;color:#b91c1c;display:none;"></div>
+      </div>
+      <div class="modal-foot">
+        <button class="btn btn-outline" onclick="closeModal()">Cancel</button>
+        <button class="btn btn-success" id="btnSaveNewStudent">💾 Save Student</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <!-- ============= SCRIPT ============= -->
+  <script type="module">
+    import { auth, db } from "./assets/js/firebase-config.js";
+    import { onAuthStateChanged }
+      from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+    import {
+      collection, getDocs, doc, getDoc, setDoc, updateDoc, deleteDoc,
+      serverTimestamp
+    } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+    // ============================================================
+    // STATE
+    // ============================================================
+    let CURRENT_USER = null;
+    let CURRENT_PROFILE = null;
+    let MY_CLASSES = [];
+    let ACTIVE_CLASS_ID = null;
+    let ACTIVE_TERM = "1";
+    let STUDENTS = [];
+    let SUBJECTS = [];       // [{ code, name }] approved for this term
+    let GRADES = {};         // { studentId: { subjectCode: number|null } }
+    let SEARCH = "";
+
+    const $ = id => document.getElementById(id);
+    const esc = s => String(s ?? "")
+      .replace(/&/g, "&amp;").replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+
+    let toastTimer;
+    function toast(msg, type = "") {
+      const t = $("toast");
+      t.textContent = msg;
+      t.className = "toast show " + type;
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => t.className = "toast", 3000);
+    }
+
+    // ============================================================
+    // AUTH
+    // ============================================================
+    onAuthStateChanged(auth, async (user) => {
+      if (!user) { location.replace("login.html"); return; }
+      CURRENT_USER = user;
+
+      try {
+        const pSnap = await getDoc(doc(db, "users", user.uid));
+        CURRENT_PROFILE = pSnap.exists() ? pSnap.data() : {};
+      } catch { CURRENT_PROFILE = {}; }
+
+      await loadClasses();
+      attachHandlers();
+    });
+
+    async function loadClasses() {
+      const isAdmin =
+        CURRENT_PROFILE?.primaryRole === "admin" ||
+        CURRENT_PROFILE?.isSuperAdmin === true ||
+        CURRENT_PROFILE?.permissions?.canManageClasses === true;
+
+      const myEmail = (CURRENT_PROFILE?.email || CURRENT_USER.email || "").toLowerCase();
+      const myName  = (CURRENT_PROFILE?.name || "").toLowerCase();
+
+      const snap = await getDocs(collection(db, "classes"));
+      MY_CLASSES = [];
+      snap.forEach(d => {
+        const c = d.data();
+        const isMine =
+          isAdmin ||
+          c.adviserUid === CURRENT_USER.uid ||
+          (c.adviserEmail || "").toLowerCase() === myEmail ||
+          (c.adviserName  || "").toLowerCase() === myName;
+
+        if (isMine) MY_CLASSES.push({ id: d.id, ...c });
+      });
+
+      // Sort by grade level then section
+      MY_CLASSES.sort((a, b) => {
+        const ga = String(a.gradeLevel || "").padStart(3, "0");
+        const gb = String(b.gradeLevel || "").padStart(3, "0");
+        if (ga !== gb) return ga.localeCompare(gb);
+        return (a.section || "").localeCompare(b.section || "");
+      });
+
+      const sel = $("classSelect");
+      sel.innerHTML = '<option value="">-- Select Class --</option>' +
+        MY_CLASSES.map(c =>
+          `<option value="${esc(c.id)}">${esc(c.classLabel || c.section || c.id)}</option>`
+        ).join("");
+
+      if (MY_CLASSES.length === 0) {
+        $("statusText").textContent = "You don't have any classes assigned.";
+      } else {
+        $("statusText").textContent =
+          `${MY_CLASSES.length} class${MY_CLASSES.length > 1 ? "es" : ""} available.`;
+      }
+    }
+
+    // ============================================================
+    // HANDLERS
+    // ============================================================
+    function attachHandlers() {
+      $("classSelect").addEventListener("change", e => {
+        ACTIVE_CLASS_ID = e.target.value;
+        if (ACTIVE_CLASS_ID) loadClassData();
+        else resetGrid();
+      });
+      $("termSelect").addEventListener("change", e => {
+        ACTIVE_TERM = e.target.value;
+        if (ACTIVE_CLASS_ID) loadClassData();
+      });
+      $("searchBox").addEventListener("input", e => {
+        SEARCH = e.target.value.toLowerCase().trim();
+        renderGrid();
+      });
+      $("btnRefresh").addEventListener("click", () => {
+        if (ACTIVE_CLASS_ID) loadClassData();
+      });
+      $("btnAddStudent").addEventListener("click", () => {
+        if (!ACTIVE_CLASS_ID) { toast("⚠️ Select a class first", "error"); return; }
+        openAddStudentModal();
+      });
+      $("btnExportCsv").addEventListener("click", exportCsv);
+    }
+
+    function resetGrid() {
+      $("emptyState").style.display = "block";
+      $("gridContent").style.display = "none";
+      $("statsBar").style.display = "none";
+      $("statusText").textContent = "Select a class to begin.";
+    }
+
+    // ============================================================
+    // LOAD CLASS DATA
+    // ============================================================
+    async function loadClassData() {
+      resetGrid();
+      $("emptyState").style.display = "block";
+      $("emptyState").innerHTML = `
+        <div class="spinner"></div>
+        <h3>Loading class data…</h3>
+        <p>Fetching students, subjects, and grades.</p>`;
+      $("gridContent").style.display = "none";
+
+      try {
+        // 1) Load students
+        const stSnap = await getDocs(
+          collection(db, "classes", ACTIVE_CLASS_ID, "students")
+        );
+        STUDENTS = stSnap.docs.map(d => ({ id: d.id, ...d.data() }))
+          .sort((a, b) =>
+            (a.fullName || "").localeCompare(b.fullName || "")
+          );
+
+        // 2) Load approved subjects for this term
+        const ecrSnap = await getDocs(
+          collection(db, "classes", ACTIVE_CLASS_ID, "ecr")
+        );
+        SUBJECTS = [];
+        for (const ecrDoc of ecrSnap.docs) {
+          const data = ecrDoc.data();
+          const status = data.terms?.[ACTIVE_TERM]?.status;
+          if (status !== "approved") continue;
+
+          let displayName = ecrDoc.id;
+          try {
+            const meta = await getDoc(doc(db, "subjects", ecrDoc.id));
+            if (meta.exists()) displayName = meta.data().displayName || ecrDoc.id;
+          } catch {}
+          SUBJECTS.push({ code: ecrDoc.id, name: displayName });
+        }
+        SUBJECTS.sort((a, b) => a.name.localeCompare(b.name));
+
+        // 3) Load all grades for this term, all students, all subjects
+        GRADES = {};   // { studentId: { subjectCode: number } }
+        STUDENTS.forEach(s => { GRADES[s.id] = {}; });
+
+        for (const subj of SUBJECTS) {
+          for (const student of STUDENTS) {
+            try {
+              const scSnap = await getDoc(
+                doc(db, "classes", ACTIVE_CLASS_ID, "ecr",
+                    subj.code, "terms", ACTIVE_TERM,
+                    "scores", student.id)
+              );
+              if (scSnap.exists()) {
+                const d = scSnap.data();
+                const g = d?.computed?.termGrade;
+                if (g != null && !isNaN(Number(g))) {
+                  GRADES[student.id][subj.code] = Number(g);
+                }
+              }
+            } catch {}
+          }
+        }
+
+        if (STUDENTS.length === 0) {
+          $("emptyState").innerHTML = `
+            <div class="icon">👥</div>
+            <h3>No students in this class</h3>
+            <p>Click "➕ Add Student" to add the first one.</p>`;
+          $("statusText").textContent = "0 students.";
+          $("statsBar").style.display = "grid";
+          $("statStudents").textContent = "0";
+          $("statSubjects").textContent = SUBJECTS.length;
+          $("statGrades").textContent = "0";
+          $("statMissing").textContent = "0";
+          $("statClassAvg").textContent = "—";
+          return;
+        }
+
+        if (SUBJECTS.length === 0) {
+          $("emptyState").innerHTML = `
+            <div class="icon">📚</div>
+            <h3>No approved subjects for Term ${ACTIVE_TERM}</h3>
+            <p>Approve an ECR for this term in the class dashboard first.</p>`;
+          $("statusText").textContent = `${STUDENTS.length} students, 0 approved subjects.`;
+          $("statsBar").style.display = "grid";
+          $("statStudents").textContent = STUDENTS.length;
+          $("statSubjects").textContent = "0";
+          $("statGrades").textContent = "0";
+          $("statMissing").textContent = "0";
+          $("statClassAvg").textContent = "—";
+          return;
+        }
+
+        // Show grid
+        $("emptyState").style.display = "none";
+        $("gridContent").style.display = "block";
+        $("statsBar").style.display = "grid";
+
+        const cls = MY_CLASSES.find(c => c.id === ACTIVE_CLASS_ID);
+        $("gridTitle").textContent =
+          `${cls?.classLabel || cls?.section || ACTIVE_CLASS_ID} — Term ${ACTIVE_TERM}`;
+
+        renderGrid();
+        updateStats();
+        $("statusText").textContent =
+          `${STUDENTS.length} students · ${SUBJECTS.length} subjects · Term ${ACTIVE_TERM}`;
+
+      } catch (err) {
+        console.error(err);
+        $("emptyState").innerHTML = `
+          <div class="icon">⚠️</div>
+          <h3>Load failed</h3>
+          <p>${esc(err.message || "Unknown error")}</p>`;
+        $("statusText").textContent = "Load failed.";
+      }
+    }
+
+    // ============================================================
+    // RENDER GRID
+    // ============================================================
+    function renderGrid() {
+      const head = $("gradesHead");
+      const body = $("gradesBody");
+
+      // --- Header ---
+      head.innerHTML = `
+        <tr>
+          <th class="student-col">Student</th>
+          ${SUBJECTS.map(s => `
+            <th class="subject-header" title="${esc(s.name)}">
+              ${esc(s.code)}
+              <span class="code">${esc(s.name.slice(0, 12))}</span>
+            </th>
+          `).join("")}
+          <th style="min-width:70px;">Average</th>
+          <th style="min-width:90px;">Actions</th>
+        </tr>
+      `;
+
+      // --- Filter students by search ---
+      const list = STUDENTS.filter(s =>
+        !SEARCH ||
+        (s.fullName || "").toLowerCase().includes(SEARCH) ||
+        (s.lrn || "").includes(SEARCH)
+      );
+
+      if (list.length === 0) {
+        body.innerHTML = `
+          <tr><td class="student-col" colspan="${SUBJECTS.length + 3}"
+            style="padding:40px;text-align:center;color:#6b7280;">
+            No students match "${esc(SEARCH)}"
+          </td></tr>`;
+        return;
+      }
+
+      // --- Body ---
+      body.innerHTML = list.map(s => {
+        const grades = GRADES[s.id] || {};
+        const validGrades = SUBJECTS
+          .map(sj => grades[sj.code])
+          .filter(g => g != null && !isNaN(g));
+        const avg = validGrades.length
+          ? Math.round(validGrades.reduce((a, b) => a + b, 0) / validGrades.length)
+          : null;
+
+        const avgClass = avg == null ? "empty"
+          : (avg >= 75 ? "" : "failing");
+
+        const subjectCells = SUBJECTS.map(sj => {
+          const g = grades[sj.code];
+          const has = g != null && !isNaN(g);
+          return `
+            <td class="score ${has ? "has-value" : "empty"}"
+                data-student="${esc(s.id)}"
+                data-subject="${esc(sj.code)}"
+                data-value="${has ? g : ""}">
+              ${has ? g : ""}
+            </td>
+          `;
+        }).join("");
+
+        return `
+          <tr data-row-student="${esc(s.id)}">
+            <td class="student-col">
+              <div class="student-name">${esc(s.fullName || "(no name)")}</div>
+              <div class="student-lrn">LRN: ${esc(s.lrn || "—")}</div>
+            </td>
+            ${subjectCells}
+            <td class="avg-cell ${avgClass}">
+              ${avg == null ? "" : avg}
+            </td>
+            <td>
+              <div class="row-actions">
+                <button title="Open SF9" data-action="sf9" data-student="${esc(s.id)}">📄</button>
+                <button title="Edit student info" data-action="edit" data-student="${esc(s.id)}">✏️</button>
+                <button class="del" title="Delete student" data-action="del" data-student="${esc(s.id)}">🗑️</button>
+              </div>
+            </td>
+          </tr>
+        `;
+      }).join("");
+
+      // --- Wire grade cell clicks ---
+      body.querySelectorAll("td.score").forEach(cell => {
+        cell.addEventListener("click", () => startGradeEdit(cell));
+      });
+
+      // --- Wire row actions ---
+      body.querySelectorAll("[data-action]").forEach(btn => {
+        btn.addEventListener("click", () => handleRowAction(btn));
+      });
+    }
+
+    // ============================================================
+    // INLINE GRADE EDIT
+    // ============================================================
+    function startGradeEdit(cell) {
+      if (cell.classList.contains("edit-mode")) return;
+
+      const studentId = cell.dataset.student;
+      const subjectCode = cell.dataset.subject;
+      const currentValue = cell.dataset.value || "";
+
+      cell.classList.add("edit-mode");
+      const originalHTML = cell.innerHTML;
+
+      const input = document.createElement("input");
+      input.type = "number";
+      input.min = "0";
+      input.max = "100";
+      input.value = currentValue;
+      input.placeholder = "—";
+      input.style.cssText = `
+        width:100%;border:2px solid #1e6bb8;
+        padding:8px 6px;text-align:center;
+        font-size:13px;font-weight:700;font-family:inherit;
+        outline:none;background:#fff;border-radius:0;
+        -moz-appearance:textfield;
+      `;
+      cell.innerHTML = "";
+      cell.appendChild(input);
+      input.focus();
+      input.select();
+
+      let saved = false;
+
+      const commit = async () => {
+        if (saved) return;
+        saved = true;
+
+        const raw = input.value.trim();
+        let value = null;
+        if (raw !== "") {
+          const n = Number(raw);
+          if (isNaN(n) || n < 0 || n > 100) {
+            toast("⚠️ Grade must be 0–100", "error");
+            cell.classList.remove("edit-mode");
+            cell.innerHTML = originalHTML;
+            return;
+          }
+          value = Math.round(n);
+        }
+
+        // Optimistically update UI
+        cell.classList.remove("edit-mode");
+        const has = value != null;
+        cell.className = "score " + (has ? "has-value" : "empty");
+        cell.dataset.value = has ? String(value) : "";
+        cell.innerHTML = has ? value : "";
+
+        // Update local state
+        if (!GRADES[studentId]) GRADES[studentId] = {};
+        if (has) GRADES[studentId][subjectCode] = value;
+        else delete GRADES[studentId][subjectCode];
+
+        updateStats();
+        updateRowAverage(studentId);
+
+        // Persist
+        try {
+          await saveGrade(studentId, subjectCode, value);
+        } catch (err) {
+          console.error("[saveGrade] failed:", err);
+          toast("⚠️ Save failed: " + (err.message || "unknown"), "error");
+          // Revert on failure
+          cell.className = "score " + (currentValue ? "has-value" : "empty");
+          cell.dataset.value = currentValue;
+          cell.innerHTML = currentValue;
+        }
+      };
+
+      const cancel = () => {
+        if (saved) return;
+        saved = true;
+        cell.classList.remove("edit-mode");
+        cell.innerHTML = originalHTML;
+      };
+
+      input.addEventListener("keydown", e => {
+        if (e.key === "Enter") { e.preventDefault(); commit(); }
+        else if (e.key === "Escape") { e.preventDefault(); cancel(); }
+      });
+      input.addEventListener("blur", () => {
+        // Small delay so Enter fires first
+        setTimeout(() => {
+          if (!saved) commit();
+        }, 100);
+      });
+    }
+
+    async function saveGrade(studentId, subjectCode, value) {
+      const scoresRef = doc(
+        db, "classes", ACTIVE_CLASS_ID, "ecr",
+        subjectCode, "terms", ACTIVE_TERM, "scores", studentId
+      );
+
+      const snap = await getDoc(scoresRef);
+      const existing = snap.exists() ? snap.data() : {};
+
+      const update = {
+        computed: {
+          ...(existing.computed || {}),
+          termGrade: value,
+        },
+        updatedAt: serverTimestamp(),
+        updatedBy: CURRENT_USER?.email || "",
+        manualEntry: true,
+      };
+
+      if (!snap.exists()) {
+        update.createdAt = serverTimestamp();
+        update.createdBy = CURRENT_USER?.email || "";
+      }
+
+      await setDoc(scoresRef, update, { merge: true });
+    }
+
+    // ============================================================
+    // ROW HELPERS
+    // ============================================================
+    function updateRowAverage(studentId) {
+      const row = document.querySelector(`tr[data-row-student="${CSS.escape(studentId)}"]`);
+      if (!row) return;
+      const cell = row.querySelector(".avg-cell");
+      if (!cell) return;
+
+      const grades = GRADES[studentId] || {};
+      const values = SUBJECTS
+        .map(sj => grades[sj.code])
+        .filter(g => g != null && !isNaN(g));
+
+      if (values.length === 0) {
+        cell.textContent = "";
+        cell.className = "avg-cell empty";
+        return;
+      }
+      const avg = Math.round(values.reduce((a, b) => a + b, 0) / values.length);
+      cell.textContent = avg;
+      cell.className = "avg-cell " + (avg >= 75 ? "" : "failing");
+    }
+
+    function updateStats() {
+      const totalCells = STUDENTS.length * SUBJECTS.length;
+      let filled = 0;
+      let sum = 0;
+      STUDENTS.forEach(s => {
+        const g = GRADES[s.id] || {};
+        SUBJECTS.forEach(sj => {
+          const v = g[sj.code];
+          if (v != null && !isNaN(v)) {
+            filled++;
+            sum += v;
+          }
+        });
+      });
+
+      $("statStudents").textContent = STUDENTS.length;
+      $("statSubjects").textContent = SUBJECTS.length;
+      $("statGrades").textContent = filled;
+      $("statMissing").textContent = Math.max(0, totalCells - filled);
+      $("statClassAvg").textContent = filled > 0
+        ? Math.round(sum / filled) : "—";
+    }
+
+    // ============================================================
+    // ROW ACTIONS
+    // ============================================================
+    async function handleRowAction(btn) {
+      const action = btn.dataset.action;
+      const studentId = btn.dataset.student;
+      const student = STUDENTS.find(s => s.id === studentId);
+      if (!student) return;
+
+      if (action === "sf9") {
+        // Open the SF9 page in new tab with pre-selected values
+        const url = `sf9.html?classId=${encodeURIComponent(ACTIVE_CLASS_ID)}` +
+                    `&studentId=${encodeURIComponent(studentId)}` +
+                    `&term=${encodeURIComponent(ACTIVE_TERM)}`;
+        window.open(url, "_blank");
+      }
+
+      else if (action === "edit") {
+        openEditStudentModal(student);
+      }
+
+      else if (action === "del") {
+        if (!confirm(`Delete "${student.fullName}"?\n\nThis removes:\n• Student record\n• All their ECR scores for this class\n\nThis cannot be undone.`)) return;
+        try {
+          // Delete all ECR score docs for this student across subjects/terms
+          for (const subj of SUBJECTS) {
+            try {
+              await deleteDoc(
+                doc(db, "classes", ACTIVE_CLASS_ID, "ecr",
+                    subj.code, "terms", ACTIVE_TERM, "scores", studentId)
+              );
+            } catch {}
+          }
+          // Delete student doc
+          await deleteDoc(
+            doc(db, "classes", ACTIVE_CLASS_ID, "students", studentId)
+          );
+          toast(`✓ Deleted ${student.fullName}`, "success");
+          await loadClassData();
+        } catch (err) {
+          toast("⚠️ Delete failed: " + (err.message || "unknown"), "error");
+        }
+      }
+    }
+
+    // ============================================================
+    // ADD / EDIT STUDENT MODAL
+    // ============================================================
+    let EDITING_STUDENT = null;
+
+    function openAddStudentModal() {
+      EDITING_STUDENT = null;
+      $("addFullName").value = "";
+      $("addLrn").value = "";
+      $("addSex").value = "";
+      $("addDob").value = "";
+      $("addError").style.display = "none";
+      document.querySelector("#addStudentModal .modal-head h3").textContent = "➕ Add New Student";
+      $("btnSaveNewStudent").textContent = "💾 Save Student";
+      $("addStudentModal").classList.add("show");
+      $("addFullName").focus();
+    }
+
+    function openEditStudentModal(student) {
+      EDITING_STUDENT = student;
+      $("addFullName").value = student.fullName || "";
+      $("addLrn").value = student.lrn || "";
+      $("addSex").value = student.sex || "";
+      $("addDob").value = student.dob || "";
+      $("addError").style.display = "none";
+      document.querySelector("#addStudentModal .modal-head h3").textContent =
+        "✏️ Edit Student — " + (student.fullName || "");
+      $("btnSaveNewStudent").textContent = "💾 Update Student";
+      $("addStudentModal").classList.add("show");
+      $("addFullName").focus();
+    }
+
+    function closeModal() {
+      $("addStudentModal").classList.remove("show");
+      EDITING_STUDENT = null;
+    }
+    window.closeModal = closeModal;
+
+    document.getElementById("btnSaveNewStudent").addEventListener("click", saveStudent);
+
+    async function saveStudent() {
+      const fullName = $("addFullName").value.trim();
+      const lrn = $("addLrn").value.trim();
+      const sex = $("addSex").value;
+      const dob = $("addDob").value;
+
+      const errBox = $("addError");
+      errBox.style.display = "none";
+
+      if (!fullName) {
+        errBox.textContent = "Full name is required.";
+        errBox.style.display = "block";
+        return;
+      }
+      if (lrn && !/^\d{12}$/.test(lrn)) {
+        errBox.textContent = "LRN must be exactly 12 digits.";
+        errBox.style.display = "block";
+        return;
+      }
+
+      const btn = $("btnSaveNewStudent");
+      btn.disabled = true;
+      btn.textContent = "Saving…";
+
+      try {
+        const data = {
+          fullName,
+          lrn: lrn || "",
+          sex: sex || "",
+          dob: dob || "",
+          updatedAt: serverTimestamp(),
+          updatedBy: CURRENT_USER?.email || "",
+        };
+
+        if (EDITING_STUDENT) {
+          await updateDoc(
+            doc(db, "classes", ACTIVE_CLASS_ID, "students", EDITING_STUDENT.id),
+            data
+          );
+          toast("✓ Student updated", "success");
+        } else {
+          data.createdAt = serverTimestamp();
+          data.createdBy = CURRENT_USER?.email || "";
+          // Add new student with auto-generated doc ID
+          const newRef = doc(collection(db, "classes", ACTIVE_CLASS_ID, "students"));
+          await setDoc(newRef, data);
+          toast("✓ Student added", "success");
+        }
+
+        closeModal();
+        await loadClassData();
+      } catch (err) {
+        console.error(err);
+        errBox.textContent = err.message || "Save failed";
+        errBox.style.display = "block";
+      } finally {
+        btn.disabled = false;
+        btn.textContent = EDITING_STUDENT ? "💾 Update Student" : "💾 Save Student";
+      }
+    }
+
+    // ============================================================
+    // CSV EXPORT
+    // ============================================================
+    function exportCsv() {
+      if (!STUDENTS.length || !SUBJECTS.length) {
+        toast("⚠️ Nothing to export", "error");
+        return;
+      }
+
+      const header = ["Student", "LRN",
+        ...SUBJECTS.map(s => s.code), "Average"];
+
+      const rows = STUDENTS.map(s => {
+        const g = GRADES[s.id] || {};
+        const values = SUBJECTS.map(sj => {
+          const v = g[sj.code];
+          return v == null ? "" : v;
+        });
+        const valid = values.filter(v => v !== "").map(Number);
+        const avg = valid.length
+          ? Math.round(valid.reduce((a, b) => a + b, 0) / valid.length)
+          : "";
+        return [s.fullName || "", s.lrn || "", ...values, avg];
+      });
+
+      const csv = [header, ...rows]
+        .map(r => r.map(v => `"${String(v).replace(/"/g, '""')}"`).join(","))
+        .join("\n");
+
+      const blob = new Blob(["\uFEFF" + csv], { type: "text/csv;charset=utf-8" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `SF9-${ACTIVE_CLASS_ID}-Term${ACTIVE_TERM}-${Date.now()}.csv`;
+      a.click();
+      URL.revokeObjectURL(url);
+      toast("✓ CSV downloaded", "success");
+    }
+  </script>
+</body>
+</html>
