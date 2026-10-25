@@ -33,6 +33,8 @@
     .topbar button.primary{background:#059669;color:#fff}
     .topbar button.primary:hover{background:#047857}
     .topbar button.secondary{background:rgba(255,255,255,.15);color:#fff}
+    .topbar button.warning{background:#d97706;color:#fff}
+    .topbar button.warning:hover{background:#b45309}
 
     /* -------- Filter bar -------- */
     .filters{
@@ -74,6 +76,7 @@
       border-bottom:1px solid #e5e7eb;background:#fafbfc;
     }
     .grid-toolbar h3{margin:0;font-size:.95rem;color:#0f2b4f}
+    .grid-toolbar .hint{font-size:12px;color:#6b7280;margin-left:auto}
 
     .table-scroll{overflow-x:auto;-webkit-overflow-scrolling:touch}
     table.grades{
@@ -107,7 +110,6 @@
     td.score:hover{background:#eff6ff !important}
     td.score.empty{color:#9ca3af;font-weight:400}
     td.score.empty::after{content:"—"}
-    td.score.has-value::before{content:"";}
     td.score.edit-mode{padding:0}
 
     td.score input{
@@ -116,6 +118,11 @@
       font-size:13px;font-weight:700;font-family:inherit;
       outline:none;background:#fff;
       border-radius:0;
+      -moz-appearance:textfield;
+    }
+    td.score input::-webkit-outer-spin-button,
+    td.score input::-webkit-inner-spin-button{
+      -webkit-appearance:none;margin:0;
     }
 
     .avg-cell{
@@ -136,6 +143,7 @@
     }
     .row-actions button:hover{background:#eff6ff;border-color:#1e6bb8}
     .row-actions button.del:hover{background:#fef2f2;border-color:#dc2626;color:#991b1b}
+    .row-actions button.print:hover{background:#f0fdf4;border-color:#059669;color:#059669}
 
     .student-name{font-weight:700;color:#0f2b4f}
     .student-lrn{font-size:11px;color:#6b7280;font-family:monospace;margin-top:2px}
@@ -190,7 +198,7 @@
       text-transform:uppercase;letter-spacing:.03em;margin-bottom:5px;margin-top:12px;
     }
     .modal-body label:first-child{margin-top:0}
-    .modal-body input,.modal-body select{
+    .modal-body input,.modal-body select,.modal-body textarea{
       width:100%;padding:9px 12px;border:1px solid #d1d5db;
       border-radius:6px;font-size:14px;font-family:inherit;
     }
@@ -206,8 +214,16 @@
     .btn-primary{background:#1e3c72;color:#fff}
     .btn-success{background:#059669;color:#fff}
     .btn-danger{background:#dc2626;color:#fff}
+    .btn-warning{background:#d97706;color:#fff}
     .btn:hover{opacity:.9}
     .btn:disabled{opacity:.5;cursor:not-allowed}
+
+    /* -------- CSV Import textarea -------- */
+    .csv-preview{
+      margin-top:12px;padding:12px;background:#f9fafb;border:1px solid #e5e7eb;
+      border-radius:8px;font-family:monospace;font-size:12px;max-height:200px;overflow-y:auto;
+      white-space:pre-wrap;word-break:break-all;
+    }
 
     /* -------- Mobile -------- */
     @media(max-width:768px){
@@ -218,6 +234,7 @@
       .grid-wrap{padding:0 10px}
       .topbar{padding:12px 14px}
       .topbar h1{font-size:.95rem}
+      .grid-toolbar .hint{display:none}
       table.grades td.student-col{min-width:150px;padding-left:10px}
       table.grades th,table.grades td{padding:8px 6px}
     }
@@ -229,10 +246,13 @@
   <div class="topbar">
     <h1>📊 SF9 Consolidated Grade Manager</h1>
     <div class="actions">
-      <a href="teacher.html">← Dashboard</a>
+      <a href="adviser.html">← Dashboard</a>
       <button class="primary" id="btnAddStudent">➕ Add Student</button>
       <button class="secondary" id="btnRefresh">🔄 Refresh</button>
+      <button class="warning" id="btnPrintAll">🖨️ Print All SF9s</button>
       <button class="secondary" id="btnExportCsv">📥 CSV</button>
+      <button class="secondary" id="btnImportCsv">📤 Import</button>
+      <button class="secondary" id="btnAuditLog">📜 History</button>
     </div>
   </div>
 
@@ -278,9 +298,7 @@
       <div id="gridContent" style="display:none;">
         <div class="grid-toolbar">
           <h3 id="gridTitle"></h3>
-          <span style="font-size:12px;color:#6b7280;margin-left:auto;">
-            💡 Click any grade cell to edit. Press Enter to save, Esc to cancel.
-          </span>
+          <span class="hint">💡 Click any grade to edit. Enter saves · Esc cancels.</span>
         </div>
         <div class="table-scroll">
           <table class="grades" id="gradesTable">
@@ -292,12 +310,12 @@
     </div>
   </div>
 
-  <!-- ============= ADD STUDENT MODAL ============= -->
+  <!-- ============= ADD / EDIT STUDENT MODAL ============= -->
   <div class="modal-bg" id="addStudentModal">
     <div class="modal-box">
       <div class="modal-head">
-        <h3>➕ Add New Student</h3>
-        <button class="btn btn-outline" onclick="closeModal()">✕</button>
+        <h3 id="studentModalTitle">➕ Add New Student</h3>
+        <button class="btn btn-outline" onclick="closeModal('addStudentModal')">✕</button>
       </div>
       <div class="modal-body">
         <label>Full Name *</label>
@@ -319,8 +337,54 @@
         <div id="addError" style="margin-top:12px;font-size:12px;color:#b91c1c;display:none;"></div>
       </div>
       <div class="modal-foot">
-        <button class="btn btn-outline" onclick="closeModal()">Cancel</button>
+        <button class="btn btn-outline" onclick="closeModal('addStudentModal')">Cancel</button>
         <button class="btn btn-success" id="btnSaveNewStudent">💾 Save Student</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============= CSV IMPORT MODAL ============= -->
+  <div class="modal-bg" id="csvImportModal">
+    <div class="modal-box" style="max-width:700px;">
+      <div class="modal-head">
+        <h3>📤 Bulk Import Grades</h3>
+        <button class="btn btn-outline" onclick="closeModal('csvImportModal')">✕</button>
+      </div>
+      <div class="modal-body">
+        <p style="font-size:13px;color:#4b5563;margin-bottom:12px;">
+          Paste a CSV with columns: <code>FullName, LRN, Subject1, Subject2, ...</code><br>
+          Only rows matching students already in this class will be updated. Blank cells skip.
+        </p>
+
+        <label>Subject to import (optional — for single-subject mode)</label>
+        <select id="csvSubject">
+          <option value="">— Multi-column CSV —</option>
+        </select>
+
+        <label>Paste CSV</label>
+        <textarea id="csvPaste" rows="10" placeholder="FullName,LRN,MATH7,ENG7&#10;Dela Cruz, Juan,123456789012,88,90&#10;Santos, Maria,123456789013,92,87"
+          style="width:100%;padding:10px;border:1px solid #d1d5db;border-radius:6px;font-size:12px;font-family:monospace;resize:vertical;"></textarea>
+
+        <div id="csvPreview" class="csv-preview" style="display:none;"></div>
+        <div id="csvError" style="margin-top:12px;font-size:12px;color:#b91c1c;display:none;"></div>
+      </div>
+      <div class="modal-foot">
+        <button class="btn btn-outline" onclick="closeModal('csvImportModal')">Cancel</button>
+        <button class="btn btn-primary" id="btnPreviewCsv">👁️ Preview</button>
+        <button class="btn btn-success" id="btnApplyCsv" disabled>📤 Import</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============= AUDIT LOG MODAL ============= -->
+  <div class="modal-bg" id="auditModal">
+    <div class="modal-box" style="max-width:800px;">
+      <div class="modal-head">
+        <h3>📜 Grade Change History</h3>
+        <button class="btn btn-outline" onclick="closeModal('auditModal')">✕</button>
+      </div>
+      <div class="modal-body" style="padding:0;">
+        <div id="auditContent" style="max-height:60vh;overflow-y:auto;"></div>
       </div>
     </div>
   </div>
@@ -334,7 +398,7 @@
       from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
     import {
       collection, getDocs, doc, getDoc, setDoc, updateDoc, deleteDoc,
-      serverTimestamp
+      serverTimestamp, query, orderBy, limit, addDoc
     } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
     // ============================================================
@@ -346,9 +410,11 @@
     let ACTIVE_CLASS_ID = null;
     let ACTIVE_TERM = "1";
     let STUDENTS = [];
-    let SUBJECTS = [];       // [{ code, name }] approved for this term
-    let GRADES = {};         // { studentId: { subjectCode: number|null } }
+    let SUBJECTS = [];
+    let GRADES = {};
     let SEARCH = "";
+    let EDITING_STUDENT = null;
+    let CSV_PARSED = null;
 
     const $ = id => document.getElementById(id);
     const esc = s => String(s ?? "")
@@ -364,6 +430,10 @@
       toastTimer = setTimeout(() => t.className = "toast", 3000);
     }
 
+    window.closeModal = function(id) {
+      $(id).classList.remove("show");
+    };
+
     // ============================================================
     // AUTH
     // ============================================================
@@ -378,6 +448,7 @@
 
       await loadClasses();
       attachHandlers();
+      applyUrlParams();
     });
 
     async function loadClasses() {
@@ -402,7 +473,6 @@
         if (isMine) MY_CLASSES.push({ id: d.id, ...c });
       });
 
-      // Sort by grade level then section
       MY_CLASSES.sort((a, b) => {
         const ga = String(a.gradeLevel || "").padStart(3, "0");
         const gb = String(b.gradeLevel || "").padStart(3, "0");
@@ -421,6 +491,36 @@
       } else {
         $("statusText").textContent =
           `${MY_CLASSES.length} class${MY_CLASSES.length > 1 ? "es" : ""} available.`;
+      }
+    }
+
+    // ============================================================
+    // URL PARAMS
+    // ============================================================
+    function applyUrlParams() {
+      const params = new URLSearchParams(location.search);
+      const preClass = params.get("classId");
+      const preTerm  = params.get("term");
+      const view     = params.get("view");
+
+      if (preTerm && ["1", "2", "3"].includes(preTerm)) {
+        ACTIVE_TERM = preTerm;
+        $("termSelect").value = preTerm;
+      }
+
+      if (preClass && MY_CLASSES.some(c => c.id === preClass)) {
+        ACTIVE_CLASS_ID = preClass;
+        $("classSelect").value = preClass;
+        loadClassData().then(() => {
+          if (view === "print") openPrintAllDialog();
+        });
+      } else if (MY_CLASSES.length === 1) {
+        ACTIVE_CLASS_ID = MY_CLASSES[0].id;
+        $("classSelect").value = MY_CLASSES[0].id;
+        loadClassData();
+      } else if (MY_CLASSES.length > 1) {
+        $("statusText").textContent =
+          `You have ${MY_CLASSES.length} classes. Pick one above to load grades.`;
       }
     }
 
@@ -449,6 +549,9 @@
         openAddStudentModal();
       });
       $("btnExportCsv").addEventListener("click", exportCsv);
+      $("btnPrintAll").addEventListener("click", openPrintAllDialog);
+      $("btnImportCsv").addEventListener("click", openCsvImport);
+      $("btnAuditLog").addEventListener("click", openAuditLog);
     }
 
     function resetGrid() {
@@ -471,16 +574,12 @@
       $("gridContent").style.display = "none";
 
       try {
-        // 1) Load students
         const stSnap = await getDocs(
           collection(db, "classes", ACTIVE_CLASS_ID, "students")
         );
         STUDENTS = stSnap.docs.map(d => ({ id: d.id, ...d.data() }))
-          .sort((a, b) =>
-            (a.fullName || "").localeCompare(b.fullName || "")
-          );
+          .sort((a, b) => (a.fullName || "").localeCompare(b.fullName || ""));
 
-        // 2) Load approved subjects for this term
         const ecrSnap = await getDocs(
           collection(db, "classes", ACTIVE_CLASS_ID, "ecr")
         );
@@ -499,8 +598,7 @@
         }
         SUBJECTS.sort((a, b) => a.name.localeCompare(b.name));
 
-        // 3) Load all grades for this term, all students, all subjects
-        GRADES = {};   // { studentId: { subjectCode: number } }
+        GRADES = {};
         STUDENTS.forEach(s => { GRADES[s.id] = {}; });
 
         for (const subj of SUBJECTS) {
@@ -552,7 +650,6 @@
           return;
         }
 
-        // Show grid
         $("emptyState").style.display = "none";
         $("gridContent").style.display = "block";
         $("statsBar").style.display = "grid";
@@ -583,7 +680,6 @@
       const head = $("gradesHead");
       const body = $("gradesBody");
 
-      // --- Header ---
       head.innerHTML = `
         <tr>
           <th class="student-col">Student</th>
@@ -594,11 +690,10 @@
             </th>
           `).join("")}
           <th style="min-width:70px;">Average</th>
-          <th style="min-width:90px;">Actions</th>
+          <th style="min-width:110px;">Actions</th>
         </tr>
       `;
 
-      // --- Filter students by search ---
       const list = STUDENTS.filter(s =>
         !SEARCH ||
         (s.fullName || "").toLowerCase().includes(SEARCH) ||
@@ -614,7 +709,6 @@
         return;
       }
 
-      // --- Body ---
       body.innerHTML = list.map(s => {
         const grades = GRADES[s.id] || {};
         const validGrades = SUBJECTS
@@ -624,8 +718,7 @@
           ? Math.round(validGrades.reduce((a, b) => a + b, 0) / validGrades.length)
           : null;
 
-        const avgClass = avg == null ? "empty"
-          : (avg >= 75 ? "" : "failing");
+        const avgClass = avg == null ? "empty" : (avg >= 75 ? "" : "failing");
 
         const subjectCells = SUBJECTS.map(sj => {
           const g = grades[sj.code];
@@ -652,7 +745,7 @@
             </td>
             <td>
               <div class="row-actions">
-                <button title="Open SF9" data-action="sf9" data-student="${esc(s.id)}">📄</button>
+                <button class="print" title="Open SF9" data-action="sf9" data-student="${esc(s.id)}">📄</button>
                 <button title="Edit student info" data-action="edit" data-student="${esc(s.id)}">✏️</button>
                 <button class="del" title="Delete student" data-action="del" data-student="${esc(s.id)}">🗑️</button>
               </div>
@@ -661,12 +754,10 @@
         `;
       }).join("");
 
-      // --- Wire grade cell clicks ---
       body.querySelectorAll("td.score").forEach(cell => {
         cell.addEventListener("click", () => startGradeEdit(cell));
       });
 
-      // --- Wire row actions ---
       body.querySelectorAll("[data-action]").forEach(btn => {
         btn.addEventListener("click", () => handleRowAction(btn));
       });
@@ -691,13 +782,6 @@
       input.max = "100";
       input.value = currentValue;
       input.placeholder = "—";
-      input.style.cssText = `
-        width:100%;border:2px solid #1e6bb8;
-        padding:8px 6px;text-align:center;
-        font-size:13px;font-weight:700;font-family:inherit;
-        outline:none;background:#fff;border-radius:0;
-        -moz-appearance:textfield;
-      `;
       cell.innerHTML = "";
       cell.appendChild(input);
       input.focus();
@@ -722,14 +806,12 @@
           value = Math.round(n);
         }
 
-        // Optimistically update UI
         cell.classList.remove("edit-mode");
         const has = value != null;
         cell.className = "score " + (has ? "has-value" : "empty");
         cell.dataset.value = has ? String(value) : "";
         cell.innerHTML = has ? value : "";
 
-        // Update local state
         if (!GRADES[studentId]) GRADES[studentId] = {};
         if (has) GRADES[studentId][subjectCode] = value;
         else delete GRADES[studentId][subjectCode];
@@ -737,13 +819,11 @@
         updateStats();
         updateRowAverage(studentId);
 
-        // Persist
         try {
-          await saveGrade(studentId, subjectCode, value);
+          await saveGrade(studentId, subjectCode, value, currentValue);
         } catch (err) {
           console.error("[saveGrade] failed:", err);
           toast("⚠️ Save failed: " + (err.message || "unknown"), "error");
-          // Revert on failure
           cell.className = "score " + (currentValue ? "has-value" : "empty");
           cell.dataset.value = currentValue;
           cell.innerHTML = currentValue;
@@ -762,38 +842,57 @@
         else if (e.key === "Escape") { e.preventDefault(); cancel(); }
       });
       input.addEventListener("blur", () => {
-        // Small delay so Enter fires first
-        setTimeout(() => {
-          if (!saved) commit();
-        }, 100);
+        setTimeout(() => { if (!saved) commit(); }, 100);
       });
     }
 
-    async function saveGrade(studentId, subjectCode, value) {
-      const scoresRef = doc(
-        db, "classes", ACTIVE_CLASS_ID, "ecr",
-        subjectCode, "terms", ACTIVE_TERM, "scores", studentId
-      );
+    async function saveGrade(studentId, subjectCode, value, previousValue) {
+  const scoresRef = doc(
+    db, "classes", ACTIVE_CLASS_ID, "ecr",
+    subjectCode, "terms", ACTIVE_TERM, "scores", studentId
+  );
 
-      const snap = await getDoc(scoresRef);
-      const existing = snap.exists() ? snap.data() : {};
+  const snap = await getDoc(scoresRef);
+  const existing = snap.exists() ? snap.data() : {};
 
-      const update = {
-        computed: {
-          ...(existing.computed || {}),
-          termGrade: value,
-        },
-        updatedAt: serverTimestamp(),
-        updatedBy: CURRENT_USER?.email || "",
-        manualEntry: true,
-      };
+  // 🆕 Determine current school year from the class
+  const cls = MY_CLASSES.find(c => c.id === ACTIVE_CLASS_ID);
+  const currentSY = cls?.schoolYear || "2026-2027";
 
-      if (!snap.exists()) {
-        update.createdAt = serverTimestamp();
-        update.createdBy = CURRENT_USER?.email || "";
+  const update = {
+    computed: {
+      ...(existing.computed || {}),
+      termGrade: value,
+    },
+    schoolYear: currentSY,      // ← NEW: tags every grade with its SY
+    updatedAt: serverTimestamp(),
+    updatedBy: CURRENT_USER?.email || "",
+    manualEntry: true,
+  };
+
+  if (!snap.exists()) {
+    update.createdAt = serverTimestamp();
+    update.createdBy = CURRENT_USER?.email || "";
+  }
+
+  await setDoc(scoresRef, update, { merge: true });
+  
+      // Log to audit trail (fire-and-forget)
+      try {
+        await addDoc(collection(db, "grade_audit"), {
+          classId: ACTIVE_CLASS_ID,
+          studentId,
+          subjectCode,
+          term: ACTIVE_TERM,
+          oldValue: previousValue === "" ? null : Number(previousValue),
+          newValue: value,
+          changedBy: CURRENT_USER?.email || "",
+          changedByUid: CURRENT_USER?.uid || "",
+          changedAt: serverTimestamp(),
+        });
+      } catch (e) {
+        console.warn("[audit] log failed:", e);
       }
-
-      await setDoc(scoresRef, update, { merge: true });
     }
 
     // ============================================================
@@ -853,21 +952,17 @@
       if (!student) return;
 
       if (action === "sf9") {
-        // Open the SF9 page in new tab with pre-selected values
-        const url = `sf9.html?classId=${encodeURIComponent(ACTIVE_CLASS_ID)}` +
-                    `&studentId=${encodeURIComponent(studentId)}` +
-                    `&term=${encodeURIComponent(ACTIVE_TERM)}`;
-        window.open(url, "_blank");
-      }
-
+  const url = `adviser-consolidation.html?classId=${encodeURIComponent(ACTIVE_CLASS_ID)}` +
+              `&studentId=${encodeURIComponent(studentId)}` +
+              `&term=${encodeURIComponent(ACTIVE_TERM)}`;
+  window.open(url, "_blank");
+}
       else if (action === "edit") {
         openEditStudentModal(student);
       }
-
       else if (action === "del") {
         if (!confirm(`Delete "${student.fullName}"?\n\nThis removes:\n• Student record\n• All their ECR scores for this class\n\nThis cannot be undone.`)) return;
         try {
-          // Delete all ECR score docs for this student across subjects/terms
           for (const subj of SUBJECTS) {
             try {
               await deleteDoc(
@@ -876,7 +971,6 @@
               );
             } catch {}
           }
-          // Delete student doc
           await deleteDoc(
             doc(db, "classes", ACTIVE_CLASS_ID, "students", studentId)
           );
@@ -891,8 +985,6 @@
     // ============================================================
     // ADD / EDIT STUDENT MODAL
     // ============================================================
-    let EDITING_STUDENT = null;
-
     function openAddStudentModal() {
       EDITING_STUDENT = null;
       $("addFullName").value = "";
@@ -900,7 +992,7 @@
       $("addSex").value = "";
       $("addDob").value = "";
       $("addError").style.display = "none";
-      document.querySelector("#addStudentModal .modal-head h3").textContent = "➕ Add New Student";
+      $("studentModalTitle").textContent = "➕ Add New Student";
       $("btnSaveNewStudent").textContent = "💾 Save Student";
       $("addStudentModal").classList.add("show");
       $("addFullName").focus();
@@ -913,20 +1005,13 @@
       $("addSex").value = student.sex || "";
       $("addDob").value = student.dob || "";
       $("addError").style.display = "none";
-      document.querySelector("#addStudentModal .modal-head h3").textContent =
-        "✏️ Edit Student — " + (student.fullName || "");
+      $("studentModalTitle").textContent = "✏️ Edit Student — " + (student.fullName || "");
       $("btnSaveNewStudent").textContent = "💾 Update Student";
       $("addStudentModal").classList.add("show");
       $("addFullName").focus();
     }
 
-    function closeModal() {
-      $("addStudentModal").classList.remove("show");
-      EDITING_STUDENT = null;
-    }
-    window.closeModal = closeModal;
-
-    document.getElementById("btnSaveNewStudent").addEventListener("click", saveStudent);
+    $("btnSaveNewStudent").addEventListener("click", saveStudent);
 
     async function saveStudent() {
       const fullName = $("addFullName").value.trim();
@@ -971,13 +1056,12 @@
         } else {
           data.createdAt = serverTimestamp();
           data.createdBy = CURRENT_USER?.email || "";
-          // Add new student with auto-generated doc ID
           const newRef = doc(collection(db, "classes", ACTIVE_CLASS_ID, "students"));
           await setDoc(newRef, data);
           toast("✓ Student added", "success");
         }
 
-        closeModal();
+        closeModal("addStudentModal");
         await loadClassData();
       } catch (err) {
         console.error(err);
@@ -1026,6 +1110,316 @@
       a.click();
       URL.revokeObjectURL(url);
       toast("✓ CSV downloaded", "success");
+    }
+
+    // ============================================================
+    // PRINT ALL SF9
+    // ============================================================
+    function openPrintAllDialog() {
+  if (!STUDENTS.length) {
+    toast("⚠️ No students to print", "error");
+    return;
+  }
+  if (!confirm(
+    `Print SF9 report cards for all ${STUDENTS.length} students?\n\n` +
+    `${STUDENTS.length} tabs will open (adviser-consolidation.html). ` +
+    `Your browser may block popups — allow them for this site.\n\n` +
+    `After printing, close each tab manually.`
+  )) return;
+
+  let opened = 0;
+  STUDENTS.forEach((s, i) => {
+    setTimeout(() => {
+      const url = `adviser-consolidation.html?classId=${encodeURIComponent(ACTIVE_CLASS_ID)}` +
+                  `&studentId=${encodeURIComponent(s.id)}` +
+                  `&term=${encodeURIComponent(ACTIVE_TERM)}` +
+                  `&autoPrint=1`;
+      const w = window.open(url, "_blank");
+      if (w) opened++;
+      if (i === STUDENTS.length - 1) {
+        setTimeout(() => toast(`✓ Opened ${opened} report card tabs`, "success"), 500);
+      }
+    }, i * 800);
+  });
+}
+
+    // ============================================================
+    // CSV IMPORT
+    // ============================================================
+    function openCsvImport() {
+      if (!ACTIVE_CLASS_ID) { toast("⚠️ Select a class first", "error"); return; }
+      if (!SUBJECTS.length) { toast("⚠️ No subjects to import", "error"); return; }
+
+      CSV_PARSED = null;
+      $("csvPaste").value = "";
+      $("csvPreview").style.display = "none";
+      $("csvError").style.display = "none";
+      $("btnApplyCsv").disabled = true;
+
+      const subjSel = $("csvSubject");
+      subjSel.innerHTML = '<option value="">— Multi-column CSV —</option>' +
+        SUBJECTS.map(s => `<option value="${esc(s.code)}">${esc(s.code)} — ${esc(s.name)}</option>`).join("");
+
+      $("csvImportModal").classList.add("show");
+    }
+
+    $("btnPreviewCsv").addEventListener("click", () => {
+      const text = $("csvPaste").value.trim();
+      const errBox = $("csvError");
+      errBox.style.display = "none";
+
+      if (!text) {
+        errBox.textContent = "Paste some CSV first.";
+        errBox.style.display = "block";
+        return;
+      }
+
+      try {
+        const rows = parseCsv(text);
+        if (rows.length < 2) {
+          throw new Error("Need a header row + at least one data row.");
+        }
+
+        const header = rows[0].map(h => h.trim());
+        const singleSubj = $("csvSubject").value;
+
+        let mapping = {};
+        if (singleSubj) {
+          mapping[singleSubj] = { colIdx: -1, name: singleSubj };
+          const nameIdx = header.findIndex(h =>
+            /name|lrn|student/i.test(h) === false && h === singleSubj
+          );
+          if (nameIdx >= 0) mapping[singleSubj].colIdx = nameIdx;
+          else {
+            const fallback = header.findIndex((h, i) => i >= 2);
+            if (fallback >= 0) mapping[singleSubj].colIdx = fallback;
+          }
+        } else {
+          header.forEach((h, i) => {
+            if (i < 2) return;
+            const subj = SUBJECTS.find(s => s.code === h || s.name === h);
+            if (subj) mapping[subj.code] = { colIdx: i, name: subj.name };
+          });
+        }
+
+        if (Object.keys(mapping).length === 0) {
+          throw new Error("No matching subject columns found in CSV header. " +
+            "Header must include subject codes like MATH7 or names.");
+        }
+
+        const matches = [];
+        const unmatched = [];
+        const nameIdx = header.findIndex(h => /name|student/i.test(h));
+        const lrnIdx = header.findIndex(h => /lrn/i.test(h));
+
+        for (let i = 1; i < rows.length; i++) {
+          const row = rows[i];
+          if (!row.length || row.every(c => !c.trim())) continue;
+
+          const csvName = (nameIdx >= 0 ? row[nameIdx] : "").trim().toLowerCase();
+          const csvLrn = (lrnIdx >= 0 ? row[lrnIdx] : "").trim();
+
+          let match = null;
+          if (csvLrn) match = STUDENTS.find(s => (s.lrn || "").trim() === csvLrn);
+          if (!match && csvName) {
+            match = STUDENTS.find(s =>
+              (s.fullName || "").toLowerCase().replace(/\s+/g, " ") ===
+              csvName.replace(/\s+/g, " ")
+            );
+          }
+
+          if (!match) {
+            unmatched.push(csvName || csvLrn || `Row ${i + 1}`);
+            continue;
+          }
+
+          const updates = {};
+          for (const [subjCode, info] of Object.entries(mapping)) {
+            const raw = row[info.colIdx];
+            if (raw == null || raw.trim() === "") continue;
+            const n = Number(raw.trim());
+            if (isNaN(n) || n < 0 || n > 100) continue;
+            updates[subjCode] = Math.round(n);
+          }
+
+          if (Object.keys(updates).length > 0) {
+            matches.push({ student: match, updates });
+          }
+        }
+
+        if (matches.length === 0) {
+          throw new Error("No student rows matched. Check the names or LRNs.");
+        }
+
+        CSV_PARSED = { matches, unmatched, mapping };
+
+        let preview = `<strong>✓ Parsed ${matches.length} student(s), ` +
+          `${Object.keys(mapping).length} subject(s)</strong>\n\n`;
+        matches.slice(0, 20).forEach(m => {
+          const vals = Object.entries(m.updates).map(([k, v]) => `${k}=${v}`).join(", ");
+          preview += `• ${m.student.fullName} → ${vals}\n`;
+        });
+        if (matches.length > 20) preview += `…and ${matches.length - 20} more\n`;
+        if (unmatched.length > 0) {
+          preview += `\n⚠️ ${unmatched.length} unmatched row(s):\n${unmatched.slice(0, 10).join("\n")}`;
+        }
+
+        $("csvPreview").textContent = preview;
+        $("csvPreview").style.display = "block";
+        $("btnApplyCsv").disabled = false;
+
+      } catch (err) {
+        errBox.textContent = err.message;
+        errBox.style.display = "block";
+        $("btnApplyCsv").disabled = true;
+      }
+    });
+
+    $("btnApplyCsv").addEventListener("click", async () => {
+      if (!CSV_PARSED) return;
+      const { matches } = CSV_PARSED;
+
+      const total = matches.reduce((sum, m) => sum + Object.keys(m.updates).length, 0);
+      if (!confirm(`Apply ${total} grade update(s) across ${matches.length} student(s)?`)) return;
+
+      const btn = $("btnApplyCsv");
+      btn.disabled = true;
+      btn.textContent = "Importing…";
+
+      let ok = 0, fail = 0;
+      for (const m of matches) {
+        for (const [subjCode, value] of Object.entries(m.updates)) {
+          try {
+            const prev = (GRADES[m.student.id] || {})[subjCode] ?? null;
+            await saveGrade(m.student.id, subjCode, value, prev);
+            ok++;
+          } catch (e) {
+            console.error(e);
+            fail++;
+          }
+        }
+      }
+
+      toast(`✓ Imported ${ok} grade(s)${fail ? ` · ${fail} failed` : ""}`,
+        fail ? "error" : "success");
+      closeModal("csvImportModal");
+      await loadClassData();
+    });
+
+    function parseCsv(text) {
+      const rows = [];
+      let row = [];
+      let cell = "";
+      let inQuote = false;
+
+      for (let i = 0; i < text.length; i++) {
+        const ch = text[i];
+        const next = text[i + 1];
+
+        if (inQuote) {
+          if (ch === '"' && next === '"') { cell += '"'; i++; }
+          else if (ch === '"') { inQuote = false; }
+          else { cell += ch; }
+        } else {
+          if (ch === '"') { inQuote = true; }
+          else if (ch === ",") { row.push(cell); cell = ""; }
+          else if (ch === "\n" || ch === "\r") {
+            if (ch === "\r" && next === "\n") i++;
+            row.push(cell); cell = "";
+            if (row.some(c => c !== "")) rows.push(row);
+            row = [];
+          }
+          else { cell += ch; }
+        }
+      }
+      if (cell !== "" || row.length) {
+        row.push(cell);
+        if (row.some(c => c !== "")) rows.push(row);
+      }
+      return rows;
+    }
+
+    // ============================================================
+    // AUDIT LOG
+    // ============================================================
+    async function openAuditLog() {
+      if (!ACTIVE_CLASS_ID) { toast("⚠️ Select a class first", "error"); return; }
+
+      const host = $("auditContent");
+      host.innerHTML = `<div class="spinner" style="margin:30px auto;"></div>
+        <p style="text-align:center;color:#6b7280;">Loading history…</p>`;
+      $("auditModal").classList.add("show");
+
+      try {
+        const q = query(
+          collection(db, "grade_audit"),
+          orderBy("changedAt", "desc"),
+          limit(500)
+        );
+        const snap = await getDocs(q);
+
+        const entries = [];
+        snap.forEach(d => {
+          const data = d.data();
+          if (data.classId !== ACTIVE_CLASS_ID) return;
+          if (String(data.term) !== String(ACTIVE_TERM)) return;
+          entries.push({ id: d.id, ...data });
+        });
+
+        if (entries.length === 0) {
+          host.innerHTML = `
+            <div style="padding:40px;text-align:center;color:#6b7280;">
+              <div style="font-size:2.5rem;">📭</div>
+              <h3 style="color:#374151;margin:10px 0 6px;">No grade changes yet</h3>
+              <p>Changes made via this page will appear here.</p>
+            </div>`;
+          return;
+        }
+
+        host.innerHTML = `
+          <table style="width:100%;border-collapse:collapse;font-size:12px;">
+            <thead>
+              <tr style="background:#1e3c72;color:#fff;position:sticky;top:0;">
+                <th style="padding:10px;text-align:left;">When</th>
+                <th style="padding:10px;text-align:left;">Student</th>
+                <th style="padding:10px;text-align:left;">Subject</th>
+                <th style="padding:10px;text-align:center;">Old</th>
+                <th style="padding:10px;text-align:center;">New</th>
+                <th style="padding:10px;text-align:left;">By</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${entries.map(e => {
+                const student = STUDENTS.find(s => s.id === e.studentId);
+                const changedDate = e.changedAt?.toDate
+                  ? e.changedAt.toDate().toLocaleString()
+                  : "—";
+                const diffColor = e.newValue == null ? "#9ca3af"
+                  : (e.oldValue == null ? "#059669"
+                  : (e.newValue > e.oldValue ? "#059669" : "#dc2626"));
+                return `
+                  <tr style="border-bottom:1px solid #f3f4f6;">
+                    <td style="padding:10px;color:#6b7280;white-space:nowrap;">${esc(changedDate)}</td>
+                    <td style="padding:10px;font-weight:700;">${esc(student?.fullName || e.studentId)}</td>
+                    <td style="padding:10px;font-family:monospace;font-size:11px;">${esc(e.subjectCode)}</td>
+                    <td style="padding:10px;text-align:center;color:#6b7280;">${e.oldValue ?? "—"}</td>
+                    <td style="padding:10px;text-align:center;font-weight:800;color:${diffColor};">${e.newValue ?? "—"}</td>
+                    <td style="padding:10px;color:#6b7280;font-size:11px;">${esc((e.changedBy || "").split("@")[0] || "—")}</td>
+                  </tr>
+                `;
+              }).join("")}
+            </tbody>
+          </table>
+        `;
+      } catch (err) {
+        console.error(err);
+        host.innerHTML = `
+          <div style="padding:40px;text-align:center;color:#991b1b;">
+            <div style="font-size:2.5rem;">⚠️</div>
+            <h3>Failed to load history</h3>
+            <p>${esc(err.message)}</p>
+          </div>`;
+      }
     }
   </script>
 </body>

@@ -659,6 +659,9 @@
         <button class="ac-nav-item admin-only-tab" data-tab="ai-settings">
         <span class="ico">🤖</span> AI Settings
         </button>
+        <button class="ac-nav-item admin-only-tab" data-tab="school-settings">
+        <span class="ico">🏫</span> School Settings
+        </button>
         <button class="ac-nav-item admin-only-tab" data-tab="security">
           <span class="ico">🎥</span> Security Monitor
         </button>
@@ -689,8 +692,8 @@
     import { auth, db } from "./assets/js/firebase-config.js";
     import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
     import {
-      collection, getDocs, doc, updateDoc, deleteDoc, addDoc,
-      query, orderBy, serverTimestamp
+    collection, getDocs, doc, getDoc, updateDoc, deleteDoc, addDoc,
+    query, orderBy, serverTimestamp
     } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
     import { getCurrentUserProfile } from "./assets/js/roles.js";
 
@@ -792,10 +795,59 @@
       document.body.classList.add(isAdmin ? "is-admin-role" : "is-teacher-role");
 
       await loadAllData();
+      checkSchoolYearReminder();   // ← ADD THIS
       renderActiveTab();
       attachSidebarHandlers();
       handleUrlHash();
     });
+
+
+    // ============================================================
+// SCHOOL YEAR REMINDER BANNER
+// Shows in April–August if the current SY is likely ending
+// ============================================================
+async function checkSchoolYearReminder() {
+  try {
+    const snap = await getDoc(doc(db, "config", "school"));
+    const cfg = snap.exists() ? snap.data() : {};
+    const currentSY = cfg.currentSchoolYear || "2026-2027";
+
+    const now = new Date();
+    const month = now.getMonth(); // 0 = Jan, 3 = Apr, 7 = Aug
+
+    // Only show reminder during April–August (end of PH school year)
+    if (month < 3 || month > 7) return;
+
+    // Don't show if admin dismissed it today
+    const dismissedAt = localStorage.getItem("sy_reminder_dismissed");
+    if (dismissedAt === now.toDateString()) return;
+
+    const banner = document.createElement("div");
+    banner.id = "sy-reminder-banner";
+    banner.style.cssText = `
+      position:fixed;top:0;left:0;right:0;z-index:99999;
+      background:linear-gradient(135deg,#f59e0b,#d97706);color:#fff;
+      padding:14px 20px;text-align:center;font-size:14px;font-weight:600;
+      box-shadow:0 4px 12px rgba(0,0,0,.15);font-family:inherit;
+    `;
+    banner.innerHTML = `
+      📅 <strong>School year ending soon?</strong>
+      Current SY is <strong>${currentSY}</strong>.
+      If the year is done, go to
+      <a href="#school-settings" style="color:#fff;text-decoration:underline;font-weight:800;">
+        School Settings
+      </a>
+      to advance to the next school year.
+      <button onclick="document.getElementById('sy-reminder-banner').remove();localStorage.setItem('sy_reminder_dismissed','${now.toDateString()}')"
+              style="margin-left:12px;background:rgba(255,255,255,.25);color:#fff;border:none;padding:4px 10px;border-radius:4px;font-weight:700;cursor:pointer;">
+        Dismiss today
+      </button>
+    `;
+    document.body.appendChild(banner);
+  } catch (e) {
+    console.warn("[sy-reminder] failed:", e);
+  }
+}
 
     // ============================================================
     // DATA LOADING
@@ -877,12 +929,13 @@
     }
 
       function handleUrlHash() {
-      const hash = location.hash.replace("#", "");
-      if (hash && ["classes", "advisers", "subjects", "rooms", "conflicts",
-                   "ilaw-settings", "ai-settings", "security"].includes(hash)) {
-        switchTab(hash);
-      }
-    }
+  const hash = location.hash.replace("#", "");
+  if (hash && ["classes", "advisers", "subjects", "rooms", "conflicts",
+               "ilaw-settings", "ai-settings", "security",
+               "school-settings"].includes(hash)) {
+    switchTab(hash);
+  }
+}
 
     // ============================================================
     // RENDER DISPATCHER
@@ -898,6 +951,7 @@
         case "rooms":    renderRoomsTab(main); break;
         case "conflicts":renderConflictsTab(main); break;
         case "security": renderSecurityTab(main); break;   // 🆕 ADD THIS
+        case "school-settings": renderSchoolSettingsTab(main); break;
         default:         renderClassesTab(main);
       }
     }
@@ -5151,6 +5205,357 @@
         </div>
       `;
     }
+
+    // ============================================================
+// TAB: SCHOOL SETTINGS
+// Lets admins update school year, principal, identity — no code edits
+// ============================================================
+async function renderSchoolSettingsTab(main) {
+  const isAdmin = CURRENT_PROFILE?.isSuperAdmin
+    || CURRENT_PROFILE?.primaryRole === "admin";
+
+  if (!isAdmin) {
+    main.innerHTML = `
+      <div class="ac-card" style="text-align:center;padding:60px;">
+        <h2 style="color:#b91c1c;">🚫 Admin Only</h2>
+        <p>Only administrators can change school settings.</p>
+      </div>`;
+    return;
+  }
+
+  // Load current config (or defaults)
+  let cfg = {};
+  try {
+    const snap = await getDoc(doc(db, "config", "school"));
+    if (snap.exists()) cfg = snap.data();
+  } catch (e) {
+    console.warn("[school-settings] config load failed:", e);
+  }
+
+  const DEFAULT_CFG = {
+    schoolName:    "STA. CRUZ PINGKIAN HIGH SCHOOL",
+    region:        "Region II - Cagayan Valley",
+    division:      "Division of Nueva Vizcaya",
+    district:      "Eastern Kayapa",
+    addressLine:   "Sta. Cruz, Kasibu, Nueva Vizcaya",
+    principalName: "SATURNINO P. CALANSI EdD",
+    principalTitle:"Principal",
+    currentSchoolYear: "2026-2027",
+  };
+
+  const current = { ...DEFAULT_CFG, ...cfg };
+
+  // Build list of school years (5 back, 5 forward from current)
+  const nowYear = parseInt((current.currentSchoolYear || "2026-2027").split("-")[0], 10) || new Date().getFullYear();
+  const yearOptions = [];
+  for (let y = nowYear - 2; y <= nowYear + 5; y++) {
+    yearOptions.push(`${y}-${y + 1}`);
+  }
+
+  // Check if rollover is "safe" — no grades entered for next year yet
+  let gradeCountThisYear = 0;
+  try {
+    // Count how many ECR score docs exist for current SY
+    for (const cls of CLASSES) {
+      const ecrSnap = await getDocs(collection(db, "classes", cls.id, "ecr"));
+      for (const ecrDoc of ecrSnap.docs) {
+        for (const t of ["1", "2", "3"]) {
+          const scoresSnap = await getDocs(
+            collection(db, "classes", cls.id, "ecr", ecrDoc.id, "terms", t, "scores")
+          );
+          scoresSnap.forEach(sd => {
+            const d = sd.data();
+            const sy = d.schoolYear || "2026-2027";
+            if (sy === current.currentSchoolYear) gradeCountThisYear++;
+          });
+        }
+      }
+    }
+  } catch (e) {
+    console.warn("[school-settings] grade scan failed:", e);
+  }
+
+  main.innerHTML = `
+    <div class="ac-page-header">
+      <h2>🏫 School Settings</h2>
+      <p>These values appear on every report card, form, and printout. Change once — the whole system updates.</p>
+    </div>
+
+    <!-- CURRENT SCHOOL YEAR (most important) -->
+    <div class="ac-card" style="border:2px solid #1e3c72;">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:16px;flex-wrap:wrap;">
+        <div style="flex:1;min-width:240px;">
+          <h3 style="margin:0 0 6px;color:#0f2b4f;">📅 Current School Year</h3>
+          <p style="margin:0 0 14px;color:#6b7280;font-size:13px;">
+            All grades, attendance, and report cards are tagged with this school year.
+            Changing it starts a fresh set of records — old data is <strong>preserved</strong> but hidden from the current view.
+          </p>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
+            <select id="ss-currentSY" class="ac-select" style="min-width:160px;font-size:14px;font-weight:700;">
+              ${yearOptions.map(y =>
+                `<option value="${y}" ${y === current.currentSchoolYear ? "selected" : ""}>${y}</option>`
+              ).join("")}
+            </select>
+            <span class="ac-badge success" style="font-size:12px;padding:5px 12px;">
+              Active
+            </span>
+          </div>
+        </div>
+        <div style="text-align:right;min-width:200px;">
+          <div style="font-size:12px;color:#6b7280;margin-bottom:6px;">Grades recorded this year:</div>
+          <div style="font-size:2.2rem;font-weight:800;color:#1e3c72;line-height:1;">${gradeCountThisYear}</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- END OF YEAR ROLLOVER (danger zone) -->
+    <div class="ac-card" style="border:2px solid #f59e0b;background:#fffbeb;">
+      <h3 style="margin:0 0 8px;color:#92400e;">🔄 End-of-Year Rollover</h3>
+      <p style="margin:0 0 14px;color:#92400e;font-size:13px;">
+        Use this at the end of the school year (usually May/June). It will:
+      </p>
+      <ul style="color:#92400e;font-size:13px;margin:0 0 14px 18px;padding:0;">
+        <li>Archive all <strong>${current.currentSchoolYear}</strong> records (grades, attendance) so they stay safe</li>
+        <li>Advance the current school year to <strong>${nextYear(current.currentSchoolYear)}</strong></li>
+        <li>Keep all students, classes, and subjects — you start fresh with new grades</li>
+        <li><strong>Does NOT delete anything</strong> — old report cards remain printable if needed</li>
+      </ul>
+      <button class="ac-btn warning" id="ss-rollover" style="padding:12px 22px;font-size:14px;">
+        🔄 Advance School Year to ${nextYear(current.currentSchoolYear)}
+      </button>
+      <p style="color:#92400e;font-size:11px;margin:10px 0 0;">
+        ⚠️ Only do this after final report cards have been printed and distributed. This cannot be undone from the UI.
+      </p>
+    </div>
+
+    <!-- SCHOOL IDENTITY -->
+    <div class="ac-card">
+      <h3 style="margin:0 0 14px;color:#0f2b4f;">🏛️ School Identity</h3>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+        <div style="grid-column:1/-1;">
+          <label style="display:block;font-size:11px;font-weight:700;color:#374151;text-transform:uppercase;margin-bottom:6px;">School Name</label>
+          <input type="text" id="ss-schoolName" value="${esc(current.schoolName)}" class="ac-search" style="width:100%;" />
+        </div>
+        <div>
+          <label style="display:block;font-size:11px;font-weight:700;color:#374151;text-transform:uppercase;margin-bottom:6px;">Region</label>
+          <input type="text" id="ss-region" value="${esc(current.region)}" class="ac-search" style="width:100%;" />
+        </div>
+        <div>
+          <label style="display:block;font-size:11px;font-weight:700;color:#374151;text-transform:uppercase;margin-bottom:6px;">Division</label>
+          <input type="text" id="ss-division" value="${esc(current.division)}" class="ac-search" style="width:100%;" />
+        </div>
+        <div>
+          <label style="display:block;font-size:11px;font-weight:700;color:#374151;text-transform:uppercase;margin-bottom:6px;">District</label>
+          <input type="text" id="ss-district" value="${esc(current.district)}" class="ac-search" style="width:100%;" />
+        </div>
+        <div>
+          <label style="display:block;font-size:11px;font-weight:700;color:#374151;text-transform:uppercase;margin-bottom:6px;">Address Line</label>
+          <input type="text" id="ss-addressLine" value="${esc(current.addressLine)}" class="ac-search" style="width:100%;" />
+        </div>
+      </div>
+    </div>
+
+    <!-- SIGNATORIES -->
+    <div class="ac-card">
+      <h3 style="margin:0 0 14px;color:#0f2b4f;">✍️ Default Signatories</h3>
+      <p style="margin:0 0 14px;color:#6b7280;font-size:13px;">
+        These names appear on every report card. Class advisers still show their own name from their class record — only the principal is a global default.
+      </p>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+        <div style="grid-column:1/-1;">
+          <label style="display:block;font-size:11px;font-weight:700;color:#374151;text-transform:uppercase;margin-bottom:6px;">Principal Name</label>
+          <input type="text" id="ss-principalName" value="${esc(current.principalName)}" class="ac-search" style="width:100%;" />
+        </div>
+        <div>
+          <label style="display:block;font-size:11px;font-weight:700;color:#374151;text-transform:uppercase;margin-bottom:6px;">Principal Title</label>
+          <input type="text" id="ss-principalTitle" value="${esc(current.principalTitle)}" class="ac-search" style="width:100%;" />
+        </div>
+      </div>
+    </div>
+
+    <!-- PREVIEW -->
+    <div class="ac-card" style="background:#f9fafb;">
+      <h3 style="margin:0 0 14px;color:#0f2b4f;">👁️ Report Card Preview</h3>
+      <p style="margin:0 0 10px;color:#6b7280;font-size:12px;">
+        This is how it will appear on the printed report card:
+      </p>
+      <div style="background:#fff;border:1px solid #e5e7eb;border-radius:8px;padding:20px;text-align:center;font-family:'Times New Roman',serif;">
+        <div style="font-size:11pt;">Republic of the Philippines</div>
+        <div style="font-size:13pt;font-weight:bold;">Department of Education</div>
+        <div id="ss-prev-region" style="font-size:9pt;margin-top:3px;">${esc(current.region)}</div>
+        <div id="ss-prev-division" style="font-size:9pt;">${esc(current.division)}</div>
+        <div id="ss-prev-schoolName" style="font-size:10pt;font-weight:bold;text-transform:uppercase;margin:6px 0;">${esc(current.schoolName)}</div>
+        <div id="ss-prev-district" style="font-size:9pt;">District: ${esc(current.district)}<br>${esc(current.addressLine)}</div>
+        <div style="margin-top:18px;font-size:9pt;">
+          School Year: <strong id="ss-prev-sy">${esc(current.currentSchoolYear)}</strong>
+        </div>
+        <div style="margin-top:14px;">
+          <div style="border-top:1px solid #000;width:170px;margin:20px auto 3px;"></div>
+          <strong id="ss-prev-principal">${esc(current.principalName)}</strong><br>
+          <span id="ss-prev-principalTitle">${esc(current.principalTitle)}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ACTION BUTTONS -->
+    <div class="ac-card" style="display:flex;gap:10px;flex-wrap:wrap;">
+      <button class="ac-btn success" id="ss-save" style="padding:12px 24px;font-size:14px;">💾 Save All Settings</button>
+      <button class="ac-btn outline" id="ss-reset">🔄 Reset to Defaults</button>
+      <span id="ss-saveStatus" style="display:flex;align-items:center;color:#059669;font-weight:700;font-size:13px;"></span>
+    </div>
+  `;
+
+  // ---- Live preview update on input ----
+  const previewMap = [
+    ["ss-schoolName",   "ss-prev-schoolName"],
+    ["ss-region",       "ss-prev-region"],
+    ["ss-division",     "ss-prev-division"],
+    ["ss-district",     "ss-prev-district"],
+    ["ss-principalName","ss-prev-principal"],
+    ["ss-principalTitle","ss-prev-principalTitle"],
+    ["ss-currentSY",    "ss-prev-sy"],
+  ];
+  previewMap.forEach(([inputId, previewId]) => {
+    const input = $(inputId);
+    const prev = $(previewId);
+    if (!input || !prev) return;
+    const handler = () => {
+      if (previewId === "ss-prev-district") {
+        prev.innerHTML = `District: ${esc($("ss-district").value)}<br>${esc($("ss-addressLine").value)}`;
+      } else {
+        prev.textContent = input.value;
+      }
+    };
+    input.addEventListener("input", handler);
+    input.addEventListener("change", handler);
+  });
+  // Address line also affects district preview
+  $("ss-addressLine")?.addEventListener("input", () => {
+    $("ss-prev-district").innerHTML = `District: ${esc($("ss-district").value)}<br>${esc($("ss-addressLine").value)}`;
+  });
+
+  // ---- Save handler ----
+  $("ss-save").addEventListener("click", async () => {
+    const btn = $("ss-save");
+    const status = $("ss-saveStatus");
+    btn.disabled = true;
+    btn.textContent = "Saving…";
+    status.textContent = "";
+
+    try {
+      const data = {
+        schoolName:    $("ss-schoolName").value.trim(),
+        region:        $("ss-region").value.trim(),
+        division:      $("ss-division").value.trim(),
+        district:      $("ss-district").value.trim(),
+        addressLine:   $("ss-addressLine").value.trim(),
+        principalName: $("ss-principalName").value.trim(),
+        principalTitle:$("ss-principalTitle").value.trim(),
+        currentSchoolYear: $("ss-currentSY").value,
+        updatedAt: serverTimestamp(),
+        updatedBy: CURRENT_USER?.email || "",
+      };
+
+      if (!data.schoolName) {
+        toast("⚠️ School name is required", "error");
+        btn.disabled = false;
+        btn.textContent = "💾 Save All Settings";
+        return;
+      }
+
+      // Write to config/school (setDoc with merge — safe to create or update)
+      const { setDoc } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js");
+      await setDoc(doc(db, "config", "school"), data, { merge: true });
+
+      status.textContent = "✓ Saved — report cards will now use these values";
+      toast("✓ School settings saved", "success");
+    } catch (e) {
+      console.error(e);
+      toast("⚠️ " + (e.message || "Save failed"), "error");
+    } finally {
+      btn.disabled = false;
+      btn.textContent = "💾 Save All Settings";
+    }
+  });
+
+  // ---- Reset handler ----
+  $("ss-reset").addEventListener("click", () => {
+    if (!confirm("Reset all fields to defaults?\n\nThis will NOT save until you click 'Save All Settings'.")) return;
+    $("ss-schoolName").value = DEFAULT_CFG.schoolName;
+    $("ss-region").value = DEFAULT_CFG.region;
+    $("ss-division").value = DEFAULT_CFG.division;
+    $("ss-district").value = DEFAULT_CFG.district;
+    $("ss-addressLine").value = DEFAULT_CFG.addressLine;
+    $("ss-principalName").value = DEFAULT_CFG.principalName;
+    $("ss-principalTitle").value = DEFAULT_CFG.principalTitle;
+    $("ss-currentSY").value = DEFAULT_CFG.currentSchoolYear;
+    // Trigger preview refresh
+    ["ss-schoolName","ss-region","ss-division","ss-district",
+     "ss-addressLine","ss-principalName","ss-principalTitle","ss-currentSY"].forEach(id => {
+      $(id).dispatchEvent(new Event("input", { bubbles: true }));
+    });
+    toast("Fields reset — click Save to persist", "success");
+  });
+
+  // ---- Rollover handler ----
+  $("ss-rollover").addEventListener("click", async () => {
+    const fromYear = current.currentSchoolYear;
+    const toYear = nextYear(fromYear);
+
+    // Triple-confirm because this is irreversible
+    if (!confirm(
+      `⚠️ Advance school year from ${fromYear} to ${toYear}?\n\n` +
+      `This will:\n` +
+      `• Tag all current grades as belonging to ${fromYear}\n` +
+      `• Start a fresh grade set for ${toYear}\n` +
+      `• Keep everything preserved — no data loss\n\n` +
+      `Continue?`
+    )) return;
+
+    const typed = prompt(
+      `Type "${toYear}" (without quotes) to confirm:`
+    );
+    if (typed !== toYear) {
+      toast("⚠️ Rollover cancelled — confirmation didn't match", "error");
+      return;
+    }
+
+    const btn = $("ss-rollover");
+    btn.disabled = true;
+    btn.textContent = "Rolling over…";
+
+    try {
+      const { setDoc } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js");
+      await setDoc(doc(db, "config", "school"), {
+        currentSchoolYear: toYear,
+        previousSchoolYears: [
+          ...(current.previousSchoolYears || []),
+          fromYear,
+        ],
+        lastRolloverAt: serverTimestamp(),
+        lastRolloverBy: CURRENT_USER?.email || "",
+      }, { merge: true });
+
+      toast(`✓ Rolled over to ${toYear}`, "success");
+      // Re-render to refresh
+      await renderSchoolSettingsTab(main);
+    } catch (e) {
+      console.error(e);
+      toast("⚠️ Rollover failed: " + (e.message || "unknown"), "error");
+      btn.disabled = false;
+      btn.textContent = `🔄 Advance School Year to ${toYear}`;
+    }
+  });
+}
+
+// Helper — given "2026-2027" returns "2027-2028"
+function nextYear(sy) {
+  const m = String(sy || "").match(/^(\d{4})-(\d{4})$/);
+  if (!m) return "2027-2028";
+  const y1 = parseInt(m[1], 10) + 1;
+  return `${y1}-${y1 + 1}`;
+}
+
     // ============================================================
 // TAB: AI SETTINGS
 // ============================================================

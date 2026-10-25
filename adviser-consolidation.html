@@ -7,7 +7,6 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   
   <style>
-    /* ✅ Exact CSS mirrored from your PHP file */
     *{margin:0;padding:0;box-sizing:border-box}
     body{font-family:'Times New Roman','Georgia',serif;background:#e8e8e8;padding:15px;font-size:10pt}
     .report-card{max-width:1400px;margin:0 auto;background:white;box-shadow:0 4px 25px rgba(0,0,0,0.2)}
@@ -16,17 +15,14 @@
     .attendance-section{padding-right:10px}
     .attendance-section .section-title,.section-title{font-weight:bold;font-size:9pt;text-align:center;text-transform:uppercase;letter-spacing:1px;border-bottom:1px solid #000;padding-bottom:3px;margin-bottom:6px}
     
-    /* Tables */
     .att-table{width:100%;border-collapse:collapse;font-size:7pt;margin:6px 0}
     .att-table th,.att-table td{border:1px solid #000;padding:2px 3px;text-align:center;vertical-align:middle}
     .att-table th{background:#f0f0f0;font-weight:bold;font-size:6pt}
     .text-left{text-align:left}.text-bold{font-weight:bold}
     
-    /* Signatures */
     .parent-sig{font-size:8pt;line-height:1.8;margin-top:10px}
     .parent-sig .ps-line{border-bottom:1px solid #000;display:inline-block;min-width:180px}
     
-    /* Right Section */
     .right-section{text-align:center;display:flex;flex-direction:column}
     .logo-container{text-align:center;margin-bottom:4px}
     .school-logo{max-height:50px;width:auto}
@@ -47,7 +43,6 @@
     .sig-item{text-align:center;font-size:9pt}
     .sig-line{border-top:1px solid #000;width:170px;margin:25px auto 3px}
     
-    /* Generic Tables */
     table{width:100%;border-collapse:collapse;font-size:7pt;margin:4px 0}
     table th,table td{border:1px solid #000;padding:2px 3px;text-align:center;vertical-align:middle}
     table th{background:#f0f0f0;font-weight:bold;font-size:6.5pt}
@@ -70,13 +65,11 @@
     .cert-sig-line{border-top:1px solid #000;width:140px;margin:20px auto 3px}
     .footer-note{text-align:center;font-size:6.5pt;color:#888;margin-top:auto;padding-top:5px}
     
-    /* Controls */
     .controls{margin-bottom:15px;padding:12px 15px;background:#f8f9fa;border-radius:8px;font-family:Arial,sans-serif;font-size:12px; display: flex; gap: 10px; flex-wrap: wrap; align-items: center;}
     .controls select,.controls button{padding:7px 10px;margin:3px;border:1px solid #ddd;border-radius:5px;font-size:12px}
     .btn{padding:8px 18px;border:none;border-radius:6px;cursor:pointer;font-weight:600;text-decoration:none;display:inline-block;font-family:Arial,sans-serif}
     .btn-success{background:#28a745;color:white}.btn-secondary{background:#6c757d;color:white}
     
-    /* Print */
     @media print{
         body{background:white;padding:0;margin:0}
         .controls{display:none!important}
@@ -84,7 +77,6 @@
         @page{size:landscape;margin:0.3in}
         .page{page-break-after:always;page-break-inside:avoid;min-height:auto;padding:10px;margin:0}
     }
-        /* ✅ MOBILE RESPONSIVENESS */
     @media (max-width: 1024px) {
       .two-col { 
         grid-template-columns: 1fr !important; 
@@ -101,18 +93,15 @@
     .controls select, .controls button { padding: 8px 12px; margin: 3px; border: 1px solid #ddd; border-radius: 5px; font-size: 13px; font-family: inherit; }
     .controls > div { display: flex; flex-direction: column; }
       
-      /* Make tables scrollable horizontally on mobile */
       .table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
       .att-table, .grades-table, .values-table, .desc-table { min-width: 500px; }
       
-      /* Fix the font size for the SF9 header on mobile */
       .doc-title { font-size: 10pt; margin: 10px 0; }
       .school-name { font-size: 9pt; }
       .learner-info { font-size: 8.5pt; line-height: 2; }
       .learner-info .underline { min-width: 180px; }
       .learner-info .med-underline { min-width: 100px; }
       
-      /* Adjust signature blocks */
       .sig-row { flex-direction: column; gap: 20px; }
       .cert-sig-row { flex-direction: column; gap: 20px; }
     }
@@ -142,7 +131,7 @@
         <option value="3">🌾 Term 3</option>
       </select>
     </div>
-    <button class="btn btn-success" onclick="generateSF9()">Load Report Card</button>
+    <button class="btn btn-success" id="btnLoad" onclick="generateSF9()">Load Report Card</button>
     <button class="btn btn-success" onclick="window.print()" id="btnPrint" disabled>Print Report Card</button>
     <a href="teacher.html" class="btn btn-secondary">Back to Dashboard</a>
   </div>
@@ -198,8 +187,8 @@
             Eligibility for Admission to Grade: _________________________________<br><br>
             <strong>Approved:</strong>
             <div class="cert-sig-row">
-              <div class="cert-sig-item"><div class="cert-sig-line"></div><strong>SATURNINO P. CALANSI EdD</strong><br>Principal</div>
-              <div class="cert-sig-item"><div class="cert-sig-line"></div><strong>EFRENA P. TIAGO</strong><br>Teacher/Adviser</div>
+              <div class="cert-sig-item"><div class="cert-sig-line"></div><strong id="infoPrincipalCert">SATURNINO P. CALANSI EdD</strong><br>Principal</div>
+              <div class="cert-sig-item"><div class="cert-sig-line"></div><strong id="infoAdviserCert">EFRENA P. TIAGO</strong><br>Teacher/Adviser</div>
             </div>
           </div>
         </div>
@@ -210,19 +199,19 @@
           </div>
           <div class="republic">Republic of the Philippines</div>
           <div class="deped">Department of Education</div>
-          <div class="region-line">Region II - Cagayan Valley</div>
-          <div class="division-line">Division of Nueva Vizcaya</div>
-          <div class="school-name">STA. CRUZ PINGKIAN HIGH SCHOOL</div>
-          <div class="district-line">District: Eastern Kayapa<br>Sta. Cruz, Kasibu, Nueva Vizcaya</div>
+          <div class="region-line" id="infoRegion">Region II - Cagayan Valley</div>
+          <div class="division-line" id="infoDivision">Division of Nueva Vizcaya</div>
+          <div class="school-name" id="infoSchoolName">STA. CRUZ PINGKIAN HIGH SCHOOL</div>
+          <div class="district-line" id="infoDistrictLine">District: Eastern Kayapa<br>Sta. Cruz, Kasibu, Nueva Vizcaya</div>
           
           <div class="doc-title">LEARNER'S PROGRESS REPORT CARD<br><span style="font-size:9pt;">(MATATAG 3-Term System | DO 009, s. 2026)</span></div>
           
           <div class="learner-info">
             <div><strong>Name:</strong> <span class="underline" id="infoName"></span></div>
             <div><strong>LRN:</strong> <span class="underline" id="infoLrn"></span></div>
-            <div><strong>Age:</strong> <span class="short-underline">16</span> <strong>Sex:</strong> <span class="short-underline" id="infoSex"></span></div>
+            <div><strong>Age:</strong> <span class="short-underline" id="infoAge">—</span> <strong>Sex:</strong> <span class="short-underline" id="infoSex"></span></div>
             <div><strong>Grade:</strong> <span class="short-underline" id="infoGrade"></span> <strong>Section:</strong> <span class="med-underline" id="infoSection"></span></div>
-            <div><strong>School Year:</strong> <span class="med-underline">2026-2027</span></div>
+            <div><strong>School Year:</strong> <span class="med-underline" id="infoSchoolYear">—</span></div>
             <div><strong>Term:</strong> <span class="med-underline" id="infoTerm"></span></div>
           </div>
           
@@ -233,8 +222,8 @@
           
           <div class="sig-box">
             <div class="sig-row">
-              <div class="sig-item"><div class="sig-line"></div><strong>SATURNINO P. CALANSI EdD</strong><br>Principal</div>
-              <div class="sig-item"><div class="sig-line"></div><strong>EFRENA P. TIAGO</strong><br>Teacher/Adviser</div>
+              <div class="sig-item"><div class="sig-line"></div><strong id="infoPrincipal">SATURNINO P. CALANSI EdD</strong><br>Principal</div>
+              <div class="sig-item"><div class="sig-line"></div><strong id="infoAdviser">EFRENA P. TIAGO</strong><br>Teacher/Adviser</div>
             </div>
           </div>
         </div>
@@ -315,6 +304,46 @@
     let ALL_STUDENTS = [];
     let APPROVED_SUBJECTS = [];
     let ALL_SCORES = {};
+    let SCHOOL_CONFIG = {};   // ← NEW: loaded from config/school
+    let URL_PARAMS = new URLSearchParams(location.search);   // ← NEW
+
+    // ============================================================
+    // DEFAULT SCHOOL CONFIG — used if config/school doc missing
+    // (identical values to current hardcoded defaults, so nothing
+    //  visually changes for SY 2026-2027)
+    // ============================================================
+    const DEFAULT_SCHOOL = {
+      schoolName:    "STA. CRUZ PINGKIAN HIGH SCHOOL",
+      region:        "Region II - Cagayan Valley",
+      division:      "Division of Nueva Vizcaya",
+      district:      "Eastern Kayapa",
+      addressLine:   "Sta. Cruz, Kasibu, Nueva Vizcaya",
+      principalName: "SATURNINO P. CALANSI EdD",
+      principalTitle:"Principal",
+      currentSchoolYear: "2026-2027",
+    };
+
+    function getSchoolConfig() {
+      return { ...DEFAULT_SCHOOL, ...SCHOOL_CONFIG };
+    }
+
+    function getCurrentSchoolYear() {
+      return getSchoolConfig().currentSchoolYear || "2026-2027";
+    }
+
+    // ============================================================
+    // Compute age from DOB
+    // ============================================================
+    function computeAge(dob) {
+      if (!dob) return "—";
+      const d = new Date(dob);
+      if (isNaN(d)) return "—";
+      const today = new Date();
+      let age = today.getFullYear() - d.getFullYear();
+      const m = today.getMonth() - d.getMonth();
+      if (m < 0 || (m === 0 && today.getDate() < d.getDate())) age--;
+      return age >= 0 ? age : "—";
+    }
 
     function getDescriptor(grade) {
       if (grade >= 90) return "Advancing (Namumukod-tangi)";
@@ -324,11 +353,24 @@
       return "Emerging (Nasisimula)";
     }
 
+    // ============================================================
+    // AUTH + INITIAL LOAD
+    // ============================================================
     onAuthStateChanged(auth, async (user) => {
       if (!user) { window.location.href = "login.html"; return; }
       CURRENT_USER = user;
       
       const classSelect = document.getElementById("classSelect");
+
+      // --- Load school config (safe fallback if doc missing) ---
+      try {
+        const cfgSnap = await getDoc(doc(db, "config", "school"));
+        if (cfgSnap.exists()) {
+          SCHOOL_CONFIG = cfgSnap.data();
+        }
+      } catch (e) {
+        console.warn("[school config] load failed — using defaults:", e);
+      }
 
       try {
         let currentProfile = {};
@@ -358,11 +400,48 @@
           classSelect.innerHTML += `<option value="${c.id}">${c.classLabel}</option>`;
         });
 
+        // ============================================================
+        // URL PARAM SUPPORT — auto-select and auto-print
+        // (enables deep-links from adviser.html and sf9-consolidated.html)
+        // ============================================================
+        const preClass   = URL_PARAMS.get("classId");
+        const preStudent = URL_PARAMS.get("studentId");
+        const preTerm    = URL_PARAMS.get("term");
+        const autoPrint  = URL_PARAMS.get("autoPrint") === "1";
+
+        if (preTerm && ["1","2","3"].includes(preTerm)) {
+          document.getElementById("termSelect").value = preTerm;
+        }
+
+        if (preClass && MY_CLASSES.some(c => c.id === preClass)) {
+          classSelect.value = preClass;
+          await window.loadStudents();
+
+          if (preStudent) {
+            document.getElementById("studentSelect").value = preStudent;
+          }
+
+          // Auto-generate after DOM settles
+          setTimeout(async () => {
+            try {
+              await window.generateSF9();
+              if (autoPrint) {
+                setTimeout(() => window.print(), 800);
+              }
+            } catch (e) {
+              console.warn("[auto-load] failed:", e);
+            }
+          }, 250);
+        }
+
       } catch (err) {
         classSelect.innerHTML = `<option value="">❌ Error: ${err.message}</option>`;
       }
     });
 
+    // ============================================================
+    // LOAD STUDENTS
+    // ============================================================
     window.loadStudents = async () => {
       const classId = document.getElementById("classSelect").value;
       const studentSelect = document.getElementById("studentSelect");
@@ -387,188 +466,227 @@
       }
     };
 
-   window.generateSF9 = async () => {
-  const classId = document.getElementById("classSelect").value;
-  const studentId = document.getElementById("studentSelect").value;
-  const term = document.getElementById("termSelect").value;
+    // ============================================================
+    // GENERATE SF9
+    // ============================================================
+    window.generateSF9 = async () => {
+      const classId = document.getElementById("classSelect").value;
+      const studentId = document.getElementById("studentSelect").value;
+      const term = document.getElementById("termSelect").value;
 
-  if (!classId || !studentId) return alert("Please select a Class and Student.");
+      if (!classId || !studentId) return alert("Please select a Class and Student.");
 
-  const btn = document.querySelector('.btn-success');
-  btn.textContent = 'Loading...';
+      // Explicit button ID (was querySelector('.btn-success') before — fragile)
+      const btn = document.getElementById("btnLoad");
+      const origText = btn.textContent;
+      btn.textContent = 'Loading...';
+      btn.disabled = true;
 
-  try {
-    const clsData = MY_CLASSES.find(c => c.id === classId);
-    const student = ALL_STUDENTS.find(s => s.id === studentId);
+      try {
+        const clsData = MY_CLASSES.find(c => c.id === classId);
+        const student = ALL_STUDENTS.find(s => s.id === studentId);
+        const school = getSchoolConfig();
+        const currentSY = clsData?.schoolYear || getCurrentSchoolYear();
 
-    // 1. Fetch Approved Subjects for this term
-    const ecrSnap = await getDocs(collection(db, "classes", classId, "ecr"));
-    APPROVED_SUBJECTS = [];
-    
-    for (const ecrDoc of ecrSnap.docs) {
-      const ecrData = ecrDoc.data();
-      const termStatus = ecrData.terms?.[term]?.status;
-      
-      if (termStatus === "approved") {
-        let subjName = ecrDoc.id;
-        try {
-          const subjMeta = await getDoc(doc(db, "subjects", ecrDoc.id));
-          if (subjMeta.exists()) subjName = subjMeta.data().displayName || ecrDoc.id;
-        } catch {}
-        APPROVED_SUBJECTS.push({ code: ecrDoc.id, name: subjName });
-      }
-    }
-
-    if (APPROVED_SUBJECTS.length === 0) {
-       alert("No approved ECRs found for " + term + " yet.");
-       btn.textContent = 'Load Report Card';
-       return;
-    }
-
-    // 2. Fetch Scores for this student
-    ALL_SCORES = {};
-    for (const subj of APPROVED_SUBJECTS) {
-      const scSnap = await getDoc(doc(db, "classes", classId, "ecr", subj.code, "terms", term, "scores", studentId));
-      if (scSnap.exists()) {
-        ALL_SCORES[subj.code] = scSnap.data();
-      }
-    }
-
-        // ✅ 3. FETCH ATTENDANCE DATA FOR THE SELECTED TERM
-    const monthNames = ["jan", "feb", "mar", "apr", "may", "jun", "jul", "aug", "sep", "oct", "nov", "dec"];
-    let attendanceTotals = { present: 0, absent: 0, schoolDays: 0 };
-    let monthlyData = {};
-
-    try {
-      const attSnap = await getDocs(collection(db, "classes", classId, "attendance"));
-      attSnap.forEach(d => {
-        const data = d.data();
-        // Check if this record is for the current term
-        if (String(data.term) === String(term)) {
-          // Get the month (0-11)
-          const monthIdx = new Date(data.date).getMonth();
-          const monthKey = monthNames[monthIdx];
-
-          if (!monthlyData[monthKey]) monthlyData[monthKey] = { sd: 0, pr: 0, ab: 0 };
+        // 1. Fetch Approved Subjects for this term
+        const ecrSnap = await getDocs(collection(db, "classes", classId, "ecr"));
+        APPROVED_SUBJECTS = [];
+        
+        for (const ecrDoc of ecrSnap.docs) {
+          const ecrData = ecrDoc.data();
+          const termStatus = ecrData.terms?.[term]?.status;
           
-          monthlyData[monthKey].sd++;
-          attendanceTotals.schoolDays++;
-
-          if (data.records && data.records[studentId]) {
-            const status = data.records[studentId].status;
-            if (status === "Present" || status === "Late") {
-              monthlyData[monthKey].pr++;
-              attendanceTotals.present++;
-            } else if (status === "Absent") {
-              monthlyData[monthKey].ab++;
-              attendanceTotals.absent++;
-            }
+          if (termStatus === "approved") {
+            let subjName = ecrDoc.id;
+            try {
+              const subjMeta = await getDoc(doc(db, "subjects", ecrDoc.id));
+              if (subjMeta.exists()) subjName = subjMeta.data().displayName || ecrDoc.id;
+            } catch {}
+            APPROVED_SUBJECTS.push({ code: ecrDoc.id, name: subjName });
           }
         }
-      });
-    } catch (err) {
-      console.warn("Could not load attendance data", err);
-    }
 
-    // ✅ 4. POPULATE ATTENDANCE TOTALS ON THE SF9
-    // Totals
-    if (document.getElementById("totalSchoolDays")) document.getElementById("totalSchoolDays").textContent = attendanceTotals.schoolDays;
-    if (document.getElementById("totalPresentDays")) document.getElementById("totalPresentDays").textContent = attendanceTotals.present;
-    if (document.getElementById("totalAbsentDays")) document.getElementById("totalAbsentDays").textContent = attendanceTotals.absent;
+        if (APPROVED_SUBJECTS.length === 0) {
+           alert("No approved ECRs found for " + term + " yet.");
+           btn.textContent = origText;
+           btn.disabled = false;
+           return;
+        }
 
-    // Monthly breakdown
-    monthNames.forEach(m => {
-      const mData = monthlyData[m] || { sd: 0, pr: 0, ab: 0 };
-      if (document.getElementById(`sd-${m}`)) document.getElementById(`sd-${m}`).textContent = mData.sd;
-      if (document.getElementById(`pr-${m}`)) document.getElementById(`pr-${m}`).textContent = mData.pr;
-      if (document.getElementById(`ab-${m}`)) document.getElementById(`ab-${m}`).textContent = mData.ab;
-    });
+        // 2. Fetch Scores — WITH school-year guard so old SY data is ignored
+        ALL_SCORES = {};
+        for (const subj of APPROVED_SUBJECTS) {
+          const scSnap = await getDoc(doc(db, "classes", classId, "ecr", subj.code, "terms", term, "scores", studentId));
+          if (scSnap.exists()) {
+            const scData = scSnap.data();
+            // If doc is tagged with a school year that doesn't match, skip
+            if (scData.schoolYear && scData.schoolYear !== currentSY) {
+              // Different year — do not use
+              continue;
+            }
+            ALL_SCORES[subj.code] = scData;
+          }
+        }
 
-    // 5. Populate Header Info
-    document.getElementById("infoName").textContent = student.fullName || "Unknown";
-    document.getElementById("infoLrn").textContent = student.lrn || "N/A";
-    document.getElementById("infoSex").textContent = student.sex === "M" ? "Male" : student.sex === "F" ? "Female" : "-";
-    
-    const gradeMatch = (clsData.gradeLevel || "").match(/\d+/);
-    document.getElementById("infoGrade").textContent = gradeMatch ? gradeMatch[0] : (clsData.gradeLevel || "-");
-    document.getElementById("infoSection").textContent = clsData.section || "-";
-    
-    const termNames = { "1": "Term 1", "2": "Term 2", "3": "Term 3" };
-    document.getElementById("infoTerm").textContent = termNames[term];
-    document.getElementById("displayTermName").textContent = termNames[term];
-    
-    document.getElementById("generatedDate").textContent = new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+        // 3. Fetch Attendance for the selected term
+        const monthNames = ["jan", "feb", "mar", "apr", "may", "jun", "jul", "aug", "sep", "oct", "nov", "dec"];
+        let attendanceTotals = { present: 0, absent: 0, schoolDays: 0 };
+        let monthlyData = {};
 
-    // 6. Populate Grades Table
-    let tbody = document.getElementById("gradesTableBody");
-    tbody.innerHTML = "";
-    
-    let totalGrades = 0;
-    let validSubjects = 0;
+        try {
+          const attSnap = await getDocs(collection(db, "classes", classId, "attendance"));
+          attSnap.forEach(d => {
+            const data = d.data();
+            if (String(data.term) !== String(term)) return;
+            // Year guard on attendance too
+            if (data.schoolYear && data.schoolYear !== currentSY) return;
 
-    APPROVED_SUBJECTS.forEach(subj => {
-      const scoreData = ALL_SCORES[subj.code];
-      let currentTermGrade = "-";
-      let finalRating = "-";
-      let remarks = "-";
+            const monthIdx = new Date(data.date).getMonth();
+            const monthKey = monthNames[monthIdx];
 
-      if (scoreData && scoreData.computed && !isNaN(scoreData.computed.termGrade)) {
-        const gradeNum = Number(scoreData.computed.termGrade);
-        currentTermGrade = gradeNum;
-        finalRating = gradeNum;
-        remarks = gradeNum >= 75 ? "Passed" : "Failed";
+            if (!monthlyData[monthKey]) monthlyData[monthKey] = { sd: 0, pr: 0, ab: 0 };
+            
+            monthlyData[monthKey].sd++;
+            attendanceTotals.schoolDays++;
 
-        totalGrades += gradeNum;
-        validSubjects++;
+            if (data.records && data.records[studentId]) {
+              const status = data.records[studentId].status;
+              if (status === "Present" || status === "Late") {
+                monthlyData[monthKey].pr++;
+                attendanceTotals.present++;
+              } else if (status === "Absent") {
+                monthlyData[monthKey].ab++;
+                attendanceTotals.absent++;
+              }
+            }
+          });
+        } catch (err) {
+          console.warn("Could not load attendance data", err);
+        }
+
+        // 4. Populate attendance
+        document.getElementById("totalSchoolDays").textContent = attendanceTotals.schoolDays;
+        document.getElementById("totalPresentDays").textContent = attendanceTotals.present;
+        document.getElementById("totalAbsentDays").textContent = attendanceTotals.absent;
+
+        monthNames.forEach(m => {
+          const mData = monthlyData[m] || { sd: 0, pr: 0, ab: 0 };
+          const sdEl = document.getElementById(`sd-${m}`);
+          const prEl = document.getElementById(`pr-${m}`);
+          const abEl = document.getElementById(`ab-${m}`);
+          if (sdEl) sdEl.textContent = mData.sd;
+          if (prEl) prEl.textContent = mData.pr;
+          if (abEl) abEl.textContent = mData.ab;
+        });
+
+        // 5. Populate header — NOW DYNAMIC (falls back to defaults for SY 2026-2027)
+        document.getElementById("infoName").textContent = student.fullName || "Unknown";
+        document.getElementById("infoLrn").textContent = student.lrn || "N/A";
+        document.getElementById("infoSex").textContent = student.sex === "M" ? "Male" : student.sex === "F" ? "Female" : "-";
+        document.getElementById("infoAge").textContent = computeAge(student.dob);
+        
+        const gradeMatch = (clsData.gradeLevel || "").match(/\d+/);
+        document.getElementById("infoGrade").textContent = gradeMatch ? gradeMatch[0] : (clsData.gradeLevel || "-");
+        document.getElementById("infoSection").textContent = clsData.section || "-";
+        document.getElementById("infoSchoolYear").textContent = currentSY;
+        
+        const termNames = { "1": "Term 1", "2": "Term 2", "3": "Term 3" };
+        document.getElementById("infoTerm").textContent = termNames[term];
+        document.getElementById("displayTermName").textContent = termNames[term];
+
+        // ---- School identity (dynamic, from config/school) ----
+        document.getElementById("infoRegion").textContent = school.region;
+        document.getElementById("infoDivision").textContent = school.division;
+        document.getElementById("infoSchoolName").textContent = school.schoolName;
+        document.getElementById("infoDistrictLine").innerHTML =
+          `District: ${school.district}<br>${school.addressLine}`;
+
+        // ---- Signatures (dynamic, from config/school + class) ----
+        const principal = school.principalName || DEFAULT_SCHOOL.principalName;
+        const adviser   = clsData.adviserName || "—";
+
+        // Bottom signature block
+        document.getElementById("infoPrincipal").textContent = principal;
+        document.getElementById("infoAdviser").textContent = adviser;
+
+        // Certificate of Transfer block
+        document.getElementById("infoPrincipalCert").textContent = principal;
+        document.getElementById("infoAdviserCert").textContent = adviser;
+        
+        document.getElementById("generatedDate").textContent =
+          new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+
+        // 6. Populate grades table
+        const tbody = document.getElementById("gradesTableBody");
+        tbody.innerHTML = "";
+        
+        let totalGrades = 0;
+        let validSubjects = 0;
+
+        APPROVED_SUBJECTS.forEach(subj => {
+          const scoreData = ALL_SCORES[subj.code];
+          let currentTermGrade = "-";
+          let finalRating = "-";
+          let remarks = "-";
+
+          if (scoreData && scoreData.computed && !isNaN(scoreData.computed.termGrade)) {
+            const gradeNum = Number(scoreData.computed.termGrade);
+            currentTermGrade = gradeNum;
+            finalRating = gradeNum;
+            remarks = gradeNum >= 75 ? "Passed" : "Failed";
+
+            totalGrades += gradeNum;
+            validSubjects++;
+          }
+
+          let t1 = "-", t2 = "-", t3 = "-";
+          if (term === "1") t1 = currentTermGrade;
+          if (term === "2") t2 = currentTermGrade;
+          if (term === "3") t3 = currentTermGrade;
+
+          tbody.innerHTML += `
+            <tr>
+              <td class="sn">${subj.name}</td>
+              <td>${t1}</td>
+              <td>${t2}</td>
+              <td>${t3}</td>
+              <td class="text-bold">${finalRating}</td>
+              <td>${remarks}</td>
+            </tr>
+          `;
+        });
+
+        // 7. General Average
+        if (validSubjects > 0) {
+          const genAvg = Math.round(totalGrades / validSubjects);
+          tbody.innerHTML += `
+            <tr>
+              <td class="ga" colspan="4" style="text-align:right; padding-right:10px;">GENERAL AVERAGE</td>
+              <td class="ga">${genAvg}%</td>
+              <td class="ga">${genAvg >= 75 ? 'Passed' : 'Failed'}</td>
+            </tr>
+          `;
+        } else {
+          tbody.innerHTML += `
+            <tr>
+              <td class="ga" colspan="4" style="text-align:right; padding-right:10px;">GENERAL AVERAGE</td>
+              <td class="ga">0%</td>
+              <td class="ga">Failed</td>
+            </tr>
+          `;
+        }
+
+        document.getElementById("reportCard").style.display = "block";
+        document.getElementById("btnPrint").disabled = false;
+
+      } catch (err) {
+        console.error(err);
+        alert("Error generating SF9: " + err.message);
+      } finally {
+        btn.textContent = origText;
+        btn.disabled = false;
       }
-
-      let t1 = "-", t2 = "-", t3 = "-";
-      if (term === "1") t1 = currentTermGrade;
-      if (term === "2") t2 = currentTermGrade;
-      if (term === "3") t3 = currentTermGrade;
-
-      tbody.innerHTML += `
-        <tr>
-          <td class="sn">${subj.name}</td>
-          <td>${t1}</td>
-          <td>${t2}</td>
-          <td>${t3}</td>
-          <td class="text-bold">${finalRating}</td>
-          <td>${remarks}</td>
-        </tr>
-      `;
-    });
-
-    // 7. General Average
-    if (validSubjects > 0) {
-      const genAvg = Math.round(totalGrades / validSubjects);
-      tbody.innerHTML += `
-        <tr>
-          <td class="ga" colspan="4" style="text-align:right; padding-right:10px;">GENERAL AVERAGE</td>
-          <td class="ga">${genAvg}%</td>
-          <td class="ga">${genAvg >= 75 ? 'Passed' : 'Failed'}</td>
-        </tr>
-      `;
-    } else {
-      tbody.innerHTML += `
-        <tr>
-          <td class="ga" colspan="4" style="text-align:right; padding-right:10px;">GENERAL AVERAGE</td>
-          <td class="ga">0%</td>
-          <td class="ga">Failed</td>
-        </tr>
-      `;
-    }
-
-    document.getElementById("reportCard").style.display = "block";
-    document.getElementById("btnPrint").disabled = false;
-
-  } catch (err) {
-    console.error(err);
-    alert("Error generating SF9: " + err.message);
-  } finally {
-    btn.textContent = 'Load Report Card';
-  }
-};
+    };
   </script>
 </body>
 </html>
