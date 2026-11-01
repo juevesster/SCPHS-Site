@@ -3,303 +3,550 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>About the Guidance Center – SCPHS</title>
-  <meta name="description" content="SCPHS Guidance Center – vision, mission, goals, and the seven guidance services." />
+  <title>Guidance Center – SCPHS</title>
+  <meta name="description" content="SCPHS Guidance Center – learner support, counseling, referrals, and programs." />
   <link rel="stylesheet" href="../../assets/css/styles.css" />
+  
   <style>
-    /* --- Shared Guidance UI (mirrors index.html) --- */
+    /* ============================================================
+       MODERN GUIDANCE CENTER UI
+       ============================================================ */
     :root {
+      --gc-primary: #0f4c81;
+      --gc-primary-hover: #0a365d;
+      --gc-bg-soft: #f8fafc;
+      --gc-border: #e2e8f0;
+      --gc-text-main: #1e293b;
+      --gc-text-muted: #64748b;
       --gc-radius: 12px;
-      --gc-shadow: 0 1px 3px rgba(0,0,0,.06), 0 1px 2px rgba(0,0,0,.04);
-      --gc-shadow-hover: 0 10px 24px rgba(0,0,0,.08);
-      --gc-transition: .2s ease;
+      --gc-shadow-sm: 0 1px 3px rgba(0,0,0,0.05), 0 1px 2px rgba(0,0,0,0.03);
+      --gc-shadow-md: 0 4px 6px -1px rgba(0,0,0,0.05), 0 2px 4px -1px rgba(0,0,0,0.03);
+      --gc-shadow-hover: 0 10px 15px -3px rgba(0,0,0,0.08), 0 4px 6px -2px rgba(0,0,0,0.04);
+      --gc-transition: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
     }
-    .gc-card-grid {
+
+    /* Layout */
+    .gc-layout-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(min(280px, 100%), 1fr));
-      gap: 1.25rem;
+      grid-template-columns: 1fr 340px;
+      gap: 2rem;
+      align-items: start;
+      margin-top: 1.5rem;
+    }
+    @media (max-width: 900px) {
+      .gc-layout-grid {
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+      }
+    }
+
+    /* Top Navigation & Breadcrumbs */
+    .gc-top-nav {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1rem 0;
+      border-bottom: 1px solid var(--gc-border);
+      margin-bottom: 1.5rem;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+    .gc-btn-back {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      background: var(--gc-bg-soft);
+      color: var(--gc-text-main);
+      padding: 0.5rem 1rem;
+      border-radius: 8px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      text-decoration: none;
+      border: 1px solid var(--gc-border);
+      transition: all var(--gc-transition);
+    }
+    .gc-btn-back:hover {
+      background: #e2e8f0;
+      transform: translateX(-2px);
+    }
+    .gc-btn-primary {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      background: var(--gc-primary);
+      color: #fff;
+      padding: 0.5rem 1.25rem;
+      border-radius: 8px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      text-decoration: none;
+      transition: all var(--gc-transition);
+    }
+    .gc-btn-primary:hover {
+      background: var(--gc-primary-hover);
+      box-shadow: var(--gc-shadow-md);
+    }
+
+    /* Hero Banner */
+    .gc-hero {
+      background: linear-gradient(135deg, #0f4c81 0%, #1e3a8a 100%);
+      color: #fff;
+      border-radius: var(--gc-radius);
+      padding: 2.5rem 2rem;
+      margin-bottom: 2rem;
+      box-shadow: var(--gc-shadow-md);
+      position: relative;
+      overflow: hidden;
+    }
+    .gc-hero::after {
+      content: "🏫";
+      position: absolute;
+      right: -10px;
+      bottom: -20px;
+      font-size: 10rem;
+      opacity: 0.1;
+      pointer-events: none;
+    }
+    .gc-hero h1 {
+      margin: 0 0 0.5rem;
+      font-size: 2.25rem;
+      letter-spacing: -0.02em;
+    }
+    .gc-hero p {
+      margin: 0;
+      font-size: 1.1rem;
+      opacity: 0.9;
+      max-width: 600px;
+    }
+
+    /* Content Cards */
+    .gc-section-title {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: var(--gc-text-main);
+      margin: 0 0 1rem;
+      padding-bottom: 0.5rem;
+      border-bottom: 2px solid var(--gc-border);
     }
     .gc-card {
       background: #fff;
-      border: 1px solid var(--line, #e5e7eb);
+      border: 1px solid var(--gc-border);
       border-radius: var(--gc-radius);
-      padding: 1.25rem 1.25rem 1.5rem;
-      box-shadow: var(--gc-shadow);
-      transition: box-shadow var(--gc-transition), transform var(--gc-transition);
-      display: flex;
-      flex-direction: column;
+      padding: 1.5rem;
+      box-shadow: var(--gc-shadow-sm);
+      transition: box-shadow var(--gc-transition);
     }
     .gc-card:hover {
       box-shadow: var(--gc-shadow-hover);
-      transform: translateY(-2px);
     }
-    .gc-card h3 {
-      margin: 0 0 .75rem;
-      font-size: 1.05rem;
-      letter-spacing: -.01em;
-    }
-    .gc-card p, .gc-card li {
-      font-size: .95rem;
-      line-height: 1.6;
-      color: #374151;
-      margin: 0;
-    }
-    .gc-card p + p { margin-top: .6rem; }
-    .gc-section-title {
-      font-size: 1.15rem;
-      font-weight: 700;
-      letter-spacing: -.01em;
-      margin: 0 0 1rem;
-      padding-bottom: .5rem;
-      border-bottom: 2px solid var(--line, #e5e7eb);
-      scroll-margin-top: 90px;
-    }
-    .gc-badge-soft {
-      display: inline-block;
-      font-size: .75rem;
-      font-weight: 600;
-      letter-spacing: .04em;
-      text-transform: uppercase;
-      padding: .25rem .6rem;
-      border-radius: 999px;
-      background: #eff6ff;
-      color: #1e40af;
-      margin-bottom: .75rem;
-    }
-    .gc-goal-list {
-      counter-reset: goal;
-      list-style: none;
-      padding: 0;
-      margin: 0;
+    .gc-info-grid {
       display: grid;
-      gap: .75rem;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 1.25rem;
+      margin-bottom: 2rem;
     }
-    .gc-goal-list li {
-      counter-increment: goal;
-      position: relative;
-      padding: .85rem 1rem .85rem 3rem;
-      background: #fff;
-      border: 1px solid var(--line, #e5e7eb);
-      border-radius: var(--gc-radius);
-      box-shadow: var(--gc-shadow);
-      font-size: .95rem;
-      line-height: 1.55;
-      color: #374151;
+    .gc-info-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 1rem;
     }
-    .gc-goal-list li::before {
-      content: counter(goal);
-      position: absolute;
-      left: .85rem;
-      top: .85rem;
-      width: 1.6rem;
-      height: 1.6rem;
-      display: grid;
-      place-items: center;
-      border-radius: 999px;
-      background: #eff6ff;
-      color: #1e40af;
-      font-weight: 700;
-      font-size: .8rem;
-    }
-    .gc-toc {
-      position: sticky;
-      top: 1rem;
-      align-self: start;
-      background: #f9fafb;
-      border: 1px solid var(--line, #e5e7eb);
-      border-radius: var(--gc-radius);
-      padding: 1rem 1.1rem;
-      font-size: .9rem;
-    }
-    .gc-toc h2 {
-      font-size: .8rem;
-      letter-spacing: .06em;
-      text-transform: uppercase;
-      color: #6b7280;
-      margin: 0 0 .6rem;
-    }
-    .gc-toc ul {
-      list-style: none;
-      margin: 0;
-      padding: 0;
-      display: grid;
-      gap: .35rem;
-    }
-    .gc-toc a {
-      color: #1f2937;
-      text-decoration: none;
-      padding: .25rem .4rem;
-      border-radius: 6px;
-      display: block;
-      transition: background var(--gc-transition);
-    }
-    .gc-toc a:hover { background: #e0ecff; color: #1d4ed8; }
-    .gc-layout {
-      display: grid;
-      grid-template-columns: 240px 1fr;
-      gap: 2rem;
-      align-items: start;
-    }
-    @media (max-width: 860px) {
-      .gc-layout { grid-template-columns: 1fr; }
-      .gc-toc { position: static; order: -1; }
-    }
-    .gc-back-link {
-      display: inline-flex;
+    .gc-info-icon {
+      background: var(--gc-bg-soft);
+      color: var(--gc-primary);
+      width: 42px;
+      height: 42px;
+      border-radius: 10px;
+      display: flex;
       align-items: center;
-      gap: .4rem;
-      font-size: .9rem;
-      font-weight: 600;
-      color: #1d4ed8;
-      text-decoration: none;
-      padding: .4rem .75rem;
-      border-radius: 999px;
-      background: #eff6ff;
-      transition: background var(--gc-transition);
+      justify-content: center;
+      font-size: 1.25rem;
+      flex-shrink: 0;
     }
-    .gc-back-link:hover { background: #dbeafe; }
-    @media (max-width: 480px) {
-      .gc-card { padding: 1rem; }
+    .gc-info-text h4 {
+      margin: 0 0 0.25rem;
+      font-size: 0.95rem;
+      color: var(--gc-text-muted);
+      font-weight: 600;
+    }
+    .gc-info-text p, .gc-info-text a {
+      margin: 0;
+      font-size: 1rem;
+      color: var(--gc-text-main);
+      font-weight: 500;
+      text-decoration: none;
+    }
+    .gc-info-text a:hover { color: var(--gc-primary); text-decoration: underline; }
+
+    /* Service Cards */
+    .gc-service-card {
+      background: #fff;
+      border: 1px solid var(--gc-border);
+      border-radius: var(--gc-radius);
+      padding: 1.25rem;
+      box-shadow: var(--gc-shadow-sm);
+      transition: transform var(--gc-transition), box-shadow var(--gc-transition);
+      display: flex;
+      flex-direction: column;
+    }
+    .gc-service-card:hover {
+      transform: translateY(-3px);
+      box-shadow: var(--gc-shadow-hover);
+      border-color: #cbd5e1;
+    }
+    .gc-service-card h3 {
+      margin: 0 0 0.5rem;
+      font-size: 1.1rem;
+      color: var(--gc-text-main);
+    }
+    .gc-service-card p {
+      margin: 0;
+      font-size: 0.9rem;
+      color: var(--gc-text-muted);
+      line-height: 1.5;
     }
 
-    
+    /* ============================================================
+       SIDEBAR & ACCORDION (Latest Design)
+       ============================================================ */
+    .gc-sidebar {
+      position: sticky;
+      top: 1.5rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+    }
+    .gc-widget {
+      background: #fff;
+      border: 1px solid var(--gc-border);
+      border-radius: var(--gc-radius);
+      padding: 1.25rem;
+      box-shadow: var(--gc-shadow-sm);
+    }
+    .gc-widget h3 {
+      margin: 0 0 1rem;
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--gc-text-main);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    /* Accordion Styling */
+    .gc-accordion {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+    .gc-acc-item {
+      border: 1px solid var(--gc-border);
+      border-radius: 8px;
+      overflow: hidden;
+      background: #fff;
+      transition: all var(--gc-transition);
+    }
+    .gc-acc-item:hover {
+      border-color: #cbd5e1;
+    }
+    .gc-acc-header {
+      width: 100%;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: var(--gc-bg-soft);
+      padding: 0.85rem 1rem;
+      border: none;
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: var(--gc-text-main);
+      cursor: pointer;
+      text-align: left;
+      transition: background var(--gc-transition);
+    }
+    .gc-acc-header:hover {
+      background: #f1f5f9;
+    }
+    .gc-acc-icon {
+      font-size: 0.7rem;
+      color: var(--gc-text-muted);
+      transition: transform 0.3s ease;
+    }
+    .gc-acc-item.active .gc-acc-header {
+      background: #eff6ff;
+      color: var(--gc-primary);
+      border-bottom: 1px solid var(--gc-border);
+    }
+    .gc-acc-item.active .gc-acc-icon {
+      transform: rotate(180deg);
+      color: var(--gc-primary);
+    }
+    .gc-acc-content {
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.3s ease-out;
+      background: #fff;
+    }
+    .gc-acc-content p {
+      margin: 0;
+      padding: 1rem;
+      font-size: 0.85rem;
+      color: var(--gc-text-muted);
+      line-height: 1.6;
+    }
+
+    /* Quick Links in Sidebar */
+    .gc-quick-links {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      display: grid;
+      gap: 0.5rem;
+    }
+    .gc-quick-links a {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 0.75rem;
+      background: var(--gc-bg-soft);
+      border-radius: 8px;
+      color: var(--gc-text-main);
+      font-size: 0.9rem;
+      font-weight: 500;
+      text-decoration: none;
+      transition: all var(--gc-transition);
+      border: 1px solid transparent;
+    }
+    .gc-quick-links a:hover {
+      background: #fff;
+      border-color: var(--gc-border);
+      box-shadow: var(--gc-shadow-sm);
+      color: var(--gc-primary);
+      transform: translateX(2px);
+    }
   </style>
 </head>
 <body>
 
-  <!-- PAGE HERO -->
-  <div class="page-hero">
-    <div class="wrap">
-      <span class="badge">Guidance office</span>
-      <h1>About the Guidance Center</h1>
-      <p class="meta">Vision, mission, goals, and the seven guidance services of SCPHS.</p>
+  <!-- Top Navigation / Breadcrumbs -->
+  <div class="wrap">
+    <div class="gc-top-nav">
+      <nav aria-label="Breadcrumb" style="font-size: 0.9rem; color: var(--gc-text-muted);">
+        <a href="../../index.html" style="color: var(--gc-primary); text-decoration: none;">Home</a>
+        <span style="margin: 0 0.5rem;">/</span>
+        <a href="../../index.html" style="color: var(--gc-primary); text-decoration: none;">Support Services</a>
+        <span style="margin: 0 0.5rem;">/</span>
+        <strong>Guidance Center</strong>
+      </nav>
+      <div style="display: flex; gap: 0.75rem; flex-wrap: wrap;">
+        <a href="../../index.html" class="gc-btn-back">
+          <span>←</span> Back to Main Portal
+        </a>
+        <a href="about.html" class="gc-btn-primary">
+          Read Vision & Mission <span>→</span>
+        </a>
+      </div>
     </div>
   </div>
 
-  <!-- Breadcrumb -->
-  <header class="mini-header">
-    <div class="wrap" style="display:flex; align-items:center; gap:12px; padding:10px 0; flex-wrap:wrap;">
-      <a href="../../index.html" class="brand">SCPHS</a>
-      <nav aria-label="Breadcrumb" class="crumbs">
-        <a href="../../index.html">Home</a>
-        /
-        <a href="../../index.html">Support Services</a>
-        /
-        <a href="index.html">Guidance Center</a>
-        /
-        <strong>About</strong>
-      </nav>
-    </div>
-  </header>
-
-  <main class="wrap" style="margin-top:16px">
-    <div style="margin-bottom:1rem;">
-      <a class="gc-back-link" href="index.html">← Back to Guidance Center</a>
+  <main class="wrap" style="margin-bottom: 3rem;">
+    
+    <!-- Hero Banner -->
+    <div class="gc-hero">
+      <h1>Guidance Center</h1>
+      <p>Fostering holistic student development through compassionate counseling, career guidance, and comprehensive support programs.</p>
     </div>
 
-    <div class="gc-layout">
-
-      <!-- Sticky TOC -->
-      <aside class="gc-toc" aria-label="On this page">
-        <h2>On this page</h2>
-        <ul>
-          <li><a href="#vision">Vision</a></li>
-          <li><a href="#mission">Mission</a></li>
-          <li><a href="#goals">Goals &amp; Objectives</a></li>
-          <li><a href="#services">Guidance Services</a></li>
-        </ul>
-      </aside>
-
-      <!-- Main content -->
+    <div class="gc-layout-grid">
+      
+      <!-- LEFT COLUMN: Main Content -->
       <div>
-        <!-- Vision -->
-        <section id="vision" aria-label="Vision" style="margin-bottom:2rem;">
-          <h2 class="gc-section-title">Vision</h2>
-          <div class="gc-card">
-            <p>The Pasay City North High School Guidance Center envisions itself as an integral unit of the school system that will promote the welfare of students and meet their needs for optimum development as global citizens.</p>
+        <!-- Quick Info -->
+        <div class="gc-info-grid">
+          <div class="gc-card gc-info-item">
+            <div class="gc-info-icon">📍</div>
+            <div class="gc-info-text">
+              <h4>Location</h4>
+              <p>Main Building, Room GC-1</p>
+            </div>
           </div>
-        </section>
-
-        <!-- Mission -->
-        <section id="mission" aria-label="Mission" style="margin-bottom:2rem;">
-          <h2 class="gc-section-title">Mission</h2>
-          <div class="gc-card">
-            <p>The Guidance Center is committed to play a significant role in the holistic development of students by providing them functional programs and services in terms of academic, personal, social, moral, career, and emotional aspects of their life that will mold them to become self-directed, value-oriented, productive and globally competent individuals.</p>
+          <div class="gc-card gc-info-item">
+            <div class="gc-info-icon">📞</div>
+            <div class="gc-info-text">
+              <h4>Contact</h4>
+              <p>+63 967-8848989</p>
+            </div>
           </div>
-        </section>
-
-        <!-- Goals -->
-        <section id="goals" aria-label="Goals and objectives" style="margin-bottom:2rem;">
-          <h2 class="gc-section-title">Goals &amp; Objectives</h2>
-          <p style="font-size:.95rem; color:#374151; margin:0 0 1rem;">It hopes to provide a guidance and counseling program that will assist students maximize their potentials. Specifically, it aims to:</p>
-          <ol class="gc-goal-list">
-            <li>Enhance and deepen the students’ understanding of their capabilities, interests, values and potentials that will make them fully functioning individuals.</li>
-            <li>Help students acquire necessary skills that will lead them toward self-awareness, self-acceptance and self-direction.</li>
-            <li>Provide students useful information needed for better human relation and adjustment.</li>
-            <li>Assist students in career planning, career exploration and goal setting to prepare them in the world of work.</li>
-            <li>Address immediate concerns of students in the different aspects of their life, namely: personal, moral, social, emotional, mental, etc.</li>
-          </ol>
-        </section>
-
-        <!-- Services -->
-        <section id="services" aria-label="Guidance services" style="margin-bottom:1.5rem;">
-          <h2 class="gc-section-title">Guidance Services</h2>
-          <div class="gc-card-grid">
-
-            <article class="gc-card">
-              <span class="gc-badge-soft">A</span>
-              <h3>Counseling</h3>
-              <p>It is the heart of the guidance program. It enables students develop their abilities in the areas of personal and social adjustment as well as academic planning and career decision-making. Parents and teachers are also extended counseling service especially in dealing with growing adolescents.</p>
-            </article>
-
-            <article class="gc-card">
-              <span class="gc-badge-soft">B</span>
-              <h3>Inventory</h3>
-              <p>It is designed to gather all reliable data, information and records, and assemble and compile these materials for their functional use.</p>
-            </article>
-
-            <article class="gc-card">
-              <span class="gc-badge-soft">C</span>
-              <h3>Information</h3>
-              <p>Materials are made available to aid students in making appropriate choices, plans and decisions.</p>
-            </article>
-
-            <article class="gc-card">
-              <span class="gc-badge-soft">D</span>
-              <h3>Follow-up</h3>
-              <p>This guidance service assists students determine the areas of their life that need further adjustment.</p>
-            </article>
-
-            <article class="gc-card">
-              <span class="gc-badge-soft">E</span>
-              <h3>Placement</h3>
-              <p>Placement service will aid students in making choices consistent with their abilities, aptitudes, interests and skills.</p>
-            </article>
-
-            <article class="gc-card">
-              <span class="gc-badge-soft">F</span>
-              <h3>Career</h3>
-              <p>This program can help prepare students develop their full potential through self-awareness, career planning and exploration, decision-making and goal setting that could ultimately lead them into a meaningful and productive career choice.</p>
-            </article>
-
-            <article class="gc-card">
-              <span class="gc-badge-soft">G</span>
-              <h3>Evaluation</h3>
-              <p>This will give students a realistic appraisal of their strengths and weaknesses, abilities, interests and type of personality. It also serves as a determinant of the effectiveness of the implementation program.</p>
-            </article>
-
+          <div class="gc-card gc-info-item">
+            <div class="gc-info-icon">✉️</div>
+            <div class="gc-info-text">
+              <h4>Email Us</h4>
+              <a href="mailto:300648@deped.gov.ph">300648@deped.gov.ph</a>
+            </div>
           </div>
-        </section>
+          <div class="gc-card gc-info-item">
+            <div class="gc-info-icon">🕒</div>
+            <div class="gc-info-text">
+              <h4>Office Hours</h4>
+              <p>Mon–Fri: 8:00 AM – 5:00 PM</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Core Services -->
+        <h2 class="gc-section-title">Our Core Services</h2>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.25rem; margin-bottom: 2rem;">
+          <div class="gc-service-card">
+            <div style="font-size: 1.5rem; margin-bottom: 0.5rem;">🤝</div>
+            <h3>Individual & Group Counseling</h3>
+            <p>Confidential sessions addressing personal, academic, and social concerns to promote mental well-being.</p>
+          </div>
+          <div class="gc-service-card">
+            <div style="font-size: 1.5rem; margin-bottom: 0.5rem;">🎯</div>
+            <h3>Career Guidance</h3>
+            <p>Career orientation, life skills programs, and pathways planning for Junior and Senior High School learners.</p>
+          </div>
+          <div class="gc-service-card">
+            <div style="font-size: 1.5rem; margin-bottom: 0.5rem;">🔗</div>
+            <h3>Referrals & Coordination</h3>
+            <p>Coordination with parents, guardians, teachers, and external professionals for comprehensive learner support.</p>
+          </div>
+          <div class="gc-service-card">
+            <div style="font-size: 1.5rem; margin-bottom: 0.5rem;">📋</div>
+            <h3>Case Management</h3>
+            <p>Confidential documentation and follow-through for student cases requiring sustained attention.</p>
+          </div>
+        </div>
+
+        <!-- Downloads -->
+        <h2 class="gc-section-title">Resources & Downloads</h2>
+        <div class="gc-card" style="margin-bottom: 2rem;">
+          <ul style="list-style: none; padding: 0; margin: 0; display: grid; gap: 1rem;">
+            <li style="display: flex; align-items: center; justify-content: space-between; padding-bottom: 1rem; border-bottom: 1px solid var(--gc-border);">
+              <div style="display: flex; align-items: center; gap: 0.75rem;">
+                <span style="font-size: 1.5rem;">📄</span>
+                <div>
+                  <strong style="display: block; color: var(--gc-text-main);">Guidance Referral Form</strong>
+                  <span style="font-size: 0.85rem; color: var(--gc-text-muted);">PDF Document • Used for student referrals</span>
+                </div>
+              </div>
+              <a href="../assets/docs/guidance-referral-form.pdf" target="_blank" class="gc-btn-back" style="padding: 0.4rem 0.75rem; font-size: 0.85rem;">Download</a>
+            </li>
+            <li style="display: flex; align-items: center; justify-content: space-between;">
+              <div style="display: flex; align-items: center; gap: 0.75rem;">
+                <span style="font-size: 1.5rem;">📘</span>
+                <div>
+                  <strong style="display: block; color: var(--gc-text-main);">Programs & Services Brochure</strong>
+                  <span style="font-size: 0.85rem; color: var(--gc-text-muted);">PDF Document • Overview of guidance programs</span>
+                </div>
+              </div>
+              <a href="../assets/docs/guidance-programs.pdf" target="_blank" class="gc-btn-back" style="padding: 0.4rem 0.75rem; font-size: 0.85rem;">Download</a>
+            </li>
+          </ul>
+        </div>
       </div>
+
+      <!-- RIGHT COLUMN: Sidebar -->
+      <aside class="gc-sidebar">
+        
+        <!-- Quick Links Widget -->
+        <div class="gc-widget">
+          <h3><span>🚀</span> Quick Links</h3>
+          <ul class="gc-quick-links">
+            <li><a href="../../index.html"><span>🏠</span> Main School Portal</a></li>
+            <li><a href="about.html"><span>📖</span> Guidance Vision & Mission</a></li>
+            <li><a href="../clinic/index.html"><span>🏥</span> School Clinic</a></li>
+            <li><a href="../registrar/index.html"><span>📜</span> Registrar Office</a></li>
+          </ul>
+        </div>
+
+        <!-- Accordion Widget: The 7 Services -->
+        <div class="gc-widget">
+          <h3><span>📂</span> Guidance Services</h3>
+          <div class="gc-accordion">
+            
+            <!-- Service A -->
+            <div class="gc-acc-item active">
+              <button class="gc-acc-header" type="button">
+                A. Counseling <span class="gc-acc-icon">▼</span>
+              </button>
+              <div class="gc-acc-content" style="max-height: 200px;">
+                <p>The heart of the guidance program. It enables students to develop their abilities in personal and social adjustment, as well as academic planning and career decision-making.</p>
+              </div>
+            </div>
+
+            <!-- Service B -->
+            <div class="gc-acc-item">
+              <button class="gc-acc-header" type="button">
+                B. Inventory <span class="gc-acc-icon">▼</span>
+              </button>
+              <div class="gc-acc-content">
+                <p>Designed to gather all reliable data, information, and records, and assemble and compile these materials for their functional use.</p>
+              </div>
+            </div>
+
+            <!-- Service C -->
+            <div class="gc-acc-item">
+              <button class="gc-acc-header" type="button">
+                C. Information <span class="gc-acc-icon">▼</span>
+              </button>
+              <div class="gc-acc-content">
+                <p>Materials are made available to aid students in making appropriate choices, plans, and decisions.</p>
+              </div>
+            </div>
+
+            <!-- Service D -->
+            <div class="gc-acc-item">
+              <button class="gc-acc-header" type="button">
+                D. Follow-up <span class="gc-acc-icon">▼</span>
+              </button>
+              <div class="gc-acc-content">
+                <p>This guidance service assists students in determining the areas of their life that need further adjustment.</p>
+              </div>
+            </div>
+
+            <!-- Service E -->
+            <div class="gc-acc-item">
+              <button class="gc-acc-header" type="button">
+                E. Placement <span class="gc-acc-icon">▼</span>
+              </button>
+              <div class="gc-acc-content">
+                <p>Placement service will aid students in making choices consistent with their abilities, aptitudes, interests, and skills.</p>
+              </div>
+            </div>
+
+            <!-- Service F -->
+            <div class="gc-acc-item">
+              <button class="gc-acc-header" type="button">
+                F. Career <span class="gc-acc-icon">▼</span>
+              </button>
+              <div class="gc-acc-content">
+                <p>Helps prepare students develop their full potential through self-awareness, career planning, exploration, decision-making, and goal setting.</p>
+              </div>
+            </div>
+
+            <!-- Service G -->
+            <div class="gc-acc-item">
+              <button class="gc-acc-header" type="button">
+                G. Evaluation <span class="gc-acc-icon">▼</span>
+              </button>
+              <div class="gc-acc-content">
+                <p>Gives students a realistic appraisal of their strengths and weaknesses, abilities, interests, and type of personality. It also determines the effectiveness of the implementation program.</p>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+      </aside>
     </div>
   </main>
 
   <!-- School Footer -->
-  <footer style="margin-top:2rem;">
-    <div class="wrap">
+  <footer style="margin-top:2rem; background: #f8fafc; border-top: 1px solid var(--gc-border);">
+    <div class="wrap" style="padding: 2rem 0;">
       <div class="foot-grid">
         <div>
-          <strong>Sta. Cruz Pingkian High School</strong><br/>
+          <strong style="color: var(--gc-primary);">Sta. Cruz Pingkian High School</strong><br/>
           Brgy. Sta. Cruz, Pingkian • Nueva Vizcaya • Philippines<br/>
           Email: 300648@deped.gov.ph • Phone: +63 967-8848989
         </div>
@@ -310,7 +557,7 @@
           <a href="https://www.facebook.com/p/Santa-Cruz-Pingkian-High-School-Official-61554495084090/" target="_blank" rel="noopener">Facebook</a>
         </div>
       </div>
-      <div class="copy">© <span id="yearNowSchool"></span> SCPHS. All rights reserved.</div>
+      <div class="copy" style="margin-top: 1.5rem; color: var(--gc-text-muted);">© <span id="yearNowSchool"></span> SCPHS. All rights reserved.</div>
     </div>
   </footer>
 
@@ -347,7 +594,7 @@
     </div>
   </footer>
 
-  <!-- Chatbot mount -->
+  <!-- Chatbot mount & loader -->
   <div id="scphs-chatbot-root"></div>
   <script>
   (function(){
@@ -370,16 +617,47 @@
     load('../../assets/js/chatbot.js', null, () =>
       load('../assets/js/chatbot.js', null, () =>
         load('assets/js/chatbot.js', null, () =>
-          console.warn('SCPHS chatbot: unable to load script from any known path.')
+          console.warn('SCPHS chatbot: unable to load script.')
         )
       )
     );
   })();
-  </script>
 
-  <script>
+  // Accordion Logic
+  document.addEventListener('DOMContentLoaded', () => {
+    const accItems = document.querySelectorAll('.gc-acc-item');
+    accItems.forEach(item => {
+      const header = item.querySelector('.gc-acc-header');
+      const content = item.querySelector('.gc-acc-content');
+      
+      header.addEventListener('click', () => {
+        // Close others
+        accItems.forEach(other => {
+          if (other !== item) {
+            other.classList.remove('active');
+            other.querySelector('.gc-acc-content').style.maxHeight = null;
+          }
+        });
+        
+        // Toggle current
+        item.classList.toggle('active');
+        if (item.classList.contains('active')) {
+          content.style.maxHeight = content.scrollHeight + 'px';
+        } else {
+          content.style.maxHeight = null;
+        }
+      });
+
+      // Initialize active items
+      if (item.classList.contains('active')) {
+        content.style.maxHeight = content.scrollHeight + 'px';
+      }
+    });
+
+    // Years
     document.getElementById('yearNowSchool').textContent = new Date().getFullYear();
     document.getElementById('yearNowGov').textContent = new Date().getFullYear();
+  });
   </script>
 </body>
 </html>
