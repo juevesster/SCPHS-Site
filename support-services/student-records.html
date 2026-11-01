@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Student Records & SF1 – Guidance Center | SCPHS</title>
+  <link rel="stylesheet" href="../../assets/css/styles.css" />
+  
+  <style>
+    :root {
+      --gc-primary: #0f4c81;
+      --gc-border: #e2e8f0;
+      --gc-text-main: #1e293b;
+      --gc-text-muted: #64748b;
+      --bright-blue: #2563eb;
+      --danger: #dc2626;
+      --warning: #d97706;
+      --success: #16a34a;
+    }
+
+    body { background: #f1f5f9; margin: 0; font-family: system-ui, -apple-system, sans-serif; }
+    .gc-layout-wrap { max-width: 1200px; margin: 0 auto; padding: 0 16px; }
+
+    /* Header */
+    .form-header { background: #fff; padding: 20px 0; border-bottom: 1px solid var(--gc-border); margin-bottom: 20px; text-align: center; }
+    .form-header h1 { margin: 0; color: var(--gc-primary); font-size: 1.5rem; }
+    .form-header p { margin: 5px 0 0; color: #666; font-size: 0.9rem; }
+    .back-link { display: inline-block; margin-bottom: 20px; color: var(--bright-blue); text-decoration: none; font-weight: 600; }
+
+    /* Loading State */
+    #loading-state { text-align: center; padding: 50px; font-weight: 600; color: var(--gc-primary); }
+    .spinner { width: 40px; height: 40px; border: 4px solid #e2e8f0; border-top-color: var(--gc-primary); border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 15px; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* Main Content */
+    #database-content { display: none; } 
+    .card { background: #fff; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); overflow: hidden; margin-bottom: 30px; }
+    .card-header { background: #f8fafc; padding: 20px; border-bottom: 1px solid var(--gc-border); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
+    .card-header h2 { margin: 0; color: var(--gc-primary); font-size: 1.25rem; }
+    
+    /* Rules Section (Placeholder) */
+    .rules-box { padding: 20px; background: #fffbeb; border-left: 4px solid var(--warning); margin: 20px; border-radius: 6px; }
+    .rules-box h3 { margin: 0 0 10px; color: #92400e; font-size: 1.1rem; }
+    .rules-box p { margin: 0; color: #78350f; font-size: 0.95rem; line-height: 1.5; }
+
+    /* Search Bar */
+    .search-bar { padding: 15px 20px; background: #fff; border-bottom: 1px solid var(--gc-border); }
+    .search-bar input { width: 100%; padding: 10px 15px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 0.95rem; box-sizing: border-box; }
+
+    /* Table */
+    table { width: 100%; border-collapse: collapse; text-align: left; }
+    th { background: #f8fafc; padding: 15px; font-size: 0.85rem; color: var(--gc-text-muted); text-transform: uppercase; letter-spacing: 0.05em; border-bottom: 2px solid var(--gc-border); }
+    td { padding: 15px; border-bottom: 1px solid var(--gc-border); font-size: 0.95rem; color: var(--gc-text-main); }
+    tr:hover { background: #f8fafc; }
+
+    /* Status Badges */
+    .badge { padding: 4px 10px; border-radius: 20px; font-size: 0.75rem; font-weight: 700; }
+    .badge-clear { background: #dcfce7; color: #166534; }
+    .badge-warning { background: #fef9c3; color: #854d0e; }
+    .badge-violation { background: #fee2e2; color: #991b1b; }
+
+    /* Buttons */
+    .btn-action { padding: 8px 14px; border: none; border-radius: 6px; cursor: pointer; font-size: 0.85rem; font-weight: 600; margin-right: 5px; text-decoration: none; display: inline-flex; align-items: center; gap: 5px; transition: all 0.2s; }
+    .btn-view { background: var(--gc-primary); color: #fff; }
+    .btn-view:hover { background: var(--gc-primary-hover); }
+    .btn-log { background: var(--danger); color: #fff; }
+    .btn-log:hover { background: #b91c1c; }
+
+    /* MODAL FOR LOGGING CASE */
+    .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); display: none; align-items: center; justify-content: center; z-index: 1000; padding: 20px; }
+    .modal-content { background: #fff; border-radius: 12px; max-width: 500px; width: 100%; box-shadow: 0 10px 25px rgba(0,0,0,0.2); overflow: hidden; }
+    .modal-header { padding: 15px 20px; background: #f8fafc; border-bottom: 1px solid var(--gc-border); display: flex; justify-content: space-between; align-items: center; }
+    .modal-header h3 { margin: 0; color: var(--danger); }
+    .modal-close { background: none; border: none; font-size: 1.5rem; cursor: pointer; color: #666; }
+    .modal-body { padding: 20px; }
+    .form-group { margin-bottom: 15px; }
+    .form-group label { display: block; font-weight: 600; font-size: 0.85rem; margin-bottom: 5px; color: #333; }
+    .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-family: inherit; box-sizing: border-box; }
+    .modal-footer { padding: 15px 20px; background: #f8fafc; border-top: 1px solid var(--gc-border); text-align: right; }
+    .btn-save { background: var(--danger); color: #fff; padding: 10px 20px; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; }
+  </style>
+</head>
+<body>
+
+  <div class="form-header">
+    <h1>Sta. Cruz Pingkian High School</h1>
+    <p>Guidance Center – Student Records & Case Management</p>
+  </div>
+
+  <div class="gc-layout-wrap">
+    <a href="index.html" class="back-link">← Back to Guidance Center</a>
+
+    <!-- LOADING STATE -->
+    <div id="loading-state">
+      <div class="spinner"></div>
+      Authenticating & Loading Student Records...
+    </div>
+
+    <!-- ACCESS DENIED -->
+    <div id="access-denied" style="display: none; text-align: center; padding: 50px; background: #fff; border-radius: 8px;">
+      <h2 style="color: var(--danger);">🚫 Access Denied</h2>
+      <p>You must be signed in as a Guidance Counselor, Teacher, or Admin to view this page.</p>
+      <a href="../../login.html" class="btn-action btn-view" style="margin-top: 15px;">Sign In Here</a>
+    </div>
+
+    <!-- DATABASE CONTENT -->
+    <div id="database-content">
+      
+      <!-- RULES PLACEHOLDER -->
+      <div class="rules-box">
+        <h3>📜 School Rules & Regulations</h3>
+        <p><em>Placeholder: The official Student Handbook and list of violations will be inserted here once provided.</em></p>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <h2>📚 Student Masterlist</h2>
+          <span style="font-size: 0.85rem; color: #64748b;">Synced with Firebase Database</span>
+        </div>
+        
+        <div class="search-bar">
+          <input type="text" id="search-input" placeholder="Search by Name, LRN, or Section..." onkeyup="filterTable()">
+        </div>
+
+        <div style="overflow-x: auto;">
+          <table id="student-table">
+            <thead>
+              <tr>
+                <th>LRN</th>
+                <th>Full Name</th>
+                <th>Grade & Section</th>
+                <th>Adviser</th>
+                <th>Guidance Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="student-tbody">
+              <!-- Data injected here -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- LOG CASE MODAL -->
+  <div id="case-modal" class="modal-overlay">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>Log Disciplinary Case</h3>
+        <button class="modal-close" onclick="closeModal()">×</button>
+      </div>
+      <div class="modal-body">
+        <p style="margin-top:0; font-weight:600; color:var(--gc-primary);" id="modal-student-name">Student Name</p>
+        <input type="hidden" id="modal-student-id" />
+        
+        <div class="form-group">
+          <label>Violation Category</label>
+          <select id="modal-violation-type">
+            <option value="Minor Offense">Minor Offense (e.g., Tardiness, Uniform)</option>
+            <option value="Major Offense">Major Offense (e.g., Bullying, Cutting Classes)</option>
+            <option value="Grave Offense">Grave Offense (e.g., Fighting, Vandalism)</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Case Details / Remarks</label>
+          <textarea id="modal-remarks" rows="3" placeholder="Describe the incident..."></textarea>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-save" onclick="saveCase()">Save Case Record</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- FIREBASE INTEGRATION -->
+  <script type="module">
+    import { auth, db } from "../../assets/js/firebase-config.js";
+    import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+    import { collection, getDocs, doc, updateDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+    import { getCurrentUserProfile } from "../../assets/js/roles.js"; 
+
+    const loadingState = document.getElementById('loading-state');
+    const accessDenied = document.getElementById('access-denied');
+    const databaseContent = document.getElementById('database-content');
+    const tbody = document.getElementById('student-tbody');
+
+    let ALL_STUDENTS = [];
+
+    // 1. Auth Check
+    onAuthStateChanged(auth, async (user) => {
+      if (!user) {
+        loadingState.style.display = 'none';
+        accessDenied.style.display = 'block';
+        return;
+      }
+
+      try {
+        const profile = await getCurrentUserProfile();
+        
+        const isAdmin = profile?.primaryRole === "admin" || profile?.isSuperAdmin || profile?.permissions?.canManageClasses;
+        const isTeacher = profile?.primaryRole === "teacher" || profile?.permissions?.canEnterGrades;
+
+        if (!isAdmin && !isTeacher) {
+          loadingState.style.display = 'none';
+          accessDenied.style.display = 'block';
+          return;
+        }
+
+        await loadAllStudentsFromFirestore();
+
+      } catch (error) {
+        console.error("Auth error:", error);
+        loadingState.innerHTML = "Error verifying account. Please refresh.";
+      }
+    });
+
+    // 2. Fetch Data
+    async function loadAllStudentsFromFirestore() {
+      try {
+        const classesSnap = await getDocs(collection(db, "classes"));
+        
+        for (const classDoc of classesSnap.docs) {
+          const classData = classDoc.data();
+          const studentsSnap = await getDocs(collection(db, "classes", classDoc.id, "students"));
+          
+          studentsSnap.forEach(studentDoc => {
+            const s = studentDoc.data();
+            ALL_STUDENTS.push({
+              id: studentDoc.id,
+              classId: classDoc.id,
+              classLabel: classData.classLabel || "Unknown Section",
+              adviserName: classData.adviserName || "Unassigned",
+              lrn: s.lrn || "⚠️ NO LRN",
+              fullName: s.fullName || `${s.lastName}, ${s.firstName}`,
+              status: s.guidanceStatus || "Clear Record" // We will update this field!
+            });
+          });
+        }
+
+        ALL_STUDENTS.sort((a, b) => a.fullName.localeCompare(b.fullName));
+        renderTable(ALL_STUDENTS);
+        
+        loadingState.style.display = 'none';
+        databaseContent.style.display = 'block';
+
+      } catch (error) {
+        console.error("Error fetching students:", error);
+        loadingState.innerHTML = "Failed to load database. Check console.";
+      }
+    }
+
+    // 3. Render Table
+    function renderTable(students) {
+      if (students.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; padding: 30px;">No student records found.</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = students.map(s => {
+        let badgeClass = "badge-clear";
+        if (s.status.includes("Minor")) badgeClass = "badge-warning";
+        if (s.status.includes("Major") || s.status.includes("Grave")) badgeClass = "badge-violation";
+
+        return `
+          <tr>
+            <td style="font-family: monospace;">${s.lrn}</td>
+            <td style="font-weight: 600; color: #0f4c81;">${s.fullName}</td>
+            <td>${s.classLabel}</td>
+            <td style="font-size: 0.85rem; color: #64748b;">${s.adviserName}</td>
+            <td><span class="badge ${badgeClass}">${s.status}</span></td>
+            <td>
+              <button class="btn-action btn-view" onclick="alert('Opening SF1 view for ${s.fullName}')">View SF1</button>
+              <button class="btn-action btn-log" onclick="openModal('${s.id}', '${s.classId}', '${s.fullName}')">+ Log Case</button>
+            </td>
+          </tr>
+        `;
+      }).join("");
+    }
+
+    // 4. Search Filter
+    window.filterTable = function() {
+      const query = document.getElementById('search-input').value.toLowerCase();
+      const filtered = ALL_STUDENTS.filter(s => 
+        s.fullName.toLowerCase().includes(query) || 
+        s.lrn.toLowerCase().includes(query) ||
+        s.classLabel.toLowerCase().includes(query)
+      );
+      renderTable(filtered);
+    };
+
+    // 5. Modal Logic for Logging a Case
+    window.openModal = function(studentId, classId, studentName) {
+      document.getElementById('modal-student-name').textContent = `Student: ${studentName}`;
+      document.getElementById('modal-student-id').value = studentId;
+      document.getElementById('modal-student-id').dataset.classId = classId;
+      document.getElementById('case-modal').style.display = 'flex';
+    };
+
+    window.closeModal = function() {
+      document.getElementById('case-modal').style.display = 'none';
+    };
+
+    // 6. Save the Case to Firestore
+    window.saveCase = async function() {
+      const studentId = document.getElementById('modal-student-id').value;
+      const classId = document.getElementById('modal-student-id').dataset.classId;
+      const violationType = document.getElementById('modal-violation-type').value;
+      const remarks = document.getElementById('modal-remarks').value;
+
+      if (!studentId || !classId) return;
+
+      const saveBtn = document.querySelector('#case-modal .btn-save');
+      saveBtn.textContent = "Saving...";
+      saveBtn.disabled = true;
+
+      try {
+        // Update the student document in Firestore
+        const studentRef = doc(db, "classes", classId, "students", studentId);
+        await updateDoc(studentRef, {
+          guidanceStatus: violationType,
+          guidanceRemarks: remarks,
+          guidanceLastUpdated: new Date().toISOString()
+        });
+
+        alert("✅ Case successfully logged to the student's permanent record.");
+        closeModal();
+        
+        // Reload the table to show the new status
+        ALL_STUDENTS = [];
+        await loadAllStudentsFromFirestore();
+
+      } catch (error) {
+        console.error("Error saving case:", error);
+        alert("❌ Failed to save case. Check console for details.");
+      } finally {
+        saveBtn.textContent = "Save Case Record";
+        saveBtn.disabled = false;
+      }
+    };
+  </script>
+</body>
+</html>
