@@ -465,59 +465,223 @@
 </head>
 <body>
 
-  <!-- ===================== NEW PCNHS-STYLE HEADER ===================== -->
-  <header class="pcnhs-header">
-    <!-- Row 1: Top Navigation & Search -->
-    <div class="pcnhs-top-nav">
-      <div class="pcnhs-nav-links">
-        <a href="https://www.gov.ph" class="pcnhs-govph-tab" target="_blank" rel="noopener">GOVPH</a>
-        <a href="../../index.html">Home</a>
-        <a href="#">About Us ▾</a>
-        <a href="#">Programs & Accomplishments ▾</a>
-        <a href="#" class="active">Guidance Services</a>
-        <a href="#">News & Events</a>
-        <a href="#">Resources</a>
-        <a href="#">Issuances</a>
-        <a href="#">Contact</a>
-      </div>
-      <div class="pcnhs-search-area">
-        <input type="text" placeholder="Search ..." aria-label="Search">
-        <button class="icon-btn" aria-label="Search">⌕</button>
-        <button class="icon-btn" aria-label="Text Size">A</button>
-      </div>
+  <style>
+    /* ============================================================
+       MODERN GUIDANCE CENTER UI (SCPHS HEADER STYLE)
+       ============================================================ */
+    :root {
+      --gc-primary: #0f4c81;
+      --gc-primary-hover: #0a365d;
+      --gc-bg-soft: #f8fafc;
+      --gc-border: #e2e8f0;
+      --gc-text-main: #1e293b;
+      --gc-text-muted: #64748b;
+      --gc-radius: 12px;
+      --gc-shadow-sm: 0 1px 3px rgba(0,0,0,0.05), 0 1px 2px rgba(0,0,0,0.03);
+      --gc-shadow-md: 0 4px 6px -1px rgba(0,0,0,0.05), 0 2px 4px -1px rgba(0,0,0,0.03);
+      --gc-shadow-hover: 0 10px 15px -3px rgba(0,0,0,0.08), 0 4px 6px -2px rgba(0,0,0,0.04);
+      --gc-transition: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    body { background: #f1f5f9; margin: 0; font-family: system-ui, -apple-system, sans-serif; }
+    .gc-layout-wrap { max-width: 1200px; margin: 0 auto; padding: 0 16px; }
+
+    /* ============================================================
+       NEW SCPHS-STYLE HEADER
+       ============================================================ */
+    
+    /* Top Navigation Bar */
+    .scphs-top-nav {
+      background: #fff;
+      border-bottom: 1px solid var(--gc-border);
+      display: flex;
+      align-items: stretch;
+      justify-content: space-between;
+      font-size: 0.9rem;
+    }
+    .scphs-nav-links {
+      display: flex;
+      align-items: stretch;
+      flex-wrap: wrap;
+    }
+    .scphs-nav-links a {
+      display: flex;
+      align-items: center;
+      padding: 0 12px; /* Reduced padding to keep it on one line */
+      color: #333;
+      text-decoration: none;
+      font-weight: 500;
+      font-size: 0.85rem;
+      border-right: 1px solid #f1f5f9;
+      transition: background 0.2s;
+    }
+    .scphs-nav-links a:hover, .scphs-nav-links a.active {
+      background: #f8fafc;
+      color: var(--gc-primary);
+    }
+    .scphs-govph-tab {
+      background: #f8fafc;
+      font-weight: 700 !important;
+      color: #000 !important;
+      border-right: 1px solid var(--gc-border) !important;
+      padding: 0 20px !important;
+    }
+    
+    /* Search Bar Area */
+    .scphs-search-area {
+      display: flex;
+      align-items: center;
+      padding: 0 16px;
+      gap: 12px;
+      background: #f8fafc;
+      border-left: 1px solid var(--gc-border);
+    }
+    .scphs-search-area input {
+      border: 1px solid #cbd5e1;
+      padding: 6px 12px;
+      border-radius: 4px;
+      font-size: 0.85rem;
+      outline: none;
+      width: 120px; /* Made search bar shorter */
+    }
+    .scphs-search-area input:focus { border-color: var(--gc-primary); }
+    .scphs-search-area .icon-btn {
+      background: none;
+      border: 1px solid #cbd5e1;
+      border-radius: 50%;
+      width: 30px;
+      height: 30px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      color: #333;
+      font-weight: bold;
+      font-size: 0.8rem;
+    }
+
+    /* Second Row: Branding & Time */
+    .scphs-header-main {
+      background: #fff;
+      padding: 20px 0;
+    }
+    .scphs-header-grid {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 20px;
+      flex-wrap: wrap;
+    }
+    
+    .scphs-branding {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+    .scphs-branding img {
+      height: 85px;
+      width: auto;
+    }
+    .scphs-brandtext h1 {
+      margin: 0;
+      font-size: 1.5rem;
+      color: #111;
+      font-weight: 800;
+      line-height: 1.1;
+    }
+    .scphs-brandtext .subtitle {
+      margin: 4px 0 0;
+      font-size: 0.95rem;
+      color: #333;
+      font-weight: 600;
+    }
+
+    .scphs-meta-right {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 8px;
+    }
+    .scphs-time {
+      font-size: 0.85rem;
+      color: #333;
+      text-align: right;
+      line-height: 1.4;
+    }
+    .scphs-gov-logos {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+    }
+    .scphs-gov-logos img {
+      height: 45px;
+      width: auto;
+    }
+
+    @media (max-width: 900px) {
+      .scphs-header-grid { flex-direction: column; text-align: center; }
+      .scphs-meta-right { align-items: center; }
+      .scphs-time { text-align: center; }
+      .scphs-top-nav { flex-direction: column; }
+      .scphs-search-area { border-left: none; border-top: 1px solid var(--gc-border); padding: 10px 16px; }
+    }
+
+    /* ... (Rest of your CSS remains the same) ... */
+</style>
+
+<!-- ===================== NEW SCPHS-STYLE HEADER ===================== -->
+<header class="scphs-header">
+  <!-- Row 1: Top Navigation & Search -->
+  <div class="scphs-top-nav">
+    <div class="scphs-nav-links">
+      <a href="https://www.gov.ph" class="scphs-govph-tab" target="_blank" rel="noopener">GOVPH</a>
+      <a href="../../index.html">Home</a>
+      <a href="#">About Us ▾</a>
+      <a href="#">Programs & Accomplishments ▾</a>
+      <a href="#" class="active">Guidance Services</a>
+      <a href="#">News & Events</a>
+      <a href="#">Resources</a>
+      <a href="#">Issuances</a>
+      <a href="#">Contact</a>
     </div>
+    <div class="scphs-search-area">
+      <input type="text" placeholder="Search ..." aria-label="Search">
+      <button class="icon-btn" aria-label="Search">⌕</button>
+      <button class="icon-btn" aria-label="Text Size">A</button>
+    </div>
+  </div>
 
-    <!-- Row 2: School Branding & Real-Time Clock -->
-    <div class="pcnhs-header-main">
-      <div class="gc-layout-wrap">
-        <div class="pcnhs-header-grid">
-          
-          <!-- Left: Logo & Title -->
-          <div class="pcnhs-branding">
-            <img src="../../assets/images/scphslogo.png" alt="SCPHS Logo">
-            <div class="pcnhs-brandtext">
-              <h1>STA. CRUZ PINGKIAN HIGH SCHOOL</h1>
-              <p class="subtitle">Schools Division of Nueva Vizcaya</p>
-            </div>
+  <!-- Row 2: School Branding & Real-Time Clock -->
+  <div class="scphs-header-main">
+    <div class="gc-layout-wrap">
+      <div class="scphs-header-grid">
+        
+        <!-- Left: Logo & Title -->
+        <div class="scphs-branding">
+          <img src="../../assets/images/scphslogo.png" alt="SCPHS Logo">
+          <div class="scphs-brandtext">
+            <h1>STA. CRUZ PINGKIAN HIGH SCHOOL</h1>
+            <p class="subtitle">Schools Division of Nueva Vizcaya</p>
           </div>
-
-          <!-- Right: PH Time & Gov Logos -->
-          <div class="pcnhs-meta-right">
-            <div class="pcnhs-time">
-              Philippine Standard Time:<br/>
-              <span id="ph-time">Loading…</span>
-            </div>
-            <div class="pcnhs-gov-logos">
-              <img src="../../assets/images/foi-logo.png" alt="Freedom of Information">
-              <img src="../../assets/images/Bagong-Pilipinas-Logo.png" alt="Bagong Pilipinas">
-              <img src="../../assets/images/transparency-seal.png" alt="Transparency Seal">
-            </div>
-          </div>
-
         </div>
+
+        <!-- Right: PH Time & Gov Logos -->
+        <div class="scphs-meta-right">
+          <div class="scphs-time">
+            Philippine Standard Time:<br/>
+            <span id="ph-time">Loading…</span>
+          </div>
+          <div class="scphs-gov-logos">
+            <img src="../../assets/images/foi-logo.png" alt="Freedom of Information">
+            <img src="../../assets/images/Bagong-Pilipinas-Logo.png" alt="Bagong Pilipinas">
+            <img src="../../assets/images/transparency-seal.png" alt="Transparency Seal">
+          </div>
+        </div>
+
       </div>
     </div>
-  </header>
+  </div>
+</header>
 
   <!-- ===================== MAIN CONTENT ===================== -->
       <!-- Breadcrumbs & Top Navigation (Bright Blue Background) -->
