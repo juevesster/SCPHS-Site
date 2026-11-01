@@ -1,0 +1,947 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Guidance Center / Care Center – SCPHS</title>
+  <meta name="description" content="SCPHS CARE CENTER – learner support, counseling, referrals, and programs." />
+  <link rel="stylesheet" href="../../assets/css/styles.css" />
+  
+  <style>
+    /* ============================================================
+       MODERN GUIDANCE CENTER UI (SCPHS STYLE)
+       ============================================================ */
+    :root {
+      --gc-primary: #0f4c81;
+      --gc-primary-hover: #0a365d;
+      --gc-bg-soft: #f8fafc;
+      --gc-border: #e2e8f0;
+      --gc-text-main: #1e293b;
+      --gc-text-muted: #64748b;
+      --gc-radius: 12px;
+      --gc-shadow-sm: 0 1px 3px rgba(0,0,0,0.05), 0 1px 2px rgba(0,0,0,0.03);
+      --gc-shadow-md: 0 4px 6px -1px rgba(0,0,0,0.05), 0 2px 4px -1px rgba(0,0,0,0.03);
+      --gc-shadow-hover: 0 10px 15px -3px rgba(0,0,0,0.08), 0 4px 6px -2px rgba(0,0,0,0.04);
+      --gc-transition: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+      --bright-blue: #2563eb;
+    }
+
+    body { background: #f1f5f9; margin: 0; font-family: system-ui, -apple-system, sans-serif; }
+    .gc-layout-wrap { max-width: 1200px; margin: 0 auto; padding: 0 16px; }
+
+    /* ============================================================
+       SCPHS HEADER STYLES
+       ============================================================ */
+    .scphs-top-nav {
+      background: #fff;
+      border-bottom: 1px solid var(--gc-border);
+      display: flex;
+      align-items: stretch;
+      justify-content: space-between;
+      font-size: 0.9rem;
+    }
+    .scphs-nav-links {
+      display: flex;
+      align-items: stretch;
+      flex-wrap: wrap;
+    }
+    .scphs-nav-links a {
+      display: flex;
+      align-items: center;
+      padding: 0 12px;
+      color: #333;
+      text-decoration: none;
+      font-weight: 500;
+      font-size: 0.85rem;
+      border-right: 1px solid #f1f5f9;
+      transition: background 0.2s;
+    }
+    .scphs-nav-links a:hover, .scphs-nav-links a.active {
+      background: #f8fafc;
+      color: var(--gc-primary);
+    }
+    .scphs-govph-tab {
+      background: #f8fafc;
+      font-weight: 700 !important;
+      color: #000 !important;
+      border-right: 1px solid var(--gc-border) !important;
+      padding: 0 20px !important;
+    }
+    
+    /* Search Bar Area */
+    .scphs-search-area {
+      display: flex;
+      align-items: center;
+      padding: 0 16px;
+      gap: 12px;
+      background: #f8fafc;
+      border-left: 1px solid var(--gc-border);
+    }
+    .scphs-search-area input {
+      border: 1px solid #cbd5e1;
+      padding: 6px 12px;
+      border-radius: 4px;
+      font-size: 0.85rem;
+      outline: none;
+      width: 120px;
+    }
+    .scphs-search-area input:focus { border-color: var(--gc-primary); }
+    .scphs-search-area .icon-btn {
+      background: none;
+      border: 1px solid #cbd5e1;
+      border-radius: 50%;
+      width: 30px;
+      height: 30px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      color: #333;
+      font-weight: bold;
+      font-size: 0.8rem;
+    }
+
+    /* Second Row: Branding & Time */
+    .scphs-header-main {
+      background: #fff;
+      padding: 20px 0;
+    }
+    .scphs-header-grid {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 20px;
+      flex-wrap: wrap;
+    }
+    
+    .scphs-branding {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+    .scphs-branding img {
+      height: 85px;
+      width: auto;
+    }
+    .scphs-brandtext h1 {
+      margin: 0;
+      font-size: 1.5rem;
+      color: #111;
+      font-weight: 800;
+      line-height: 1.1;
+    }
+    .scphs-brandtext .subtitle {
+      margin: 4px 0 0;
+      font-size: 0.95rem;
+      color: #333;
+      font-weight: 600;
+    }
+
+    .scphs-meta-right {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 8px;
+    }
+    .scphs-time {
+      font-size: 0.85rem;
+      color: #333;
+      text-align: right;
+      line-height: 1.4;
+    }
+    .scphs-gov-logos {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+    }
+    .scphs-gov-logos img {
+      height: 45px;
+      width: auto;
+    }
+
+    @media (max-width: 900px) {
+      .scphs-header-grid { flex-direction: column; text-align: center; }
+      .scphs-meta-right { align-items: center; }
+      .scphs-time { text-align: center; }
+      .scphs-top-nav { flex-direction: column; }
+      .scphs-search-area { border-left: none; border-top: 1px solid var(--gc-border); padding: 10px 16px; }
+    }
+
+    /* ============================================================
+       MAIN CONTENT STYLES
+       ============================================================ */
+    .gc-top-nav {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1rem 1.25rem;
+      border-radius: 8px;
+      margin-top: 1.5rem;
+      margin-bottom: 1.5rem;
+      flex-wrap: wrap;
+      gap: 1rem;
+      background-color: var(--bright-blue);
+      box-shadow: 0 4px 6px -1px rgba(37, 99, 235, 0.2);
+    }
+    .gc-btn-back {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      background: #ffffff;
+      color: var(--bright-blue);
+      padding: 0.5rem 1rem;
+      border-radius: 8px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      text-decoration: none;
+      border: none;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      transition: all var(--gc-transition);
+    }
+    .gc-btn-back:hover {
+      background: #f1f5f9;
+      transform: translateX(-2px);
+    }
+    .gc-btn-primary {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      background: rgba(255, 255, 255, 0.15);
+      border: 1px solid rgba(255, 255, 255, 0.4);
+      color: #ffffff;
+      padding: 0.5rem 1.25rem;
+      border-radius: 8px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      text-decoration: none;
+      backdrop-filter: blur(4px);
+      transition: all var(--gc-transition);
+    }
+    .gc-btn-primary:hover {
+      background: rgba(255, 255, 255, 0.25);
+      box-shadow: var(--gc-shadow-md);
+    }
+
+    /* Hero Banner (Bright Blue) */
+    .gc-hero {
+      background: var(--bright-blue);
+      color: #ffffff;
+      border-radius: var(--gc-radius);
+      padding: 2.5rem 2rem;
+      margin-bottom: 2rem;
+      box-shadow: 0 10px 15px -3px rgba(37, 99, 235, 0.3);
+      position: relative;
+      overflow: hidden;
+    }
+    .gc-hero::after {
+      content: "🏫";
+      position: absolute;
+      right: -10px;
+      bottom: -20px;
+      font-size: 10rem;
+      opacity: 0.15;
+      pointer-events: none;
+    }
+    .gc-hero h1 {
+      margin: 0 0 0.5rem;
+      font-size: 2.25rem;
+      letter-spacing: -0.02em;
+    }
+    .gc-hero p {
+      margin: 0;
+      font-size: 1.1rem;
+      opacity: 0.9;
+      max-width: 600px;
+    }
+
+    .gc-layout-grid {
+      display: grid;
+      grid-template-columns: 1fr 340px;
+      gap: 2rem;
+      align-items: start;
+      margin-top: 1.5rem;
+    }
+    @media (max-width: 900px) {
+      .gc-layout-grid {
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+      }
+    }
+
+    /* Content Cards */
+    .gc-section-title {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: var(--gc-text-main);
+      margin: 0 0 1rem;
+      padding-bottom: 0.5rem;
+      border-bottom: 2px solid var(--gc-border);
+    }
+    .gc-card {
+      background: #fff;
+      border: 1px solid var(--gc-border);
+      border-radius: var(--gc-radius);
+      padding: 1.5rem;
+      box-shadow: var(--gc-shadow-sm);
+      transition: box-shadow var(--gc-transition);
+    }
+    .gc-card:hover { box-shadow: var(--gc-shadow-hover); }
+    
+    .gc-info-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 1.25rem;
+      margin-bottom: 2rem;
+    }
+    .gc-info-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 1rem;
+    }
+    .gc-info-icon {
+      background: var(--gc-bg-soft);
+      color: var(--gc-primary);
+      width: 42px;
+      height: 42px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.25rem;
+      flex-shrink: 0;
+    }
+    .gc-info-text h4 {
+      margin: 0 0 0.25rem;
+      font-size: 0.95rem;
+      color: var(--gc-text-muted);
+      font-weight: 600;
+    }
+    .gc-info-text p, .gc-info-text a {
+      margin: 0;
+      font-size: 1rem;
+      color: var(--gc-text-main);
+      font-weight: 500;
+      text-decoration: none;
+    }
+    .gc-info-text a:hover { color: var(--gc-primary); text-decoration: underline; }
+
+    /* Service Cards */
+    .gc-service-card {
+      background: #fff;
+      border: 1px solid var(--gc-border);
+      border-radius: var(--gc-radius);
+      padding: 1.25rem;
+      box-shadow: var(--gc-shadow-sm);
+      transition: transform var(--gc-transition), box-shadow var(--gc-transition);
+      display: flex;
+      flex-direction: column;
+    }
+    .gc-service-card:hover {
+      transform: translateY(-3px);
+      box-shadow: var(--gc-shadow-hover);
+      border-color: #cbd5e1;
+    }
+    .gc-service-card h3 {
+      margin: 0 0 0.5rem;
+      font-size: 1.1rem;
+      color: var(--gc-text-main);
+    }
+    .gc-service-card p {
+      margin: 0;
+      font-size: 0.9rem;
+      color: var(--gc-text-muted);
+      line-height: 1.5;
+    }
+
+    /* Sidebar & Accordion */
+    .gc-sidebar {
+      position: sticky;
+      top: 1.5rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+    }
+    .gc-widget {
+      background: #fff;
+      border: 1px solid var(--gc-border);
+      border-radius: var(--gc-radius);
+      padding: 1.25rem;
+      box-shadow: var(--gc-shadow-sm);
+    }
+    .gc-widget h3 {
+      margin: 0 0 1rem;
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--gc-text-main);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .gc-accordion { display: flex; flex-direction: column; gap: 0.5rem; }
+    .gc-acc-item {
+      border: 1px solid var(--gc-border);
+      border-radius: 8px;
+      overflow: hidden;
+      background: #fff;
+      transition: all var(--gc-transition);
+    }
+    .gc-acc-item:hover { border-color: #cbd5e1; }
+    .gc-acc-header {
+      width: 100%;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: var(--gc-bg-soft);
+      padding: 0.85rem 1rem;
+      border: none;
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: var(--gc-text-main);
+      cursor: pointer;
+      text-align: left;
+      transition: background var(--gc-transition);
+      outline: none; /* Removes the black focus box shown in your screenshot */
+    }
+    .gc-acc-header:focus { outline: none; }
+    .gc-acc-header:hover { background: #f1f5f9; }
+    .gc-acc-icon {
+      font-size: 0.7rem;
+      color: var(--gc-text-muted);
+      transition: transform 0.3s ease;
+    }
+    .gc-acc-item.active .gc-acc-header {
+      background: #eff6ff;
+      color: var(--gc-primary);
+      border-bottom: 1px solid var(--gc-border);
+    }
+    .gc-acc-item.active .gc-acc-icon {
+      transform: rotate(180deg);
+      color: var(--gc-primary);
+    }
+    .gc-acc-content {
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.3s ease-out;
+      background: #fff;
+    }
+    .gc-acc-content p {
+      margin: 0;
+      padding: 1rem;
+      font-size: 0.85rem;
+      color: var(--gc-text-muted);
+      line-height: 1.6;
+    }
+
+    .gc-quick-links {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      display: grid;
+      gap: 0.5rem;
+    }
+    .gc-quick-links a {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 0.75rem;
+      background: var(--gc-bg-soft);
+      border-radius: 8px;
+      color: var(--gc-text-main);
+      font-size: 0.9rem;
+      font-weight: 500;
+      text-decoration: none;
+      transition: all var(--gc-transition);
+      border: 1px solid transparent;
+    }
+    .gc-quick-links a:hover {
+      background: #fff;
+      border-color: var(--gc-border);
+      box-shadow: var(--gc-shadow-sm);
+      color: var(--gc-primary);
+      transform: translateX(2px);
+    }
+
+        /* Dropdown Menu Styles */
+    .scphs-nav-dropdown {
+      position: relative;
+      display: flex;
+      align-items: stretch;
+    }
+    .scphs-nav-dropdown > a {
+      border-right: 1px solid #f1f5f9; /* Keeps the border consistent */
+    }
+    .scphs-dropdown-content {
+      display: none;
+      position: absolute;
+      top: 100%;
+      left: 0;
+      background-color: #fff;
+      min-width: 240px;
+      box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1);
+      border: 1px solid var(--gc-border);
+      border-radius: 0 0 8px 8px;
+      z-index: 1000;
+    }
+    .scphs-nav-dropdown:hover .scphs-dropdown-content {
+      display: block;
+    }
+    .scphs-dropdown-content a {
+      color: #333;
+      padding: 12px 16px;
+      text-decoration: none;
+      display: block;
+      font-size: 0.85rem;
+      font-weight: 500;
+      border-bottom: 1px solid #f1f5f9;
+      text-align: left;
+      border-right: none;
+      transition: background 0.2s;
+    }
+    .scphs-dropdown-content a:hover {
+      background-color: var(--gc-bg-soft);
+      color: var(--gc-primary);
+    }
+    .scphs-dropdown-content a:last-child {
+      border-bottom: none;
+      border-radius: 0 0 8px 8px;
+    }
+  </style>
+</head>
+<body>
+
+    <!-- ===================== SCPHS HEADER ===================== -->
+  <header class="scphs-header">
+    <!-- Row 1: Top Navigation & Search -->
+    <div class="scphs-top-nav">
+      <div class="scphs-nav-links">
+        <a href="https://www.gov.ph" class="scphs-govph-tab" target="_blank" rel="noopener">GOVPH</a>
+        <a href="../../index.html">Home</a>
+        <a href="#">About Us ▾</a>
+        <a href="#">Programs & Accomplishments ▾</a>
+        <a href="#" class="active">Guidance Services</a>
+        <a href="#">News & Events</a>
+        
+        <!-- UPDATED RESOURCES DROPDOWN -->
+        <div class="scphs-nav-dropdown">
+          <a href="resources.html">Resources ▾</a>
+          <div class="scphs-dropdown-content">
+            <a href="resources.html">📂 Downloadable Forms</a>
+            <a href="#">📄 Guidance Manual</a>
+            <a href="#">📊 Counseling Data Sheet</a>
+          </div>
+        </div>
+        
+        <a href="#">Issuances</a>
+        <a href="#">Contact</a>
+      </div>
+      <div class="scphs-search-area">
+        <input type="text" placeholder="Search ..." aria-label="Search">
+        <button class="icon-btn" aria-label="Search">⌕</button>
+        <button class="icon-btn" aria-label="Text Size">A</button>
+      </div>
+    </div>
+
+    <!-- Row 2: School Branding & Real-Time Clock -->
+    <div class="scphs-header-main">
+      <div class="gc-layout-wrap">
+        <div class="scphs-header-grid">
+          
+          <!-- Left: Logo & Title -->
+          <div class="scphs-branding">
+            <img src="../../assets/images/scphslogo.png" alt="SCPHS Logo">
+            <div class="scphs-brandtext">
+              <h1>STA. CRUZ PINGKIAN HIGH SCHOOL</h1>
+              <p class="subtitle">Schools Division of Nueva Vizcaya</p>
+            </div>
+          </div>
+
+          <!-- Right: PH Time & Gov Logos -->
+          <div class="scphs-meta-right">
+            <div class="scphs-time">
+              Philippine Standard Time:<br/>
+              <span id="ph-time">Loading…</span>
+            </div>
+            <div class="scphs-gov-logos">
+              <img src="../../assets/images/foi-logo.png" alt="Freedom of Information">
+              <img src="../../assets/images/Bagong-Pilipinas-Logo.png" alt="Bagong Pilipinas">
+              <img src="../../assets/images/transparency-seal.png" alt="Transparency Seal">
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- ===================== MAIN CONTENT ===================== -->
+  <main class="gc-layout-wrap">
+    
+    <!-- Breadcrumbs & Top Navigation (Bright Blue Background) -->
+    <div class="gc-top-nav">
+      <nav aria-label="Breadcrumb" style="font-size: 0.9rem; color: #ffffff; display: flex; align-items: center; flex-wrap: wrap; gap: 0.25rem;">
+        <a href="../../index.html" style="color: #ffffff; text-decoration: none; opacity: 0.8; transition: opacity 0.2s;" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.8'">Home</a>
+        <span style="margin: 0 0.5rem; opacity: 0.6;">/</span>
+        <a href="../../index.html#support-services" style="color: #ffffff; text-decoration: none; opacity: 0.8; transition: opacity 0.2s;" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.8'">Support Services</a>
+        <span style="margin: 0 0.5rem; opacity: 0.6;">/</span>
+        <strong style="color: #ffffff; font-weight: 700;">Guidance Center / Care Center</strong>
+      </nav>
+      <div style="display: flex; gap: 0.75rem; flex-wrap: wrap; margin-top: 0.5rem;">
+        <a href="../../index.html" class="gc-btn-back">
+          <span>←</span> Back to Main Portal
+        </a>
+        <a href="about.html" class="gc-btn-primary">
+          Read Vision & Mission <span>→</span>
+        </a>
+      </div>
+    </div>
+
+    <!-- Hero Banner (Bright Blue) -->
+    <div class="gc-hero">
+      <h1>Guidance Center</h1>
+      <p>Fostering holistic student development through compassionate counseling, career guidance, and comprehensive support programs.</p>
+    </div>
+
+    <div class="gc-layout-grid">
+      
+      <!-- LEFT COLUMN: Main Content -->
+      <div>
+        <!-- Quick Info -->
+        <div class="gc-info-grid">
+          <div class="gc-card gc-info-item">
+            <div class="gc-info-icon">📍</div>
+            <div class="gc-info-text">
+              <h4>Location</h4>
+              <p>Main Building, Room GC-1</p>
+            </div>
+          </div>
+          <div class="gc-card gc-info-item">
+            <div class="gc-info-icon">📞</div>
+            <div class="gc-info-text">
+              <h4>Contact</h4>
+              <p>+63 967-8848989</p>
+            </div>
+          </div>
+          <div class="gc-card gc-info-item">
+            <div class="gc-info-icon">✉️</div>
+            <div class="gc-info-text">
+              <h4>Email Us</h4>
+              <a href="mailto:300648@deped.gov.ph">300648@deped.gov.ph</a>
+            </div>
+          </div>
+          <div class="gc-card gc-info-item">
+            <div class="gc-info-icon">🕒</div>
+            <div class="gc-info-text">
+              <h4>Office Hours</h4>
+              <p>Mon–Fri: 8:00 AM – 5:00 PM</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Core Services -->
+        <h2 class="gc-section-title">Our Core Services</h2>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.25rem; margin-bottom: 2rem;">
+          <div class="gc-service-card">
+            <div style="font-size: 1.5rem; margin-bottom: 0.5rem;">🤝</div>
+            <h3>Individual & Group Counseling</h3>
+            <p>Confidential sessions addressing personal, academic, and social concerns to promote mental well-being.</p>
+          </div>
+          <div class="gc-service-card">
+            <div style="font-size: 1.5rem; margin-bottom: 0.5rem;">🎯</div>
+            <h3>Career Guidance</h3>
+            <p>Career orientation, life skills programs, and pathways planning for Junior and Senior High School learners.</p>
+          </div>
+          <div class="gc-service-card">
+            <div style="font-size: 1.5rem; margin-bottom: 0.5rem;">🔗</div>
+            <h3>Referrals & Coordination</h3>
+            <p>Coordination with parents, guardians, teachers, and external professionals for comprehensive learner support.</p>
+          </div>
+          <div class="gc-service-card">
+            <div style="font-size: 1.5rem; margin-bottom: 0.5rem;">📋</div>
+            <h3>Case Management</h3>
+            <p>Confidential documentation and follow-through for student cases requiring sustained attention.</p>
+          </div>
+        </div>
+
+        <!-- Downloads -->
+        <h2 class="gc-section-title">Resources & Downloads</h2>
+        <div class="gc-card" style="margin-bottom: 2rem;">
+          <ul style="list-style: none; padding: 0; margin: 0; display: grid; gap: 1rem;">
+            <li style="display: flex; align-items: center; justify-content: space-between; padding-bottom: 1rem; border-bottom: 1px solid var(--gc-border);">
+              <div style="display: flex; align-items: center; gap: 0.75rem;">
+                <span style="font-size: 1.5rem;">📄</span>
+                <div>
+                  <strong style="display: block; color: var(--gc-text-main);">Guidance Referral Form</strong>
+                  <span style="font-size: 0.85rem; color: var(--gc-text-muted);">PDF Document • Used for student referrals</span>
+                </div>
+              </div>
+              <a href="../assets/docs/guidance-referral-form.pdf" target="_blank" class="gc-btn-back" style="padding: 0.4rem 0.75rem; font-size: 0.85rem; color: var(--gc-primary); box-shadow: none; border: 1px solid var(--gc-border);">Download</a>
+            </li>
+            <li style="display: flex; align-items: center; justify-content: space-between;">
+              <div style="display: flex; align-items: center; gap: 0.75rem;">
+                <span style="font-size: 1.5rem;">📘</span>
+                <div>
+                  <strong style="display: block; color: var(--gc-text-main);">Programs & Services Brochure</strong>
+                  <span style="font-size: 0.85rem; color: var(--gc-text-muted);">PDF Document • Overview of guidance programs</span>
+                </div>
+              </div>
+              <a href="../assets/docs/guidance-programs.pdf" target="_blank" class="gc-btn-back" style="padding: 0.4rem 0.75rem; font-size: 0.85rem; color: var(--gc-primary); box-shadow: none; border: 1px solid var(--gc-border);">Download</a>
+            </li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- RIGHT COLUMN: Sidebar -->
+      <aside class="gc-sidebar">
+        
+        <!-- Quick Links Widget -->
+        <div class="gc-widget">
+          <h3><span>🚀</span> Quick Links</h3>
+          <ul class="gc-quick-links">
+            <li><a href="../../index.html"><span>🏠</span> Main School Portal</a></li>
+            <li><a href="about.html"><span>📖</span> Guidance Vision & Mission</a></li>
+            <li><a href="../clinic/index.html"><span>🏥</span> School Clinic</a></li>
+            <li><a href="../registrar/index.html"><span>📜</span> Registrar Office</a></li>
+          </ul>
+        </div>
+
+        <!-- Accordion Widget: The 7 Services -->
+        <div class="gc-widget">
+          <h3><span>📂</span> Guidance Services</h3>
+          <div class="gc-accordion">
+            
+            <!-- Service A -->
+            <div class="gc-acc-item active">
+              <button class="gc-acc-header" type="button">
+                A. Counseling <span class="gc-acc-icon">▼</span>
+              </button>
+              <div class="gc-acc-content" style="max-height: 200px;">
+                <p>The heart of the guidance program. It enables students to develop their abilities in personal and social adjustment, as well as academic planning and career decision-making.</p>
+              </div>
+            </div>
+
+            <!-- Service B -->
+            <div class="gc-acc-item">
+              <button class="gc-acc-header" type="button">
+                B. Inventory <span class="gc-acc-icon">▼</span>
+              </button>
+              <div class="gc-acc-content">
+                <p>Designed to gather all reliable data, information, and records, and assemble and compile these materials for their functional use.</p>
+              </div>
+            </div>
+
+            <!-- Service C -->
+            <div class="gc-acc-item">
+              <button class="gc-acc-header" type="button">
+                C. Information <span class="gc-acc-icon">▼</span>
+              </button>
+              <div class="gc-acc-content">
+                <p>Materials are made available to aid students in making appropriate choices, plans, and decisions.</p>
+              </div>
+            </div>
+
+            <!-- Service D -->
+            <div class="gc-acc-item">
+              <button class="gc-acc-header" type="button">
+                D. Follow-up <span class="gc-acc-icon">▼</span>
+              </button>
+              <div class="gc-acc-content">
+                <p>This guidance service assists students in determining the areas of their life that need further adjustment.</p>
+              </div>
+            </div>
+
+            <!-- Service E -->
+            <div class="gc-acc-item">
+              <button class="gc-acc-header" type="button">
+                E. Placement <span class="gc-acc-icon">▼</span>
+              </button>
+              <div class="gc-acc-content">
+                <p>Placement service will aid students in making choices consistent with their abilities, aptitudes, interests, and skills.</p>
+              </div>
+            </div>
+
+            <!-- Service F -->
+            <div class="gc-acc-item">
+              <button class="gc-acc-header" type="button">
+                F. Career <span class="gc-acc-icon">▼</span>
+              </button>
+              <div class="gc-acc-content">
+                <p>Helps prepare students develop their full potential through self-awareness, career planning, exploration, decision-making, and goal setting.</p>
+              </div>
+            </div>
+
+            <!-- Service G -->
+            <div class="gc-acc-item">
+              <button class="gc-acc-header" type="button">
+                G. Evaluation <span class="gc-acc-icon">▼</span>
+              </button>
+              <div class="gc-acc-content">
+                <p>Gives students a realistic appraisal of their strengths and weaknesses, abilities, interests, and type of personality. It also determines the effectiveness of the implementation program.</p>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+      </aside>
+    </div>
+  </main>
+
+  <!-- School Footer -->
+  <footer style="margin-top:2rem; background: #f8fafc; border-top: 1px solid var(--gc-border);">
+    <div class="wrap" style="padding: 2rem 0;">
+      <div class="foot-grid">
+        <div>
+          <strong style="color: var(--gc-primary);">Sta. Cruz Pingkian High School</strong><br/>
+          Brgy. Sta. Cruz, Pingkian • Nueva Vizcaya • Philippines<br/>
+          Email: 300648@deped.gov.ph • Phone: +63 967-8848989
+        </div>
+        <div>
+          <a href="#privacy">Privacy Notice</a> •
+          <a href="#foi">FOI</a> •
+          <a href="#sitemap">Sitemap</a> •
+          <a href="https://www.facebook.com/p/Santa-Cruz-Pingkian-High-School-Official-61554495084090/" target="_blank" rel="noopener">Facebook</a>
+        </div>
+      </div>
+      <div class="copy" style="margin-top: 1.5rem; color: var(--gc-text-muted);">© <span id="yearNowSchool"></span> SCPHS. All rights reserved.</div>
+    </div>
+  </footer>
+
+  <!-- GOVPH Footer -->
+  <footer class="govph-footer" role="contentinfo">
+    <div class="wrap govph-footer__grid">
+      <div class="govph-footer__col">
+        <h4>Republic of the Philippines</h4>
+        <p>All content is in the public domain unless otherwise stated.</p>
+      </div>
+      <div class="govph-footer__col">
+        <h4>About GOVPH</h4>
+        <ul class="govph-footer__links">
+          <li><a href="https://www.gov.ph/" target="_blank" rel="noopener">GOV.PH</a></li>
+          <li><a href="https://data.gov.ph/" target="_blank" rel="noopener">Open Data Portal</a></li>
+          <li><a href="https://www.officialgazette.gov.ph/" target="_blank" rel="noopener">Official Gazette</a></li>
+        </ul>
+      </div>
+      <div class="govph-footer__col">
+        <h4>Government Links</h4>
+        <ul class="govph-footer__links">
+          <li><a href="https://op-proper.gov.ph/" target="_blank" rel="noopener">Office of the President</a></li>
+          <li><a href="https://ovp.gov.ph/" target="_blank" rel="noopener">Office of the Vice President</a></li>
+          <li><a href="https://www.senate.gov.ph/" target="_blank" rel="noopener">Senate of the Philippines</a></li>
+          <li><a href="https://www.congress.gov.ph/" target="_blank" rel="noopener">House of Representatives</a></li>
+          <li><a href="https://sc.judiciary.gov.ph/" target="_blank" rel="noopener">Supreme Court</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="govph-footer__bar">
+      <div class="wrap">
+        <small>© <span id="yearNowGov"></span> Sta. Cruz Pingkian High School • A Philippine Government Website</small>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Chatbot mount & loader -->
+  <div id="scphs-chatbot-root"></div>
+  <script>
+  (function(){
+    // Real-time PH Time logic for the header
+    function tickTime() {
+      const el = document.getElementById('ph-time');
+      if (!el) return;
+      try {
+        const fmt = new Intl.DateTimeFormat('en-PH', {
+          timeZone: 'Asia/Manila',
+          weekday: 'long', year: 'numeric', month: 'long', day: '2-digit',
+          hour: 'numeric', minute: '2-digit', second: '2-digit', hour12: true
+        });
+        const p = fmt.formatToParts(new Date());
+        const m = Object.fromEntries(p.map(x => [x.type, x.value]));
+        el.textContent = `${m.weekday}, ${m.month} ${m.day}, ${m.year}, ${m.hour}:${m.minute}:${m.second} ${m.dayPeriod}`;
+      } catch {
+        el.textContent = new Date().toLocaleString('en-PH', { timeZone: 'Asia/Manila' });
+      }
+    }
+    tickTime();
+    setInterval(tickTime, 1000);
+
+    // Chatbot Loader
+    const rootId = 'scphs-chatbot-root';
+    if (!document.getElementById(rootId)) {
+      const m = document.createElement('div');
+      m.id = rootId;
+      document.body.appendChild(m);
+    }
+    const tried = {};
+      function load(src, onOk, onFail){
+      if (tried[src]) return onFail && onFail();
+      tried[src] = true;
+      const s = document.createElement('script');
+      s.src = src; s.defer = true;
+      s.onload = onOk;
+      s.onerror = onFail;
+      document.body.appendChild(s);
+    }
+    load('../../assets/js/chatbot.js', null, () => 
+      load('../assets/js/chatbot.js', null, () => 
+        load('assets/js/chatbot.js', null, () => 
+          console.warn('SCPHS chatbot: unable to load script.')
+        )
+      )
+    );
+  })();
+
+  // ============================================================
+  // ACCORDION LOGIC (Powers the dropdowns)
+  // ============================================================
+  document.addEventListener('DOMContentLoaded', () => {
+    const accItems = document.querySelectorAll('.gc-acc-item');
+    
+    accItems.forEach(item => {
+      const header = item.querySelector('.gc-acc-header');
+      const content = item.querySelector('.gc-acc-content');
+      
+      header.addEventListener('click', () => {
+        // Close all other open items
+        accItems.forEach(other => {
+          if (other !== item) {
+            other.classList.remove('active');
+            other.querySelector('.gc-acc-content').style.maxHeight = null;
+          }
+        });
+        
+        // Toggle the clicked item
+        item.classList.toggle('active');
+        if (item.classList.contains('active')) {
+          content.style.maxHeight = content.scrollHeight + 'px';
+        } else {
+          content.style.maxHeight = null;
+        }
+      });
+
+      // Initialize the first open item (Service A) so it opens smoothly
+      if (item.classList.contains('active')) {
+        content.style.maxHeight = content.scrollHeight + 'px';
+      }
+    });
+
+    // Handle window resizing (prevents text clipping if the window gets wider/narrower)
+    let resizeTimer;
+    window.addEventListener('resize', () => {
+      clearTimeout(resizeTimer);
+      resizeTimer = setTimeout(() => {
+        document.querySelectorAll('.gc-acc-item.active .gc-acc-content').forEach(openContent => {
+          openContent.style.maxHeight = openContent.scrollHeight + 'px';
+        });
+      }, 150);
+    });
+
+    // Update footer years automatically
+    const yearSchool = document.getElementById('yearNowSchool');
+    const yearGov = document.getElementById('yearNowGov');
+    const currentYear = new Date().getFullYear();
+    if (yearSchool) yearSchool.textContent = currentYear;
+    if (yearGov) yearGov.textContent = currentYear;
+  });
+  </script>
+</body>
+</html>

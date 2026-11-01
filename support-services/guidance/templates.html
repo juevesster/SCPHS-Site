@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Forms & Templates – Guidance Center | SCPHS</title>
+  <link rel="stylesheet" href="../../assets/css/styles.css" />
+  
+  <style>
+    :root {
+      --gc-primary: #0f4c81;
+      --gc-primary-hover: #0a365d;
+      --gc-bg-soft: #f8fafc;
+      --gc-border: #e2e8f0;
+      --gc-text-main: #1e293b;
+      --gc-text-muted: #64748b;
+      --gc-radius: 12px;
+      --gc-shadow-sm: 0 1px 3px rgba(0,0,0,0.05), 0 1px 2px rgba(0,0,0,0.03);
+      --gc-shadow-md: 0 4px 6px -1px rgba(0,0,0,0.05), 0 2px 4px -1px rgba(0,0,0,0.03);
+      --gc-transition: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+      --bright-blue: #2563eb;
+      
+      /* Purple theme from screenshot */
+      --purple-dark: #3b1c4a;
+      --purple-mid: #6b2fa0;
+      --purple-light: #b03ee6;
+    }
+
+    body { background: #f1f5f9; margin: 0; font-family: system-ui, -apple-system, sans-serif; }
+    .gc-layout-wrap { max-width: 1200px; margin: 0 auto; padding: 0 16px; }
+
+    /* HEADER STYLES */
+    .scphs-top-nav { background: #fff; border-bottom: 1px solid var(--gc-border); display: flex; align-items: stretch; justify-content: space-between; font-size: 0.9rem; }
+    .scphs-nav-links { display: flex; align-items: stretch; flex-wrap: wrap; }
+    .scphs-nav-links a { display: flex; align-items: center; padding: 0 12px; color: #333; text-decoration: none; font-weight: 500; font-size: 0.85rem; border-right: 1px solid #f1f5f9; }
+    .scphs-nav-links a:hover, .scphs-nav-links a.active { background: #f8fafc; color: var(--gc-primary); }
+    .scphs-govph-tab { background: #f8fafc; font-weight: 700 !important; color: #000 !important; border-right: 1px solid var(--gc-border) !important; padding: 0 20px !important; }
+    
+    .scphs-nav-dropdown { position: relative; display: flex; align-items: stretch; }
+    .scphs-nav-dropdown > a { border-right: 1px solid #f1f5f9; }
+    .scphs-dropdown-content { display: none; position: absolute; top: 100%; left: 0; background-color: #fff; min-width: 240px; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); border: 1px solid var(--gc-border); border-radius: 0 0 8px 8px; z-index: 1000; }
+    .scphs-nav-dropdown:hover .scphs-dropdown-content { display: block; }
+    .scphs-dropdown-content a { color: #333; padding: 12px 16px; text-decoration: none; display: block; font-size: 0.85rem; font-weight: 500; border-bottom: 1px solid #f1f5f9; text-align: left; border-right: none; }
+    .scphs-dropdown-content a:hover { background-color: var(--gc-bg-soft); color: var(--gc-primary); }
+    .scphs-dropdown-content a:last-child { border-bottom: none; border-radius: 0 0 8px 8px; }
+    
+    .scphs-search-area { display: flex; align-items: center; padding: 0 16px; gap: 12px; background: #f8fafc; border-left: 1px solid var(--gc-border); }
+    .scphs-search-area input { border: 1px solid #cbd5e1; padding: 6px 12px; border-radius: 4px; font-size: 0.85rem; outline: none; width: 120px; }
+    .scphs-search-area .icon-btn { background: none; border: 1px solid #cbd5e1; border-radius: 50%; width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; cursor: pointer; color: #333; font-weight: bold; font-size: 0.8rem; }
+    .scphs-header-main { background: #fff; padding: 20px 0; }
+    .scphs-header-grid { display: flex; justify-content: space-between; align-items: center; gap: 20px; flex-wrap: wrap; }
+    .scphs-branding { display: flex; align-items: center; gap: 16px; }
+    .scphs-branding img { height: 85px; width: auto; }
+    .scphs-brandtext h1 { margin: 0; font-size: 1.5rem; color: #111; font-weight: 800; line-height: 1.1; }
+    .scphs-brandtext .subtitle { margin: 4px 0 0; font-size: 0.95rem; color: #333; font-weight: 600; }
+    .scphs-meta-right { display: flex; flex-direction: column; align-items: flex-end; gap: 8px; }
+    .scphs-time { font-size: 0.85rem; color: #333; text-align: right; line-height: 1.4; }
+    .scphs-gov-logos { display: flex; gap: 12px; align-items: center; }
+    .scphs-gov-logos img { height: 45px; width: auto; }
+
+    @media (max-width: 900px) {
+      .scphs-header-grid { flex-direction: column; text-align: center; }
+      .scphs-meta-right { align-items: center; }
+      .scphs-time { text-align: center; }
+      .scphs-top-nav { flex-direction: column; }
+      .scphs-search-area { border-left: none; border-top: 1px solid var(--gc-border); padding: 10px 16px; }
+    }
+
+    /* MAIN CONTENT */
+    .gc-top-nav { display: flex; justify-content: space-between; align-items: center; padding: 1rem 1.25rem; border-radius: 8px; margin-top: 1.5rem; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem; background-color: var(--bright-blue); box-shadow: 0 4px 6px -1px rgba(37, 99, 235, 0.2); }
+    .gc-btn-back { display: inline-flex; align-items: center; gap: 0.5rem; background: #ffffff; color: var(--bright-blue); padding: 0.5rem 1rem; border-radius: 8px; font-size: 0.9rem; font-weight: 600; text-decoration: none; border: none; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+    .gc-btn-back:hover { background: #f1f5f9; }
+
+    /* E-COMPLAINT DESK CARD */
+    .complaint-card {
+      background: #fdfaf6;
+      border: 1px solid #e2e8f0;
+      border-radius: 4px;
+      max-width: 800px;
+      margin: 0 auto 40px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+      overflow: hidden;
+    }
+    .complaint-header-img {
+      background: url('https://images.unsplash.com/photo-1517842645767-c639042777db?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80') center/cover;
+      height: 180px;
+      border-bottom: 4px solid #d97706;
+    }
+    .complaint-content {
+      padding: 30px;
+      background: #fff;
+    }
+    .complaint-content h2 {
+      margin: 0 0 15px;
+      font-size: 2rem;
+      font-family: serif;
+      color: #333;
+    }
+    .complaint-content p {
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: #444;
+      line-height: 1.6;
+      margin-bottom: 15px;
+    }
+    .complaint-required {
+      color: #dc2626;
+      font-size: 0.85rem;
+      margin-bottom: 20px;
+      border-top: 1px solid #eee;
+      padding-top: 15px;
+    }
+    .complaint-title {
+      background: #fff;
+      padding: 15px 30px;
+      border-top: 1px solid #e2e8f0;
+      font-size: 1.2rem;
+      color: #333;
+    }
+    .complaint-btn {
+      display: block;
+      width: 100%;
+      background: #2c0a3b;
+      color: #fff;
+      text-align: center;
+      padding: 15px;
+      font-size: 1.1rem;
+      text-decoration: none;
+      font-weight: 500;
+    }
+    .complaint-btn:hover { background: #1a0524; }
+
+    /* TEMPLATES SECTION */
+    .templates-section {
+      background: #fff;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+      margin-bottom: 40px;
+      overflow: hidden;
+    }
+    .templates-header {
+      background: var(--purple-dark);
+      background-image: linear-gradient(135deg, var(--purple-dark) 0%, var(--purple-mid) 100%);
+      padding: 30px;
+      text-align: center;
+      color: #fff;
+      border-bottom: 4px solid #d97706;
+    }
+    .templates-header h2 {
+      margin: 0;
+      font-size: 2rem;
+      letter-spacing: 2px;
+      font-weight: 600;
+    }
+    
+    .templates-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 30px;
+      padding: 40px;
+    }
+    @media (max-width: 768px) {
+      .templates-grid { grid-template-columns: 1fr; padding: 20px; gap: 20px; }
+    }
+
+    .template-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 15px;
+    }
+    
+    .template-item span {
+      font-weight: 700;
+      font-size: 0.95rem;
+      color: #222;
+      line-height: 1.4;
+    }
+
+    .btn-purple {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      background: linear-gradient(180deg, #e050ff 0%, #9900cc 100%);
+      color: #fff;
+      padding: 8px 16px;
+      border-radius: 20px;
+      font-size: 0.8rem;
+      font-weight: 700;
+      text-decoration: none;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.2), inset 0 1px 0 rgba(255,255,255,0.4);
+      white-space: nowrap;
+      transition: all 0.2s;
+    }
+    .btn-purple:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 8px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.4);
+    }
+  </style>
+</head>
+<body>
+
+  <header class="scphs-header">
+    <div class="scphs-top-nav">
+      <div class="scphs-nav-links">
+        <a href="https://www.gov.ph" class="scphs-govph-tab" target="_blank" rel="noopener">GOVPH</a>
+        <a href="../../index.html">Home</a>
+        <a href="#">About Us ▾</a>
+        <a href="#">Programs & Accomplishments ▾</a>
+        <a href="index.html">Guidance Services</a>
+        <a href="#">News & Events</a>
+        
+        <div class="scphs-nav-dropdown">
+          <a href="resources.html">Resources ▾</a>
+          <div class="scphs-dropdown-content">
+            <a href="resources.html">📂 Downloadable Forms</a>
+            <a href="templates.html" class="active">📋 Guidance Templates</a>
+          </div>
+        </div>
+        
+        <a href="#">Issuances</a>
+        <a href="#">Contact</a>
+      </div>
+      <div class="scphs-search-area">
+        <input type="text" placeholder="Search ...">
+        <button class="icon-btn">⌕</button>
+        <button class="icon-btn">A</button>
+      </div>
+    </div>
+
+    <div class="scphs-header-main">
+      <div class="gc-layout-wrap">
+        <div class="scphs-header-grid">
+          <div class="scphs-branding">
+            <img src="../../assets/images/scphslogo.png" alt="SCPHS Logo">
+            <div class="scphs-brandtext">
+              <h1>STA. CRUZ PINGKIAN HIGH SCHOOL</h1>
+              <p class="subtitle">Schools Division of Nueva Vizcaya</p>
+            </div>
+          </div>
+          <div class="scphs-meta-right">
+            <div class="scphs-time">
+              Philippine Standard Time:<br/>
+              <span id="ph-time">Loading…</span>
+            </div>
+            <div class="scphs-gov-logos">
+              <img src="../../assets/images/foi-logo.png" alt="FOI">
+              <img src="../../assets/images/Bagong-Pilipinas-Logo.png" alt="Bagong Pilipinas">
+              <img src="../../assets/images/transparency-seal.png" alt="Transparency Seal">
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main class="gc-layout-wrap">
+    
+    <div class="gc-top-nav">
+      <nav aria-label="Breadcrumb" style="font-size: 0.9rem; color: #ffffff; display: flex; align-items: center; gap: 0.25rem;">
+        <a href="../../index.html" style="color: #ffffff; text-decoration: none; opacity: 0.8;">Home</a>
+        <span style="margin: 0 0.5rem; opacity: 0.6;">/</span>
+        <a href="index.html" style="color: #ffffff; text-decoration: none; opacity: 0.8;">Guidance Center</a>
+        <span style="margin: 0 0.5rem; opacity: 0.6;">/</span>
+        <strong style="color: #ffffff; font-weight: 700;">Forms & Templates</strong>
+      </nav>
+      <div style="display: flex; gap: 0.75rem;">
+        <a href="index.html" class="gc-btn-back"><span>←</span> Back to Guidance Center</a>
+      </div>
+    </div>
+
+    <!-- E-COMPLAINT DESK -->
+    <div class="complaint-card">
+      <div class="complaint-header-img"></div>
+      <div class="complaint-content">
+        <h2>LRP E-Complaint Desk</h2>
+        <p>The Department of Education recognizes its responsibilities under the Republic Act No. 10173 (Act), also known as the Data Privacy Act of 2012, with respect to the data they collect, record, organize, update, use, consolidate or destruct from their personnel and clientele. The personal data obtained from this form is entered and stored within DepEd's authorized information and communications system and will only be accessed by the authorized personnel.</p>
+        <p>DepEd has instituted appropriate organizational, technical and physical security measures to ensure the protection of personal data. Furthermore, the information collected and stored in the portal shall only be used for the purposes of this complaint form. DepEd shall not disclose any personal information without their consent and shall retain this information over a period of ten years for the effective implementation and management of this form.</p>
+        <div class="complaint-required">* Indicates required question</div>
+      </div>
+      <div class="complaint-title">LRP E-Complaint Desk</div>
+      <!-- Add your Google Form link below in the href -->
+      <a href="#" target="_blank" class="complaint-btn">Fill out form</a>
+    </div>
+
+    <!-- TEMPLATES SECTION -->
+    <div class="templates-section">
+      <div class="templates-header">
+        <h2>TEMPLATES</h2>
+      </div>
+      
+      <div class="templates-grid">
+        
+        <!-- Left Column -->
+        <div style="display: flex; flex-direction: column; gap: 30px;">
+          
+          <!-- 1. Case Monitoring Form -->
+          <div class="template-item">
+            <span>Case Monitoring Form</span>
+            <!-- Make sure this file is uploaded to your assets/docs folder -->
+            <a href="../../assets/docs/CASE MONITORING FORM.docx" download class="btn-purple">DOWNLOAD <span>⬇</span></a>
+          </div>
+
+          <!-- 2. Children in Conflict with the Law -->
+          <div class="template-item">
+            <span>Children in Conflict with<br>the Law (CICL) Form</span>
+            <a href="../../assets/docs/Children in Conflict with the Law.docx" download class="btn-purple">DOWNLOAD <span>⬇</span></a>
+          </div>
+
+          <!-- 3. Profiling and Initial Risk Assessment -->
+          <div class="template-item">
+            <span>Profiling and Initial Risk<br>Assessment Tool for<br>Children (Appendix A)</span>
+            <a href="../../assets/docs/Profiling and Initial Risk Assessment Tools for Children-APPENDIX A.docx" download class="btn-purple">DOWNLOAD <span>⬇</span></a>
+          </div>
+
+          <!-- 4. Enhanced Intake Sheet -->
+          <div class="template-item">
+            <span>Enhanced Intake Sheet<br>Form (Annex E)</span>
+            <a href="../../assets/docs/ANNEX E- Enhanced Intake Sheet.docx" download class="btn-purple">DOWNLOAD <span>⬇</span></a>
+          </div>
+
+        </div>
+
+                <!-- Right Column -->
+        <div style="display: flex; flex-direction: column; gap: 30px;">
+          
+          <!-- 5. Referral for Service -->
+          <div class="template-item">
+            <span>Referral for Service Form<br>(Appendix C)</span>
+            <a href="../../assets/docs/REFERRAL FOR SERVICE-Appendix C.docx" download class="btn-purple">DOWNLOAD <span>⬇</span></a>
+          </div>
+
+          <!-- 6. Consolidated Report on CAR (NEW) -->
+          <div class="template-item">
+            <span>Consolidated Report on<br>CAR (Appendix D)</span>
+            <a href="../../assets/docs/Consolidated Report on CAR Appendix D.docx" download class="btn-purple">DOWNLOAD <span>⬇</span></a>
+          </div>
+
+          <!-- 7. Restorative Justice Agreement -->
+          <div class="template-item">
+            <span>Restorative Justice<br>Agreement Form<br>(Appendix E)</span>
+            <a href="../../assets/docs/RESTORATIVE JUSTICE AGREEMENT FORM-Appendix E.docx" download class="btn-purple">DOWNLOAD <span>⬇</span></a>
+          </div>
+
+          <!-- 8. LRPO-Intervention Plan -->
+          <div class="template-item">
+            <span>LRPO-Intervention Plan<br>Template</span>
+            <a href="../../assets/docs/ESSD-LRPO- INTERVENTION PLAN TEMPLATE.docx" download class="btn-purple">DOWNLOAD <span>⬇</span></a>
+          </div>
+
+        </div>
+
+      </div>
+    </div>
+
+  </main>
+
+  <footer style="margin-top:2rem; background: #f8fafc; border-top: 1px solid var(--gc-border);">
+    <div class="gc-layout-wrap" style="padding: 2rem 0; text-align: center; font-size:0.9rem; color:var(--gc-text-muted);">
+      <strong style="color: var(--gc-primary);">Sta. Cruz Pingkian High School</strong><br/>
+      Brgy. Sta. Cruz, Pingkian • Nueva Vizcaya • Philippines<br/>
+      © <span id="yearNowSchool"></span> SCPHS. All rights reserved.
+    </div>
+  </footer>
+
+  <script>
+    (function(){
+      function tickTime() {
+        const el = document.getElementById('ph-time');
+        if (!el) return;
+        try {
+          const fmt = new Intl.DateTimeFormat('en-PH', {
+            timeZone: 'Asia/Manila', weekday: 'long', year: 'numeric', month: 'long', day: '2-digit',
+            hour: 'numeric', minute: '2-digit', second: '2-digit', hour12: true
+          });
+          el.textContent = fmt.format(new Date());
+        } catch { el.textContent = new Date().toLocaleString(); }
+      }
+      tickTime();
+      setInterval(tickTime, 1000);
+      document.getElementById('yearNowSchool').textContent = new Date().getFullYear();
+    })();
+  </script>
+</body>
+</html>
