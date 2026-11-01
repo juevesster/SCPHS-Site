@@ -9,7 +9,7 @@
   
   <style>
     /* ============================================================
-       MODERN GUIDANCE CENTER UI (MATCHING MAIN LMS)
+       MODERN GUIDANCE CENTER UI (PCNHS HEADER STYLE)
        ============================================================ */
     :root {
       --gc-primary: #0f4c81;
@@ -25,115 +25,150 @@
       --gc-transition: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
     }
 
-    /* Fix body padding if main styles.css doesn't provide it */
     body { background: #f1f5f9; margin: 0; font-family: system-ui, -apple-system, sans-serif; }
+    .gc-layout-wrap { max-width: 1200px; margin: 0 auto; padding: 0 16px; }
 
     /* ============================================================
-       MAIN LMS HEADER (Copied from index.html)
+       NEW PCNHS-STYLE HEADER
        ============================================================ */
-    .govph {
-      background: #0f2b4f;
-      color: #fff;
-      font-size: 12px;
-      padding: 6px 0;
-    }
-    .govph .wrap {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-    .govph-link {
-      color: #fff;
-      text-decoration: none;
-      font-weight: 700;
-      letter-spacing: 0.05em;
-    }
-    .govph .sep {
-      width: 1px;
-      height: 12px;
-      background: rgba(255,255,255,0.3);
-    }
-    .govph .label {
-      opacity: 0.8;
-    }
-
-    header.main-header {
+    
+    /* Top Navigation Bar */
+    .pcnhs-top-nav {
       background: #fff;
       border-bottom: 1px solid var(--gc-border);
-      box-shadow: 0 2px 4px rgba(0,0,0,0.02);
-    }
-    .ph-time-box {
       display: flex;
-      gap: 6px;
-      align-items: center;
-      font-size: 12px;
-      color: var(--gc-text-muted);
-      padding: 6px 16px;
-      max-width: 1200px;
-      margin: 0 auto;
-      border-bottom: 1px dashed var(--gc-border);
-    }
-    .ph-label { font-weight: 600; color: #374151; }
-
-    .brandbar {
-      display: flex;
-      align-items: center;
+      align-items: stretch;
       justify-content: space-between;
-      padding: 16px 0;
-      gap: 20px;
-    }
-    .logos-left img { height: 60px; }
-    .logos-right { display: flex; gap: 12px; align-items: center; }
-    .logos-right img { height: 45px; }
-    
-    .brandtext { flex: 1; text-align: center; }
-    .brandtext h1 {
-      margin: 0;
-      font-size: 1.4rem;
-      color: var(--gc-primary);
-      font-weight: 800;
-      letter-spacing: -0.01em;
-    }
-    .brandtext p {
-      margin: 4px 0 0;
-      font-size: 0.85rem;
-      color: var(--gc-text-muted);
-    }
-
-    /* Navigation Menu */
-    nav.primary-nav {
-      background: var(--gc-primary);
-    }
-    .menu {
-      display: flex;
-      list-style: none;
-      margin: 0;
-      padding: 0;
-      max-width: 1200px;
-      margin: 0 auto;
-    }
-    .menu > li > a {
-      display: block;
-      padding: 14px 20px;
-      color: #fff;
-      text-decoration: none;
       font-size: 0.9rem;
-      font-weight: 600;
-      transition: background var(--gc-transition);
     }
-    .menu > li > a:hover, .menu > li > a.active {
-      background: rgba(255,255,255,0.15);
+    .pcnhs-nav-links {
+      display: flex;
+      align-items: stretch;
+      flex-wrap: wrap;
+    }
+    .pcnhs-nav-links a {
+      display: flex;
+      align-items: center;
+      padding: 0 16px;
+      color: #333;
+      text-decoration: none;
+      font-weight: 500;
+      border-right: 1px solid #f1f5f9;
+      transition: background 0.2s;
+    }
+    .pcnhs-nav-links a:hover, .pcnhs-nav-links a.active {
+      background: #f8fafc;
+      color: var(--gc-primary);
+    }
+    .pcnhs-govph-tab {
+      background: #f8fafc;
+      font-weight: 700 !important;
+      color: #000 !important;
+      border-right: 1px solid var(--gc-border) !important;
+      padding: 0 24px !important;
+    }
+    
+    /* Search Bar Area */
+    .pcnhs-search-area {
+      display: flex;
+      align-items: center;
+      padding: 0 16px;
+      gap: 12px;
+      background: #f8fafc;
+      border-left: 1px solid var(--gc-border);
+    }
+    .pcnhs-search-area input {
+      border: 1px solid #cbd5e1;
+      padding: 6px 12px;
+      border-radius: 4px;
+      font-size: 0.85rem;
+      outline: none;
+      width: 160px;
+    }
+    .pcnhs-search-area input:focus { border-color: var(--gc-primary); }
+    .pcnhs-search-area .icon-btn {
+      background: none;
+      border: 1px solid #cbd5e1;
+      border-radius: 50%;
+      width: 30px;
+      height: 30px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      color: #333;
+      font-weight: bold;
+      font-size: 0.8rem;
     }
 
-    @media (max-width: 768px) {
-      .brandbar { flex-direction: column; text-align: center; }
-      .logos-right { justify-content: center; }
-      .menu { flex-wrap: wrap; justify-content: center; }
-      .menu > li > a { padding: 10px 15px; font-size: 0.85rem; }
+    /* Second Row: Branding & Time */
+    .pcnhs-header-main {
+      background: #fff;
+      padding: 20px 0;
+    }
+    .pcnhs-header-grid {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 20px;
+      flex-wrap: wrap;
+    }
+    
+    .pcnhs-branding {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+    .pcnhs-branding img {
+      height: 85px;
+      width: auto;
+    }
+    .pcnhs-brandtext h1 {
+      margin: 0;
+      font-size: 1.5rem;
+      color: #111;
+      font-weight: 800;
+      line-height: 1.1;
+    }
+    .pcnhs-brandtext .subtitle {
+      margin: 4px 0 0;
+      font-size: 0.95rem;
+      color: #333;
+      font-weight: 600;
+    }
+
+    .pcnhs-meta-right {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 8px;
+    }
+    .pcnhs-time {
+      font-size: 0.85rem;
+      color: #333;
+      text-align: right;
+      line-height: 1.4;
+    }
+    .pcnhs-gov-logos {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+    }
+    .pcnhs-gov-logos img {
+      height: 45px;
+      width: auto;
+    }
+
+    @media (max-width: 900px) {
+      .pcnhs-header-grid { flex-direction: column; text-align: center; }
+      .pcnhs-meta-right { align-items: center; }
+      .pcnhs-time { text-align: center; }
+      .pcnhs-top-nav { flex-direction: column; }
+      .pcnhs-search-area { border-left: none; border-top: 1px solid var(--gc-border); padding: 10px 16px; }
     }
 
     /* ============================================================
-       BREADCRUMBS & TOP NAVIGATION
+       BREADCRUMBS & MAIN CONTENT
        ============================================================ */
     .gc-top-nav {
       display: flex;
@@ -181,14 +216,6 @@
       box-shadow: var(--gc-shadow-md);
     }
 
-    /* ============================================================
-       LAYOUT GRID
-       ============================================================ */
-    .gc-layout-wrap {
-      max-width: 1200px;
-      margin: 0 auto;
-      padding: 0 16px;
-    }
     .gc-layout-grid {
       display: grid;
       grid-template-columns: 1fr 340px;
@@ -204,9 +231,7 @@
       }
     }
 
-    /* ============================================================
-       HERO BANNER (FIXED CONTRAST)
-       ============================================================ */
+    /* Hero Banner (Clean White Theme) */
     .gc-hero {
       background: #fff;
       border: 1px solid var(--gc-border);
@@ -438,55 +463,58 @@
 </head>
 <body>
 
-  <!-- ===================== GOVPH / DepEd strip ===================== -->
-  <div class="govph">
-    <div class="wrap gc-layout-wrap">
-      <a class="govph-link" href="https://www.gov.ph" target="_blank" rel="noopener">GOVPH</a>
-      <span class="sep" aria-hidden="true"></span>
-      <span class="label">Republic of the Philippines • Department of Education</span>
-    </div>
-  </div>
-
-  <!-- ===================== MAIN HEADER ===================== -->
-  <header class="main-header">
-    <div class="ph-time-box gc-layout-wrap">
-      <span class="ph-label">Philippine Standard Time:</span>
-      <span id="ph-time">Loading…</span>
-    </div>
-
-    <div class="gc-layout-wrap">
-      <div class="brandbar">
-        <div class="logos-left" aria-label="School logo">
-          <img src="../../assets/images/scphslogo.png" alt="SCPHS Logo">
-        </div>
-        <div class="brandtext">
-          <h1>STA. CRUZ PINGKIAN HIGH SCHOOL</h1>
-          <p>Schools Division of Nueva Vizcaya • Region II – Cagayan Valley • Department of Education</p>
-        </div>
-        <div class="logos-right" aria-label="Government logos">
-          <img src="../../assets/images/foi-logo.png" alt="Freedom of Information" class="logo--gov">
-          <img src="../../assets/images/Bagong-Pilipinas-Logo.png" alt="Bagong Pilipinas" class="logo--gov">
-          <a href="../../transparency" class="logo-link" target="_blank" rel="noopener">
-            <img src="../../assets/images/transparency-seal.png" alt="Transparency Seal" class="logo--seal">
-          </a>
-        </div>
+  <!-- ===================== NEW PCNHS-STYLE HEADER ===================== -->
+  <header class="pcnhs-header">
+    <!-- Row 1: Top Navigation & Search -->
+    <div class="pcnhs-top-nav">
+      <div class="pcnhs-nav-links">
+        <a href="https://www.gov.ph" class="pcnhs-govph-tab" target="_blank" rel="noopener">GOVPH</a>
+        <a href="../../index.html">Home</a>
+        <a href="#">About Us ▾</a>
+        <a href="#">Programs & Accomplishments ▾</a>
+        <a href="#" class="active">Guidance Services</a>
+        <a href="#">News & Events</a>
+        <a href="#">Resources</a>
+        <a href="#">Issuances</a>
+        <a href="#">Contact</a>
+      </div>
+      <div class="pcnhs-search-area">
+        <input type="text" placeholder="Search ..." aria-label="Search">
+        <button class="icon-btn" aria-label="Search">⌕</button>
+        <button class="icon-btn" aria-label="Text Size">A</button>
       </div>
     </div>
 
-    <!-- Navigation -->
-    <nav class="primary-nav" aria-label="Primary">
-      <ul class="menu gc-layout-wrap">
-        <li><a href="../../index.html">Home</a></li>
-        <li><a href="../../index.html#the-school">The School</a></li>
-        <li><a href="../../index.html#officials">DepEd Officials</a></li>
-        <li><a href="../../index.html#faculty">Faculty</a></li>
-        <li><a href="../../index.html#students">Students</a></li>
-        <li><a href="../../index.html#bulletin">Bulletin</a></li>
-        <li><a href="../../index.html#support-services" class="active">Support Services</a></li>
-        <li><a href="../../index.html#linkages">School Linkages</a></li>
-        <li><a href="../../index.html#contact">Contact Us</a></li>
-      </ul>
-    </nav>
+    <!-- Row 2: School Branding & Real-Time Clock -->
+    <div class="pcnhs-header-main">
+      <div class="gc-layout-wrap">
+        <div class="pcnhs-header-grid">
+          
+          <!-- Left: Logo & Title -->
+          <div class="pcnhs-branding">
+            <img src="../../assets/images/scphslogo.png" alt="SCPHS Logo">
+            <div class="pcnhs-brandtext">
+              <h1>STA. CRUZ PINGKIAN HIGH SCHOOL</h1>
+              <p class="subtitle">Schools Division of Nueva Vizcaya</p>
+            </div>
+          </div>
+
+          <!-- Right: PH Time & Gov Logos -->
+          <div class="pcnhs-meta-right">
+            <div class="pcnhs-time">
+              Philippine Standard Time:<br/>
+              <span id="ph-time">Loading…</span>
+            </div>
+            <div class="pcnhs-gov-logos">
+              <img src="../../assets/images/foi-logo.png" alt="Freedom of Information">
+              <img src="../../assets/images/Bagong-Pilipinas-Logo.png" alt="Bagong Pilipinas">
+              <img src="../../assets/images/transparency-seal.png" alt="Transparency Seal">
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
   </header>
 
   <!-- ===================== MAIN CONTENT ===================== -->
@@ -511,7 +539,7 @@
       </div>
     </div>
 
-    <!-- Hero Banner (Clean White Theme) -->
+    <!-- Hero Banner -->
     <div class="gc-hero">
       <h1>Guidance Center</h1>
       <p>Fostering holistic student development through compassionate counseling, career guidance, and comprehensive support programs.</p>
@@ -625,7 +653,6 @@
           <h3><span>📂</span> Guidance Services</h3>
           <div class="gc-accordion">
             
-            <!-- Service A -->
             <div class="gc-acc-item active">
               <button class="gc-acc-header" type="button">
                 A. Counseling <span class="gc-acc-icon">▼</span>
@@ -635,7 +662,6 @@
               </div>
             </div>
 
-            <!-- Service B -->
             <div class="gc-acc-item">
               <button class="gc-acc-header" type="button">
                 B. Inventory <span class="gc-acc-icon">▼</span>
@@ -645,7 +671,6 @@
               </div>
             </div>
 
-            <!-- Service C -->
             <div class="gc-acc-item">
               <button class="gc-acc-header" type="button">
                 C. Information <span class="gc-acc-icon">▼</span>
@@ -655,7 +680,6 @@
               </div>
             </div>
 
-            <!-- Service D -->
             <div class="gc-acc-item">
               <button class="gc-acc-header" type="button">
                 D. Follow-up <span class="gc-acc-icon">▼</span>
@@ -665,7 +689,6 @@
               </div>
             </div>
 
-            <!-- Service E -->
             <div class="gc-acc-item">
               <button class="gc-acc-header" type="button">
                 E. Placement <span class="gc-acc-icon">▼</span>
@@ -675,7 +698,6 @@
               </div>
             </div>
 
-            <!-- Service F -->
             <div class="gc-acc-item">
               <button class="gc-acc-header" type="button">
                 F. Career <span class="gc-acc-icon">▼</span>
@@ -685,7 +707,6 @@
               </div>
             </div>
 
-            <!-- Service G -->
             <div class="gc-acc-item">
               <button class="gc-acc-header" type="button">
                 G. Evaluation <span class="gc-acc-icon">▼</span>
@@ -755,11 +776,10 @@
     </div>
   </footer>
 
-  <!-- Chatbot mount & loader -->
   <div id="scphs-chatbot-root"></div>
   <script>
   (function(){
-    // PH Time logic for header
+    // Real-time PH Time logic for the new header
     function tickTime() {
       const el = document.getElementById('ph-time');
       if (!el) return;
@@ -796,16 +816,16 @@
       s.onerror = onFail;
       document.body.appendChild(s);
     }
-    load('../../assets/js/chatbot.js', null, () =>
-      load('../assets/js/chatbot.js', null, () =>
-        load('assets/js/chatbot.js', null, () =>
+    load('../../assets/js/chatbot.js', null, () => 
+      load('../assets/js/chatbot.js', null, () => 
+        load('assets/js/chatbot.js', null, () => 
           console.warn('SCPHS chatbot: unable to load script.')
         )
       )
     );
   })();
 
-  // Accordion Logic
+   // Accordion Logic
   document.addEventListener('DOMContentLoaded', () => {
     const accItems = document.querySelectorAll('.gc-acc-item');
     accItems.forEach(item => {
