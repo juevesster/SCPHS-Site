@@ -610,12 +610,16 @@
                     "scores", student.id)
               );
               if (scSnap.exists()) {
-                const d = scSnap.data();
-                const g = d?.computed?.termGrade;
-                if (g != null && !isNaN(Number(g))) {
-                  GRADES[student.id][subj.code] = Number(g);
-                }
-              }
+            const d = scSnap.data();
+            const cls = MY_CLASSES.find(c => c.id === ACTIVE_CLASS_ID);
+            const currentSY = cls?.schoolYear || "2026-2027";
+            // Skip docs from a different school year
+            if (d.schoolYear && d.schoolYear !== currentSY) return;
+            const g = d?.computed?.termGrade;
+            if (g != null && !isNaN(Number(g))) {
+            GRADES[student.id][subj.code] = Number(g);
+            }
+            }
             } catch {}
           }
         }
