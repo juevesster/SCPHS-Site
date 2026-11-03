@@ -391,7 +391,7 @@
             <td>${s.classLabel}</td>
             <td><span class="badge ${badgeClass}">${statusText}</span></td>
             <td>
-              <button class="btn-action btn-log" onclick="openModal('${s.id}', '${s.classId}', '${s.fullName}', '${s.classLabel}', '${s.lrn}')">+ Log Case</button>
+              <button class="btn-action btn-log" onclick="openModalById('${s.id}')">+ Log Case</button>
             </td>
           </tr>
         `;
@@ -409,57 +409,38 @@
       renderTable(filtered);
     };
 
-        // 5. Modal Logic
-    window.openModal = function(studentId, classId, studentName, classLabel, lrn) {
-      try {
-        // Find the elements
-        const elName = document.getElementById('modal-student-name');
-        const elDetails = document.getElementById('modal-student-details');
-        const elId = document.getElementById('modal-student-id');
-        const elClassId = document.getElementById('modal-student-classid');
-        
-        // Populate them safely
-        if (elName) elName.textContent = studentName;
-        if (elDetails) elDetails.textContent = `${classLabel} | LRN: ${lrn}`;
-        if (elId) elId.value = studentId;
-        if (elClassId) elClassId.value = classId;
-        
-        // Set default date and time to now
-        const now = new Date();
-        const elDate = document.getElementById('modal-date');
-        const elTime = document.getElementById('modal-time');
-        
-        if (elDate) {
-          const offset = now.getTimezoneOffset() * 60000;
-          const localISOTime = (new Date(now - offset)).toISOString().slice(0, 10);
-          elDate.value = localISOTime;
-        }
-        
-        if (elTime) {
-          const hours = String(now.getHours()).padStart(2, '0');
-          const minutes = String(now.getMinutes()).padStart(2, '0');
-          elTime.value = `${hours}:${minutes}`;
-        }
-
-        // THE LINE THAT OPENS THE PANEL
-        const modal = document.getElementById('case-modal');
-        if (modal) {
-          modal.classList.add('show');
-        } else {
-          console.error("Could not find the modal element with id 'case-modal'");
-          alert("Error: The modal HTML is missing from the page.");
-        }
-
-      } catch (error) {
-        console.error("Error opening modal:", error);
-        alert("There was a script error trying to open the modal. Check the console (F12).");
+            // 5. Modal Logic
+        window.openModalById = function(studentId) {
+      // Find the student in our global array
+      const student = ALL_STUDENTS.find(s => s.id === studentId);
+      if (!student) {
+        alert("Student not found!");
+        return;
       }
+
+      // Populate the fields
+      document.getElementById('modal-student-name').textContent = student.fullName;
+      document.getElementById('modal-student-details').textContent = `${student.classLabel} | LRN: ${student.lrn}`;
+      document.getElementById('modal-student-id').value = student.id;
+      document.getElementById('modal-student-classid').value = student.classId;
+      
+      // Set default date and time
+      const now = new Date();
+      const offset = now.getTimezoneOffset() * 60000;
+      const localISOTime = (new Date(now - offset)).toISOString().slice(0, 10);
+      document.getElementById('modal-date').value = localISOTime;
+      
+      const hours = String(now.getHours()).padStart(2, '0');
+      const minutes = String(now.getMinutes()).padStart(2, '0');
+      document.getElementById('modal-time').value = `${hours}:${minutes}`;
+
+      // OPEN THE PANEL
+      document.getElementById('case-modal').classList.add('show');
     };
 
     window.closeModal = function(event) {
       if (event && event.target !== event.currentTarget) return;
-      const modal = document.getElementById('case-modal');
-      if (modal) modal.classList.remove('show');
+      document.getElementById('case-modal').classList.remove('show');
     };
 
     // 6. Submit Case to Firestore
