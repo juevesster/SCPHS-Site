@@ -409,24 +409,57 @@
       renderTable(filtered);
     };
 
-    // 5. Modal Logic
+        // 5. Modal Logic
     window.openModal = function(studentId, classId, studentName, classLabel, lrn) {
-      document.getElementById('modal-student-name').textContent = studentName;
-      document.getElementById('modal-student-details').textContent = `${classLabel} | LRN: ${lrn}`;
-      document.getElementById('modal-student-id').value = studentId;
-      document.getElementById('modal-student-classid').value = classId;
-      
-      // Set default date and time to now
-      const now = new Date();
-      document.getElementById('modal-date').valueAsDate = now;
-      document.getElementById('modal-time').value = now.toTimeString().slice(0,5);
+      try {
+        // Find the elements
+        const elName = document.getElementById('modal-student-name');
+        const elDetails = document.getElementById('modal-student-details');
+        const elId = document.getElementById('modal-student-id');
+        const elClassId = document.getElementById('modal-student-classid');
+        
+        // Populate them safely
+        if (elName) elName.textContent = studentName;
+        if (elDetails) elDetails.textContent = `${classLabel} | LRN: ${lrn}`;
+        if (elId) elId.value = studentId;
+        if (elClassId) elClassId.value = classId;
+        
+        // Set default date and time to now
+        const now = new Date();
+        const elDate = document.getElementById('modal-date');
+        const elTime = document.getElementById('modal-time');
+        
+        if (elDate) {
+          const offset = now.getTimezoneOffset() * 60000;
+          const localISOTime = (new Date(now - offset)).toISOString().slice(0, 10);
+          elDate.value = localISOTime;
+        }
+        
+        if (elTime) {
+          const hours = String(now.getHours()).padStart(2, '0');
+          const minutes = String(now.getMinutes()).padStart(2, '0');
+          elTime.value = `${hours}:${minutes}`;
+        }
 
-      document.getElementById('case-modal').classList.add('show');
+        // THE LINE THAT OPENS THE PANEL
+        const modal = document.getElementById('case-modal');
+        if (modal) {
+          modal.classList.add('show');
+        } else {
+          console.error("Could not find the modal element with id 'case-modal'");
+          alert("Error: The modal HTML is missing from the page.");
+        }
+
+      } catch (error) {
+        console.error("Error opening modal:", error);
+        alert("There was a script error trying to open the modal. Check the console (F12).");
+      }
     };
 
     window.closeModal = function(event) {
       if (event && event.target !== event.currentTarget) return;
-      document.getElementById('case-modal').classList.remove('show');
+      const modal = document.getElementById('case-modal');
+      if (modal) modal.classList.remove('show');
     };
 
     // 6. Submit Case to Firestore
