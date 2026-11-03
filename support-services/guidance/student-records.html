@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Student Records & SF1 – Guidance Center | SCPHS</title>
+  <title>Student Records & Discipline – Guidance Center | SCPHS</title>
   <link rel="stylesheet" href="../../assets/css/styles.css" />
   
   <style>
@@ -16,6 +16,7 @@
       --danger: #dc2626;
       --warning: #d97706;
       --success: #16a34a;
+      --bg-soft: #f8fafc;
     }
 
     body { background: #f1f5f9; margin: 0; font-family: system-ui, -apple-system, sans-serif; }
@@ -24,7 +25,6 @@
     /* Header */
     .form-header { background: #fff; padding: 20px 0; border-bottom: 1px solid var(--gc-border); margin-bottom: 20px; text-align: center; }
     .form-header h1 { margin: 0; color: var(--gc-primary); font-size: 1.5rem; }
-    .form-header p { margin: 5px 0 0; color: #666; font-size: 0.9rem; }
     .back-link { display: inline-block; margin-bottom: 20px; color: var(--bright-blue); text-decoration: none; font-weight: 600; }
 
     /* Loading State */
@@ -32,22 +32,17 @@
     .spinner { width: 40px; height: 40px; border: 4px solid #e2e8f0; border-top-color: var(--gc-primary); border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 15px; }
     @keyframes spin { to { transform: rotate(360deg); } }
 
-    /* Main Content */
+    /* Main Layout */
     #database-content { display: none; } 
     .card { background: #fff; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); overflow: hidden; margin-bottom: 30px; }
     .card-header { background: #f8fafc; padding: 20px; border-bottom: 1px solid var(--gc-border); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
     .card-header h2 { margin: 0; color: var(--gc-primary); font-size: 1.25rem; }
     
-    /* Rules Section (Placeholder) */
-    .rules-box { padding: 20px; background: #fffbeb; border-left: 4px solid var(--warning); margin: 20px; border-radius: 6px; }
-    .rules-box h3 { margin: 0 0 10px; color: #92400e; font-size: 1.1rem; }
-    .rules-box p { margin: 0; color: #78350f; font-size: 0.95rem; line-height: 1.5; }
-
     /* Search Bar */
     .search-bar { padding: 15px 20px; background: #fff; border-bottom: 1px solid var(--gc-border); }
     .search-bar input { width: 100%; padding: 10px 15px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 0.95rem; box-sizing: border-box; }
 
-    /* Table */
+    /* Masterlist Table */
     table { width: 100%; border-collapse: collapse; text-align: left; }
     th { background: #f8fafc; padding: 15px; font-size: 0.85rem; color: var(--gc-text-muted); text-transform: uppercase; letter-spacing: 0.05em; border-bottom: 2px solid var(--gc-border); }
     td { padding: 15px; border-bottom: 1px solid var(--gc-border); font-size: 0.95rem; color: var(--gc-text-main); }
@@ -63,65 +58,63 @@
     .btn-action { padding: 8px 14px; border: none; border-radius: 6px; cursor: pointer; font-size: 0.85rem; font-weight: 600; margin-right: 5px; text-decoration: none; display: inline-flex; align-items: center; gap: 5px; transition: all 0.2s; }
     .btn-view { background: var(--gc-primary); color: #fff; }
     .btn-view:hover { background: var(--gc-primary-hover); }
-    .btn-log { background: var(--danger); color: #fff; }
-    .btn-log:hover { background: #b91c1c; }
-
-    /* MODAL FOR LOGGING CASE */
-    .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); display: none; align-items: center; justify-content: center; z-index: 1000; padding: 20px; }
-    .modal-content { background: #fff; border-radius: 12px; max-width: 500px; width: 100%; box-shadow: 0 10px 25px rgba(0,0,0,0.2); overflow: hidden; }
-    .modal-header { padding: 15px 20px; background: #f8fafc; border-bottom: 1px solid var(--gc-border); display: flex; justify-content: space-between; align-items: center; }
-    .modal-header h3 { margin: 0; color: var(--danger); }
+    
+    /* MODAL: LOG CASE (Full Screen Side Panel) */
+    .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); display: none; z-index: 1000; }
+    .modal-content { background: #f8fafc; position: absolute; right: 0; top: 0; bottom: 0; width: 100%; max-width: 800px; box-shadow: -5px 0 25px rgba(0,0,0,0.2); display: flex; flex-direction: column; transform: translateX(100%); transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+    .modal-overlay.show .modal-content { transform: translateX(0); }
+    
+    .modal-header { padding: 20px; background: #fff; border-bottom: 1px solid var(--gc-border); display: flex; justify-content: space-between; align-items: center; }
+    .modal-header h3 { margin: 0; color: var(--gc-primary); font-size: 1.25rem; }
     .modal-close { background: none; border: none; font-size: 1.5rem; cursor: pointer; color: #666; }
-    .modal-body { padding: 20px; }
-    .form-group { margin-bottom: 15px; }
-    .form-group label { display: block; font-weight: 600; font-size: 0.85rem; margin-bottom: 5px; color: #333; }
-    .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-family: inherit; box-sizing: border-box; }
-    .modal-footer { padding: 15px 20px; background: #f8fafc; border-top: 1px solid var(--gc-border); text-align: right; }
-    .btn-save { background: var(--danger); color: #fff; padding: 10px 20px; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; }
+    
+    .modal-body { padding: 20px; overflow-y: auto; flex: 1; }
+    
+    /* Rules Accordion inside Modal */
+    .rule-class { background: #fff; border: 1px solid var(--gc-border); border-radius: 8px; margin-bottom: 15px; overflow: hidden; }
+    .rule-class-header { background: #f1f5f9; padding: 12px 15px; font-weight: bold; color: var(--gc-primary); display: flex; justify-content: space-between; cursor: pointer; }
+    .rule-class-body { display: none; padding: 10px; }
+    .rule-class.open .rule-class-body { display: block; }
+    
+    .rule-item { display: flex; justify-content: space-between; align-items: center; padding: 10px 15px; border-bottom: 1px solid #f1f5f9; }
+    .rule-item:last-child { border-bottom: none; }
+    .rule-text { font-size: 0.9rem; color: #333; }
+    .rule-btn { background: #eff6ff; color: var(--bright-blue); border: 1px solid #bfdbfe; padding: 4px 10px; border-radius: 4px; font-size: 0.8rem; font-weight: 600; cursor: pointer; transition: all 0.2s; }
+    .rule-btn:hover { background: var(--bright-blue); color: #fff; }
+    
+    /* Penalty Box */
+    .penalty-box { background: #fffbeb; border-left: 4px solid var(--warning); padding: 15px; margin-top: 20px; border-radius: 4px; font-size: 0.9rem; color: #92400e; }
   </style>
 </head>
 <body>
 
   <div class="form-header">
     <h1>Sta. Cruz Pingkian High School</h1>
-    <p>Guidance Center – Student Records & Case Management</p>
+    <p>Guidance Center – Student Discipline & Records</p>
   </div>
 
   <div class="gc-layout-wrap">
     <a href="index.html" class="back-link">← Back to Guidance Center</a>
 
-    <!-- LOADING STATE -->
     <div id="loading-state">
       <div class="spinner"></div>
       Authenticating & Loading Student Records...
     </div>
 
-    <!-- ACCESS DENIED -->
     <div id="access-denied" style="display: none; text-align: center; padding: 50px; background: #fff; border-radius: 8px;">
       <h2 style="color: var(--danger);">🚫 Access Denied</h2>
-      <p>You must be signed in as a Guidance Counselor, Teacher, or Admin to view this page.</p>
-      <a href="../../login.html" class="btn-action btn-view" style="margin-top: 15px;">Sign In Here</a>
+      <p>You must be signed in as a Guidance Counselor or Admin.</p>
     </div>
 
-    <!-- DATABASE CONTENT -->
+    <!-- MASTERLIST TABLE -->
     <div id="database-content">
-      
-      <!-- RULES PLACEHOLDER -->
-      <div class="rules-box">
-        <h3>📜 School Rules & Regulations</h3>
-        <p><em>Placeholder: The official Student Handbook and list of violations will be inserted here once provided.</em></p>
-      </div>
-
       <div class="card">
         <div class="card-header">
           <h2>📚 Student Masterlist</h2>
-          <span style="font-size: 0.85rem; color: #64748b;">Synced with Firebase Database</span>
         </div>
-        
         <div class="search-bar">
           <input type="text" id="search-input" placeholder="Search by Name, LRN, or Section..." onkeyup="filterTable()">
         </div>
-
         <div style="overflow-x: auto;">
           <table id="student-table">
             <thead>
@@ -129,46 +122,132 @@
                 <th>LRN</th>
                 <th>Full Name</th>
                 <th>Grade & Section</th>
-                <th>Adviser</th>
-                <th>Guidance Status</th>
+                <th>Total Violations</th>
                 <th>Actions</th>
               </tr>
             </thead>
-            <tbody id="student-tbody">
-              <!-- Data injected here -->
-            </tbody>
+            <tbody id="student-tbody"></tbody>
           </table>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- LOG CASE MODAL -->
-  <div id="case-modal" class="modal-overlay">
-    <div class="modal-content">
+  <!-- LOG CASE MODAL (Slide-out Panel) -->
+  <div id="case-modal" class="modal-overlay" onclick="closeModal(event)">
+    <div class="modal-content" onclick="event.stopPropagation()">
+      
       <div class="modal-header">
         <h3>Log Disciplinary Case</h3>
         <button class="modal-close" onclick="closeModal()">×</button>
       </div>
+      
       <div class="modal-body">
-        <p style="margin-top:0; font-weight:600; color:var(--gc-primary);" id="modal-student-name">Student Name</p>
-        <input type="hidden" id="modal-student-id" />
-        
-        <div class="form-group">
-          <label>Violation Category</label>
-          <select id="modal-violation-type">
-            <option value="Minor Offense">Minor Offense (e.g., Tardiness, Uniform)</option>
-            <option value="Major Offense">Major Offense (e.g., Bullying, Cutting Classes)</option>
-            <option value="Grave Offense">Grave Offense (e.g., Fighting, Vandalism)</option>
-          </select>
+        <!-- Student Info -->
+        <div style="background: #fff; padding: 15px; border-radius: 8px; margin-bottom: 20px; border: 1px solid var(--gc-border);">
+          <div style="font-size: 0.85rem; color: #64748b; text-transform: uppercase; font-weight: bold; margin-bottom: 5px;">Student:</div>
+          <div style="font-size: 1.2rem; font-weight: bold; color: var(--gc-primary);" id="modal-student-name">Student Name</div>
+          <div style="font-size: 0.9rem; color: #475569; margin-top: 5px;" id="modal-student-details">Grade & Section | LRN</div>
+          <input type="hidden" id="modal-student-id" />
+          <input type="hidden" id="modal-student-classid" />
         </div>
-        <div class="form-group">
-          <label>Case Details / Remarks</label>
-          <textarea id="modal-remarks" rows="3" placeholder="Describe the incident..."></textarea>
+
+        <!-- Selection Panel -->
+        <div style="display: flex; gap: 10px; margin-bottom: 20px;">
+          <div style="flex: 1;">
+            <label style="display: block; font-size: 0.8rem; font-weight: bold; margin-bottom: 5px;">Date of Incident</label>
+            <input type="date" id="modal-date" style="width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; box-sizing: border-box;">
+          </div>
+          <div style="flex: 1;">
+            <label style="display: block; font-size: 0.8rem; font-weight: bold; margin-bottom: 5px;">Time</label>
+            <input type="time" id="modal-time" style="width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; box-sizing: border-box;">
+          </div>
         </div>
-      </div>
-      <div class="modal-footer">
-        <button class="btn-save" onclick="saveCase()">Save Case Record</button>
+
+        <h4 style="margin: 0 0 10px; color: #333;">Select Violation Committed:</h4>
+
+        <!-- CLASS A / B OFFENSES -->
+        <div class="rule-class open">
+          <div class="rule-class-header" onclick="this.parentElement.classList.toggle('open')">
+            <span>CLASS A / B OFFENSES (Minor)</span>
+            <span>▼</span>
+          </div>
+          <div class="rule-class-body">
+            <div class="rule-item"><span class="rule-text">A.1 Irregular Attendance</span><button class="rule-btn" onclick="submitCase('A.1 Irregular Attendance')">+ Log</button></div>
+            <div class="rule-item"><span class="rule-text">A.2 No Letter of Excuse</span><button class="rule-btn" onclick="submitCase('A.2 No Letter of Excuse')">+ Log</button></div>
+            <div class="rule-item"><span class="rule-text">A.3 Misbehavior</span><button class="rule-btn" onclick="submitCase('A.3 Misbehavior')">+ Log</button></div>
+            <div class="rule-item"><span class="rule-text">A.4 Boisterous laughter</span><button class="rule-btn" onclick="submitCase('A.4 Boisterous laughter')">+ Log</button></div>
+            <div class="rule-item"><span class="rule-text">A.5 Entering Campus No ID</span><button class="rule-btn" onclick="submitCase('A.5 Entering Campus No ID')">+ Log</button></div>
+            <div class="rule-item"><span class="rule-text">A.6 Not Wearing ID</span><button class="rule-btn" onclick="submitCase('A.6 Not Wearing ID')">+ Log</button></div>
+            <div class="rule-item"><span class="rule-text">A.7 Littering</span><button class="rule-btn" onclick="submitCase('A.7 Littering')">+ Log</button></div>
+            <div class="rule-item"><span class="rule-text">A.8 Disruption of Classes</span><button class="rule-btn" onclick="submitCase('A.8 Disruption of Classes')">+ Log</button></div>
+            <div class="rule-item"><span class="rule-text">A.9 Cheating Exams</span><button class="rule-btn" onclick="submitCase('A.9 Cheating Exams')">+ Log</button></div>
+            <div class="rule-item"><span class="rule-text">A.10 Unauthorized haircut (2x3) boy</span><button class="rule-btn" onclick="submitCase('A.10 Unauthorized haircut')">+ Log</button></div>
+            <div class="rule-item"><span class="rule-text">A.11 Wearing of earring for male</span><button class="rule-btn" onclick="submitCase('A.11 Wearing of earring for male')">+ Log</button></div>
+            <div class="rule-item"><span class="rule-text">A.12 Bringing large amount money</span><button class="rule-btn" onclick="submitCase('A.12 Bringing large amount money')">+ Log</button></div>
+            <div class="rule-item"><span class="rule-text">A.13 Use of cellular phones class hrs.</span><button class="rule-btn" onclick="submitCase('A.13 Use of cellular phones class hrs.')">+ Log</button></div>
+            <div class="rule-item"><span class="rule-text">A.14 Gambling</span><button class="rule-btn" onclick="submitCase('A.14 Gambling')">+ Log</button></div>
+            <div class="rule-item"><span class="rule-text">A.15 Not in a proper uniform</span><button class="rule-btn" onclick="submitCase('A.15 Not in a proper uniform')">+ Log</button></div>
+            <div class="rule-item"><span class="rule-text">A.16 Cutting Classes</span><button class="rule-btn" onclick="submitCase('A.16 Cutting Classes')">+ Log</button></div>
+            <div class="rule-item"><span class="rule-text">A.17 In/Out School Campus over fence</span><button class="rule-btn" onclick="submitCase('A.17 In/Out School Campus over fence')">+ Log</button></div>
+            <div class="rule-item"><span class="rule-text">A.18 Chewing Gum during class hrs.</span><button class="rule-btn" onclick="submitCase('A.18 Chewing Gum during class hrs.')">+ Log</button></div>
+            <div class="rule-item"><span class="rule-text">A.19 Falcification of signatures</span><button class="rule-btn" onclick="submitCase('A.19 Falcification of signatures')">+ Log</button></div>
+            <div class="rule-item"><span class="rule-text">A.20 Showing pornographic pics</span><button class="rule-btn" onclick="submitCase('A.20 Showing pornographic pics')">+ Log</button></div>
+            <div class="rule-item"><span class="rule-text">A.21 Bringing outsiders in campus</span><button class="rule-btn" onclick="submitCase('A.21 Bringing outsiders in campus')">+ Log</button></div>
+            <div class="rule-item"><span class="rule-text">A.22 Disrespect</span><button class="rule-btn" onclick="submitCase('A.22 Disrespect')">+ Log</button></div>
+            <div class="rule-item"><span class="rule-text">A.23 Too much coloring hair</span><button class="rule-btn" onclick="submitCase('A.23 Too much coloring hair')">+ Log</button></div>
+            <div class="rule-item"><span class="rule-text">A.24 Littering/ throwing garbage</span><button class="rule-btn" onclick="submitCase('A.24 Littering/ throwing garbage')">+ Log</button></div>
+            <div class="rule-item"><span class="rule-text">A.25 Improper disposal of spitting "momma"</span><button class="rule-btn" onclick="submitCase('A.25 Improper disposal of spitting')">+ Log</button></div>
+            <div class="rule-item"><span class="rule-text">A.26 Late/not attending Flag Ceremony</span><button class="rule-btn" onclick="submitCase('A.26 Late/not attending Flag Ceremony')">+ Log</button></div>
+            
+            <div class="penalty-box">
+              <strong>Penalty:</strong> 1st - Reprimand, 2nd - Confiscation of ID/Parental notification, 3rd - Ordinary Suspension, 4th - Preventive Suspension, 5th - Dismissal
+            </div>
+          </div>
+        </div>
+
+        <!-- CLASS C OFFENSES -->
+        <div class="rule-class">
+          <div class="rule-class-header" onclick="this.parentElement.classList.toggle('open')">
+            <span>CLASS C OFFENSES (Anti-Bullying)</span>
+            <span>▼</span>
+          </div>
+          <div class="rule-class-body">
+            <div class="rule-item"><span class="rule-text">Bullying (Physical, Verbal, Social, Cyber)</span><button class="rule-btn" onclick="submitCase('Class C: Bullying')">+ Log</button></div>
+            <div class="penalty-box">
+              <strong>Penalty:</strong> 1st - Ordinary Suspension, 2nd - Preventive Suspension, 3rd - Dismissal
+            </div>
+          </div>
+        </div>
+
+        <!-- CLASS D OFFENSES -->
+        <div class="rule-class">
+          <div class="rule-class-header" onclick="this.parentElement.classList.toggle('open')">
+            <span>CLASS D OFFENSES (Major/Grave)</span>
+            <span>▼</span>
+          </div>
+          <div class="rule-class-body">
+            <div class="rule-item"><span class="rule-text">D.1 Under the influence of Liquor</span><button class="rule-btn" onclick="submitCase('D.1 Under the influence of Liquor')">+ Log</button></div>
+            <div class="rule-item"><span class="rule-text">D.2 Forging /Record/document</span><button class="rule-btn" onclick="submitCase('D.2 Forging /Record/document')">+ Log</button></div>
+            <div class="rule-item"><span class="rule-text">D.3 Verbal physical assault</span><button class="rule-btn" onclick="submitCase('D.3 Verbal physical assault')">+ Log</button></div>
+            <div class="rule-item"><span class="rule-text">D.4 Distribution pornographic</span><button class="rule-btn" onclick="submitCase('D.4 Distribution pornographic')">+ Log</button></div>
+            <div class="rule-item"><span class="rule-text">D.5 Gambling/playing cards</span><button class="rule-btn" onclick="submitCase('D.5 Gambling/playing cards')">+ Log</button></div>
+            <div class="rule-item"><span class="rule-text">D.6 Inflicting injury student/staff</span><button class="rule-btn" onclick="submitCase('D.6 Inflicting injury student/staff')">+ Log</button></div>
+            <div class="rule-item"><span class="rule-text">D.7 Class Boycott</span><button class="rule-btn" onclick="submitCase('D.7 Class Boycott')">+ Log</button></div>
+            <div class="rule-item"><span class="rule-text">D.8 Membership in Gangs etc.</span><button class="rule-btn" onclick="submitCase('D.8 Membership in Gangs etc.')">+ Log</button></div>
+            <div class="rule-item"><span class="rule-text">D.9 Hazing</span><button class="rule-btn" onclick="submitCase('D.9 Hazing')">+ Log</button></div>
+            <div class="rule-item"><span class="rule-text">D.10 Bringing a deadly weapons</span><button class="rule-btn" onclick="submitCase('D.10 Bringing a deadly weapons')">+ Log</button></div>
+            <div class="rule-item"><span class="rule-text">D.11 Immorality</span><button class="rule-btn" onclick="submitCase('D.11 Immorality')">+ Log</button></div>
+            <div class="rule-item"><span class="rule-text">D.12 Publishing/circulating false</span><button class="rule-btn" onclick="submitCase('D.12 Publishing/circulating false')">+ Log</button></div>
+            <div class="rule-item"><span class="rule-text">D.13 Drug user/pusher</span><button class="rule-btn" onclick="submitCase('D.13 Drug user/pusher')">+ Log</button></div>
+
+            <div class="penalty-box">
+              <strong>Penalty:</strong> 1st Offense - Preventive Suspension (Intervention counseling program), 2nd Offense - Dismissal (Rehabilitation/Intervention Program). <br><br>
+              <em>Note: Harmful drugs - 1st offense is dismissal (due process of law may apply)</em>
+            </div>
+          </div>
+        </div>
+
       </div>
     </div>
   </div>
@@ -177,7 +256,7 @@
   <script type="module">
     import { auth, db } from "../../assets/js/firebase-config.js";
     import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-    import { collection, getDocs, doc, updateDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+    import { collection, getDocs, doc, updateDoc, arrayUnion } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
     import { getCurrentUserProfile } from "../../assets/js/roles.js"; 
 
     const loadingState = document.getElementById('loading-state');
@@ -197,7 +276,6 @@
 
       try {
         const profile = await getCurrentUserProfile();
-        
         const isAdmin = profile?.primaryRole === "admin" || profile?.isSuperAdmin || profile?.permissions?.canManageClasses;
         const isTeacher = profile?.primaryRole === "teacher" || profile?.permissions?.canEnterGrades;
 
@@ -208,16 +286,15 @@
         }
 
         await loadAllStudentsFromFirestore();
-
       } catch (error) {
         console.error("Auth error:", error);
-        loadingState.innerHTML = "Error verifying account. Please refresh.";
       }
     });
 
     // 2. Fetch Data
     async function loadAllStudentsFromFirestore() {
       try {
+        ALL_STUDENTS = [];
         const classesSnap = await getDocs(collection(db, "classes"));
         
         for (const classDoc of classesSnap.docs) {
@@ -226,14 +303,19 @@
           
           studentsSnap.forEach(studentDoc => {
             const s = studentDoc.data();
+            
+            // Count total offenses
+            const violations = s.violations || [];
+            const totalOffenses = violations.length;
+
             ALL_STUDENTS.push({
               id: studentDoc.id,
               classId: classDoc.id,
               classLabel: classData.classLabel || "Unknown Section",
-              adviserName: classData.adviserName || "Unassigned",
-              lrn: s.lrn || "⚠️ NO LRN",
+              lrn: s.lrn || "NO LRN",
               fullName: s.fullName || `${s.lastName}, ${s.firstName}`,
-              status: s.guidanceStatus || "Clear Record" // We will update this field!
+              totalOffenses: totalOffenses,
+              violations: violations
             });
           });
         }
@@ -246,32 +328,38 @@
 
       } catch (error) {
         console.error("Error fetching students:", error);
-        loadingState.innerHTML = "Failed to load database. Check console.";
+        loadingState.innerHTML = "Failed to load database.";
       }
     }
 
     // 3. Render Table
     function renderTable(students) {
       if (students.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; padding: 30px;">No student records found.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; padding: 30px;">No student records found.</td></tr>`;
         return;
       }
 
       tbody.innerHTML = students.map(s => {
+        // Color code the status based on total offenses
         let badgeClass = "badge-clear";
-        if (s.status.includes("Minor")) badgeClass = "badge-warning";
-        if (s.status.includes("Major") || s.status.includes("Grave")) badgeClass = "badge-violation";
+        let statusText = "Clear Record";
+        
+        if (s.totalOffenses > 0 && s.totalOffenses < 3) {
+           badgeClass = "badge-warning";
+           statusText = `${s.totalOffenses} Violation(s)`;
+        } else if (s.totalOffenses >= 3) {
+           badgeClass = "badge-violation";
+           statusText = `${s.totalOffenses} Violation(s)`;
+        }
 
         return `
           <tr>
             <td style="font-family: monospace;">${s.lrn}</td>
             <td style="font-weight: 600; color: #0f4c81;">${s.fullName}</td>
             <td>${s.classLabel}</td>
-            <td style="font-size: 0.85rem; color: #64748b;">${s.adviserName}</td>
-            <td><span class="badge ${badgeClass}">${s.status}</span></td>
+            <td><span class="badge ${badgeClass}">${statusText}</span></td>
             <td>
-              <button class="btn-action btn-view" onclick="alert('Opening SF1 view for ${s.fullName}')">View SF1</button>
-              <button class="btn-action btn-log" onclick="openModal('${s.id}', '${s.classId}', '${s.fullName}')">+ Log Case</button>
+              <button class="btn-action btn-log" onclick="openModal('${s.id}', '${s.classId}', '${s.fullName}', '${s.classLabel}', '${s.lrn}')">+ Log Case</button>
             </td>
           </tr>
         `;
@@ -289,53 +377,60 @@
       renderTable(filtered);
     };
 
-    // 5. Modal Logic for Logging a Case
-    window.openModal = function(studentId, classId, studentName) {
-      document.getElementById('modal-student-name').textContent = `Student: ${studentName}`;
+    // 5. Modal Logic
+    window.openModal = function(studentId, classId, studentName, classLabel, lrn) {
+      document.getElementById('modal-student-name').textContent = studentName;
+      document.getElementById('modal-student-details').textContent = `${classLabel} | LRN: ${lrn}`;
       document.getElementById('modal-student-id').value = studentId;
-      document.getElementById('modal-student-id').dataset.classId = classId;
-      document.getElementById('case-modal').style.display = 'flex';
+      document.getElementById('modal-student-classid').value = classId;
+      
+      // Set default date and time to now
+      const now = new Date();
+      document.getElementById('modal-date').valueAsDate = now;
+      document.getElementById('modal-time').value = now.toTimeString().slice(0,5);
+
+      document.getElementById('case-modal').classList.add('show');
     };
 
-    window.closeModal = function() {
-      document.getElementById('case-modal').style.display = 'none';
+    window.closeModal = function(event) {
+      if (event && event.target !== event.currentTarget) return;
+      document.getElementById('case-modal').classList.remove('show');
     };
 
-    // 6. Save the Case to Firestore
-    window.saveCase = async function() {
+    // 6. Submit Case to Firestore
+    window.submitCase = async function(violationName) {
       const studentId = document.getElementById('modal-student-id').value;
-      const classId = document.getElementById('modal-student-id').dataset.classId;
-      const violationType = document.getElementById('modal-violation-type').value;
-      const remarks = document.getElementById('modal-remarks').value;
+      const classId = document.getElementById('modal-student-classid').value;
+      const date = document.getElementById('modal-date').value;
+      const time = document.getElementById('modal-time').value;
 
       if (!studentId || !classId) return;
 
-      const saveBtn = document.querySelector('#case-modal .btn-save');
-      saveBtn.textContent = "Saving...";
-      saveBtn.disabled = true;
+      if (!confirm(`Are you sure you want to log:\n\n"${violationName}"\n\nfor this student?`)) return;
 
       try {
-        // Update the student document in Firestore
         const studentRef = doc(db, "classes", classId, "students", studentId);
+        
+        // We use arrayUnion to add a new violation record to the student's document
         await updateDoc(studentRef, {
-          guidanceStatus: violationType,
-          guidanceRemarks: remarks,
-          guidanceLastUpdated: new Date().toISOString()
+          violations: arrayUnion({
+            violation: violationName,
+            date: date,
+            time: time,
+            loggedBy: auth.currentUser.email,
+            timestamp: Date.now()
+          })
         });
 
         alert("✅ Case successfully logged to the student's permanent record.");
         closeModal();
         
-        // Reload the table to show the new status
-        ALL_STUDENTS = [];
+        // Reload the table
         await loadAllStudentsFromFirestore();
 
       } catch (error) {
         console.error("Error saving case:", error);
         alert("❌ Failed to save case. Check console for details.");
-      } finally {
-        saveBtn.textContent = "Save Case Record";
-        saveBtn.disabled = false;
       }
     };
   </script>
