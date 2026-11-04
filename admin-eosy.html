@@ -192,10 +192,12 @@
             <td style="font-weight: 600; color: #0f4c81;">${s.fullName}</td>
             <td><span style="font-size: 0.8rem; padding: 4px 8px; background: #f1f5f9; border-radius: 4px;">${currentStatus}</span></td>
             <td>
-              <select class="status-select" data-id="${s.id}" onchange="updateRowColor(this)">
+                <select class="status-select" data-id="${s.id}" onchange="updateRowColor(this)">
                 <option value="Currently Enrolled" ${currentStatus === 'Currently Enrolled' ? 'selected' : ''}>Currently Enrolled</option>
                 <option value="Promoted" ${currentStatus === 'Promoted' ? 'selected' : ''}>Promoted</option>
+                <option value="Graduated" ${currentStatus === 'Graduated' ? 'selected' : ''}>Graduated</option>
                 <option value="Retained" ${currentStatus === 'Retained' ? 'selected' : ''}>Retained</option>
+                <option value="Transferred In" ${currentStatus === 'Transferred In' ? 'selected' : ''}>Transferred In</option>
                 <option value="Transferred Out" ${currentStatus === 'Transferred Out' ? 'selected' : ''}>Transferred Out</option>
                 <option value="Dropped Out" ${currentStatus === 'Dropped Out' ? 'selected' : ''}>Dropped Out</option>
               </select>
@@ -209,13 +211,19 @@
     }
 
     // 5. UI Colors based on selection
-    window.updateRowColor = function(selectEl) {
+        window.updateRowColor = function(selectEl) {
       selectEl.className = 'status-select';
       const val = selectEl.value;
-      if (val === 'Promoted') selectEl.classList.add('promoted');
-      else if (val === 'Retained') selectEl.classList.add('retained');
-      else if (val === 'Transferred Out') selectEl.classList.add('transferred');
-      else if (val === 'Dropped Out') selectEl.classList.add('dropped');
+      
+      if (val === 'Promoted' || val === 'Graduated') {
+        selectEl.classList.add('promoted'); // Green
+      } else if (val === 'Retained') {
+        selectEl.classList.add('retained'); // Red
+      } else if (val === 'Transferred Out' || val === 'Transferred In') {
+        selectEl.classList.add('transferred'); // Yellow/Orange
+      } else if (val === 'Dropped Out') {
+        selectEl.classList.add('dropped'); // Gray
+      }
     };
 
     // 6. Save All Changes
