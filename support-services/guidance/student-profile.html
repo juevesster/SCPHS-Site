@@ -346,7 +346,6 @@
           <span>▼</span>
         </div>
         <div class="rule-class-body">
-          <!-- LIST OF A/B OFFENSES -->
           <div class="rule-item"><span class="rule-text">A.1 Irregular Attendance</span><button class="rule-btn" onclick="submitCase('A.1 Irregular Attendance')">+ Log</button></div>
           <div class="rule-item"><span class="rule-text">A.2 No Letter of Excuse</span><button class="rule-btn" onclick="submitCase('A.2 No Letter of Excuse')">+ Log</button></div>
           <div class="rule-item"><span class="rule-text">A.3 Misbehavior</span><button class="rule-btn" onclick="submitCase('A.3 Misbehavior')">+ Log</button></div>
@@ -383,13 +382,22 @@
       <!-- CLASS C OFFENSES -->
       <div class="rule-class">
         <div class="rule-class-header" onclick="this.parentElement.classList.toggle('open')">
-          <span>CLASS C OFFENSES (Anti-Bullying)</span>
+          <span>CLASS C OFFENSES [CPC- ANTI- BULLYING]</span>
           <span>▼</span>
         </div>
         <div class="rule-class-body">
-          <div class="rule-item"><span class="rule-text">Bullying (Physical, Verbal, Social, Cyber)</span><button class="rule-btn" onclick="submitCase('Class C: Bullying')">+ Log</button></div>
+          <div class="rule-item"><span class="rule-text">C 1 Vandalism</span><button class="rule-btn" onclick="submitCase('C 1 Vandalism')">+ Log</button></div>
+          <div class="rule-item"><span class="rule-text">C 2 Smoking</span><button class="rule-btn" onclick="submitCase('C 2 Smoking')">+ Log</button></div>
+          <div class="rule-item"><span class="rule-text">C 3 Tampering/improper us ID card</span><button class="rule-btn" onclick="submitCase('C 3 Tampering/improper us ID card')">+ Log</button></div>
+          <div class="rule-item"><span class="rule-text">C 4 Theft/Rubbery</span><button class="rule-btn" onclick="submitCase('C 4 Theft/Rubbery')">+ Log</button></div>
+          <div class="rule-item"><span class="rule-text">C 5 Vulgar manner</span><button class="rule-btn" onclick="submitCase('C 5 Vulgar manner')">+ Log</button></div>
+          <div class="rule-item"><span class="rule-text">C 6 Rumor mongering</span><button class="rule-btn" onclick="submitCase('C 6 Rumor mongering')">+ Log</button></div>
+          <div class="rule-item"><span class="rule-text">C 7 Threat / Coercion</span><button class="rule-btn" onclick="submitCase('C 7 Threat / Coercion')">+ Log</button></div>
+          <div class="rule-item"><span class="rule-text">C 8 Indecent Acts</span><button class="rule-btn" onclick="submitCase('C 8 Indecent Acts')">+ Log</button></div>
+          <div class="rule-item"><span class="rule-text">C 9 Lending of school ID to other</span><button class="rule-btn" onclick="submitCase('C 9 Lending of school ID to other')">+ Log</button></div>
+          
           <div class="penalty-box">
-            <strong>Penalty:</strong> 1st - Ordinary Suspension, 2nd - Preventive Suspension, 3rd - Dismissal
+            <strong>Penalty:</strong> 1st Offense - Ordinary Suspension, 2nd Offense - Preventive Suspension, 3rd Offense - Dismissal
           </div>
         </div>
       </div>
@@ -485,7 +493,7 @@
       </div>
 
       <!-- Class C Offenses Table -->
-      <div class="print-table-title">CLASS C OFFENSES [CPC- ANTI- BULLYING]</div>
+      <div class="print-table-title">(CLASS C OFFENSES) [CPC-ANTI-BULLYING]</div>
       <table class="print-table">
         <thead>
           <tr>
@@ -506,7 +514,7 @@
       </div>
 
       <!-- Class D Offenses Table -->
-      <div class="print-table-title">PROHIBITED ACTS (CLASS D OFFENSES) - [CPC- ANTI- BULLYING]</div>
+      <div class="print-table-title">(CLASS D OFFENSES) - [CPC- ANTI-BULLYING]</div>
       <table class="print-table">
         <thead>
           <tr>
@@ -552,7 +560,6 @@
     import { collection, getDocs, doc, updateDoc, arrayUnion } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
     import { getCurrentUserProfile } from "../../assets/js/roles.js"; 
 
-    // DOM Elements
     const loadingState = document.getElementById('loading-state');
     const accessDenied = document.getElementById('access-denied');
     const profileContent = document.getElementById('profile-content');
@@ -564,7 +571,6 @@
     let CURRENT_STUDENT = null;
     let IS_EDIT_MODE = false;
 
-    // 1. Auth Check
     onAuthStateChanged(auth, async (user) => {
       if (!user) {
         loadingState.style.display = 'none';
@@ -591,7 +597,6 @@
       }
     });
 
-    // 2. Load Students (Fast & Reliable)
     async function loadAllStudents() {
       try {
         ALL_STUDENTS = [];
@@ -628,7 +633,6 @@
       }
     }
 
-    // 3. Search & Autocomplete Logic
     searchInput.addEventListener('input', function() {
       const query = this.value.toLowerCase().trim();
       autocompleteList.innerHTML = '';
@@ -670,7 +674,6 @@
       }
     });
 
-    // 4. Select a Student & Populate UI
     function selectStudent(student) {
       CURRENT_STUDENT = student;
       searchInput.value = student.fullName;
@@ -725,7 +728,6 @@
       });
     }
 
-    // 5. Toggle Edit Mode
     window.toggleEditMode = function() {
       IS_EDIT_MODE = !IS_EDIT_MODE;
       
@@ -748,7 +750,6 @@
       document.getElementById('btn-save-changes').style.display = IS_EDIT_MODE ? 'block' : 'none';
     };
 
-    // 6. Save Changes to Firestore
     window.saveStudentInfo = async function() {
       if (!CURRENT_STUDENT) return;
       
@@ -793,7 +794,6 @@
       }
     };
 
-    // 7. Handle Profile Picture Upload
     document.getElementById('photo-upload').addEventListener('change', function(e) {
       const file = e.target.files[0];
       if (!file || !CURRENT_STUDENT) return;
@@ -822,7 +822,6 @@
       reader.readAsDataURL(file);
     });
 
-    // 8. Violation Modal Logic
     const caseDialog = document.getElementById('case-dialog');
 
     window.openViolationModal = function() {
@@ -889,7 +888,6 @@
       }
     };
 
-    // 9. Print Violation Report
     window.printViolationReport = function() {
       if (!CURRENT_STUDENT) {
         alert("Please select a student first.");
@@ -910,8 +908,17 @@
         "A.25 Improper disposal of spitting", "A.26 Late/not attending Flag Ceremony"
       ];
 
+      // UPDATED: Full list of Class C Offenses
       const offensesC = [
-        "Class C: Bullying"
+        "C 1 Vandalism",
+        "C 2 Smoking",
+        "C 3 Tampering/improper us ID card",
+        "C 4 Theft/Rubbery",
+        "C 5 Vulgar manner",
+        "C 6 Rumor mongering",
+        "C 7 Threat / Coercion",
+        "C 8 Indecent Acts",
+        "C 9 Lending of school ID to other"
       ];
 
       const offensesD = [
