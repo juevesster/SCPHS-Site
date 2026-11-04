@@ -97,12 +97,16 @@
 
   <div class="wrap">
     
-    <!-- Enrollment Closed Message -->
+        <!-- Enrollment Closed Message -->
     <div id="closed-msg" class="form-card alert-box alert-closed">
       <h2>🔒 Enrollment is Currently Closed</h2>
-      <p>The enrollment period for this school year has ended or has not yet started.</p>
-      <p>Please contact the school registrar for assistance.</p>
+      <p id="closed-reason">The enrollment period for this school year has ended or has not yet started.</p>
       <a href="index.html" style="display:inline-block; margin-top:15px; color:#991b1b; font-weight:bold; text-decoration:underline;">Return to Homepage</a>
+    </div>
+    
+    <!-- Dynamic Announcement Banner (Shows above form when open) -->
+    <div id="announcement-banner" style="display: none; background: #eff6ff; border-left: 4px solid #3b82f6; padding: 15px; margin-bottom: 20px; border-radius: 6px; color: #1e3a8a; font-weight: 500;">
+      <span id="announcement-text"></span>
     </div>
 
     <!-- Progress Steps -->
@@ -309,19 +313,37 @@
     };
 
     // 2. Check if Enrollment is Open
+        // 2. Check if Enrollment is Open & Load Announcement
     async function checkEnrollmentStatus() {
       try {
         const settingsRef = doc(db, "config", "enrollment_settings");
         const settingsSnap = await getDoc(settingsRef);
         
-        if (settingsSnap.exists() && settingsSnap.data().isOpen === false) {
-          closedMsg.style.display = 'block';
-          return false;
+        if (settingsSnap.exists()) {
+          const data = settingsSnap.data();
+          
+          // Show announcement if there is one
+          if (data.announcement) {
+            const banner = document.getElementById('announcement-banner');
+            const text = document.getElementById('announcement-text');
+            if (banner && text) {
+              text.textContent = data.announcement;
+              banner.style.display = 'block';
+            }
+          }
+
+          if (data.isOpen === false) {
+            closedMsg.style.display = 'block';
+            if (data.announcement) {
+              document.getElementById('closed-reason').textContent = data.announcement;
+            }
+            return false;
+          }
         }
         return true;
       } catch (error) {
         console.error("Error checking settings:", error);
-        return true; // Default to open
+        return true; 
       }
     }
 

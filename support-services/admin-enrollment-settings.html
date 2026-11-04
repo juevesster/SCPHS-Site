@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Enrollment Settings – Admin Portal | SCPHS</title>
+  <link rel="stylesheet" href="assets/css/styles.css" />
+  
+  <style>
+    :root {
+      --gc-primary: #0f4c81;
+      --gc-border: #e2e8f0;
+      --bright-blue: #2563eb;
+      --success: #16a34a;
+      --danger: #dc2626;
+      --bg-soft: #f8fafc;
+    }
+
+    body { background: #f1f5f9; margin: 0; font-family: system-ui, -apple-system, sans-serif; }
+    .wrap { max-width: 800px; margin: 0 auto; padding: 20px 16px; }
+
+    /* Header */
+    .admin-header { background: #fff; padding: 20px; border-bottom: 1px solid var(--gc-border); margin-bottom: 30px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.02); }
+    .admin-header h1 { margin: 0; color: var(--gc-primary); font-size: 1.4rem; }
+    .back-link { color: var(--bright-blue); text-decoration: none; font-weight: 600; font-size: 0.9rem; }
+    
+    /* Settings Card */
+    .settings-card { background: #fff; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); padding: 30px; margin-bottom: 30px; }
+    .settings-card h2 { margin-top: 0; color: var(--gc-primary); border-bottom: 2px solid var(--gc-border); padding-bottom: 15px; margin-bottom: 20px; font-size: 1.2rem; }
+
+    /* Toggle Switch */
+    .toggle-wrapper { display: flex; align-items: center; gap: 15px; background: var(--bg-soft); padding: 20px; border-radius: 8px; border: 1px solid var(--gc-border); margin-bottom: 25px; }
+    .toggle-switch { position: relative; display: inline-block; width: 60px; height: 34px; }
+    .toggle-switch input { opacity: 0; width: 0; height: 0; }
+    .toggle-slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #cbd5e1; transition: .4s; border-radius: 34px; }
+    .toggle-slider:before { position: absolute; content: ""; height: 26px; width: 26px; left: 4px; bottom: 4px; background-color: white; transition: .4s; border-radius: 50%; box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
+    input:checked + .toggle-slider { background-color: var(--success); }
+    input:checked + .toggle-slider:before { transform: translateX(26px); }
+    
+    .toggle-status { font-size: 1.1rem; font-weight: 800; }
+    .status-open { color: var(--success); }
+    .status-closed { color: var(--danger); }
+
+    /* Form Fields */
+    .form-group { margin-bottom: 20px; }
+    .form-group label { display: block; font-weight: 700; font-size: 0.85rem; color: #333; margin-bottom: 8px; }
+    .form-group textarea { width: 100%; padding: 15px; border: 1px solid #cbd5e1; border-radius: 6px; font-family: inherit; font-size: 0.95rem; resize: vertical; min-height: 100px; box-sizing: border-box; }
+    .form-group textarea:focus { outline: none; border-color: var(--bright-blue); }
+
+    /* Button */
+    .btn-save { display: block; width: 100%; background: var(--gc-primary); color: #fff; border: none; padding: 15px; font-size: 1rem; font-weight: bold; border-radius: 8px; cursor: pointer; transition: 0.2s; }
+    .btn-save:hover { background: #0a365d; }
+    .btn-save:disabled { background: #94a3b8; cursor: not-allowed; }
+
+    /* Toast */
+    .toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%) translateY(100px); background: #111827; color: #fff; padding: 12px 24px; border-radius: 8px; font-weight: 600; opacity: 0; transition: 0.3s; z-index: 1000; }
+    .toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+    .toast.success { background: var(--success); }
+    .toast.error { background: var(--danger); }
+  </style>
+</head>
+<body>
+
+  <div class="wrap">
+    <div class="admin-header">
+      <h1>⚙️ Enrollment Settings</h1>
+      <a href="index.html" class="back-link">← Back to Portal</a>
+    </div>
+
+    <div id="loading" style="text-align: center; padding: 50px; color: var(--gc-primary); font-weight: bold;">
+      Loading settings...
+    </div>
+
+    <div id="settings-content" style="display: none;">
+      <div class="settings-card">
+        <h2>Enrollment Control</h2>
+        
+        <div class="toggle-wrapper">
+          <label class="toggle-switch">
+            <input type="checkbox" id="toggle-enrollment">
+            <span class="toggle-slider"></span>
+          </label>
+          <div>
+            <div class="toggle-status" id="status-text">Checking...</div>
+            <div style="font-size: 0.85rem; color: #666; margin-top: 4px;">Toggle this switch to allow or block new enrollments.</div>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Public Announcement Message</label>
+          <textarea id="input-announcement" placeholder="e.g., Enrollment for SY 2026-2027 is now open! Please prepare your PSA birth certificate and Form 138."></textarea>
+          <div style="font-size: 0.8rem; color: #64748b; margin-top: 5px;">This message will be displayed to parents when they visit the enrollment page.</div>
+        </div>
+
+        <button class="btn-save" id="btn-save">Save Settings</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast" class="toast">Settings Saved!</div>
+
+  <!-- FIREBASE LOGIC -->
+  <script type="module">
+    import { auth, db } from "./assets/js/firebase-config.js";
+    import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+    import { doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+    import { getCurrentUserProfile } from "./assets/js/roles.js";
+
+    const loading = document.getElementById('loading');
+    const content = document.getElementById('settings-content');
+    const toggle = document.getElementById('toggle-enrollment');
+    const statusText = document.getElementById('status-text');
+    const inputAnnouncement = document.getElementById('input-announcement');
+    const btnSave = document.getElementById('btn-save');
+    const toast = document.getElementById('toast');
+
+    let isAdmin = false;
+
+    // 1. Auth Check
+    onAuthStateChanged(auth, async (user) => {
+      if (!user) {
+        loading.innerHTML = "🚫 Access Denied. Please sign in.";
+        return;
+      }
+
+      try {
+        const profile = await getCurrentUserProfile();
+        isAdmin = profile?.primaryRole === "admin" || profile?.isSuperAdmin;
+        
+        if (!isAdmin) {
+          loading.innerHTML = "🚫 Access Denied. Admin only.";
+          return;
+        }
+
+        // Load existing settings
+        await loadSettings();
+        
+        loading.style.display = 'none';
+        content.style.display = 'block';
+
+      } catch (error) {
+        console.error(error);
+        loading.innerHTML = "Error checking permissions.";
+      }
+    });
+
+    // 2. Load Settings from Firestore
+    async function loadSettings() {
+      try {
+        const ref = doc(db, "config", "enrollment_settings");
+        const snap = await getDoc(ref);
+        
+        if (snap.exists()) {
+          const data = snap.data();
+          toggle.checked = data.isOpen !== false; // Default to true if not set
+          inputAnnouncement.value = data.announcement || "";
+        } else {
+          toggle.checked = true; // Default to open
+        }
+        
+        updateStatusText();
+
+      } catch (error) {
+        console.error("Error loading settings:", error);
+      }
+    }
+
+    // 3. Update Status Text
+    function updateStatusText() {
+      if (toggle.checked) {
+        statusText.textContent = "🟢 OPEN";
+        statusText.className = "toggle-status status-open";
+      } else {
+        statusText.textContent = "🔴 CLOSED";
+        statusText.className = "toggle-status status-closed";
+      }
+    }
+
+    toggle.addEventListener('change', updateStatusText);
+
+    // 4. Save Settings
+    btnSave.addEventListener('click', async () => {
+      if (!isAdmin) return;
+      
+      btnSave.textContent = "Saving...";
+      btnSave.disabled = true;
+
+      try {
+        const ref = doc(db, "config", "enrollment_settings");
+        
+        await setDoc(ref, {
+          isOpen: toggle.checked,
+          announcement: inputAnnouncement.value.trim(),
+          lastUpdated: new Date().toISOString(),
+          updatedBy: auth.currentUser.email
+        }, { merge: true });
+
+        showToast("✅ Settings saved successfully!", "success");
+      } catch (error) {
+        console.error("Save error:", error);
+        showToast("❌ Failed to save settings.", "error");
+      } finally {
+        btnSave.textContent = "Save Settings";
+        btnSave.disabled = false;
+      }
+    });
+
+    // Helper: Show Toast
+    let toastTimer;
+    function showToast(msg, type) {
+      toast.textContent = msg;
+      toast.className = `toast show ${type}`;
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => { toast.className = "toast"; }, 3000);
+    }
+  </script>
+</body>
+</html>
