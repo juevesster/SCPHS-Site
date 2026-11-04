@@ -235,7 +235,7 @@
   </div>
 
     <!-- LOG VIOLATION DIALOG (Pulled from student-records.html) -->
-  <dialog id="case-dialog" style="border: none; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.3); padding: 0; width: 90%; max-width: 800px; max-height: 90vh; background: #f8fafc; overflow: hidden; display: flex; flex-direction: column;">
+  <dialog id="case-dialog" style="display: none; border: none; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.3); padding: 0; width: 90%; max-width: 800px; max-height: 90vh; background: #f8fafc; overflow: hidden; flex-direction: column;">
     <div class="modal-header" style="padding: 20px; background: #fff; border-bottom: 1px solid var(--gc-border); display: flex; justify-content: space-between; align-items: center;">
       <h3 style="margin: 0; color: var(--gc-primary); font-size: 1.25rem;">Log Disciplinary Case</h3>
       <button class="modal-close" style="background: none; border: none; font-size: 1.5rem; cursor: pointer; color: #666; padding: 0 10px;" onclick="document.getElementById('case-dialog').close()">×</button>
@@ -354,7 +354,7 @@
     import { collection, getDocs, doc, updateDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
     import { getCurrentUserProfile } from "../../assets/js/roles.js"; 
     import { collection, getDocs, doc, updateDoc, arrayUnion } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
-
+    import { collection, collectionGroup, getDocs, doc, updateDoc, arrayUnion } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
     // DOM Elements
     const loadingState = document.getElementById('loading-state');
@@ -395,27 +395,48 @@
       }
     });
 
-    // 2. Load Students
+        // 2. Load Students (Optimized)
     async function loadAllStudents() {
       try {
         ALL_STUDENTS = [];
-        const classesSnap = await getDocs(collection(db, "classes"));
         
-        for (const classDoc of classesSnap.docs) {
-          const classData = classDoc.data();
-          const studentsSnap = await getDocs(collection(db, "classes", classDoc.id, "students"));
+        // FASTEST: If your Firestore rules allow reading the "students" collection group directly
+        const studentsSnap = await getDocs(collectionGroup(db, "students"));
+        
+        studentsSnap.forEach(studentDoc => {
+          const s = studentDoc.data();
+          // The parent of a student document is the class document
+          const classDocRef = studentDoc.ref.parent.parent; 
           
-          studentsSnap.forEach(studentDoc => {
-            const s = studentDoc.data();
-            ALL_STUDENTS.push({
-              id: studentDoc.id,
-              classId: classDoc.id,
-              classLabel: classData.classLabel || "Unknown Section",
-              adviserName: classData.adviserName || "Unassigned",
-              ...s
-            });
+          ALL_STUDENTS.push({
+            id: studentDoc.id,
+            classId: classDocRef ? classDocRef.id : "unknown",
+            classLabel: s.classLabel || "Unknown Section", // Assuming classLabel is saved in student doc
+            adviserName: s.adviserName || "Unassigned",
+            ...s
           });
+        });
+
+        // If the query above returns 0 results (because rules block collectionGroup), fallback to the old way
+        if (ALL_STUDENTS.length === 0) {
+          console.log("CollectionGroup blocked, using fallback method...");
+          const classesSnap = await getDocs(collection(db, "classes"));
+          for (const classDoc of classesSnap.docs) {
+            const classData = classDoc.data();
+            const studentsSnap = await getDocs(collection(db, "classes", classDoc.id, "students"));
+            studentsSnap.forEach(studentDoc => {
+              const s = studentDoc.data();
+              ALL_STUDENTS.push({
+                id: studentDoc.id,
+                classId: classDoc.id,
+                classLabel: classData.classLabel || "Unknown Section",
+                adviserName: classData.adviserName || "Unassigned",
+                ...s
+              });
+            });
+          }
         }
+
       } catch (error) {
         console.error("Error fetching students:", error);
       }
