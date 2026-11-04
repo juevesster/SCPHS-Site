@@ -318,6 +318,39 @@
       margin: 0 auto 12px;
     }
     @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* SF1 PRINT STYLES */
+    @media print {
+      @page { size: A4 landscape; margin: 10mm; }
+      body * { visibility: hidden; }
+      #print-sf1-section, #print-sf1-section * { visibility: visible; }
+      #print-sf1-section { position: absolute; left: 0; top: 0; width: 100%; display: block !important; }
+      
+      .print-sf1-document { font-family: "Times New Roman", Times, serif; color: #000; font-size: 10px; }
+      
+      .print-sf1-header { margin-bottom: 15px; }
+      .header-top { display: flex; justify-content: space-between; align-items: center; text-align: center; }
+      .header-top img { height: 60px; }
+      .header-text { flex: 1; line-height: 1.2; }
+      .header-text .bold { font-weight: bold; font-size: 12px; }
+      
+      .print-sf1-title { text-align: center; font-weight: bold; font-size: 14px; margin: 15px 0 10px; letter-spacing: 1px; }
+      
+      .print-sf1-meta { display: flex; justify-content: space-between; font-size: 11px; margin-bottom: 10px; }
+      
+      .print-sf1-table { width: 100%; border-collapse: collapse; margin-bottom: 20px; table-layout: fixed; }
+      .print-sf1-table th, .print-sf1-table td { border: 1px solid #000; padding: 3px 5px; text-align: left; font-size: 9px; word-wrap: break-word; }
+      .print-sf1-table th { background: #e0e0e0; font-weight: bold; text-align: center; vertical-align: middle; }
+      .print-sf1-table td { text-align: center; vertical-align: middle; }
+      .print-sf1-table td.left-align { text-align: left; }
+      
+      .print-sf1-signatures { display: flex; justify-content: space-between; margin-top: 40px; page-break-inside: avoid; }
+      .sig-block { width: 40%; text-align: center; }
+      .sig-label { font-size: 10px; text-align: left; margin-bottom: 20px; }
+      .sig-line { border-bottom: 1px solid #000; width: 100%; height: 15px; margin-bottom: 5px; }
+      .sig-name { font-weight: bold; font-size: 11px; }
+      .sig-pos { font-size: 10px; }
+    }
   </style>
 </head>
 <body>
@@ -370,6 +403,9 @@
     </button>
     <button class="sc-btn outline" id="btnExport">
       📥 Export to Excel
+    </button>
+        <button class="sc-btn primary" id="btnPrintSF1" style="background: #0f4c81;">
+      🖨️ Print SF1
     </button>
     <span id="studentCountLabel" style="margin-left:auto;font-size:0.85rem;color:#6b7280;"></span>
   </div>
@@ -528,6 +564,86 @@
       <div class="sc-modal-foot">
         <button class="sc-btn outline" data-close="previewModal">Cancel</button>
         <button class="sc-btn success" id="btnConfirmImport">✓ Confirm Import</button>
+      </div>
+    </div>
+  </div>
+
+
+    <!-- HIDDEN PRINT TEMPLATE FOR SF1 -->
+  <div id="print-sf1-section" style="display: none;">
+    <div class="print-sf1-document">
+      
+      <!-- Header -->
+      <div class="print-sf1-header">
+        <div class="header-top">
+          <img src="../../assets/images/deped-logo.png" alt="DepEd Logo">
+          <div class="header-text">
+            <div>Republic of the Philippines</div>
+            <div class="bold">DEPARTMENT OF EDUCATION</div>
+            <div>Region II - Cagayan Valley</div>
+            <div>SCHOOLS DIVISION OF NUEVA VIZCAYA</div>
+            <div class="bold">STA. CRUZ PINGKIAN HIGH SCHOOL</div>
+            <div style="text-decoration: underline;">Pingkian, Kayapa, Nueva Vizcaya</div>
+          </div>
+          <img src="../../assets/images/scphslogo.png" alt="SCPHS Logo">
+        </div>
+        
+        <div class="print-sf1-title">SCHOOL FORM 1 (SF 1) - SCHOOL REGISTER</div>
+        
+        <div class="print-sf1-meta">
+          <div><strong>School ID:</strong> 300648</div>
+          <div><strong>School Year:</strong> <span id="sf1-print-sy">________</span></div>
+          <div><strong>Grade & Section:</strong> <span id="sf1-print-section">________</span></div>
+          <div><strong>Curriculum:</strong> <span id="sf1-print-curriculum">________</span></div>
+        </div>
+      </div>
+
+      <!-- Table -->
+      <table class="print-sf1-table">
+        <thead>
+          <tr>
+            <th rowspan="2" style="width: 3%;">No.</th>
+            <th rowspan="2" style="width: 10%;">LRN</th>
+            <th rowspan="2" style="width: 15%;">NAME (Last, First, Middle)</th>
+            <th rowspan="2" style="width: 3%;">Sex</th>
+            <th rowspan="2" style="width: 8%;">Birthdate</th>
+            <th rowspan="2" style="width: 3%;">Age</th>
+            <th colspan="2" style="width: 12%;">Address</th>
+            <th colspan="2" style="width: 15%;">Parents / Guardian</th>
+            <th rowspan="2" style="width: 8%;">Contact No.</th>
+            <th rowspan="2" style="width: 8%;">Modality</th>
+            <th rowspan="2" style="width: 10%;">Remarks</th>
+          </tr>
+          <tr>
+            <th style="width: 6%;">Barangay</th>
+            <th style="width: 6%;">Municipality</th>
+            <th style="width: 7.5%;">Father</th>
+            <th style="width: 7.5%;">Mother</th>
+          </tr>
+        </thead>
+        <tbody id="sf1-print-tbody">
+          <!-- Rows injected by JS -->
+        </tbody>
+      </table>
+
+      <!-- Signatures -->
+      <div class="print-sf1-signatures">
+        <div class="sig-block">
+          <div class="sig-label">Prepared by:</div>
+          <div class="sig-line"></div>
+          <div class="sig-name" id="sf1-print-adviser">_______________________</div>
+          <div class="sig-pos">Class Adviser</div>
+        </div>
+        <div class="sig-block">
+          <div class="sig-label">Certified Correct:</div>
+          <div class="sig-line"></div>
+          <div class="sig-name">SATURNINO P. CALANSI EdD</div>
+          <div class="sig-pos">Principal IV/School Head</div>
+        </div>
+      </div>
+      
+      <div style="text-align: center; margin-top: 20px; font-size: 10px;">
+        Generated on: <span id="sf1-print-date"></span>
       </div>
     </div>
   </div>
@@ -1000,6 +1116,47 @@
       XLSX.writeFile(wb, filename);
       toast("✓ Exported", "success");
     }
+
+        // Attach Print Event
+    document.getElementById('btnPrintSF1').addEventListener('click', () => {
+      if (!STUDENTS || STUDENTS.length === 0) {
+        alert("No students to print.");
+        return;
+      }
+
+      // Populate Meta Data
+      document.getElementById('sf1-print-sy').textContent = CLASS_INFO.schoolYear || "________";
+      document.getElementById('sf1-print-section').textContent = CLASS_INFO.classLabel || "________";
+      document.getElementById('sf1-print-curriculum').textContent = CLASS_INFO.curriculum || "________";
+      document.getElementById('sf1-print-adviser').textContent = CLASS_INFO.adviserName || "_______________________";
+      document.getElementById('sf1-print-date').textContent = new Date().toLocaleDateString('en-PH');
+
+      // Populate Table Rows
+      const tbody = document.getElementById('sf1-print-tbody');
+      tbody.innerHTML = STUDENTS.map((s, i) => {
+        const parent = s.fatherName || s.motherName || s.guardianName || "—";
+        return `
+          <tr>
+            <td>${i + 1}</td>
+            <td>${s.lrn || '⚠️'}</td>
+            <td class="left-align">${s.fullName || (s.lastName + ", " + s.firstName)}</td>
+            <td>${s.sex || '—'}</td>
+            <td>${s.birthDate || '—'}</td>
+            <td>${s.age || '—'}</td>
+            <td>${s.addressBarangay || '—'}</td>
+            <td>${s.addressMunicipality || '—'}</td>
+            <td>${s.fatherName || '—'}</td>
+            <td>${s.motherName || '—'}</td>
+            <td>${s.contactNumber || '—'}</td>
+            <td>${s.learningModality || 'Face to Face'}</td>
+            <td>${s.remarks || ''}</td>
+          </tr>
+        `;
+      }).join("");
+
+      // Trigger Print
+      window.print();
+    });
   </script>
 </body>
 </html>
