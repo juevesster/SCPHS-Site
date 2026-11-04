@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>EOSY Promotion & Retention – Admin | SCPHS</title>
+  <link rel="stylesheet" href="assets/css/styles.css" />
+  
+  <style>
+    :root {
+      --gc-primary: #0f4c81;
+      --gc-border: #e2e8f0;
+      --bright-blue: #2563eb;
+      --success: #16a34a;
+      --warning: #d97706;
+      --danger: #dc2626;
+      --bg-soft: #f8fafc;
+    }
+
+    body { background: #f1f5f9; margin: 0; font-family: system-ui, -apple-system, sans-serif; }
+    .wrap { max-width: 1000px; margin: 0 auto; padding: 20px 16px; }
+
+    /* Header */
+    .admin-header { background: #fff; padding: 20px; border-bottom: 1px solid var(--gc-border); margin-bottom: 30px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.02); }
+    .admin-header h1 { margin: 0; color: var(--gc-primary); font-size: 1.4rem; }
+    .back-link { color: var(--bright-blue); text-decoration: none; font-weight: 600; font-size: 0.9rem; }
+
+    /* Controls */
+    .controls-card { background: #fff; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); padding: 20px; margin-bottom: 20px; display: flex; gap: 15px; align-items: flex-end; flex-wrap: wrap; }
+    .form-group { display: flex; flex-direction: column; flex: 1; min-width: 250px; }
+    .form-group label { font-size: 0.85rem; font-weight: 700; color: #333; margin-bottom: 8px; }
+    .form-group select { padding: 12px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 0.95rem; outline: none; }
+    
+    .btn-load { background: var(--gc-primary); color: #fff; border: none; padding: 12px 24px; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 0.95rem; transition: 0.2s; }
+    .btn-load:hover { background: #0a365d; }
+
+    /* Table */
+    .table-card { background: #fff; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); overflow: hidden; margin-bottom: 30px; }
+    .table-header { padding: 15px 20px; border-bottom: 1px solid var(--gc-border); display: flex; justify-content: space-between; align-items: center; background: #f8fafc; }
+    .table-header h2 { margin: 0; font-size: 1.1rem; color: var(--gc-primary); }
+    .btn-save-all { background: var(--success); color: #fff; border: none; padding: 8px 16px; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 0.85rem; }
+    
+    table { width: 100%; border-collapse: collapse; text-align: left; }
+    th { background: #fff; padding: 15px; font-size: 0.8rem; color: var(--gc-text-muted); text-transform: uppercase; border-bottom: 2px solid var(--gc-border); }
+    td { padding: 15px; border-bottom: 1px solid var(--gc-border); font-size: 0.95rem; color: var(--gc-text-main); }
+    
+    .status-select { padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 0.85rem; font-weight: 600; outline: none; width: 100%; max-width: 200px; }
+    .status-select.promoted { background: #dcfce7; color: #166534; border-color: #bbf7d0; }
+    .status-select.retained { background: #fee2e2; color: #991b1b; border-color: #fecaca; }
+    .status-select.transferred { background: #fef9c3; color: #854d0e; border-color: #fef08a; }
+    .status-select.dropped { background: #f1f5f9; color: #475569; border-color: #cbd5e1; }
+
+    /* Toast */
+    .toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%) translateY(100px); background: #111827; color: #fff; padding: 12px 24px; border-radius: 8px; font-weight: 600; opacity: 0; transition: 0.3s; z-index: 1000; }
+    .toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+    .toast.success { background: var(--success); }
+  </style>
+</head>
+<body>
+
+  <div class="wrap">
+    <div class="admin-header">
+      <h1>🎓 EOSY Status Management</h1>
+      <a href="index.html" class="back-link">← Back to Portal</a>
+    </div>
+
+    <div class="controls-card">
+      <div class="form-group">
+        <label>Select Class to Process</label>
+        <select id="select-class">
+          <option value="">-- Loading Classes --</option>
+        </select>
+      </div>
+      <button class="btn-load" id="btn-load">Load Students</button>
+    </div>
+
+    <div class="table-card" id="table-card" style="display: none;">
+      <div class="table-header">
+        <h2>Student Status</h2>
+        <button class="btn-save-all" id="btn-save-all">💾 Save All Changes</button>
+      </div>
+      <div style="overflow-x: auto;">
+        <table id="student-table">
+          <thead>
+            <tr>
+              <th>LRN</th>
+              <th>Full Name</th>
+              <th>Current Status</th>
+              <th>Action (EOSY Status)</th>
+            </tr>
+          </thead>
+          <tbody id="student-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast" class="toast"></div>
+
+  <script type="module">
+    import { auth, db } from "./assets/js/firebase-config.js";
+    import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+    import { collection, getDocs, doc, updateDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+    import { getCurrentUserProfile } from "./assets/js/roles.js";
+
+    const selectClass = document.getElementById('select-class');
+    const btnLoad = document.getElementById('btn-load');
+    const tableCard = document.getElementById('table-card');
+    const tbody = document.getElementById('student-tbody');
+    const btnSaveAll = document.getElementById('btn-save-all');
+    const toast = document.getElementById('toast');
+
+    let ALL_CLASSES = [];
+    let CURRENT_STUDENTS = [];
+    let CURRENT_CLASS_ID = null;
+
+    // 1. Auth Check
+    onAuthStateChanged(auth, async (user) => {
+      if (!user) { window.location.href = "login.html"; return; }
+      
+      const profile = await getCurrentUserProfile();
+      const isAdmin = profile?.primaryRole === "admin" || profile?.isSuperAdmin;
+      
+      if (!isAdmin) {
+        alert("Access Denied. Only Admin can process EOSY.");
+        window.location.href = "index.html";
+        return;
+      }
+
+      await loadClasses();
+    });
+
+    // 2. Load Classes
+    async function loadClasses() {
+      try {
+        const snap = await getDocs(collection(db, "classes"));
+        snap.forEach(doc => ALL_CLASSES.push({ id: doc.id, ...doc.data() }));
+        
+        ALL_CLASSES.sort((a, b) => (a.classLabel || "").localeCompare(b.classLabel || ""));
+        
+        selectClass.innerHTML = '<option value="">-- Select Class --</option>';
+        ALL_CLASSES.forEach(c => {
+          selectClass.innerHTML += `<option value="${c.id}">${c.classLabel} (SY ${c.schoolYear})</option>`;
+        });
+      } catch (error) {
+        console.error(error);
+      }
+    }
+
+    // 3. Load Students for Selected Class
+    btnLoad.addEventListener('click', async () => {
+      CURRENT_CLASS_ID = selectClass.value;
+      if (!CURRENT_CLASS_ID) { alert("Please select a class."); return; }
+
+      btnLoad.textContent = "Loading...";
+      btnLoad.disabled = true;
+
+      try {
+        const snap = await getDocs(collection(db, "classes", CURRENT_CLASS_ID, "students"));
+        CURRENT_STUDENTS = [];
+        snap.forEach(doc => {
+          CURRENT_STUDENTS.push({ id: doc.id, ...doc.data() });
+        });
+
+        CURRENT_STUDENTS.sort((a, b) => (a.fullName || "").localeCompare(b.fullName || ""));
+
+        renderTable();
+        tableCard.style.display = 'block';
+
+      } catch (error) {
+        console.error(error);
+        alert("Failed to load students.");
+      } finally {
+        btnLoad.textContent = "Load Students";
+        btnLoad.disabled = false;
+      }
+    });
+
+    // 4. Render Table
+    function renderTable() {
+      if (CURRENT_STUDENTS.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; padding: 30px;">No students found in this class.</td></tr>';
+        return;
+      }
+
+      tbody.innerHTML = CURRENT_STUDENTS.map(s => {
+        const currentStatus = s.enrollmentStatus || "Currently Enrolled";
+        
+        return `
+          <tr>
+            <td style="font-family: monospace;">${s.lrn || 'NO LRN'}</td>
+            <td style="font-weight: 600; color: #0f4c81;">${s.fullName}</td>
+            <td><span style="font-size: 0.8rem; padding: 4px 8px; background: #f1f5f9; border-radius: 4px;">${currentStatus}</span></td>
+            <td>
+              <select class="status-select" data-id="${s.id}" onchange="updateRowColor(this)">
+                <option value="Currently Enrolled" ${currentStatus === 'Currently Enrolled' ? 'selected' : ''}>Currently Enrolled</option>
+                <option value="Promoted" ${currentStatus === 'Promoted' ? 'selected' : ''}>Promoted</option>
+                <option value="Retained" ${currentStatus === 'Retained' ? 'selected' : ''}>Retained</option>
+                <option value="Transferred Out" ${currentStatus === 'Transferred Out' ? 'selected' : ''}>Transferred Out</option>
+                <option value="Dropped Out" ${currentStatus === 'Dropped Out' ? 'selected' : ''}>Dropped Out</option>
+              </select>
+            </td>
+          </tr>
+        `;
+      }).join("");
+
+      // Apply initial colors
+      document.querySelectorAll('.status-select').forEach(sel => updateRowColor(sel));
+    }
+
+    // 5. UI Colors based on selection
+    window.updateRowColor = function(selectEl) {
+      selectEl.className = 'status-select';
+      const val = selectEl.value;
+      if (val === 'Promoted') selectEl.classList.add('promoted');
+      else if (val === 'Retained') selectEl.classList.add('retained');
+      else if (val === 'Transferred Out') selectEl.classList.add('transferred');
+      else if (val === 'Dropped Out') selectEl.classList.add('dropped');
+    };
+
+    // 6. Save All Changes
+    btnSaveAll.addEventListener('click', async () => {
+      if (CURRENT_STUDENTS.length === 0) return;
+
+      btnSaveAll.textContent = "Saving...";
+      btnSaveAll.disabled = true;
+
+      let successCount = 0;
+      const selects = document.querySelectorAll('.status-select');
+
+      try {
+        const promises = Array.from(selects).map(async (sel) => {
+          const studentId = sel.dataset.id;
+          const newStatus = sel.value;
+          
+          const studentRef = doc(db, "classes", CURRENT_CLASS_ID, "students", studentId);
+          await updateDoc(studentRef, { enrollmentStatus: newStatus });
+          successCount++;
+        });
+
+        await Promise.all(promises);
+
+        showToast(`✅ Successfully updated ${successCount} students!`, "success");
+        
+        // Refresh data
+        const updatedSnap = await getDocs(collection(db, "classes", CURRENT_CLASS_ID, "students"));
+        CURRENT_STUDENTS = [];
+        updatedSnap.forEach(doc => CURRENT_STUDENTS.push({ id: doc.id, ...doc.data() }));
+        CURRENT_STUDENTS.sort((a, b) => (a.fullName || "").localeCompare(b.fullName || ""));
+        renderTable();
+
+      } catch (error) {
+        console.error(error);
+        alert("❌ Failed to save some changes.");
+      } finally {
+        btnSaveAll.textContent = "💾 Save All Changes";
+        btnSaveAll.disabled = false;
+      }
+    });
+
+    // Toast Helper
+    let toastTimer;
+    function showToast(msg, type) {
+      toast.textContent = msg;
+      toast.className = `toast show ${type}`;
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => { toast.className = "toast"; }, 3000);
+    }
+  </script>
+</body>
+</html>
