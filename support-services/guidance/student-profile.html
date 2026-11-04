@@ -229,7 +229,8 @@
               <div class="card-body">
                 <button class="btn-edit" style="margin-top: 0;" onclick="openViolationModal()">⚠️ Log Violation</button>
                 <button class="btn-edit" style="margin-top: 10px; background: #475569;" onclick="printViolationReport()">🖨️ Print Violation Report</button>
-              </div>
+                <button class="btn-edit" style="margin-top: 10px; background: #64748b;" onclick="openManageViolationsModal()">📋 Manage Violations</button>
+            </div>
             </div>
           </div>
 
@@ -431,6 +432,26 @@
     </div>
   </dialog>
 
+    <!-- 👇 PASTE THE NEW MANAGE VIOLATIONS DIALOG HERE 👇 -->
+  <!-- MANAGE VIOLATIONS DIALOG -->
+  <dialog id="manage-violations-dialog">
+    <div class="modal-header">
+      <h3>Manage Violations</h3>
+      <button class="modal-close" onclick="document.getElementById('manage-violations-dialog').close()">×</button>
+    </div>
+    <div class="modal-body">
+      <div style="background: #fff; padding: 15px; border-radius: 8px; margin-bottom: 20px; border: 1px solid var(--gc-border);">
+        <div style="font-size: 0.85rem; color: #64748b; text-transform: uppercase; font-weight: bold; margin-bottom: 5px;">Student:</div>
+        <div style="font-size: 1.2rem; font-weight: bold; color: var(--gc-primary);" id="manage-student-name">-</div>
+      </div>
+      
+      <div id="violations-list-container">
+        <!-- Violations will be injected here by JS -->
+      </div>
+    </div>
+  </dialog>
+  <!-- 👆 END OF NEW DIALOG 👆 -->
+   
   <!-- HIDDEN PRINT TEMPLATE -->
   <div id="print-section">
     <div class="print-document">
@@ -552,7 +573,7 @@
 
     </div>
   </div>
-
+ 
   <!-- FIREBASE INTEGRATION -->
   <script type="module">
     import { auth, db } from "../../assets/js/firebase-config.js";
@@ -885,6 +906,75 @@
       } catch (error) {
         console.error("Error saving case:", error);
         alert("❌ Failed to save case. Check console for details.");
+      }
+    };
+
+
+        // 9. Manage Violations (View & Delete)
+    const manageDialog = document.getElementById('manage-violations-dialog');
+
+    window.openManageViolationsModal = function() {
+      if (!CURRENT_STUDENT) return;
+
+      document.getElementById('manage-student-name').textContent = CURRENT_STUDENT.fullName;
+      
+      const violations = CURRENT_STUDENT.violations || [];
+      const container = document.getElementById('violations-list-container');
+
+      if (violations.length === 0) {
+        container.innerHTML = '<div style="text-align:center; padding: 30px; color: #64748b;">No violations recorded for this student.</div>';
+      } else {
+        // Sort violations by newest first
+        const sorted = [...violations].sort((a, b) => b.timestamp - a.timestamp);
+        
+        container.innerHTML = sorted.map((v, index) => `
+          <div style="display: flex; justify-content: space-between; align-items: center; background: #fff; padding: 15px; border: 1px solid var(--gc-border); border-radius: 8px; margin-bottom: 10px;">
+            <div>
+              <div style="font-weight: bold; color: var(--danger); font-size: 1rem; margin-bottom: 4px;">${v.violation}</div>
+              <div style="font-size: 0.85rem; color: #64748b;">
+                📅 ${v.date} &nbsp;|&nbsp; 🕒 ${v.time}
+              </div>
+            </div>
+            <button class="btn-action btn-log" onclick="deleteViolation(${index})" style="background: #fee2e2; color: #991b1b; border: 1px solid #fecaca; padding: 8px 12px;">🗑️ Delete</button>
+          </div>
+        `).join("");
+      }
+
+      manageDialog.showModal();
+    };
+
+    window.deleteViolation = async function(index) {
+      if (!CURRENT_STUDENT) return;
+
+      // Get the sorted array to find the exact violation to delete
+      const violations = CURRENT_STUDENT.violations || [];
+      const sorted = [...violations].sort((a, b) => b.timestamp - a.timestamp);
+      const violationToDelete = sorted[index];
+
+      if (!confirm(`Are you sure you want to delete this violation?\n\n"${violationToDelete.violation}"\nDate: ${violationToDelete.date}`)) {
+        return;
+      }
+
+      try {
+        // Filter out the selected violation
+        const updatedViolations = violations.filter(v => v.timestamp !== violationToDelete.timestamp);
+        
+        const studentRef = doc(db, "classes", CURRENT_STUDENT.classId, "students", CURRENT_STUDENT.id);
+        await updateDoc(studentRef, { violations: updatedViolations });
+
+        alert("✅ Violation deleted successfully.");
+        
+        // Refresh the student data
+        await loadAllStudents(); 
+        const updatedStudent = ALL_STUDENTS.find(s => s.id === CURRENT_STUDENT.id);
+        if (updatedStudent) {
+          selectStudent(updatedStudent); 
+          openManageViolationsModal(); // Re-open the modal to show the updated list
+        }
+
+      } catch (error) {
+        console.error("Error deleting violation:", error);
+        alert("❌ Failed to delete violation.");
       }
     };
 
