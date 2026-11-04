@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Student Enrollment – SCPHS</title>
+  <title>Online Enrollment – SCPHS</title>
   <link rel="stylesheet" href="assets/css/styles.css" />
   
   <style>
@@ -19,174 +19,263 @@
     body { background: #f1f5f9; margin: 0; font-family: system-ui, -apple-system, sans-serif; }
     .wrap { max-width: 900px; margin: 0 auto; padding: 20px 16px; }
 
-    /* Header */
-    .header { text-align: center; margin-bottom: 30px; }
-    .header h1 { color: var(--gc-primary); margin: 0 0 10px; }
-    .header p { color: #666; margin: 0; }
+    /* DepEd Official Header */
+    .deped-header { 
+      background: #fff; 
+      padding: 20px; 
+      text-align: center; 
+      border-bottom: 2px solid var(--gc-primary);
+      margin-bottom: 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .deped-header .logos { display: flex; gap: 20px; align-items: center; justify-content: center; margin-bottom: 10px; }
+    .deped-header .logos img { height: 65px; }
+    .deped-header h1 { margin: 0; font-size: 1.3rem; color: #111; }
+    .deped-header p { margin: 5px 0 0; font-size: 0.85rem; color: #333; font-weight: 600; }
 
-    /* Main Form Card */
-    .form-card { background: #fff; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); overflow: hidden; margin-bottom: 40px; }
-    .form-header { background: var(--gc-primary); color: #fff; padding: 20px 30px; font-size: 1.2rem; font-weight: bold; }
-    .form-body { padding: 30px; }
-
-    /* Form Sections */
-    .section-title { font-size: 1.1rem; color: var(--gc-primary); border-bottom: 2px solid var(--gc-border); padding-bottom: 8px; margin-top: 30px; margin-bottom: 20px; }
-    .section-title:first-child { margin-top: 0; }
+    /* Multi-Step Progress */
+    .steps { display: flex; justify-content: center; align-items: center; margin-bottom: 25px; flex-wrap: wrap; gap: 10px; }
+    .step-item { display: flex; align-items: center; gap: 8px; padding: 8px 15px; border-radius: 25px; font-weight: 600; font-size: 0.85rem; color: #94a3b8; background: #fff; border: 1px solid var(--gc-border); }
+    .step-item.active { background: var(--gc-primary); color: #fff; border-color: var(--gc-primary); }
+    .step-item.done { background: #dcfce7; color: #166534; border-color: #bbf7d0; }
+    .step-num { width: 24px; height: 24px; border-radius: 50%; background: #e2e8f0; color: #64748b; display: flex; align-items: center; justify-content: center; font-size: 0.75rem; }
+    .step-item.active .step-num { background: #fff; color: var(--gc-primary); }
     
-    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px; }
+    /* Form Cards */
+    .form-card { background: #fff; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); padding: 30px; margin-bottom: 40px; display: none; }
+    .form-card.active { display: block; animation: fadeIn 0.3s ease; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    
+    .section-title { font-size: 1.1rem; color: var(--gc-primary); border-bottom: 2px solid var(--gc-border); padding-bottom: 10px; margin-top: 0; margin-bottom: 20px; }
+    
+    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px; }
     @media (max-width: 600px) { .form-grid { grid-template-columns: 1fr; } }
     
     .form-group { display: flex; flex-direction: column; }
     .form-group.full { grid-column: 1 / -1; }
-    .form-group label { font-size: 0.85rem; font-weight: 700; color: #333; margin-bottom: 6px; }
-    .form-group input, .form-group select, .form-group textarea { padding: 12px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 0.95rem; font-family: inherit; }
-    .form-group input:focus, .form-group select:focus, .form-group textarea:focus { outline: none; border-color: var(--bright-blue); }
+    .form-group label { font-size: 0.75rem; font-weight: 700; color: #333; margin-bottom: 6px; text-transform: uppercase; }
+    .form-group input, .form-group select, .form-group textarea { padding: 10px 12px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 0.9rem; font-family: inherit; }
+    .form-group input:focus, .form-group select:focus { outline: none; border-color: var(--bright-blue); }
+    .form-group input[readonly] { background: #f1f5f9; color: #64748b; }
 
-    .submit-btn { display: block; width: 100%; background: var(--success); color: #fff; border: none; padding: 15px; font-size: 1.1rem; font-weight: bold; border-radius: 8px; cursor: pointer; transition: 0.2s; margin-top: 30px; }
-    .submit-btn:hover { background: #15803d; }
-    .submit-btn:disabled { background: #94a3b8; cursor: not-allowed; }
-    
-    /* Success / Error Messages */
-    #success-msg { display: none; text-align: center; padding: 40px 20px; background: #dcfce7; border: 1px solid #bbf7d0; border-radius: 8px; color: #166534; margin-top: 20px; }
-    #closed-msg { display: none; text-align: center; padding: 40px 20px; background: #fee2e2; border: 1px solid #fecaca; border-radius: 8px; color: #991b1b; margin-top: 20px; }
+    /* Buttons */
+    .btn-row { display: flex; justify-content: space-between; margin-top: 30px; }
+    .btn { padding: 12px 24px; border: none; border-radius: 6px; font-weight: bold; font-size: 0.95rem; cursor: pointer; transition: 0.2s; display: inline-flex; align-items: center; gap: 8px; }
+    .btn-primary { background: var(--gc-primary); color: #fff; }
+    .btn-primary:hover { background: #0a365d; }
+    .btn-secondary { background: #e2e8f0; color: #333; }
+    .btn-secondary:hover { background: #cbd5e1; }
+    .btn-success { background: var(--success); color: #fff; width: 100%; justify-content: center; }
+    .btn-success:hover { background: #15803d; }
+
+    /* Checkboxes */
+    .checkbox-group { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; }
+    .checkbox-group label { display: flex; align-items: center; gap: 8px; font-size: 0.9rem; font-weight: normal; text-transform: none; cursor: pointer; }
+
+    /* Success / Closed Messages */
+    .alert-box { display: none; text-align: center; padding: 40px 20px; border-radius: 8px; }
+    .alert-closed { background: #fee2e2; border: 1px solid #fecaca; color: #991b1b; }
+    .alert-success { background: #dcfce7; border: 1px solid #bbf7d0; color: #166534; }
   </style>
 </head>
 <body>
 
-  <div class="wrap">
-    <div class="header">
-      <h1>Sta. Cruz Pingkian High School</h1>
-      <p>Official Student Enrollment Form</p>
+  <!-- DepEd Official Header -->
+  <div class="deped-header">
+    <div class="logos">
+      <img src="assets/images/scphslogo.png" alt="SCPHS Logo">
+      <img src="assets/images/deped-logo.png" alt="DepEd Logo">
     </div>
+    <h1>Sta. Cruz Pingkian High School</h1>
+    <p>Schools Division of Nueva Vizcaya • Region II</p>
+  </div>
 
+  <div class="wrap">
+    
     <!-- Enrollment Closed Message -->
-    <div id="closed-msg" class="form-card">
+    <div id="closed-msg" class="form-card alert-box alert-closed">
       <h2>🔒 Enrollment is Currently Closed</h2>
       <p>The enrollment period for this school year has ended or has not yet started.</p>
       <p>Please contact the school registrar for assistance.</p>
-      <a href="index.html" style="display:inline-block; margin-top:15px; color:#991b1b; font-weight:bold;">Return to Homepage</a>
+      <a href="index.html" style="display:inline-block; margin-top:15px; color:#991b1b; font-weight:bold; text-decoration:underline;">Return to Homepage</a>
     </div>
 
-    <div class="form-card" id="enrollment-form-card" style="display: none;">
-      <div class="form-header">New Student Enrollment</div>
-      
-      <div class="form-body">
-        <form id="enroll-form">
-          
-          <!-- CLASS SELECTION -->
-          <h3 class="section-title">1. Class Assignment</h3>
-          <div class="form-grid">
-            <div class="form-group full">
-              <label>Select Grade & Section *</label>
-              <select id="f-classId" required>
-                <option value="">-- Loading Available Classes --</option>
-              </select>
-            </div>
-          </div>
-
-          <!-- PERSONAL INFO -->
-          <h3 class="section-title">2. Learner Information</h3>
-          <div class="form-grid">
-            <div class="form-group">
-              <label>LRN (12 digits)</label>
-              <input type="text" id="f-lrn" maxlength="12" placeholder="Leave blank if no LRN yet">
-            </div>
-            <div class="form-group">
-              <label>Sex *</label>
-              <select id="f-sex" required>
-                <option value="">-- Select --</option>
-                <option value="M">Male</option>
-                <option value="F">Female</option>
-              </select>
-            </div>
-            <div class="form-group">
-              <label>Last Name *</label>
-              <input type="text" id="f-lastName" required>
-            </div>
-            <div class="form-group">
-              <label>First Name *</label>
-              <input type="text" id="f-firstName" required>
-            </div>
-            <div class="form-group">
-              <label>Middle Name</label>
-              <input type="text" id="f-middleName">
-            </div>
-            <div class="form-group">
-              <label>Date of Birth</label>
-              <input type="date" id="f-birthDate">
-            </div>
-            <div class="form-group">
-              <label>Age</label>
-              <input type="number" id="f-age">
-            </div>
-            <div class="form-group">
-              <label>Religion</label>
-              <input type="text" id="f-religion">
-            </div>
-            <div class="form-group full">
-              <label>Address (Barangay) *</label>
-              <input type="text" id="f-addressBarangay" required>
-            </div>
-          </div>
-
-          <!-- ADDITIONAL INFO (BENCHMARK FROM PHP) -->
-          <h3 class="section-title">3. Additional Information</h3>
-          <div class="form-grid">
-            <div class="form-group">
-              <label>Member of Indigenous People (IP)?</label>
-              <select id="f-isIP">
-                <option value="No">No</option>
-                <option value="Yes">Yes</option>
-              </select>
-            </div>
-            <div class="form-group">
-              <label>4Ps Beneficiary?</label>
-              <select id="f-is4Ps">
-                <option value="No">No</option>
-                <option value="Yes">Yes</option>
-              </select>
-            </div>
-            <div class="form-group full">
-              <label>Learning Modality Preferred</label>
-              <select id="f-modality">
-                <option value="Face to Face">Face to Face</option>
-                <option value="Modular (Print)">Modular (Print)</option>
-                <option value="Blended">Blended</option>
-              </select>
-            </div>
-          </div>
-
-          <!-- PARENTS INFO -->
-          <h3 class="section-title">4. Parents / Guardian</h3>
-          <div class="form-grid">
-            <div class="form-group">
-              <label>Father's Name</label>
-              <input type="text" id="f-fatherName">
-            </div>
-            <div class="form-group">
-              <label>Mother's Maiden Name</label>
-              <input type="text" id="f-motherName">
-            </div>
-            <div class="form-group">
-              <label>Guardian Name (if applicable)</label>
-              <input type="text" id="f-guardianName">
-            </div>
-            <div class="form-group">
-              <label>Contact Number *</label>
-              <input type="text" id="f-contactNumber" required>
-            </div>
-          </div>
-
-          <button type="submit" class="submit-btn" id="btn-submit">Submit Enrollment</button>
-        </form>
-
-        <div id="success-msg">
-          <h2>✅ Enrollment Successful!</h2>
-          <p>The student has been officially added to the SF1 Masterlist.</p>
-          <a href="index.html" style="display:inline-block; margin-top:15px; color:#166534; font-weight:bold; text-decoration:underline;">Return to Homepage</a>
-        </div>
+    <!-- Progress Steps -->
+    <div class="steps" id="progress-steps" style="display: none;">
+      <div class="step-item active" data-step="1">
+        <span class="step-num">1</span> Learner Info
+      </div>
+      <div class="step-item" data-step="2">
+        <span class="step-num">2</span> Parents & Details
+      </div>
+      <div class="step-item" data-step="3">
+        <span class="step-num">3</span> Submit
       </div>
     </div>
+
+    <!-- Enrollment Form -->
+    <form id="enroll-form" style="display: none;">
+      
+      <!-- STEP 1: LEARNER INFO -->
+      <div class="form-card active" id="step1">
+        <h2 class="section-title">Step 1: Learner Information</h2>
+        
+        <div class="form-grid">
+          <div class="form-group full">
+            <label>Select Grade Level & Section *</label>
+            <select id="f-classId" required>
+              <option value="">-- Loading Available Classes --</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-grid">
+          <div class="form-group">
+            <label>PSA Birth Certificate No.</label>
+            <input type="text" id="f-psa" placeholder="Optional">
+          </div>
+          <div class="form-group">
+            <label>Learner Reference Number (LRN)</label>
+            <input type="text" id="f-lrn" maxlength="12" placeholder="Leave blank if no LRN">
+          </div>
+          <div class="form-group">
+            <label>Last Name *</label>
+            <input type="text" id="f-lastName" required style="text-transform: uppercase;">
+          </div>
+          <div class="form-group">
+            <label>First Name *</label>
+            <input type="text" id="f-firstName" required style="text-transform: uppercase;">
+          </div>
+          <div class="form-group">
+            <label>Middle Name</label>
+            <input type="text" id="f-middleName" style="text-transform: uppercase;">
+          </div>
+          <div class="form-group">
+            <label>Extension Name (Jr, III)</label>
+            <input type="text" id="f-extension" placeholder="Optional">
+          </div>
+          <div class="form-group">
+            <label>Date of Birth *</label>
+            <input type="date" id="f-birthDate" required>
+          </div>
+          <div class="form-group">
+            <label>Sex *</label>
+            <select id="f-sex" required>
+              <option value="">-- Select --</option>
+              <option value="Male">Male</option>
+              <option value="Female">Female</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Age</label>
+            <input type="number" id="f-age">
+          </div>
+          <div class="form-group">
+            <label>Mother Tongue</label>
+            <input type="text" id="f-motherTongue">
+          </div>
+          <div class="form-group full">
+            <label>Permanent Address *</label>
+            <textarea id="f-address" rows="2" required></textarea>
+          </div>
+        </div>
+
+        <div class="btn-row" style="justify-content: flex-end;">
+          <button type="button" class="btn btn-primary" onclick="goToStep(2)">Next Step →</button>
+        </div>
+      </div>
+
+      <!-- STEP 2: PARENTS & DETAILS -->
+      <div class="form-card" id="step2">
+        <h2 class="section-title">Step 2: Parents & Additional Information</h2>
+        
+        <div class="form-grid">
+          <div class="form-group">
+            <label>Father's Name</label>
+            <input type="text" id="f-fatherName" style="text-transform: uppercase;">
+          </div>
+          <div class="form-group">
+            <label>Mother's Maiden Name</label>
+            <input type="text" id="f-motherName" style="text-transform: uppercase;">
+          </div>
+          <div class="form-group">
+            <label>Guardian's Name (if applicable)</label>
+            <input type="text" id="f-guardianName" style="text-transform: uppercase;">
+          </div>
+          <div class="form-group">
+            <label>Contact Number *</label>
+            <input type="tel" id="f-contactNumber" required>
+          </div>
+        </div>
+
+        <div class="form-grid" style="margin-top: 20px;">
+          <div class="form-group">
+            <label>Member of Indigenous People (IP)?</label>
+            <select id="f-isIP">
+              <option value="No">No</option>
+              <option value="Yes">Yes</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>4Ps Beneficiary?</label>
+            <select id="f-is4Ps">
+              <option value="No">No</option>
+              <option value="Yes">Yes</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-group full" style="margin-top: 20px;">
+          <label>Preferred Learning Modality</label>
+          <select id="f-modality">
+            <option value="Face to Face">Face to Face</option>
+            <option value="Modular (Print)">Modular (Print)</option>
+            <option value="Blended">Blended</option>
+          </select>
+        </div>
+
+        <div class="btn-row">
+          <button type="button" class="btn btn-secondary" onclick="goToStep(1)">← Back</button>
+          <button type="button" class="btn btn-primary" onclick="goToStep(3)">Next Step →</button>
+        </div>
+      </div>
+
+      <!-- STEP 3: SUBMIT -->
+      <div class="form-card" id="step3">
+        <h2 class="section-title">Step 3: Review & Submit</h2>
+        
+        <div style="background: #fffbeb; border-left: 4px solid #d97706; padding: 15px; margin-bottom: 20px; border-radius: 4px;">
+          <label style="display: flex; align-items: flex-start; gap: 10px; cursor: pointer; text-transform: none;">
+            <input type="checkbox" id="f-certify" required style="margin-top: 4px;">
+            <span style="font-size: 0.9rem; color: #92400e;">
+              <strong>Data Privacy Consent:</strong> I certify that the information provided is true and correct, and I allow the Department of Education to process this data in compliance with the Data Privacy Act of 2012.
+            </span>
+          </label>
+        </div>
+
+        <div class="form-group full">
+          <label>Parent/Guardian Signature (Type Full Name) *</label>
+          <input type="text" id="f-signature" required placeholder="Type your full name to sign">
+        </div>
+
+        <div class="btn-row">
+          <button type="button" class="btn btn-secondary" onclick="goToStep(2)">← Back</button>
+          <button type="submit" class="btn btn-success" id="btn-submit">Submit Enrollment</button>
+        </div>
+      </div>
+
+    </form>
+
+    <!-- Success Message -->
+    <div id="success-msg" class="form-card alert-box alert-success">
+      <h2>✅ Enrollment Successful!</h2>
+      <p>The student has been officially added to the SF1 Masterlist.</p>
+      <p style="margin-top: 10px; font-weight: bold;" id="success-lrn"></p>
+      <a href="index.html" style="display:inline-block; margin-top:15px; color:#166534; font-weight:bold; text-decoration:underline;">Return to Homepage</a>
+    </div>
+
   </div>
 
   <!-- FIREBASE INTEGRATION -->
@@ -194,36 +283,46 @@
     import { auth, db } from "./assets/js/firebase-config.js";
     import { collection, getDocs, addDoc, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
     
-    const classSelect = document.getElementById('f-classId');
     const form = document.getElementById('enroll-form');
+    const classSelect = document.getElementById('f-classId');
     const btnSubmit = document.getElementById('btn-submit');
-    const successMsg = document.getElementById('success-msg');
-    const formCard = document.getElementById('enrollment-form-card');
+    
     const closedMsg = document.getElementById('closed-msg');
+    const progressSteps = document.getElementById('progress-steps');
+    const successMsg = document.getElementById('success-msg');
 
-    // 1. Check if Enrollment is Open (Benchmark from PHP settings)
+    // 1. Multi-step Navigation
+    window.goToStep = function(step) {
+      document.querySelectorAll('.form-card').forEach(c => c.classList.remove('active'));
+      document.getElementById(`step${step}`).classList.add('active');
+      
+      document.querySelectorAll('.step-item').forEach(item => {
+        item.classList.remove('active', 'done');
+        const s = parseInt(item.dataset.step);
+        if (s === step) item.classList.add('active');
+        if (s < step) item.classList.add('done');
+      });
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    };
+
+    // 2. Check if Enrollment is Open
     async function checkEnrollmentStatus() {
       try {
-        // Assuming you have a config document for the school
         const settingsRef = doc(db, "config", "enrollment_settings");
         const settingsSnap = await getDoc(settingsRef);
         
-        if (settingsSnap.exists()) {
-          const data = settingsSnap.data();
-          if (data.isOpen === false) {
-            closedMsg.style.display = 'block';
-            return false;
-          }
+        if (settingsSnap.exists() && settingsSnap.data().isOpen === false) {
+          closedMsg.style.display = 'block';
+          return false;
         }
-        // If no settings found, default to open
         return true;
       } catch (error) {
         console.error("Error checking settings:", error);
-        return true; // Default to open if error to not block enrollment
+        return true; // Default to open
       }
     }
 
-    // 2. Load Available Classes
+    // 3. Load Available Classes
     async function loadClasses() {
       try {
         const snap = await getDocs(collection(db, "classes"));
@@ -234,7 +333,7 @@
 
         classes.sort((a, b) => (a.classLabel || "").localeCompare(b.classLabel || ""));
 
-        classSelect.innerHTML = '<option value="">-- Select Class --</option>';
+        classSelect.innerHTML = '<option value="">-- Select Grade & Section --</option>';
         classes.forEach(c => {
           const opt = document.createElement('option');
           opt.value = c.id;
@@ -247,23 +346,26 @@
       }
     }
     
-    // Initialize
+    // Initialize Page
     async function init() {
       const isOpen = await checkEnrollmentStatus();
       if (isOpen) {
-        formCard.style.display = 'block';
+        form.style.display = 'block';
+        progressSteps.style.display = 'flex';
         await loadClasses();
       }
     }
     init();
 
-    // 3. Handle Form Submission
+    // 4. Handle Form Submission
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
       
       const classId = classSelect.value;
-      if (!classId) {
-        alert("Please select a class.");
+      if (!classId) { alert("Please select a class."); goToStep(1); return; }
+      
+      if (!document.getElementById('f-certify').checked) {
+        alert("Please check the Data Privacy Consent box.");
         return;
       }
 
@@ -283,15 +385,17 @@
 
         const studentData = {
           lrn: lrn,
+          psaNumber: document.getElementById('f-psa').value.trim(),
           firstName,
           lastName,
           middleName,
+          extensionName: document.getElementById('f-extension').value.trim(),
           fullName,
           sex: document.getElementById('f-sex').value,
           birthDate: document.getElementById('f-birthDate').value,
           age: document.getElementById('f-age').value ? parseInt(document.getElementById('f-age').value) : null,
-          religion: document.getElementById('f-religion').value.trim(),
-          addressBarangay: document.getElementById('f-addressBarangay').value.trim(),
+          motherTongue: document.getElementById('f-motherTongue').value.trim(),
+          addressBarangay: document.getElementById('f-address').value.trim(),
           
           isIP: document.getElementById('f-isIP').value,
           is4Ps: document.getElementById('f-is4Ps').value,
@@ -302,19 +406,24 @@
           guardianName: document.getElementById('f-guardianName').value.trim(),
           contactNumber: document.getElementById('f-contactNumber').value.trim(),
           
+          // Defaults required by the Firebase Rules
           enrollmentStatus: "Currently Enrolled",
           violations: [],
           dateEnrolled: new Date().toISOString()
         };
 
+        // Save to Firestore
         await addDoc(collection(db, "classes", classId, "students"), studentData);
 
+        // Show Success
         form.style.display = 'none';
+        progressSteps.style.display = 'none';
         successMsg.style.display = 'block';
+        document.getElementById('success-lrn').textContent = `Assigned LRN: ${lrn}`;
 
       } catch (error) {
         console.error("Enrollment failed:", error);
-        alert("❌ Failed to enroll student. Please try again.");
+        alert("❌ Failed to enroll student. Check the browser console for details.");
         btnSubmit.textContent = "Submit Enrollment";
         btnSubmit.disabled = false;
       }
