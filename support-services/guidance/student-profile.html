@@ -159,7 +159,7 @@
             <div class="card">
               <div class="card-header">Quick Actions</div>
               <div class="card-body">
-                <button class="btn-edit" style="margin-top: 0;" onclick="alert('This will open the case logger we built earlier!')">⚠️ Log Violation</button>
+                <button class="btn-edit" style="margin-top: 0;" onclick="openViolationModal()">⚠️ Log Violation</button>
               </div>
             </div>
           </div>
@@ -234,12 +234,127 @@
     </div>
   </div>
 
+    <!-- LOG VIOLATION DIALOG (Pulled from student-records.html) -->
+  <dialog id="case-dialog" style="border: none; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.3); padding: 0; width: 90%; max-width: 800px; max-height: 90vh; background: #f8fafc; overflow: hidden; display: flex; flex-direction: column;">
+    <div class="modal-header" style="padding: 20px; background: #fff; border-bottom: 1px solid var(--gc-border); display: flex; justify-content: space-between; align-items: center;">
+      <h3 style="margin: 0; color: var(--gc-primary); font-size: 1.25rem;">Log Disciplinary Case</h3>
+      <button class="modal-close" style="background: none; border: none; font-size: 1.5rem; cursor: pointer; color: #666; padding: 0 10px;" onclick="document.getElementById('case-dialog').close()">×</button>
+    </div>
+    
+    <div class="modal-body" style="padding: 20px; overflow-y: auto; flex: 1;">
+      <!-- Student Info -->
+      <div style="background: #fff; padding: 15px; border-radius: 8px; margin-bottom: 20px; border: 1px solid var(--gc-border);">
+        <div style="font-size: 0.85rem; color: #64748b; text-transform: uppercase; font-weight: bold; margin-bottom: 5px;">Student:</div>
+        <div style="font-size: 1.2rem; font-weight: bold; color: var(--gc-primary);" id="modal-student-name">-</div>
+        <div style="font-size: 0.9rem; color: #475569; margin-top: 5px;" id="modal-student-details">-</div>
+      </div>
+
+      <!-- Selection Panel -->
+      <div style="display: flex; gap: 10px; margin-bottom: 20px;">
+        <div style="flex: 1;">
+          <label style="display: block; font-size: 0.8rem; font-weight: bold; margin-bottom: 5px;">Date of Incident</label>
+          <input type="date" id="modal-date" style="width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; box-sizing: border-box;">
+        </div>
+        <div style="flex: 1;">
+          <label style="display: block; font-size: 0.8rem; font-weight: bold; margin-bottom: 5px;">Time</label>
+          <input type="time" id="modal-time" style="width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; box-sizing: border-box;">
+        </div>
+      </div>
+
+      <h4 style="margin: 0 0 10px; color: #333;">Select Violation Committed:</h4>
+
+      <!-- CLASS A / B OFFENSES -->
+      <div class="rule-class open" style="background: #fff; border: 1px solid var(--gc-border); border-radius: 8px; margin-bottom: 15px; overflow: hidden;">
+        <div class="rule-class-header" style="background: #f1f5f9; padding: 12px 15px; font-weight: bold; color: var(--gc-primary); display: flex; justify-content: space-between; cursor: pointer; user-select: none;" onclick="this.parentElement.classList.toggle('open')">
+          <span>CLASS A / B OFFENSES (Minor)</span>
+          <span>▼</span>
+        </div>
+        <div class="rule-class-body" style="display: block; padding: 10px;">
+          <div class="rule-item" style="display: flex; justify-content: space-between; align-items: center; padding: 10px 15px; border-bottom: 1px solid #f1f5f9;"><span style="font-size: 0.9rem; color: #333;">A.1 Irregular Attendance</span><button class="rule-btn" style="background: #eff6ff; color: var(--bright-blue); border: 1px solid #bfdbfe; padding: 4px 10px; border-radius: 4px; font-size: 0.8rem; font-weight: 600; cursor: pointer;" onclick="submitCase('A.1 Irregular Attendance')">+ Log</button></div>
+          <div class="rule-item" style="display: flex; justify-content: space-between; align-items: center; padding: 10px 15px; border-bottom: 1px solid #f1f5f9;"><span style="font-size: 0.9rem; color: #333;">A.2 No Letter of Excuse</span><button class="rule-btn" style="background: #eff6ff; color: var(--bright-blue); border: 1px solid #bfdbfe; padding: 4px 10px; border-radius: 4px; font-size: 0.8rem; font-weight: 600; cursor: pointer;" onclick="submitCase('A.2 No Letter of Excuse')">+ Log</button></div>
+          <div class="rule-item" style="display: flex; justify-content: space-between; align-items: center; padding: 10px 15px; border-bottom: 1px solid #f1f5f9;"><span style="font-size: 0.9rem; color: #333;">A.3 Misbehavior</span><button class="rule-btn" style="background: #eff6ff; color: var(--bright-blue); border: 1px solid #bfdbfe; padding: 4px 10px; border-radius: 4px; font-size: 0.8rem; font-weight: 600; cursor: pointer;" onclick="submitCase('A.3 Misbehavior')">+ Log</button></div>
+          <div class="rule-item" style="display: flex; justify-content: space-between; align-items: center; padding: 10px 15px; border-bottom: 1px solid #f1f5f9;"><span style="font-size: 0.9rem; color: #333;">A.4 Boisterous laughter</span><button class="rule-btn" style="background: #eff6ff; color: var(--bright-blue); border: 1px solid #bfdbfe; padding: 4px 10px; border-radius: 4px; font-size: 0.8rem; font-weight: 600; cursor: pointer;" onclick="submitCase('A.4 Boisterous laughter')">+ Log</button></div>
+          <div class="rule-item" style="display: flex; justify-content: space-between; align-items: center; padding: 10px 15px; border-bottom: 1px solid #f1f5f9;"><span style="font-size: 0.9rem; color: #333;">A.5 Entering Campus No ID</span><button class="rule-btn" style="background: #eff6ff; color: var(--bright-blue); border: 1px solid #bfdbfe; padding: 4px 10px; border-radius: 4px; font-size: 0.8rem; font-weight: 600; cursor: pointer;" onclick="submitCase('A.5 Entering Campus No ID')">+ Log</button></div>
+          <div class="rule-item" style="display: flex; justify-content: space-between; align-items: center; padding: 10px 15px; border-bottom: 1px solid #f1f5f9;"><span style="font-size: 0.9rem; color: #333;">A.6 Not Wearing ID</span><button class="rule-btn" style="background: #eff6ff; color: var(--bright-blue); border: 1px solid #bfdbfe; padding: 4px 10px; border-radius: 4px; font-size: 0.8rem; font-weight: 600; cursor: pointer;" onclick="submitCase('A.6 Not Wearing ID')">+ Log</button></div>
+          <div class="rule-item" style="display: flex; justify-content: space-between; align-items: center; padding: 10px 15px; border-bottom: 1px solid #f1f5f9;"><span style="font-size: 0.9rem; color: #333;">A.7 Littering</span><button class="rule-btn" style="background: #eff6ff; color: var(--bright-blue); border: 1px solid #bfdbfe; padding: 4px 10px; border-radius: 4px; font-size: 0.8rem; font-weight: 600; cursor: pointer;" onclick="submitCase('A.7 Littering')">+ Log</button></div>
+          <div class="rule-item" style="display: flex; justify-content: space-between; align-items: center; padding: 10px 15px; border-bottom: 1px solid #f1f5f9;"><span style="font-size: 0.9rem; color: #333;">A.8 Disruption of Classes</span><button class="rule-btn" style="background: #eff6ff; color: var(--bright-blue); border: 1px solid #bfdbfe; padding: 4px 10px; border-radius: 4px; font-size: 0.8rem; font-weight: 600; cursor: pointer;" onclick="submitCase('A.8 Disruption of Classes')">+ Log</button></div>
+          <div class="rule-item" style="display: flex; justify-content: space-between; align-items: center; padding: 10px 15px; border-bottom: 1px solid #f1f5f9;"><span style="font-size: 0.9rem; color: #333;">A.9 Cheating Exams</span><button class="rule-btn" style="background: #eff6ff; color: var(--bright-blue); border: 1px solid #bfdbfe; padding: 4px 10px; border-radius: 4px; font-size: 0.8rem; font-weight: 600; cursor: pointer;" onclick="submitCase('A.9 Cheating Exams')">+ Log</button></div>
+          <div class="rule-item" style="display: flex; justify-content: space-between; align-items: center; padding: 10px 15px; border-bottom: 1px solid #f1f5f9;"><span style="font-size: 0.9rem; color: #333;">A.10 Unauthorized haircut</span><button class="rule-btn" style="background: #eff6ff; color: var(--bright-blue); border: 1px solid #bfdbfe; padding: 4px 10px; border-radius: 4px; font-size: 0.8rem; font-weight: 600; cursor: pointer;" onclick="submitCase('A.10 Unauthorized haircut')">+ Log</button></div>
+          <div class="rule-item" style="display: flex; justify-content: space-between; align-items: center; padding: 10px 15px; border-bottom: 1px solid #f1f5f9;"><span style="font-size: 0.9rem; color: #333;">A.11 Wearing of earring for male</span><button class="rule-btn" style="background: #eff6ff; color: var(--bright-blue); border: 1px solid #bfdbfe; padding: 4px 10px; border-radius: 4px; font-size: 0.8rem; font-weight: 600; cursor: pointer;" onclick="submitCase('A.11 Wearing of earring for male')">+ Log</button></div>
+          <div class="rule-item" style="display: flex; justify-content: space-between; align-items: center; padding: 10px 15px; border-bottom: 1px solid #f1f5f9;"><span style="font-size: 0.9rem; color: #333;">A.12 Bringing large amount money</span><button class="rule-btn" style="background: #eff6ff; color: var(--bright-blue); border: 1px solid #bfdbfe; padding: 4px 10px; border-radius: 4px; font-size: 0.8rem; font-weight: 600; cursor: pointer;" onclick="submitCase('A.12 Bringing large amount money')">+ Log</button></div>
+          <div class="rule-item" style="display: flex; justify-content: space-between; align-items: center; padding: 10px 15px; border-bottom: 1px solid #f1f5f9;"><span style="font-size: 0.9rem; color: #333;">A.13 Use of cellular phones class hrs.</span><button class="rule-btn" style="background: #eff6ff; color: var(--bright-blue); border: 1px solid #bfdbfe; padding: 4px 10px; border-radius: 4px; font-size: 0.8rem; font-weight: 600; cursor: pointer;" onclick="submitCase('A.13 Use of cellular phones class hrs.')">+ Log</button></div>
+          <div class="rule-item" style="display: flex; justify-content: space-between; align-items: center; padding: 10px 15px; border-bottom: 1px solid #f1f5f9;"><span style="font-size: 0.9rem; color: #333;">A.14 Gambling</span><button class="rule-btn" style="background: #eff6ff; color: var(--bright-blue); border: 1px solid #bfdbfe; padding: 4px 10px; border-radius: 4px; font-size: 0.8rem; font-weight: 600; cursor: pointer;" onclick="submitCase('A.14 Gambling')">+ Log</button></div>
+          <div class="rule-item" style="display: flex; justify-content: space-between; align-items: center; padding: 10px 15px; border-bottom: 1px solid #f1f5f9;"><span style="font-size: 0.9rem; color: #333;">A.15 Not in a proper uniform</span><button class="rule-btn" style="background: #eff6ff; color: var(--bright-blue); border: 1px solid #bfdbfe; padding: 4px 10px; border-radius: 4px; font-size: 0.8rem; font-weight: 600; cursor: pointer;" onclick="submitCase('A.15 Not in a proper uniform')">+ Log</button></div>
+          <div class="rule-item" style="display: flex; justify-content: space-between; align-items: center; padding: 10px 15px; border-bottom: 1px solid #f1f5f9;"><span style="font-size: 0.9rem; color: #333;">A.16 Cutting Classes</span><button class="rule-btn" style="background: #eff6ff; color: var(--bright-blue); border: 1px solid #bfdbfe; padding: 4px 10px; border-radius: 4px; font-size: 0.8rem; font-weight: 600; cursor: pointer;" onclick="submitCase('A.16 Cutting Classes')">+ Log</button></div>
+          <div class="rule-item" style="display: flex; justify-content: space-between; align-items: center; padding: 10px 15px; border-bottom: 1px solid #f1f5f9;"><span style="font-size: 0.9rem; color: #333;">A.17 In/Out School Campus over fence</span><button class="rule-btn" style="background: #eff6ff; color: var(--bright-blue); border: 1px solid #bfdbfe; padding: 4px 10px; border-radius: 4px; font-size: 0.8rem; font-weight: 600; cursor: pointer;" onclick="submitCase('A.17 In/Out School Campus over fence')">+ Log</button></div>
+          <div class="rule-item" style="display: flex; justify-content: space-between; align-items: center; padding: 10px 15px; border-bottom: 1px solid #f1f5f9;"><span style="font-size: 0.9rem; color: #333;">A.18 Chewing Gum during class hrs.</span><button class="rule-btn" style="background: #eff6ff; color: var(--bright-blue); border: 1px solid #bfdbfe; padding: 4px 10px; border-radius: 4px; font-size: 0.8rem; font-weight: 600; cursor: pointer;" onclick="submitCase('A.18 Chewing Gum during class hrs.')">+ Log</button></div>
+          <div class="rule-item" style="display: flex; justify-content: space-between; align-items: center; padding: 10px 15px; border-bottom: 1px solid #f1f5f9;"><span style="font-size: 0.9rem; color: #333;">A.19 Falcification of signatures</span><button class="rule-btn" style="background: #eff6ff; color: var(--bright-blue); border: 1px solid #bfdbfe; padding: 4px 10px; border-radius: 4px; font-size: 0.8rem; font-weight: 600; cursor: pointer;" onclick="submitCase('A.19 Falcification of signatures')">+ Log</button></div>
+          <div class="rule-item" style="display: flex; justify-content: space-between; align-items: center; padding: 10px 15px; border-bottom: 1px solid #f1f5f9;"><span style="font-size: 0.9rem; color: #333;">A.20 Showing pornographic pics</span><button class="rule-btn" style="background: #eff6ff; color: var(--bright-blue); border: 1px solid #bfdbfe; padding: 4px 10px; border-radius: 4px; font-size: 0.8rem; font-weight: 600; cursor: pointer;" onclick="submitCase('A.20 Showing pornographic pics')">+ Log</button></div>
+          <div class="rule-item" style="display: flex; justify-content: space-between; align-items: center; padding: 10px 15px; border-bottom: 1px solid #f1f5f9;"><span style="font-size: 0.9rem; color: #333;">A.21 Bringing outsiders in campus</span><button class="rule-btn" style="background: #eff6ff; color: var(--bright-blue); border: 1px solid #bfdbfe; padding: 4px 10px; border-radius: 4px; font-size: 0.8rem; font-weight: 600; cursor: pointer;" onclick="submitCase('A.21 Bringing outsiders in campus')">+ Log</button></div>
+          <div class="rule-item" style="display: flex; justify-content: space-between; align-items: center; padding: 10px 15px; border-bottom: 1px solid #f1f5f9;"><span style="font-size: 0.9rem; color: #333;">A.22 Disrespect</span><button class="rule-btn" style="background: #eff6ff; color: var(--bright-blue); border: 1px solid #bfdbfe; padding: 4px 10px; border-radius: 4px; font-size: 0.8rem; font-weight: 600; cursor: pointer;" onclick="submitCase('A.22 Disrespect')">+ Log</button></div>
+          <div class="rule-item" style="display: flex; justify-content: space-between; align-items: center; padding: 10px 15px; border-bottom: 1px solid #f1f5f9;"><span style="font-size: 0.9rem; color: #333;">A.23 Too much coloring hair</span><button class="rule-btn" style="background: #eff6ff; color: var(--bright-blue); border: 1px solid #bfdbfe; padding: 4px 10px; border-radius: 4px; font-size: 0.8rem; font-weight: 600; cursor: pointer;" onclick="submitCase('A.23 Too much coloring hair')">+ Log</button></div>
+          <div class="rule-item" style="display: flex; justify-content: space-between; align-items: center; padding: 10px 15px; border-bottom: 1px solid #f1f5f9;"><span style="font-size: 0.9rem; color: #333;">A.24 Littering/ throwing garbage</span><button class="rule-btn" style="background: #eff6ff; color: var(--bright-blue); border: 1px solid #bfdbfe; padding: 4px 10px; border-radius: 4px; font-size: 0.8rem; font-weight: 600; cursor: pointer;" onclick="submitCase('A.24 Littering/ throwing garbage')">+ Log</button></div>
+          <div class="rule-item" style="display: flex; justify-content: space-between; align-items: center; padding: 10px 15px; border-bottom: 1px solid #f1f5f9;"><span style="font-size: 0.9rem; color: #333;">A.25 Improper disposal of spitting</span><button class="rule-btn" style="background: #eff6ff; color: var(--bright-blue); border: 1px solid #bfdbfe; padding: 4px 10px; border-radius: 4px; font-size: 0.8rem; font-weight: 600; cursor: pointer;" onclick="submitCase('A.25 Improper disposal of spitting')">+ Log</button></div>
+          <div class="rule-item" style="display: flex; justify-content: space-between; align-items: center; padding: 10px 15px;"><span style="font-size: 0.9rem; color: #333;">A.26 Late/not attending Flag Ceremony</span><button class="rule-btn" style="background: #eff6ff; color: var(--bright-blue); border: 1px solid #bfdbfe; padding: 4px 10px; border-radius: 4px; font-size: 0.8rem; font-weight: 600; cursor: pointer;" onclick="submitCase('A.26 Late/not attending Flag Ceremony')">+ Log</button></div>
+          
+          <div class="penalty-box" style="background: #fffbeb; border-left: 4px solid var(--warning); padding: 15px; margin-top: 20px; border-radius: 4px; font-size: 0.9rem; color: #92400e;">
+            <strong>Penalty:</strong> 1st - Reprimand, 2nd - Confiscation of ID/Parental notification, 3rd - Ordinary Suspension, 4th - Preventive Suspension, 5th - Dismissal
+          </div>
+        </div>
+      </div>
+
+      <!-- CLASS C OFFENSES -->
+      <div class="rule-class" style="background: #fff; border: 1px solid var(--gc-border); border-radius: 8px; margin-bottom: 15px; overflow: hidden;">
+        <div class="rule-class-header" style="background: #f1f5f9; padding: 12px 15px; font-weight: bold; color: var(--gc-primary); display: flex; justify-content: space-between; cursor: pointer; user-select: none;" onclick="this.parentElement.classList.toggle('open')">
+          <span>CLASS C OFFENSES (Anti-Bullying)</span>
+          <span>▼</span>
+        </div>
+        <div class="rule-class-body" style="display: none; padding: 10px;">
+          <div class="rule-item" style="display: flex; justify-content: space-between; align-items: center; padding: 10px 15px;"><span style="font-size: 0.9rem; color: #333;">Bullying (Physical, Verbal, Social, Cyber)</span><button class="rule-btn" style="background: #eff6ff; color: var(--bright-blue); border: 1px solid #bfdbfe; padding: 4px 10px; border-radius: 4px; font-size: 0.8rem; font-weight: 600; cursor: pointer;" onclick="submitCase('Class C: Bullying')">+ Log</button></div>
+          <div class="penalty-box" style="background: #fffbeb; border-left: 4px solid var(--warning); padding: 15px; margin-top: 20px; border-radius: 4px; font-size: 0.9rem; color: #92400e;">
+            <strong>Penalty:</strong> 1st - Ordinary Suspension, 2nd - Preventive Suspension, 3rd - Dismissal
+          </div>
+        </div>
+      </div>
+
+      <!-- CLASS D OFFENSES -->
+      <div class="rule-class" style="background: #fff; border: 1px solid var(--gc-border); border-radius: 8px; margin-bottom: 15px; overflow: hidden;">
+        <div class="rule-class-header" style="background: #f1f5f9; padding: 12px 15px; font-weight: bold; color: var(--gc-primary); display: flex; justify-content: space-between; cursor: pointer; user-select: none;" onclick="this.parentElement.classList.toggle('open')">
+          <span>CLASS D OFFENSES (Major/Grave)</span>
+          <span>▼</span>
+        </div>
+        <div class="rule-class-body" style="display: none; padding: 10px;">
+          <div class="rule-item" style="display: flex; justify-content: space-between; align-items: center; padding: 10px 15px; border-bottom: 1px solid #f1f5f9;"><span style="font-size: 0.9rem; color: #333;">D.1 Under the influence of Liquor</span><button class="rule-btn" style="background: #eff6ff; color: var(--bright-blue); border: 1px solid #bfdbfe; padding: 4px 10px; border-radius: 4px; font-size: 0.8rem; font-weight: 600; cursor: pointer;" onclick="submitCase('D.1 Under the influence of Liquor')">+ Log</button></div>
+          <div class="rule-item" style="display: flex; justify-content: space-between; align-items: center; padding: 10px 15px; border-bottom: 1px solid #f1f5f9;"><span style="font-size: 0.9rem; color: #333;">D.2 Forging /Record/document</span><button class="rule-btn" style="background: #eff6ff; color: var(--bright-blue); border: 1px solid #bfdbfe; padding: 4px 10px; border-radius: 4px; font-size: 0.8rem; font-weight: 600; cursor: pointer;" onclick="submitCase('D.2 Forging /Record/document')">+ Log</button></div>
+          <div class="rule-item" style="display: flex; justify-content: space-between; align-items: center; padding: 10px 15px; border-bottom: 1px solid #f1f5f9;"><span style="font-size: 0.9rem; color: #333;">D.3 Verbal physical assault</span><button class="rule-btn" style="background: #eff6ff; color: var(--bright-blue); border: 1px solid #bfdbfe; padding: 4px 10px; border-radius: 4px; font-size: 0.8rem; font-weight: 600; cursor: pointer;" onclick="submitCase('D.3 Verbal physical assault')">+ Log</button></div>
+          <div class="rule-item" style="display: flex; justify-content: space-between; align-items: center; padding: 10px 15px; border-bottom: 1px solid #f1f5f9;"><span style="font-size: 0.9rem; color: #333;">D.4 Distribution pornographic</span><button class="rule-btn" style="background: #eff6ff; color: var(--bright-blue); border: 1px solid #bfdbfe; padding: 4px 10px; border-radius: 4px; font-size: 0.8rem; font-weight: 600; cursor: pointer;" onclick="submitCase('D.4 Distribution pornographic')">+ Log</button></div>
+          <div class="rule-item" style="display: flex; justify-content: space-between; align-items: center; padding: 10px 15px; border-bottom: 1px solid #f1f5f9;"><span style="font-size: 0.9rem; color: #333;">D.5 Gambling/playing cards</span><button class="rule-btn" style="background: #eff6ff; color: var(--bright-blue); border: 1px solid #bfdbfe; padding: 4px 10px; border-radius: 4px; font-size: 0.8rem; font-weight: 600; cursor: pointer;" onclick="submitCase('D.5 Gambling/playing cards')">+ Log</button></div>
+          <div class="rule-item" style="display: flex; justify-content: space-between; align-items: center; padding: 10px 15px; border-bottom: 1px solid #f1f5f9;"><span style="font-size: 0.9rem; color: #333;">D.6 Inflicting injury student/staff</span><button class="rule-btn" style="background: #eff6ff; color: var(--bright-blue); border: 1px solid #bfdbfe; padding: 4px 10px; border-radius: 4px; font-size: 0.8rem; font-weight: 600; cursor: pointer;" onclick="submitCase('D.6 Inflicting injury student/staff')">+ Log</button></div>
+          <div class="rule-item" style="display: flex; justify-content: space-between; align-items: center; padding: 10px 15px; border-bottom: 1px solid #f1f5f9;"><span style="font-size: 0.9rem; color: #333;">D.7 Class Boycott</span><button class="rule-btn" style="background: #eff6ff; color: var(--bright-blue); border: 1px solid #bfdbfe; padding: 4px 10px; border-radius: 4px; font-size: 0.8rem; font-weight: 600; cursor: pointer;" onclick="submitCase('D.7 Class Boycott')">+ Log</button></div>
+          <div class="rule-item" style="display: flex; justify-content: space-between; align-items: center; padding: 10px 15px; border-bottom: 1px solid #f1f5f9;"><span style="font-size: 0.9rem; color: #333;">D.8 Membership in Gangs etc.</span><button class="rule-btn" style="background: #eff6ff; color: var(--bright-blue); border: 1px solid #bfdbfe; padding: 4px 10px; border-radius: 4px; font-size: 0.8rem; font-weight: 600; cursor: pointer;" onclick="submitCase('D.8 Membership in Gangs etc.')">+ Log</button></div>
+          <div class="rule-item" style="display: flex; justify-content: space-between; align-items: center; padding: 10px 15px; border-bottom: 1px solid #f1f5f9;"><span style="font-size: 0.9rem; color: #333;">D.9 Hazing</span><button class="rule-btn" style="background: #eff6ff; color: var(--bright-blue); border: 1px solid #bfdbfe; padding: 4px 10px; border-radius: 4px; font-size: 0.8rem; font-weight: 600; cursor: pointer;" onclick="submitCase('D.9 Hazing')">+ Log</button></div>
+          <div class="rule-item" style="display: flex; justify-content: space-between; align-items: center; padding: 10px 15px; border-bottom: 1px solid #f1f5f9;"><span style="font-size: 0.9rem; color: #333;">D.10 Bringing a deadly weapons</span><button class="rule-btn" style="background: #eff6ff; color: var(--bright-blue); border: 1px solid #bfdbfe; padding: 4px 10px; border-radius: 4px; font-size: 0.8rem; font-weight: 600; cursor: pointer;" onclick="submitCase('D.10 Bringing a deadly weapons')">+ Log</button></div>
+          <div class="rule-item" style="display: flex; justify-content: space-between; align-items: center; padding: 10px 15px; border-bottom: 1px solid #f1f5f9;"><span style="font-size: 0.9rem; color: #333;">D.11 Immorality</span><button class="rule-btn" style="background: #eff6ff; color: var(--bright-blue); border: 1px solid #bfdbfe; padding: 4px 10px; border-radius: 4px; font-size: 0.8rem; font-weight: 600; cursor: pointer;" onclick="submitCase('D.11 Immorality')">+ Log</button></div>
+          <div class="rule-item" style="display: flex; justify-content: space-between; align-items: center; padding: 10px 15px; border-bottom: 1px solid #f1f5f9;"><span style="font-size: 0.9rem; color: #333;">D.12 Publishing/circulating false</span><button class="rule-btn" style="background: #eff6ff; color: var(--bright-blue); border: 1px solid #bfdbfe; padding: 4px 10px; border-radius: 4px; font-size: 0.8rem; font-weight: 600; cursor: pointer;" onclick="submitCase('D.12 Publishing/circulating false')">+ Log</button></div>
+          <div class="rule-item" style="display: flex; justify-content: space-between; align-items: center; padding: 10px 15px;"><span style="font-size: 0.9rem; color: #333;">D.13 Drug user/pusher</span><button class="rule-btn" style="background: #eff6ff; color: var(--bright-blue); border: 1px solid #bfdbfe; padding: 4px 10px; border-radius: 4px; font-size: 0.8rem; font-weight: 600; cursor: pointer;" onclick="submitCase('D.13 Drug user/pusher')">+ Log</button></div>
+
+          <div class="penalty-box" style="background: #fffbeb; border-left: 4px solid var(--warning); padding: 15px; margin-top: 20px; border-radius: 4px; font-size: 0.9rem; color: #92400e;">
+            <strong>Penalty:</strong> 1st Offense - Preventive Suspension (Intervention counseling program), 2nd Offense - Dismissal (Rehabilitation/Intervention Program). <br><br>
+            <em>Note: Harmful drugs - 1st offense is dismissal (due process of law may apply)</em>
+          </div>
+        </div>
+      </div>
+    </div>
+  </dialog>
+
   <!-- FIREBASE INTEGRATION -->
   <script type="module">
     import { auth, db } from "../../assets/js/firebase-config.js";
     import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
     import { collection, getDocs, doc, updateDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
     import { getCurrentUserProfile } from "../../assets/js/roles.js"; 
+    import { collection, getDocs, doc, updateDoc, arrayUnion } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
 
     // DOM Elements
     const loadingState = document.getElementById('loading-state');
@@ -501,6 +616,81 @@
       };
       reader.readAsDataURL(file);
     });
+
+        // 8. Violation Modal Logic
+    const caseDialog = document.getElementById('case-dialog');
+
+    window.openViolationModal = function() {
+      if (!CURRENT_STUDENT) return;
+
+      // Populate fields
+      document.getElementById('modal-student-name').textContent = CURRENT_STUDENT.fullName;
+      document.getElementById('modal-student-details').textContent = `${CURRENT_STUDENT.classLabel} | LRN: ${CURRENT_STUDENT.lrn || 'N/A'}`;
+      
+      // Set default date and time
+      const now = new Date();
+      const offset = now.getTimezoneOffset() * 60000;
+      const localISOTime = (new Date(now - offset)).toISOString().slice(0, 10);
+      document.getElementById('modal-date').value = localISOTime;
+      
+      const hours = String(now.getHours()).padStart(2, '0');
+      const minutes = String(now.getMinutes()).padStart(2, '0');
+      document.getElementById('modal-time').value = `${hours}:${minutes}`;
+
+      // Show the dialog
+      caseDialog.showModal();
+    };
+
+    // Close dialog when clicking backdrop
+    caseDialog.addEventListener('click', (e) => {
+      const rect = caseDialog.getBoundingClientRect();
+      const isInDialog = (rect.top <= e.clientY && e.clientY <= rect.top + rect.height &&
+        rect.left <= e.clientX && e.clientX <= rect.left + rect.width);
+      if (!isInDialog) {
+        caseDialog.close();
+      }
+    });
+
+    // Submit the case to Firestore
+    window.submitCase = async function(violationName) {
+      const date = document.getElementById('modal-date').value;
+      const time = document.getElementById('modal-time').value;
+
+      if (!CURRENT_STUDENT) return;
+
+      if (!confirm(`Are you sure you want to log:\n\n"${violationName}"\n\nfor ${CURRENT_STUDENT.fullName}?`)) return;
+
+      try {
+        const studentRef = doc(db, "classes", CURRENT_STUDENT.classId, "students", CURRENT_STUDENT.id);
+        
+        // Append to violations array in Firestore
+        await updateDoc(studentRef, {
+          violations: arrayUnion({
+            violation: violationName,
+            date: date,
+            time: time,
+            loggedBy: auth.currentUser.email,
+            timestamp: Date.now()
+          })
+        });
+
+        alert("✅ Case successfully logged to the student's permanent record.");
+        caseDialog.close();
+        
+        // Refresh the student data
+        await loadAllStudents(); 
+        
+        // Find the updated student and refresh the UI
+        const updatedStudent = ALL_STUDENTS.find(s => s.id === CURRENT_STUDENT.id);
+        if (updatedStudent) {
+          selectStudent(updatedStudent); 
+        }
+
+      } catch (error) {
+        console.error("Error saving case:", error);
+        alert("❌ Failed to save case. Check console for details.");
+      }
+    };
   </script>
 </body>
 </html>
