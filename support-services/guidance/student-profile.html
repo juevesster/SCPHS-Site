@@ -160,7 +160,8 @@
               <div class="card-header">Quick Actions</div>
               <div class="card-body">
                 <button class="btn-edit" style="margin-top: 0;" onclick="openViolationModal()">⚠️ Log Violation</button>
-              </div>
+                <button class="btn-edit" style="margin-top: 10px; background: #475569;" onclick="printViolationReport()">🖨️ Print Violation Report</button>
+            </div>
             </div>
           </div>
 
@@ -346,6 +347,121 @@
       </div>
     </div>
   </dialog>
+
+
+    <!-- HIDDEN PRINT TEMPLATE -->
+  <div id="print-section" style="display: none;">
+    <div class="print-document">
+      
+      <!-- DepEd Header -->
+      <div class="print-header">
+        <img src="../../assets/images/deped-logo.png" alt="DepEd Logo">
+        <div class="header-text">
+          <div>Republic of the Philippines</div>
+          <div class="bold">DEPARTMENT OF EDUCATION</div>
+          <div>Region 2</div>
+          <div class="bold">SCHOOL DIVISION OFFICE OF NUEVA VIZCAYA</div>
+          <div>Bayombong</div>
+          <div class="bold">STA. CRUZ PINGKIAN HIGH SCHOOL</div>
+          <div style="text-decoration: underline;">Pingkian, Kayapa, Nueva Vizcaya</div>
+          <div class="bold" style="margin-top: 10px;">GUIDANCE AND COUNSELING CENTER</div>
+          <div>S.Y. 20__ to 20__</div>
+        </div>
+      </div>
+
+      <!-- Student Info -->
+      <div class="print-student-info">
+        <div class="info-row">
+          <span class="info-item"><strong>Name:</strong> <span id="print-name">________________________</span></span>
+          <span class="info-item"><strong>Age:</strong> <span id="print-age">______</span></span>
+        </div>
+        <div class="info-row">
+          <span class="info-item"><strong>Date:</strong> <span id="print-date">________________</span></span>
+          <span class="info-item"><strong>Time:</strong> <span id="print-time">____________</span></span>
+        </div>
+        <div class="info-row">
+          <span class="info-item"><strong>Year and Section:</strong> <span id="print-section-info">________________________</span></span>
+        </div>
+      </div>
+
+      <div class="print-title">SCHOOL RULES/REGULATIONS VIOLATIONS</div>
+      <div class="print-subtitle">Infractions : Sanctions &nbsp;&nbsp;&nbsp;&nbsp; Commissions : Omissions</div>
+
+      <!-- Class A/B Offenses Table -->
+      <div class="print-table-title">PROHIBITED ACTS (CLASS A / B OFFENSES)</div>
+      <table class="print-table">
+        <thead>
+          <tr>
+            <th style="width: 60%;">Violation</th>
+            <th style="width: 40%;">No. of Offenses (1) (2) (3) (4) (5)</th>
+          </tr>
+        </thead>
+        <tbody id="print-tbody-ab">
+          <!-- Rows injected by JS -->
+        </tbody>
+      </table>
+      
+      <div class="print-penalty">
+        <strong>(CLASS A / B PENALTY)</strong><br>
+        1st Offense - Reprimand/Written warning<br>
+        2nd Offense - Confiscation of ID/Parental notification<br>
+        3rd Offense - Ordinary Suspension<br>
+        4th Offense - Preventive Suspension<br>
+        5th Offense - Dismissal
+      </div>
+
+      <!-- Signatures -->
+      <div class="print-signatures">
+        <div class="sig-block">
+          <div class="sig-line"></div>
+          <div class="sig-label">Prepared by: <span id="print-counselor-name">_______________________</span></div>
+          <div class="sig-label" style="font-size: 10px;">Teacher III - Guidance Counselor (Designate)</div>
+        </div>
+        <div class="sig-block">
+          <div class="sig-line"></div>
+          <div class="sig-label">Approved by: <span>SATURNINO P. CALANSI EdD</span></div>
+          <div class="sig-label" style="font-size: 10px;">Principal IV/School Head</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <style>
+    /* PRINT STYLES */
+    @media print {
+      @page { size: A4 portrait; margin: 10mm; }
+      body * { visibility: hidden; }
+      #print-section, #print-section * { visibility: visible; }
+      #print-section { position: absolute; left: 0; top: 0; width: 100%; display: block !important; }
+      
+      .print-document { font-family: "Times New Roman", Times, serif; color: #000; font-size: 12px; }
+      .print-header { text-align: center; margin-bottom: 20px; }
+      .print-header img { height: 70px; margin-bottom: 5px; }
+      .print-header .header-text { line-height: 1.3; }
+      .print-header .bold { font-weight: bold; font-size: 14px; }
+      
+      .print-student-info { margin-bottom: 20px; font-size: 13px; }
+      .info-row { display: flex; justify-content: space-between; margin-bottom: 8px; }
+      .info-item { width: 50%; }
+      
+      .print-title { text-align: center; font-weight: bold; font-size: 14px; margin-bottom: 5px; }
+      .print-subtitle { text-align: center; font-size: 12px; margin-bottom: 15px; }
+      .print-table-title { font-weight: bold; text-decoration: underline; margin-bottom: 5px; }
+      
+      .print-table { width: 100%; border-collapse: collapse; margin-bottom: 10px; }
+      .print-table th, .print-table td { border: 1px solid #000; padding: 4px 8px; text-align: left; font-size: 11px; }
+      .print-table th { background: #f0f0f0; font-weight: bold; }
+      .offense-check { font-family: monospace; font-size: 14px; letter-spacing: 3px; }
+      
+      .print-penalty { font-size: 11px; margin-bottom: 30px; line-height: 1.5; }
+      
+      .print-signatures { display: flex; justify-content: space-between; margin-top: 50px; }
+      .sig-block { width: 45%; text-align: center; }
+      .sig-line { border-bottom: 1px solid #000; height: 25px; margin-bottom: 5px; }
+      .sig-label { font-size: 12px; }
+    }
+  </style>
 
   <!-- FIREBASE INTEGRATION -->
   <script type="module">
@@ -706,6 +822,72 @@
         console.error("Error saving case:", error);
         alert("❌ Failed to save case. Check console for details.");
       }
+    };
+
+        // 9. Print Violation Report
+    window.printViolationReport = function() {
+      if (!CURRENT_STUDENT) {
+        alert("Please select a student first.");
+        return;
+      }
+
+      const violations = CURRENT_STUDENT.violations || [];
+      
+      // We only show Class A/B offenses for this specific template
+      // If you want to expand to Class C/D later, we can add more tables.
+      const offensesList = [
+        "A.1 Irregular Attendance", "A.2 No Letter of Excuse", "A.3 Misbehavior", 
+        "A.4 Boisterous laughter", "A.5 Entering Campus No ID", "A.6 Not Wearing ID", 
+        "A.7 Littering", "A.8 Disruption of Classes", "A.9 Cheating Exams", 
+        "A.10 Unauthorized haircut", "A.11 Wearing of earring for male", "A.12 Bringing large amount money", 
+        "A.13 Use of cellular phones class hrs.", "A.14 Gambling", "A.15 Not in a proper uniform", 
+        "A.16 Cutting Classes", "A.17 In/Out School Campus over fence", "A.18 Chewing Gum during class hrs.", 
+        "A.19 Falcification of signatures", "A.20 Showing pornographic pics", "A.21 Bringing outsiders in campus", 
+        "A.22 Disrespect", "A.23 Too much coloring hair", "A.24 Littering/ throwing garbage", 
+        "A.25 Improper disposal of spitting", "A.26 Late/not attending Flag Ceremony"
+      ];
+
+      // Count occurrences of each offense
+      const counts = {};
+      violations.forEach(v => {
+        // We match the violation name loosely to handle small differences in string
+        const found = offensesList.find(o => v.violation.includes(o.split(' ')[0]));
+        if (found) {
+          counts[found] = (counts[found] || 0) + 1;
+        }
+      });
+
+      // Build table rows
+      const tbody = document.getElementById('print-tbody-ab');
+      tbody.innerHTML = offensesList.map(offense => {
+        const count = counts[offense] || 0;
+        
+        // Generate checkboxes based on count
+        let boxes = "";
+        for (let i = 1; i <= 5; i++) {
+          boxes += (i <= count) ? "[ ✓ ] " : "[   ] ";
+        }
+
+        return `
+          <tr>
+            <td>${offense}</td>
+            <td class="offense-check">${boxes}</td>
+          </tr>
+        `;
+      }).join("");
+
+      // Populate Student Info
+      document.getElementById('print-name').textContent = CURRENT_STUDENT.fullName;
+      document.getElementById('print-age').textContent = CURRENT_STUDENT.age || "______";
+      document.getElementById('print-section-info').textContent = CURRENT_STUDENT.classLabel;
+      
+      // Date and Time
+      const now = new Date();
+      document.getElementById('print-date').textContent = now.toLocaleDateString('en-PH', { year: 'numeric', month: 'long', day: 'numeric' });
+      document.getElementById('print-time').textContent = now.toLocaleTimeString('en-PH', { hour: '2-digit', minute: '2-digit' });
+
+      // Trigger Print
+      window.print();
     };
   </script>
 </body>
