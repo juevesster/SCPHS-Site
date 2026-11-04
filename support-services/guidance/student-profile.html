@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Student Profile – Guidance Center | SCPHS</title>
+  <link rel="stylesheet" href="../../assets/css/styles.css" />
+  
+  <style>
+    :root {
+      --gc-primary: #0f4c81;
+      --gc-primary-hover: #0a365d;
+      --gc-border: #e2e8f0;
+      --gc-text-main: #1e293b;
+      --gc-text-muted: #64748b;
+      --bright-blue: #2563eb;
+      --danger: #dc2626;
+      --warning: #d97706;
+      --success: #16a34a;
+      --bg-soft: #f8fafc;
+    }
+
+    body { background: #f1f5f9; margin: 0; font-family: system-ui, -apple-system, sans-serif; }
+    .gc-layout-wrap { max-width: 1200px; margin: 0 auto; padding: 0 16px; }
+
+    /* Header */
+    .form-header { background: #fff; padding: 20px 0; border-bottom: 1px solid var(--gc-border); margin-bottom: 20px; text-align: center; }
+    .form-header h1 { margin: 0; color: var(--gc-primary); font-size: 1.5rem; }
+    .back-link { display: inline-block; margin-bottom: 20px; color: var(--bright-blue); text-decoration: none; font-weight: 600; }
+
+    /* Loading State */
+    #loading-state { text-align: center; padding: 50px; font-weight: 600; color: var(--gc-primary); }
+    .spinner { width: 40px; height: 40px; border: 4px solid #e2e8f0; border-top-color: var(--gc-primary); border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 15px; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* Main UI */
+    #profile-content { display: none; }
+    
+    /* Search Area */
+    .search-container { background: #fff; padding: 20px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); margin-bottom: 20px; position: relative; }
+    .search-container input { width: 100%; padding: 15px 20px; border: 2px solid var(--gc-border); border-radius: 8px; font-size: 1rem; box-sizing: border-box; }
+    .search-container input:focus { outline: none; border-color: var(--bright-blue); }
+    
+    /* Autocomplete Dropdown */
+    .autocomplete-list { position: absolute; top: 100%; left: 20px; right: 20px; background: #fff; border: 1px solid var(--gc-border); border-radius: 0 0 8px 8px; box-shadow: 0 10px 15px rgba(0,0,0,0.1); max-height: 300px; overflow-y: auto; z-index: 100; display: none; }
+    .autocomplete-item { padding: 12px 20px; cursor: pointer; border-bottom: 1px solid #f1f5f9; display: flex; justify-content: space-between; }
+    .autocomplete-item:hover { background: #f8fafc; }
+    .autocomplete-item .name { font-weight: 600; color: var(--gc-primary); }
+    .autocomplete-item .details { font-size: 0.85rem; color: var(--gc-text-muted); }
+
+    /* Layout Grid */
+    .profile-grid { display: grid; grid-template-columns: 350px 1fr; gap: 20px; }
+    @media (max-width: 900px) { .profile-grid { grid-template-columns: 1fr; } }
+
+    /* Left Column (Picture & Summary) */
+    .card { background: #fff; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); overflow: hidden; margin-bottom: 20px; }
+    .card-header { background: #f8fafc; padding: 15px 20px; border-bottom: 1px solid var(--gc-border); font-weight: bold; color: var(--gc-primary); font-size: 1.1rem; }
+    .card-body { padding: 20px; }
+
+    .profile-pic-container { text-align: center; padding: 20px 20px 0 20px; }
+    .profile-pic { width: 150px; height: 150px; border-radius: 50%; object-fit: cover; border: 4px solid var(--gc-border); background: #f1f5f9; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+    .btn-upload { margin-top: 15px; background: #eff6ff; color: var(--bright-blue); border: 1px solid #bfdbfe; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 0.85rem; display: inline-block; transition: 0.2s; }
+    .btn-upload:hover { background: var(--bright-blue); color: #fff; }
+    input[type="file"] { display: none; }
+
+    .summary-row { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px dashed var(--gc-border); font-size: 0.95rem; }
+    .summary-row:last-child { border-bottom: none; }
+    .summary-label { color: var(--gc-text-muted); font-weight: 600; }
+    .summary-value { font-weight: 700; color: var(--gc-text-main); text-align: right; }
+    
+    .badge { padding: 4px 10px; border-radius: 20px; font-size: 0.75rem; font-weight: 700; }
+    .badge-clear { background: #dcfce7; color: #166534; }
+    .badge-warning { background: #fef9c3; color: #854d0e; }
+    .badge-violation { background: #fee2e2; color: #991b1b; }
+
+    /* Right Column (Details) */
+    .details-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+    @media (max-width: 600px) { .details-grid { grid-template-columns: 1fr; } }
+    .detail-item { margin-bottom: 10px; }
+    .detail-label { font-size: 0.75rem; text-transform: uppercase; color: var(--gc-text-muted); font-weight: 700; letter-spacing: 0.05em; margin-bottom: 4px; }
+    .detail-value { font-size: 0.95rem; color: var(--gc-text-main); font-weight: 500; padding: 8px 12px; background: #f8fafc; border-radius: 6px; border: 1px solid var(--gc-border); }
+    .detail-value.empty { color: #94a3b8; font-style: italic; }
+
+    /* Edit Mode */
+    .edit-input { width: 100%; padding: 8px 12px; border: 1px solid var(--gc-border); border-radius: 6px; font-size: 0.95rem; box-sizing: border-box; font-family: inherit; }
+    .btn-save { background: var(--success); color: #fff; border: none; padding: 10px 20px; border-radius: 6px; font-weight: bold; cursor: pointer; margin-top: 15px; display: none; width: 100%; transition: 0.2s; }
+    .btn-save:hover { background: #15803d; }
+    .btn-edit { background: var(--gc-primary); color: #fff; border: none; padding: 10px 20px; border-radius: 6px; font-weight: bold; cursor: pointer; margin-top: 15px; width: 100%; transition: 0.2s; }
+    .btn-edit:hover { background: var(--gc-primary-hover); }
+
+  </style>
+</head>
+<body>
+
+  <div class="form-header">
+    <h1>Sta. Cruz Pingkian High School</h1>
+    <p style="margin: 5px 0 0; color: #666; font-size: 0.9rem;">Guidance Center – Student Profile & Dossier</p>
+  </div>
+
+  <div class="gc-layout-wrap">
+    <a href="index.html" class="back-link">← Back to Guidance Center</a>
+
+    <div id="loading-state">
+      <div class="spinner"></div>
+      Authenticating & Loading Database...
+    </div>
+
+    <div id="access-denied" style="display: none; text-align: center; padding: 50px; background: #fff; border-radius: 8px;">
+      <h2 style="color: var(--danger);">🚫 Access Denied</h2>
+      <p>You must be signed in as a Guidance Counselor or Admin.</p>
+    </div>
+
+    <!-- MAIN UI -->
+    <div id="profile-content">
+      
+      <!-- SEARCH BAR -->
+      <div class="search-container">
+        <input type="text" id="search-input" placeholder="🔍 Search student by Name or LRN..." autocomplete="off">
+        <div id="autocomplete-list" class="autocomplete-list"></div>
+      </div>
+
+      <!-- PROFILE DISPLAY (Hidden until student is selected) -->
+      <div id="profile-display" style="display: none;">
+        <div class="profile-grid">
+          
+          <!-- LEFT COLUMN: PHOTO & SUMMARY -->
+          <div>
+            <div class="card">
+              <div class="profile-pic-container">
+                <!-- Default avatar if no photo -->
+                <img src="https://ui-avatars.com/api/?name=Student&background=e2e8f0&color=64748b&size=150" id="profile-image" class="profile-pic" alt="Profile Picture">
+                <input type="file" id="photo-upload" accept="image/*">
+                <label for="photo-upload" class="btn-upload">📷 Change Photo</label>
+              </div>
+              <div class="card-body">
+                <div class="summary-row">
+                  <span class="summary-label">Full Name</span>
+                  <span class="summary-value" id="side-name">-</span>
+                </div>
+                <div class="summary-row">
+                  <span class="summary-label">LRN</span>
+                  <span class="summary-value" id="side-lrn">-</span>
+                </div>
+                <div class="summary-row">
+                  <span class="summary-label">Grade & Section</span>
+                  <span class="summary-value" id="side-section">-</span>
+                </div>
+                <div class="summary-row">
+                  <span class="summary-label">Adviser</span>
+                  <span class="summary-value" id="side-adviser">-</span>
+                </div>
+                <div class="summary-row">
+                  <span class="summary-label">Discipline Status</span>
+                  <span class="summary-value"><span id="side-status" class="badge badge-clear">Clear Record</span></span>
+                </div>
+              </div>
+            </div>
+            
+            <div class="card">
+              <div class="card-header">Quick Actions</div>
+              <div class="card-body">
+                <button class="btn-edit" style="margin-top: 0;" onclick="alert('This will open the case logger we built earlier!')">⚠️ Log Violation</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- RIGHT COLUMN: DETAILED INFO -->
+          <div class="card">
+            <div class="card-header" style="display: flex; justify-content: space-between; align-items: center;">
+              <span>📄 Personal Information (SF1 Data)</span>
+              <button id="btn-edit-toggle" class="btn-upload" style="margin: 0;" onclick="toggleEditMode()">✏️ Edit Info</button>
+            </div>
+            
+            <div class="card-body">
+              <div class="details-grid">
+                <div class="detail-item">
+                  <div class="detail-label">First Name</div>
+                  <div class="detail-value" id="view-firstName">-</div>
+                  <input type="text" class="edit-input" id="edit-firstName" style="display: none;">
+                </div>
+                <div class="detail-item">
+                  <div class="detail-label">Last Name</div>
+                  <div class="detail-value" id="view-lastName">-</div>
+                  <input type="text" class="edit-input" id="edit-lastName" style="display: none;">
+                </div>
+                <div class="detail-item">
+                  <div class="detail-label">Middle Name</div>
+                  <div class="detail-value" id="view-middleName">-</div>
+                  <input type="text" class="edit-input" id="edit-middleName" style="display: none;">
+                </div>
+                <div class="detail-item">
+                  <div class="detail-label">Sex</div>
+                  <div class="detail-value" id="view-sex">-</div>
+                  <input type="text" class="edit-input" id="edit-sex" style="display: none;">
+                </div>
+                <div class="detail-item">
+                  <div class="detail-label">Date of Birth</div>
+                  <div class="detail-value" id="view-birthDate">-</div>
+                  <input type="text" class="edit-input" id="edit-birthDate" style="display: none;">
+                </div>
+                <div class="detail-item">
+                  <div class="detail-label">Age</div>
+                  <div class="detail-value" id="view-age">-</div>
+                  <input type="text" class="edit-input" id="edit-age" style="display: none;">
+                </div>
+                <div class="detail-item" style="grid-column: 1 / -1;">
+                  <div class="detail-label">Address (Barangay)</div>
+                  <div class="detail-value" id="view-addressBarangay">-</div>
+                  <input type="text" class="edit-input" id="edit-addressBarangay" style="display: none;">
+                </div>
+                <div class="detail-item" style="grid-column: 1 / -1;">
+                  <div class="detail-label">Father's Name</div>
+                  <div class="detail-value" id="view-fatherName">-</div>
+                  <input type="text" class="edit-input" id="edit-fatherName" style="display: none;">
+                </div>
+                <div class="detail-item" style="grid-column: 1 / -1;">
+                  <div class="detail-label">Mother's Name</div>
+                  <div class="detail-value" id="view-motherName">-</div>
+                  <input type="text" class="edit-input" id="edit-motherName" style="display: none;">
+                </div>
+                <div class="detail-item" style="grid-column: 1 / -1;">
+                  <div class="detail-label">Contact Number</div>
+                  <div class="detail-value" id="view-contactNumber">-</div>
+                  <input type="text" class="edit-input" id="edit-contactNumber" style="display: none;">
+                </div>
+              </div>
+              
+              <button id="btn-save-changes" class="btn-save" onclick="saveStudentInfo()">💾 Save Changes to Database</button>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- FIREBASE INTEGRATION -->
+  <script type="module">
+    import { auth, db } from "../../assets/js/firebase-config.js";
+    import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+    import { collection, getDocs, doc, updateDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+    import { getCurrentUserProfile } from "../../assets/js/roles.js"; 
+
+    // DOM Elements
+    const loadingState = document.getElementById('loading-state');
+    const accessDenied = document.getElementById('access-denied');
+    const profileContent = document.getElementById('profile-content');
+    const searchInput = document.getElementById('search-input');
+    const autocompleteList = document.getElementById('autocomplete-list');
+    const profileDisplay = document.getElementById('profile-display');
+
+    let ALL_STUDENTS = [];
+    let CURRENT_STUDENT = null;
+    let IS_EDIT_MODE = false;
+
+    // 1. Auth Check
+    onAuthStateChanged(auth, async (user) => {
+      if (!user) {
+        loadingState.style.display = 'none';
+        accessDenied.style.display = 'block';
+        return;
+      }
+
+      try {
+        const profile = await getCurrentUserProfile();
+        const isAdmin = profile?.primaryRole === "admin" || profile?.isSuperAdmin || profile?.permissions?.canManageClasses;
+        const isTeacher = profile?.primaryRole === "teacher" || profile?.permissions?.canEnterGrades;
+
+        if (!isAdmin && !isTeacher) {
+          loadingState.style.display = 'none';
+          accessDenied.style.display = 'block';
+          return;
+        }
+
+        await loadAllStudents();
+        loadingState.style.display = 'none';
+        profileContent.style.display = 'block';
+      } catch (error) {
+        console.error("Auth error:", error);
+      }
+    });
+
+    // 2. Load Students
+    async function loadAllStudents() {
+      try {
+        ALL_STUDENTS = [];
+        const classesSnap = await getDocs(collection(db, "classes"));
+        
+        for (const classDoc of classesSnap.docs) {
+          const classData = classDoc.data();
+          const studentsSnap = await getDocs(collection(db, "classes", classDoc.id, "students"));
+          
+          studentsSnap.forEach(studentDoc => {
+            const s = studentDoc.data();
+            ALL_STUDENTS.push({
+              id: studentDoc.id,
+              classId: classDoc.id,
+              classLabel: classData.classLabel || "Unknown Section",
+              adviserName: classData.adviserName || "Unassigned",
+              ...s
+            });
+          });
+        }
+      } catch (error) {
+        console.error("Error fetching students:", error);
+      }
+    }
+
+    // 3. Search & Autocomplete Logic
+    searchInput.addEventListener('input', function() {
+      const query = this.value.toLowerCase().trim();
+      autocompleteList.innerHTML = '';
+      
+      if (query.length < 2) {
+        autocompleteList.style.display = 'none';
+        return;
+      }
+
+      const matches = ALL_STUDENTS.filter(s => 
+        (s.fullName && s.fullName.toLowerCase().includes(query)) || 
+        (s.lrn && s.lrn.includes(query))
+      ).slice(0, 10); // Limit to 10 results
+
+      if (matches.length === 0) {
+        autocompleteList.style.display = 'none';
+        return;
+      }
+
+      matches.forEach(student => {
+        const div = document.createElement('div');
+        div.className = 'autocomplete-item';
+        div.innerHTML = `
+          <div>
+            <div class="name">${student.fullName}</div>
+            <div class="details">${student.lrn} • ${student.classLabel}</div>
+          </div>
+        `;
+        div.onclick = () => selectStudent(student);
+        autocompleteList.appendChild(div);
+      });
+      
+      autocompleteList.style.display = 'block';
+    });
+
+    // Close dropdown when clicking outside
+    document.addEventListener('click', (e) => {
+      if (!searchInput.contains(e.target) && !autocompleteList.contains(e.target)) {
+        autocompleteList.style.display = 'none';
+      }
+    });
+
+    // 4. Select a Student & Populate UI
+    function selectStudent(student) {
+      CURRENT_STUDENT = student;
+      searchInput.value = student.fullName;
+      autocompleteList.style.display = 'none';
+      profileDisplay.style.display = 'block';
+      
+      // Turn off edit mode if it was on
+      if (IS_EDIT_MODE) toggleEditMode();
+
+      // Left Side
+      document.getElementById('side-name').textContent = student.fullName;
+      document.getElementById('side-lrn').textContent = student.lrn || "No LRN";
+      document.getElementById('side-section').textContent = student.classLabel;
+      document.getElementById('side-adviser').textContent = student.adviserName;
+      
+      // Status Badge
+      const violations = student.violations || [];
+      const statusEl = document.getElementById('side-status');
+      if (violations.length === 0) {
+        statusEl.className = "badge badge-clear";
+        statusEl.textContent = "Clear Record";
+      } else if (violations.length < 3) {
+        statusEl.className = "badge badge-warning";
+        statusEl.textContent = `${violations.length} Violation(s)`;
+      } else {
+        statusEl.className = "badge badge-violation";
+        statusEl.textContent = `${violations.length} Violation(s)`;
+      }
+
+      // Profile Picture
+      const imgEl = document.getElementById('profile-image');
+      if (student.profilePicture) {
+        imgEl.src = student.profilePicture;
+      } else {
+        // Generate initials avatar
+        imgEl.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(student.fullName)}&background=e2e8f0&color=0f4c81&size=150&bold=true`;
+      }
+
+      // Right Side Details
+      const fields = ['firstName', 'lastName', 'middleName', 'sex', 'birthDate', 'age', 'addressBarangay', 'fatherName', 'motherName', 'contactNumber'];
+      fields.forEach(field => {
+        const viewEl = document.getElementById('view-' + field);
+        const editEl = document.getElementById('edit-' + field);
+        
+        const val = student[field] || '';
+        viewEl.textContent = val || '-';
+        if (!val) viewEl.classList.add('empty');
+        else viewEl.classList.remove('empty');
+        
+        editEl.value = val;
+      });
+    }
+
+    // 5. Toggle Edit Mode
+    window.toggleEditMode = function() {
+      IS_EDIT_MODE = !IS_EDIT_MODE;
+      
+      const fields = ['firstName', 'lastName', 'middleName', 'sex', 'birthDate', 'age', 'addressBarangay', 'fatherName', 'motherName', 'contactNumber'];
+      
+      fields.forEach(field => {
+        const viewEl = document.getElementById('view-' + field);
+        const editEl = document.getElementById('edit-' + field);
+        
+        if (IS_EDIT_MODE) {
+          viewEl.style.display = 'none';
+          editEl.style.display = 'block';
+        } else {
+          viewEl.style.display = 'block';
+          editEl.style.display = 'none';
+        }
+      });
+
+      document.getElementById('btn-edit-toggle').style.display = IS_EDIT_MODE ? 'none' : 'block';
+      document.getElementById('btn-save-changes').style.display = IS_EDIT_MODE ? 'block' : 'none';
+    };
+
+    // 6. Save Changes to Firestore
+    window.saveStudentInfo = async function() {
+      if (!CURRENT_STUDENT) return;
+      
+      const btn = document.getElementById('btn-save-changes');
+      btn.textContent = "Saving...";
+      btn.disabled = true;
+
+      try {
+        const studentRef = doc(db, "classes", CURRENT_STUDENT.classId, "students", CURRENT_STUDENT.id);
+        
+        const updates = {
+          firstName: document.getElementById('edit-firstName').value.trim(),
+          lastName: document.getElementById('edit-lastName').value.trim(),
+          middleName: document.getElementById('edit-middleName').value.trim(),
+          sex: document.getElementById('edit-sex').value.trim(),
+          birthDate: document.getElementById('edit-birthDate').value.trim(),
+          age: document.getElementById('edit-age').value.trim(),
+          addressBarangay: document.getElementById('edit-addressBarangay').value.trim(),
+          fatherName: document.getElementById('edit-fatherName').value.trim(),
+          motherName: document.getElementById('edit-motherName').value.trim(),
+          contactNumber: document.getElementById('edit-contactNumber').value.trim(),
+        };
+        
+        // Reconstruct full name
+        updates.fullName = `${updates.lastName}, ${updates.firstName}${updates.middleName ? ', ' + updates.middleName : ''}`;
+
+        await updateDoc(studentRef, updates);
+        
+        // Update local object and UI
+        Object.assign(CURRENT_STUDENT, updates);
+        
+        // Refresh view
+        selectStudent(CURRENT_STUDENT);
+        toggleEditMode(); // Turn off edit mode
+        
+        alert("✅ Student info updated successfully!");
+
+      } catch (error) {
+        console.error("Error saving:", error);
+        alert("❌ Failed to save changes.");
+      } finally {
+        btn.textContent = "💾 Save Changes to Database";
+        btn.disabled = false;
+      }
+    };
+
+    // 7. Handle Profile Picture Upload (Converts to Base64 for Firestore)
+    document.getElementById('photo-upload').addEventListener('change', function(e) {
+      const file = e.target.files[0];
+      if (!file || !CURRENT_STUDENT) return;
+
+      if (file.size > 800000) { // Limit to 800kb to prevent Firestore document bloat
+        alert("⚠️ Please select an image smaller than 800KB.");
+        return;
+      }
+
+      const reader = new FileReader();
+      reader.onload = async function(event) {
+        const base64String = event.target.result;
+        
+        try {
+          const studentRef = doc(db, "classes", CURRENT_STUDENT.classId, "students", CURRENT_STUDENT.id);
+          await updateDoc(studentRef, { profilePicture: base64String });
+          
+          CURRENT_STUDENT.profilePicture = base64String;
+          document.getElementById('profile-image').src = base64String;
+          alert("✅ Profile picture updated!");
+        } catch (err) {
+          console.error("Error uploading image:", err);
+          alert("❌ Failed to upload image.");
+        }
+      };
+      reader.readAsDataURL(file);
+    });
+  </script>
+</body>
+</html>
