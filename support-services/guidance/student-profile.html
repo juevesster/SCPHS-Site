@@ -1372,50 +1372,60 @@
         return;
       }
 
-      function getVal(id) {
-        const el = document.getElementById(id);
-        return el && el.value ? el.value : "—";
+      // Helper: Only update the text if the element exists on the page
+      function safeSetText(printId, value) {
+        const el = document.getElementById(printId);
+        if (el) el.textContent = value || "—";
+      }
+
+      function getFieldValue(fieldId) {
+        const el = document.getElementById(fieldId);
+        return el ? el.value : "";
       }
 
       try {
-        // Populate Header
-        document.getElementById('print-lrp-name').textContent = CURRENT_STUDENT.fullName;
-        document.getElementById('print-lrp-section').textContent = CURRENT_STUDENT.classLabel;
-        document.getElementById('print-lrp-age').textContent = CURRENT_STUDENT.age || "—";
-        document.getElementById('print-lrp-sex').textContent = CURRENT_STUDENT.sex || "—";
+        // 1. Populate Header
+        safeSetText('print-lrp-name', CURRENT_STUDENT.fullName);
+        safeSetText('print-lrp-section', CURRENT_STUDENT.classLabel);
+        safeSetText('print-lrp-age', CURRENT_STUDENT.age);
+        safeSetText('print-lrp-sex', CURRENT_STUDENT.sex);
 
-        // Populate Part I
-        document.getElementById('print-lrp-mother').textContent = getVal('lrp-motherName');
-        document.getElementById('print-lrp-mother-contact').textContent = getVal('lrp-motherContact');
-        document.getElementById('print-lrp-father').textContent = getVal('lrp-fatherName');
-        document.getElementById('print-lrp-father-contact').textContent = getVal('lrp-fatherContact');
-        document.getElementById('print-lrp-guardian').textContent = getVal('lrp-guardianName');
-        document.getElementById('print-lrp-complainant').textContent = getVal('lrp-complainantName');
-        document.getElementById('print-lrp-compl-relation').textContent = getVal('lrp-complainantRelation');
-        document.getElementById('print-lrp-compl-contact').textContent = getVal('lrp-complainantContact');
-        document.getElementById('print-lrp-compl-address').textContent = getVal('lrp-complainantAddress');
+        // 2. Populate Part I
+        safeSetText('print-lrp-mother', getFieldValue('lrp-motherName'));
+        safeSetText('print-lrp-mother-contact', getFieldValue('lrp-motherContact'));
+        safeSetText('print-lrp-father', getFieldValue('lrp-fatherName'));
+        safeSetText('print-lrp-father-contact', getFieldValue('lrp-fatherContact'));
+        safeSetText('print-lrp-guardian', getFieldValue('lrp-guardianName'));
+        safeSetText('print-lrp-complainant', getFieldValue('lrp-complainantName'));
+        safeSetText('print-lrp-compl-relation', getFieldValue('lrp-complainantRelation'));
+        safeSetText('print-lrp-compl-contact', getFieldValue('lrp-complainantContact'));
+        safeSetText('print-lrp-compl-address', getFieldValue('lrp-complainantAddress'));
 
-        // Populate Part II
-        document.getElementById('print-lrp-offender-type').textContent = getVal('lrp-offenderType');
-        document.getElementById('print-lrp-offender-name').textContent = getVal('lrp-offenderName');
-        document.getElementById('print-lrp-offender-age').textContent = getVal('lrp-offenderAge');
-        document.getElementById('print-lrp-offender-sex').textContent = getVal('lrp-offenderSex');
-        document.getElementById('print-lrp-offender-address').textContent = getVal('lrp-offenderAddress');
-        document.getElementById('print-lrp-offender-relation').textContent = getVal('lrp-offenderRelation');
+        // 3. Populate Part II
+        safeSetText('print-lrp-offender-type', getFieldValue('lrp-offenderType'));
+        safeSetText('print-lrp-offender-name', getFieldValue('lrp-offenderName'));
+        safeSetText('print-lrp-offender-age', getFieldValue('lrp-offenderAge'));
+        safeSetText('print-lrp-offender-sex', getFieldValue('lrp-offenderSex'));
+        safeSetText('print-lrp-offender-address', getFieldValue('lrp-offenderAddress'));
+        safeSetText('print-lrp-offender-relation', getFieldValue('lrp-offenderRelation'));
 
-        // Populate Part III
-        document.getElementById('print-lrp-incident-date').textContent = getVal('lrp-incidentDate');
-        document.getElementById('print-lrp-incident-details').textContent = getVal('lrp-incidentDetails');
+        // 4. Populate Part III
+        safeSetText('print-lrp-incident-date', getFieldValue('lrp-incidentDate'));
+        safeSetText('print-lrp-incident-details', getFieldValue('lrp-incidentDetails'));
 
-        // Populate Part IV & V
-        document.getElementById('print-lrp-actions').textContent = getVal('lrp-initialActions');
-        document.getElementById('print-lrp-referral-req').textContent = getVal('lrp-referralReq');
-        document.getElementById('print-lrp-referral-to').textContent = getVal('lrp-referralTo');
-        document.getElementById('print-lrp-referral-reason').textContent = getVal('lrp-referralReason');
+        // 5. Populate Part IV & V
+        safeSetText('print-lrp-actions', getFieldValue('lrp-initialActions'));
+        safeSetText('print-lrp-referral-req', getFieldValue('lrp-referralReq'));
+        safeSetText('print-lrp-referral-to', getFieldValue('lrp-referralTo'));
+        safeSetText('print-lrp-referral-reason', getFieldValue('lrp-referralReason'));
 
-        // Trigger Print
+        // 6. Tell CSS to print the LRP sheet
         document.body.classList.add('print-mode-lrp');
+        
+        // 7. Trigger Print
         window.print();
+        
+        // 8. Remove the class after printing
         setTimeout(() => document.body.classList.remove('print-mode-lrp'), 1000);
 
       } catch (error) {
@@ -1423,7 +1433,7 @@
         alert("❌ Error preparing print. Check the browser console (F12).");
         document.body.classList.remove('print-mode-lrp');
       }
-    };  // <--- THIS CLOSING BRACE AND SEMICOLON IS CRITICAL
+    };
     
   </script>
 </body>
