@@ -153,6 +153,13 @@
       /* Editable Inputs for Print */
       .print-input { border: none; border-bottom: 1px solid #000; font-family: "Times New Roman", Times, serif; font-size: 12px; text-align: center; background: transparent; outline: none; padding: 0; }
     }
+
+        /* LRP Form Specifics */
+    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px; }
+    .form-group.full { grid-column: 1 / -1; }
+    .form-group label { display: block; font-size: 0.8rem; font-weight: bold; color: #333; margin-bottom: 5px; }
+    .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-family: inherit; font-size: 0.9rem; box-sizing: border-box; }
+    .form-group textarea { resize: vertical; }
   </style>
 </head>
 <body>
@@ -230,6 +237,7 @@
                 <button class="btn-edit" style="margin-top: 0;" onclick="openViolationModal()">⚠️ Log Violation</button>
                 <button class="btn-edit" style="margin-top: 10px; background: #475569;" onclick="printViolationReport()">🖨️ Print Violation Report</button>
                 <button class="btn-edit" style="margin-top: 10px; background: #64748b;" onclick="openManageViolationsModal()">📋 Manage Violations</button>
+                <button class="btn-edit" style="margin-top: 10px; background: #0369a1;" onclick="openLRPModal()">📁 LRP Case Files (Annex E)</button>
             </div>
             </div>
           </div>
@@ -453,6 +461,110 @@
     </div>
   </dialog>
   <!-- 👆 END OF NEW DIALOG 👆 -->
+
+    <!-- LRP INTAKE SHEET (ANNEX E) DIALOG -->
+  <dialog id="lrp-dialog" style="width: 95%; max-width: 900px;">
+    <div class="modal-header">
+      <h3>Enhanced Intake Sheet (Annex E)</h3>
+      <button class="modal-close" onclick="document.getElementById('lrp-dialog').close()">×</button>
+    </div>
+    
+    <div class="modal-body" style="background: #f8fafc;">
+      
+      <!-- Student Info Header -->
+      <div style="background: #fff; padding: 15px; border-radius: 8px; margin-bottom: 20px; border: 1px solid var(--gc-border);">
+        <div style="font-size: 0.85rem; color: #64748b; text-transform: uppercase; font-weight: bold; margin-bottom: 5px;">Learner-Victim:</div>
+        <div style="font-size: 1.2rem; font-weight: bold; color: var(--gc-primary);" id="lrp-student-name">-</div>
+        <div style="font-size: 0.9rem; color: #475569; margin-top: 5px;" id="lrp-student-details">-</div>
+      </div>
+
+      <form id="lrp-form">
+        
+        <!-- PART I: IDENTIFYING INFORMATION -->
+        <div style="background: #fff; padding: 20px; border-radius: 8px; border: 1px solid var(--gc-border); margin-bottom: 20px;">
+          <h4 style="margin-top: 0; color: var(--gc-primary); border-bottom: 1px solid var(--gc-border); padding-bottom: 10px;">I. IDENTIFYING INFORMATION</h4>
+          
+          <h5 style="margin: 15px 0 10px; color: #333;">B. Parents and Guardian</h5>
+          <div class="form-grid">
+            <div class="form-group"><label>Name of Mother</label><input type="text" id="lrp-motherName"></div>
+            <div class="form-group"><label>Contact No.</label><input type="text" id="lrp-motherContact"></div>
+            <div class="form-group"><label>Name of Father</label><input type="text" id="lrp-fatherName"></div>
+            <div class="form-group"><label>Contact No.</label><input type="text" id="lrp-fatherContact"></div>
+            <div class="form-group full"><label>Name of Guardian (if applicable)</label><input type="text" id="lrp-guardianName"></div>
+          </div>
+
+          <h5 style="margin: 15px 0 10px; color: #333;">C. Complainant</h5>
+          <div class="form-grid">
+            <div class="form-group"><label>Complainant Name</label><input type="text" id="lrp-complainantName"></div>
+            <div class="form-group"><label>Relation to Learner-Victim</label><input type="text" id="lrp-complainantRelation"></div>
+            <div class="form-group"><label>Contact No.</label><input type="text" id="lrp-complainantContact"></div>
+            <div class="form-group"><label>Address</label><input type="text" id="lrp-complainantAddress"></div>
+          </div>
+        </div>
+
+        <!-- PART II: ALLEGED OFFENDER -->
+        <div style="background: #fff; padding: 20px; border-radius: 8px; border: 1px solid var(--gc-border); margin-bottom: 20px;">
+          <h4 style="margin-top: 0; color: var(--gc-primary); border-bottom: 1px solid var(--gc-border); padding-bottom: 10px;">II. ALLEGED OFFENDER</h4>
+          
+          <div class="form-group" style="margin-bottom: 15px;">
+            <label>Type of Offender</label>
+            <select id="lrp-offenderType" style="width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px;" onchange="toggleOffenderFields()">
+              <option value="student">Student</option>
+              <option value="personnel">School Personnel</option>
+              <option value="other">Neither School Personnel nor Student</option>
+            </select>
+          </div>
+
+          <div class="form-grid">
+            <div class="form-group full"><label>Name of Offender</label><input type="text" id="lrp-offenderName"></div>
+            <div class="form-group"><label>Age</label><input type="text" id="lrp-offenderAge"></div>
+            <div class="form-group"><label>Sex</label><input type="text" id="lrp-offenderSex"></div>
+            <div class="form-group"><label>Date of Birth</label><input type="date" id="lrp-offenderDOB"></div>
+            <div class="form-group"><label>Contact No.</label><input type="text" id="lrp-offenderContact"></div>
+            <div class="form-group"><label>Address</label><input type="text" id="lrp-offenderAddress"></div>
+            <div class="form-group"><label>Relationship to Learner-Victim</label><input type="text" id="lrp-offenderRelation"></div>
+          </div>
+        </div>
+
+        <!-- PART III: DETAILS OF THE INCIDENT -->
+        <div style="background: #fff; padding: 20px; border-radius: 8px; border: 1px solid var(--gc-border); margin-bottom: 20px;">
+          <h4 style="margin-top: 0; color: var(--gc-primary); border-bottom: 1px solid var(--gc-border); padding-bottom: 10px;">III. DETAILS OF THE INCIDENT</h4>
+          <div class="form-grid">
+            <div class="form-group"><label>Date of Incident</label><input type="date" id="lrp-incidentDate"></div>
+            <div class="form-group full"><label>Narrative Description</label><textarea id="lrp-incidentDetails" rows="4"></textarea></div>
+          </div>
+        </div>
+
+        <!-- PART IV & V: ACTIONS & RECOMMENDATIONS -->
+        <div style="background: #fff; padding: 20px; border-radius: 8px; border: 1px solid var(--gc-border); margin-bottom: 20px;">
+          <h4 style="margin-top: 0; color: var(--gc-primary); border-bottom: 1px solid var(--gc-border); padding-bottom: 10px;">IV. ACTIONS & V. RECOMMENDATIONS</h4>
+          
+          <div class="form-group full" style="margin-bottom: 15px;">
+            <label>Initial Actions Taken</label>
+            <textarea id="lrp-initialActions" rows="3"></textarea>
+          </div>
+          
+          <div class="form-grid">
+            <div class="form-group">
+              <label>Referral Required?</label>
+              <select id="lrp-referralReq">
+                <option value="No">No</option>
+                <option value="Yes">Yes</option>
+              </select>
+            </div>
+            <div class="form-group"><label>Referred To</label><input type="text" id="lrp-referralTo" placeholder="e.g., LSWDO, PNP, NGO"></div>
+            <div class="form-group full"><label>Reason for Referral / Other Recommendations</label><textarea id="lrp-referralReason" rows="3"></textarea></div>
+          </div>
+        </div>
+
+      </form>
+    </div>
+
+    <div class="modal-footer" style="padding: 15px 20px; background: #fff; border-top: 1px solid var(--gc-border); text-align: right;">
+      <button class="btn-edit" style="margin: 0; width: auto; background: #64748b; display: inline-block;" onclick="document.getElementById('lrp-dialog').close()">Cancel</button>
+      <button class="btn-save" style="margin: 0; width: auto; display: inline-block; margin-left: 10px;" onclick="saveLRPCase()" id="btn-save-lrp">Save Intake Sheet</button>
+    </div>
+  </dialog>
 
   <!-- HIDDEN PRINT TEMPLATE -->
   <div id="print-section">
@@ -1056,6 +1168,93 @@
       document.getElementById('print-time').textContent = now.toLocaleTimeString('en-PH', { hour: '2-digit', minute: '2-digit' });
 
       window.print();
+    };
+
+        // 10. LRP Case Management (Annex E)
+    const lrpDialog = document.getElementById('lrp-dialog');
+
+    window.openLRPModal = function() {
+      if (!CURRENT_STUDENT) return;
+
+      // Populate Header
+      document.getElementById('lrp-student-name').textContent = CURRENT_STUDENT.fullName;
+      document.getElementById('lrp-student-details').textContent = `${CURRENT_STUDENT.classLabel} | Age: ${CURRENT_STUDENT.age || '—'} | Sex: ${CURRENT_STUDENT.sex || '—'}`;
+      
+      // Pre-fill some fields if available in Student Profile
+      document.getElementById('lrp-motherName').value = CURRENT_STUDENT.motherName || "";
+      document.getElementById('lrp-fatherName').value = CURRENT_STUDENT.fatherName || "";
+      document.getElementById('lrp-guardianName').value = CURRENT_STUDENT.guardianName || "";
+      
+      // Reset Form
+      document.getElementById('lrp-form').reset();
+      document.getElementById('lrp-incidentDate').valueAsDate = new Date();
+
+      lrpDialog.showModal();
+    };
+
+    window.toggleOffenderFields = function() {
+      const type = document.getElementById('lrp-offenderType').value;
+      // In the future, you can hide/show specific fields based on if it's a student, personnel, etc.
+    };
+
+    window.saveLRPCase = async function() {
+      if (!CURRENT_STUDENT) return;
+
+      const btn = document.getElementById('btn-save-lrp');
+      btn.textContent = "Saving...";
+      btn.disabled = true;
+
+      try {
+        // We save this in a subcollection called "lrp_cases" inside the student's document
+        const casesRef = collection(db, "classes", CURRENT_STUDENT.classId, "students", CURRENT_STUDENT.id, "lrp_cases");
+        
+        await addDoc(casesRef, {
+          // Part I
+          motherName: document.getElementById('lrp-motherName').value,
+          motherContact: document.getElementById('lrp-motherContact').value,
+          fatherName: document.getElementById('lrp-fatherName').value,
+          fatherContact: document.getElementById('lrp-fatherContact').value,
+          guardianName: document.getElementById('lrp-guardianName').value,
+          complainantName: document.getElementById('lrp-complainantName').value,
+          complainantRelation: document.getElementById('lrp-complainantRelation').value,
+          complainantContact: document.getElementById('lrp-complainantContact').value,
+          complainantAddress: document.getElementById('lrp-complainantAddress').value,
+          
+          // Part II
+          offenderType: document.getElementById('lrp-offenderType').value,
+          offenderName: document.getElementById('lrp-offenderName').value,
+          offenderAge: document.getElementById('lrp-offenderAge').value,
+          offenderSex: document.getElementById('lrp-offenderSex').value,
+          offenderDOB: document.getElementById('lrp-offenderDOB').value,
+          offenderContact: document.getElementById('lrp-offenderContact').value,
+          offenderAddress: document.getElementById('lrp-offenderAddress').value,
+          offenderRelation: document.getElementById('lrp-offenderRelation').value,
+          
+          // Part III
+          incidentDate: document.getElementById('lrp-incidentDate').value,
+          incidentDetails: document.getElementById('lrp-incidentDetails').value,
+          
+          // Part IV & V
+          initialActions: document.getElementById('lrp-initialActions').value,
+          referralReq: document.getElementById('lrp-referralReq').value,
+          referralTo: document.getElementById('lrp-referralTo').value,
+          referralReason: document.getElementById('lrp-referralReason').value,
+          
+          // Meta
+          loggedBy: auth.currentUser.email,
+          timestamp: Date.now()
+        });
+
+        alert("✅ Enhanced Intake Sheet saved successfully!");
+        lrpDialog.close();
+
+      } catch (error) {
+        console.error("Error saving LRP case:", error);
+        alert("❌ Failed to save LRP case.");
+      } finally {
+        btn.textContent = "Save Intake Sheet";
+        btn.disabled = false;
+      }
     };
   </script>
 </body>
