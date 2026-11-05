@@ -111,11 +111,21 @@
     /* --- PRINT TEMPLATE STYLES (Hidden on screen) --- */
     #print-section { display: none; }
     
-    @media print {
+        @media print {
       @page { size: A4 portrait; margin: 10mm; }
       body * { visibility: hidden; }
-      #print-section, #print-section * { visibility: visible; }
-      #print-section { position: absolute; left: 0; top: 0; width: 100%; display: block !important; }
+      
+      /* Both sections are hidden by default */
+      #print-section, #print-lrp-section { display: none !important; }
+      
+      /* The JS will apply a special class to force the correct one to show */
+      body.print-mode-violation #print-section, 
+      body.print-mode-violation #print-section * { visibility: visible; display: block !important; }
+      body.print-mode-violation #print-section { position: absolute; left: 0; top: 0; width: 100%; }
+      
+      body.print-mode-lrp #print-lrp-section, 
+      body.print-mode-lrp #print-lrp-section * { visibility: visible; display: block !important; }
+      body.print-mode-lrp #print-lrp-section { position: absolute; left: 0; top: 0; width: 100%; }
       
       .print-document { font-family: "Times New Roman", Times, serif; color: #000; font-size: 11px; line-height: 1.3; }
       
@@ -160,6 +170,8 @@
     .form-group label { display: block; font-size: 0.8rem; font-weight: bold; color: #333; margin-bottom: 5px; }
     .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-family: inherit; font-size: 0.9rem; box-sizing: border-box; }
     .form-group textarea { resize: vertical; }
+
+    
   </style>
 </head>
 <body>
@@ -563,6 +575,8 @@
      <!-- 👇 PASTE THE NEW FOOTER RIGHT HERE 👇 -->
     <div style="position: sticky; bottom: 0; background: #fff; padding: 15px 20px; border-top: 1px solid var(--gc-border); text-align: right; z-index: 10; border-radius: 0 0 12px 12px;">
       <button class="btn-edit" style="margin: 0; width: auto; background: #64748b; display: inline-block;" onclick="document.getElementById('lrp-dialog').close()">Cancel</button>
+      <!-- NEW PRINT BUTTON -->
+      <button class="btn-edit" style="margin: 0 0 0 10px; width: auto; background: #475569; display: inline-block;" onclick="printIntakeSheet()">🖨️ Print Intake Sheet</button>
       <button class="btn-save" style="margin: 0; width: auto; display: inline-block; margin-left: 10px;" onclick="saveLRPCase()" id="btn-save-lrp">💾 Save Intake Sheet</button>
     </div>
     <!-- 👆 END OF NEW FOOTER 👆 -->
@@ -690,6 +704,91 @@
     </div>
   </div>
  
+
+    <!-- HIDDEN PRINT TEMPLATE FOR ANNEX E -->
+  <div id="print-lrp-section" style="display: none;">
+    <div class="print-document">
+      
+      <div class="print-header">
+        <img src="../../assets/images/deped-logo.png" alt="DepEd Logo">
+        <div class="header-text">
+          <div>Republic of the Philippines</div>
+          <div class="bold">DEPARTMENT OF EDUCATION</div>
+          <div>Region II - Cagayan Valley</div>
+          <div>SCHOOLS DIVISION OF NUEVA VIZCAYA</div>
+          <div class="bold">STA. CRUZ PINGKIAN HIGH SCHOOL</div>
+          <div style="text-decoration: underline;">Pingkian, Kayapa, Nueva Vizcaya</div>
+          <div class="bold" style="margin-top: 10px;">ENHANCED INTAKE SHEET (ANNEX E)</div>
+        </div>
+      </div>
+
+      <div style="margin-bottom: 15px; font-size: 11px;">
+        <strong>I. IDENTIFYING INFORMATION</strong><br>
+        <strong>Learner-Victim:</strong> <span id="print-lrp-name">______________</span><br>
+        <strong>Grade & Section:</strong> <span id="print-lrp-section">______________</span> | 
+        <strong>Age:</strong> <span id="print-lrp-age">______</span> | 
+        <strong>Sex:</strong> <span id="print-lrp-sex">______</span>
+      </div>
+
+      <div style="margin-bottom: 15px; font-size: 11px;">
+        <strong>B. Parents and Guardian</strong><br>
+        Mother: <span id="print-lrp-mother">______________</span> (Contact: <span id="print-lrp-mother-contact">__________</span>)<br>
+        Father: <span id="print-lrp-father">______________</span> (Contact: <span id="print-lrp-father-contact">__________</span>)<br>
+        Guardian: <span id="print-lrp-guardian">______________</span>
+      </div>
+
+      <div style="margin-bottom: 15px; font-size: 11px;">
+        <strong>C. Complainant</strong><br>
+        Name: <span id="print-lrp-complainant">______________</span> | 
+        Relation: <span id="print-lrp-compl-relation">______________</span><br>
+        Contact: <span id="print-lrp-compl-contact">______________</span> | 
+        Address: <span id="print-lrp-compl-address">______________</span>
+      </div>
+
+      <div style="margin-bottom: 15px; font-size: 11px;">
+        <strong>II. ALLEGED OFFENDER</strong><br>
+        Type: <span id="print-lrp-offender-type">______________</span><br>
+        Name: <span id="print-lrp-offender-name">______________</span> | 
+        Age: <span id="print-lrp-offender-age">______</span> | 
+        Sex: <span id="print-lrp-offender-sex">______</span><br>
+        Address: <span id="print-lrp-offender-address">______________</span> | 
+        Relationship: <span id="print-lrp-offender-relation">______________</span>
+      </div>
+
+      <div style="margin-bottom: 15px; font-size: 11px;">
+        <strong>III. DETAILS OF THE INCIDENT</strong><br>
+        Date: <span id="print-lrp-incident-date">______________</span><br>
+        <p style="margin-top: 5px; text-align: justify;" id="print-lrp-incident-details">____________________________________________________________</p>
+      </div>
+
+      <div style="margin-bottom: 15px; font-size: 11px;">
+        <strong>IV. INITIAL ACTIONS TAKEN</strong><br>
+        <p style="margin-top: 5px; text-align: justify;" id="print-lrp-actions">____________________________________________________________</p>
+      </div>
+
+      <div style="margin-bottom: 30px; font-size: 11px;">
+        <strong>V. RECOMMENDATIONS / NEXT STEPS</strong><br>
+        <strong>Referral:</strong> <span id="print-lrp-referral-req">No</span><br>
+        <strong>Referred To:</strong> <span id="print-lrp-referral-to">______________</span><br>
+        <p style="margin-top: 5px; text-align: justify;" id="print-lrp-referral-reason">____________________________________________________________</p>
+      </div>
+
+      <div class="print-signatures" style="display: flex; justify-content: space-between; margin-top: 50px;">
+        <div class="sig-block" style="width: 45%; text-align: center;">
+          <div style="margin-bottom: 30px;">Prepared by:</div>
+          <div style="border-bottom: 1px solid #000; font-weight: bold;" id="print-lrp-prepared-name">_______________________</div>
+          <div style="font-size: 10px; margin-top: 5px;">Guidance Counselor / Designate</div>
+        </div>
+        <div class="sig-block" style="width: 45%; text-align: center;">
+          <div style="margin-bottom: 30px;">Reviewed by:</div>
+          <div style="border-bottom: 1px solid #000; font-weight: bold;">SATURNINO P. CALANSI EdD</div>
+          <div style="font-size: 10px; margin-top: 5px;">Principal IV / School Head</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
   <!-- FIREBASE INTEGRATION -->
   <script type="module">
     import { auth, db } from "../../assets/js/firebase-config.js";
@@ -1169,9 +1268,15 @@
       document.getElementById('print-date').textContent = now.toLocaleDateString('en-PH', { year: 'numeric', month: 'long', day: 'numeric' });
       document.getElementById('print-time').textContent = now.toLocaleTimeString('en-PH', { hour: '2-digit', minute: '2-digit' });
 
+            // Tell CSS to print the violation report
+      document.body.classList.add('print-mode-violation');
+      
       window.print();
+      
+      // Remove the class after printing
+      setTimeout(() => document.body.classList.remove('print-mode-violation'), 1000);
     };
-
+      
         // 10. LRP Case Management (Annex E)
     const lrpDialog = document.getElementById('lrp-dialog');
 
@@ -1258,6 +1363,55 @@
         btn.disabled = false;
       }
     };
+
+        window.printIntakeSheet = function() {
+      if (!CURRENT_STUDENT) return;
+
+      // Populate Header
+      document.getElementById('print-lrp-name').textContent = CURRENT_STUDENT.fullName;
+      document.getElementById('print-lrp-section').textContent = CURRENT_STUDENT.classLabel;
+      document.getElementById('print-lrp-age').textContent = CURRENT_STUDENT.age || "—";
+      document.getElementById('print-lrp-sex').textContent = CURRENT_STUDENT.sex || "—";
+
+      // Part I
+      document.getElementById('print-lrp-mother').textContent = document.getElementById('lrp-motherName').value || "—";
+      document.getElementById('print-lrp-mother-contact').textContent = document.getElementById('lrp-motherContact').value || "—";
+      document.getElementById('print-lrp-father').textContent = document.getElementById('lrp-fatherName').value || "—";
+      document.getElementById('print-lrp-father-contact').textContent = document.getElementById('lrp-fatherContact').value || "—";
+      document.getElementById('print-lrp-guardian').textContent = document.getElementById('lrp-guardianName').value || "—";
+      document.getElementById('print-lrp-complainant').textContent = document.getElementById('lrp-complainantName').value || "—";
+      document.getElementById('print-lrp-compl-relation').textContent = document.getElementById('lrp-complainantRelation').value || "—";
+      document.getElementById('print-lrp-compl-contact').textContent = document.getElementById('lrp-complainantContact').value || "—";
+      document.getElementById('print-lrp-compl-address').textContent = document.getElementById('lrp-complainantAddress').value || "—";
+
+      // Part II
+      document.getElementById('print-lrp-offender-type').textContent = document.getElementById('lrp-offenderType').value;
+      document.getElementById('print-lrp-offender-name').textContent = document.getElementById('lrp-offenderName').value || "—";
+      document.getElementById('print-lrp-offender-age').textContent = document.getElementById('lrp-offenderAge').value || "—";
+      document.getElementById('print-lrp-offender-sex').textContent = document.getElementById('lrp-offenderSex').value || "—";
+      document.getElementById('print-lrp-offender-address').textContent = document.getElementById('lrp-offenderAddress').value || "—";
+      document.getElementById('print-lrp-offender-relation').textContent = document.getElementById('lrp-offenderRelation').value || "—";
+
+      // Part III
+      document.getElementById('print-lrp-incident-date').textContent = document.getElementById('lrp-incidentDate').value || "—";
+      document.getElementById('print-lrp-incident-details').textContent = document.getElementById('lrp-incidentDetails').value || "No details provided.";
+
+      // Part IV & V
+      document.getElementById('print-lrp-actions').textContent = document.getElementById('lrp-initialActions').value || "No actions recorded.";
+      document.getElementById('print-lrp-referral-req').textContent = document.getElementById('lrp-referralReq').value;
+      document.getElementById('print-lrp-referral-to').textContent = document.getElementById('lrp-referralTo').value || "—";
+      document.getElementById('print-lrp-referral-reason').textContent = document.getElementById('lrp-referralReason').value || "—";
+
+            // Tell CSS to print the LRP sheet
+      document.body.classList.add('print-mode-lrp');
+      
+      // Trigger Print
+      window.print();
+      
+      // Remove the class after printing
+      setTimeout(() => document.body.classList.remove('print-mode-lrp'), 1000);
+    };
+      
   </script>
 </body>
 </html>
