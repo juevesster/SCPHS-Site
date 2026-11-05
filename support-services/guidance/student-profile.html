@@ -111,30 +111,25 @@
     /* --- PRINT TEMPLATE STYLES (Hidden on screen) --- */
     #print-section { display: none; }
     
-                @media print {
+                    @media print {
       body * { visibility: hidden; }
       
-      /* Both sections are hidden by default */
       #print-section, #print-lrp-section { display: none !important; }
       
-      /* Force Landscape for Violation Report */
-      body.print-mode-violation {
-        @page { size: A4 landscape; margin: 10mm; }
-      }
-      body.print-mode-violation #print-section, 
-      body.print-mode-violation #print-section * { visibility: visible; display: block !important; }
-      body.print-mode-violation #print-section { position: absolute; left: 0; top: 0; width: 100%; }
-      
-      /* Force Portrait for LRP Intake Sheet */
-      body.print-mode-lrp {
-        @page { size: A4 portrait; margin: 10mm; }
-      }
+      /* LRP Print Mode (Portrait) */
       body.print-mode-lrp #print-lrp-section, 
       body.print-mode-lrp #print-lrp-section * { visibility: visible; display: block !important; }
       body.print-mode-lrp #print-lrp-section { position: absolute; left: 0; top: 0; width: 100%; }
       
-      /* Keep the rest of your print styles below */
+      /* Violation Print Mode (Landscape) */
+      body.print-mode-violation #print-section, 
+      body.print-mode-violation #print-section * { visibility: visible; display: block !important; }
+      body.print-mode-violation #print-section { position: absolute; left: 0; top: 0; width: 100%; }
+
       .print-document { font-family: "Times New Roman", Times, serif; color: #000; font-size: 11px; line-height: 1.3; }
+      
+      /* ... (Keep the rest of your print styles for headers, tables, signatures, etc.) ... */
+    }
       
       /* Header */
       .print-header { text-align: center; margin-bottom: 15px; }
@@ -1371,14 +1366,13 @@
       }
     };
 
-           window.printIntakeSheet = function() {
+               window.printIntakeSheet = function() {
       if (!CURRENT_STUDENT) {
         alert("Please select a student first.");
         return;
       }
 
-      // 1. CAPTURE DATA FROM THE FORM FIRST
-      // (This ensures the data is read before the modal is hidden by printing)
+      // 1. Capture all data BEFORE closing the modal
       const data = {
         motherName: document.getElementById('lrp-motherName')?.value || "—",
         motherContact: document.getElementById('lrp-motherContact')?.value || "—",
@@ -1403,7 +1397,7 @@
         referralReason: document.getElementById('lrp-referralReason')?.value || "—"
       };
 
-      // 2. INJECT DATA INTO HIDDEN TEMPLATE
+      // 2. Populate the hidden template
       document.getElementById('print-lrp-name').textContent = CURRENT_STUDENT.fullName;
       document.getElementById('print-lrp-section').textContent = CURRENT_STUDENT.classLabel;
       document.getElementById('print-lrp-age').textContent = CURRENT_STUDENT.age || "—";
@@ -1434,9 +1428,14 @@
       document.getElementById('print-lrp-referral-to').textContent = data.referralTo;
       document.getElementById('print-lrp-referral-reason').textContent = data.referralReason;
 
-      // 3. TRIGGER PRINT
+      // 3. 👇 THE FIX: Close the modal first so it doesn't block the print dialog
+      document.getElementById('lrp-dialog').close();
+
+      // 4. Trigger Print
       document.body.classList.add('print-mode-lrp');
       window.print();
+      
+      // 5. Cleanup after print
       setTimeout(() => document.body.classList.remove('print-mode-lrp'), 1000);
     };
     
