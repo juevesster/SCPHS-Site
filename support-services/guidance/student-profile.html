@@ -1282,22 +1282,25 @@
         // 10. LRP Case Management (Annex E)
     const lrpDialog = document.getElementById('lrp-dialog');
 
-    window.openLRPModal = function() {
+        window.openLRPModal = function() {
       if (!CURRENT_STUDENT) return;
 
-      // Populate Header
+      // 1. Reset Form FIRST (before filling anything)
+      document.getElementById('lrp-form').reset();
+      
+      // 2. Set Default Date
+      document.getElementById('lrp-incidentDate').valueAsDate = new Date();
+
+      // 3. Populate Header (This is the display on the screen)
       document.getElementById('lrp-student-name').textContent = CURRENT_STUDENT.fullName;
       document.getElementById('lrp-student-details').textContent = `${CURRENT_STUDENT.classLabel} | Age: ${CURRENT_STUDENT.age || '—'} | Sex: ${CURRENT_STUDENT.sex || '—'}`;
       
-      // Pre-fill some fields if available in Student Profile
+      // 4. Pre-fill Parent Names (if they exist in the student record)
       document.getElementById('lrp-motherName').value = CURRENT_STUDENT.motherName || "";
       document.getElementById('lrp-fatherName').value = CURRENT_STUDENT.fatherName || "";
       document.getElementById('lrp-guardianName').value = CURRENT_STUDENT.guardianName || "";
-      
-      // Reset Form
-      document.getElementById('lrp-form').reset();
-      document.getElementById('lrp-incidentDate').valueAsDate = new Date();
 
+      // 5. Show Modal
       lrpDialog.showModal();
     };
 
@@ -1397,8 +1400,8 @@
         referralReason: document.getElementById('lrp-referralReason')?.value || "—"
       };
 
-      // 2. Populate the hidden template
-      document.getElementById('print-lrp-name').textContent = CURRENT_STUDENT.fullName;
+            // 2. Populate the hidden template
+      document.getElementById('print-lrp-name').textContent = CURRENT_STUDENT.fullName; // <-- THIS IS CRITICAL
       document.getElementById('print-lrp-section').textContent = CURRENT_STUDENT.classLabel;
       document.getElementById('print-lrp-age').textContent = CURRENT_STUDENT.age || "—";
       document.getElementById('print-lrp-sex').textContent = CURRENT_STUDENT.sex || "—";
