@@ -1366,8 +1366,17 @@
       }
     };
 
-            window.printIntakeSheet = function() {
-      if (!CURRENT_STUDENT) return;
+                window.printIntakeSheet = function() {
+      if (!CURRENT_STUDENT) {
+        alert("Please select a student first.");
+        return;
+      }
+
+      // A safe helper to get values without crashing if an ID is missing
+      function getVal(id) {
+        const el = document.getElementById(id);
+        return el && el.value ? el.value : "—";
+      }
 
       try {
         // 1. Populate Header
@@ -1377,33 +1386,33 @@
         document.getElementById('print-lrp-sex').textContent = CURRENT_STUDENT.sex || "—";
 
         // 2. Part I
-        document.getElementById('print-lrp-mother').textContent = document.getElementById('lrp-motherName').value || "—";
-        document.getElementById('print-lrp-mother-contact').textContent = document.getElementById('lrp-motherContact').value || "—";
-        document.getElementById('print-lrp-father').textContent = document.getElementById('lrp-fatherName').value || "—";
-        document.getElementById('print-lrp-father-contact').textContent = document.getElementById('lrp-fatherContact').value || "—";
-        document.getElementById('print-lrp-guardian').textContent = document.getElementById('lrp-guardianName').value || "—";
-        document.getElementById('print-lrp-complainant').textContent = document.getElementById('lrp-complainantName').value || "—";
-        document.getElementById('print-lrp-compl-relation').textContent = document.getElementById('lrp-complainantRelation').value || "—";
-        document.getElementById('print-lrp-compl-contact').textContent = document.getElementById('lrp-complainantContact').value || "—";
-        document.getElementById('print-lrp-compl-address').textContent = document.getElementById('lrp-complainantAddress').value || "—";
+        document.getElementById('print-lrp-mother').textContent = getVal('lrp-motherName');
+        document.getElementById('print-lrp-mother-contact').textContent = getVal('lrp-motherContact');
+        document.getElementById('print-lrp-father').textContent = getVal('lrp-fatherName');
+        document.getElementById('print-lrp-father-contact').textContent = getVal('lrp-fatherContact');
+        document.getElementById('print-lrp-guardian').textContent = getVal('lrp-guardianName');
+        document.getElementById('print-lrp-complainant').textContent = getVal('lrp-complainantName');
+        document.getElementById('print-lrp-compl-relation').textContent = getVal('lrp-complainantRelation');
+        document.getElementById('print-lrp-compl-contact').textContent = getVal('lrp-complainantContact');
+        document.getElementById('print-lrp-compl-address').textContent = getVal('lrp-complainantAddress');
 
         // 3. Part II
-        document.getElementById('print-lrp-offender-type').textContent = document.getElementById('lrp-offenderType').value;
-        document.getElementById('print-lrp-offender-name').textContent = document.getElementById('lrp-offenderName').value || "—";
-        document.getElementById('print-lrp-offender-age').textContent = document.getElementById('lrp-offenderAge').value || "—";
-        document.getElementById('print-lrp-offender-sex').textContent = document.getElementById('lrp-offenderSex').value || "—";
-        document.getElementById('print-lrp-offender-address').textContent = document.getElementById('lrp-offenderAddress').value || "—";
-        document.getElementById('print-lrp-offender-relation').textContent = document.getElementById('lrp-offenderRelation').value || "—";
+        document.getElementById('print-lrp-offender-type').textContent = getVal('lrp-offenderType');
+        document.getElementById('print-lrp-offender-name').textContent = getVal('lrp-offenderName');
+        document.getElementById('print-lrp-offender-age').textContent = getVal('lrp-offenderAge');
+        document.getElementById('print-lrp-offender-sex').textContent = getVal('lrp-offenderSex');
+        document.getElementById('print-lrp-offender-address').textContent = getVal('lrp-offenderAddress');
+        document.getElementById('print-lrp-offender-relation').textContent = getVal('lrp-offenderRelation');
 
         // 4. Part III
-        document.getElementById('print-lrp-incident-date').textContent = document.getElementById('lrp-incidentDate').value || "—";
-        document.getElementById('print-lrp-incident-details').textContent = document.getElementById('lrp-incidentDetails').value || "No details provided.";
+        document.getElementById('print-lrp-incident-date').textContent = getVal('lrp-incidentDate');
+        document.getElementById('print-lrp-incident-details').textContent = getVal('lrp-incidentDetails');
 
         // 5. Part IV & V
-        document.getElementById('print-lrp-actions').textContent = document.getElementById('lrp-initialActions').value || "No actions recorded.";
-        document.getElementById('print-lrp-referral-req').textContent = document.getElementById('lrp-referralReq').value;
-        document.getElementById('print-lrp-referral-to').textContent = document.getElementById('lrp-referralTo').value || "—";
-        document.getElementById('print-lrp-referral-reason').textContent = document.getElementById('lrp-referralReason').value || "—";
+        document.getElementById('print-lrp-actions').textContent = getVal('lrp-initialActions');
+        document.getElementById('print-lrp-referral-req').textContent = getVal('lrp-referralReq');
+        document.getElementById('print-lrp-referral-to').textContent = getVal('lrp-referralTo');
+        document.getElementById('print-lrp-referral-reason').textContent = getVal('lrp-referralReason');
 
         // 6. Tell CSS to print the LRP sheet
         document.body.classList.add('print-mode-lrp');
