@@ -80,10 +80,12 @@
       input, select, textarea { border: none; border-bottom: 1px solid #000; padding: 4px 0; border-radius: 0; font-size: 11px; background: transparent; }
       textarea { border: 1px solid #000; padding: 5px; }
       
+      /* Print Signatures */
       .print-signatures { display: flex; justify-content: space-between; margin-top: 40px; page-break-inside: avoid; }
-      .sig-block { width: 45%; text-align: center; }
-      .sig-label { font-size: 11px; margin-bottom: 25px; text-align: left; }
-      .sig-line { border-bottom: 1px solid #000; height: 15px; margin-bottom: 5px; }
+      .sig-block { width: 30%; text-align: center; }
+      .sig-label { font-size: 10px; margin-bottom: 25px; text-align: left; }
+      .sig-line { border-bottom: 1px solid #000; height: 15px; margin-bottom: 3px; }
+      .sig-pos { font-size: 9px; color: #333; }
     }
     .print-header { display: none; }
   </style>
@@ -98,7 +100,7 @@
 
     <div class="form-card">
       
-      <!-- Print Header (Only visible when printing) -->
+      <!-- Print Header -->
       <div class="print-header">
         <img src="../../assets/images/deped-logo.png" alt="DepEd Logo">
         <div style="font-size: 12px;">Republic of the Philippines</div>
@@ -233,13 +235,26 @@
           </div>
         </div>
 
-        <!-- Signatories (Screen only, to be populated before print) -->
+        <!-- Signatories (Now includes Position) -->
         <div class="form-section">
           <h3>SIGNATORIES</h3>
           <div class="grid-3">
-            <div><label>Date of Intake</label><input type="date" id="lrp-dateIntake"></div>
-            <div><label>Prepared by</label><input type="text" id="lrp-preparedBy" placeholder="Name & Designation"></div>
-            <div><label>Reviewed by</label><input type="text" id="lrp-reviewedBy" placeholder="Name & Designation"></div>
+            <div>
+              <label>Date of Intake</label>
+              <input type="date" id="lrp-dateIntake">
+            </div>
+            <div>
+              <label>Prepared by (Name)</label>
+              <input type="text" id="lrp-preparedBy" placeholder="Full Name">
+              <label style="margin-top: 10px;">Position</label>
+              <input type="text" id="lrp-preparedPos" placeholder="e.g. Teacher III - Guidance Counselor">
+            </div>
+            <div>
+              <label>Reviewed by (Name)</label>
+              <input type="text" id="lrp-reviewedBy" placeholder="Full Name">
+              <label style="margin-top: 10px;">Position</label>
+              <input type="text" id="lrp-reviewedPos" placeholder="e.g. Principal IV / School Head">
+            </div>
           </div>
         </div>
 
@@ -408,7 +423,9 @@
           // Signatories
           dateIntake: document.getElementById('lrp-dateIntake').value,
           preparedBy: document.getElementById('lrp-preparedBy').value,
+          preparedPos: document.getElementById('lrp-preparedPos').value,
           reviewedBy: document.getElementById('lrp-reviewedBy').value,
+          reviewedPos: document.getElementById('lrp-reviewedPos').value,
           
           // Meta
           loggedBy: auth.currentUser.email,
