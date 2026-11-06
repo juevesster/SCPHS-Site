@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Case Monitoring Form – SCPHS Guidance</title>
+  <link rel="stylesheet" href="../../assets/css/styles.css" />
+  
+  <style>
+    :root {
+      --gc-primary: #0f4c81;
+      --gc-border: #e2e8f0;
+      --gc-text-main: #1e293b;
+      --gc-text-muted: #64748b;
+      --bright-blue: #2563eb;
+      --danger: #dc2626;
+      --success: #16a34a;
+    }
+
+    body { background: #f1f5f9; margin: 0; font-family: system-ui, -apple-system, sans-serif; }
+    .wrap { max-width: 1000px; margin: 0 auto; padding: 20px 16px; }
+
+    /* Header */
+    .header { background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; }
+    .header h1 { margin: 0; color: var(--gc-primary); font-size: 1.4rem; }
+    .back-link { color: var(--bright-blue); text-decoration: none; font-weight: 600; font-size: 0.9rem; }
+
+    /* Form Card */
+    .form-card { background: #fff; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); padding: 30px; margin-bottom: 30px; }
+    
+    .form-section { margin-bottom: 30px; border: 1px solid var(--gc-border); border-radius: 8px; padding: 20px; }
+    .form-section h3 { margin-top: 0; color: var(--gc-primary); border-bottom: 1px solid var(--gc-border); padding-bottom: 10px; font-size: 1.1rem; text-transform: uppercase;}
+    
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px; }
+    .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px; margin-bottom: 15px; }
+    .grid-full { margin-bottom: 15px; }
+    @media (max-width: 600px) { .grid-2, .grid-3 { grid-template-columns: 1fr; } }
+
+    label { display: block; font-size: 0.8rem; font-weight: 700; color: #333; margin-bottom: 5px; text-transform: uppercase; }
+    input, select, textarea { width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-family: inherit; font-size: 0.95rem; box-sizing: border-box; }
+    textarea { resize: vertical; min-height: 80px; }
+
+    /* Checkbox Grid */
+    .checkbox-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px; margin-top: 10px; }
+    .checkbox-item { display: flex; align-items: center; gap: 8px; font-size: 0.9rem; font-weight: 500; }
+    .checkbox-item input { width: auto; }
+
+    /* Buttons */
+    .btn-row { display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px; padding-top: 20px; border-top: 1px solid var(--gc-border); }
+    .btn { padding: 12px 24px; border: none; border-radius: 6px; font-weight: bold; font-size: 0.95rem; cursor: pointer; transition: 0.2s; }
+    .btn-save { background: var(--success); color: #fff; }
+    .btn-save:hover { background: #15803d; }
+    .btn-print { background: #475569; color: #fff; }
+    .btn-print:hover { background: #334155; }
+    .btn-cancel { background: #e2e8f0; color: #333; }
+
+    /* --- PRINT STYLES --- */
+    @media print {
+      @page { size: A4 portrait; margin: 10mm; }
+      body { background: #fff; }
+      .header, .back-link, .btn-row { display: none !important; }
+      .wrap { padding: 0; max-width: 100%; }
+      .form-card { box-shadow: none; padding: 0; margin: 0; }
+      .form-section { border: none; padding: 0; margin-bottom: 15px; }
+      
+      .print-header { display: block !important; text-align: center !important; margin-bottom: 20px; }
+      .print-header img { display: block !important; margin: 0 auto 10px auto !important; height: 60px; }
+      .print-header h1 { font-size: 13px; margin: 3px 0; font-weight: bold; }
+      .print-header p { font-size: 11px; margin: 2px 0; }
+      
+      .form-section h3 { border-bottom: 1px solid #000; font-size: 12px; margin-bottom: 8px; font-weight: bold; }
+      
+      .grid-2, .grid-3 { gap: 10px; margin-bottom: 5px; }
+      label { font-size: 9px; color: #000; margin-bottom: 2px; text-transform: none; font-weight: bold; }
+      input, select, textarea { border: none; border-bottom: 1px solid #000; padding: 4px 0; border-radius: 0; font-size: 11px; background: transparent; }
+      textarea { border: 1px solid #000; padding: 5px; }
+      
+      .checkbox-grid { display: block; }
+      .checkbox-item { display: inline-block; width: 30%; font-size: 10px; margin-bottom: 5px; }
+      
+      .print-signatures { display: flex; justify-content: space-between; margin-top: 40px; page-break-inside: avoid; }
+      .sig-block { width: 45%; text-align: center; }
+      .sig-label { font-size: 11px; margin-bottom: 25px; text-align: left; }
+      .sig-line { border-bottom: 1px solid #000; height: 15px; margin-bottom: 3px; }
+      .sig-pos { font-size: 10px; color: #333; }
+    }
+    .print-header { display: none; }
+  </style>
+</head>
+<body>
+
+  <div class="wrap">
+    <div class="header">
+      <h1>📋 Case Monitoring Form</h1>
+      <a href="student-records.html" class="back-link" onclick="history.back(); return false;">← Back to Profile</a>
+    </div>
+
+    <div class="form-card">
+      
+      <!-- Print Header -->
+      <div class="print-header">
+        <img src="../../assets/images/deped-logo.png" alt="DepEd Logo">
+        <div style="font-size: 11px;">Republic of the Philippines</div>
+        <div style="font-size: 13px; font-weight: bold;">DEPARTMENT OF EDUCATION</div>
+        <div style="font-size: 11px;">Region II - Cagayan Valley</div>
+        <div style="font-size: 11px;">Schools Division of Nueva Vizcaya</div>
+        <div style="font-size: 13px; font-weight: bold; margin-top: 10px;">Learner Rights and Protection Office</div>
+        <div style="font-size: 16px; font-weight: bold; margin-top: 5px;">CASE MONITORING FORM</div>
+      </div>
+
+      <form id="case-form">
+        
+        <!-- CLIENT'S INFORMATION -->
+        <div class="form-section">
+          <h3>CLIENT'S INFORMATION</h3>
+          <div class="grid-3">
+            <div style="grid-column: 1 / -1;"><label>Name</label><input type="text" id="cm-name" readonly style="background: #f1f5f9;"></div>
+            <div><label>Sex</label><input type="text" id="cm-sex" readonly style="background: #f1f5f9;"></div>
+            <div><label>Age</label><input type="text" id="cm-age" readonly style="background: #f1f5f9;"></div>
+            <div><label>Date of Birth</label><input type="text" id="cm-dob" readonly style="background: #f1f5f9;"></div>
+            <div><label>Grade Level</label><input type="text" id="cm-grade" readonly style="background: #f1f5f9;"></div>
+            <div><label>LRN</label><input type="text" id="cm-lrn" readonly style="background: #f1f5f9;"></div>
+            <div><label>Email</label><input type="text" id="cm-email"></div>
+            <div><label>Contact No.</label><input type="text" id="cm-contact"></div>
+            <div style="grid-column: 1 / -1;"><label>Address</label><input type="text" id="cm-address"></div>
+          </div>
+        </div>
+
+        <!-- SCHOOL PROFILE -->
+        <div class="form-section">
+          <h3>SCHOOL PROFILE</h3>
+          <div class="grid-3">
+            <div><label>Region</label><input type="text" id="cm-region" value="Region II - Cagayan Valley"></div>
+            <div><label>Division</label><input type="text" id="cm-division" value="Nueva Vizcaya"></div>
+            <div><label>School I.D.</label><input type="text" id="cm-schoolId" value="300648"></div>
+            <div style="grid-column: 1 / -1;"><label>Name of School</label><input type="text" id="cm-schoolName" value="Sta. Cruz Pingkian High School"></div>
+            <div style="grid-column: 1 / -1;"><label>Address</label><input type="text" id="cm-schoolAddress" value="Pingkian, Kayapa, Nueva Vizcaya"></div>
+            <div><label>Contact No.</label><input type="text" id="cm-schoolContact" value="+63 967-8848989"></div>
+            <div style="grid-column: span 2;"><label>Email</label><input type="text" id="cm-schoolEmail" value="300648@deped.gov.ph"></div>
+          </div>
+        </div>
+
+        <!-- TYPE OF CASE -->
+        <div class="form-section">
+          <h3>TYPE OF CASE</h3>
+          <div class="checkbox-grid">
+            <!-- Group 1: BULLYING / CHILD ABUSE / CICL -->
+            <div>
+              <strong style="font-size: 0.85rem; color: var(--gc-primary);">BULLYING</strong><br>
+              <label class="checkbox-item"><input type="checkbox" name="case-type" value="Physical Bullying"> Physical</label>
+              <label class="checkbox-item"><input type="checkbox" name="case-type" value="Social Bullying"> Social</label>
+              <label class="checkbox-item"><input type="checkbox" name="case-type" value="Cyber Bullying"> Cyber</label>
+              <label class="checkbox-item"><input type="checkbox" name="case-type" value="Retaliation"> Retaliation</label>
+            </div>
+            <div>
+              <strong style="font-size: 0.85rem; color: var(--gc-primary);">CHILD ABUSE</strong><br>
+              <label class="checkbox-item"><input type="checkbox" name="case-type" value="Physical Abuse"> Physical</label>
+              <label class="checkbox-item"><input type="checkbox" name="case-type" value="Sexual Abuse"> Sexual</label>
+              <label class="checkbox-item"><input type="checkbox" name="case-type" value="Verbal/Psychological Abuse"> Verbal/Psychological</label>
+            </div>
+            <div>
+              <strong style="font-size: 0.85rem; color: var(--gc-primary);">CHILD AT-RISK</strong><br>
+              <label class="checkbox-item"><input type="checkbox" name="case-type" value="Child Labor"> Child Labor</label>
+              <label class="checkbox-item"><input type="checkbox" name="case-type" value="Child Trafficking"> Child Trafficking</label>
+              <label class="checkbox-item"><input type="checkbox" name="case-type" value="Online Sexual Exploitation"> Online Sexual Exploitation</label>
+              <label class="checkbox-item"><input type="checkbox" name="case-type" value="Living in Armed Conflict"> Living in Armed Conflict</label>
+              <label class="checkbox-item"><input type="checkbox" name="case-type" value="Member of a Gang"> Member of a Gang</label>
+              <label class="checkbox-item"><input type="checkbox" name="case-type" value="Victims of Neglect"> Victims of Neglect</label>
+            </div>
+            <div>
+              <strong style="font-size: 0.85rem; color: var(--gc-primary);">CICL / OTHERS</strong><br>
+              <label class="checkbox-item"><input type="checkbox" name="case-type" value="Children in Conflict with the Law (CICL)"> Children in Conflict with the Law (CICL)</label>
+              <label class="checkbox-item"><input type="checkbox" name="case-type" value="Smoking"> Smoking</label>
+              <label class="checkbox-item"><input type="checkbox" name="case-type" value="Alcohol"> Alcohol</label>
+              <label class="checkbox-item"><input type="checkbox" name="case-type" value="Rape"> Rape</label>
+              <label class="checkbox-item"><input type="checkbox" name="case-type" value="Gender-Based"> Gender-Based</label>
+              <label class="checkbox-item"><input type="checkbox" name="case-type" value="Corporal Punishment"> Corporal Punishment</label>
+              <label class="checkbox-item"><input type="checkbox" name="case-type" value="Drug Use"> Drug Use</label>
+              <label class="checkbox-item"><input type="checkbox" name="case-type" value="Others"> Others: <input type="text" id="cm-otherCase" style="width: 100px; padding: 2px; margin-left: 5px; border: 1px solid #ccc;"></label>
+            </div>
+          </div>
+        </div>
+
+        <!-- CASE STATUS -->
+        <div class="form-section">
+          <h3>CASE STATUS</h3>
+          <div class="grid-3">
+            <div><label>Case Status</label><input type="text" id="cm-caseStatus" placeholder="e.g. Ongoing, Resolved"></div>
+            <div><label>Date Endorsed</label><input type="date" id="cm-dateEndorsed"></div>
+            <div><label>Endorsed To</label><input type="text" id="cm-endorsedTo"></div>
+            <div><label>Date of Last Follow-up</label><input type="date" id="cm-lastFollowup"></div>
+            <div><label>Date of Next Follow-up</label><input type="date" id="cm-nextFollowup"></div>
+            <div><label>Agency</label><input type="text" id="cm-agency"></div>
+            <div style="grid-column: 1 / -1;"><label>Job Position</label><input type="text" id="cm-jobPosition"></div>
+          </div>
+        </div>
+
+        <!-- DESCRIPTION OF THE CASE -->
+        <div class="form-section">
+          <h3>DESCRIPTION OF THE CASE</h3>
+          <div class="grid-full">
+            <textarea id="cm-description" rows="4"></textarea>
+          </div>
+        </div>
+
+        <!-- INTERVENTIONS -->
+        <div class="form-section">
+          <h3>INTERVENTIONS</h3>
+          <div class="grid-full">
+            <textarea id="cm-interventions" rows="5" placeholder="1.&#10;2.&#10;3.&#10;4.&#10;5."></textarea>
+          </div>
+        </div>
+
+        <!-- SIGNATORIES -->
+        <div class="form-section">
+          <h3>SIGNATORIES</h3>
+          <div class="grid-2">
+            <div>
+              <label>Prepared by (Name & Position)</label>
+              <input type="text" id="cm-preparedBy" placeholder="e.g. Renee Frances D. Aleman, Teacher III">
+              <label style="margin-top: 5px;">Date</label>
+              <input type="date" id="cm-datePrepared">
+            </div>
+            <div>
+              <label>Noted by (Name & Position)</label>
+              <input type="text" id="cm-notedBy" placeholder="e.g. Saturnino P. Calansi EdD, Principal IV">
+              <label style="margin-top: 5px;">Date</label>
+              <input type="date" id="cm-dateNoted">
+            </div>
+          </div>
+        </div>
+
+        <div class="btn-row">
+          <button type="button" class="btn btn-cancel" onclick="history.back()">Cancel</button>
+          <button type="button" class="btn btn-print" onclick="window.print()">🖨️ Print Form</button>
+          <button type="button" class="btn btn-save" onclick="saveCaseMonitoring()" id="btn-save">💾 Save Case Record</button>
+        </div>
+
+      </form>
+    </div>
+  </div>
+
+  <script type="module">
+    import { auth, db } from "../../assets/js/firebase-config.js";
+    import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+    import { doc, getDoc, collection, addDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+    const urlParams = new URLSearchParams(window.location.search);
+    const classId = urlParams.get('classId');
+    const studentId = urlParams.get('studentId');
+
+    let CURRENT_STUDENT = null;
+
+    onAuthStateChanged(auth, async (user) => {
+      if (!user) { window.location.href = "../../login.html"; return; }
+      if (!classId || !studentId) { alert("Missing student information."); window.location.href = "student-records.html"; return; }
+
+      try {
+        const classRef = doc(db, "classes", classId);
+        const classSnap = await getDoc(classRef);
+        let className = classSnap.exists() ? classSnap.data().classLabel : "Unknown Section";
+
+        const studentRef = doc(db, "classes", classId, "students", studentId);
+        const studentSnap = await getDoc(studentRef);
+        
+        if (studentSnap.exists()) {
+          CURRENT_STUDENT = { id: studentSnap.id, classId, classLabel: className, ...studentSnap.data() };
+          
+          // Pre-fill Client Info
+          document.getElementById('cm-name').value = CURRENT_STUDENT.fullName || "";
+          document.getElementById('cm-sex').value = CURRENT_STUDENT.sex || "";
+          document.getElementById('cm-age').value = CURRENT_STUDENT.age || "";
+          document.getElementById('cm-dob').value = CURRENT_STUDENT.birthDate || "";
+          document.getElementById('cm-grade').value = CURRENT_STUDENT.classLabel || "";
+          document.getElementById('cm-lrn').value = CURRENT_STUDENT.lrn || "";
+          document.getElementById('cm-email').value = CURRENT_STUDENT.email || "";
+          document.getElementById('cm-contact').value = CURRENT_STUDENT.contactNumber || "";
+          document.getElementById('cm-address').value = CURRENT_STUDENT.addressBarangay || "";
+
+          // Pre-fill Dates
+          document.getElementById('cm-datePrepared').valueAsDate = new Date();
+        }
+      } catch (error) {
+        console.error("Error loading student:", error);
+      }
+    });
+
+    window.saveCaseMonitoring = async function() {
+      if (!CURRENT_STUDENT) return;
+      const btn = document.getElementById('btn-save');
+      btn.textContent = "Saving..."; btn.disabled = true;
+
+      try {
+        const casesRef = collection(db, "classes", classId, "students", studentId, "case_monitoring");
+        
+        // Collect checked case types
+        const checkedCases = Array.from(document.querySelectorAll('input[name="case-type"]:checked')).map(cb => cb.value);
+
+        const dataToSave = {
+          caseTypes: checkedCases,
+          otherCase: document.getElementById('cm-otherCase').value,
+          caseStatus: document.getElementById('cm-caseStatus').value,
+          dateEndorsed: document.getElementById('cm-dateEndorsed').value,
+          endorsedTo: document.getElementById('cm-endorsedTo').value,
+          lastFollowup: document.getElementById('cm-lastFollowup').value,
+          nextFollowup: document.getElementById('cm-nextFollowup').value,
+          agency: document.getElementById('cm-agency').value,
+          jobPosition: document.getElementById('cm-jobPosition').value,
+          description: document.getElementById('cm-description').value,
+          interventions: document.getElementById('cm-interventions').value,
+          preparedBy: document.getElementById('cm-preparedBy').value,
+          datePrepared: document.getElementById('cm-datePrepared').value,
+          notedBy: document.getElementById('cm-notedBy').value,
+          dateNoted: document.getElementById('cm-dateNoted').value,
+          loggedBy: auth.currentUser.email,
+          timestamp: Date.now()
+        };
+
+        await addDoc(casesRef, dataToSave);
+        alert("✅ Case Monitoring Form saved successfully!");
+        window.location.href = "student-records.html";
+
+      } catch (error) {
+        console.error("Error saving case:", error);
+        alert("❌ Failed to save case.");
+        btn.textContent = "💾 Save Case Record"; btn.disabled = false;
+      }
+    };
+  </script>
+</body>
+</html>
