@@ -53,13 +53,17 @@
     .btn-cancel { background: #e2e8f0; color: #333; }
 
     /* --- PRINT STYLES --- */
-    @media print {
+        @media print {
       @page { size: A4 portrait; margin: 10mm; }
       body { background: #fff; }
       .header, .back-link, .btn-row { display: none !important; }
       .wrap { padding: 0; max-width: 100%; }
       .form-card { box-shadow: none; padding: 0; margin: 0; }
       .form-section { border: none; padding: 0; margin-bottom: 15px; }
+      
+      /* Ensure the print header is visible */
+      .print-header { display: block !important; }
+      
       .form-section h3 { border-bottom: 1px solid #000; font-size: 12px; margin-bottom: 8px; }
       
       .student-header { background: none; border: none; border-bottom: 2px solid #000; padding: 0 0 10px 0; margin-bottom: 20px; }
@@ -70,6 +74,7 @@
       label { font-size: 9px; color: #000; margin-bottom: 2px; text-transform: none; }
       input, select, textarea { border: none; border-bottom: 1px solid #000; padding: 4px 0; border-radius: 0; font-size: 11px; background: transparent; }
       textarea { border: 1px solid #000; padding: 5px; }
+    }
       
       .print-header { display: block !important; text-align: center; margin-bottom: 20px; }
       .print-header img { height: 60px; }
@@ -89,16 +94,16 @@
 
     <div class="form-card">
       
-      <!-- Print Header (Only visible when printing) -->
-      <div class="print-header">
-        <img src="../../assets/images/deped-logo.png" alt="DepEd Logo">
-        <h1>Republic of the Philippines</h1>
-        <h1>DEPARTMENT OF EDUCATION</h1>
-        <p>Region II - Cagayan Valley</p>
-        <p>SCHOOLS DIVISION OF NUEVA VIZCAYA</p>
-        <h1>STA. CRUZ PINGKIAN HIGH SCHOOL</h1>
-        <p>Pingkian, Kayapa, Nueva Vizcaya</p>
-        <h1 style="margin-top: 15px;">ENHANCED INTAKE SHEET (ANNEX E)</h1>
+        <!-- Print Header (Only visible when printing) -->
+      <div class="print-header" style="display: none; text-align: center; margin-bottom: 20px; font-family: 'Times New Roman', Times, serif;">
+        <img src="../../assets/images/deped-logo.png" alt="DepEd Logo" style="height: 65px; margin-bottom: 5px;">
+        <div style="font-size: 12px;">Republic of the Philippines</div>
+        <div style="font-size: 14px; font-weight: bold;">DEPARTMENT OF EDUCATION</div>
+        <div style="font-size: 12px;">Region II - Cagayan Valley</div>
+        <div style="font-size: 12px;">SCHOOLS DIVISION OF NUEVA VIZCAYA</div>
+        <div style="font-size: 12px; font-weight: bold;">STA. CRUZ PINGKIAN HIGH SCHOOL</div>
+        <div style="font-size: 12px; text-decoration: underline;">Pingkian, Kayapa, Nueva Vizcaya</div>
+        <div style="font-size: 14px; font-weight: bold; margin-top: 15px;">ENHANCED INTAKE SHEET (ANNEX E)</div>
       </div>
 
       <!-- Student Info -->
@@ -195,7 +200,7 @@
     </div>
   </div>
 
-  <script type="module">
+    <script type="module">
     import { auth, db } from "../../assets/js/firebase-config.js";
     import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
     import { doc, getDoc, collection, addDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
@@ -219,16 +224,33 @@
       }
 
       try {
+        // 1. Fetch the Class Document to get the "Grade & Section" name
+        const classRef = doc(db, "classes", classId);
+        const classSnap = await getDoc(classRef);
+        
+        let className = "Unknown Section";
+        if (classSnap.exists()) {
+          className = classSnap.data().classLabel || "Unknown Section";
+        }
+
+        // 2. Fetch the Student Document
         const studentRef = doc(db, "classes", classId, "students", studentId);
         const studentSnap = await getDoc(studentRef);
         
         if (studentSnap.exists()) {
-          CURRENT_STUDENT = { id: studentSnap.id, classId, ...studentSnap.data() };
+          // Combine student data with the fetched class name
+          CURRENT_STUDENT = { 
+            id: studentSnap.id, 
+            classId, 
+            classLabel: className, 
+            ...studentSnap.data() 
+          };
           
+          // 3. Display the Student info with the correct section
           document.getElementById('display-student-name').textContent = CURRENT_STUDENT.fullName;
-          document.getElementById('display-student-details').textContent = `${CURRENT_STUDENT.classLabel || 'Unknown Section'} | Age: ${CURRENT_STUDENT.age || '—'} | Sex: ${CURRENT_STUDENT.sex || '—'}`;
+          document.getElementById('display-student-details').textContent = `${CURRENT_STUDENT.classLabel} | Age: ${CURRENT_STUDENT.age || '—'} | Sex: ${CURRENT_STUDENT.sex || '—'}`;
 
-          // Pre-fill known data
+          // 4. Pre-fill fields
           document.getElementById('lrp-motherName').value = CURRENT_STUDENT.motherName || "";
           document.getElementById('lrp-fatherName').value = CURRENT_STUDENT.fatherName || "";
           document.getElementById('lrp-guardianName').value = CURRENT_STUDENT.guardianName || "";
@@ -288,7 +310,7 @@
         await addDoc(casesRef, dataToSave);
 
         alert("✅ Enhanced Intake Sheet saved successfully!");
-        window.location.href = "student-records.html"; // Go back to the profile
+        window.location.href = "student-records.html";
 
       } catch (error) {
         console.error("Error saving LRP case:", error);
