@@ -372,6 +372,7 @@
               <button class="btn-action btn-print" onclick="printViolationReport()"><i class="fas fa-print"></i> Print Violation Report</button>
               <button class="btn-action btn-manage" onclick="openManageViolationsModal()"><i class="fas fa-tasks"></i> Manage Violations</button>
               <button class="btn-action btn-lrp" onclick="openNewLRPPage()"><i class="fas fa-folder-open"></i> LRP Case Files (Annex E)</button>
+              <button class="btn-action btn-print" onclick="editSettings()"><i class="fas fa-cog"></i> Update Signatories / S.Y.</button>
             </div>
           </div>
         </div>
@@ -583,7 +584,7 @@
           <div class="bold">STA. CRUZ PINGKIAN HIGH SCHOOL</div>
           <div style="text-decoration: underline;">Pingkian, Kayapa, Nueva Vizcaya</div>
           <div class="bold" style="margin-top: 10px;">GUIDANCE AND COUNSELING CENTER</div>
-          <div style="margin-bottom: 15px;">S.Y. 20__ to 20__</div>
+          <div style="margin-bottom: 15px;">S.Y. <span id="print-schoolYear">20__ to 20__</span></div>
         </div>
       </div>
 
@@ -970,7 +971,7 @@
       } catch (error) { console.error(error); alert("❌ Failed to delete violation."); }
     };
 
-        window.printViolationReport = function() {
+            window.printViolationReport = function() {
       if (!CURRENT_STUDENT) return;
       const violations = CURRENT_STUDENT.violations || [];
       
@@ -995,11 +996,20 @@
       document.getElementById('print-age').textContent = CURRENT_STUDENT.age || "______";
       document.getElementById('print-section-info').textContent = CURRENT_STUDENT.classLabel;
       
+      // 👇 DYNAMIC SCHOOL YEAR LOGIC
+      const savedSY = localStorage.getItem('gc_schoolYear') || "20__ to 20__";
+      const savedCounselor = localStorage.getItem('gc_counselorName') || "_______________________";
+      const savedPrincipal = localStorage.getItem('gc_principalName') || "SATURNINO P. CALANSI EdD";
+      
+      document.getElementById('print-schoolYear').textContent = savedSY;
+      document.getElementById('print-counselor-name').value = savedCounselor;
+      document.getElementById('print-principal-name').value = savedPrincipal;
+      // 👆 END OF DYNAMIC LOGIC
+
       const now = new Date();
       document.getElementById('print-date').textContent = now.toLocaleDateString('en-PH', { year: 'numeric', month: 'long', day: 'numeric' });
       document.getElementById('print-time').textContent = now.toLocaleTimeString('en-PH', { hour: '2-digit', minute: '2-digit' });
 
-      // 👇 THIS FORCES THE BROWSER TO USE PORTRAIT MODE
       let style = document.createElement('style');
       style.innerHTML = '@page { size: A4 portrait; margin: 10mm; }';
       document.head.appendChild(style);
@@ -1008,8 +1018,25 @@
       window.print();
       setTimeout(() => {
         document.body.classList.remove('print-mode-violation');
-        style.remove(); // Clean up the style after printing
+        style.remove();
       }, 1000);
+    };
+
+        window.editSettings = function() {
+      const currentSY = localStorage.getItem('gc_schoolYear') || "2026-2027";
+      const currentCounselor = localStorage.getItem('gc_counselorName') || "";
+      const currentPrincipal = localStorage.getItem('gc_principalName') || "SATURNINO P. CALANSI EdD";
+
+      const newSY = prompt("Enter School Year (e.g., 2026-2027):", currentSY);
+      if (newSY !== null) localStorage.setItem('gc_schoolYear', newSY);
+
+      const newCounselor = prompt("Enter Guidance Counselor Name:", currentCounselor);
+      if (newCounselor !== null) localStorage.setItem('gc_counselorName', newCounselor);
+
+      const newPrincipal = prompt("Enter Principal Name:", currentPrincipal);
+      if (newPrincipal !== null) localStorage.setItem('gc_principalName', newPrincipal);
+
+      alert("✅ Settings saved! They will now appear on your printouts.");
     };
       
     window.openNewLRPPage = function() {
