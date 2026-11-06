@@ -20,7 +20,7 @@
     body { background: #f1f5f9; margin: 0; font-family: system-ui, -apple-system, sans-serif; }
     .wrap { max-width: 900px; margin: 0 auto; padding: 20px 16px; }
 
-    /* Header */
+    /* Screen Header */
     .header { background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; }
     .header h1 { margin: 0; color: var(--gc-primary); font-size: 1.4rem; }
     .back-link { color: var(--bright-blue); text-decoration: none; font-weight: 600; font-size: 0.9rem; }
@@ -34,14 +34,16 @@
 
     .form-section { margin-bottom: 30px; border: 1px solid var(--gc-border); border-radius: 8px; padding: 20px; }
     .form-section h3 { margin-top: 0; color: var(--gc-primary); border-bottom: 1px solid var(--gc-border); padding-bottom: 10px; font-size: 1.1rem; }
+    .form-section h4 { font-size: 0.95rem; margin: 20px 0 10px; color: #333; }
     
     .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px; }
+    .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px; margin-bottom: 15px; }
     .grid-full { margin-bottom: 15px; }
-    @media (max-width: 600px) { .grid-2 { grid-template-columns: 1fr; } }
+    @media (max-width: 600px) { .grid-2, .grid-3 { grid-template-columns: 1fr; } }
 
     label { display: block; font-size: 0.8rem; font-weight: 700; color: #333; margin-bottom: 5px; text-transform: uppercase; }
     input, select, textarea { width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-family: inherit; font-size: 0.95rem; box-sizing: border-box; }
-    textarea { resize: vertical; min-height: 100px; }
+    textarea { resize: vertical; min-height: 80px; }
 
     /* Buttons */
     .btn-row { display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px; padding-top: 20px; border-top: 1px solid var(--gc-border); }
@@ -52,8 +54,8 @@
     .btn-print:hover { background: #334155; }
     .btn-cancel { background: #e2e8f0; color: #333; }
 
-       /* --- PRINT STYLES --- */
-     @media print {
+    /* --- PRINT STYLES --- */
+    @media print {
       @page { size: A4 portrait; margin: 10mm; }
       body { background: #fff; }
       .header, .back-link, .btn-row { display: none !important; }
@@ -61,25 +63,28 @@
       .form-card { box-shadow: none; padding: 0; margin: 0; }
       .form-section { border: none; padding: 0; margin-bottom: 15px; }
       
-      /* Force the print header to be visible and centered */
       .print-header { display: block !important; text-align: center !important; margin-bottom: 20px; }
       .print-header img { display: block !important; margin: 0 auto 10px auto !important; height: 70px; }
       .print-header h1 { font-size: 14px; margin: 5px 0; font-weight: bold; }
       .print-header p { font-size: 11px; margin: 2px 0; }
       
       .form-section h3 { border-bottom: 1px solid #000; font-size: 12px; margin-bottom: 8px; }
+      .form-section h4 { border-bottom: 1px solid #ccc; font-size: 11px; margin: 10px 0 5px; }
       
       .student-header { background: none; border: none; border-bottom: 2px solid #000; padding: 0 0 10px 0; margin-bottom: 20px; }
       .student-header h2 { font-size: 14px; }
       .student-header p { font-size: 11px; }
       
-      .grid-2 { gap: 10px; }
-      label { font-size: 9px; color: #000; margin-bottom: 2px; text-transform: none; }
+      .grid-2, .grid-3 { gap: 10px; }
+      label { font-size: 9px; color: #000; margin-bottom: 2px; text-transform: none; font-weight: bold; }
       input, select, textarea { border: none; border-bottom: 1px solid #000; padding: 4px 0; border-radius: 0; font-size: 11px; background: transparent; }
       textarea { border: 1px solid #000; padding: 5px; }
+      
+      .print-signatures { display: flex; justify-content: space-between; margin-top: 40px; page-break-inside: avoid; }
+      .sig-block { width: 45%; text-align: center; }
+      .sig-label { font-size: 11px; margin-bottom: 25px; text-align: left; }
+      .sig-line { border-bottom: 1px solid #000; height: 15px; margin-bottom: 5px; }
     }
-    
-    /* Hide print header on screen */
     .print-header { display: none; }
   </style>
 </head>
@@ -87,19 +92,15 @@
 
   <div class="wrap">
     <div class="header">
-      <h1>📁 LRP Intake Sheet (Annex E)</h1>
+      <h1>📁 Enhanced Intake Sheet (Annex E)</h1>
       <a href="student-records.html" class="back-link" onclick="history.back(); return false;">← Back to Profile</a>
     </div>
 
     <div class="form-card">
       
-              <!-- Print Header (Only visible when printing) -->
-      <div class="print-header" style="display: none; text-align: center; margin-bottom: 20px; font-family: 'Times New Roman', Times, serif;">
-        <!-- Logo on its own line -->
-        <div style="margin-bottom: 10px;">
-          <img src="../../assets/images/deped-logo.png" alt="DepEd Logo" style="height: 75px; object-fit: contain;">
-        </div>
-        <!-- Text stacked below -->
+      <!-- Print Header (Only visible when printing) -->
+      <div class="print-header">
+        <img src="../../assets/images/deped-logo.png" alt="DepEd Logo">
         <div style="font-size: 12px;">Republic of the Philippines</div>
         <div style="font-size: 14px; font-weight: bold;">DEPARTMENT OF EDUCATION</div>
         <div style="font-size: 12px;">Region II - Cagayan Valley</div>
@@ -109,7 +110,7 @@
         <div style="font-size: 14px; font-weight: bold; margin-top: 15px;">ENHANCED INTAKE SHEET (ANNEX E)</div>
       </div>
 
-      <!-- Student Info -->
+      <!-- Screen Student Info -->
       <div class="student-header">
         <h2 id="display-student-name">Loading Student...</h2>
         <p id="display-student-details">-</p>
@@ -117,79 +118,128 @@
 
       <form id="lrp-form">
         
-        <!-- PART I -->
+        <!-- I. IDENTIFYING INFORMATION -->
         <div class="form-section">
           <h3>I. IDENTIFYING INFORMATION</h3>
           
-          <h4 style="font-size: 0.9rem; margin: 10px 0;">B. Parents and Guardian</h4>
+          <h4>A. Learner-Victim</h4>
           <div class="grid-2">
-            <div><label>Name of Mother</label><input type="text" id="lrp-motherName"></div>
-            <div><label>Contact No.</label><input type="text" id="lrp-motherContact"></div>
-            <div><label>Name of Father</label><input type="text" id="lrp-fatherName"></div>
-            <div><label>Contact No.</label><input type="text" id="lrp-fatherContact"></div>
-            <div style="grid-column: 1 / -1;"><label>Name of Guardian (if applicable)</label><input type="text" id="lrp-guardianName"></div>
+            <div><label>Name</label><input type="text" id="lrp-victimName" readonly style="background: #f1f5f9;"></div>
+            <div><label>Age</label><input type="text" id="lrp-victimAge" readonly style="background: #f1f5f9;"></div>
+            <div><label>Sex</label><input type="text" id="lrp-victimSex" readonly style="background: #f1f5f9;"></div>
+            <div><label>Date of Birth</label><input type="text" id="lrp-victimDOB" readonly style="background: #f1f5f9;"></div>
+            <div><label>Grade Level and Section</label><input type="text" id="lrp-victimSection" readonly style="background: #f1f5f9;"></div>
+            <div><label>Name of Adviser</label><input type="text" id="lrp-victimAdviser" readonly style="background: #f1f5f9;"></div>
+          </div>
+          
+          <div class="grid-full">
+            <label>Adviser's observations on the learner-victim BEFORE the incident</label>
+            <textarea id="lrp-obsBefore" rows="3"></textarea>
+          </div>
+          <div class="grid-full">
+            <label>Adviser's observations on the learner-victim AFTER the incident</label>
+            <textarea id="lrp-obsAfter" rows="3"></textarea>
           </div>
 
-          <h4 style="font-size: 0.9rem; margin: 20px 0 10px;">C. Complainant</h4>
-          <div class="grid-2">
-            <div><label>Complainant Name</label><input type="text" id="lrp-complainantName"></div>
-            <div><label>Relation to Learner-Victim</label><input type="text" id="lrp-complainantRelation"></div>
+          <h4>B. Parents and Guardian</h4>
+          <div class="grid-3">
+            <div style="grid-column: 1 / -1;"><label>Name of the Mother</label><input type="text" id="lrp-motherName"></div>
+            <div><label>Age</label><input type="text" id="lrp-motherAge"></div>
+            <div><label>Occupation</label><input type="text" id="lrp-motherOcc"></div>
+            <div><label>Contact No.</label><input type="text" id="lrp-motherContact"></div>
+            <div style="grid-column: 1 / -1;"><label>Address</label><input type="text" id="lrp-motherAddress"></div>
+          </div>
+          <div class="grid-3">
+            <div style="grid-column: 1 / -1;"><label>Name of the Father</label><input type="text" id="lrp-fatherName"></div>
+            <div><label>Age</label><input type="text" id="lrp-fatherAge"></div>
+            <div><label>Occupation</label><input type="text" id="lrp-fatherOcc"></div>
+            <div><label>Contact No.</label><input type="text" id="lrp-fatherContact"></div>
+            <div style="grid-column: 1 / -1;"><label>Address</label><input type="text" id="lrp-fatherAddress"></div>
+          </div>
+          <div class="grid-3">
+            <div style="grid-column: 1 / -1;"><label>If applicable: Name of the Guardian</label><input type="text" id="lrp-guardianName"></div>
+            <div><label>Age</label><input type="text" id="lrp-guardianAge"></div>
+            <div><label>Occupation</label><input type="text" id="lrp-guardianOcc"></div>
+            <div><label>Contact No.</label><input type="text" id="lrp-guardianContact"></div>
+            <div style="grid-column: 1 / -1;"><label>Address</label><input type="text" id="lrp-guardianAddress"></div>
+          </div>
+
+          <h4>C. Complainant</h4>
+          <div class="grid-3">
+            <div><label>Name</label><input type="text" id="lrp-complainantName"></div>
+            <div><label>Age</label><input type="text" id="lrp-complainantAge"></div>
+            <div><label>Relation to the learner-victim</label><input type="text" id="lrp-complainantRelation"></div>
             <div><label>Contact No.</label><input type="text" id="lrp-complainantContact"></div>
-            <div><label>Address</label><input type="text" id="lrp-complainantAddress"></div>
+            <div style="grid-column: 1 / -1;"><label>Address</label><input type="text" id="lrp-complainantAddress"></div>
           </div>
         </div>
 
-        <!-- PART II -->
+        <!-- II. ALLEGED OFFENDER -->
         <div class="form-section">
           <h3>II. ALLEGED OFFENDER</h3>
-          <div class="grid-full">
-            <label>Type of Offender</label>
-            <select id="lrp-offenderType">
-              <option value="Student">Student</option>
-              <option value="School Personnel">School Personnel</option>
-              <option value="Other">Neither School Personnel nor Student</option>
-            </select>
-          </div>
+          
+          <h4>A. If the alleged offender is a School Personnel</h4>
           <div class="grid-2">
-            <div style="grid-column: 1 / -1;"><label>Name of Offender</label><input type="text" id="lrp-offenderName"></div>
+            <div><label>Name</label><input type="text" id="lrp-offenderName"></div>
             <div><label>Age</label><input type="text" id="lrp-offenderAge"></div>
             <div><label>Sex</label><input type="text" id="lrp-offenderSex"></div>
             <div><label>Date of Birth</label><input type="date" id="lrp-offenderDOB"></div>
             <div><label>Contact No.</label><input type="text" id="lrp-offenderContact"></div>
-            <div><label>Address</label><input type="text" id="lrp-offenderAddress"></div>
-            <div><label>Relationship to Learner-Victim</label><input type="text" id="lrp-offenderRelation"></div>
+            <div><label>Relationship to the learner-victim</label><input type="text" id="lrp-offenderRelation"></div>
+            <div style="grid-column: 1 / -1;"><label>Address</label><input type="text" id="lrp-offenderAddress"></div>
+          </div>
+          
+          <h4>B. If the alleged offender is neither school personnel nor a student</h4>
+          <div class="grid-2">
+            <div><label>Name</label><input type="text" id="lrp-offenderName2"></div>
+            <div><label>Age</label><input type="text" id="lrp-offenderAge2"></div>
+            <div><label>Sex</label><input type="text" id="lrp-offenderSex2"></div>
+            <div><label>Date of Birth</label><input type="date" id="lrp-offenderDOB2"></div>
+            <div><label>Contact No.</label><input type="text" id="lrp-offenderContact2"></div>
+            <div><label>Relationship to the learner-victim</label><input type="text" id="lrp-offenderRelation2"></div>
+            <div style="grid-column: 1 / -1;"><label>Address</label><input type="text" id="lrp-offenderAddress2"></div>
           </div>
         </div>
 
-        <!-- PART III -->
+        <!-- III. DETAILS OF THE INCIDENT -->
         <div class="form-section">
           <h3>III. DETAILS OF THE INCIDENT</h3>
-          <div class="grid-2">
-            <div><label>Date of Incident</label><input type="date" id="lrp-incidentDate"></div>
+          <div class="grid-full">
+            <label>Date of the incident (estimation is acceptable)</label>
+            <input type="date" id="lrp-incidentDate">
           </div>
           <div class="grid-full">
-            <label>Narrative Description</label>
-            <textarea id="lrp-incidentDetails" rows="4"></textarea>
+            <label>Narrative</label>
+            <textarea id="lrp-incidentDetails" rows="5" placeholder="1.&#10;2.&#10;3."></textarea>
           </div>
         </div>
 
-        <!-- PART IV & V -->
+        <!-- IV & V. ACTIONS & RECOMMENDATIONS -->
         <div class="form-section">
-          <h3>IV. ACTIONS & V. RECOMMENDATIONS</h3>
+          <h3>IV. INITIAL ACTIONS TAKEN</h3>
           <div class="grid-full">
-            <label>Initial Actions Taken</label>
-            <textarea id="lrp-initialActions" rows="3"></textarea>
+            <textarea id="lrp-initialActions" rows="3" placeholder="1.&#10;2."></textarea>
           </div>
+
+          <h3>V. RECOMMENDATIONS/NEXT STEPS</h3>
           <div class="grid-2">
             <div>
-              <label>Referral Required?</label>
-              <select id="lrp-referralReq"><option value="No">No</option><option value="Yes">Yes</option></select>
+              <label>Referral</label>
+              <select id="lrp-referralReq"><option value="NO">NO</option><option value="YES">YES</option></select>
             </div>
-            <div><label>Referred To</label><input type="text" id="lrp-referralTo" placeholder="e.g., LSWDO, PNP, NGO"></div>
+            <div><label>Referral to</label><input type="text" id="lrp-referralTo"></div>
+            <div style="grid-column: 1 / -1;"><label>Reason for referral</label><input type="text" id="lrp-referralReason"></div>
+            <div style="grid-column: 1 / -1;"><label>Other recommendations/next steps</label><textarea id="lrp-otherRecs" rows="3" placeholder="1.&#10;2."></textarea></div>
           </div>
-          <div class="grid-full">
-            <label>Reason for Referral / Other Recommendations</label>
-            <textarea id="lrp-referralReason" rows="3"></textarea>
+        </div>
+
+        <!-- Signatories (Screen only, to be populated before print) -->
+        <div class="form-section">
+          <h3>SIGNATORIES</h3>
+          <div class="grid-3">
+            <div><label>Date of Intake</label><input type="date" id="lrp-dateIntake"></div>
+            <div><label>Prepared by</label><input type="text" id="lrp-preparedBy" placeholder="Name & Designation"></div>
+            <div><label>Reviewed by</label><input type="text" id="lrp-reviewedBy" placeholder="Name & Designation"></div>
           </div>
         </div>
 
@@ -203,7 +253,7 @@
     </div>
   </div>
 
-    <script type="module">
+  <script type="module">
     import { auth, db } from "../../assets/js/firebase-config.js";
     import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
     import { doc, getDoc, collection, addDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
@@ -227,13 +277,15 @@
       }
 
       try {
-        // 1. Fetch the Class Document to get the "Grade & Section" name
+        // 1. Fetch the Class Document
         const classRef = doc(db, "classes", classId);
         const classSnap = await getDoc(classRef);
         
         let className = "Unknown Section";
+        let adviserName = "Unassigned";
         if (classSnap.exists()) {
           className = classSnap.data().classLabel || "Unknown Section";
+          adviserName = classSnap.data().adviserName || "Unassigned";
         }
 
         // 2. Fetch the Student Document
@@ -241,23 +293,34 @@
         const studentSnap = await getDoc(studentRef);
         
         if (studentSnap.exists()) {
-          // Combine student data with the fetched class name
           CURRENT_STUDENT = { 
             id: studentSnap.id, 
             classId, 
             classLabel: className, 
+            adviserName: adviserName,
             ...studentSnap.data() 
           };
           
-          // 3. Display the Student info with the correct section
+          // 3. Display the Student info
           document.getElementById('display-student-name').textContent = CURRENT_STUDENT.fullName;
           document.getElementById('display-student-details').textContent = `${CURRENT_STUDENT.classLabel} | Age: ${CURRENT_STUDENT.age || '—'} | Sex: ${CURRENT_STUDENT.sex || '—'}`;
 
-          // 4. Pre-fill fields
+          // 4. Pre-fill Learner-Victim details
+          document.getElementById('lrp-victimName').value = CURRENT_STUDENT.fullName || "";
+          document.getElementById('lrp-victimAge').value = CURRENT_STUDENT.age || "";
+          document.getElementById('lrp-victimSex').value = CURRENT_STUDENT.sex || "";
+          document.getElementById('lrp-victimDOB').value = CURRENT_STUDENT.birthDate || "";
+          document.getElementById('lrp-victimSection').value = CURRENT_STUDENT.classLabel || "";
+          document.getElementById('lrp-victimAdviser').value = CURRENT_STUDENT.adviserName || "";
+
+          // 5. Pre-fill Parent Names if available
           document.getElementById('lrp-motherName').value = CURRENT_STUDENT.motherName || "";
           document.getElementById('lrp-fatherName').value = CURRENT_STUDENT.fatherName || "";
           document.getElementById('lrp-guardianName').value = CURRENT_STUDENT.guardianName || "";
+          
+          // 6. Set Dates
           document.getElementById('lrp-incidentDate').valueAsDate = new Date();
+          document.getElementById('lrp-dateIntake').valueAsDate = new Date();
 
         } else {
           alert("Student not found.");
@@ -279,33 +342,75 @@
         const casesRef = collection(db, "classes", classId, "students", studentId, "lrp_cases");
         
         const dataToSave = {
+          // Learner-Victim
+          victimName: document.getElementById('lrp-victimName').value,
+          victimAge: document.getElementById('lrp-victimAge').value,
+          victimSex: document.getElementById('lrp-victimSex').value,
+          victimDOB: document.getElementById('lrp-victimDOB').value,
+          victimSection: document.getElementById('lrp-victimSection').value,
+          victimAdviser: document.getElementById('lrp-victimAdviser').value,
+          obsBefore: document.getElementById('lrp-obsBefore').value,
+          obsAfter: document.getElementById('lrp-obsAfter').value,
+
+          // Parents
           motherName: document.getElementById('lrp-motherName').value,
+          motherAge: document.getElementById('lrp-motherAge').value,
+          motherOcc: document.getElementById('lrp-motherOcc').value,
           motherContact: document.getElementById('lrp-motherContact').value,
+          motherAddress: document.getElementById('lrp-motherAddress').value,
+          
           fatherName: document.getElementById('lrp-fatherName').value,
+          fatherAge: document.getElementById('lrp-fatherAge').value,
+          fatherOcc: document.getElementById('lrp-fatherOcc').value,
           fatherContact: document.getElementById('lrp-fatherContact').value,
+          fatherAddress: document.getElementById('lrp-fatherAddress').value,
+          
           guardianName: document.getElementById('lrp-guardianName').value,
+          guardianAge: document.getElementById('lrp-guardianAge').value,
+          guardianOcc: document.getElementById('lrp-guardianOcc').value,
+          guardianContact: document.getElementById('lrp-guardianContact').value,
+          guardianAddress: document.getElementById('lrp-guardianAddress').value,
+
+          // Complainant
           complainantName: document.getElementById('lrp-complainantName').value,
+          complainantAge: document.getElementById('lrp-complainantAge').value,
           complainantRelation: document.getElementById('lrp-complainantRelation').value,
           complainantContact: document.getElementById('lrp-complainantContact').value,
           complainantAddress: document.getElementById('lrp-complainantAddress').value,
           
-          offenderType: document.getElementById('lrp-offenderType').value,
+          // Offender 1
           offenderName: document.getElementById('lrp-offenderName').value,
           offenderAge: document.getElementById('lrp-offenderAge').value,
           offenderSex: document.getElementById('lrp-offenderSex').value,
           offenderDOB: document.getElementById('lrp-offenderDOB').value,
           offenderContact: document.getElementById('lrp-offenderContact').value,
-          offenderAddress: document.getElementById('lrp-offenderAddress').value,
           offenderRelation: document.getElementById('lrp-offenderRelation').value,
+          offenderAddress: document.getElementById('lrp-offenderAddress').value,
+
+          // Offender 2
+          offenderName2: document.getElementById('lrp-offenderName2').value,
+          offenderAge2: document.getElementById('lrp-offenderAge2').value,
+          offenderSex2: document.getElementById('lrp-offenderSex2').value,
+          offenderDOB2: document.getElementById('lrp-offenderDOB2').value,
+          offenderContact2: document.getElementById('lrp-offenderContact2').value,
+          offenderRelation2: document.getElementById('lrp-offenderRelation2').value,
+          offenderAddress2: document.getElementById('lrp-offenderAddress2').value,
           
+          // Incident
           incidentDate: document.getElementById('lrp-incidentDate').value,
           incidentDetails: document.getElementById('lrp-incidentDetails').value,
-          
           initialActions: document.getElementById('lrp-initialActions').value,
           referralReq: document.getElementById('lrp-referralReq').value,
           referralTo: document.getElementById('lrp-referralTo').value,
           referralReason: document.getElementById('lrp-referralReason').value,
+          otherRecs: document.getElementById('lrp-otherRecs').value,
+
+          // Signatories
+          dateIntake: document.getElementById('lrp-dateIntake').value,
+          preparedBy: document.getElementById('lrp-preparedBy').value,
+          reviewedBy: document.getElementById('lrp-reviewedBy').value,
           
+          // Meta
           loggedBy: auth.currentUser.email,
           timestamp: Date.now()
         };
