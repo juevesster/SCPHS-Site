@@ -30,7 +30,7 @@
     body { background: var(--gc-bg); margin: 0; font-family: 'Inter', system-ui, -apple-system, sans-serif; display: flex; min-height: 100vh; }
 
     /* ============================================================
-       SIDEBAR NAVIGATION (The Professional Look)
+       SIDEBAR NAVIGATION
        ============================================================ */
     .sidebar {
       width: var(--sidebar-width);
@@ -93,7 +93,7 @@
     }
 
     /* ============================================================
-       SEARCH BAR (The VIP Greeting)
+       SEARCH BAR
        ============================================================ */
     .search-hero {
       background: linear-gradient(135deg, var(--gc-primary), var(--gc-primary-light));
@@ -103,8 +103,8 @@
       box-shadow: var(--shadow-lg);
       margin-bottom: 30px;
       position: relative;
-      overflow: visible; /* 👈 CHANGED FROM HIDDEN to VISIBLE */
-      z-index: 50; /* 👈 Added this to keep it above the content below */
+      overflow: visible;
+      z-index: 50;
     }
     .search-hero::after {
       content: "\f002";
@@ -115,19 +115,14 @@
       font-size: 12rem;
       opacity: 0.05;
       pointer-events: none;
-      max-width: 100%;      /* 👈 ADD */
-      max-height: 100%;     /* 👈 ADD */
-      clip-path: inset(0);  /* 👈 ADD - This keeps the watermark inside the banner */
+      max-width: 100%;
+      max-height: 100%;
+      clip-path: inset(0);
     }
-
     .search-hero h1 { margin: 0 0 5px; font-size: 1.8rem; font-weight: 800; letter-spacing: -0.5px; }
     .search-hero p { margin: 0 0 20px; opacity: 0.8; font-size: 0.95rem; }
     
-    .search-container { 
-      position: relative; 
-      max-width: 600px; 
-      z-index: 100; /* Keeps the search area above the banner pattern */
-    }
+    .search-container { position: relative; max-width: 600px; z-index: 100; }
     .search-container input {
       width: 100%; padding: 16px 20px 16px 50px;
       border-radius: 10px; border: none; font-size: 1rem;
@@ -142,20 +137,11 @@
 
     /* Autocomplete Dropdown */
     .autocomplete-list { 
-      position: absolute; 
-      top: calc(100% + 8px); /* Small gap below the input */
-      left: 0; 
-      right: 0; 
-      background: #fff; 
-      border: 1px solid var(--gc-border); 
-      border-radius: 8px; 
+      position: absolute; top: calc(100% + 8px); left: 0; right: 0;
+      background: #fff; border: 1px solid var(--gc-border); border-radius: 8px;
       box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1);
-      max-height: 300px; 
-      overflow-y: auto; 
-      z-index: 9999; /* Always on top */
-      display: none; 
+      max-height: 300px; overflow-y: auto; z-index: 9999; display: none;
     }
-
     .autocomplete-item { padding: 15px 20px; cursor: pointer; border-bottom: 1px solid var(--gc-border); display: flex; justify-content: space-between; align-items: center; transition: 0.2s; }
     .autocomplete-item:hover { background: var(--gc-bg); }
     .autocomplete-item .name { font-weight: 700; color: var(--gc-primary); font-size: 1rem; }
@@ -230,7 +216,7 @@
     .badge-warning { background: #fef9c3; color: #854d0e; }
     .badge-violation { background: #fee2e2; color: #991b1b; }
 
-    /* Modals & Print logic remains the same, using the previous standard */
+    /* Modals */
     dialog { border: none; border-radius: 16px; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25); padding: 0; width: 90%; max-width: 800px; max-height: 90vh; background: #f8fafc; overflow: hidden; }
     dialog::backdrop { background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(4px); }
     .modal-header { padding: 20px 25px; background: #fff; border-bottom: 1px solid var(--gc-border); display: flex; justify-content: space-between; align-items: center; }
@@ -250,37 +236,50 @@
     .rule-btn:hover { background: var(--gc-primary); color: #fff; }
     .penalty-box { background: #fffbeb; border-left: 4px solid var(--warning); padding: 15px 20px; margin-top: 20px; border-radius: 6px; font-size: 0.9rem; color: #92400e; font-weight: 500; }
 
-    /* Print styles */
+    /* ============================================================
+       PRINT STYLES (For Violation Report)
+       ============================================================ */
     #print-section { display: none; }
     @media print {
-      @page { size: A4 landscape; margin: 10mm; }
+      @page { size: A4 portrait; margin: 10mm; } /* FORCED PORTRAIT */
       body * { visibility: hidden; }
       #print-section { display: none !important; }
       body.print-mode-violation #print-section, 
       body.print-mode-violation #print-section * { visibility: visible; display: block !important; }
       body.print-mode-violation #print-section { position: absolute; left: 0; top: 0; width: 100%; }
+      
       .print-document { font-family: "Times New Roman", Times, serif; color: #000; font-size: 11px; line-height: 1.3; }
-      .print-header { text-align: center; margin-bottom: 15px; }
+      
+      /* Print Header */
+      .print-header { text-align: center; margin-bottom: 20px; }
       .print-header img { height: 70px; margin-bottom: 5px; display: inline-block; }
       .print-header .header-text { line-height: 1.25; }
       .print-header .bold { font-weight: bold; font-size: 13px; }
+      
+      /* Student Info (Stacked) */
       .print-student-info { margin-bottom: 15px; font-size: 12px; }
-      .info-row { display: flex; justify-content: space-between; margin-bottom: 5px; }
-      .info-item { width: 48%; }
-      .print-title { text-align: center; font-weight: bold; font-size: 13px; margin-bottom: 3px; }
+      .info-row { margin-bottom: 3px; display: block; }
+      .info-item { display: block; margin-bottom: 2px; }
+      
+      /* Titles */
+      .print-title { text-align: center; font-weight: bold; font-size: 14px; margin-bottom: 3px; }
       .print-subtitle { text-align: center; font-size: 11px; margin-bottom: 15px; }
-      .print-table-title { font-weight: bold; text-decoration: underline; margin-bottom: 3px; font-size: 11px; margin-top: 10px; }
+      .print-table-title { font-weight: bold; text-decoration: underline; margin-bottom: 3px; font-size: 12px; margin-top: 10px; }
+      
+      /* Tables */
       .print-table { width: 100%; border-collapse: collapse; margin-bottom: 10px; page-break-inside: auto; }
       .print-table tr { page-break-inside: avoid; page-break-after: auto; }
-      .print-table th, .print-table td { border: 1px solid #000; padding: 3px 5px; text-align: left; font-size: 10px; }
-      .print-table th { background: #f0f0f0; font-weight: bold; }
-      .offense-check { font-family: monospace; font-size: 12px; letter-spacing: 2px; }
-      .print-penalty { font-size: 10px; margin-bottom: 15px; line-height: 1.4; }
-      .print-signatures { display: flex; justify-content: space-between; margin-top: 30px; page-break-inside: avoid; }
+      .print-table th, .print-table td { border: 1px solid #000; padding: 4px 8px; text-align: left; font-size: 11px; }
+      .print-table th { background: #f0f0f0; font-weight: bold; text-align: center; }
+      .offense-check { font-family: monospace; font-size: 13px; letter-spacing: 2px; text-align: center; }
+      
+      .print-penalty { font-size: 11px; margin-bottom: 15px; line-height: 1.4; }
+      
+      /* Signatures */
+      .print-signatures { display: flex; justify-content: space-between; margin-top: 40px; page-break-inside: avoid; }
       .sig-block { width: 45%; text-align: center; }
       .sig-line { border-bottom: 1px solid #000; height: 20px; margin-bottom: 5px; }
-      .sig-label { font-size: 11px; }
-      .print-input { border: none; border-bottom: 1px solid #000; font-family: "Times New Roman", Times, serif; font-size: 12px; text-align: center; background: transparent; outline: none; padding: 0; }
+      .sig-label { font-size: 12px; }
     }
   </style>
 </head>
@@ -458,10 +457,8 @@
     </div>
   </main>
 
-  <!-- Keep the exact same Modals and Print Template from your previous file below this line -->
   <!-- LOG VIOLATION DIALOG -->
   <dialog id="case-dialog">
-    <!-- ... (Your existing Log Violation Dialog content) ... -->
     <div class="modal-header">
       <h3>Log Disciplinary Case</h3>
       <button class="modal-close" onclick="document.getElementById('case-dialog').close()">×</button>
@@ -483,6 +480,7 @@
         </div>
       </div>
       <h4 style="margin: 0 0 10px; color: #333;">Select Violation Committed:</h4>
+      
       <div class="rule-class open">
         <div class="rule-class-header" onclick="this.parentElement.classList.toggle('open')"><span>CLASS A / B OFFENSES (Minor)</span><span>▼</span></div>
         <div class="rule-class-body">
@@ -515,6 +513,7 @@
           <div class="penalty-box"><strong>Penalty:</strong> 1st - Reprimand, 2nd - Confiscation of ID/Parental notification, 3rd - Ordinary Suspension, 4th - Preventive Suspension, 5th - Dismissal</div>
         </div>
       </div>
+      
       <div class="rule-class">
         <div class="rule-class-header" onclick="this.parentElement.classList.toggle('open')"><span>CLASS C OFFENSES [CPC- ANTI- BULLYING]</span><span>▼</span></div>
         <div class="rule-class-body">
@@ -530,6 +529,7 @@
           <div class="penalty-box"><strong>Penalty:</strong> 1st Offense - Ordinary Suspension, 2nd Offense - Preventive Suspension, 3rd Offense - Dismissal</div>
         </div>
       </div>
+      
       <div class="rule-class">
         <div class="rule-class-header" onclick="this.parentElement.classList.toggle('open')"><span>CLASS D OFFENSES (Major/Grave)</span><span>▼</span></div>
         <div class="rule-class-body">
@@ -567,13 +567,14 @@
     </div>
   </dialog>
 
-  <!-- HIDDEN PRINT TEMPLATE -->
+  <!-- HIDDEN PRINT TEMPLATE (Now perfectly formatted for Portrait) -->
   <div id="print-section">
-    <!-- ... (Keep your exact print template code here) ... -->
     <div class="print-document">
-      <div class="print-header">
-        <img src="../../assets/images/deped-logo.png" alt="DepEd Logo">
-        <div class="header-text">
+      
+      <!-- 1. LOGO ON TOP, TEXT BELOW (Centered Stack) -->
+      <div class="print-header" style="text-align: center; margin-bottom: 20px;">
+        <img src="../../assets/images/deped-logo.png" alt="DepEd Logo" style="height: 70px; margin-bottom: 5px; display: inline-block;">
+        <div class="header-text" style="line-height: 1.3;">
           <div>Republic of the Philippines</div>
           <div class="bold">DEPARTMENT OF EDUCATION</div>
           <div>Region 2</div>
@@ -585,35 +586,93 @@
           <div style="margin-bottom: 15px;">S.Y. 20__ to 20__</div>
         </div>
       </div>
-      <div class="print-student-info">
-        <div class="info-row"><span class="info-item"><strong>Name:</strong> <span id="print-name">________________________</span></span><span class="info-item"><strong>Age:</strong> <span id="print-age">______</span></span></div>
-        <div class="info-row"><span class="info-item"><strong>Date:</strong> <span id="print-date">________________</span></span><span class="info-item"><strong>Time:</strong> <span id="print-time">____________</span></span></div>
-        <div class="info-row"><span class="info-item"><strong>Year and Section:</strong> <span id="print-section-info">________________________</span></span></div>
+
+      <!-- 2. STUDENT INFO (Stacked per line as in Word) -->
+      <div class="print-student-info" style="margin-bottom: 20px; font-size: 12px; line-height: 1.5;">
+        <div><strong>Name:</strong> <span id="print-name">________________________</span></div>
+        <div><strong>Age:</strong> <span id="print-age">______</span></div>
+        <div><strong>Date:</strong> <span id="print-date">________________</span></div>
+        <div><strong>Time:</strong> <span id="print-time">____________</span></div>
+        <div><strong>Year and Section:</strong> <span id="print-section-info">________________________</span></div>
       </div>
-      <div class="print-title">SCHOOL RULES/REGULATIONS VIOLATIONS</div>
-      <div class="print-subtitle">Infractions : Sanctions &nbsp;&nbsp;&nbsp;&nbsp; Commissions : Omissions</div>
-      <div class="print-table-title">PROHIBITED ACTS (CLASS A / B OFFENSES)</div>
+
+      <!-- 3. TITLES -->
+      <div class="print-title" style="text-align: center; font-weight: bold; font-size: 14px; margin-bottom: 3px;">SCHOOL RULES/REGULATIONS VIOLATIONS</div>
+      <div class="print-subtitle" style="text-align: center; font-size: 12px; margin-bottom: 15px;">Infractions : Sanctions &nbsp;&nbsp;&nbsp;&nbsp; Commissions : Omissions</div>
+
+      <!-- 4. TABLES -->
+      <div class="print-table-title" style="font-weight: bold; text-decoration: underline; margin-bottom: 3px; font-size: 12px; margin-top: 10px;">PROHIBITED ACTS (CLASS A / B OFFENSES)</div>
       <table class="print-table">
-        <thead><tr><th style="width: 60%;">Violation</th><th style="width: 40%;">No. of Offenses (1) (2) (3) (4) (5)</th></tr></thead>
+        <thead>
+          <tr>
+            <th style="width: 60%; text-align: left;">Violation</th>
+            <th style="width: 40%; text-align: center;">No. of Offenses (1) (2) (3) (4) (5)</th>
+          </tr>
+        </thead>
         <tbody id="print-tbody-ab"></tbody>
       </table>
-      <div class="print-penalty"><strong>(CLASS A / B PENALTY)</strong><br>1st Offense - Reprimand/Written warning<br>2nd Offense - Confiscation of ID/Parental notification<br>3rd Offense - Ordinary Suspension<br>4th Offense - Preventive Suspension<br>5th Offense - Dismissal</div>
+      
+      <div class="print-penalty">
+        <strong>(CLASS A / B PENALTY)</strong><br>
+        1st Offense - Reprimand/Written warning<br>
+        2nd Offense - Confiscation of ID/Parental notification<br>
+        3rd Offense - Ordinary Suspension<br>
+        4th Offense - Preventive Suspension<br>
+        5th Offense - Dismissal
+      </div>
+
       <div class="print-table-title">(CLASS C OFFENSES) [CPC-ANTI-BULLYING]</div>
       <table class="print-table">
-        <thead><tr><th style="width: 60%;">Violation</th><th style="width: 40%;">No. of Offenses (1) (2) (3) (4) (5)</th></tr></thead>
+        <thead>
+          <tr>
+            <th style="width: 60%; text-align: left;">Violation</th>
+            <th style="width: 40%; text-align: center;">No. of Offenses (1) (2) (3) (4) (5)</th>
+          </tr>
+        </thead>
         <tbody id="print-tbody-c"></tbody>
       </table>
-      <div class="print-penalty"><strong>(CLASS C PENALTY)</strong><br>1st Offense - Ordinary Suspension<br>2nd Offense - Preventive Suspension<br>3rd Offense - Dismissal</div>
+      
+      <div class="print-penalty">
+        <strong>(CLASS C PENALTY)</strong><br>
+        1st Offense - Ordinary Suspension<br>
+        2nd Offense - Preventive Suspension<br>
+        3rd Offense - Dismissal
+      </div>
+
       <div class="print-table-title">(CLASS D OFFENSES) - [CPC- ANTI-BULLYING]</div>
       <table class="print-table">
-        <thead><tr><th style="width: 60%;">Violation</th><th style="width: 40%;">No. of Offenses (1) (2) (3) (4) (5)</th></tr></thead>
+        <thead>
+          <tr>
+            <th style="width: 60%; text-align: left;">Violation</th>
+            <th style="width: 40%; text-align: center;">No. of Offenses (1) (2) (3) (4) (5)</th>
+          </tr>
+        </thead>
         <tbody id="print-tbody-d"></tbody>
       </table>
-      <div class="print-penalty"><strong>(CLASS D PENALTY)</strong><br>1st Offense - Preventive Suspension (Intervention counseling program)<br>2nd Offense - Dismissal (Rehabilitation/Intervention Program)<br><em>Note: Harmful drugs - 1st offense is dismissal (due process of law may apply)</em></div>
-      <div class="print-signatures">
-        <div class="sig-block"><div class="sig-line"></div><div class="sig-label">Prepared by:</div><input type="text" class="print-input" id="print-counselor-name" placeholder="Guidance Counselor Name" style="width: 80%; margin-top: 2px;"><div class="sig-label" style="font-size: 10px; margin-top: 2px;">Teacher III - Guidance Counselor (Designate)</div></div>
-        <div class="sig-block"><div class="sig-line"></div><div class="sig-label">Approved by:</div><input type="text" class="print-input" id="print-principal-name" placeholder="Principal Name" value="SATURNINO P. CALANSI EdD" style="width: 80%; margin-top: 2px;"><div class="sig-label" style="font-size: 10px; margin-top: 2px;">Principal IV/School Head</div></div>
+      
+      <div class="print-penalty">
+        <strong>(CLASS D PENALTY)</strong><br>
+        1st Offense - Preventive Suspension (Intervention counseling program)<br>
+        2nd Offense - Dismissal (Rehabilitation/Intervention Program)<br>
+        <em>Note: Harmful drugs - 1st offense is dismissal (due process of law may apply)</em>
       </div>
+
+      <!-- 5. SIGNATURES -->
+      <div class="print-signatures">
+        <div class="sig-block">
+          <div class="sig-line"></div>
+          <div class="sig-label">Prepared by:</div>
+          <input type="text" class="print-input" id="print-counselor-name" placeholder="Guidance Counselor Name" style="width: 80%; margin-top: 2px;">
+          <div class="sig-label" style="font-size: 10px; margin-top: 2px;">Teacher III - Guidance Counselor (Designate)</div>
+        </div>
+        <div class="sig-block">
+          <div class="sig-line"></div>
+          <div class="sig-label">Approved by:</div>
+          <input type="text" class="print-input" id="print-principal-name" placeholder="Principal Name" value="SATURNINO P. CALANSI EdD" style="width: 80%; margin-top: 2px;">
+          <div class="sig-label" style="font-size: 10px; margin-top: 2px;">Principal IV/School Head</div>
+        </div>
+      </div>
+
     </div>
   </div>
 
