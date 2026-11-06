@@ -279,7 +279,7 @@
   <script type="module">
     import { auth, db } from "../../assets/js/firebase-config.js";
     import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-    import { doc, getDoc, collection, getDocs, addDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+    import { doc, getDoc, collection, getDocs, addDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
     const urlParams = new URLSearchParams(window.location.search);
     const classId = urlParams.get('classId');
@@ -359,7 +359,7 @@
     });
 
     // 👇 NEW FUNCTIONS FOR HISTORY 👇
-    async function loadPastCases() {
+        async function loadPastCases() {
       try {
         const casesRef = collection(db, "classes", classId, "students", studentId, "lrp_cases");
         const snap = await getDocs(casesRef);
@@ -376,7 +376,12 @@
                 <strong style="color: #0f4c81;">Date Intake:</strong> ${c.dateIntake || 'N/A'} <br>
                 <span style="font-size: 0.85rem; color: #64748b;">Prepared by: ${c.preparedBy || 'N/A'}</span>
               </div>
-              <button type="button" class="btn" style="background: #0f4c81; color: #fff; padding: 8px 15px; font-size: 0.85rem; border-radius: 6px; cursor: pointer;" onclick="loadCaseData('${c.id}')">Load Record</button>
+              <div style="display: flex; gap: 8px;">
+                <button type="button" class="btn" style="background: #0f4c81; color: #fff; padding: 8px 15px; font-size: 0.85rem; border-radius: 6px; cursor: pointer;" onclick="loadCaseData('${c.id}')">Load Record</button>
+                
+                <!-- 👇 NEW DELETE BUTTON 👇 -->
+                <button type="button" class="btn" style="background: #fee2e2; color: #dc2626; border: 1px solid #fecaca; padding: 8px 15px; font-size: 0.85rem; border-radius: 6px; cursor: pointer;" onclick="deleteCaseRecord('${c.id}')">🗑️</button>
+              </div>
             </div>
           `).join("");
         }
@@ -384,6 +389,24 @@
         console.error("Error loading cases:", error); 
       }
     }
+
+        window.deleteCaseRecord = async function(caseId) {
+      if (!confirm("Are you sure you want to permanently delete this case record? This cannot be undone.")) return;
+
+      try {
+        // 1. Delete from Firestore
+        const caseRef = doc(db, "classes", classId, "students", studentId, "lrp_cases", caseId);
+        await deleteDoc(caseRef);
+        
+        // 2. Reload the list to show it's gone
+        alert("✅ Case record deleted successfully.");
+        await loadPastCases(); 
+
+      } catch (error) {
+        console.error("Error deleting case:", error);
+        alert("❌ Failed to delete record. Check the console.");
+      }
+    };
 
     window.loadCaseData = function(caseId) {
       const caseData = SAVED_CASES.find(c => c.id === caseId);
@@ -439,9 +462,18 @@
       alert("✅ Record loaded successfully! You can now print this document or make updates.");
     };
 
-    // Keep your existing saveLRPCase function exactly the same here
     window.saveLRPCase = async function() {
       if (!CURRENT_STUDENT) return;
+
+      // 👇 ADD THIS CHECK 👇
+      const incidentDetails = document.getElementById('lrp-incidentDetails').value.trim();
+      const obsBefore = document.getElementById('lrp-obsBefore').value.trim();
+      
+      if (!incidentDetails && !obsBefore) {
+        alert("⚠️ Cannot save an empty record. Please fill out at least the Incident Details or Adviser's Observations.");
+        return;
+      }
+      // 👆 END OF CHECK 👆
       const btn = document.getElementById('btn-save');
       btn.textContent = "Saving..."; btn.disabled = true;
 
