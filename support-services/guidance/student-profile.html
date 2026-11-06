@@ -95,7 +95,7 @@
     /* ============================================================
        SEARCH BAR (The VIP Greeting)
        ============================================================ */
-        .search-hero {
+    .search-hero {
       background: linear-gradient(135deg, var(--gc-primary), var(--gc-primary-light));
       border-radius: 16px;
       padding: 30px;
@@ -103,8 +103,8 @@
       box-shadow: var(--shadow-lg);
       margin-bottom: 30px;
       position: relative;
-      /* overflow: hidden;  <-- REMOVE THIS */
-      clip-path: inset(0 round 16px); /* This keeps the watermark inside without clipping children! */
+      overflow: visible; /* 👈 CHANGED FROM HIDDEN to VISIBLE */
+      z-index: 50; /* 👈 Added this to keep it above the content below */
     }
     .search-hero::after {
       content: "\f002";
@@ -115,18 +115,18 @@
       font-size: 12rem;
       opacity: 0.05;
       pointer-events: none;
-      /* Add these to make it stay inside */
-      max-width: 100%;
-      max-height: 100%;
-      clip-path: inset(0);
+      max-width: 100%;      /* 👈 ADD */
+      max-height: 100%;     /* 👈 ADD */
+      clip-path: inset(0);  /* 👈 ADD - This keeps the watermark inside the banner */
     }
+
     .search-hero h1 { margin: 0 0 5px; font-size: 1.8rem; font-weight: 800; letter-spacing: -0.5px; }
     .search-hero p { margin: 0 0 20px; opacity: 0.8; font-size: 0.95rem; }
     
-        .search-container { 
+    .search-container { 
       position: relative; 
       max-width: 600px; 
-      z-index: 10; /* Keeps the search area above the background pattern */
+      z-index: 100; /* Keeps the search area above the banner pattern */
     }
     .search-container input {
       width: 100%; padding: 16px 20px 16px 50px;
@@ -143,7 +143,7 @@
     /* Autocomplete Dropdown */
     .autocomplete-list { 
       position: absolute; 
-      top: calc(100% + 8px); 
+      top: calc(100% + 8px); /* Small gap below the input */
       left: 0; 
       right: 0; 
       background: #fff; 
@@ -152,7 +152,7 @@
       box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1);
       max-height: 300px; 
       overflow-y: auto; 
-      z-index: 9999; 
+      z-index: 9999; /* Always on top */
       display: none; 
     }
 
