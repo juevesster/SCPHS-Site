@@ -712,8 +712,21 @@
           return;
         }
 
-        await loadAllStudents();
+                await loadAllStudents();
         loadingState.style.display = 'none';
+
+        // 👇 AUTO-SELECT STUDENT FROM URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const urlClassId = urlParams.get('classId');
+        const urlStudentId = urlParams.get('studentId');
+
+        if (urlClassId && urlStudentId) {
+          const targetStudent = ALL_STUDENTS.find(s => s.id === urlStudentId && s.classId === urlClassId);
+          if (targetStudent) {
+            selectStudent(targetStudent);
+          }
+        }
+        // 👆 END OF AUTO-SELECT
       } catch (error) {
         console.error("Auth error:", error);
       }
