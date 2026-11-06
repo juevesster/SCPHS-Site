@@ -112,6 +112,14 @@
         <div style="font-size: 14px; font-weight: bold; margin-top: 15px;">ENHANCED INTAKE SHEET (ANNEX E)</div>
       </div>
 
+            <!-- 👇 HISTORY SECTION 👇 -->
+      <div class="form-section" style="display: none; background: #f1f5f9; border-left: 4px solid var(--gc-primary);">
+        <h3 style="margin-top: 0; border-bottom: none; padding-bottom: 0; color: var(--gc-primary);">📂 Past Intake Records for this Student</h3>
+        <p style="font-size: 0.85rem; color: #64748b; margin-top: 5px;">Click "Load Record" to pull up a previous case for reprinting or updating.</p>
+        <div id="lrp-history" style="margin-top: 15px;"></div>
+      </div>
+      <!-- 👆 END OF HISTORY 👆 -->
+
       <!-- Screen Student Info -->
       <div class="student-header">
         <h2 id="display-student-name">Loading Student...</h2>
@@ -271,13 +279,14 @@
   <script type="module">
     import { auth, db } from "../../assets/js/firebase-config.js";
     import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-    import { doc, getDoc, collection, addDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+    import { doc, getDoc, collection, getDocs, addDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
     const urlParams = new URLSearchParams(window.location.search);
     const classId = urlParams.get('classId');
     const studentId = urlParams.get('studentId');
 
     let CURRENT_STUDENT = null;
+    let SAVED_CASES = [];
 
     onAuthStateChanged(auth, async (user) => {
       if (!user) {
@@ -337,6 +346,9 @@
           document.getElementById('lrp-incidentDate').valueAsDate = new Date();
           document.getElementById('lrp-dateIntake').valueAsDate = new Date();
 
+          // 👇 NEW: Load past cases
+          await loadPastCases();
+
         } else {
           alert("Student not found.");
         }
@@ -345,6 +357,88 @@
         alert("Error loading student data.");
       }
     });
+
+    // 👇 NEW FUNCTIONS FOR HISTORY 👇
+    async function loadPastCases() {
+      try {
+        const casesRef = collection(db, "classes", classId, "students", studentId, "lrp_cases");
+        const snap = await getDocs(casesRef);
+        SAVED_CASES = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+        
+        const historyContainer = document.getElementById('lrp-history');
+        const historyWrapper = document.getElementById('lrp-history-wrapper');
+        
+        if (SAVED_CASES.length > 0 && historyContainer) {
+          historyWrapper.style.display = 'block';
+          historyContainer.innerHTML = SAVED_CASES.map(c => `
+            <div style="display: flex; justify-content: space-between; align-items: center; background: #fff; padding: 12px 15px; border: 1px solid #e2e8f0; border-radius: 8px; margin-bottom: 10px; box-shadow: 0 2px 4px rgba(0,0,0,0.02);">
+              <div>
+                <strong style="color: #0f4c81;">Date Intake:</strong> ${c.dateIntake || 'N/A'} <br>
+                <span style="font-size: 0.85rem; color: #64748b;">Prepared by: ${c.preparedBy || 'N/A'}</span>
+              </div>
+              <button type="button" class="btn" style="background: #0f4c81; color: #fff; padding: 8px 15px; font-size: 0.85rem; border-radius: 6px; cursor: pointer;" onclick="loadCaseData('${c.id}')">Load Record</button>
+            </div>
+          `).join("");
+        }
+      } catch (error) { 
+        console.error("Error loading cases:", error); 
+      }
+    }
+
+    window.loadCaseData = function(caseId) {
+      const caseData = SAVED_CASES.find(c => c.id === caseId);
+      if (!caseData) return;
+
+      // Populate all fields
+      document.getElementById('lrp-obsBefore').value = caseData.obsBefore || "";
+      document.getElementById('lrp-obsAfter').value = caseData.obsAfter || "";
+      document.getElementById('lrp-motherAge').value = caseData.motherAge || "";
+      document.getElementById('lrp-motherOcc').value = caseData.motherOcc || "";
+      document.getElementById('lrp-motherContact').value = caseData.motherContact || "";
+      document.getElementById('lrp-motherAddress').value = caseData.motherAddress || "";
+      document.getElementById('lrp-fatherAge').value = caseData.fatherAge || "";
+      document.getElementById('lrp-fatherOcc').value = caseData.fatherOcc || "";
+      document.getElementById('lrp-fatherContact').value = caseData.fatherContact || "";
+      document.getElementById('lrp-fatherAddress').value = caseData.fatherAddress || "";
+      document.getElementById('lrp-guardianAge').value = caseData.guardianAge || "";
+      document.getElementById('lrp-guardianOcc').value = caseData.guardianOcc || "";
+      document.getElementById('lrp-guardianContact').value = caseData.guardianContact || "";
+      document.getElementById('lrp-guardianAddress').value = caseData.guardianAddress || "";
+      document.getElementById('lrp-complainantName').value = caseData.complainantName || "";
+      document.getElementById('lrp-complainantAge').value = caseData.complainantAge || "";
+      document.getElementById('lrp-complainantRelation').value = caseData.complainantRelation || "";
+      document.getElementById('lrp-complainantContact').value = caseData.complainantContact || "";
+      document.getElementById('lrp-complainantAddress').value = caseData.complainantAddress || "";
+      document.getElementById('lrp-offenderName').value = caseData.offenderName || "";
+      document.getElementById('lrp-offenderAge').value = caseData.offenderAge || "";
+      document.getElementById('lrp-offenderSex').value = caseData.offenderSex || "";
+      document.getElementById('lrp-offenderDOB').value = caseData.offenderDOB || "";
+      document.getElementById('lrp-offenderContact').value = caseData.offenderContact || "";
+      document.getElementById('lrp-offenderRelation').value = caseData.offenderRelation || "";
+      document.getElementById('lrp-offenderAddress').value = caseData.offenderAddress || "";
+      document.getElementById('lrp-offenderName2').value = caseData.offenderName2 || "";
+      document.getElementById('lrp-offenderAge2').value = caseData.offenderAge2 || "";
+      document.getElementById('lrp-offenderSex2').value = caseData.offenderSex2 || "";
+      document.getElementById('lrp-offenderDOB2').value = caseData.offenderDOB2 || "";
+      document.getElementById('lrp-offenderContact2').value = caseData.offenderContact2 || "";
+      document.getElementById('lrp-offenderRelation2').value = caseData.offenderRelation2 || "";
+      document.getElementById('lrp-offenderAddress2').value = caseData.offenderAddress2 || "";
+      document.getElementById('lrp-incidentDate').value = caseData.incidentDate || "";
+      document.getElementById('lrp-incidentDetails').value = caseData.incidentDetails || "";
+      document.getElementById('lrp-initialActions').value = caseData.initialActions || "";
+      document.getElementById('lrp-referralReq').value = caseData.referralReq || "NO";
+      document.getElementById('lrp-referralTo').value = caseData.referralTo || "";
+      document.getElementById('lrp-referralReason').value = caseData.referralReason || "";
+      document.getElementById('lrp-otherRecs').value = caseData.otherRecs || "";
+      document.getElementById('lrp-dateIntake').value = caseData.dateIntake || "";
+      document.getElementById('lrp-preparedBy').value = caseData.preparedBy || "";
+      document.getElementById('lrp-preparedPos').value = caseData.preparedPos || "";
+      document.getElementById('lrp-reviewedBy').value = caseData.reviewedBy || "";
+      document.getElementById('lrp-reviewedPos').value = caseData.reviewedPos || "";
+      
+      alert("✅ Record loaded successfully! You can now print this document or make updates.");
+    };
+
 
     window.saveLRPCase = async function() {
       if (!CURRENT_STUDENT) return;
