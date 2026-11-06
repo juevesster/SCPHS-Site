@@ -112,8 +112,8 @@
         <div style="font-size: 14px; font-weight: bold; margin-top: 15px;">ENHANCED INTAKE SHEET (ANNEX E)</div>
       </div>
 
-            <!-- 👇 HISTORY SECTION 👇 -->
-      <div class="form-section" style="display: none; background: #f1f5f9; border-left: 4px solid var(--gc-primary);">
+                  <!-- 👇 HISTORY SECTION 👇 -->
+      <div id="lrp-history-wrapper" class="form-section" style="display: none; background: #f1f5f9; border-left: 4px solid var(--gc-primary);">
         <h3 style="margin-top: 0; border-bottom: none; padding-bottom: 0; color: var(--gc-primary);">📂 Past Intake Records for this Student</h3>
         <p style="font-size: 0.85rem; color: #64748b; margin-top: 5px;">Click "Load Record" to pull up a previous case for reprinting or updating.</p>
         <div id="lrp-history" style="margin-top: 15px;"></div>
@@ -439,19 +439,16 @@
       alert("✅ Record loaded successfully! You can now print this document or make updates.");
     };
 
-
+    // Keep your existing saveLRPCase function exactly the same here
     window.saveLRPCase = async function() {
       if (!CURRENT_STUDENT) return;
-
       const btn = document.getElementById('btn-save');
-      btn.textContent = "Saving...";
-      btn.disabled = true;
+      btn.textContent = "Saving..."; btn.disabled = true;
 
       try {
         const casesRef = collection(db, "classes", classId, "students", studentId, "lrp_cases");
-        
         const dataToSave = {
-          // Learner-Victim
+          // ... (Your existing save data structure remains the same)
           victimName: document.getElementById('lrp-victimName').value,
           victimAge: document.getElementById('lrp-victimAge').value,
           victimSex: document.getElementById('lrp-victimSex').value,
@@ -460,34 +457,26 @@
           victimAdviser: document.getElementById('lrp-victimAdviser').value,
           obsBefore: document.getElementById('lrp-obsBefore').value,
           obsAfter: document.getElementById('lrp-obsAfter').value,
-
-          // Parents
           motherName: document.getElementById('lrp-motherName').value,
           motherAge: document.getElementById('lrp-motherAge').value,
           motherOcc: document.getElementById('lrp-motherOcc').value,
           motherContact: document.getElementById('lrp-motherContact').value,
           motherAddress: document.getElementById('lrp-motherAddress').value,
-          
           fatherName: document.getElementById('lrp-fatherName').value,
           fatherAge: document.getElementById('lrp-fatherAge').value,
           fatherOcc: document.getElementById('lrp-fatherOcc').value,
           fatherContact: document.getElementById('lrp-fatherContact').value,
           fatherAddress: document.getElementById('lrp-fatherAddress').value,
-          
           guardianName: document.getElementById('lrp-guardianName').value,
           guardianAge: document.getElementById('lrp-guardianAge').value,
           guardianOcc: document.getElementById('lrp-guardianOcc').value,
           guardianContact: document.getElementById('lrp-guardianContact').value,
           guardianAddress: document.getElementById('lrp-guardianAddress').value,
-
-          // Complainant
           complainantName: document.getElementById('lrp-complainantName').value,
           complainantAge: document.getElementById('lrp-complainantAge').value,
           complainantRelation: document.getElementById('lrp-complainantRelation').value,
           complainantContact: document.getElementById('lrp-complainantContact').value,
           complainantAddress: document.getElementById('lrp-complainantAddress').value,
-          
-          // Offender 1
           offenderName: document.getElementById('lrp-offenderName').value,
           offenderAge: document.getElementById('lrp-offenderAge').value,
           offenderSex: document.getElementById('lrp-offenderSex').value,
@@ -495,8 +484,6 @@
           offenderContact: document.getElementById('lrp-offenderContact').value,
           offenderRelation: document.getElementById('lrp-offenderRelation').value,
           offenderAddress: document.getElementById('lrp-offenderAddress').value,
-
-          // Offender 2
           offenderName2: document.getElementById('lrp-offenderName2').value,
           offenderAge2: document.getElementById('lrp-offenderAge2').value,
           offenderSex2: document.getElementById('lrp-offenderSex2').value,
@@ -504,8 +491,6 @@
           offenderContact2: document.getElementById('lrp-offenderContact2').value,
           offenderRelation2: document.getElementById('lrp-offenderRelation2').value,
           offenderAddress2: document.getElementById('lrp-offenderAddress2').value,
-          
-          // Incident
           incidentDate: document.getElementById('lrp-incidentDate').value,
           incidentDetails: document.getElementById('lrp-incidentDetails').value,
           initialActions: document.getElementById('lrp-initialActions').value,
@@ -513,29 +498,23 @@
           referralTo: document.getElementById('lrp-referralTo').value,
           referralReason: document.getElementById('lrp-referralReason').value,
           otherRecs: document.getElementById('lrp-otherRecs').value,
-
-          // Signatories
           dateIntake: document.getElementById('lrp-dateIntake').value,
           preparedBy: document.getElementById('lrp-preparedBy').value,
           preparedPos: document.getElementById('lrp-preparedPos').value,
           reviewedBy: document.getElementById('lrp-reviewedBy').value,
           reviewedPos: document.getElementById('lrp-reviewedPos').value,
-          
-          // Meta
           loggedBy: auth.currentUser.email,
           timestamp: Date.now()
         };
 
         await addDoc(casesRef, dataToSave);
-
         alert("✅ Enhanced Intake Sheet saved successfully!");
         window.location.href = "student-records.html";
 
       } catch (error) {
         console.error("Error saving LRP case:", error);
         alert("❌ Failed to save LRP case. Check the console.");
-        btn.textContent = "💾 Save Intake Sheet";
-        btn.disabled = false;
+        btn.textContent = "💾 Save Intake Sheet"; btn.disabled = false;
       }
     };
   </script>
