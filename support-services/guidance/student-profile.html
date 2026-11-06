@@ -3,334 +3,446 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Student Profile – Guidance Center | SCPHS</title>
+  <title>Student Dossier – Guidance Center | SCPHS</title>
   <link rel="stylesheet" href="../../assets/css/styles.css" />
+  
+  <!-- FontAwesome for Premium Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   
   <style>
     :root {
       --gc-primary: #0f4c81;
-      --gc-primary-hover: #0a365d;
+      --gc-primary-light: #1e6bb8;
+      --gc-bg: #f4f7f9;
+      --gc-card: #ffffff;
       --gc-border: #e2e8f0;
-      --gc-text-main: #1e293b;
+      --gc-text: #1e293b;
       --gc-text-muted: #64748b;
-      --bright-blue: #2563eb;
       --danger: #dc2626;
       --warning: #d97706;
       --success: #16a34a;
-      --bg-soft: #f8fafc;
+      --sidebar-width: 260px;
+      --shadow-sm: 0 1px 3px rgba(0,0,0,0.05);
+      --shadow-lg: 0 10px 25px rgba(15, 76, 129, 0.08);
     }
 
-    body { background: #f1f5f9; margin: 0; font-family: system-ui, -apple-system, sans-serif; }
-    .gc-layout-wrap { max-width: 1200px; margin: 0 auto; padding: 0 16px; }
+    * { box-sizing: border-box; }
+    body { background: var(--gc-bg); margin: 0; font-family: 'Inter', system-ui, -apple-system, sans-serif; display: flex; min-height: 100vh; }
 
-    /* Header */
-    .form-header { background: #fff; padding: 20px 0; border-bottom: 1px solid var(--gc-border); margin-bottom: 20px; text-align: center; }
-    .form-header h1 { margin: 0; color: var(--gc-primary); font-size: 1.5rem; }
-    .back-link { display: inline-block; margin-bottom: 20px; color: var(--bright-blue); text-decoration: none; font-weight: 600; }
-
-    /* Loading State */
-    #loading-state { text-align: center; padding: 50px; font-weight: 600; color: var(--gc-primary); }
-    .spinner { width: 40px; height: 40px; border: 4px solid #e2e8f0; border-top-color: var(--gc-primary); border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 15px; }
-    @keyframes spin { to { transform: rotate(360deg); } }
-
-    /* Main UI */
-    #profile-content { display: none; }
+    /* ============================================================
+       SIDEBAR NAVIGATION (The Professional Look)
+       ============================================================ */
+    .sidebar {
+      width: var(--sidebar-width);
+      background: var(--gc-primary);
+      color: #fff;
+      position: fixed;
+      top: 0; bottom: 0; left: 0;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 4px 0 15px rgba(0,0,0,0.05);
+      z-index: 100;
+    }
+    .sidebar-brand {
+      padding: 25px 20px;
+      text-align: center;
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+    }
+    .sidebar-brand img { height: 65px; margin-bottom: 10px; }
+    .sidebar-brand h2 { font-size: 1.1rem; margin: 0; letter-spacing: 0.5px; font-weight: 700; }
+    .sidebar-brand p { font-size: 0.75rem; opacity: 0.7; margin: 5px 0 0; }
     
-    /* Search Area */
-    .search-container { background: #fff; padding: 20px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); margin-bottom: 20px; position: relative; }
-    .search-container input { width: 100%; padding: 15px 20px; border: 2px solid var(--gc-border); border-radius: 8px; font-size: 1rem; box-sizing: border-box; }
-    .search-container input:focus { outline: none; border-color: var(--bright-blue); }
+    .sidebar-nav { padding: 20px 0; flex: 1; }
+    .sidebar-nav a {
+      display: flex; align-items: center; gap: 15px;
+      padding: 15px 25px;
+      color: rgba(255,255,255,0.7);
+      text-decoration: none;
+      font-size: 0.95rem;
+      font-weight: 500;
+      transition: all 0.2s;
+      border-left: 4px solid transparent;
+    }
+    .sidebar-nav a:hover, .sidebar-nav a.active {
+      background: rgba(255,255,255,0.1);
+      color: #fff;
+      border-left-color: #60a5fa;
+    }
+    .sidebar-nav a i { font-size: 1.1rem; width: 20px; text-align: center; }
+
+    /* ============================================================
+       MAIN CONTENT AREA
+       ============================================================ */
+    .main-content {
+      margin-left: var(--sidebar-width);
+      flex: 1;
+      padding: 30px;
+      min-width: 0;
+    }
+    @media (max-width: 900px) {
+      body { flex-direction: column; }
+      .sidebar { position: relative; width: 100%; flex-direction: row; align-items: center; justify-content: space-between; padding: 10px; }
+      .sidebar-brand { border: none; padding: 0 10px; display: flex; align-items: center; gap: 10px; text-align: left; }
+      .sidebar-brand img { height: 40px; margin: 0; }
+      .sidebar-brand h2 { font-size: 1rem; }
+      .sidebar-nav { display: flex; padding: 0; overflow-x: auto; }
+      .sidebar-nav a { padding: 10px 15px; border-left: none; border-bottom: 3px solid transparent; }
+      .sidebar-nav a:hover, .sidebar-nav a.active { border-left: none; border-bottom-color: #60a5fa; }
+      .sidebar-nav a span { display: none; }
+      .main-content { margin-left: 0; padding: 15px; }
+    }
+
+    /* ============================================================
+       SEARCH BAR (The VIP Greeting)
+       ============================================================ */
+    .search-hero {
+      background: linear-gradient(135deg, var(--gc-primary), var(--gc-primary-light));
+      border-radius: 16px;
+      padding: 30px;
+      color: white;
+      box-shadow: var(--shadow-lg);
+      margin-bottom: 30px;
+      position: relative;
+      overflow: hidden;
+    }
+    .search-hero::after {
+      content: "\f002";
+      font-family: "Font Awesome 6 Free";
+      font-weight: 900;
+      position: absolute;
+      right: -20px; bottom: -40px;
+      font-size: 12rem;
+      opacity: 0.05;
+    }
+    .search-hero h1 { margin: 0 0 5px; font-size: 1.8rem; font-weight: 800; letter-spacing: -0.5px; }
+    .search-hero p { margin: 0 0 20px; opacity: 0.8; font-size: 0.95rem; }
     
-    /* Autocomplete Dropdown */
-    .autocomplete-list { position: absolute; top: 100%; left: 20px; right: 20px; background: #fff; border: 1px solid var(--gc-border); border-radius: 0 0 8px 8px; box-shadow: 0 10px 15px rgba(0,0,0,0.1); max-height: 300px; overflow-y: auto; z-index: 100; display: none; }
-    .autocomplete-item { padding: 12px 20px; cursor: pointer; border-bottom: 1px solid #f1f5f9; display: flex; justify-content: space-between; }
-    .autocomplete-item:hover { background: #f8fafc; }
-    .autocomplete-item .name { font-weight: 600; color: var(--gc-primary); }
+    .search-container { position: relative; max-width: 600px; }
+    .search-container input {
+      width: 100%; padding: 16px 20px 16px 50px;
+      border-radius: 10px; border: none; font-size: 1rem;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+      transition: all 0.3s;
+    }
+    .search-container input:focus { outline: none; box-shadow: 0 6px 15px rgba(0,0,0,0.15); transform: translateY(-2px); }
+    .search-container i {
+      position: absolute; left: 20px; top: 50%; transform: translateY(-50%);
+      color: var(--gc-text-muted); font-size: 1.1rem;
+    }
+
+    /* Autocomplete */
+    .autocomplete-list {
+      position: absolute; top: calc(100% + 5px); left: 0; right: 0;
+      background: #fff; border-radius: 10px; box-shadow: var(--shadow-lg);
+      max-height: 300px; overflow-y: auto; z-index: 100; display: none;
+      border: 1px solid var(--gc-border);
+    }
+    .autocomplete-item { padding: 15px 20px; cursor: pointer; border-bottom: 1px solid var(--gc-border); display: flex; justify-content: space-between; align-items: center; transition: 0.2s; }
+    .autocomplete-item:hover { background: var(--gc-bg); }
+    .autocomplete-item .name { font-weight: 700; color: var(--gc-primary); font-size: 1rem; }
     .autocomplete-item .details { font-size: 0.85rem; color: var(--gc-text-muted); }
 
-    /* Layout Grid */
-    .profile-grid { display: grid; grid-template-columns: 350px 1fr; gap: 20px; }
-    @media (max-width: 900px) { .profile-grid { grid-template-columns: 1fr; } }
+    /* ============================================================
+       THE DOSSIER (Profile Grid)
+       ============================================================ */
+    #profile-display { display: none; animation: fadeIn 0.4s ease-out; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-    /* Cards */
-    .card { background: #fff; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); overflow: hidden; margin-bottom: 20px; }
-    .card-header { background: #f8fafc; padding: 15px 20px; border-bottom: 1px solid var(--gc-border); font-weight: bold; color: var(--gc-primary); font-size: 1.1rem; }
-    .card-body { padding: 20px; }
+    .dossier-grid { display: grid; grid-template-columns: 340px 1fr; gap: 25px; }
+    @media (max-width: 1000px) { .dossier-grid { grid-template-columns: 1fr; } }
 
-    /* Left Column */
-    .profile-pic-container { text-align: center; padding: 20px 20px 0 20px; }
-    .profile-pic { width: 150px; height: 150px; border-radius: 50%; object-fit: cover; border: 4px solid var(--gc-border); background: #f1f5f9; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
-    .btn-upload { margin-top: 15px; background: #eff6ff; color: var(--bright-blue); border: 1px solid #bfdbfe; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 0.85rem; display: inline-block; transition: 0.2s; }
-    .btn-upload:hover { background: var(--bright-blue); color: #fff; }
+    .card { background: var(--gc-card); border-radius: 16px; box-shadow: var(--shadow-sm); border: 1px solid var(--gc-border); overflow: hidden; margin-bottom: 25px; }
+    .card-header { padding: 20px; border-bottom: 1px solid var(--gc-border); font-weight: 800; color: var(--gc-primary); font-size: 1.1rem; display: flex; justify-content: space-between; align-items: center; background: #fafbfc; }
+    
+    /* ID Card Style (Left Column) */
+    .id-card { text-align: center; position: relative; }
+    .id-card-bg { height: 100px; background: linear-gradient(135deg, var(--gc-primary), var(--gc-primary-light)); }
+    .profile-pic-container { margin-top: -60px; position: relative; display: inline-block; }
+    .profile-pic { width: 120px; height: 120px; border-radius: 50%; object-fit: cover; border: 5px solid #fff; box-shadow: 0 4px 10px rgba(0,0,0,0.1); background: #f1f5f9; }
+    .btn-upload { position: absolute; bottom: 5px; right: 5px; background: #fff; color: var(--gc-primary); border: 1px solid var(--gc-border); width: 35px; height: 35px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: var(--shadow-sm); transition: 0.2s; }
+    .btn-upload:hover { background: var(--gc-primary); color: #fff; }
     input[type="file"] { display: none; }
 
-    .summary-row { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px dashed var(--gc-border); font-size: 0.95rem; }
-    .summary-row:last-child { border-bottom: none; }
-    .summary-label { color: var(--gc-text-muted); font-weight: 600; }
-    .summary-value { font-weight: 700; color: var(--gc-text-main); text-align: right; }
+    .id-card-info { padding: 15px 20px 25px; }
+    .id-card-info h2 { margin: 0 0 5px; font-size: 1.3rem; color: var(--gc-text); font-weight: 800; }
+    .id-card-info .lrn { font-size: 0.9rem; color: var(--gc-text-muted); font-family: monospace; letter-spacing: 1px; }
     
-    .badge { padding: 4px 10px; border-radius: 20px; font-size: 0.75rem; font-weight: 700; }
+    .summary-list { text-align: left; margin-top: 20px; border-top: 1px dashed var(--gc-border); padding-top: 15px; }
+    .summary-row { display: flex; justify-content: space-between; padding: 8px 0; font-size: 0.9rem; }
+    .summary-row .label { color: var(--gc-text-muted); font-weight: 600; }
+    .summary-row .value { font-weight: 700; color: var(--gc-text); text-align: right; }
+
+    /* Quick Actions */
+    .action-grid { display: grid; gap: 10px; padding: 20px; }
+    .btn-action { display: flex; align-items: center; gap: 12px; padding: 14px 20px; border-radius: 10px; border: none; font-weight: 700; font-size: 0.9rem; cursor: pointer; transition: 0.2s; text-align: left; width: 100%; }
+    .btn-action i { font-size: 1.1rem; }
+    .btn-action:hover { transform: translateY(-2px); box-shadow: var(--shadow-sm); }
+    
+    .btn-violation { background: #fef2f2; color: var(--danger); border: 1px solid #fecaca; }
+    .btn-violation:hover { background: var(--danger); color: #fff; }
+    .btn-print { background: #f1f5f9; color: var(--gc-text); border: 1px solid var(--gc-border); }
+    .btn-print:hover { background: #e2e8f0; }
+    .btn-manage { background: #fefce8; color: var(--warning); border: 1px solid #fef08a; }
+    .btn-manage:hover { background: var(--warning); color: #fff; }
+    .btn-lrp { background: #f0fdf4; color: var(--success); border: 1px solid #bbf7d0; }
+    .btn-lrp:hover { background: var(--success); color: #fff; }
+
+    /* Right Column Details */
+    .details-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; padding: 25px; }
+    @media (max-width: 600px) { .details-grid { grid-template-columns: 1fr; } }
+    
+    .detail-item { display: flex; flex-direction: column; }
+    .detail-label { font-size: 0.75rem; text-transform: uppercase; color: var(--gc-text-muted); font-weight: 700; letter-spacing: 0.5px; margin-bottom: 6px; }
+    .detail-value { font-size: 1rem; color: var(--gc-text); font-weight: 600; padding: 12px 15px; background: var(--gc-bg); border-radius: 8px; border: 1px solid transparent; transition: 0.2s; }
+    .detail-value:hover { border-color: var(--gc-border); background: #fff; }
+    .detail-value.empty { color: #94a3b8; font-style: italic; font-weight: 400; }
+    
+    .edit-input { width: 100%; padding: 12px 15px; border: 1px solid var(--gc-border); border-radius: 8px; font-size: 1rem; box-sizing: border-box; font-family: inherit; transition: 0.2s; background: #fff; }
+    .edit-input:focus { outline: none; border-color: var(--gc-primary); box-shadow: 0 0 0 3px rgba(15, 76, 129, 0.1); }
+    
+    .btn-save { background: var(--success); color: #fff; border: none; padding: 14px 20px; border-radius: 8px; font-weight: 700; cursor: pointer; width: 100%; margin-top: 20px; transition: 0.2s; display: none; font-size: 1rem; }
+    .btn-save:hover { background: #15803d; }
+    .btn-edit-toggle { background: var(--gc-primary); color: #fff; border: none; padding: 10px 20px; border-radius: 8px; font-weight: 700; cursor: pointer; transition: 0.2s; font-size: 0.9rem; display: flex; align-items: center; gap: 8px; }
+    .btn-edit-toggle:hover { background: var(--gc-primary-light); }
+
+    /* Badges */
+    .badge { padding: 6px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; }
     .badge-clear { background: #dcfce7; color: #166534; }
     .badge-warning { background: #fef9c3; color: #854d0e; }
     .badge-violation { background: #fee2e2; color: #991b1b; }
 
-    /* Right Column */
-    .details-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
-    @media (max-width: 600px) { .details-grid { grid-template-columns: 1fr; } }
-    .detail-item { margin-bottom: 10px; }
-    .detail-label { font-size: 0.75rem; text-transform: uppercase; color: var(--gc-text-muted); font-weight: 700; letter-spacing: 0.05em; margin-bottom: 4px; }
-    .detail-value { font-size: 0.95rem; color: var(--gc-text-main); font-weight: 500; padding: 8px 12px; background: #f8fafc; border-radius: 6px; border: 1px solid var(--gc-border); }
-    .detail-value.empty { color: #94a3b8; font-style: italic; }
+    /* Modals & Print logic remains the same, using the previous standard */
+    dialog { border: none; border-radius: 16px; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25); padding: 0; width: 90%; max-width: 800px; max-height: 90vh; background: #f8fafc; overflow: hidden; }
+    dialog::backdrop { background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(4px); }
+    .modal-header { padding: 20px 25px; background: #fff; border-bottom: 1px solid var(--gc-border); display: flex; justify-content: space-between; align-items: center; }
+    .modal-header h3 { margin: 0; color: var(--gc-primary); font-size: 1.25rem; font-weight: 800; }
+    .modal-close { background: none; border: none; font-size: 1.5rem; cursor: pointer; color: var(--gc-text-muted); transition: 0.2s; }
+    .modal-close:hover { color: var(--danger); }
+    .modal-body { padding: 25px; overflow-y: auto; height: calc(90vh - 80px); }
 
-    /* Edit Mode */
-    .edit-input { width: 100%; padding: 8px 12px; border: 1px solid var(--gc-border); border-radius: 6px; font-size: 0.95rem; box-sizing: border-box; font-family: inherit; }
-    .btn-save { background: var(--success); color: #fff; border: none; padding: 10px 20px; border-radius: 6px; font-weight: bold; cursor: pointer; margin-top: 15px; display: none; width: 100%; transition: 0.2s; }
-    .btn-save:hover { background: #15803d; }
-    .btn-edit { background: var(--gc-primary); color: #fff; border: none; padding: 10px 20px; border-radius: 6px; font-weight: bold; cursor: pointer; margin-top: 15px; width: 100%; transition: 0.2s; }
-    .btn-edit:hover { background: var(--gc-primary-hover); }
-
-    /* Modal */
-    dialog { border: none; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.3); padding: 0; width: 90%; max-width: 800px; max-height: 90vh; background: #f8fafc; overflow: hidden; }
-    dialog::backdrop { background: rgba(0,0,0,0.5); }
-    .modal-header { padding: 20px; background: #fff; border-bottom: 1px solid var(--gc-border); display: flex; justify-content: space-between; align-items: center; }
-    .modal-header h3 { margin: 0; color: var(--gc-primary); font-size: 1.25rem; }
-    .modal-close { background: none; border: none; font-size: 1.5rem; cursor: pointer; color: #666; padding: 0 10px; }
-    .modal-body { padding: 20px; overflow-y: auto; height: calc(90vh - 80px); }
-    
-    .rule-class { background: #fff; border: 1px solid var(--gc-border); border-radius: 8px; margin-bottom: 15px; overflow: hidden; }
-    .rule-class-header { background: #f1f5f9; padding: 12px 15px; font-weight: bold; color: var(--gc-primary); display: flex; justify-content: space-between; cursor: pointer; user-select: none; }
+    .rule-class { background: #fff; border: 1px solid var(--gc-border); border-radius: 10px; margin-bottom: 15px; overflow: hidden; }
+    .rule-class-header { background: #f8fafc; padding: 15px 20px; font-weight: 800; color: var(--gc-primary); display: flex; justify-content: space-between; cursor: pointer; user-select: none; }
     .rule-class-body { display: none; padding: 10px; }
     .rule-class.open .rule-class-body { display: block; }
-    .rule-item { display: flex; justify-content: space-between; align-items: center; padding: 10px 15px; border-bottom: 1px solid #f1f5f9; }
+    .rule-item { display: flex; justify-content: space-between; align-items: center; padding: 12px 20px; border-bottom: 1px solid var(--gc-border); }
     .rule-item:last-child { border-bottom: none; }
-    .rule-text { font-size: 0.9rem; color: #333; }
-    .rule-btn { background: #eff6ff; color: var(--bright-blue); border: 1px solid #bfdbfe; padding: 4px 10px; border-radius: 4px; font-size: 0.8rem; font-weight: 600; cursor: pointer; }
-    .rule-btn:hover { background: var(--bright-blue); color: #fff; }
-    .penalty-box { background: #fffbeb; border-left: 4px solid var(--warning); padding: 15px; margin-top: 20px; border-radius: 4px; font-size: 0.9rem; color: #92400e; }
+    .rule-text { font-size: 0.9rem; color: var(--gc-text); font-weight: 500; }
+    .rule-btn { background: #eff6ff; color: var(--gc-primary); border: 1px solid #bfdbfe; padding: 6px 12px; border-radius: 6px; font-size: 0.8rem; font-weight: 700; cursor: pointer; transition: 0.2s; }
+    .rule-btn:hover { background: var(--gc-primary); color: #fff; }
+    .penalty-box { background: #fffbeb; border-left: 4px solid var(--warning); padding: 15px 20px; margin-top: 20px; border-radius: 6px; font-size: 0.9rem; color: #92400e; font-weight: 500; }
 
-    /* --- PRINT TEMPLATE STYLES (Hidden on screen) --- */
+    /* Print styles */
     #print-section { display: none; }
-    
-                        @media print {
+    @media print {
       @page { size: A4 landscape; margin: 10mm; }
       body * { visibility: hidden; }
-      
-      /* Hide the violation report by default */
       #print-section { display: none !important; }
-      
-      /* Only show it when the JS triggers this class */
       body.print-mode-violation #print-section, 
       body.print-mode-violation #print-section * { visibility: visible; display: block !important; }
       body.print-mode-violation #print-section { position: absolute; left: 0; top: 0; width: 100%; }
-
       .print-document { font-family: "Times New Roman", Times, serif; color: #000; font-size: 11px; line-height: 1.3; }
-      
-      /* ... (Keep the rest of your print styles for tables, signatures, etc.) ... */
-    
-      
-      /* Header */
       .print-header { text-align: center; margin-bottom: 15px; }
       .print-header img { height: 70px; margin-bottom: 5px; display: inline-block; }
       .print-header .header-text { line-height: 1.25; }
       .print-header .bold { font-weight: bold; font-size: 13px; }
-      
-      /* Student Info */
       .print-student-info { margin-bottom: 15px; font-size: 12px; }
       .info-row { display: flex; justify-content: space-between; margin-bottom: 5px; }
       .info-item { width: 48%; }
-      
-      /* Titles */
       .print-title { text-align: center; font-weight: bold; font-size: 13px; margin-bottom: 3px; }
       .print-subtitle { text-align: center; font-size: 11px; margin-bottom: 15px; }
       .print-table-title { font-weight: bold; text-decoration: underline; margin-bottom: 3px; font-size: 11px; margin-top: 10px; }
-      
-      /* Tables */
       .print-table { width: 100%; border-collapse: collapse; margin-bottom: 10px; page-break-inside: auto; }
       .print-table tr { page-break-inside: avoid; page-break-after: auto; }
       .print-table th, .print-table td { border: 1px solid #000; padding: 3px 5px; text-align: left; font-size: 10px; }
       .print-table th { background: #f0f0f0; font-weight: bold; }
       .offense-check { font-family: monospace; font-size: 12px; letter-spacing: 2px; }
-      
       .print-penalty { font-size: 10px; margin-bottom: 15px; line-height: 1.4; }
-      
-      /* Signatures */
       .print-signatures { display: flex; justify-content: space-between; margin-top: 30px; page-break-inside: avoid; }
       .sig-block { width: 45%; text-align: center; }
       .sig-line { border-bottom: 1px solid #000; height: 20px; margin-bottom: 5px; }
       .sig-label { font-size: 11px; }
-      
-                 /* Editable Inputs for Print */
-      .print-input { border: none; border-bottom: 1px solid #000; font-family: "Times New Roman", Times, serif; font-size: 12px; text-align: center; background: transparent; outline: none; padding: 0; 
+      .print-input { border: none; border-bottom: 1px solid #000; font-family: "Times New Roman", Times, serif; font-size: 12px; text-align: center; background: transparent; outline: none; padding: 0; }
     }
-    }
-
   </style>
 </head>
 <body>
 
-  <div class="form-header">
-    <h1>Sta. Cruz Pingkian High School</h1>
-    <p style="margin: 5px 0 0; color: #666; font-size: 0.9rem;">Guidance Center – Student Profile & Dossier</p>
-  </div>
+  <!-- SIDEBAR NAVIGATION -->
+  <aside class="sidebar">
+    <div class="sidebar-brand">
+      <img src="../../assets/images/scphslogo.png" alt="SCPHS Logo">
+      <h2>SCPHS Guidance</h2>
+      <p>Student Dossier System</p>
+    </div>
+    <nav class="sidebar-nav">
+      <a href="index.html"><i class="fas fa-home"></i> <span>Dashboard</span></a>
+      <a href="student-records.html"><i class="fas fa-users"></i> <span>Masterlist</span></a>
+      <a href="#" class="active"><i class="fas fa-id-card"></i> <span>Student Profile</span></a>
+      <a href="lrp-intake.html"><i class="fas fa-folder-open"></i> <span>LRP Cases</span></a>
+      <a href="templates.html"><i class="fas fa-file-alt"></i> <span>Templates</span></a>
+    </nav>
+  </aside>
 
-  <div class="gc-layout-wrap">
-    <a href="index.html" class="back-link">← Back to Guidance Center</a>
+  <!-- MAIN CONTENT -->
+  <main class="main-content">
+    
+    <!-- HERO SEARCH -->
+    <div class="search-hero">
+      <h1>Student Dossier</h1>
+      <p>Search for a student to access their comprehensive profile, discipline records, and LRP case files.</p>
+      
+      <div class="search-container">
+        <i class="fas fa-search"></i>
+        <input type="text" id="search-input" placeholder="Type student name or LRN to begin..." autocomplete="off">
+        <div id="autocomplete-list" class="autocomplete-list"></div>
+      </div>
+    </div>
 
-    <div id="loading-state">
+    <!-- Loading State -->
+    <div id="loading-state" style="text-align: center; padding: 50px; font-weight: 600; color: var(--gc-primary);">
       <div class="spinner"></div>
       Authenticating & Loading Database...
     </div>
 
-    <div id="access-denied" style="display: none; text-align: center; padding: 50px; background: #fff; border-radius: 8px;">
-      <h2 style="color: var(--danger);">🚫 Access Denied</h2>
-      <p>You must be signed in as a Guidance Counselor or Admin.</p>
+    <div id="access-denied" style="display: none; text-align: center; padding: 50px; background: #fff; border-radius: 16px; border: 1px solid var(--gc-border);">
+      <h2 style="color: var(--danger);"><i class="fas fa-lock"></i> Access Denied</h2>
+      <p style="color: var(--gc-text-muted);">You must be signed in as a Guidance Counselor or Admin.</p>
     </div>
 
-    <!-- MAIN UI -->
-    <div id="profile-content">
-      
-      <!-- SEARCH BAR -->
-      <div class="search-container">
-        <input type="text" id="search-input" placeholder="🔍 Search student by Name or LRN..." autocomplete="off">
-        <div id="autocomplete-list" class="autocomplete-list"></div>
-      </div>
-
-      <!-- PROFILE DISPLAY -->
-      <div id="profile-display" style="display: none;">
-        <div class="profile-grid">
+    <!-- PROFILE DISPLAY -->
+    <div id="profile-display">
+      <div class="dossier-grid">
+        
+        <!-- LEFT COLUMN (ID Card & Actions) -->
+        <div>
+          <div class="card id-card">
+            <div class="id-card-bg"></div>
+            <div class="profile-pic-container">
+              <img src="https://ui-avatars.com/api/?name=Student&background=e2e8f0&color=64748b&size=150" id="profile-image" class="profile-pic" alt="Profile Picture">
+              <input type="file" id="photo-upload" accept="image/*">
+              <label for="photo-upload" class="btn-upload" title="Change Photo"><i class="fas fa-camera"></i></label>
+            </div>
+            <div class="id-card-info">
+              <h2 id="side-name">Loading...</h2>
+              <div class="lrn" id="side-lrn">LRN: ----------</div>
+              
+              <div class="summary-list">
+                <div class="summary-row">
+                  <span class="label">Grade & Section</span>
+                  <span class="value" id="side-section">-</span>
+                </div>
+                <div class="summary-row">
+                  <span class="label">School Year</span>
+                  <span class="value" id="side-schoolYear">-</span>
+                </div>
+                <div class="summary-row">
+                  <span class="label">Adviser</span>
+                  <span class="value" id="side-adviser">-</span>
+                </div>
+                <div class="summary-row" style="align-items: center; margin-top: 10px;">
+                  <span class="label">Discipline Status</span>
+                  <span class="value"><span id="side-status" class="badge badge-clear">Clear Record</span></span>
+                </div>
+              </div>
+            </div>
+          </div>
           
-          <!-- LEFT COLUMN -->
-          <div>
-            <div class="card">
-              <div class="profile-pic-container">
-                <img src="https://ui-avatars.com/api/?name=Student&background=e2e8f0&color=64748b&size=150" id="profile-image" class="profile-pic" alt="Profile Picture">
-                <input type="file" id="photo-upload" accept="image/*">
-                <label for="photo-upload" class="btn-upload">📷 Change Photo</label>
-              </div>
-              <div class="card-body">
-                <div class="summary-row">
-                  <span class="summary-label">Full Name</span>
-                  <span class="summary-value" id="side-name">-</span>
-                </div>
-                <div class="summary-row">
-                  <span class="summary-label">LRN</span>
-                  <span class="summary-value" id="side-lrn">-</span>
-                </div>
-                <div class="summary-row">
-                  <span class="summary-label">Grade & Section</span>
-                  <span class="summary-value" id="side-section">-</span>
-                </div>
-                <div class="summary-row">
-                  <span class="summary-label">School Year</span>
-                  <span class="summary-value" id="side-schoolYear">-</span>
-                </div>
-                <div class="summary-row">
-                  <span class="summary-label">Adviser</span>
-                  <span class="summary-value" id="side-adviser">-</span>
-                </div>
-                <div class="summary-row">
-                  <span class="summary-label">Discipline Status</span>
-                  <span class="summary-value"><span id="side-status" class="badge badge-clear">Clear Record</span></span>
-                </div>
-              </div>
-            </div>
-            
-            <div class="card">
-              <div class="card-header">Quick Actions</div>
-              <div class="card-body">
-                <button class="btn-edit" style="margin-top: 0;" onclick="openViolationModal()">⚠️ Log Violation</button>
-                <button class="btn-edit" style="margin-top: 10px; background: #475569;" onclick="printViolationReport()">🖨️ Print Violation Report</button>
-                <button class="btn-edit" style="margin-top: 10px; background: #64748b;" onclick="openManageViolationsModal()">📋 Manage Violations</button>
-                <button class="btn-edit" style="margin-top: 10px; background: #0369a1;" onclick="openNewLRPPage()">📁 LRP Case Files (Annex E)</button>
-                
-            </div>
-            </div>
-          </div>
-
-          <!-- RIGHT COLUMN -->
           <div class="card">
-            <div class="card-header" style="display: flex; justify-content: space-between; align-items: center;">
-              <span>📄 Personal Information (SF1 Data)</span>
-              <button id="btn-edit-toggle" class="btn-upload" style="margin: 0;" onclick="toggleEditMode()">✏️ Edit Info</button>
-            </div>
-            
-            <div class="card-body">
-              <div class="details-grid">
-                <div class="detail-item">
-                  <div class="detail-label">First Name</div>
-                  <div class="detail-value" id="view-firstName">-</div>
-                  <input type="text" class="edit-input" id="edit-firstName" style="display: none;">
-                </div>
-                <div class="detail-item">
-                  <div class="detail-label">Last Name</div>
-                  <div class="detail-value" id="view-lastName">-</div>
-                  <input type="text" class="edit-input" id="edit-lastName" style="display: none;">
-                </div>
-                <div class="detail-item">
-                  <div class="detail-label">Middle Name</div>
-                  <div class="detail-value" id="view-middleName">-</div>
-                  <input type="text" class="edit-input" id="edit-middleName" style="display: none;">
-                </div>
-                <div class="detail-item">
-                  <div class="detail-label">Sex</div>
-                  <div class="detail-value" id="view-sex">-</div>
-                  <input type="text" class="edit-input" id="edit-sex" style="display: none;">
-                </div>
-                <div class="detail-item">
-                  <div class="detail-label">Date of Birth</div>
-                  <div class="detail-value" id="view-birthDate">-</div>
-                  <input type="text" class="edit-input" id="edit-birthDate" style="display: none;">
-                </div>
-                <div class="detail-item">
-                  <div class="detail-label">Age</div>
-                  <div class="detail-value" id="view-age">-</div>
-                  <input type="text" class="edit-input" id="edit-age" style="display: none;">
-                </div>
-                <div class="detail-item" style="grid-column: 1 / -1;">
-                  <div class="detail-label">Address (Barangay)</div>
-                  <div class="detail-value" id="view-addressBarangay">-</div>
-                  <input type="text" class="edit-input" id="edit-addressBarangay" style="display: none;">
-                </div>
-                <div class="detail-item" style="grid-column: 1 / -1;">
-                  <div class="detail-label">Father's Name</div>
-                  <div class="detail-value" id="view-fatherName">-</div>
-                  <input type="text" class="edit-input" id="edit-fatherName" style="display: none;">
-                </div>
-                <div class="detail-item" style="grid-column: 1 / -1;">
-                  <div class="detail-label">Mother's Name</div>
-                  <div class="detail-value" id="view-motherName">-</div>
-                  <input type="text" class="edit-input" id="edit-motherName" style="display: none;">
-                </div>
-                <div class="detail-item" style="grid-column: 1 / -1;">
-                  <div class="detail-label">Contact Number</div>
-                  <div class="detail-value" id="view-contactNumber">-</div>
-                  <input type="text" class="edit-input" id="edit-contactNumber" style="display: none;">
-                </div>
-                <div class="detail-item" style="grid-column: 1 / -1;">
-                  <div class="detail-label">Enrollment Status (EOSY)</div>
-                  <div class="detail-value" id="view-enrollmentStatus">-</div>
-                    <select class="edit-input" id="edit-enrollmentStatus" style="display: none;">
-                    <option value="Currently Enrolled">Currently Enrolled</option>
-                    <option value="Promoted">Promoted</option>
-                    <option value="Graduated">Graduated</option>
-                    <option value="Retained">Retained</option>
-                    <option value="Transferred In">Transferred In</option>
-                    <option value="Transferred Out">Transferred Out</option>
-                    <option value="Dropped Out">Dropped Out</option>
-                  </select>
-                </div>
-              </div>
-              <button id="btn-save-changes" class="btn-save" onclick="saveStudentInfo()">💾 Save Changes to Database</button>
+            <div class="card-header"><i class="fas fa-bolt text-warning"></i> Quick Actions</div>
+            <div class="action-grid">
+              <button class="btn-action btn-violation" onclick="openViolationModal()"><i class="fas fa-exclamation-triangle"></i> Log Violation</button>
+              <button class="btn-action btn-print" onclick="printViolationReport()"><i class="fas fa-print"></i> Print Violation Report</button>
+              <button class="btn-action btn-manage" onclick="openManageViolationsModal()"><i class="fas fa-tasks"></i> Manage Violations</button>
+              <button class="btn-action btn-lrp" onclick="openNewLRPPage()"><i class="fas fa-folder-open"></i> LRP Case Files (Annex E)</button>
             </div>
           </div>
-
         </div>
+
+        <!-- RIGHT COLUMN (SF1 Details) -->
+        <div class="card">
+          <div class="card-header">
+            <span><i class="fas fa-user-graduate text-primary"></i> Personal Information (SF1 Data)</span>
+            <button id="btn-edit-toggle" class="btn-edit-toggle" onclick="toggleEditMode()"><i class="fas fa-edit"></i> Edit Info</button>
+          </div>
+          
+          <div class="details-grid">
+            <div class="detail-item">
+              <div class="detail-label">First Name</div>
+              <div class="detail-value" id="view-firstName">-</div>
+              <input type="text" class="edit-input" id="edit-firstName" style="display: none;">
+            </div>
+            <div class="detail-item">
+              <div class="detail-label">Last Name</div>
+              <div class="detail-value" id="view-lastName">-</div>
+              <input type="text" class="edit-input" id="edit-lastName" style="display: none;">
+            </div>
+            <div class="detail-item">
+              <div class="detail-label">Middle Name</div>
+              <div class="detail-value" id="view-middleName">-</div>
+              <input type="text" class="edit-input" id="edit-middleName" style="display: none;">
+            </div>
+            <div class="detail-item">
+              <div class="detail-label">Sex</div>
+              <div class="detail-value" id="view-sex">-</div>
+              <input type="text" class="edit-input" id="edit-sex" style="display: none;">
+            </div>
+            <div class="detail-item">
+              <div class="detail-label">Date of Birth</div>
+              <div class="detail-value" id="view-birthDate">-</div>
+              <input type="text" class="edit-input" id="edit-birthDate" style="display: none;">
+            </div>
+            <div class="detail-item">
+              <div class="detail-label">Age</div>
+              <div class="detail-value" id="view-age">-</div>
+              <input type="text" class="edit-input" id="edit-age" style="display: none;">
+            </div>
+            <div class="detail-item" style="grid-column: 1 / -1;">
+              <div class="detail-label">Address (Barangay)</div>
+              <div class="detail-value" id="view-addressBarangay">-</div>
+              <input type="text" class="edit-input" id="edit-addressBarangay" style="display: none;">
+            </div>
+            <div class="detail-item" style="grid-column: 1 / -1;">
+              <div class="detail-label">Father's Name</div>
+              <div class="detail-value" id="view-fatherName">-</div>
+              <input type="text" class="edit-input" id="edit-fatherName" style="display: none;">
+            </div>
+            <div class="detail-item" style="grid-column: 1 / -1;">
+              <div class="detail-label">Mother's Name</div>
+              <div class="detail-value" id="view-motherName">-</div>
+              <input type="text" class="edit-input" id="edit-motherName" style="display: none;">
+            </div>
+            <div class="detail-item" style="grid-column: 1 / -1;">
+              <div class="detail-label">Contact Number</div>
+              <div class="detail-value" id="view-contactNumber">-</div>
+              <input type="text" class="edit-input" id="edit-contactNumber" style="display: none;">
+            </div>
+            <div class="detail-item" style="grid-column: 1 / -1;">
+              <div class="detail-label">Enrollment Status (EOSY)</div>
+              <div class="detail-value" id="view-enrollmentStatus">-</div>
+              <select class="edit-input" id="edit-enrollmentStatus" style="display: none;">
+                <option value="Currently Enrolled">Currently Enrolled</option>
+                <option value="Promoted">Promoted</option>
+                <option value="Graduated">Graduated</option>
+                <option value="Retained">Retained</option>
+                <option value="Transferred In">Transferred In</option>
+                <option value="Transferred Out">Transferred Out</option>
+                <option value="Dropped Out">Dropped Out</option>
+              </select>
+            </div>
+          </div>
+          <div style="padding: 0 25px 25px;">
+            <button id="btn-save-changes" class="btn-save" onclick="saveStudentInfo()"><i class="fas fa-save"></i> Save Changes to Database</button>
+          </div>
+        </div>
+
       </div>
     </div>
-  </div>
+  </main>
 
+  <!-- Keep the exact same Modals and Print Template from your previous file below this line -->
   <!-- LOG VIOLATION DIALOG -->
   <dialog id="case-dialog">
+    <!-- ... (Your existing Log Violation Dialog content) ... -->
     <div class="modal-header">
       <h3>Log Disciplinary Case</h3>
       <button class="modal-close" onclick="document.getElementById('case-dialog').close()">×</button>
@@ -341,7 +453,6 @@
         <div style="font-size: 1.2rem; font-weight: bold; color: var(--gc-primary);" id="modal-student-name">-</div>
         <div style="font-size: 0.9rem; color: #475569; margin-top: 5px;" id="modal-student-details">-</div>
       </div>
-
       <div style="display: flex; gap: 10px; margin-bottom: 20px;">
         <div style="flex: 1;">
           <label style="display: block; font-size: 0.8rem; font-weight: bold; margin-bottom: 5px;">Date of Incident</label>
@@ -352,15 +463,9 @@
           <input type="time" id="modal-time" style="width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; box-sizing: border-box;">
         </div>
       </div>
-
       <h4 style="margin: 0 0 10px; color: #333;">Select Violation Committed:</h4>
-
-      <!-- CLASS A / B OFFENSES -->
       <div class="rule-class open">
-        <div class="rule-class-header" onclick="this.parentElement.classList.toggle('open')">
-          <span>CLASS A / B OFFENSES (Minor)</span>
-          <span>▼</span>
-        </div>
+        <div class="rule-class-header" onclick="this.parentElement.classList.toggle('open')"><span>CLASS A / B OFFENSES (Minor)</span><span>▼</span></div>
         <div class="rule-class-body">
           <div class="rule-item"><span class="rule-text">A.1 Irregular Attendance</span><button class="rule-btn" onclick="submitCase('A.1 Irregular Attendance')">+ Log</button></div>
           <div class="rule-item"><span class="rule-text">A.2 No Letter of Excuse</span><button class="rule-btn" onclick="submitCase('A.2 No Letter of Excuse')">+ Log</button></div>
@@ -388,19 +493,11 @@
           <div class="rule-item"><span class="rule-text">A.24 Littering/ throwing garbage</span><button class="rule-btn" onclick="submitCase('A.24 Littering/ throwing garbage')">+ Log</button></div>
           <div class="rule-item"><span class="rule-text">A.25 Improper disposal of spitting</span><button class="rule-btn" onclick="submitCase('A.25 Improper disposal of spitting')">+ Log</button></div>
           <div class="rule-item"><span class="rule-text">A.26 Late/not attending Flag Ceremony</span><button class="rule-btn" onclick="submitCase('A.26 Late/not attending Flag Ceremony')">+ Log</button></div>
-          
-          <div class="penalty-box">
-            <strong>Penalty:</strong> 1st - Reprimand, 2nd - Confiscation of ID/Parental notification, 3rd - Ordinary Suspension, 4th - Preventive Suspension, 5th - Dismissal
-          </div>
+          <div class="penalty-box"><strong>Penalty:</strong> 1st - Reprimand, 2nd - Confiscation of ID/Parental notification, 3rd - Ordinary Suspension, 4th - Preventive Suspension, 5th - Dismissal</div>
         </div>
       </div>
-
-      <!-- CLASS C OFFENSES -->
       <div class="rule-class">
-        <div class="rule-class-header" onclick="this.parentElement.classList.toggle('open')">
-          <span>CLASS C OFFENSES [CPC- ANTI- BULLYING]</span>
-          <span>▼</span>
-        </div>
+        <div class="rule-class-header" onclick="this.parentElement.classList.toggle('open')"><span>CLASS C OFFENSES [CPC- ANTI- BULLYING]</span><span>▼</span></div>
         <div class="rule-class-body">
           <div class="rule-item"><span class="rule-text">C 1 Vandalism</span><button class="rule-btn" onclick="submitCase('C 1 Vandalism')">+ Log</button></div>
           <div class="rule-item"><span class="rule-text">C 2 Smoking</span><button class="rule-btn" onclick="submitCase('C 2 Smoking')">+ Log</button></div>
@@ -411,19 +508,11 @@
           <div class="rule-item"><span class="rule-text">C 7 Threat / Coercion</span><button class="rule-btn" onclick="submitCase('C 7 Threat / Coercion')">+ Log</button></div>
           <div class="rule-item"><span class="rule-text">C 8 Indecent Acts</span><button class="rule-btn" onclick="submitCase('C 8 Indecent Acts')">+ Log</button></div>
           <div class="rule-item"><span class="rule-text">C 9 Lending of school ID to other</span><button class="rule-btn" onclick="submitCase('C 9 Lending of school ID to other')">+ Log</button></div>
-          
-          <div class="penalty-box">
-            <strong>Penalty:</strong> 1st Offense - Ordinary Suspension, 2nd Offense - Preventive Suspension, 3rd Offense - Dismissal
-          </div>
+          <div class="penalty-box"><strong>Penalty:</strong> 1st Offense - Ordinary Suspension, 2nd Offense - Preventive Suspension, 3rd Offense - Dismissal</div>
         </div>
       </div>
-
-      <!-- CLASS D OFFENSES -->
       <div class="rule-class">
-        <div class="rule-class-header" onclick="this.parentElement.classList.toggle('open')">
-          <span>CLASS D OFFENSES (Major/Grave)</span>
-          <span>▼</span>
-        </div>
+        <div class="rule-class-header" onclick="this.parentElement.classList.toggle('open')"><span>CLASS D OFFENSES (Major/Grave)</span><span>▼</span></div>
         <div class="rule-class-body">
           <div class="rule-item"><span class="rule-text">D.1 Under the influence of Liquor</span><button class="rule-btn" onclick="submitCase('D.1 Under the influence of Liquor')">+ Log</button></div>
           <div class="rule-item"><span class="rule-text">D.2 Forging /Record/document</span><button class="rule-btn" onclick="submitCase('D.2 Forging /Record/document')">+ Log</button></div>
@@ -438,16 +527,12 @@
           <div class="rule-item"><span class="rule-text">D.11 Immorality</span><button class="rule-btn" onclick="submitCase('D.11 Immorality')">+ Log</button></div>
           <div class="rule-item"><span class="rule-text">D.12 Publishing/circulating false</span><button class="rule-btn" onclick="submitCase('D.12 Publishing/circulating false')">+ Log</button></div>
           <div class="rule-item"><span class="rule-text">D.13 Drug user/pusher</span><button class="rule-btn" onclick="submitCase('D.13 Drug user/pusher')">+ Log</button></div>
-          <div class="penalty-box">
-            <strong>Penalty:</strong> 1st Offense - Preventive Suspension (Intervention counseling program), 2nd Offense - Dismissal (Rehabilitation/Intervention Program). <br><br>
-            <em>Note: Harmful drugs - 1st offense is dismissal (due process of law may apply)</em>
-          </div>
+          <div class="penalty-box"><strong>Penalty:</strong> 1st Offense - Preventive Suspension (Intervention counseling program), 2nd Offense - Dismissal (Rehabilitation/Intervention Program). <br><br><em>Note: Harmful drugs - 1st offense is dismissal (due process of law may apply)</em></div>
         </div>
       </div>
     </div>
   </dialog>
 
-    <!-- 👇 PASTE THE NEW MANAGE VIOLATIONS DIALOG HERE 👇 -->
   <!-- MANAGE VIOLATIONS DIALOG -->
   <dialog id="manage-violations-dialog">
     <div class="modal-header">
@@ -459,19 +544,14 @@
         <div style="font-size: 0.85rem; color: #64748b; text-transform: uppercase; font-weight: bold; margin-bottom: 5px;">Student:</div>
         <div style="font-size: 1.2rem; font-weight: bold; color: var(--gc-primary);" id="manage-student-name">-</div>
       </div>
-      
-      <div id="violations-list-container">
-        <!-- Violations will be injected here by JS -->
-      </div>
+      <div id="violations-list-container"></div>
     </div>
   </dialog>
-  <!-- 👆 END OF NEW DIALOG 👆 -->
 
   <!-- HIDDEN PRINT TEMPLATE -->
   <div id="print-section">
+    <!-- ... (Keep your exact print template code here) ... -->
     <div class="print-document">
-      
-      <!-- DepEd Header -->
       <div class="print-header">
         <img src="../../assets/images/deped-logo.png" alt="DepEd Logo">
         <div class="header-text">
@@ -486,110 +566,38 @@
           <div style="margin-bottom: 15px;">S.Y. 20__ to 20__</div>
         </div>
       </div>
-
-      <!-- Student Info -->
       <div class="print-student-info">
-        <div class="info-row">
-          <span class="info-item"><strong>Name:</strong> <span id="print-name">________________________</span></span>
-          <span class="info-item"><strong>Age:</strong> <span id="print-age">______</span></span>
-        </div>
-        <div class="info-row">
-          <span class="info-item"><strong>Date:</strong> <span id="print-date">________________</span></span>
-          <span class="info-item"><strong>Time:</strong> <span id="print-time">____________</span></span>
-        </div>
-        <div class="info-row">
-          <span class="info-item"><strong>Year and Section:</strong> <span id="print-section-info">________________________</span></span>
-        </div>
+        <div class="info-row"><span class="info-item"><strong>Name:</strong> <span id="print-name">________________________</span></span><span class="info-item"><strong>Age:</strong> <span id="print-age">______</span></span></div>
+        <div class="info-row"><span class="info-item"><strong>Date:</strong> <span id="print-date">________________</span></span><span class="info-item"><strong>Time:</strong> <span id="print-time">____________</span></span></div>
+        <div class="info-row"><span class="info-item"><strong>Year and Section:</strong> <span id="print-section-info">________________________</span></span></div>
       </div>
-
       <div class="print-title">SCHOOL RULES/REGULATIONS VIOLATIONS</div>
       <div class="print-subtitle">Infractions : Sanctions &nbsp;&nbsp;&nbsp;&nbsp; Commissions : Omissions</div>
-
-      <!-- Class A/B Offenses Table -->
       <div class="print-table-title">PROHIBITED ACTS (CLASS A / B OFFENSES)</div>
       <table class="print-table">
-        <thead>
-          <tr>
-            <th style="width: 60%;">Violation</th>
-            <th style="width: 40%;">No. of Offenses (1) (2) (3) (4) (5)</th>
-          </tr>
-        </thead>
-        <tbody id="print-tbody-ab">
-          <!-- Rows injected by JS -->
-        </tbody>
+        <thead><tr><th style="width: 60%;">Violation</th><th style="width: 40%;">No. of Offenses (1) (2) (3) (4) (5)</th></tr></thead>
+        <tbody id="print-tbody-ab"></tbody>
       </table>
-      
-      <div class="print-penalty">
-        <strong>(CLASS A / B PENALTY)</strong><br>
-        1st Offense - Reprimand/Written warning<br>
-        2nd Offense - Confiscation of ID/Parental notification<br>
-        3rd Offense - Ordinary Suspension<br>
-        4th Offense - Preventive Suspension<br>
-        5th Offense - Dismissal
-      </div>
-
-      <!-- Class C Offenses Table -->
+      <div class="print-penalty"><strong>(CLASS A / B PENALTY)</strong><br>1st Offense - Reprimand/Written warning<br>2nd Offense - Confiscation of ID/Parental notification<br>3rd Offense - Ordinary Suspension<br>4th Offense - Preventive Suspension<br>5th Offense - Dismissal</div>
       <div class="print-table-title">(CLASS C OFFENSES) [CPC-ANTI-BULLYING]</div>
       <table class="print-table">
-        <thead>
-          <tr>
-            <th style="width: 60%;">Violation</th>
-            <th style="width: 40%;">No. of Offenses (1) (2) (3) (4) (5)</th>
-          </tr>
-        </thead>
-        <tbody id="print-tbody-c">
-          <!-- Rows injected by JS -->
-        </tbody>
+        <thead><tr><th style="width: 60%;">Violation</th><th style="width: 40%;">No. of Offenses (1) (2) (3) (4) (5)</th></tr></thead>
+        <tbody id="print-tbody-c"></tbody>
       </table>
-      
-      <div class="print-penalty">
-        <strong>(CLASS C PENALTY)</strong><br>
-        1st Offense - Ordinary Suspension<br>
-        2nd Offense - Preventive Suspension<br>
-        3rd Offense - Dismissal
-      </div>
-
-      <!-- Class D Offenses Table -->
+      <div class="print-penalty"><strong>(CLASS C PENALTY)</strong><br>1st Offense - Ordinary Suspension<br>2nd Offense - Preventive Suspension<br>3rd Offense - Dismissal</div>
       <div class="print-table-title">(CLASS D OFFENSES) - [CPC- ANTI-BULLYING]</div>
       <table class="print-table">
-        <thead>
-          <tr>
-            <th style="width: 60%;">Violation</th>
-            <th style="width: 40%;">No. of Offenses (1) (2) (3) (4) (5)</th>
-          </tr>
-        </thead>
-        <tbody id="print-tbody-d">
-          <!-- Rows injected by JS -->
-        </tbody>
+        <thead><tr><th style="width: 60%;">Violation</th><th style="width: 40%;">No. of Offenses (1) (2) (3) (4) (5)</th></tr></thead>
+        <tbody id="print-tbody-d"></tbody>
       </table>
-      
-      <div class="print-penalty">
-        <strong>(CLASS D PENALTY)</strong><br>
-        1st Offense - Preventive Suspension (Intervention counseling program)<br>
-        2nd Offense - Dismissal (Rehabilitation/Intervention Program)<br>
-        <em>Note: Harmful drugs - 1st offense is dismissal (due process of law may apply)</em>
-      </div>
-
-      <!-- Signatures -->
+      <div class="print-penalty"><strong>(CLASS D PENALTY)</strong><br>1st Offense - Preventive Suspension (Intervention counseling program)<br>2nd Offense - Dismissal (Rehabilitation/Intervention Program)<br><em>Note: Harmful drugs - 1st offense is dismissal (due process of law may apply)</em></div>
       <div class="print-signatures">
-        <div class="sig-block">
-          <div class="sig-line"></div>
-          <div class="sig-label">Prepared by:</div>
-          <input type="text" class="print-input" id="print-counselor-name" placeholder="Guidance Counselor Name" style="width: 80%; margin-top: 2px;">
-          <div class="sig-label" style="font-size: 10px; margin-top: 2px;">Teacher III - Guidance Counselor (Designate)</div>
-        </div>
-        <div class="sig-block">
-          <div class="sig-line"></div>
-          <div class="sig-label">Approved by:</div>
-          <input type="text" class="print-input" id="print-principal-name" placeholder="Principal Name" value="SATURNINO P. CALANSI EdD" style="width: 80%; margin-top: 2px;">
-          <div class="sig-label" style="font-size: 10px; margin-top: 2px;">Principal IV/School Head</div>
-        </div>
+        <div class="sig-block"><div class="sig-line"></div><div class="sig-label">Prepared by:</div><input type="text" class="print-input" id="print-counselor-name" placeholder="Guidance Counselor Name" style="width: 80%; margin-top: 2px;"><div class="sig-label" style="font-size: 10px; margin-top: 2px;">Teacher III - Guidance Counselor (Designate)</div></div>
+        <div class="sig-block"><div class="sig-line"></div><div class="sig-label">Approved by:</div><input type="text" class="print-input" id="print-principal-name" placeholder="Principal Name" value="SATURNINO P. CALANSI EdD" style="width: 80%; margin-top: 2px;"><div class="sig-label" style="font-size: 10px; margin-top: 2px;">Principal IV/School Head</div></div>
       </div>
-
     </div>
   </div>
- 
- <!-- FIREBASE INTEGRATION -->
+
   <script type="module">
     import { auth, db } from "../../assets/js/firebase-config.js";
     import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
@@ -598,10 +606,9 @@
 
     const loadingState = document.getElementById('loading-state');
     const accessDenied = document.getElementById('access-denied');
-    const profileContent = document.getElementById('profile-content');
+    const profileContent = document.getElementById('profile-display');
     const searchInput = document.getElementById('search-input');
     const autocompleteList = document.getElementById('autocomplete-list');
-    const profileDisplay = document.getElementById('profile-display');
 
     let ALL_STUDENTS = [];
     let CURRENT_STUDENT = null;
@@ -627,7 +634,6 @@
 
         await loadAllStudents();
         loadingState.style.display = 'none';
-        profileContent.style.display = 'block';
       } catch (error) {
         console.error("Auth error:", error);
       }
@@ -658,9 +664,7 @@
         });
 
         const results = await Promise.all(studentPromises);
-        results.forEach(classStudents => {
-          ALL_STUDENTS.push(...classStudents);
-        });
+        results.forEach(classStudents => ALL_STUDENTS.push(...classStudents));
 
         ALL_STUDENTS.sort((a, b) => (a.fullName || "").localeCompare(b.fullName || ""));
 
@@ -673,30 +677,19 @@
       const query = this.value.toLowerCase().trim();
       autocompleteList.innerHTML = '';
       
-      if (query.length < 2) {
-        autocompleteList.style.display = 'none';
-        return;
-      }
+      if (query.length < 2) { autocompleteList.style.display = 'none'; return; }
 
       const matches = ALL_STUDENTS.filter(s => 
         (s.fullName && s.fullName.toLowerCase().includes(query)) || 
         (s.lrn && s.lrn.includes(query))
       ).slice(0, 10);
 
-      if (matches.length === 0) {
-        autocompleteList.style.display = 'none';
-        return;
-      }
+      if (matches.length === 0) { autocompleteList.style.display = 'none'; return; }
 
       matches.forEach(student => {
         const div = document.createElement('div');
         div.className = 'autocomplete-item';
-        div.innerHTML = `
-          <div>
-            <div class="name">${student.fullName}</div>
-            <div class="details">${student.lrn} • ${student.classLabel}</div>
-          </div>
-        `;
+        div.innerHTML = `<div class="name">${student.fullName}</div><div class="details">${student.lrn} • ${student.classLabel}</div>`;
         div.onclick = () => selectStudent(student);
         autocompleteList.appendChild(div);
       });
@@ -714,12 +707,12 @@
       CURRENT_STUDENT = student;
       searchInput.value = student.fullName;
       autocompleteList.style.display = 'none';
-      profileDisplay.style.display = 'block';
+      profileContent.style.display = 'block';
       
       if (IS_EDIT_MODE) toggleEditMode();
 
       document.getElementById('side-name').textContent = student.fullName;
-      document.getElementById('side-lrn').textContent = student.lrn || "No LRN";
+      document.getElementById('side-lrn').textContent = "LRN: " + (student.lrn || "No LRN");
       document.getElementById('side-section').textContent = student.classLabel;
       document.getElementById('side-schoolYear').textContent = student.schoolYear;
       document.getElementById('side-adviser').textContent = student.adviserName;
@@ -749,53 +742,41 @@
       fields.forEach(field => {
         const viewEl = document.getElementById('view-' + field);
         const editEl = document.getElementById('edit-' + field);
-        
         const val = student[field] || (field === 'enrollmentStatus' ? 'Currently Enrolled' : '');
         
         if (viewEl) {
           viewEl.textContent = val || '-';
-          if (!val) viewEl.classList.add('empty');
-          else viewEl.classList.remove('empty');
+          if (!val) viewEl.classList.add('empty'); else viewEl.classList.remove('empty');
         }
-        
-        if (editEl) {
-          editEl.value = val;
-        }
+        if (editEl) editEl.value = val;
       });
     }
 
     window.toggleEditMode = function() {
       IS_EDIT_MODE = !IS_EDIT_MODE;
-      
       const fields = ['firstName', 'lastName', 'middleName', 'sex', 'birthDate', 'age', 'addressBarangay', 'fatherName', 'motherName', 'contactNumber', 'enrollmentStatus'];
       
       fields.forEach(field => {
         const viewEl = document.getElementById('view-' + field);
         const editEl = document.getElementById('edit-' + field);
-        
         if (IS_EDIT_MODE) {
-          viewEl.style.display = 'none';
-          editEl.style.display = 'block';
+          viewEl.style.display = 'none'; editEl.style.display = 'block';
         } else {
-          viewEl.style.display = 'block';
-          editEl.style.display = 'none';
+          viewEl.style.display = 'block'; editEl.style.display = 'none';
         }
       });
 
-      document.getElementById('btn-edit-toggle').style.display = IS_EDIT_MODE ? 'none' : 'block';
+      document.getElementById('btn-edit-toggle').style.display = IS_EDIT_MODE ? 'none' : 'flex';
       document.getElementById('btn-save-changes').style.display = IS_EDIT_MODE ? 'block' : 'none';
     };
 
     window.saveStudentInfo = async function() {
       if (!CURRENT_STUDENT) return;
-      
       const btn = document.getElementById('btn-save-changes');
-      btn.textContent = "Saving...";
-      btn.disabled = true;
+      btn.textContent = "Saving..."; btn.disabled = true;
 
       try {
         const studentRef = doc(db, "classes", CURRENT_STUDENT.classId, "students", CURRENT_STUDENT.id);
-        
         const updates = {
           firstName: document.getElementById('edit-firstName').value.trim(),
           lastName: document.getElementById('edit-lastName').value.trim(),
@@ -809,257 +790,128 @@
           contactNumber: document.getElementById('edit-contactNumber').value.trim(),
           enrollmentStatus: document.getElementById('edit-enrollmentStatus').value
         };
-        
         updates.fullName = `${updates.lastName}, ${updates.firstName}${updates.middleName ? ', ' + updates.middleName : ''}`;
 
         await updateDoc(studentRef, updates);
-        
         Object.assign(CURRENT_STUDENT, updates);
-        
         selectStudent(CURRENT_STUDENT);
         toggleEditMode();
-        
         alert("✅ Student info updated successfully!");
-
       } catch (error) {
         console.error("Error saving:", error);
         alert("❌ Failed to save changes.");
       } finally {
-        btn.textContent = "💾 Save Changes to Database";
-        btn.disabled = false;
+        btn.textContent = "💾 Save Changes to Database"; btn.disabled = false;
       }
     };
 
     document.getElementById('photo-upload').addEventListener('change', function(e) {
       const file = e.target.files[0];
       if (!file || !CURRENT_STUDENT) return;
-
-      if (file.size > 800000) { 
-        alert("⚠️ Please select an image smaller than 800KB.");
-        return;
-      }
+      if (file.size > 800000) { alert("⚠️ Please select an image smaller than 800KB."); return; }
 
       const reader = new FileReader();
       reader.onload = async function(event) {
         const base64String = event.target.result;
-        
         try {
           const studentRef = doc(db, "classes", CURRENT_STUDENT.classId, "students", CURRENT_STUDENT.id);
           await updateDoc(studentRef, { profilePicture: base64String });
-          
           CURRENT_STUDENT.profilePicture = base64String;
           document.getElementById('profile-image').src = base64String;
           alert("✅ Profile picture updated!");
-        } catch (err) {
-          console.error("Error uploading image:", err);
-          alert("❌ Failed to upload image.");
-        }
+        } catch (err) { console.error(err); alert("❌ Failed to upload image."); }
       };
       reader.readAsDataURL(file);
     });
 
     const caseDialog = document.getElementById('case-dialog');
-
     window.openViolationModal = function() {
       if (!CURRENT_STUDENT) return;
-
       document.getElementById('modal-student-name').textContent = CURRENT_STUDENT.fullName;
       document.getElementById('modal-student-details').textContent = `${CURRENT_STUDENT.classLabel} | LRN: ${CURRENT_STUDENT.lrn || 'N/A'}`;
-      
-      const now = new Date();
-      const offset = now.getTimezoneOffset() * 60000;
-      const localISOTime = (new Date(now - offset)).toISOString().slice(0, 10);
-      document.getElementById('modal-date').value = localISOTime;
-      
-      const hours = String(now.getHours()).padStart(2, '0');
-      const minutes = String(now.getMinutes()).padStart(2, '0');
-      document.getElementById('modal-time').value = `${hours}:${minutes}`;
-
+      document.getElementById('modal-date').valueAsDate = new Date();
+      document.getElementById('modal-time').value = new Date().toTimeString().slice(0,5);
       caseDialog.showModal();
     };
-
-    caseDialog.addEventListener('click', (e) => {
-      const rect = caseDialog.getBoundingClientRect();
-      const isInDialog = (rect.top <= e.clientY && e.clientY <= rect.top + rect.height &&
-        rect.left <= e.clientX && e.clientX <= rect.left + rect.width);
-      if (!isInDialog) {
-        caseDialog.close();
-      }
-    });
 
     window.submitCase = async function(violationName) {
       const date = document.getElementById('modal-date').value;
       const time = document.getElementById('modal-time').value;
-
       if (!CURRENT_STUDENT) return;
-
       if (!confirm(`Are you sure you want to log:\n\n"${violationName}"\n\nfor ${CURRENT_STUDENT.fullName}?`)) return;
 
       try {
         const studentRef = doc(db, "classes", CURRENT_STUDENT.classId, "students", CURRENT_STUDENT.id);
-        
-        await updateDoc(studentRef, {
-          violations: arrayUnion({
-            violation: violationName,
-            date: date,
-            time: time,
-            loggedBy: auth.currentUser.email,
-            timestamp: Date.now()
-          })
-        });
-
+        await updateDoc(studentRef, { violations: arrayUnion({ violation: violationName, date, time, loggedBy: auth.currentUser.email, timestamp: Date.now() }) });
         alert("✅ Case successfully logged to the student's permanent record.");
         caseDialog.close();
-        
         await loadAllStudents(); 
-        
         const updatedStudent = ALL_STUDENTS.find(s => s.id === CURRENT_STUDENT.id);
-        if (updatedStudent) {
-          selectStudent(updatedStudent); 
-        }
-
-      } catch (error) {
-        console.error("Error saving case:", error);
-        alert("❌ Failed to save case. Check console for details.");
-      }
+        if (updatedStudent) selectStudent(updatedStudent); 
+      } catch (error) { console.error(error); alert("❌ Failed to save case."); }
     };
 
-
-        // 9. Manage Violations (View & Delete)
     const manageDialog = document.getElementById('manage-violations-dialog');
-
     window.openManageViolationsModal = function() {
       if (!CURRENT_STUDENT) return;
-
       document.getElementById('manage-student-name').textContent = CURRENT_STUDENT.fullName;
-      
       const violations = CURRENT_STUDENT.violations || [];
       const container = document.getElementById('violations-list-container');
 
       if (violations.length === 0) {
-        container.innerHTML = '<div style="text-align:center; padding: 30px; color: #64748b;">No violations recorded for this student.</div>';
+        container.innerHTML = '<div style="text-align:center; padding: 30px; color: #64748b;">No violations recorded.</div>';
       } else {
-        // Sort violations by newest first
         const sorted = [...violations].sort((a, b) => b.timestamp - a.timestamp);
-        
         container.innerHTML = sorted.map((v, index) => `
           <div style="display: flex; justify-content: space-between; align-items: center; background: #fff; padding: 15px; border: 1px solid var(--gc-border); border-radius: 8px; margin-bottom: 10px;">
             <div>
               <div style="font-weight: bold; color: var(--danger); font-size: 1rem; margin-bottom: 4px;">${v.violation}</div>
-              <div style="font-size: 0.85rem; color: #64748b;">
-                📅 ${v.date} &nbsp;|&nbsp; 🕒 ${v.time}
-              </div>
+              <div style="font-size: 0.85rem; color: #64748b;">📅 ${v.date} | 🕒 ${v.time}</div>
             </div>
-            <button class="btn-action btn-log" onclick="deleteViolation(${index})" style="background: #fee2e2; color: #991b1b; border: 1px solid #fecaca; padding: 8px 12px;">🗑️ Delete</button>
-          </div>
-        `).join("");
+            <button class="btn-action btn-violation" style="padding: 8px 12px; font-size: 0.8rem;" onclick="deleteViolation(${index})">🗑️ Delete</button>
+          </div>`).join("");
       }
-
       manageDialog.showModal();
     };
 
     window.deleteViolation = async function(index) {
       if (!CURRENT_STUDENT) return;
-
-      // Get the sorted array to find the exact violation to delete
       const violations = CURRENT_STUDENT.violations || [];
       const sorted = [...violations].sort((a, b) => b.timestamp - a.timestamp);
       const violationToDelete = sorted[index];
-
-      if (!confirm(`Are you sure you want to delete this violation?\n\n"${violationToDelete.violation}"\nDate: ${violationToDelete.date}`)) {
-        return;
-      }
+      if (!confirm(`Delete this violation?\n\n"${violationToDelete.violation}"\nDate: ${violationToDelete.date}`)) return;
 
       try {
-        // Filter out the selected violation
         const updatedViolations = violations.filter(v => v.timestamp !== violationToDelete.timestamp);
-        
         const studentRef = doc(db, "classes", CURRENT_STUDENT.classId, "students", CURRENT_STUDENT.id);
         await updateDoc(studentRef, { violations: updatedViolations });
-
-        alert("✅ Violation deleted successfully.");
-        
-        // Refresh the student data
+        alert("✅ Violation deleted.");
         await loadAllStudents(); 
         const updatedStudent = ALL_STUDENTS.find(s => s.id === CURRENT_STUDENT.id);
-        if (updatedStudent) {
-          selectStudent(updatedStudent); 
-          openManageViolationsModal(); // Re-open the modal to show the updated list
-        }
-
-      } catch (error) {
-        console.error("Error deleting violation:", error);
-        alert("❌ Failed to delete violation.");
-      }
+        if (updatedStudent) { selectStudent(updatedStudent); openManageViolationsModal(); }
+      } catch (error) { console.error(error); alert("❌ Failed to delete violation."); }
     };
 
     window.printViolationReport = function() {
-      if (!CURRENT_STUDENT) {
-        alert("Please select a student first.");
-        return;
-      }
-
+      if (!CURRENT_STUDENT) return;
       const violations = CURRENT_STUDENT.violations || [];
-      
-      const offensesAB = [
-        "A.1 Irregular Attendance", "A.2 No Letter of Excuse", "A.3 Misbehavior", 
-        "A.4 Boisterous laughter", "A.5 Entering Campus No ID", "A.6 Not Wearing ID", 
-        "A.7 Littering", "A.8 Disruption of Classes", "A.9 Cheating Exams", 
-        "A.10 Unauthorized haircut", "A.11 Wearing of earring for male", "A.12 Bringing large amount money", 
-        "A.13 Use of cellular phones class hrs.", "A.14 Gambling", "A.15 Not in a proper uniform", 
-        "A.16 Cutting Classes", "A.17 In/Out School Campus over fence", "A.18 Chewing Gum during class hrs.", 
-        "A.19 Falcification of signatures", "A.20 Showing pornographic pics", "A.21 Bringing outsiders in campus", 
-        "A.22 Disrespect", "A.23 Too much coloring hair", "A.24 Littering/ throwing garbage", 
-        "A.25 Improper disposal of spitting", "A.26 Late/not attending Flag Ceremony"
-      ];
-
-      // UPDATED: Full list of Class C Offenses
-      const offensesC = [
-        "C 1 Vandalism",
-        "C 2 Smoking",
-        "C 3 Tampering/improper us ID card",
-        "C 4 Theft/Rubbery",
-        "C 5 Vulgar manner",
-        "C 6 Rumor mongering",
-        "C 7 Threat / Coercion",
-        "C 8 Indecent Acts",
-        "C 9 Lending of school ID to other"
-      ];
-
-      const offensesD = [
-        "D.1 Under the influence of Liquor", "D.2 Forging /Record/document", "D.3 Verbal physical assault", 
-        "D.4 Distribution pornographic", "D.5 Gambling/playing cards", "D.6 Inflicting injury student/staff", 
-        "D.7 Class Boycott", "D.8 Membership in Gangs etc.", "D.9 Hazing", "D.10 Bringing a deadly weapons", 
-        "D.11 Immorality", "D.12 Publishing/circulating false", "D.13 Drug user/pusher"
-      ];
+      const offensesAB = [ "A.1 Irregular Attendance", "A.2 No Letter of Excuse", "A.3 Misbehavior", "A.4 Boisterous laughter", "A.5 Entering Campus No ID", "A.6 Not Wearing ID", "A.7 Littering", "A.8 Disruption of Classes", "A.9 Cheating Exams", "A.10 Unauthorized haircut", "A.11 Wearing of earring for male", "A.12 Bringing large amount money", "A.13 Use of cellular phones class hrs.", "A.14 Gambling", "A.15 Not in a proper uniform", "A.16 Cutting Classes", "A.17 In/Out School Campus over fence", "A.18 Chewing Gum during class hrs.", "A.19 Falcification of signatures", "A.20 Showing pornographic pics", "A.21 Bringing outsiders in campus", "A.22 Disrespect", "A.23 Too much coloring hair", "A.24 Littering/ throwing garbage", "A.25 Improper disposal of spitting", "A.26 Late/not attending Flag Ceremony" ];
+      const offensesC = [ "C 1 Vandalism", "C 2 Smoking", "C 3 Tampering/improper us ID card", "C 4 Theft/Rubbery", "C 5 Vulgar manner", "C 6 Rumor mongering", "C 7 Threat / Coercion", "C 8 Indecent Acts", "C 9 Lending of school ID to other" ];
+      const offensesD = [ "D.1 Under the influence of Liquor", "D.2 Forging /Record/document", "D.3 Verbal physical assault", "D.4 Distribution pornographic", "D.5 Gambling/playing cards", "D.6 Inflicting injury student/staff", "D.7 Class Boycott", "D.8 Membership in Gangs etc.", "D.9 Hazing", "D.10 Bringing a deadly weapons", "D.11 Immorality", "D.12 Publishing/circulating false", "D.13 Drug user/pusher" ];
 
       function buildRows(offenseList) {
         return offenseList.map(offense => {
           let count = 0;
-          violations.forEach(v => {
-            if (v.violation.includes(offense.split(' ')[0]) || v.violation === offense) {
-              count++;
-            }
-          });
-
+          violations.forEach(v => { if (v.violation.includes(offense.split(' ')[0]) || v.violation === offense) count++; });
           let boxes = "";
-          for (let i = 1; i <= 5; i++) {
-            boxes += (i <= count) ? "[ ✓ ] " : "[   ] ";
-          }
-
-          return `
-            <tr>
-              <td>${offense}</td>
-              <td class="offense-check">${boxes}</td>
-            </tr>
-          `;
+          for (let i = 1; i <= 5; i++) boxes += (i <= count) ? "[ ✓ ] " : "[   ] ";
+          return `<tr><td>${offense}</td><td class="offense-check">${boxes}</td></tr>`;
         }).join("");
       }
 
       document.getElementById('print-tbody-ab').innerHTML = buildRows(offensesAB);
       document.getElementById('print-tbody-c').innerHTML = buildRows(offensesC);
       document.getElementById('print-tbody-d').innerHTML = buildRows(offensesD);
-
       document.getElementById('print-name').textContent = CURRENT_STUDENT.fullName;
       document.getElementById('print-age').textContent = CURRENT_STUDENT.age || "______";
       document.getElementById('print-section-info').textContent = CURRENT_STUDENT.classLabel;
@@ -1068,21 +920,15 @@
       document.getElementById('print-date').textContent = now.toLocaleDateString('en-PH', { year: 'numeric', month: 'long', day: 'numeric' });
       document.getElementById('print-time').textContent = now.toLocaleTimeString('en-PH', { hour: '2-digit', minute: '2-digit' });
 
-            // Tell CSS to print the violation report
       document.body.classList.add('print-mode-violation');
-      
       window.print();
-      
-      // Remove the class after printing
       setTimeout(() => document.body.classList.remove('print-mode-violation'), 1000);
     };
       
     window.openNewLRPPage = function() {
       if (!CURRENT_STUDENT) return;
-      // Opens the new dedicated page and passes the student IDs in the URL
       window.location.href = `lrp-intake.html?classId=${CURRENT_STUDENT.classId}&studentId=${CURRENT_STUDENT.id}`;
     };
-   
   </script>
 </body>
 </html>
