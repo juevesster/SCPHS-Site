@@ -970,9 +970,10 @@
       } catch (error) { console.error(error); alert("❌ Failed to delete violation."); }
     };
 
-    window.printViolationReport = function() {
+        window.printViolationReport = function() {
       if (!CURRENT_STUDENT) return;
       const violations = CURRENT_STUDENT.violations || [];
+      
       const offensesAB = [ "A.1 Irregular Attendance", "A.2 No Letter of Excuse", "A.3 Misbehavior", "A.4 Boisterous laughter", "A.5 Entering Campus No ID", "A.6 Not Wearing ID", "A.7 Littering", "A.8 Disruption of Classes", "A.9 Cheating Exams", "A.10 Unauthorized haircut", "A.11 Wearing of earring for male", "A.12 Bringing large amount money", "A.13 Use of cellular phones class hrs.", "A.14 Gambling", "A.15 Not in a proper uniform", "A.16 Cutting Classes", "A.17 In/Out School Campus over fence", "A.18 Chewing Gum during class hrs.", "A.19 Falcification of signatures", "A.20 Showing pornographic pics", "A.21 Bringing outsiders in campus", "A.22 Disrespect", "A.23 Too much coloring hair", "A.24 Littering/ throwing garbage", "A.25 Improper disposal of spitting", "A.26 Late/not attending Flag Ceremony" ];
       const offensesC = [ "C 1 Vandalism", "C 2 Smoking", "C 3 Tampering/improper us ID card", "C 4 Theft/Rubbery", "C 5 Vulgar manner", "C 6 Rumor mongering", "C 7 Threat / Coercion", "C 8 Indecent Acts", "C 9 Lending of school ID to other" ];
       const offensesD = [ "D.1 Under the influence of Liquor", "D.2 Forging /Record/document", "D.3 Verbal physical assault", "D.4 Distribution pornographic", "D.5 Gambling/playing cards", "D.6 Inflicting injury student/staff", "D.7 Class Boycott", "D.8 Membership in Gangs etc.", "D.9 Hazing", "D.10 Bringing a deadly weapons", "D.11 Immorality", "D.12 Publishing/circulating false", "D.13 Drug user/pusher" ];
@@ -998,9 +999,17 @@
       document.getElementById('print-date').textContent = now.toLocaleDateString('en-PH', { year: 'numeric', month: 'long', day: 'numeric' });
       document.getElementById('print-time').textContent = now.toLocaleTimeString('en-PH', { hour: '2-digit', minute: '2-digit' });
 
+      // 👇 THIS FORCES THE BROWSER TO USE PORTRAIT MODE
+      let style = document.createElement('style');
+      style.innerHTML = '@page { size: A4 portrait; margin: 10mm; }';
+      document.head.appendChild(style);
+
       document.body.classList.add('print-mode-violation');
       window.print();
-      setTimeout(() => document.body.classList.remove('print-mode-violation'), 1000);
+      setTimeout(() => {
+        document.body.classList.remove('print-mode-violation');
+        style.remove(); // Clean up the style after printing
+      }, 1000);
     };
       
     window.openNewLRPPage = function() {
