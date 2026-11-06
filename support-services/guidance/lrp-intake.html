@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>LRP Intake Sheet – SCPHS Guidance</title>
+  <link rel="stylesheet" href="../../assets/css/styles.css" />
+  
+  <style>
+    :root {
+      --gc-primary: #0f4c81;
+      --gc-border: #e2e8f0;
+      --gc-text-main: #1e293b;
+      --gc-text-muted: #64748b;
+      --bright-blue: #2563eb;
+      --danger: #dc2626;
+      --success: #16a34a;
+    }
+
+    body { background: #f1f5f9; margin: 0; font-family: system-ui, -apple-system, sans-serif; }
+    .wrap { max-width: 900px; margin: 0 auto; padding: 20px 16px; }
+
+    /* Header */
+    .header { background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; }
+    .header h1 { margin: 0; color: var(--gc-primary); font-size: 1.4rem; }
+    .back-link { color: var(--bright-blue); text-decoration: none; font-weight: 600; font-size: 0.9rem; }
+
+    /* Form Card */
+    .form-card { background: #fff; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); padding: 30px; margin-bottom: 30px; }
+    
+    .student-header { background: #f8fafc; border: 1px solid var(--gc-border); padding: 15px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid var(--gc-primary); }
+    .student-header h2 { margin: 0; color: var(--gc-primary); font-size: 1.2rem; }
+    .student-header p { margin: 5px 0 0; color: var(--gc-text-muted); font-size: 0.9rem; }
+
+    .form-section { margin-bottom: 30px; border: 1px solid var(--gc-border); border-radius: 8px; padding: 20px; }
+    .form-section h3 { margin-top: 0; color: var(--gc-primary); border-bottom: 1px solid var(--gc-border); padding-bottom: 10px; font-size: 1.1rem; }
+    
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px; }
+    .grid-full { margin-bottom: 15px; }
+    @media (max-width: 600px) { .grid-2 { grid-template-columns: 1fr; } }
+
+    label { display: block; font-size: 0.8rem; font-weight: 700; color: #333; margin-bottom: 5px; text-transform: uppercase; }
+    input, select, textarea { width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-family: inherit; font-size: 0.95rem; box-sizing: border-box; }
+    textarea { resize: vertical; min-height: 100px; }
+
+    /* Buttons */
+    .btn-row { display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px; padding-top: 20px; border-top: 1px solid var(--gc-border); }
+    .btn { padding: 12px 24px; border: none; border-radius: 6px; font-weight: bold; font-size: 0.95rem; cursor: pointer; transition: 0.2s; }
+    .btn-save { background: var(--success); color: #fff; }
+    .btn-save:hover { background: #15803d; }
+    .btn-print { background: #475569; color: #fff; }
+    .btn-print:hover { background: #334155; }
+    .btn-cancel { background: #e2e8f0; color: #333; }
+
+    /* --- PRINT STYLES --- */
+    @media print {
+      @page { size: A4 portrait; margin: 10mm; }
+      body { background: #fff; }
+      .header, .back-link, .btn-row { display: none !important; }
+      .wrap { padding: 0; max-width: 100%; }
+      .form-card { box-shadow: none; padding: 0; margin: 0; }
+      .form-section { border: none; padding: 0; margin-bottom: 15px; }
+      .form-section h3 { border-bottom: 1px solid #000; font-size: 12px; margin-bottom: 8px; }
+      
+      .student-header { background: none; border: none; border-bottom: 2px solid #000; padding: 0 0 10px 0; margin-bottom: 20px; }
+      .student-header h2 { font-size: 14px; }
+      .student-header p { font-size: 11px; }
+      
+      .grid-2 { gap: 10px; }
+      label { font-size: 9px; color: #000; margin-bottom: 2px; text-transform: none; }
+      input, select, textarea { border: none; border-bottom: 1px solid #000; padding: 4px 0; border-radius: 0; font-size: 11px; background: transparent; }
+      textarea { border: 1px solid #000; padding: 5px; }
+      
+      .print-header { display: block !important; text-align: center; margin-bottom: 20px; }
+      .print-header img { height: 60px; }
+      .print-header h1 { font-size: 14px; margin: 5px 0; }
+      .print-header p { font-size: 11px; margin: 2px 0; }
+    }
+    .print-header { display: none; }
+  </style>
+</head>
+<body>
+
+  <div class="wrap">
+    <div class="header">
+      <h1>📁 LRP Intake Sheet (Annex E)</h1>
+      <a href="student-records.html" class="back-link" onclick="history.back(); return false;">← Back to Profile</a>
+    </div>
+
+    <div class="form-card">
+      
+      <!-- Print Header (Only visible when printing) -->
+      <div class="print-header">
+        <img src="../../assets/images/deped-logo.png" alt="DepEd Logo">
+        <h1>Republic of the Philippines</h1>
+        <h1>DEPARTMENT OF EDUCATION</h1>
+        <p>Region II - Cagayan Valley</p>
+        <p>SCHOOLS DIVISION OF NUEVA VIZCAYA</p>
+        <h1>STA. CRUZ PINGKIAN HIGH SCHOOL</h1>
+        <p>Pingkian, Kayapa, Nueva Vizcaya</p>
+        <h1 style="margin-top: 15px;">ENHANCED INTAKE SHEET (ANNEX E)</h1>
+      </div>
+
+      <!-- Student Info -->
+      <div class="student-header">
+        <h2 id="display-student-name">Loading Student...</h2>
+        <p id="display-student-details">-</p>
+      </div>
+
+      <form id="lrp-form">
+        
+        <!-- PART I -->
+        <div class="form-section">
+          <h3>I. IDENTIFYING INFORMATION</h3>
+          
+          <h4 style="font-size: 0.9rem; margin: 10px 0;">B. Parents and Guardian</h4>
+          <div class="grid-2">
+            <div><label>Name of Mother</label><input type="text" id="lrp-motherName"></div>
+            <div><label>Contact No.</label><input type="text" id="lrp-motherContact"></div>
+            <div><label>Name of Father</label><input type="text" id="lrp-fatherName"></div>
+            <div><label>Contact No.</label><input type="text" id="lrp-fatherContact"></div>
+            <div style="grid-column: 1 / -1;"><label>Name of Guardian (if applicable)</label><input type="text" id="lrp-guardianName"></div>
+          </div>
+
+          <h4 style="font-size: 0.9rem; margin: 20px 0 10px;">C. Complainant</h4>
+          <div class="grid-2">
+            <div><label>Complainant Name</label><input type="text" id="lrp-complainantName"></div>
+            <div><label>Relation to Learner-Victim</label><input type="text" id="lrp-complainantRelation"></div>
+            <div><label>Contact No.</label><input type="text" id="lrp-complainantContact"></div>
+            <div><label>Address</label><input type="text" id="lrp-complainantAddress"></div>
+          </div>
+        </div>
+
+        <!-- PART II -->
+        <div class="form-section">
+          <h3>II. ALLEGED OFFENDER</h3>
+          <div class="grid-full">
+            <label>Type of Offender</label>
+            <select id="lrp-offenderType">
+              <option value="Student">Student</option>
+              <option value="School Personnel">School Personnel</option>
+              <option value="Other">Neither School Personnel nor Student</option>
+            </select>
+          </div>
+          <div class="grid-2">
+            <div style="grid-column: 1 / -1;"><label>Name of Offender</label><input type="text" id="lrp-offenderName"></div>
+            <div><label>Age</label><input type="text" id="lrp-offenderAge"></div>
+            <div><label>Sex</label><input type="text" id="lrp-offenderSex"></div>
+            <div><label>Date of Birth</label><input type="date" id="lrp-offenderDOB"></div>
+            <div><label>Contact No.</label><input type="text" id="lrp-offenderContact"></div>
+            <div><label>Address</label><input type="text" id="lrp-offenderAddress"></div>
+            <div><label>Relationship to Learner-Victim</label><input type="text" id="lrp-offenderRelation"></div>
+          </div>
+        </div>
+
+        <!-- PART III -->
+        <div class="form-section">
+          <h3>III. DETAILS OF THE INCIDENT</h3>
+          <div class="grid-2">
+            <div><label>Date of Incident</label><input type="date" id="lrp-incidentDate"></div>
+          </div>
+          <div class="grid-full">
+            <label>Narrative Description</label>
+            <textarea id="lrp-incidentDetails" rows="4"></textarea>
+          </div>
+        </div>
+
+        <!-- PART IV & V -->
+        <div class="form-section">
+          <h3>IV. ACTIONS & V. RECOMMENDATIONS</h3>
+          <div class="grid-full">
+            <label>Initial Actions Taken</label>
+            <textarea id="lrp-initialActions" rows="3"></textarea>
+          </div>
+          <div class="grid-2">
+            <div>
+              <label>Referral Required?</label>
+              <select id="lrp-referralReq"><option value="No">No</option><option value="Yes">Yes</option></select>
+            </div>
+            <div><label>Referred To</label><input type="text" id="lrp-referralTo" placeholder="e.g., LSWDO, PNP, NGO"></div>
+          </div>
+          <div class="grid-full">
+            <label>Reason for Referral / Other Recommendations</label>
+            <textarea id="lrp-referralReason" rows="3"></textarea>
+          </div>
+        </div>
+
+        <div class="btn-row">
+          <button type="button" class="btn btn-cancel" onclick="history.back()">Cancel</button>
+          <button type="button" class="btn btn-print" onclick="window.print()">🖨️ Print Intake Sheet</button>
+          <button type="button" class="btn btn-save" onclick="saveLRPCase()" id="btn-save">💾 Save Intake Sheet</button>
+        </div>
+
+      </form>
+    </div>
+  </div>
+
+  <script type="module">
+    import { auth, db } from "../../assets/js/firebase-config.js";
+    import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+    import { doc, getDoc, collection, addDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+    const urlParams = new URLSearchParams(window.location.search);
+    const classId = urlParams.get('classId');
+    const studentId = urlParams.get('studentId');
+
+    let CURRENT_STUDENT = null;
+
+    onAuthStateChanged(auth, async (user) => {
+      if (!user) {
+        window.location.href = "../../login.html";
+        return;
+      }
+
+      if (!classId || !studentId) {
+        alert("Missing student information. Please open this page from the Student Profile.");
+        window.location.href = "student-records.html";
+        return;
+      }
+
+      try {
+        const studentRef = doc(db, "classes", classId, "students", studentId);
+        const studentSnap = await getDoc(studentRef);
+        
+        if (studentSnap.exists()) {
+          CURRENT_STUDENT = { id: studentSnap.id, classId, ...studentSnap.data() };
+          
+          document.getElementById('display-student-name').textContent = CURRENT_STUDENT.fullName;
+          document.getElementById('display-student-details').textContent = `${CURRENT_STUDENT.classLabel || 'Unknown Section'} | Age: ${CURRENT_STUDENT.age || '—'} | Sex: ${CURRENT_STUDENT.sex || '—'}`;
+
+          // Pre-fill known data
+          document.getElementById('lrp-motherName').value = CURRENT_STUDENT.motherName || "";
+          document.getElementById('lrp-fatherName').value = CURRENT_STUDENT.fatherName || "";
+          document.getElementById('lrp-guardianName').value = CURRENT_STUDENT.guardianName || "";
+          document.getElementById('lrp-incidentDate').valueAsDate = new Date();
+
+        } else {
+          alert("Student not found.");
+        }
+      } catch (error) {
+        console.error("Error loading student:", error);
+        alert("Error loading student data.");
+      }
+    });
+
+    window.saveLRPCase = async function() {
+      if (!CURRENT_STUDENT) return;
+
+      const btn = document.getElementById('btn-save');
+      btn.textContent = "Saving...";
+      btn.disabled = true;
+
+      try {
+        const casesRef = collection(db, "classes", classId, "students", studentId, "lrp_cases");
+        
+        const dataToSave = {
+          motherName: document.getElementById('lrp-motherName').value,
+          motherContact: document.getElementById('lrp-motherContact').value,
+          fatherName: document.getElementById('lrp-fatherName').value,
+          fatherContact: document.getElementById('lrp-fatherContact').value,
+          guardianName: document.getElementById('lrp-guardianName').value,
+          complainantName: document.getElementById('lrp-complainantName').value,
+          complainantRelation: document.getElementById('lrp-complainantRelation').value,
+          complainantContact: document.getElementById('lrp-complainantContact').value,
+          complainantAddress: document.getElementById('lrp-complainantAddress').value,
+          
+          offenderType: document.getElementById('lrp-offenderType').value,
+          offenderName: document.getElementById('lrp-offenderName').value,
+          offenderAge: document.getElementById('lrp-offenderAge').value,
+          offenderSex: document.getElementById('lrp-offenderSex').value,
+          offenderDOB: document.getElementById('lrp-offenderDOB').value,
+          offenderContact: document.getElementById('lrp-offenderContact').value,
+          offenderAddress: document.getElementById('lrp-offenderAddress').value,
+          offenderRelation: document.getElementById('lrp-offenderRelation').value,
+          
+          incidentDate: document.getElementById('lrp-incidentDate').value,
+          incidentDetails: document.getElementById('lrp-incidentDetails').value,
+          
+          initialActions: document.getElementById('lrp-initialActions').value,
+          referralReq: document.getElementById('lrp-referralReq').value,
+          referralTo: document.getElementById('lrp-referralTo').value,
+          referralReason: document.getElementById('lrp-referralReason').value,
+          
+          loggedBy: auth.currentUser.email,
+          timestamp: Date.now()
+        };
+
+        await addDoc(casesRef, dataToSave);
+
+        alert("✅ Enhanced Intake Sheet saved successfully!");
+        window.location.href = "student-records.html"; // Go back to the profile
+
+      } catch (error) {
+        console.error("Error saving LRP case:", error);
+        alert("❌ Failed to save LRP case. Check the console.");
+        btn.textContent = "💾 Save Intake Sheet";
+        btn.disabled = false;
+      }
+    };
+  </script>
+</body>
+</html>

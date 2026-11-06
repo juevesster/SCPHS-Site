@@ -251,7 +251,8 @@
                 <button class="btn-edit" style="margin-top: 0;" onclick="openViolationModal()">⚠️ Log Violation</button>
                 <button class="btn-edit" style="margin-top: 10px; background: #475569;" onclick="printViolationReport()">🖨️ Print Violation Report</button>
                 <button class="btn-edit" style="margin-top: 10px; background: #64748b;" onclick="openManageViolationsModal()">📋 Manage Violations</button>
-                <button class="btn-edit" style="margin-top: 10px; background: #0369a1;" onclick="openLRPModal()">📁 LRP Case Files (Annex E)</button>
+                <button class="btn-edit" style="margin-top: 10px; background: #0369a1;" onclick="openNewLRPPage()">📁 LRP Case Files (Annex E)</button>
+                
             </div>
             </div>
           </div>
@@ -1282,26 +1283,10 @@
         // 10. LRP Case Management (Annex E)
     const lrpDialog = document.getElementById('lrp-dialog');
 
-        window.openLRPModal = function() {
+            window.openNewLRPPage = function() {
       if (!CURRENT_STUDENT) return;
-
-      // 1. Reset Form FIRST (before filling anything)
-      document.getElementById('lrp-form').reset();
-      
-      // 2. Set Default Date
-      document.getElementById('lrp-incidentDate').valueAsDate = new Date();
-
-      // 3. Populate Header (This is the display on the screen)
-      document.getElementById('lrp-student-name').textContent = CURRENT_STUDENT.fullName;
-      document.getElementById('lrp-student-details').textContent = `${CURRENT_STUDENT.classLabel} | Age: ${CURRENT_STUDENT.age || '—'} | Sex: ${CURRENT_STUDENT.sex || '—'}`;
-      
-      // 4. Pre-fill Parent Names (if they exist in the student record)
-      document.getElementById('lrp-motherName').value = CURRENT_STUDENT.motherName || "";
-      document.getElementById('lrp-fatherName').value = CURRENT_STUDENT.fatherName || "";
-      document.getElementById('lrp-guardianName').value = CURRENT_STUDENT.guardianName || "";
-
-      // 5. Show Modal
-      lrpDialog.showModal();
+      // Opens the new dedicated page and passes the student IDs in the URL
+      window.location.href = `lrp-intake.html?classId=${CURRENT_STUDENT.classId}&studentId=${CURRENT_STUDENT.id}`;
     };
 
     window.toggleOffenderFields = function() {
