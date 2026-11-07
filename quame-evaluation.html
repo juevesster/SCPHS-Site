@@ -342,69 +342,68 @@
     </div>
   </div>
 
-  <script type="module">
-    // Make sure this path is correct for your folder structure!
+    <script type="module">
     import { db } from "./assets/js/firebase-config.js"; 
     import { collection, addDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
     window.saveQUAME = async function() {
-      const topic = document.getElementById('eval-topic').value;
-      const facilitator = document.getElementById('eval-facilitator').value;
+      const btn = document.querySelector('.btn-save');
       
-      if (!topic || !facilitator) {
-        alert("⚠️ Please fill out the Session Topic and Facilitator.");
-        return;
-      }
-
-      // Gather all radio button answers
-      const data = {};
-      let totalScore = 0;
-      let answeredCount = 0;
-
-      // Loop through all 19 questions
-      const questions = ['s1','s2','s3','s4','s5','s6','s7','s8','s9','s10', 'f1','f2','f3','f4','f5','f6','f7','f8','f9'];
-      
-      for (let q of questions) {
-        const selected = document.querySelector(`input[name="${q}"]:checked`);
-        if (selected) {
-          const val = selected.value;
-          data[q] = val;
-          answeredCount++;
-          
-          if (val === "Strongly Agree") totalScore += 5;
-          else if (val === "Agree") totalScore += 4;
-          else if (val === "Disagree") totalScore += 2;
-          else if (val === "Strongly Disagree") totalScore += 1;
-        }
-      }
-
-      if (answeredCount < 19) {
-        alert("⚠️ Please answer all 19 questions before submitting.");
-        return;
-      }
-
-      const percentage = (totalScore / 95) * 100;
-      
-      // NEW: Get participant name (or default to Anonymous)
-      let participant = document.getElementById('eval-participant').value.trim();
-      if (!participant) participant = "Anonymous";
-
-      const evaluationData = {
-        topic: topic,
-        facilitator: facilitator,
-        participant: participant, // Saved here
-        date: document.getElementById('eval-date').value,
-        answers: data,
-        totalScore: totalScore,
-        percentage: percentage,
-        comments: document.getElementById('eval-comments').value,
-        timestamp: Date.now()
-      };
-
       try {
-        const btn = document.querySelector('.btn-save');
         btn.textContent = "Saving...";
         btn.disabled = true;
+
+        const topic = document.getElementById('eval-topic').value.trim();
+        const facilitator = document.getElementById('eval-facilitator').value.trim();
+        const dateVal = document.getElementById('eval-date').value;
+        
+        if (!topic || !facilitator) {
+          alert("⚠️ Please fill out the Session Topic and Facilitator.");
+          return;
+        }
+
+        // Gather all radio button answers
+        const data = {};
+        let totalScore = 0;
+        let answeredCount = 0;
+
+        const questions = ['s1','s2','s3','s4','s5','s6','s7','s8','s9','s10', 'f1','f2','f3','f4','f5','f6','f7','f8','f9'];
+        
+        for (let q of questions) {
+          const selected = document.querySelector(`input[name="${q}"]:checked`);
+          if (selected) {
+            const val = selected.value;
+            data[q] = val;
+            answeredCount++;
+            
+            if (val === "Strongly Agree") totalScore += 5;
+            else if (val === "Agree") totalScore += 4;
+            else if (val === "Disagree") totalScore += 2;
+            else if (val === "Strongly Disagree") totalScore += 1;
+          }
+        }
+
+        if (answeredCount < 19) {
+          alert(`⚠️ You only answered ${answeredCount} out of 19 questions. Please answer all before saving.`);
+          return;
+        }
+
+        const percentage = (totalScore / 95) * 100;
+        
+        let participant = document.getElementById('eval-participant').value.trim();
+        if (!participant) participant = "Anonymous";
+
+        const evaluationData = {
+          topic: topic,
+          facilitator: facilitator,
+          participant: participant,
+          date: dateVal || new Date().toISOString().split('T')[0], // Fallback to today if empty
+          answers: data,
+          totalScore: totalScore,
+          percentage: percentage,
+          comments: document.getElementById('eval-comments').value,
+          timestamp: Date.now()
+        };
 
         await addDoc(collection(db, "quame_evaluations"), evaluationData);
         
@@ -412,18 +411,19 @@
         
         // Reset form for the next participant
         document.getElementById('quame-form').reset(); 
-        document.getElementById('eval-topic').value = topic; // Keep the topic for the next person
-        document.getElementById('eval-facilitator').value = facilitator; // Keep the facilitator
-        document.getElementById('eval-date').value = evaluationData.date; // Keep the date
+        document.getElementById('eval-topic').value = topic; 
+        document.getElementById('eval-facilitator').value = facilitator; 
+        document.getElementById('eval-date').value = evaluationData.date; 
 
       } catch (error) {
-        console.error("Error saving:", error);
-        alert("❌ Failed to save. Check console.");
+        console.error("DETAILED FIREBASE ERROR:", error);
+        alert("❌ Failed to save. Error: " + error.message);
       } finally {
         btn.textContent = "💾 Save Evaluation";
         btn.disabled = false;
       }
     };
+
   </script>
 </body>
 </html>
