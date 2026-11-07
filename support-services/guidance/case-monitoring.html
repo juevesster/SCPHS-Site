@@ -54,14 +54,19 @@
     .btn-print:hover { background: #334155; }
     .btn-cancel { background: #e2e8f0; color: #333; }
 
-        /* --- PRINT STYLES --- */
+    /* --- PRINT STYLES --- */
     @media print {
       @page { 
         size: A4 portrait; 
         margin: 10mm; 
       }
       body { background: #fff; }
-      .header, .back-link, .btn-row { display: none !important; }
+      
+      /* Hide UI elements during print */
+      .header, .back-link, .btn-row, #cm-history-wrapper { 
+        display: none !important; 
+      }
+      
       .wrap { padding: 0; max-width: 100%; }
       .form-card { box-shadow: none; padding: 0; margin: 0; }
       .form-section { border: none; padding: 0; margin-bottom: 15px; }
@@ -113,6 +118,14 @@
         <div style="font-size: 16px; font-weight: bold; margin-top: 5px;">CASE MONITORING FORM</div>
       </div>
 
+      <!-- 👇 HISTORY SECTION 👇 -->
+      <div id="cm-history-wrapper" class="form-section" style="display: none; background: #f1f5f9; border-left: 4px solid var(--gc-primary);">
+        <h3 style="margin-top: 0; border-bottom: none; padding-bottom: 0; color: var(--gc-primary);">📂 Past Case Monitoring Records</h3>
+        <p style="font-size: 0.85rem; color: #64748b; margin-top: 5px;">Click "Load Record" to pull up a previous case for reprinting or updating.</p>
+        <div id="cm-history" style="margin-top: 15px;"></div>
+      </div>
+      <!-- 👆 END OF HISTORY 👆 -->
+
       <form id="case-form">
         
         <!-- CLIENT'S INFORMATION -->
@@ -149,7 +162,6 @@
         <div class="form-section">
           <h3>TYPE OF CASE</h3>
           <div class="checkbox-grid">
-            <!-- Group 1: BULLYING / CHILD ABUSE / CICL -->
             <div>
               <strong style="font-size: 0.85rem; color: var(--gc-primary);">BULLYING</strong><br>
               <label class="checkbox-item"><input type="checkbox" name="case-type" value="Physical Bullying"> Physical</label>
@@ -248,13 +260,14 @@
   <script type="module">
     import { auth, db } from "../../assets/js/firebase-config.js";
     import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-    import { doc, getDoc, collection, addDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+    import { doc, getDoc, collection, getDocs, addDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
     const urlParams = new URLSearchParams(window.location.search);
     const classId = urlParams.get('classId');
     const studentId = urlParams.get('studentId');
 
     let CURRENT_STUDENT = null;
+    let SAVED_CASES = [];
 
     onAuthStateChanged(auth, async (user) => {
       if (!user) { window.location.href = "../../login.html"; return; }
@@ -284,21 +297,113 @@
 
           // Pre-fill Dates
           document.getElementById('cm-datePrepared').valueAsDate = new Date();
+
+          // 👇 LOAD PAST CASES
+          await loadPastCases();
         }
       } catch (error) {
         console.error("Error loading student:", error);
       }
     });
 
+    // 👇 NEW FUNCTIONS FOR HISTORY 👇
+    async function loadPastCases() {
+      try {
+        const casesRef = collection(db, "classes", classId, "students", studentId, "case_monitoring");
+        const snap = await getDocs(casesRef);
+        SAVED_CASES = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+        
+        const historyContainer = document.getElementById('cm-history');
+        const historyWrapper = document.getElementById('cm-history-wrapper');
+        
+        if (SAVED_CASES.length > 0 && historyContainer) {
+          historyWrapper.style.display = 'block';
+          historyContainer.innerHTML = SAVED_CASES.map(c => `
+            <div style="display: flex; justify-content: space-between; align-items: center; background: #fff; padding: 12px 15px; border: 1px solid #e2e8f0; border-radius: 8px; margin-bottom: 10px; box-shadow: 0 2px 4px rgba(0,0,0,0.02);">
+              <div>
+                <strong style="color: #0f4c81;">Case Status:</strong> ${c.caseStatus || 'N/A'} <br>
+                <span style="font-size: 0.85rem; color: #64748b;">Date Prepared: ${c.datePrepared || 'N/A'}</span>
+              </div>
+              <div style="display: flex; gap: 8px;">
+                <button type="button" class="btn" style="background: #0f4c81; color: #fff; padding: 8px 15px; font-size: 0.85rem; border-radius: 6px; cursor: pointer;" onclick="loadCaseData('${c.id}')">Load Record</button>
+                
+                <!-- DELETE BUTTON -->
+                <button type="button" class="btn" style="background: #fee2e2; color: #dc2626; border: 1px solid #fecaca; padding: 8px 15px; font-size: 0.85rem; border-radius: 6px; cursor: pointer;" onclick="deleteCaseRecord('${c.id}')">🗑️</button>
+              </div>
+            </div>
+          `).join("");
+        }
+      } catch (error) { 
+        console.error("Error loading cases:", error); 
+      }
+    }
+
+    window.loadCaseData = function(caseId) {
+      const caseData = SAVED_CASES.find(c => c.id === caseId);
+      if (!caseData) return;
+
+      // Clear checkboxes first
+      document.querySelectorAll('input[name="case-type"]').forEach(cb => cb.checked = false);
+
+      // Populate Fields
+      document.getElementById('cm-otherCase').value = caseData.otherCase || "";
+      document.getElementById('cm-caseStatus').value = caseData.caseStatus || "";
+      document.getElementById('cm-dateEndorsed').value = caseData.dateEndorsed || "";
+      document.getElementById('cm-endorsedTo').value = caseData.endorsedTo || "";
+      document.getElementById('cm-lastFollowup').value = caseData.lastFollowup || "";
+      document.getElementById('cm-nextFollowup').value = caseData.nextFollowup || "";
+      document.getElementById('cm-agency').value = caseData.agency || "";
+      document.getElementById('cm-jobPosition').value = caseData.jobPosition || "";
+      document.getElementById('cm-description').value = caseData.description || "";
+      document.getElementById('cm-interventions').value = caseData.interventions || "";
+      document.getElementById('cm-preparedBy').value = caseData.preparedBy || "";
+      document.getElementById('cm-datePrepared').value = caseData.datePrepared || "";
+      document.getElementById('cm-notedBy').value = caseData.notedBy || "";
+      document.getElementById('cm-dateNoted').value = caseData.dateNoted || "";
+
+      // Re-check the saved checkboxes
+      if (caseData.caseTypes && Array.isArray(caseData.caseTypes)) {
+        caseData.caseTypes.forEach(val => {
+          const cb = document.querySelector(`input[name="case-type"][value="${val}"]`);
+          if (cb) cb.checked = true;
+        });
+      }
+
+      alert("✅ Record loaded successfully! You can now print this form or make updates.");
+    };
+
+    window.deleteCaseRecord = async function(caseId) {
+      if (!confirm("Are you sure you want to permanently delete this case record? This cannot be undone.")) return;
+
+      try {
+        const caseRef = doc(db, "classes", classId, "students", studentId, "case_monitoring", caseId);
+        await deleteDoc(caseRef);
+        
+        alert("✅ Case record deleted successfully.");
+        await loadPastCases(); 
+
+      } catch (error) {
+        console.error("Error deleting case:", error);
+        alert("❌ Failed to delete record. Check the console.");
+      }
+    };
+
     window.saveCaseMonitoring = async function() {
       if (!CURRENT_STUDENT) return;
+
+      // Prevent empty saves
+      const description = document.getElementById('cm-description').value.trim();
+      if (!description) {
+        alert("⚠️ Cannot save an empty record. Please fill out the Description of the Case first.");
+        return;
+      }
+
       const btn = document.getElementById('btn-save');
       btn.textContent = "Saving..."; btn.disabled = true;
 
       try {
         const casesRef = collection(db, "classes", classId, "students", studentId, "case_monitoring");
         
-        // Collect checked case types
         const checkedCases = Array.from(document.querySelectorAll('input[name="case-type"]:checked')).map(cb => cb.value);
 
         const dataToSave = {
@@ -311,7 +416,7 @@
           nextFollowup: document.getElementById('cm-nextFollowup').value,
           agency: document.getElementById('cm-agency').value,
           jobPosition: document.getElementById('cm-jobPosition').value,
-          description: document.getElementById('cm-description').value,
+          description: description,
           interventions: document.getElementById('cm-interventions').value,
           preparedBy: document.getElementById('cm-preparedBy').value,
           datePrepared: document.getElementById('cm-datePrepared').value,
