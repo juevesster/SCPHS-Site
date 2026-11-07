@@ -134,6 +134,13 @@
             <input type="text" id="eval-facilitator">
           </div>
         </div>
+        <!-- NEW: Optional Participant Name -->
+        <div class="form-info-row">
+          <div class="info-group" style="width: 100%;">
+            <label>Participant Name:</label>
+            <input type="text" id="eval-participant" placeholder="(Optional - leave blank to remain anonymous)">
+          </div>
+        </div>
       </div>
 
       <!-- Directions -->
@@ -329,13 +336,15 @@
       <!-- Action Buttons -->
       <div class="btn-row">
         <button type="button" class="btn btn-print" onclick="window.print()">🖨️ Print Form</button>
-        <button type="button" class="btn btn-save" onclick="alert('✅ Ready to save! (Connect to Firebase later)')">💾 Save Evaluation</button>
+        <button type="button" class="btn btn-save" onclick="saveQUAME()">💾 Save Evaluation</button>
       </div>
 
     </div>
   </div>
+
   <script type="module">
-    import { db } from "../../assets/js/firebase-config.js"; // Adjust path if needed
+    // Make sure this path is correct for your folder structure!
+    import { db } from "./assets/js/firebase-config.js"; 
     import { collection, addDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
     window.saveQUAME = async function() {
@@ -348,12 +357,11 @@
       }
 
       // Gather all radio button answers
-      const form = document.getElementById('quame-form');
       const data = {};
       let totalScore = 0;
       let answeredCount = 0;
 
-      // Loop through all 19 questions (10 session, 9 facilitator)
+      // Loop through all 19 questions
       const questions = ['s1','s2','s3','s4','s5','s6','s7','s8','s9','s10', 'f1','f2','f3','f4','f5','f6','f7','f8','f9'];
       
       for (let q of questions) {
@@ -363,7 +371,6 @@
           data[q] = val;
           answeredCount++;
           
-          // Convert to score (5 to 1)
           if (val === "Strongly Agree") totalScore += 5;
           else if (val === "Agree") totalScore += 4;
           else if (val === "Disagree") totalScore += 2;
@@ -376,12 +383,16 @@
         return;
       }
 
-      // Calculate percentage (Max score is 19 * 5 = 95)
       const percentage = (totalScore / 95) * 100;
+      
+      // NEW: Get participant name (or default to Anonymous)
+      let participant = document.getElementById('eval-participant').value.trim();
+      if (!participant) participant = "Anonymous";
 
       const evaluationData = {
         topic: topic,
         facilitator: facilitator,
+        participant: participant, // Saved here
         date: document.getElementById('eval-date').value,
         answers: data,
         totalScore: totalScore,
@@ -397,12 +408,20 @@
 
         await addDoc(collection(db, "quame_evaluations"), evaluationData);
         
-        alert(`✅ Evaluation Saved! Total Score: ${totalScore}/95 (${percentage.toFixed(1)}%)`);
-        window.location.reload(); // Reset form
+        alert(`✅ Evaluation Saved!\nParticipant: ${participant}\nScore: ${totalScore}/95 (${percentage.toFixed(1)}%)`);
+        
+        // Reset form for the next participant
+        document.getElementById('quame-form').reset(); 
+        document.getElementById('eval-topic').value = topic; // Keep the topic for the next person
+        document.getElementById('eval-facilitator').value = facilitator; // Keep the facilitator
+        document.getElementById('eval-date').value = evaluationData.date; // Keep the date
 
       } catch (error) {
         console.error("Error saving:", error);
         alert("❌ Failed to save. Check console.");
+      } finally {
+        btn.textContent = "💾 Save Evaluation";
+        btn.disabled = false;
       }
     };
   </script>
