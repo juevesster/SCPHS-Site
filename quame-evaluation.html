@@ -3,8 +3,8 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>QUAME Evaluation Form – SCPHS</title>
-  <link rel="stylesheet" href="assets/css/styles.css" />
+  <title>QUAME Form D – Session Evaluation Tool | SCPHS</title>
+  <link rel="stylesheet" href="../../assets/css/styles.css" />
   
   <style>
     :root {
@@ -17,44 +17,69 @@
       --success: #16a34a;
     }
 
-    body { background: #f1f5f9; margin: 0; font-family: system-ui, -apple-system, sans-serif; }
-    .wrap { max-width: 900px; margin: 0 auto; padding: 20px 16px; }
+    body { background: #f1f5f9; margin: 0; font-family: "Times New Roman", Times, serif; }
+    .wrap { max-width: 1000px; margin: 0 auto; padding: 20px 16px; }
 
-    /* Header */
-    .header { background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; }
+    /* Screen Header */
+    .header { background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; font-family: system-ui, -apple-system, sans-serif; }
     .header h1 { margin: 0; color: var(--gc-primary); font-size: 1.4rem; }
     .back-link { color: var(--bright-blue); text-decoration: none; font-weight: 600; font-size: 0.9rem; }
 
     /* Form Card */
-    .form-card { background: #fff; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); padding: 30px; margin-bottom: 30px; }
+    .form-card { background: #fff; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); padding: 40px; margin-bottom: 30px; color: #000; }
     
-    .form-section { margin-bottom: 30px; border: 1px solid var(--gc-border); border-radius: 8px; padding: 20px; background: #fafbfc; }
-    .form-section h3 { margin-top: 0; color: var(--gc-primary); border-bottom: 2px solid var(--gc-border); padding-bottom: 10px; font-size: 1.1rem; text-transform: uppercase;}
-    .form-section h4 { font-size: 0.95rem; margin: 15px 0 10px; color: #333; }
+    /* Title */
+    .doc-title { text-align: center; margin-bottom: 30px; }
+    .doc-title h2 { margin: 0 0 5px; font-size: 1.4rem; font-weight: bold; text-transform: uppercase; }
+    .doc-title p { margin: 0; font-size: 1rem; font-style: italic; }
+
+    /* Form Info */
+    .form-info { margin-bottom: 20px; line-height: 2; }
+    .form-info-row { display: flex; flex-wrap: wrap; gap: 20px; margin-bottom: 5px; }
+    .info-group { display: flex; flex-grow: 1; align-items: baseline; }
+    .info-group label { font-weight: bold; margin-right: 5px; }
+    .info-group input { flex-grow: 1; border: none; border-bottom: 1px solid #000; font-family: inherit; font-size: 1rem; padding: 2px 5px; background: transparent; outline: none; }
+
+    /* Directions */
+    .directions { font-weight: bold; margin-bottom: 15px; font-size: 0.95rem; }
+
+    /* Tables */
+    table { width: 100%; border-collapse: collapse; margin-bottom: 20px; font-size: 0.95rem; }
+    th, td { border: 1px solid #000; padding: 8px; }
+    th { background: #f8fafc; font-weight: bold; text-align: center; }
+    td.center { text-align: center; vertical-align: middle; }
+    td.number { text-align: right; width: 30px; }
     
-    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px; }
-    .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px; margin-bottom: 15px; }
-    .grid-full { margin-bottom: 15px; }
-    @media (max-width: 600px) { .grid-2, .grid-3 { grid-template-columns: 1fr; } }
+    .section-header { background: #e2e8f0; font-weight: bold; text-align: center; }
+    .sub-header { font-weight: bold; text-align: left; }
+    
+    /* Radio Buttons as Checkmarks */
+    input[type="radio"] { width: 20px; height: 20px; cursor: pointer; accent-color: #000; }
 
-    label { display: block; font-size: 0.8rem; font-weight: 700; color: #333; margin-bottom: 5px; text-transform: uppercase; }
-    input, select, textarea { width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-family: inherit; font-size: 0.95rem; box-sizing: border-box; background: #fff; }
-    textarea { resize: vertical; min-height: 80px; }
-
-    /* Rating Tables */
-    .rating-table { width: 100%; border-collapse: collapse; margin-bottom: 15px; font-size: 0.9rem; }
-    .rating-table th, .rating-table td { border: 1px solid var(--gc-border); padding: 10px; text-align: left; }
-    .rating-table th { background: #f1f5f9; color: #333; font-weight: 700; }
-    .rating-table td.center { text-align: center; }
-    .rating-table input[type="radio"] { width: auto; transform: scale(1.2); cursor: pointer; }
+    /* Comments Box */
+    .comments-section { margin-top: 20px; }
+    .comments-section label { font-weight: bold; display: block; margin-bottom: 5px; }
+    .comments-section textarea { 
+      width: 100%; 
+      border: none;
+      border-bottom: 1px solid #000;
+      border-top: 1px solid #000;
+      font-family: inherit; 
+      font-size: 1rem; 
+      padding: 10px; 
+      resize: vertical; 
+      min-height: 120px;
+      background: repeating-linear-gradient(transparent, transparent 31px, #000 31px, #000 32px);
+      line-height: 32px;
+    }
 
     /* Buttons */
-    .btn-row { display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px; padding-top: 20px; border-top: 1px solid var(--gc-border); }
+    .btn-row { display: flex; gap: 10px; justify-content: flex-end; margin-top: 30px; padding-top: 20px; border-top: 1px solid var(--gc-border); font-family: system-ui, -apple-system, sans-serif; }
     .btn { padding: 12px 24px; border: none; border-radius: 6px; font-weight: bold; font-size: 0.95rem; cursor: pointer; transition: 0.2s; }
-    .btn-save { background: var(--success); color: #fff; }
-    .btn-save:hover { background: #15803d; }
     .btn-print { background: #475569; color: #fff; }
     .btn-print:hover { background: #334155; }
+    .btn-save { background: var(--success); color: #fff; }
+    .btn-save:hover { background: #15803d; }
 
     /* --- PRINT STYLES --- */
     @media print {
@@ -63,192 +88,252 @@
       .header, .back-link, .btn-row { display: none !important; }
       .wrap { padding: 0; max-width: 100%; }
       .form-card { box-shadow: none; padding: 0; margin: 0; }
-      .form-section { border: none; padding: 0; margin-bottom: 15px; background: transparent; }
       
-      .print-header { display: block !important; text-align: center !important; margin-bottom: 20px; }
-      .print-header img { display: block !important; margin: 0 auto 10px auto !important; height: 70px; }
-      .print-header h1 { font-size: 14px; margin: 5px 0; font-weight: bold; }
-      .print-header p { font-size: 11px; margin: 2px 0; }
+      /* Make inputs look like typed text on a line */
+      input[type="text"], input[type="date"] { border-bottom: 1px solid #000 !important; }
+      textarea { background: transparent; border: none; border-top: 1px solid #000; border-bottom: 1px solid #000; }
       
-      .form-section h3 { border-bottom: 1px solid #000; font-size: 12px; margin-bottom: 8px; }
-      .form-section h4 { font-size: 11px; margin: 10px 0 5px; border-bottom: 1px solid #ccc; }
-      
-      .grid-2, .grid-3 { gap: 10px; }
-      label { font-size: 9px; color: #000; margin-bottom: 2px; text-transform: none; font-weight: bold; }
-      input, select, textarea { border: none; border-bottom: 1px solid #000; padding: 4px 0; border-radius: 0; font-size: 11px; background: transparent; }
-      textarea { border: 1px solid #000; padding: 5px; }
-      
-      .rating-table th, .rating-table td { border: 1px solid #000; padding: 4px; font-size: 10px; }
-      .rating-table th { background: #e0e0e0; }
-      
-      .print-signatures { display: flex; justify-content: space-between; margin-top: 40px; page-break-inside: avoid; }
-      .sig-block { width: 45%; text-align: center; }
-      .sig-label { font-size: 11px; margin-bottom: 25px; text-align: left; }
-      .sig-line { border-bottom: 1px solid #000; height: 15px; margin-bottom: 3px; }
-      .sig-pos { font-size: 10px; color: #333; }
+      /* Ensure tables print perfectly */
+      table, th, td { border: 1px solid #000 !important; }
+      th { background: #e0e0e0 !important; -webkit-print-color-adjust: exact; }
     }
-    .print-header { display: none; }
   </style>
 </head>
 <body>
 
   <div class="wrap">
+    <!-- Screen Header -->
     <div class="header">
-      <h1>📊 QUAME Evaluation Form</h1>
+      <h1>📋 QUAME Form D: Session Evaluation Tool</h1>
       <a href="index.html" class="back-link">← Back to Portal</a>
     </div>
 
     <div class="form-card">
       
-      <!-- Print Header -->
-      <div class="print-header">
-        <img src="assets/images/deped-logo.png" alt="DepEd Logo">
-        <div style="font-size: 12px;">Republic of the Philippines</div>
-        <div style="font-size: 14px; font-weight: bold;">DEPARTMENT OF EDUCATION</div>
-        <div style="font-size: 12px;">Region II - Cagayan Valley</div>
-        <div style="font-size: 12px;">SCHOOLS DIVISION OF NUEVA VIZCAYA</div>
-        <div style="font-size: 12px; font-weight: bold;">STA. CRUZ PINGKIAN HIGH SCHOOL</div>
-        <div style="font-size: 12px; text-decoration: underline;">Pingkian, Kayapa, Nueva Vizcaya</div>
-        <div style="font-size: 15px; font-weight: bold; margin-top: 15px;">QUALITY ASSURANCE, MONITORING, AND EVALUATION (QUAME)</div>
-        <div style="font-size: 13px; font-weight: bold;">Project / L&D Evaluation Form</div>
+      <!-- Form Title -->
+      <div class="doc-title">
+        <h2>SESSION EVALUATION</h2>
+        <p>(To be administered every after a session)</p>
       </div>
 
-      <form id="quame-form">
-        
-        <!-- I. PROJECT / ACTIVITY PROFILE -->
-        <div class="form-section">
-          <h3>I. Project / Activity Profile</h3>
-          <div class="grid-2">
-            <div style="grid-column: 1 / -1;"><label>Title of Project / L&D Activity</label><input type="text" id="q-title" required></div>
-            <div><label>Date Conducted</label><input type="date" id="q-date"></div>
-            <div><label>Venue</label><input type="text" id="q-venue"></div>
-            <div><label>Proponent / Organizer</label><input type="text" id="q-proponent"></div>
-            <div><label>Target Participants</label><input type="text" id="q-participants"></div>
+      <!-- Basic Info -->
+      <div class="form-info">
+        <div class="form-info-row">
+          <div class="info-group" style="width: 60%;">
+            <label>Session Topic:</label>
+            <input type="text" id="eval-topic">
+          </div>
+          <div class="info-group" style="width: 35%;">
+            <label>Date:</label>
+            <input type="date" id="eval-date">
           </div>
         </div>
-
-        <!-- II. EVALUATION CRITERIA -->
-        <div class="form-section">
-          <h3>II. Evaluation Criteria</h3>
-          <p style="font-size: 0.85rem; color: var(--gc-text-muted); margin-bottom: 15px;">Please rate the following criteria using the scale: <strong>5 - Outstanding, 4 - Very Satisfactory, 3 - Satisfactory, 2 - Needs Improvement, 1 - Poor.</strong></p>
-          
-          <table class="rating-table">
-            <thead>
-              <tr>
-                <th style="width: 50%;">Criteria</th>
-                <th class="center" style="width: 10%;">5</th>
-                <th class="center" style="width: 10%;">4</th>
-                <th class="center" style="width: 10%;">3</th>
-                <th class="center" style="width: 10%;">2</th>
-                <th class="center" style="width: 10%;">1</th>
-              </tr>
-            </thead>
-            <tbody>
-              <!-- Reaction -->
-              <tr>
-                <td><strong>A. Reaction</strong><br>Relevance of the topic/project to the needs of the participants.</td>
-                <td class="center"><input type="radio" name="q-react" value="5"></td>
-                <td class="center"><input type="radio" name="q-react" value="4"></td>
-                <td class="center"><input type="radio" name="q-react" value="3"></td>
-                <td class="center"><input type="radio" name="q-react" value="2"></td>
-                <td class="center"><input type="radio" name="q-react" value="1"></td>
-              </tr>
-              <!-- Learning -->
-              <tr>
-                <td><strong>B. Learning</strong><br>Acquisition of new knowledge, skills, and attitudes.</td>
-                <td class="center"><input type="radio" name="q-learn" value="5"></td>
-                <td class="center"><input type="radio" name="q-learn" value="4"></td>
-                <td class="center"><input type="radio" name="q-learn" value="3"></td>
-                <td class="center"><input type="radio" name="q-learn" value="2"></td>
-                <td class="center"><input type="radio" name="q-learn" value="1"></td>
-              </tr>
-              <!-- Behavior -->
-              <tr>
-                <td><strong>C. Behavior</strong><br>Application of learning to actual work/practice.</td>
-                <td class="center"><input type="radio" name="q-behavior" value="5"></td>
-                <td class="center"><input type="radio" name="q-behavior" value="4"></td>
-                <td class="center"><input type="radio" name="q-behavior" value="3"></td>
-                <td class="center"><input type="radio" name="q-behavior" value="2"></td>
-                <td class="center"><input type="radio" name="q-behavior" value="1"></td>
-              </tr>
-              <!-- Results -->
-              <tr>
-                <td><strong>D. Results</strong><br>Impact of the project/activity on the school/community.</td>
-                <td class="center"><input type="radio" name="q-results" value="5"></td>
-                <td class="center"><input type="radio" name="q-results" value="4"></td>
-                <td class="center"><input type="radio" name="q-results" value="3"></td>
-                <td class="center"><input type="radio" name="q-results" value="2"></td>
-                <td class="center"><input type="radio" name="q-results" value="1"></td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-
-        <!-- III. QUALITATIVE FEEDBACK -->
-        <div class="form-section">
-          <h3>III. Qualitative Feedback</h3>
-          <div class="grid-full">
-            <label>Strengths / Best Practices</label>
-            <textarea id="q-strengths" rows="3"></textarea>
-          </div>
-          <div class="grid-full">
-            <label>Areas for Improvement / Recommendations</label>
-            <textarea id="q-improvements" rows="3"></textarea>
+        <div class="form-info-row">
+          <div class="info-group" style="width: 100%;">
+            <label>Session Facilitator:</label>
+            <input type="text" id="eval-facilitator">
           </div>
         </div>
+      </div>
 
-        <!-- IV. SIGNATORIES -->
-        <div class="form-section">
-          <h3>IV. Signatories</h3>
-          <div class="grid-2">
-            <div>
-              <label>Evaluated / Prepared by</label>
-              <input type="text" id="q-evaluator" placeholder="Name">
-              <input type="text" id="q-evaluator-pos" placeholder="Position/Designation" style="margin-top: 5px;">
-            </div>
-            <div>
-              <label>Noted / Approved by</label>
-              <input type="text" id="q-noted" placeholder="Name">
-              <input type="text" id="q-noted-pos" placeholder="Position/Designation" style="margin-top: 5px;">
-            </div>
-          </div>
-        </div>
+      <!-- Directions -->
+      <div class="directions">
+        Direction: Rate the session and the facilitator using the rating scale. Put a check/tick under the column of the response.
+      </div>
 
-        <div class="btn-row">
-          <button type="button" class="btn btn-print" onclick="window.print()">🖨️ Print Form</button>
-          <button type="button" class="btn btn-save" onclick="saveQUAME()">💾 Save Evaluation</button>
-        </div>
+      <!-- Evaluation Table -->
+      <table>
+        <thead>
+          <tr>
+            <th colspan="2" style="width: 50%;">SESSION<br>In this session...</th>
+            <th style="width: 12.5%;">Strongly<br>Agree</th>
+            <th style="width: 12.5%;">Agree</th>
+            <th style="width: 12.5%;">Disagree</th>
+            <th style="width: 12.5%;">Strongly<br>Disagree</th>
+          </tr>
+        </thead>
+        <tbody>
+          <!-- Session Questions -->
+          <tr>
+            <td class="number">1.</td>
+            <td>The topic was relevant to our area of work</td>
+            <td class="center"><input type="radio" name="s1" value="Strongly Agree"></td>
+            <td class="center"><input type="radio" name="s1" value="Agree"></td>
+            <td class="center"><input type="radio" name="s1" value="Disagree"></td>
+            <td class="center"><input type="radio" name="s1" value="Strongly Disagree"></td>
+          </tr>
+          <tr>
+            <td class="number">2.</td>
+            <td>The session was well planned</td>
+            <td class="center"><input type="radio" name="s2" value="Strongly Agree"></td>
+            <td class="center"><input type="radio" name="s2" value="Agree"></td>
+            <td class="center"><input type="radio" name="s2" value="Disagree"></td>
+            <td class="center"><input type="radio" name="s2" value="Strongly Disagree"></td>
+          </tr>
+          <tr>
+            <td class="number">3.</td>
+            <td>The objectives of the session was well planned</td>
+            <td class="center"><input type="radio" name="s3" value="Strongly Agree"></td>
+            <td class="center"><input type="radio" name="s3" value="Agree"></td>
+            <td class="center"><input type="radio" name="s3" value="Disagree"></td>
+            <td class="center"><input type="radio" name="s3" value="Strongly Disagree"></td>
+          </tr>
+          <tr>
+            <td class="number">4.</td>
+            <td>The time allotment for the topic was adequate</td>
+            <td class="center"><input type="radio" name="s4" value="Strongly Agree"></td>
+            <td class="center"><input type="radio" name="s4" value="Agree"></td>
+            <td class="center"><input type="radio" name="s4" value="Disagree"></td>
+            <td class="center"><input type="radio" name="s4" value="Strongly Disagree"></td>
+          </tr>
+          <tr>
+            <td class="number">5.</td>
+            <td>The activities were appropriate for adult learners</td>
+            <td class="center"><input type="radio" name="s5" value="Strongly Agree"></td>
+            <td class="center"><input type="radio" name="s5" value="Agree"></td>
+            <td class="center"><input type="radio" name="s5" value="Disagree"></td>
+            <td class="center"><input type="radio" name="s5" value="Strongly Disagree"></td>
+          </tr>
+          <tr>
+            <td class="number">6.</td>
+            <td>Time to start and to end was observed</td>
+            <td class="center"><input type="radio" name="s6" value="Strongly Agree"></td>
+            <td class="center"><input type="radio" name="s6" value="Agree"></td>
+            <td class="center"><input type="radio" name="s6" value="Disagree"></td>
+            <td class="center"><input type="radio" name="s6" value="Strongly Disagree"></td>
+          </tr>
+          <tr>
+            <td class="number">7.</td>
+            <td>The learning materials were adequate and relevant</td>
+            <td class="center"><input type="radio" name="s7" value="Strongly Agree"></td>
+            <td class="center"><input type="radio" name="s7" value="Agree"></td>
+            <td class="center"><input type="radio" name="s7" value="Disagree"></td>
+            <td class="center"><input type="radio" name="s7" value="Strongly Disagree"></td>
+          </tr>
+          <tr>
+            <td class="number">8.</td>
+            <td>The support materials were adequate</td>
+            <td class="center"><input type="radio" name="s8" value="Strongly Agree"></td>
+            <td class="center"><input type="radio" name="s8" value="Agree"></td>
+            <td class="center"><input type="radio" name="s8" value="Disagree"></td>
+            <td class="center"><input type="radio" name="s8" value="Strongly Disagree"></td>
+          </tr>
+          <tr>
+            <td class="number">9.</td>
+            <td>The participants were engaged in activities</td>
+            <td class="center"><input type="radio" name="s9" value="Strongly Agree"></td>
+            <td class="center"><input type="radio" name="s9" value="Agree"></td>
+            <td class="center"><input type="radio" name="s9" value="Disagree"></td>
+            <td class="center"><input type="radio" name="s9" value="Strongly Disagree"></td>
+          </tr>
+          <tr>
+            <td class="number">10.</td>
+            <td>The participants were able to demonstrate their learning</td>
+            <td class="center"><input type="radio" name="s10" value="Strongly Agree"></td>
+            <td class="center"><input type="radio" name="s10" value="Agree"></td>
+            <td class="center"><input type="radio" name="s10" value="Disagree"></td>
+            <td class="center"><input type="radio" name="s10" value="Strongly Disagree"></td>
+          </tr>
 
-      </form>
+          <!-- Facilitator Section Header -->
+          <tr>
+            <th colspan="2" class="sub-header">FACILITATOR<br>The facilitator...</th>
+            <th>Strongly<br>Agree</th>
+            <th>Agree</th>
+            <th>Disagree</th>
+            <th>Strongly<br>Disagree</th>
+          </tr>
+
+          <!-- Facilitator Questions -->
+          <tr>
+            <td class="number">1.</td>
+            <td>Exhibited full grasp of the topic</td>
+            <td class="center"><input type="radio" name="f1" value="Strongly Agree"></td>
+            <td class="center"><input type="radio" name="f1" value="Agree"></td>
+            <td class="center"><input type="radio" name="f1" value="Disagree"></td>
+            <td class="center"><input type="radio" name="f1" value="Strongly Disagree"></td>
+          </tr>
+          <tr>
+            <td class="number">2.</td>
+            <td>Was sensitive to the participants' mood</td>
+            <td class="center"><input type="radio" name="f2" value="Strongly Agree"></td>
+            <td class="center"><input type="radio" name="f2" value="Agree"></td>
+            <td class="center"><input type="radio" name="f2" value="Disagree"></td>
+            <td class="center"><input type="radio" name="f2" value="Strongly Disagree"></td>
+          </tr>
+          <tr>
+            <td class="number">3.</td>
+            <td>Asked stimulating questions</td>
+            <td class="center"><input type="radio" name="f3" value="Strongly Agree"></td>
+            <td class="center"><input type="radio" name="f3" value="Agree"></td>
+            <td class="center"><input type="radio" name="f3" value="Disagree"></td>
+            <td class="center"><input type="radio" name="f3" value="Strongly Disagree"></td>
+          </tr>
+          <tr>
+            <td class="number">4.</td>
+            <td>Processed questions and responses to deepen learning</td>
+            <td class="center"><input type="radio" name="f4" value="Strongly Agree"></td>
+            <td class="center"><input type="radio" name="f4" value="Agree"></td>
+            <td class="center"><input type="radio" name="f4" value="Disagree"></td>
+            <td class="center"><input type="radio" name="f4" value="Strongly Disagree"></td>
+          </tr>
+          <tr>
+            <td class="number">5.</td>
+            <td>Maintained positive learning environment</td>
+            <td class="center"><input type="radio" name="f5" value="Strongly Agree"></td>
+            <td class="center"><input type="radio" name="f5" value="Agree"></td>
+            <td class="center"><input type="radio" name="f5" value="Disagree"></td>
+            <td class="center"><input type="radio" name="f5" value="Strongly Disagree"></td>
+          </tr>
+          <tr>
+            <td class="number">6.</td>
+            <td>Expressed ideas clearly</td>
+            <td class="center"><input type="radio" name="f6" value="Strongly Agree"></td>
+            <td class="center"><input type="radio" name="f6" value="Agree"></td>
+            <td class="center"><input type="radio" name="f6" value="Disagree"></td>
+            <td class="center"><input type="radio" name="f6" value="Strongly Disagree"></td>
+          </tr>
+          <tr>
+            <td class="number">7.</td>
+            <td>Used appropriate training aids</td>
+            <td class="center"><input type="radio" name="f7" value="Strongly Agree"></td>
+            <td class="center"><input type="radio" name="f7" value="Agree"></td>
+            <td class="center"><input type="radio" name="f7" value="Disagree"></td>
+            <td class="center"><input type="radio" name="f7" value="Strongly Disagree"></td>
+          </tr>
+          <tr>
+            <td class="number">8.</td>
+            <td>Observed appropriate attire</td>
+            <td class="center"><input type="radio" name="f8" value="Strongly Agree"></td>
+            <td class="center"><input type="radio" name="f8" value="Agree"></td>
+            <td class="center"><input type="radio" name="f8" value="Disagree"></td>
+            <td class="center"><input type="radio" name="f8" value="Strongly Disagree"></td>
+          </tr>
+          <tr>
+            <td class="number">9.</td>
+            <td>Was able to firm up attainment of objectives of the session</td>
+            <td class="center"><input type="radio" name="f9" value="Strongly Agree"></td>
+            <td class="center"><input type="radio" name="f9" value="Agree"></td>
+            <td class="center"><input type="radio" name="f9" value="Disagree"></td>
+            <td class="center"><input type="radio" name="f9" value="Strongly Disagree"></td>
+          </tr>
+        </tbody>
+      </table>
+
+      <!-- Comments and Suggestions -->
+      <div class="comments-section">
+        <label>COMMENTS AND SUGGESTIONS: _________________________________________________</label>
+        <textarea id="eval-comments" rows="4"></textarea>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="btn-row">
+        <button type="button" class="btn btn-print" onclick="window.print()">🖨️ Print Form</button>
+        <button type="button" class="btn btn-save" onclick="alert('✅ Ready to save! (Connect to Firebase later)')">💾 Save Evaluation</button>
+      </div>
+
     </div>
   </div>
 
-  <!-- Example Script for saving to localStorage (Can be changed to Firestore later) -->
-  <script>
-    window.saveQUAME = function() {
-      const form = document.getElementById('quame-form');
-      
-      // Basic validation
-      if (!document.getElementById('q-title').value) {
-        alert("⚠️ Please enter the Project Title.");
-        return;
-      }
-
-      const radios = ['q-react', 'q-learn', 'q-behavior', 'q-results'];
-      let allRated = true;
-      radios.forEach(name => {
-        if (!document.querySelector(`input[name="${name}"]:checked`)) {
-          allRated = false;
-        }
-      });
-
-      if (!allRated) {
-        alert("⚠️ Please rate all criteria (Reaction, Learning, Behavior, Results).");
-        return;
-      }
-
-      alert("✅ QUAME Evaluation saved successfully! (Ready to print)");
-    };
-  </script>
 </body>
 </html>
