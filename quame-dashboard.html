@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>QUAME Dashboard – SCPHS</title>
-  <link rel="stylesheet" href="../../assets/css/styles.css" />
+  <link rel="stylesheet" href="assets/css/styles.css" />
   <!-- Load Chart.js for the graphs -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   
@@ -28,6 +28,9 @@
     .charts-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
     @media (max-width: 900px) { .charts-grid { grid-template-columns: 1fr; } }
     .chart-card { background: #fff; padding: 25px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
+    
+    /* Empty State */
+    #empty-state { text-align: center; padding: 50px; color: #64748b; display: none; }
   </style>
 </head>
 <body>
@@ -38,50 +41,67 @@
       <a href="quame-evaluation.html" style="color: var(--gc-primary); font-weight: bold; text-decoration: none;">← Back to Evaluation Form</a>
     </div>
 
-    <!-- Statistics Cards -->
-    <div class="stats-grid">
-      <div class="stat-card">
-        <div class="stat-value" id="total-responses">0</div>
-        <div class="stat-label">Total Evaluations Submitted</div>
+    <div id="loading" style="text-align: center; padding: 50px; color: #0f4c81; font-weight: bold;">
+      Loading Data from Firebase...
+    </div>
+
+    <div id="dashboard-content" style="display: none;">
+      <!-- Statistics Cards -->
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-value" id="total-responses">0</div>
+          <div class="stat-label">Total Evaluations Submitted</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value" id="avg-score">0%</div>
+          <div class="stat-label">Average Overall Score</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value" id="highest-score">0%</div>
+          <div class="stat-label">Highest Rating Given</div>
+        </div>
       </div>
-      <div class="stat-card">
-        <div class="stat-value" id="avg-score">0%</div>
-        <div class="stat-label">Average Overall Score</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-value" id="highest-score">0%</div>
-        <div class="stat-label">Highest Rating Given</div>
+
+      <!-- Charts -->
+      <div class="charts-grid">
+        <div class="chart-card">
+          <h3 style="margin-top: 0; color: #333;">Session vs. Facilitator Rating</h3>
+          <canvas id="categoryChart"></canvas>
+        </div>
+        <div class="chart-card">
+          <h3 style="margin-top: 0; color: #333;">Overall Satisfaction Breakdown</h3>
+          <canvas id="satisfactionChart"></canvas>
+        </div>
       </div>
     </div>
 
-    <!-- Charts -->
-    <div class="charts-grid">
-      <div class="chart-card">
-        <h3 style="margin-top: 0; color: #333;">Session vs. Facilitator Rating</h3>
-        <canvas id="categoryChart"></canvas>
-      </div>
-      <div class="chart-card">
-        <h3 style="margin-top: 0; color: #333;">Overall Satisfaction Breakdown</h3>
-        <canvas id="satisfactionChart"></canvas>
-      </div>
+    <div id="empty-state" class="chart-card">
+      <h2>No Evaluations Found</h2>
+      <p>There are currently no records in the <code>quame_evaluations</code> database. Please submit an evaluation first.</p>
     </div>
   </div>
 
   <script type="module">
-    import { db } from "../../assets/js/firebase-config.js"; 
+    // 👇 FIXED PATH: Using ./ to point to the root folder
+    import { db } from "./assets/js/firebase-config.js"; 
     import { collection, getDocs } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+    let categoryChart = null;
+    let satisfactionChart = null;
 
     async function loadStats() {
       try {
         const snapshot = await getDocs(collection(db, "quame_evaluations"));
         const data = snapshot.docs.map(doc => doc.data());
 
+        document.getElementById('loading').style.display = 'none';
+
         if (data.length === 0) {
-          document.getElementById('total-responses').textContent = "0";
+          document.getElementById('empty-state').style.display = 'block';
           return;
         }
 
-        document.getElementById('total-responses').textContent = data.length;
+        document.getElementById('dashboard-content').style.display = 'block';
 
         // Calculate Averages
         let totalPerc = 0;
@@ -96,11 +116,11 @@
           // Calculate Session vs Facilitator breakdown
           let sScore = 0, fScore = 0;
           for (let i = 1; i <= 10; i++) {
-            const val = item.answers[`s${i}`];
+            const val = item.answers ? item.answers[`s${i}`] : null;
             if (val === "Strongly Agree") sScore += 5; else if (val === "Agree") sScore += 4;
           }
           for (let i = 1; i <= 9; i++) {
-            const val = item.answers[`f${i}`];
+            const val = item.answers ? item.answers[`f${i}`] : null;
             if (val === "Strongly Agree") fScore += 5; else if (val === "Agree") fScore += 4;
           }
           sessionTotal += (sScore / 50) * 100; 
@@ -108,6 +128,7 @@
         });
 
         const avgPerc = (totalPerc / data.length).toFixed(1);
+        document.getElementById('total-responses').textContent = data.length;
         document.getElementById('avg-score').textContent = `${avgPerc}%`;
         document.getElementById('highest-score').textContent = `${highestPerc.toFixed(1)}%`;
 
@@ -115,7 +136,9 @@
         const avgSession = (sessionTotal / data.length).toFixed(1);
         const avgFacilitator = (facilitatorTotal / data.length).toFixed(1);
 
-        new Chart(document.getElementById('categoryChart'), {
+        if (categoryChart) categoryChart.destroy(); // Clear old chart if auto-refreshing
+
+        categoryChart = new Chart(document.getElementById('categoryChart'), {
           type: 'bar',
           data: {
             labels: ['Session Content', 'Facilitator Skills'],
@@ -139,7 +162,9 @@
           else needsImprovement++;
         });
 
-        new Chart(document.getElementById('satisfactionChart'), {
+        if (satisfactionChart) satisfactionChart.destroy();
+
+        satisfactionChart = new Chart(document.getElementById('satisfactionChart'), {
           type: 'doughnut',
           data: {
             labels: ['Excellent (>90%)', 'Good (75-89%)', 'Needs Improvement (<75%)'],
@@ -153,10 +178,15 @@
 
       } catch (error) {
         console.error("Error loading stats:", error);
+        document.getElementById('loading').innerHTML = `<span style="color:red;">Error: ${error.message}</span>`;
       }
     }
 
+    // Load immediately on page load
     loadStats();
+    
+    // Auto-refresh every 10 seconds for a "Live" dashboard feel
+    setInterval(loadStats, 10000);
   </script>
 </body>
 </html>
