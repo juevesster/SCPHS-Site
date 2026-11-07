@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>QUAME Dashboard – SCPHS</title>
+  <link rel="stylesheet" href="../../assets/css/styles.css" />
+  <!-- Load Chart.js for the graphs -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  
+  <style>
+    :root {
+      --gc-primary: #0f4c81;
+      --gc-border: #e2e8f0;
+      --bg-gray: #f1f5f9;
+    }
+    body { background: var(--bg-gray); margin: 0; font-family: system-ui, -apple-system, sans-serif; }
+    .wrap { max-width: 1200px; margin: 0 auto; padding: 20px 16px; }
+
+    .header { background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; }
+    .header h1 { margin: 0; color: var(--gc-primary); font-size: 1.5rem; }
+    
+    .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin-bottom: 20px; }
+    .stat-card { background: #fff; padding: 25px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); text-align: center; }
+    .stat-value { font-size: 2.5rem; font-weight: 800; color: var(--gc-primary); }
+    .stat-label { color: #64748b; font-weight: 600; margin-top: 5px; }
+
+    .charts-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+    @media (max-width: 900px) { .charts-grid { grid-template-columns: 1fr; } }
+    .chart-card { background: #fff; padding: 25px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
+  </style>
+</head>
+<body>
+
+  <div class="wrap">
+    <div class="header">
+      <h1>📊 QUAME Evaluation Dashboard</h1>
+      <a href="quame-evaluation.html" style="color: var(--gc-primary); font-weight: bold; text-decoration: none;">← Back to Evaluation Form</a>
+    </div>
+
+    <!-- Statistics Cards -->
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-value" id="total-responses">0</div>
+        <div class="stat-label">Total Evaluations Submitted</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value" id="avg-score">0%</div>
+        <div class="stat-label">Average Overall Score</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value" id="highest-score">0%</div>
+        <div class="stat-label">Highest Rating Given</div>
+      </div>
+    </div>
+
+    <!-- Charts -->
+    <div class="charts-grid">
+      <div class="chart-card">
+        <h3 style="margin-top: 0; color: #333;">Session vs. Facilitator Rating</h3>
+        <canvas id="categoryChart"></canvas>
+      </div>
+      <div class="chart-card">
+        <h3 style="margin-top: 0; color: #333;">Overall Satisfaction Breakdown</h3>
+        <canvas id="satisfactionChart"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <script type="module">
+    import { db } from "../../assets/js/firebase-config.js"; 
+    import { collection, getDocs } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+    async function loadStats() {
+      try {
+        const snapshot = await getDocs(collection(db, "quame_evaluations"));
+        const data = snapshot.docs.map(doc => doc.data());
+
+        if (data.length === 0) {
+          document.getElementById('total-responses').textContent = "0";
+          return;
+        }
+
+        document.getElementById('total-responses').textContent = data.length;
+
+        // Calculate Averages
+        let totalPerc = 0;
+        let highestPerc = 0;
+        let sessionTotal = 0;
+        let facilitatorTotal = 0;
+
+        data.forEach(item => {
+          totalPerc += item.percentage;
+          if (item.percentage > highestPerc) highestPerc = item.percentage;
+          
+          // Calculate Session vs Facilitator breakdown
+          let sScore = 0, fScore = 0;
+          for (let i = 1; i <= 10; i++) {
+            const val = item.answers[`s${i}`];
+            if (val === "Strongly Agree") sScore += 5; else if (val === "Agree") sScore += 4;
+          }
+          for (let i = 1; i <= 9; i++) {
+            const val = item.answers[`f${i}`];
+            if (val === "Strongly Agree") fScore += 5; else if (val === "Agree") fScore += 4;
+          }
+          sessionTotal += (sScore / 50) * 100; 
+          facilitatorTotal += (fScore / 45) * 100;
+        });
+
+        const avgPerc = (totalPerc / data.length).toFixed(1);
+        document.getElementById('avg-score').textContent = `${avgPerc}%`;
+        document.getElementById('highest-score').textContent = `${highestPerc.toFixed(1)}%`;
+
+        // Setup Chart 1: Session vs Facilitator
+        const avgSession = (sessionTotal / data.length).toFixed(1);
+        const avgFacilitator = (facilitatorTotal / data.length).toFixed(1);
+
+        new Chart(document.getElementById('categoryChart'), {
+          type: 'bar',
+          data: {
+            labels: ['Session Content', 'Facilitator Skills'],
+            datasets: [{
+              label: 'Average Score (%)',
+              data: [avgSession, avgFacilitator],
+              backgroundColor: ['#0f4c81', '#16a34a'],
+              borderRadius: 6
+            }]
+          },
+          options: {
+            scales: { y: { beginAtZero: true, max: 100 } }
+          }
+        });
+
+        // Setup Chart 2: Overall Satisfaction Pie Chart
+        let excellent = 0, good = 0, needsImprovement = 0;
+        data.forEach(item => {
+          if (item.percentage >= 90) excellent++;
+          else if (item.percentage >= 75) good++;
+          else needsImprovement++;
+        });
+
+        new Chart(document.getElementById('satisfactionChart'), {
+          type: 'doughnut',
+          data: {
+            labels: ['Excellent (>90%)', 'Good (75-89%)', 'Needs Improvement (<75%)'],
+            datasets: [{
+              data: [excellent, good, needsImprovement],
+              backgroundColor: ['#16a34a', '#eab308', '#dc2626'],
+              borderWidth: 0
+            }]
+          }
+        });
+
+      } catch (error) {
+        console.error("Error loading stats:", error);
+      }
+    }
+
+    loadStats();
+  </script>
+</body>
+</html>

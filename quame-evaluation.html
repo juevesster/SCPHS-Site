@@ -334,6 +334,77 @@
 
     </div>
   </div>
+  <script type="module">
+    import { db } from "../../assets/js/firebase-config.js"; // Adjust path if needed
+    import { collection, addDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
+    window.saveQUAME = async function() {
+      const topic = document.getElementById('eval-topic').value;
+      const facilitator = document.getElementById('eval-facilitator').value;
+      
+      if (!topic || !facilitator) {
+        alert("⚠️ Please fill out the Session Topic and Facilitator.");
+        return;
+      }
+
+      // Gather all radio button answers
+      const form = document.getElementById('quame-form');
+      const data = {};
+      let totalScore = 0;
+      let answeredCount = 0;
+
+      // Loop through all 19 questions (10 session, 9 facilitator)
+      const questions = ['s1','s2','s3','s4','s5','s6','s7','s8','s9','s10', 'f1','f2','f3','f4','f5','f6','f7','f8','f9'];
+      
+      for (let q of questions) {
+        const selected = document.querySelector(`input[name="${q}"]:checked`);
+        if (selected) {
+          const val = selected.value;
+          data[q] = val;
+          answeredCount++;
+          
+          // Convert to score (5 to 1)
+          if (val === "Strongly Agree") totalScore += 5;
+          else if (val === "Agree") totalScore += 4;
+          else if (val === "Disagree") totalScore += 2;
+          else if (val === "Strongly Disagree") totalScore += 1;
+        }
+      }
+
+      if (answeredCount < 19) {
+        alert("⚠️ Please answer all 19 questions before submitting.");
+        return;
+      }
+
+      // Calculate percentage (Max score is 19 * 5 = 95)
+      const percentage = (totalScore / 95) * 100;
+
+      const evaluationData = {
+        topic: topic,
+        facilitator: facilitator,
+        date: document.getElementById('eval-date').value,
+        answers: data,
+        totalScore: totalScore,
+        percentage: percentage,
+        comments: document.getElementById('eval-comments').value,
+        timestamp: Date.now()
+      };
+
+      try {
+        const btn = document.querySelector('.btn-save');
+        btn.textContent = "Saving...";
+        btn.disabled = true;
+
+        await addDoc(collection(db, "quame_evaluations"), evaluationData);
+        
+        alert(`✅ Evaluation Saved! Total Score: ${totalScore}/95 (${percentage.toFixed(1)}%)`);
+        window.location.reload(); // Reset form
+
+      } catch (error) {
+        console.error("Error saving:", error);
+        alert("❌ Failed to save. Check console.");
+      }
+    };
+  </script>
 </body>
 </html>
