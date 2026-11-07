@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>QUAME Dashboard – SCPHS</title>
   <link rel="stylesheet" href="assets/css/styles.css" />
-  <!-- Load Chart.js for the graphs -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   
   <style>
@@ -35,6 +34,15 @@
     .interp-text { font-size: 1rem; color: #333; line-height: 1.6; text-align: justify; }
     .interp-text strong { color: var(--gc-primary); }
 
+    /* Table for Records */
+    .table-card { background: #fff; padding: 25px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); margin-bottom: 20px; overflow-x: auto; }
+    .table-card h2 { margin-top: 0; color: var(--gc-primary); font-size: 1.2rem; border-bottom: 1px solid var(--gc-border); padding-bottom: 10px; }
+    table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+    th, td { border: 1px solid var(--gc-border); padding: 10px; text-align: left; }
+    th { background: #f8fafc; font-weight: bold; }
+    .btn-delete { background: #fee2e2; color: #dc2626; border: 1px solid #fecaca; padding: 5px 10px; border-radius: 4px; cursor: pointer; font-weight: bold; transition: 0.2s; }
+    .btn-delete:hover { background: #dc2626; color: #fff; }
+
     /* Print Button */
     .btn-print { background: #475569; color: #fff; border: none; padding: 12px 24px; border-radius: 6px; font-weight: bold; font-size: 0.95rem; cursor: pointer; transition: 0.2s; float: right; margin-bottom: 20px; }
     .btn-print:hover { background: #334155; }
@@ -43,10 +51,8 @@
     @media print {
       @page { size: A4 portrait; margin: 15mm; }
       body { background: #fff; }
-      .header, .btn-print, .btn-link { display: none !important; }
+      .header, .btn-print, .btn-link, .table-card { display: none !important; }
       .wrap { padding: 0; max-width: 100%; }
-      
-      /* Hide the charts to focus on the text and data */
       .charts-grid { display: none !important; }
 
       .print-header { display: block !important; text-align: center !important; margin-bottom: 30px; }
@@ -73,11 +79,9 @@
       <a href="quame-evaluation.html" class="btn-link" style="color: var(--gc-primary); font-weight: bold; text-decoration: none;">← Back to Evaluation Form</a>
     </div>
 
-    <!-- Print Button -->
     <button class="btn-print" onclick="window.print()">🖨️ Print Research Report</button>
     <div style="clear: both;"></div>
 
-    <!-- Print Header (Only shows on paper) -->
     <div class="print-header">
       <img src="assets/images/deped-logo.png" alt="DepEd Logo">
       <div style="font-size: 12px;">Republic of the Philippines</div>
@@ -115,12 +119,10 @@
       <!-- Interpretation Section -->
       <div class="interp-card">
         <h2>📝 Data Interpretation (Chapter 5)</h2>
-        <div class="interp-text" id="interp-text">
-          <!-- Dynamic text will be inserted here -->
-        </div>
+        <div class="interp-text" id="interp-text"></div>
       </div>
 
-      <!-- Charts (Screen only) -->
+      <!-- Charts -->
       <div class="charts-grid">
         <div class="chart-card">
           <h3 style="margin-top: 0; color: #333;">Session vs. Facilitator Rating</h3>
@@ -130,6 +132,24 @@
           <h3 style="margin-top: 0; color: #333;">Overall Satisfaction Breakdown</h3>
           <canvas id="satisfactionChart"></canvas>
         </div>
+      </div>
+
+      <!-- Records Table (Hidden on Print) -->
+      <div class="table-card">
+        <h2>📋 Individual Evaluation Records</h2>
+        <table>
+          <thead>
+            <tr>
+              <th>Participant</th>
+              <th>Date</th>
+              <th>Score</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody id="records-tbody">
+            <!-- Records inserted here by JS -->
+          </tbody>
+        </table>
       </div>
 
     </div>
@@ -142,7 +162,7 @@
 
   <script type="module">
     import { db } from "./assets/js/firebase-config.js"; 
-    import { collection, getDocs } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+    import { collection, getDocs, doc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
     let categoryChart = null;
     let satisfactionChart = null;
@@ -150,15 +170,17 @@
     async function loadStats() {
       try {
         const snapshot = await getDocs(collection(db, "quame_evaluations"));
-        const data = snapshot.docs.map(doc => doc.data());
+        const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
 
         document.getElementById('loading').style.display = 'none';
 
         if (data.length === 0) {
           document.getElementById('empty-state').style.display = 'block';
+          document.getElementById('dashboard-content').style.display = 'none';
           return;
         }
 
+        document.getElementById('empty-state').style.display = 'none';
         document.getElementById('dashboard-content').style.display = 'block';
 
         // Calculate Averages
@@ -198,23 +220,30 @@
         document.getElementById('avg-score').textContent = `${avgPerc}%`;
         document.getElementById('highest-score').textContent = `${highestPerc.toFixed(1)}%`;
 
-        // Generate Dynamic Interpretation Text
+        // Generate Interpretation Text
         let interpretation = `<p>Based on the <strong>${data.length} evaluation forms</strong> collected from the participants of the recent Learning & Development session, the following findings were derived:</p>`;
-        
         interpretation += `<p><strong>1. Overall Satisfaction:</strong> The sessions achieved an average satisfaction score of <strong>${avgPerc}%</strong>. This indicates that the participants generally rated the training as highly effective and satisfactory.</p>`;
-        
         interpretation += `<p><strong>2. Session Content vs. Facilitator Skills:</strong> The analysis reveals that the Session Content received an average rating of <strong>${avgSession}%</strong>, while the Facilitator's performance received <strong>${avgFacilitator}%</strong>. `;
         if (avgFacilitator > avgSession) {
             interpretation += `This suggests that the participants were particularly impressed by the delivery and competence of the facilitators.</p>`;
         } else {
             interpretation += `This suggests that while the content was highly relevant, there may be room for improvement in the facilitator's delivery or engagement strategies.</p>`;
         }
-
         interpretation += `<p><strong>3. Satisfaction Breakdown:</strong> Out of all respondents, <strong>${excellentCount}</strong> rated the session as "Excellent" (>90%), <strong>${goodCount}</strong> rated it as "Good" (75-89%), and <strong>${poorCount}</strong> indicated that the session needs improvement (<75%).</p>`;
-        
         interpretation += `<p><strong>Conclusion:</strong> The results from the QUAME Form D affirm the effectiveness of the project/innovation. The data supports the conclusion that the activity met its objectives and provided substantial value to the participants.</p>`;
 
         document.getElementById('interp-text').innerHTML = interpretation;
+
+        // Populate Records Table
+        const tbody = document.getElementById('records-tbody');
+        tbody.innerHTML = data.sort((a,b) => b.timestamp - a.timestamp).map(item => `
+          <tr>
+            <td><strong>${item.participant || 'Anonymous'}</strong></td>
+            <td>${item.date || 'N/A'}</td>
+            <td>${item.percentage.toFixed(1)}%</td>
+            <td><button class="btn-delete" onclick="deleteRecord('${item.id}')">🗑️ Delete</button></td>
+          </tr>
+        `).join("");
 
         // Render Charts
         if (categoryChart) categoryChart.destroy();
@@ -250,6 +279,19 @@
         document.getElementById('loading').innerHTML = `<span style="color:red;">Error: ${error.message}</span>`;
       }
     }
+
+    window.deleteRecord = async function(id) {
+      if (!confirm("Are you sure you want to delete this evaluation record? This action cannot be undone.")) return;
+      
+      try {
+        await deleteDoc(doc(db, "quame_evaluations", id));
+        alert("✅ Record deleted successfully.");
+        loadStats(); // Refresh dashboard instantly
+      } catch (error) {
+        console.error("Error deleting record:", error);
+        alert("❌ Failed to delete record.");
+      }
+    };
 
     loadStats();
     setInterval(loadStats, 10000);
