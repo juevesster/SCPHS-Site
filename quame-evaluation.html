@@ -410,7 +410,10 @@
         alert(`✅ Evaluation Saved!\nParticipant: ${participant}\nScore: ${totalScore}/95 (${percentage.toFixed(1)}%)`);
         
         // Reset form for the next participant
-        document.getElementById('quame-form').reset(); 
+                // Clear all radio buttons manually
+        document.querySelectorAll('input[type="radio"]').forEach(radio => radio.checked = false);
+        // Clear the comments
+        document.getElementById('eval-comments').value = ""; 
         document.getElementById('eval-topic').value = topic; 
         document.getElementById('eval-facilitator').value = facilitator; 
         document.getElementById('eval-date').value = evaluationData.date; 
