@@ -32,7 +32,6 @@
     .form-section h3 { margin-top: 0; color: var(--gc-primary); border-bottom: 1px solid var(--gc-border); padding-bottom: 10px; font-size: 1.1rem; text-transform: uppercase;}
     
     .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px; }
-    .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px; margin-bottom: 15px; }
     .grid-full { margin-bottom: 15px; }
 
     label { display: block; font-size: 0.8rem; font-weight: 700; color: #333; margin-bottom: 5px; text-transform: uppercase; }
@@ -47,7 +46,7 @@
     .report-table td.center { text-align: center; }
     .report-table tr:hover { background: #f8fafc; }
     
-    .text-input-cell { width: 100%; border: 1px solid transparent; padding: 6px; border-radius: 4px; font-family: inherit; font-size: 0.85rem; transition: 0.2s; }
+    .text-input-cell { width: 100%; border: 1px solid transparent; padding: 6px; border-radius: 4px; font-family: inherit; font-size: 0.85rem; transition: 0.2s; background: transparent;}
     .text-input-cell:focus { border-color: var(--bright-blue); outline: none; background: #fff; }
     .text-input-cell:hover { border-color: #cbd5e1; background: #fff; }
 
@@ -58,10 +57,12 @@
     .btn-print:hover { background: #334155; }
     .btn-refresh { background: var(--bright-blue); color: #fff; }
     .btn-refresh:hover { background: #1d4ed8; }
+    .btn-save-details { background: var(--success); color: #fff; }
+    .btn-save-details:hover { background: #15803d; }
 
     /* --- PRINT STYLES --- */
     @media print {
-      @page { size: A4 landscape; margin: 10mm; } /* Landscape to fit the wide table */
+      @page { size: A4 landscape; margin: 10mm; }
       body { background: #fff; font-family: "Times New Roman", Times, serif; }
       
       .header, .back-link, .btn-row { display: none !important; }
@@ -76,13 +77,11 @@
       .print-header h1 { font-size: 14px; margin: 3px 0; font-weight: bold; }
       .print-header p { font-size: 12px; margin: 2px 0; }
       
-      /* Inputs as lines */
-      .grid-2, .grid-3 { gap: 15px; margin-bottom: 10px; }
+      .grid-2 { gap: 15px; margin-bottom: 10px; }
       label { font-size: 11px; color: #000; margin-bottom: 2px; text-transform: none; font-family: sans-serif; }
       input, textarea { border: none; border-bottom: 1px solid #000; padding: 2px 0; border-radius: 0; font-size: 12px; background: transparent; font-family: "Times New Roman", Times, serif;}
       textarea { border: 1px solid #000; padding: 5px; }
       
-      /* Table */
       .report-table { font-size: 11px; font-family: "Times New Roman", Times, serif; }
       .report-table th, .report-table td { border: 1px solid #000; padding: 4px 6px; }
       .report-table th { background: #e5e7eb !important; }
@@ -107,7 +106,6 @@
 
     <div class="form-card">
       
-      <!-- Print Header -->
       <div class="print-header">
         <img src="../../assets/images/deped-logo.png" alt="DepEd Logo">
         <div style="font-size: 11px;">Republic of the Philippines</div>
@@ -119,7 +117,6 @@
         <div style="font-size: 11px; font-weight: bold; color: #dc2626; margin-top: 5px;">Appendix D</div>
       </div>
 
-      <!-- HEADER INFO -->
       <div class="form-section">
         <div class="grid-2">
           <div><label>School/Division/Region</label><input type="text" id="rep-school" value="Sta. Cruz Pingkian High School / Division of Nueva Vizcaya / Region II"></div>
@@ -127,7 +124,6 @@
         </div>
       </div>
 
-      <!-- I. CHILDREN-AT-RISK TABLE -->
       <div class="form-section">
         <h3>I. CHILDREN-AT-RISK (CAR)</h3>
         <p style="font-size: 0.85rem; color: #64748b; margin-top: -5px; margin-bottom: 15px;">The system automatically calculates Male and Female counts based on LRP records.</p>
@@ -159,7 +155,6 @@
         </table>
       </div>
 
-      <!-- II. DESCRIPTION OF ACTION -->
       <div class="form-section">
         <h3>II. Description of action taken by the school or division to alleviate the risk factors of the CAR:</h3>
         <div class="grid-full">
@@ -167,7 +162,6 @@
         </div>
       </div>
 
-      <!-- SIGNATORIES -->
       <div class="form-section" style="border-bottom: none; margin-bottom: 0; padding-bottom: 0;">
         <div class="print-signatures">
           <div class="sig-block">
@@ -190,7 +184,8 @@
 
       <!-- BUTTONS -->
       <div class="btn-row">
-        <button type="button" class="btn btn-refresh" onclick="fetchDataAndAggregate()">🔄 Refresh Data</button>
+        <button type="button" class="btn btn-refresh" onclick="fetchDataAndAggregate()">🔄 Refresh Counts</button>
+        <button type="button" class="btn btn-save-details" onclick="saveDetails()">💾 Save Typed Details</button>
         <button type="button" class="btn btn-print" onclick="window.print()">🖨️ Print Report</button>
       </div>
 
@@ -200,9 +195,8 @@
   <script type="module">
     import { auth, db } from "../../assets/js/firebase-config.js";
     import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-    import { collection, getDocs, query, where, collectionGroup } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+    import { collection, getDocs } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
-    // Definitions of CAR categories mapped to checkbox values in the Case Monitoring form
     const CAR_CATEGORIES = [
       { id: "abuse", label: "1. Victim of abuse (sexual, physical, psychological, mental, economic and other mean)", keywords: ["Physical Abuse", "Sexual Abuse", "Verbal/Psychological Abuse", "Physical Bullying", "Social Bullying", "Cyber Bullying", "Gender-Based"] },
       { id: "neglect", label: "2. Victim of neglect", keywords: ["Victims of Neglect"] },
@@ -214,56 +208,70 @@
       { id: "prostituted", label: "8. Prostituted children", keywords: ["Prostituted", "Online Sexual Exploitation"] },
       { id: "mendicant", label: "9. Mendicant under PD 1563", keywords: ["Mendicant"] },
       { id: "solvent", label: "10. Solvent/ Rugby User", keywords: ["Solvent", "Rugby"] },
-      { id: "others", label: "11. Others", keywords: [] } // Catch-all
+      { id: "others", label: "11. Others", keywords: [] } 
     ];
 
     onAuthStateChanged(auth, async (user) => {
       if (!user) { window.location.href = "../../login.html"; return; }
       
-      // Set current date
       const today = new Date().toLocaleDateString('en-PH', { year: 'numeric', month: 'long', day: 'numeric' });
       document.getElementById('rep-dateDisplay').textContent = today;
       document.getElementById('rep-dateNotedDisplay').textContent = today;
-
-      // Pre-fill local storage from previous setting
       document.getElementById('rep-preparedBy').value = localStorage.getItem('gc_counselorName') || "";
 
-      await buildTable();
+      // Load saved text inputs from LocalStorage
+      const savedDetails = JSON.parse(localStorage.getItem('car_report_details') || '{}');
+      if (savedDetails['rep-description']) document.getElementById('rep-description').value = savedDetails['rep-description'];
+
+      await buildTable(savedDetails);
       await fetchDataAndAggregate();
     });
 
-        // Generate the HTML Table Rows dynamically
-    async function buildTable() {
+    // Generate the HTML Table Rows dynamically
+    async function buildTable(savedDetails = {}) {
       const tbody = document.getElementById('report-tbody');
-      tbody.innerHTML = CAR_CATEGORIES.map(cat => `
+      tbody.innerHTML = CAR_CATEGORIES.map(cat => {
+        const actionVal = savedDetails[`action-${cat.id}`] || '';
+        const remarksVal = savedDetails[`remarks-${cat.id}`] || '';
+        
+        return `
         <tr>
           <td>${cat.label}</td>
           <td class="center" id="count-${cat.id}-m">0</td>
           <td class="center" id="count-${cat.id}-f">0</td>
-          <!-- 👇 REMOVED PLACEHOLDERS HERE 👇 -->
-          <td><input type="text" class="text-input-cell" id="action-${cat.id}"></td>
-          <td><input type="text" class="text-input-cell" id="remarks-${cat.id}"></td>
-          <!-- 👆 ----------------------- 👆 -->
+          <td><input type="text" class="text-input-cell" id="action-${cat.id}" value="${actionVal}"></td>
+          <td><input type="text" class="text-input-cell" id="remarks-${cat.id}" value="${remarksVal}"></td>
         </tr>
-      `).join("");
+      `}).join("");
     }
 
-    // Fetch all students and aggregate their LRP records
+    // Save typed details to LocalStorage
+    window.saveDetails = function() {
+      const details = {
+        'rep-description': document.getElementById('rep-description').value
+      };
+      
+      CAR_CATEGORIES.forEach(cat => {
+        details[`action-${cat.id}`] = document.getElementById(`action-${cat.id}`).value;
+        details[`remarks-${cat.id}`] = document.getElementById(`remarks-${cat.id}`).value;
+      });
+
+      localStorage.setItem('car_report_details', JSON.stringify(details));
+      alert("✅ Typed details saved! They will appear on the printed report.");
+    };
+
     window.fetchDataAndAggregate = async function() {
       const btn = document.querySelector('.btn-refresh');
       const originalText = btn.textContent;
       btn.textContent = "Loading Data..."; btn.disabled = true;
 
-      // Reset counts
       const counts = {};
       CAR_CATEGORIES.forEach(c => counts[c.id] = { m: 0, f: 0 });
       let otherCount = { m: 0, f: 0 };
 
       try {
-        // 1. Fetch all classes
         const classesSnap = await getDocs(collection(db, "classes"));
         
-        // 2. Loop through classes -> students -> case_monitoring
         const promises = classesSnap.docs.map(async (classDoc) => {
           const studentsSnap = await getDocs(collection(db, "classes", classDoc.id, "students"));
           
@@ -273,10 +281,8 @@
             const isMale = gender === 'male' || gender === 'm';
             const isFemale = gender === 'female' || gender === 'f';
             
-            // Skip if gender unknown
             if (!isMale && !isFemale) return; 
 
-            // Fetch cases for this student
             const casesSnap = await getDocs(collection(db, "classes", classDoc.id, "students", studentDoc.id, "case_monitoring"));
             
             casesSnap.forEach(caseDoc => {
@@ -285,20 +291,15 @@
               
               types.forEach(type => {
                 let matched = false;
-                // Match against predefined categories
                 for (const cat of CAR_CATEGORIES) {
                   if (cat.id === 'others') continue; 
-                  
-                  // Check if the type string includes any of the keywords for this category
                   if (cat.keywords.some(k => type.toLowerCase().includes(k.toLowerCase()))) {
                     if (isMale) counts[cat.id].m++;
                     if (isFemale) counts[cat.id].f++;
                     matched = true;
-                    break; // Move to next type
+                    break; 
                   }
                 }
-                
-                // If it didn't match any specific category, add to Others
                 if (!matched && type && !type.toLowerCase().includes('bullying') && !type.toLowerCase().includes('abuse')) {
                    if (isMale) otherCount.m++;
                    if (isFemale) otherCount.f++;
@@ -306,24 +307,18 @@
               });
             });
           });
-          
           await Promise.all(studentPromises);
         });
 
         await Promise.all(promises);
 
-        // 3. Update the UI
         let totalM = 0;
         let totalF = 0;
 
         CAR_CATEGORIES.forEach(cat => {
           let m = counts[cat.id].m;
           let f = counts[cat.id].f;
-          
-          if (cat.id === 'others') {
-            m = otherCount.m;
-            f = otherCount.f;
-          }
+          if (cat.id === 'others') { m = otherCount.m; f = otherCount.f; }
 
           document.getElementById(`count-${cat.id}-m`).textContent = m;
           document.getElementById(`count-${cat.id}-f`).textContent = f;
