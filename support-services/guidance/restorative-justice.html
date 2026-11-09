@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Restorative Justice Agreement (App E) – SCPHS Guidance</title>
+  <link rel="stylesheet" href="../../assets/css/styles.css" />
+  
+  <style>
+    :root {
+      --gc-primary: #0f4c81;
+      --gc-border: #e2e8f0;
+      --gc-text-main: #1e293b;
+      --gc-text-muted: #64748b;
+      --bright-blue: #2563eb;
+      --danger: #dc2626;
+      --success: #16a34a;
+    }
+
+    body { background: #f1f5f9; margin: 0; font-family: system-ui, -apple-system, sans-serif; }
+    .wrap { max-width: 900px; margin: 0 auto; padding: 20px 16px; }
+
+    /* Header */
+    .header { background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; }
+    .header h1 { margin: 0; color: var(--gc-primary); font-size: 1.4rem; }
+    .back-link { color: var(--bright-blue); text-decoration: none; font-weight: 600; font-size: 0.9rem; }
+
+    /* Form Card */
+    .form-card { background: #fff; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); padding: 30px; margin-bottom: 30px; }
+    
+    .form-section { margin-bottom: 25px; border: 1px solid var(--gc-border); border-radius: 8px; padding: 20px; background: #fff;}
+    .form-section h3 { margin-top: 0; color: var(--gc-primary); border-bottom: 1px solid var(--gc-border); padding-bottom: 10px; font-size: 1.1rem; text-transform: uppercase;}
+    
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px; }
+    .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px; margin-bottom: 15px; }
+    .grid-full { margin-bottom: 15px; }
+    @media (max-width: 600px) { .grid-2, .grid-3 { grid-template-columns: 1fr; } }
+
+    label { display: block; font-size: 0.8rem; font-weight: 700; color: #333; margin-bottom: 5px; text-transform: uppercase; }
+    input, textarea { width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-family: inherit; font-size: 0.95rem; box-sizing: border-box; }
+    textarea { resize: vertical; min-height: 80px; }
+
+    /* Buttons */
+    .btn-row { display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px; padding-top: 20px; border-top: 1px solid var(--gc-border); }
+    .btn { padding: 12px 24px; border: none; border-radius: 6px; font-weight: bold; font-size: 0.95rem; cursor: pointer; transition: 0.2s; }
+    .btn-save { background: var(--success); color: #fff; }
+    .btn-save:hover { background: #15803d; }
+    .btn-print { background: #475569; color: #fff; }
+    .btn-print:hover { background: #334155; }
+
+    /* --- PRINT STYLES --- */
+    @media print {
+      @page { size: A4 portrait; margin: 15mm; }
+      body { background: #fff; font-family: "Times New Roman", Times, serif; }
+      
+      .header, .back-link, .btn-row, #rj-history-wrapper { display: none !important; }
+      
+      .wrap { padding: 0; max-width: 100%; }
+      .form-card { box-shadow: none; padding: 0; margin: 0; }
+      .form-section { border: none; padding: 0; margin-bottom: 15px; }
+      .form-section h3 { border-bottom: 1px solid #000; font-size: 12px; margin-bottom: 10px; font-weight: bold; text-transform: uppercase; font-family: sans-serif; }
+      
+      .print-header { display: block !important; text-align: center !important; margin-bottom: 20px; }
+      .print-header img { display: block !important; margin: 0 auto 10px auto !important; height: 60px; }
+      .print-header h1 { font-size: 14px; margin: 3px 0; font-weight: bold; }
+      .print-header p { font-size: 12px; margin: 2px 0; }
+      
+      .grid-2, .grid-3 { gap: 15px; margin-bottom: 10px; }
+      label { font-size: 11px; color: #000; margin-bottom: 2px; text-transform: none; font-family: sans-serif; }
+      input, textarea { border: none; border-bottom: 1px solid #000; padding: 2px 0; border-radius: 0; font-size: 12px; background: transparent; font-family: "Times New Roman", Times, serif;}
+      textarea { border: 1px solid #000; padding: 5px; }
+      
+      .print-signatures { display: flex; justify-content: space-between; margin-top: 30px; page-break-inside: avoid; }
+      .sig-block { width: 45%; text-align: center; }
+      .sig-label { font-size: 11px; margin-bottom: 25px; text-align: left; font-family: sans-serif;}
+      .sig-line { border-bottom: 1px solid #000; height: 15px; margin-bottom: 3px; }
+      .sig-pos { font-size: 10px; color: #333; font-family: sans-serif; }
+    }
+    .print-header { display: none; }
+  </style>
+</head>
+<body>
+
+  <div class="wrap">
+    <div class="header">
+      <h1>🤝 Restorative Justice Agreement (App E)</h1>
+      <a href="student-records.html" class="back-link" onclick="history.back(); return false;">← Back to Profile</a>
+    </div>
+
+    <div class="form-card">
+      
+      <!-- Print Header -->
+      <div class="print-header">
+        <img src="../../assets/images/deped-logo.png" alt="DepEd Logo">
+        <div style="font-size: 11px;">Republic of the Philippines</div>
+        <div style="font-size: 13px; font-weight: bold;">DEPARTMENT OF EDUCATION</div>
+        <div style="font-size: 11px;">Region II - Cagayan Valley</div>
+        <div style="font-size: 11px;">Schools Division of Nueva Vizcaya</div>
+        <div style="font-size: 13px; font-weight: bold; margin-top: 10px;">STA. CRUZ PINGKIAN HIGH SCHOOL</div>
+        <div style="font-size: 14px; font-weight: bold; margin-top: 5px;">RESTORATIVE JUSTICE AGREEMENT FORM</div>
+        <div style="font-size: 11px; font-weight: bold; color: #dc2626; margin-top: 5px;">Appendix E - CONFIDENTIAL</div>
+      </div>
+
+      <!-- 👇 HISTORY SECTION 👇 -->
+      <div id="rj-history-wrapper" class="form-section" style="display: none; background: #f1f5f9; border-left: 4px solid var(--gc-primary);">
+        <h3 style="margin-top: 0; border-bottom: none; padding-bottom: 0; color: var(--gc-primary);">📂 Past RJA Records</h3>
+        <p style="font-size: 0.85rem; color: #64748b; margin-top: 5px;">Click "Load Record" to pull up a previous agreement for reprinting or updating.</p>
+        <div id="rj-history" style="margin-top: 15px;"></div>
+      </div>
+      <!-- 👆 END OF HISTORY 👆 -->
+
+      <form id="rj-form">
+        
+        <!-- STUDENT INFO -->
+        <div class="form-section">
+          <h3>Student Information</h3>
+          <div class="grid-2">
+            <div style="grid-column: 1 / -1;"><label>Name of the Offender (Student)</label><input type="text" id="rj-studentName" readonly style="background: #f1f5f9;"></div>
+            <div><label>Age</label><input type="text" id="rj-age" readonly style="background: #f1f5f9;"></div>
+            <div><label>Grade & Section</label><input type="text" id="rj-grade" readonly style="background: #f1f5f9;"></div>
+            <div style="grid-column: 1 / -1;"><label>Date of Agreement</label><input type="date" id="rj-dateAgreement"></div>
+          </div>
+        </div>
+
+        <!-- BACKGROUND OF INCIDENT -->
+        <div class="form-section">
+          <h3>I. Background of the Incident</h3>
+          <div class="grid-full">
+            <textarea id="rj-background" rows="4" placeholder="Describe what happened, when, and where..."></textarea>
+          </div>
+        </div>
+
+        <!-- STATEMENT OF AGREEMENT -->
+        <div class="form-section">
+          <h3>II. Statement of Agreement</h3>
+          <p style="font-size: 0.9rem; color: #475569; margin-bottom: 15px;">
+            For the best interest of <strong id="rj-studentNameDisplay" style="color: var(--gc-primary);">the student</strong> and the school/community, the following shall be undertaken:
+          </p>
+          
+          <div class="grid-full">
+            <label>For the student-offender:</label>
+            <textarea id="rj-studentAction" rows="2" placeholder="e.g. Write a letter of apology, render community service..."></textarea>
+          </div>
+
+          <div class="grid-full">
+            <label>For the parents of the student-offender:</label>
+            <textarea id="rj-parentAction" rows="2" placeholder="e.g. Attend parenting seminars, monitor child's behavior..."></textarea>
+          </div>
+
+          <div class="grid-full">
+            <label>For the teacher-adviser / Guidance Counselor:</label>
+            <textarea id="rj-teacherAction" rows="2" placeholder="e.g. Conduct weekly counseling, monitor progress..."></textarea>
+          </div>
+
+          <div class="grid-full">
+            <label>For the social worker or LSWDO:</label>
+            <textarea id="rj-lswdoAction" rows="2" placeholder="e.g. Provide intervention programs, home visitation..."></textarea>
+          </div>
+
+          <div class="grid-full">
+            <label>For the victim and his/her parent/s (when appropriate):</label>
+            <textarea id="rj-victimAction" rows="2" placeholder="e.g. Accept the apology, participate in mediation..."></textarea>
+          </div>
+
+          <div class="grid-2" style="margin-top: 15px;">
+            <div>
+              <label>Implementation Start Date</label>
+              <input type="date" id="rj-startDate">
+            </div>
+            <div>
+              <label>Implementation End Date</label>
+              <input type="date" id="rj-endDate">
+            </div>
+          </div>
+        </div>
+
+        <!-- SIGNATORIES -->
+        <div class="form-section" style="border-bottom: none; margin-bottom: 0; padding-bottom: 0;">
+          <h3>Signatories</h3>
+          
+          <div style="margin-bottom: 30px;">
+            <div class="sig-label" style="font-size: 0.9rem; font-weight: bold; margin-bottom: 15px;">Prepared by:</div>
+            <div class="grid-2">
+              <div>
+                <div class="sig-line"></div>
+                <input type="text" id="rj-preparedBy" placeholder="Name of Guidance Counselor" style="text-align: center; font-weight: bold; margin-bottom: 2px; font-size: 0.9rem;">
+                <div style="text-align: center; font-size: 0.85rem; color: #475569;">Guidance Counselor / RJP Secretary</div>
+              </div>
+            </div>
+          </div>
+
+          <div style="margin-bottom: 30px;">
+            <div class="sig-label" style="font-size: 0.9rem; font-weight: bold; margin-bottom: 15px;">Conforme:</div>
+            <div class="grid-3">
+              <div>
+                <div class="sig-line"></div>
+                <input type="text" id="rj-conformeStudent" placeholder="Student Name" style="text-align: center; font-weight: bold; margin-bottom: 2px; font-size: 0.9rem;">
+                <div style="text-align: center; font-size: 0.85rem; color: #475569;">(Student-offender)</div>
+              </div>
+              <div>
+                <div class="sig-line"></div>
+                <input type="text" id="rj-conformeParent" placeholder="Parent Name" style="text-align: center; font-weight: bold; margin-bottom: 2px; font-size: 0.9rem;">
+                <div style="text-align: center; font-size: 0.85rem; color: #475569;">(Parent)</div>
+              </div>
+              <div>
+                <div class="sig-line"></div>
+                <input type="text" id="rj-conformeLSWDO" placeholder="LSWDO Name" style="text-align: center; font-weight: bold; margin-bottom: 2px; font-size: 0.9rem;">
+                <div style="text-align: center; font-size: 0.85rem; color: #475569;">(LSWDO / Social Worker)</div>
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <div class="sig-label" style="font-size: 0.9rem; font-weight: bold; margin-bottom: 15px;">Noted by:</div>
+            <div class="grid-2">
+              <div>
+                <div class="sig-line"></div>
+                <input type="text" id="rj-notedBy" value="SATURNINO P. CALANSI EdD" style="text-align: center; font-weight: bold; margin-bottom: 2px; font-size: 0.9rem;">
+                <div style="text-align: center; font-size: 0.85rem; color: #475569;">Principal / RJP Chairperson</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- BUTTONS -->
+        <div class="btn-row">
+          <button type="button" class="btn btn-print" onclick="window.print()">🖨️ Print Form</button>
+          <button type="button" class="btn btn-save" onclick="saveRJA()" id="btn-save">💾 Save RJA Record</button>
+        </div>
+
+      </form>
+    </div>
+  </div>
+
+  <script type="module">
+    import { auth, db } from "../../assets/js/firebase-config.js";
+    import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+    import { doc, getDoc, collection, getDocs, addDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+    const urlParams = new URLSearchParams(window.location.search);
+    const classId = urlParams.get('classId');
+    const studentId = urlParams.get('studentId');
+
+    let CURRENT_STUDENT = null;
+    let SAVED_RJAS = [];
+
+    onAuthStateChanged(auth, async (user) => {
+      if (!user) { window.location.href = "../../login.html"; return; }
+      if (!classId || !studentId) { alert("Missing student information."); window.location.href = "student-records.html"; return; }
+
+      try {
+        const studentRef = doc(db, "classes", classId, "students", studentId);
+        const studentSnap = await getDoc(studentRef);
+        
+        if (studentSnap.exists()) {
+          CURRENT_STUDENT = { id: studentSnap.id, classId, ...studentSnap.data() };
+          
+          // Pre-fill Student Info
+          document.getElementById('rj-studentName').value = CURRENT_STUDENT.fullName || "";
+          document.getElementById('rj-studentNameDisplay').textContent = CURRENT_STUDENT.fullName || "the student";
+          document.getElementById('rj-age').value = CURRENT_STUDENT.age || "";
+          document.getElementById('rj-grade').value = CURRENT_STUDENT.classLabel || "";
+          document.getElementById('rj-conformeStudent').value = CURRENT_STUDENT.fullName || "";
+          
+          // Pre-fill Dates
+          document.getElementById('rj-dateAgreement').valueAsDate = new Date();
+          document.getElementById('rj-preparedBy').value = localStorage.getItem('gc_counselorName') || "";
+
+          // Load past agreements
+          await loadPastRJAs();
+        }
+      } catch (error) {
+        console.error("Error loading student:", error);
+      }
+    });
+
+    // LOAD HISTORY
+    async function loadPastRJAs() {
+      try {
+        const rjaRef = collection(db, "classes", classId, "students", studentId, "restorative_agreements");
+        const snap = await getDocs(rjaRef);
+        SAVED_RJAS = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+        
+        const historyContainer = document.getElementById('rj-history');
+        const historyWrapper = document.getElementById('rj-history-wrapper');
+        
+        if (SAVED_RJAS.length > 0 && historyContainer) {
+          historyWrapper.style.display = 'block';
+          const sorted = SAVED_RJAS.sort((a,b) => b.timestamp - a.timestamp);
+          
+          historyContainer.innerHTML = sorted.map(c => `
+            <div style="display: flex; justify-content: space-between; align-items: center; background: #fff; padding: 12px 15px; border: 1px solid #e2e8f0; border-radius: 8px; margin-bottom: 10px; box-shadow: 0 2px 4px rgba(0,0,0,0.02);">
+              <div>
+                <strong style="color: #0f4c81;">Date: ${c.dateAgreement || 'N/A'}</strong> <br>
+                <span style="font-size: 0.85rem; color: #64748b;">Incident: ${(c.background || '').substring(0, 40)}...</span>
+              </div>
+              <div style="display: flex; gap: 8px;">
+                <button type="button" class="btn" style="background: #0f4c81; color: #fff; padding: 8px 15px; font-size: 0.85rem; border-radius: 6px; cursor: pointer;" onclick="loadRJAData('${c.id}')">Load Record</button>
+                <button type="button" class="btn" style="background: #fee2e2; color: #dc2626; border: 1px solid #fecaca; padding: 8px 15px; font-size: 0.85rem; border-radius: 6px; cursor: pointer;" onclick="deleteRJARecord('${c.id}')">🗑️</button>
+              </div>
+            </div>
+          `).join("");
+        }
+      } catch (error) { 
+        console.error("Error loading RJAs:", error); 
+      }
+    }
+
+    // LOAD SPECIFIC RECORD
+    window.loadRJAData = function(id) {
+      const data = SAVED_RJAS.find(r => r.id === id);
+      if (!data) return;
+
+      document.getElementById('rj-dateAgreement').value = data.dateAgreement || "";
+      document.getElementById('rj-background').value = data.background || "";
+      document.getElementById('rj-studentAction').value = data.studentAction || "";
+      document.getElementById('rj-parentAction').value = data.parentAction || "";
+      document.getElementById('rj-teacherAction').value = data.teacherAction || "";
+      document.getElementById('rj-lswdoAction').value = data.lswdoAction || "";
+      document.getElementById('rj-victimAction').value = data.victimAction || "";
+      document.getElementById('rj-startDate').value = data.startDate || "";
+      document.getElementById('rj-endDate').value = data.endDate || "";
+      
+      document.getElementById('rj-preparedBy').value = data.preparedBy || "";
+      document.getElementById('rj-conformeStudent').value = data.conformeStudent || "";
+      document.getElementById('rj-conformeParent').value = data.conformeParent || "";
+      document.getElementById('rj-conformeLSWDO').value = data.conformeLSWDO || "";
+      document.getElementById('rj-notedBy').value = data.notedBy || "";
+
+      alert("✅ Record loaded successfully! You can now print this form or make updates.");
+    };
+
+    // DELETE RECORD
+    window.deleteRJARecord = async function(id) {
+      if (!confirm("Are you sure you want to permanently delete this agreement? This cannot be undone.")) return;
+
+      try {
+        const ref = doc(db, "classes", classId, "students", studentId, "restorative_agreements", id);
+        await deleteDoc(ref);
+        alert("✅ Agreement deleted successfully.");
+        await loadPastRJAs(); 
+      } catch (error) {
+        console.error("Error deleting record:", error);
+        alert("❌ Failed to delete record.");
+      }
+    };
+
+    // SAVE NEW RECORD
+    window.saveRJA = async function() {
+      if (!CURRENT_STUDENT) return;
+
+      const background = document.getElementById('rj-background').value.trim();
+      if (!background) {
+        alert("⚠️ Cannot save. Please fill out the 'Background of the Incident' first.");
+        return;
+      }
+
+      const btn = document.getElementById('btn-save');
+      btn.textContent = "Saving..."; btn.disabled = true;
+
+      try {
+        const refsRef = collection(db, "classes", classId, "students", studentId, "restorative_agreements");
+        
+        const dataToSave = {
+          dateAgreement: document.getElementById('rj-dateAgreement').value,
+          background: background,
+          studentAction: document.getElementById('rj-studentAction').value,
+          parentAction: document.getElementById('rj-parentAction').value,
+          teacherAction: document.getElementById('rj-teacherAction').value,
+          lswdoAction: document.getElementById('rj-lswdoAction').value,
+          victimAction: document.getElementById('rj-victimAction').value,
+          startDate: document.getElementById('rj-startDate').value,
+          endDate: document.getElementById('rj-endDate').value,
+          preparedBy: document.getElementById('rj-preparedBy').value,
+          conformeStudent: document.getElementById('rj-conformeStudent').value,
+          conformeParent: document.getElementById('rj-conformeParent').value,
+          conformeLSWDO: document.getElementById('rj-conformeLSWDO').value,
+          notedBy: document.getElementById('rj-notedBy').value,
+          loggedBy: auth.currentUser.email,
+          timestamp: Date.now()
+        };
+
+        await addDoc(refsRef, dataToSave);
+        alert("✅ Restorative Justice Agreement saved successfully!");
+        window.location.href = "student-records.html";
+
+      } catch (error) {
+        console.error("Error saving agreement:", error);
+        alert("❌ Failed to save agreement.");
+        btn.textContent = "💾 Save RJA Record"; btn.disabled = false;
+      }
+    };
+  </script>
+</body>
+</html>
