@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Consolidated Report on CICL (Appendix F) – SCPHS</title>
+  <link rel="stylesheet" href="../../assets/css/styles.css" />
+  
+  <style>
+    :root {
+      --gc-primary: #0f4c81;
+      --gc-border: #e2e8f0;
+      --gc-text-main: #1e293b;
+      --gc-text-muted: #64748b;
+      --bright-blue: #2563eb;
+      --danger: #dc2626;
+      --success: #16a34a;
+    }
+
+    body { background: #f1f5f9; margin: 0; font-family: system-ui, -apple-system, sans-serif; }
+    .wrap { max-width: 1300px; margin: 0 auto; padding: 20px 16px; }
+
+    /* Header */
+    .header { background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; }
+    .header h1 { margin: 0; color: var(--gc-primary); font-size: 1.4rem; }
+    .back-link { color: var(--bright-blue); text-decoration: none; font-weight: 600; font-size: 0.9rem; }
+
+    /* Form Card */
+    .form-card { background: #fff; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); padding: 30px; margin-bottom: 30px; }
+    
+    .form-section { margin-bottom: 25px; border: 1px solid var(--gc-border); border-radius: 8px; padding: 20px; background: #fff; overflow-x: auto;}
+    .form-section h3 { margin-top: 0; color: var(--gc-primary); border-bottom: 1px solid var(--gc-border); padding-bottom: 10px; font-size: 1.1rem; text-transform: uppercase;}
+    
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px; }
+    .grid-full { margin-bottom: 15px; }
+
+    label { display: block; font-size: 0.8rem; font-weight: 700; color: #333; margin-bottom: 5px; text-transform: uppercase; }
+    input, textarea { width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-family: inherit; font-size: 0.95rem; box-sizing: border-box; }
+    textarea { resize: vertical; min-height: 80px; }
+
+    /* Report Table */
+    .report-table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 0.85rem; }
+    .report-table th, .report-table td { border: 1px solid #cbd5e1; padding: 8px; text-align: center; }
+    .report-table th { background: #f8fafc; font-weight: 700; color: #1e293b; }
+    .report-table td { text-align: left; }
+    .report-table td.center { text-align: center; }
+    .report-table tr:hover { background: #f8fafc; }
+    
+    .text-input-cell { width: 100%; border: 1px solid transparent; padding: 4px; border-radius: 4px; font-family: inherit; font-size: 0.85rem; transition: 0.2s; background: transparent;}
+    .text-input-cell:focus { border-color: var(--bright-blue); outline: none; background: #fff; }
+    .text-input-cell:hover { border-color: #cbd5e1; background: #fff; }
+
+    /* Buttons */
+    .btn-row { display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px; padding-top: 20px; border-top: 1px solid var(--gc-border); }
+    .btn { padding: 12px 24px; border: none; border-radius: 6px; font-weight: bold; font-size: 0.95rem; cursor: pointer; transition: 0.2s; }
+    .btn-print { background: #475569; color: #fff; }
+    .btn-print:hover { background: #334155; }
+    .btn-refresh { background: var(--bright-blue); color: #fff; }
+    .btn-refresh:hover { background: #1d4ed8; }
+    .btn-save-details { background: var(--success); color: #fff; }
+    .btn-save-details:hover { background: #15803d; }
+
+    /* --- PRINT STYLES --- */
+    @media print {
+      @page { size: A4 landscape; margin: 10mm; }
+      body { background: #fff; font-family: "Times New Roman", Times, serif; }
+      
+      .header, .back-link, .btn-row { display: none !important; }
+      
+      .wrap { padding: 0; max-width: 100%; }
+      .form-card { box-shadow: none; padding: 0; margin: 0; }
+      .form-section { border: none; padding: 0; margin-bottom: 15px; }
+      .form-section h3 { border-bottom: 1px solid #000; font-size: 12px; margin-bottom: 10px; font-weight: bold; text-transform: uppercase; font-family: sans-serif; }
+      
+      .print-header { display: block !important; text-align: center !important; margin-bottom: 20px; }
+      .print-header img { display: block !important; margin: 0 auto 10px auto !important; height: 60px; }
+      .print-header h1 { font-size: 14px; margin: 3px 0; font-weight: bold; }
+      .print-header p { font-size: 12px; margin: 2px 0; }
+      
+      .grid-2 { gap: 15px; margin-bottom: 10px; }
+      label { font-size: 11px; color: #000; margin-bottom: 2px; text-transform: none; font-family: sans-serif; }
+      input, textarea { border: none; border-bottom: 1px solid #000; padding: 2px 0; border-radius: 0; font-size: 12px; background: transparent; font-family: "Times New Roman", Times, serif;}
+      textarea { border: 1px solid #000; padding: 5px; }
+      
+      .report-table { font-size: 11px; font-family: "Times New Roman", Times, serif; }
+      .report-table th, .report-table td { border: 1px solid #000; padding: 4px 6px; }
+      .report-table th { background: #e5e7eb !important; }
+      .text-input-cell { border: none; padding: 0; font-family: inherit; font-size: inherit; }
+      
+      .print-signatures { display: flex; justify-content: space-between; margin-top: 40px; page-break-inside: avoid; }
+      .sig-block { width: 30%; text-align: center; }
+      .sig-label { font-size: 11px; margin-bottom: 25px; text-align: left; font-family: sans-serif;}
+      .sig-line { border-bottom: 1px solid #000; height: 15px; margin-bottom: 3px; }
+      .sig-pos { font-size: 10px; color: #333; font-family: sans-serif; }
+    }
+    .print-header { display: none; }
+  </style>
+</head>
+<body>
+
+  <div class="wrap">
+    <div class="header">
+      <h1>⚖️ Consolidated Report on CICL (Appendix F)</h1>
+      <a href="student-records.html" class="back-link">← Back to Records</a>
+    </div>
+
+    <div class="form-card">
+      
+      <div class="print-header">
+        <img src="../../assets/images/deped-logo.png" alt="DepEd Logo">
+        <div style="font-size: 11px;">Republic of the Philippines</div>
+        <div style="font-size: 13px; font-weight: bold;">DEPARTMENT OF EDUCATION</div>
+        <div style="font-size: 11px;">Region II - Cagayan Valley</div>
+        <div style="font-size: 11px;">Schools Division of Nueva Vizcaya</div>
+        <div style="font-size: 13px; font-weight: bold; margin-top: 10px;">STA. CRUZ PINGKIAN HIGH SCHOOL</div>
+        <div style="font-size: 16px; font-weight: bold; margin-top: 5px;">CONSOLIDATED REPORT ON INCIDENTS OF CHILDREN IN CONFLICT WITH THE LAW (CICL)</div>
+        <div style="font-size: 11px; font-weight: bold; color: #dc2626; margin-top: 5px;">Appendix F</div>
+      </div>
+
+      <div class="form-section">
+        <div class="grid-2">
+          <div><label>School/Division/Region</label><input type="text" id="rep-school" value="Sta. Cruz Pingkian High School / Division of Nueva Vizcaya / Region II"></div>
+          <div><label>Period Covered</label><input type="text" id="rep-period" value="School Year 2026-2027"></div>
+        </div>
+      </div>
+
+      <div class="form-section">
+        <h3>A. Consolidated Report on Incidents of CICL</h3>
+        <p style="font-size: 0.85rem; color: #64748b; margin-top: -5px; margin-bottom: 15px;">
+          <i class="fas fa-info-circle"></i> Students with logged offenses (Theft, Physical Injury, CICL tags, etc.) appear here automatically.
+        </p>
+        
+        <table class="report-table">
+          <thead>
+            <tr>
+              <th style="width: 15%;">Learner's Reference Number (LRN)</th>
+              <th style="width: 8%;">Age</th>
+              <th style="width: 5%;">Sex (M/F)</th>
+              <th style="width: 25%;">Case/Violation</th>
+              <th style="width: 15%;">Action Taken</th>
+              <th style="width: 17%;">Intervention / Diversion Program</th>
+              <th style="width: 15%;">Remarks</th>
+            </tr>
+          </thead>
+          <tbody id="report-tbody">
+            <!-- Rows injected by JS -->
+          </tbody>
+        </table>
+        <div id="no-data-msg" style="text-align: center; padding: 20px; color: #64748b; display: none;">
+          No CICL incidents found in the database for this period.
+        </div>
+      </div>
+
+      <div class="form-section">
+        <h3>B. Description of Intervention / Diversion Program</h3>
+        <div class="grid-full">
+          <textarea id="rep-description" rows="4" placeholder="Describe any intervention or diversion program that the school initiated to facilitate the reintegration of the CICL..."></textarea>
+        </div>
+      </div>
+
+      <div class="form-section" style="border-bottom: none; margin-bottom: 0; padding-bottom: 0;">
+        <div class="print-signatures">
+          <div class="sig-block">
+            <div class="sig-label">Prepared by:</div>
+            <div class="sig-line"></div>
+            <input type="text" id="rep-preparedBy" placeholder="Name of Guidance Counselor" style="text-align: center; font-weight: bold; margin-bottom: 2px;">
+            <input type="text" id="rep-preparedPos" placeholder="Designation" value="Guidance Counselor (Designate)" style="text-align: center; font-size: 0.85rem; margin-bottom: 2px;">
+            <div style="font-size: 0.85rem; color: #475569;" id="rep-dateDisplay">Date</div>
+          </div>
+          
+          <div class="sig-block">
+            <div class="sig-label">Noted by:</div>
+            <div class="sig-line"></div>
+            <input type="text" id="rep-notedBy" value="SATURNINO P. CALANSI EdD" style="text-align: center; font-weight: bold; margin-bottom: 2px;">
+            <input type="text" id="rep-notedPos" value="Principal IV / School Head" style="text-align: center; font-size: 0.85rem; margin-bottom: 2px;">
+            <div style="font-size: 0.85rem; color: #475569;" id="rep-dateNotedDisplay">Date</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- BUTTONS -->
+      <div class="btn-row">
+        <button type="button" class="btn btn-refresh" onclick="fetchDataAndAggregate()">🔄 Refresh Data</button>
+        <button type="button" class="btn btn-save-details" onclick="saveDetails()">💾 Save Typed Details</button>
+        <button type="button" class="btn btn-print" onclick="window.print()">🖨️ Print Report</button>
+      </div>
+
+    </div>
+  </div>
+
+  <script type="module">
+    import { auth, db } from "../../assets/js/firebase-config.js";
+    import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+    import { collection, getDocs } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+    onAuthStateChanged(auth, async (user) => {
+      if (!user) { window.location.href = "../../login.html"; return; }
+      
+      const today = new Date().toLocaleDateString('en-PH', { year: 'numeric', month: 'long', day: 'numeric' });
+      document.getElementById('rep-dateDisplay').textContent = today;
+      document.getElementById('rep-dateNotedDisplay').textContent = today;
+      document.getElementById('rep-preparedBy').value = localStorage.getItem('gc_counselorName') || "";
+
+      // Load saved description from LocalStorage
+      const savedDetails = JSON.parse(localStorage.getItem('cicl_report_details') || '{}');
+      if (savedDetails['rep-description']) document.getElementById('rep-description').value = savedDetails['rep-description'];
+
+      await fetchDataAndAggregate(savedDetails);
+    });
+
+    // Save typed details to LocalStorage
+    window.saveDetails = function() {
+      const savedDetails = JSON.parse(localStorage.getItem('cicl_report_details') || '{}');
+      savedDetails['rep-description'] = document.getElementById('rep-description').value;
+      
+      // Save all row-specific custom inputs (Action, Intervention, Remarks)
+      document.querySelectorAll('.cicd-action').forEach(inp => savedDetails[inp.id] = inp.value);
+      document.querySelectorAll('.cicd-intervention').forEach(inp => savedDetails[inp.id] = inp.value);
+      document.querySelectorAll('.cicd-remarks').forEach(inp => savedDetails[inp.id] = inp.value);
+
+      localStorage.setItem('cicl_report_details', JSON.stringify(savedDetails));
+      alert("✅ Typed details saved! They will appear on the printed report.");
+    };
+
+    window.fetchDataAndAggregate = async function(savedDetails = {}) {
+      const btn = document.querySelector('.btn-refresh');
+      const originalText = btn.textContent;
+      btn.textContent = "Loading Data..."; btn.disabled = true;
+
+      const tbody = document.getElementById('report-tbody');
+      tbody.innerHTML = ''; // Clear existing
+      const noDataMsg = document.getElementById('no-data-msg');
+
+      let ciclCount = 0;
+
+      try {
+        const classesSnap = await getDocs(collection(db, "classes"));
+        
+        const promises = classesSnap.docs.map(async (classDoc) => {
+          const classData = classDoc.data();
+          const studentsSnap = await getDocs(collection(db, "classes", classDoc.id, "students"));
+          
+          const studentPromises = studentsSnap.docs.map(async (studentDoc) => {
+            const student = studentDoc.data();
+            
+            // Fetch cases for this student
+            const casesSnap = await getDocs(collection(db, "classes", classDoc.id, "students", studentDoc.id, "case_monitoring"));
+            
+            let isCICL = false;
+            let ciclCase = "";
+
+            // 1. Check Case Monitoring for CICL keywords
+            casesSnap.forEach(caseDoc => {
+              const cData = caseDoc.data();
+              const types = cData.caseTypes || [];
+              
+              types.forEach(type => {
+                const lowerType = type.toLowerCase();
+                // Look for specific CICL offenses
+                if (lowerType.includes('cicl') || lowerType.includes('theft') || lowerType.includes('robbery') || 
+                    lowerType.includes('injury') || lowerType.includes('drug') || lowerType.includes('homicide') || 
+                    lowerType.includes('rape') || lowerType.includes('assault')) {
+                  isCICL = true;
+                  ciclCase = type;
+                }
+              });
+            });
+
+            // 2. Check Violations array for CICL keywords (Class C & D)
+            const violations = student.violations || [];
+            violations.forEach(v => {
+              const lowerV = v.violation.toLowerCase();
+              if (lowerV.includes('vandalism') || lowerV.includes('theft') || lowerV.includes('injury') || 
+                  lowerV.includes('drug') || lowerV.includes('hazing') || lowerV.includes('weapon')) {
+                isCICL = true;
+                ciclCase = v.violation;
+              }
+            });
+
+            if (isCICL) {
+              ciclCount++;
+              
+              const rowId = studentDoc.id;
+              const actionVal = savedDetails[`action-${rowId}`] || '';
+              const interventionVal = savedDetails[`intervention-${rowId}`] || '';
+              const remarksVal = savedDetails[`remarks-${rowId}`] || '';
+
+              const tr = document.createElement('tr');
+              tr.innerHTML = `
+                <td><strong>${student.lrn || 'N/A'}</strong><br><span style="font-size: 0.75rem; color:#64748b;">${student.fullName}</span></td>
+                <td class="center">${student.age || '-'}</td>
+                <td class="center">${student.sex ? student.sex.charAt(0).toUpperCase() : '-'}</td>
+                <td style="color: #dc2626; font-weight: 600;">${ciclCase}</td>
+                <td><input type="text" class="text-input-cell cicd-action" id="action-${rowId}" value="${actionVal}"></td>
+                <td><input type="text" class="text-input-cell cicd-intervention" id="intervention-${rowId}" value="${interventionVal}"></td>
+                <td><input type="text" class="text-input-cell cicd-remarks" id="remarks-${rowId}" value="${remarksVal}"></td>
+              `;
+              tbody.appendChild(tr);
+            }
+          });
+          await Promise.all(studentPromises);
+        });
+
+        await Promise.all(promises);
+
+        if (ciclCount === 0) {
+          noDataMsg.style.display = 'block';
+        } else {
+          noDataMsg.style.display = 'none';
+        }
+
+      } catch (error) {
+        console.error("Error aggregating data:", error);
+        alert("❌ Failed to load data from Firebase.");
+      } finally {
+        btn.textContent = originalText; btn.disabled = false;
+      }
+    };
+  </script>
+</body>
+</html>
