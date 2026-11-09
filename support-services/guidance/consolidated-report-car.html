@@ -232,7 +232,7 @@
       await fetchDataAndAggregate();
     });
 
-    // Generate the HTML Table Rows dynamically
+        // Generate the HTML Table Rows dynamically
     async function buildTable() {
       const tbody = document.getElementById('report-tbody');
       tbody.innerHTML = CAR_CATEGORIES.map(cat => `
@@ -240,8 +240,10 @@
           <td>${cat.label}</td>
           <td class="center" id="count-${cat.id}-m">0</td>
           <td class="center" id="count-${cat.id}-f">0</td>
-          <td><input type="text" class="text-input-cell" id="action-${cat.id}" placeholder="e.g. Counseling"></td>
-          <td><input type="text" class="text-input-cell" id="remarks-${cat.id}" placeholder="e.g. Resolved"></td>
+          <!-- 👇 REMOVED PLACEHOLDERS HERE 👇 -->
+          <td><input type="text" class="text-input-cell" id="action-${cat.id}"></td>
+          <td><input type="text" class="text-input-cell" id="remarks-${cat.id}"></td>
+          <!-- 👆 ----------------------- 👆 -->
         </tr>
       `).join("");
     }
