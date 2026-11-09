@@ -9,8 +9,7 @@
   <style>
     :root {
       --gc-primary: #0f4c81;
-      --gc-primary-light: #e0f2fe;
-      --gc-accent: #fef08a; /* Yellow from your chart */
+      --gc-accent: #fef08a;
       --gc-dark: #1e3a8a;
       --gc-border: #cbd5e1;
       --gc-text: #1e293b;
@@ -91,7 +90,7 @@
     .bottom-level { display: flex; justify-content: center; gap: 40px; width: 100%; margin-top: -17px; position: relative; flex-wrap: wrap;}
     .bottom-level::before { content: ''; position: absolute; top: 17px; left: 25%; right: 25%; height: 3px; background: var(--gc-text); z-index: 0; }
 
-    /* Save Button (Only visible in Edit Mode) */
+    /* Save Button */
     #save-controls { display: none; margin-top: 40px; text-align: center; }
 
     /* Toast */
@@ -112,12 +111,14 @@
       body { background: #fff; font-family: "Times New Roman", Times, serif; }
       
       .header { margin-bottom: 20px; }
-      .header h1 { color: #000; font-size: 18pt; }
-      .header p { display: none; } /* Hide subtitle on print */
+      .header h1 { color: #000; font-size: 18pt; margin-bottom: 5px; }
+      .header p { display: none; }
       
       .controls-row, #save-controls { display: none !important; }
       
-      /* Make cards look like the Word document */
+      .wrap { padding: 0; margin: 0; max-width: 100%; }
+      
+      /* Force color printing */
       .cpc-card {
         box-shadow: none !important;
         border: 2px solid #000;
@@ -129,22 +130,40 @@
       .cpc-card.dark {
         background: #1e3a8a !important;
         color: #fff !important;
-        -webkit-print-color-adjust: exact;
-        print-color-adjust: exact;
       }
       
       .cpc-name { font-size: 12pt; color: #000; }
       .cpc-pos { font-size: 10pt; color: #000; }
       .cpc-contact { font-size: 9pt; color: #333; }
       
-      .cpc-card.dark .cpc-name { color: #fff; }
-      
-      .connector-vertical, .connector-horizontal, .sub-committee::before, .bottom-level::before {
-        background: #000 !important;
+      /* FIX: Use borders instead of background color so they print reliably */
+      .connector-vertical { 
+        height: 30px; 
+        width: 0; 
+        border-left: 3px solid #000; 
+        background: transparent !important; 
+      }
+      .connector-horizontal { 
+        height: 0; 
+        border-top: 3px solid #000; 
+        background: transparent !important; 
+        width: 70%; 
+      }
+      .sub-committee::before { 
+        height: 0; 
+        border-top: 3px solid #000; 
+        background: transparent !important; 
+        top: 18px; /* Adjust for border */
+      }
+      .bottom-level::before { 
+        height: 0; 
+        border-top: 3px solid #000; 
+        background: transparent !important; 
+        top: 18px;
       }
       
-      /* Prevent page breaks inside the chart */
-      .org-chart { page-break-inside: avoid; }
+      /* Make sure it fits on one page */
+      .org-chart { transform: scale(0.95); transform-origin: top center; page-break-inside: auto; }
     }
   </style>
 </head>
@@ -156,7 +175,7 @@
       <p>Sta. Cruz Pingkian High School is committed to ensuring a safe, inclusive, and bully-free environment for all learners.</p>
     </div>
 
-    <!-- Controls (Admin & Print) -->
+    <!-- Controls -->
     <div class="controls-row" id="admin-controls">
       <button class="btn-ctrl" id="btn-toggle-edit" onclick="toggleEditMode()">
         <i class="fas fa-edit"></i> Enable Edit Mode
@@ -169,7 +188,7 @@
     <!-- ORG CHART -->
     <div class="org-chart" id="org-chart">
       
-      <!-- 1. Chairperson -->
+      <!-- Chairperson -->
       <div class="cpc-card">
         <input type="text" class="edit-input" id="edit-chair-name" placeholder="Name">
         <input type="text" class="edit-input" id="edit-chair-pos" placeholder="Position">
@@ -181,7 +200,7 @@
 
       <div class="connector-vertical"></div>
 
-      <!-- 2. Coordinator -->
+      <!-- Coordinator -->
       <div class="cpc-card" style="border: 3px solid var(--gc-text);">
         <input type="text" class="edit-input" id="edit-coord-name" placeholder="Name">
         <input type="text" class="edit-input" id="edit-coord-pos" placeholder="Position">
@@ -194,10 +213,9 @@
       <div class="connector-vertical"></div>
       <div class="connector-horizontal"></div>
 
-      <!-- 3. Sub-Committee Level -->
+      <!-- Sub-Committee Level -->
       <div class="sub-committee">
         
-        <!-- STA President -->
         <div class="sub-card-wrap">
           <div class="connector-vertical"></div>
           <div class="cpc-card">
@@ -208,7 +226,6 @@
           </div>
         </div>
 
-        <!-- PTA President -->
         <div class="sub-card-wrap">
           <div class="connector-vertical"></div>
           <div class="cpc-card">
@@ -219,7 +236,6 @@
           </div>
         </div>
 
-        <!-- SSG President -->
         <div class="sub-card-wrap">
           <div class="connector-vertical"></div>
           <div class="cpc-card">
@@ -230,7 +246,6 @@
           </div>
         </div>
 
-        <!-- Educ Committee -->
         <div class="sub-card-wrap">
           <div class="connector-vertical"></div>
           <div class="cpc-card">
@@ -246,9 +261,8 @@
       <div class="connector-vertical"></div>
       <div class="connector-horizontal" style="width: 50%;"></div>
 
-      <!-- 4. Bottom Level (Parents & Students) -->
+      <!-- Bottom Level -->
       <div class="bottom-level">
-        
         <div class="sub-card-wrap" style="max-width: 250px;">
           <div class="connector-vertical"></div>
           <div class="cpc-card dark">
@@ -262,7 +276,6 @@
             <div class="cpc-name">STUDENTS</div>
           </div>
         </div>
-
       </div>
 
     </div>
@@ -286,30 +299,22 @@
 
     let IS_EDIT_MODE = false;
 
-    // 1. Check Authentication & Roles
     onAuthStateChanged(auth, async (user) => {
-      // Load data regardless of auth (public page)
       await loadCommitteeData();
-
       if (user) {
         try {
           const userRef = doc(db, "users", user.uid);
           const userSnap = await getDoc(userRef);
-          
           if (userSnap.exists()) {
             const role = userSnap.data().primaryRole || userSnap.data().role;
-            // Allow admin or teacher to edit & print
             if (role === 'admin' || role === 'teacher' || role === 'superadmin') {
               document.getElementById('admin-controls').style.display = 'flex';
             }
           }
-        } catch (error) {
-          console.error("Auth check failed", error);
-        }
+        } catch (error) {}
       }
     });
 
-    // 2. Load Data from Firestore
     async function loadCommitteeData() {
       try {
         const docRef = doc(db, "config", "cpc_committee");
@@ -317,27 +322,21 @@
 
         if (docSnap.exists()) {
           const data = docSnap.data();
-          
           const roles = ['chair', 'coord', 'sta', 'pta', 'ssg', 'gov'];
           
           roles.forEach(role => {
-            // Set View Texts
             if(data[`${role}Name`]) document.getElementById(`view-${role}-name`).textContent = data[`${role}Name`];
             if(data[`${role}Pos`]) document.getElementById(`view-${role}-pos`).textContent = data[`${role}Pos`];
             if(data[`${role}Contact`]) document.getElementById(`view-${role}-contact`).textContent = data[`${role}Contact`];
             
-            // Populate Edit Inputs
             if(document.getElementById(`edit-${role}-name`)) document.getElementById(`edit-${role}-name`).value = data[`${role}Name`] || '';
             if(document.getElementById(`edit-${role}-pos`)) document.getElementById(`edit-${role}-pos`).value = data[`${role}Pos`] || '';
             if(document.getElementById(`edit-${role}-contact`)) document.getElementById(`edit-${role}-contact`).value = data[`${role}Contact`] || '';
           });
         }
-      } catch (error) {
-        console.error("Error loading committee data:", error);
-      }
+      } catch (error) {}
     }
 
-    // 3. Toggle Edit Mode
     window.toggleEditMode = function() {
       IS_EDIT_MODE = !IS_EDIT_MODE;
       const chart = document.getElementById('org-chart');
@@ -354,11 +353,10 @@
         btn.innerHTML = '<i class="fas fa-edit"></i> Enable Edit Mode';
         btn.classList.remove('active');
         saveControls.style.display = 'none';
-        loadCommitteeData(); // Revert changes visually
+        loadCommitteeData();
       }
     };
 
-    // 4. Save Data to Firestore
     window.saveCommitteeData = async function() {
       const btn = document.querySelector('#save-controls .btn-ctrl');
       const originalText = btn.innerHTML;
@@ -371,26 +369,19 @@
         roles.forEach(role => {
           dataToSave[`${role}Name`] = document.getElementById(`edit-${role}-name`).value;
           dataToSave[`${role}Pos`] = document.getElementById(`edit-${role}-pos`).value;
-          
           const contactEl = document.getElementById(`edit-${role}-contact`);
           if (contactEl) dataToSave[`${role}Contact`] = contactEl.value;
         });
 
-        // Save to config/cpc_committee
         await setDoc(doc(db, "config", "cpc_committee"), dataToSave);
-
-        // Update View
         await loadCommitteeData();
-        toggleEditMode(); // Exit edit mode
+        toggleEditMode();
         
-        // Show Toast
         const toast = document.getElementById('toast');
         toast.style.display = 'block';
         setTimeout(() => { toast.style.display = 'none'; }, 3000);
-
       } catch (error) {
-        console.error("Error saving data:", error);
-        alert("❌ Failed to save changes. Check console for details.");
+        alert("❌ Failed to save changes.");
       } finally {
         btn.innerHTML = originalText; btn.disabled = false;
       }
