@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Profiling & Risk Assessment (App A) – SCPHS Guidance</title>
+  <link rel="stylesheet" href="../../assets/css/styles.css" />
+  
+  <style>
+    :root {
+      --gc-primary: #0f4c81;
+      --gc-border: #e2e8f0;
+      --gc-text-main: #1e293b;
+      --gc-text-muted: #64748b;
+      --danger: #dc2626;
+      --danger-bg: #fef2f2;
+      --success: #16a34a;
+      --warning: #d97706;
+    }
+
+    body { background: #f1f5f9; margin: 0; font-family: system-ui, -apple-system, sans-serif; }
+    .wrap { max-width: 950px; margin: 0 auto; padding: 20px 16px; }
+
+    /* Header */
+    .header { background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; }
+    .header h1 { margin: 0; color: var(--gc-primary); font-size: 1.4rem; }
+    .back-link { color: var(--gc-primary); text-decoration: none; font-weight: 600; font-size: 0.9rem; }
+
+    /* Form Card */
+    .form-card { background: #fff; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); padding: 30px; margin-bottom: 30px; }
+    
+    .form-section { margin-bottom: 25px; border: 1px solid var(--gc-border); border-radius: 8px; padding: 20px; background: #fff;}
+    .form-section h3 { margin-top: 0; color: var(--gc-primary); border-bottom: 1px solid var(--gc-border); padding-bottom: 10px; font-size: 1.1rem; text-transform: uppercase;}
+    
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px; }
+    .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px; margin-bottom: 15px; }
+    .grid-full { margin-bottom: 15px; }
+    @media (max-width: 600px) { .grid-2, .grid-3 { grid-template-columns: 1fr; } }
+
+    label { display: block; font-size: 0.8rem; font-weight: 700; color: #333; margin-bottom: 5px; text-transform: uppercase; }
+    input, select, textarea { width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-family: inherit; font-size: 0.95rem; box-sizing: border-box; }
+    
+    /* Readonly inputs */
+    input[readonly] { background: #f8fafc; color: #475569; cursor: not-allowed; }
+
+    /* Interactive Checklist Accordion */
+    .acc-item { border: 1px solid var(--gc-border); border-radius: 8px; margin-bottom: 10px; overflow: hidden; }
+    .acc-header { background: #f8fafc; padding: 15px 20px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; font-weight: 600; color: var(--gc-text-main); transition: 0.2s; }
+    .acc-header:hover { background: #eff6ff; color: var(--gc-primary); }
+    .acc-header.active { background: #eff6ff; color: var(--gc-primary); border-bottom: 1px solid var(--gc-border); }
+    .acc-content { display: none; padding: 15px 20px; background: #fff; }
+    .acc-item.open .acc-content { display: block; }
+    
+    .check-item { display: flex; align-items: flex-start; gap: 10px; margin-bottom: 10px; font-size: 0.95rem; color: #334155; cursor: pointer; }
+    .check-item input[type="checkbox"] { width: 18px; height: 18px; margin-top: 2px; cursor: pointer; accent-color: var(--gc-primary); }
+    .check-item.critical { color: var(--danger); font-weight: 700; }
+
+    /* Smart Alert Box */
+    #critical-alert { display: none; position: fixed; bottom: 20px; right: 20px; background: var(--danger-bg); border: 2px solid var(--danger); color: var(--danger); padding: 15px 20px; border-radius: 8px; box-shadow: 0 4px 15px rgba(220, 38, 38, 0.2); z-index: 1000; max-width: 400px; animation: slideIn 0.3s ease; }
+    @keyframes slideIn { from { transform: translateY(100%); } to { transform: translateY(0); } }
+    #critical-alert h4 { margin: 0 0 5px; font-size: 1rem; display: flex; align-items: center; gap: 8px; }
+    #critical-alert p { margin: 0; font-size: 0.85rem; line-height: 1.4; }
+
+    /* Buttons */
+    .btn-row { display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px; padding-top: 20px; border-top: 1px solid var(--gc-border); }
+    .btn { padding: 12px 24px; border: none; border-radius: 6px; font-weight: bold; font-size: 0.95rem; cursor: pointer; transition: 0.2s; }
+    .btn-save { background: var(--success); color: #fff; }
+    .btn-save:hover { background: #15803d; }
+    .btn-print { background: #475569; color: #fff; }
+    .btn-print:hover { background: #334155; }
+
+    /* --- PRINT STYLES --- */
+    @media print {
+      @page { size: A4 portrait; margin: 10mm; }
+      body { background: #fff; font-family: "Times New Roman", Times, serif; }
+      
+      .header, .back-link, .btn-row, #critical-alert { display: none !important; }
+      
+      .wrap { padding: 0; max-width: 100%; }
+      .form-card { box-shadow: none; padding: 0; margin: 0; }
+      .form-section { border: none; padding: 0; margin-bottom: 15px; }
+      .form-section h3 { border-bottom: 1px solid #000; font-size: 12px; margin-bottom: 10px; font-weight: bold; text-transform: uppercase; font-family: sans-serif; }
+      
+      .print-header { display: block !important; text-align: center !important; margin-bottom: 20px; }
+      .print-header img { display: block !important; margin: 0 auto 10px auto !important; height: 60px; }
+      
+      .grid-2, .grid-3 { gap: 15px; margin-bottom: 5px; }
+      label { font-size: 10px; color: #000; margin-bottom: 2px; text-transform: none; font-family: sans-serif; }
+      input, select { border: none; border-bottom: 1px solid #000; padding: 2px 0; border-radius: 0; font-size: 11px; background: transparent; }
+      
+      /* Force all accordions open for print */
+      .acc-content { display: block !important; padding: 0; }
+      .acc-header { padding: 5px 0; background: transparent !important; border-bottom: 1px solid #ccc; font-size: 11px; color: #000; margin-top: 5px; }
+      .acc-header::after { content: none; } /* hide arrow */
+      .acc-item { border: none; margin-bottom: 10px; }
+      
+      /* Print checkboxes */
+      .check-item { font-size: 11px; margin-bottom: 4px; font-family: sans-serif; }
+      .check-item input[type="checkbox"] { width: 12px; height: 12px; border: 1px solid #000; appearance: none; -webkit-appearance: none; display: inline-block; }
+      .check-item input[type="checkbox"]:checked { background: #000; }
+      
+      .print-signatures { display: flex; justify-content: space-between; margin-top: 40px; page-break-inside: avoid; }
+      .sig-block { width: 45%; text-align: center; }
+      .sig-label { font-size: 11px; margin-bottom: 25px; text-align: left; font-family: sans-serif;}
+      .sig-line { border-bottom: 1px solid #000; height: 15px; margin-bottom: 3px; }
+    }
+    .print-header { display: none; }
+  </style>
+</head>
+<body>
+
+  <div class="wrap">
+    <div class="header">
+      <h1>📋 Profiling & Risk Assessment (App A)</h1>
+      <a href="student-records.html" class="back-link" onclick="history.back(); return false;">← Back to Profile</a>
+    </div>
+
+    <div class="form-card">
+      
+      <!-- Print Header -->
+      <div class="print-header">
+        <img src="../../assets/images/deped-logo.png" alt="DepEd Logo">
+        <div style="font-size: 11px;">Republic of the Philippines</div>
+        <div style="font-size: 13px; font-weight: bold;">DEPARTMENT OF EDUCATION</div>
+        <div style="font-size: 11px;">Region II - Cagayan Valley</div>
+        <div style="font-size: 11px;">Schools Division of Nueva Vizcaya</div>
+        <div style="font-size: 13px; font-weight: bold; margin-top: 10px;">STA. CRUZ PINGKIAN HIGH SCHOOL</div>
+        <div style="font-size: 14px; font-weight: bold; margin-top: 5px;">PROFILING AND INITIAL RISK ASSESSMENT TOOL FOR CHILDREN-AT-RISK</div>
+        <div style="font-size: 11px; font-weight: bold; color: #dc2626; margin-top: 5px;">Appendix A - CONFIDENTIAL</div>
+      </div>
+
+      <!-- INSTRUCTIONS -->
+      <div style="background: #eff6ff; border-left: 4px solid var(--gc-primary); padding: 15px; margin-bottom: 25px; border-radius: 4px; font-size: 0.85rem; color: #1e3a8a;">
+        <strong>Instructions:</strong> A check mark on items in <span style="color: var(--danger); font-weight: bold;">RED</span> requires immediate referral to LSWDO/DSWD within 8 hours. A mark on other items requires further investigation before referral.
+      </div>
+
+      <!-- PART I: IDENTIFYING INFO -->
+      <div class="form-section">
+        <h3>I. Child's Identifying Information</h3>
+        <div class="grid-3">
+          <div style="grid-column: 1 / -1;"><label>Name</label><input type="text" id="ra-name" readonly style="background: #f1f5f9;"></div>
+          <div><label>Age</label><input type="text" id="ra-age" readonly style="background: #f1f5f9;"></div>
+          <div><label>Date of Birth</label><input type="text" id="ra-dob" readonly style="background: #f1f5f9;"></div>
+          <div><label>Sex</label><input type="text" id="ra-sex" readonly style="background: #f1f5f9;"></div>
+          <div style="grid-column: 1 / -1;"><label>Address</label><input type="text" id="ra-address" readonly style="background: #f1f5f9;"></div>
+          
+          <div><label>In School?</label><input type="text" id="ra-inSchool" value="Yes"></div>
+          <div style="grid-column: span 2;"><label>Grade/Year Level</label><input type="text" id="ra-gradeLevel" readonly style="background: #f1f5f9;"></div>
+          
+          <div style="grid-column: 1 / -1;"><label>Caregivers</label>
+            <div style="display: flex; gap: 15px; margin-top: 5px;">
+              <label class="check-item"><input type="checkbox" name="caregiver" value="Father"> Father only</label>
+              <label class="check-item"><input type="checkbox" name="caregiver" value="Mother"> Mother only</label>
+              <label class="check-item"><input type="checkbox" name="caregiver" value="Both"> Father & Mother</label>
+              <label class="check-item"><input type="checkbox" name="caregiver" value="Others"> Others</label>
+            </div>
+          </div>
+          <div style="grid-column: 1 / -1;"><label>Others (indicate relationship)</label><input type="text" id="ra-caregiverOther"></div>
+          <div style="grid-column: 1 / -1;"><label>Caregivers' source of income/employment</label><input type="text" id="ra-income"></div>
+          <div><label>No. of Siblings</label><input type="number" id="ra-siblings"></div>
+          <div><label>Siblings below 18</label><input type="number" id="ra-siblingsBelow"></div>
+          <div><label>Ordinal Position</label><input type="text" id="ra-ordinal"></div>
+        </div>
+      </div>
+
+      <!-- PART II: RISK FACTORS (ACCORDION) -->
+      <div class="form-section" style="background: transparent; border: none; padding: 0;">
+        
+        <!-- Individual Factors -->
+        <div class="acc-item open">
+          <div class="acc-header" onclick="this.parentElement.classList.toggle('open'); this.classList.toggle('active')">
+            <span>II. Individual Factors</span> <span>▼</span>
+          </div>
+          <div class="acc-content">
+            <label class="check-item"><input type="checkbox" class="risk-check" data-id="substance" value="Substance Abuse"> History of substance/alcohol abuse</label>
+            <label class="check-item"><input type="checkbox" class="risk-check" data-id="gangs" value="Involvement in gangs"> Involvement in gangs</label>
+            <label class="check-item"><input type="checkbox" class="risk-check" value="Positive youth development activity"> Involvement in any positive youth development activity, identify: <input type="text" id="ra-positiveActivity" style="width: 200px; padding: 2px; display: inline-block; margin-left: 10px;"></label>
+            <label class="check-item"><input type="checkbox" class="risk-check" value="Sudden outbursts"> Reported incidents of sudden outbursts of anger/irritability exhibited in school</label>
+            <label class="check-item"><input type="checkbox" class="risk-check" value="Traumatic experiences"> Report or allegations of traumatic experiences of the child</label>
+            
+            <label class="check-item critical"><input type="checkbox" class="risk-check critical-check" value="Suicidal ideation"> Reported recent suicide attempts or suicidal ideation</label>
+            <label class="check-item"><input type="checkbox" class="risk-check" value="Depressed/anxious"> Child observed in class to be depressed, anxious and out of focus most of the time</label>
+            <label class="check-item"><input type="checkbox" class="risk-check" value="Somatic complaints"> Constant somatic complaints</label>
+            <label class="check-item"><input type="checkbox" class="risk-check" value="Thought disturbances"> Reported/Noted Thought disturbances</label>
+            
+            <div style="margin-top: 15px; padding-top: 10px; border-top: 1px dashed #ccc;">
+              <label style="margin-bottom: 10px;">Types of offenses committed (Indicate how many times):</label>
+              <div class="grid-3">
+                <div style="display:flex; align-items:center; gap:5px;"><input type="checkbox" class="risk-check offense-check" value="Theft"> Theft <input type="number" placeholder="Times" style="width: 60px; padding: 4px;"></div>
+                <div style="display:flex; align-items:center; gap:5px;"><input type="checkbox" class="risk-check offense-check" value="Robbery"> Robbery <input type="number" placeholder="Times" style="width: 60px; padding: 4px;"></div>
+                <div style="display:flex; align-items:center; gap:5px;"><input type="checkbox" class="risk-check offense-check" value="Physical injuries"> Physical injuries <input type="number" placeholder="Times" style="width: 60px; padding: 4px;"></div>
+                <div style="display:flex; align-items:center; gap:5px;"><input type="checkbox" class="risk-check offense-check" value="Sexual harassment"> Sexual harassment <input type="number" placeholder="Times" style="width: 60px; padding: 4px;"></div>
+                <div style="display:flex; align-items:center; gap:5px;"><input type="checkbox" class="risk-check offense-check" value="Rape"> Rape <input type="number" placeholder="Times" style="width: 60px; padding: 4px;"></div>
+                <div style="display:flex; align-items:center; gap:5px;"><input type="checkbox" class="risk-check offense-check" value="Homicide"> Homicide <input type="number" placeholder="Times" style="width: 60px; padding: 4px;"></div>
+                <div style="display:flex; align-items:center; gap:5px;"><input type="checkbox" class="risk-check offense-check" value="Murder"> Murder <input type="number" placeholder="Times" style="width: 60px; padding: 4px;"></div>
+                <div style="display:flex; align-items:center; gap:5px;"><input type="checkbox" class="risk-check offense-check" value="Drug-related"> Drug-related <input type="number" placeholder="Times" style="width: 60px; padding: 4px;"></div>
+                <div style="display:flex; align-items:center; gap:5px; grid-column: span 3;"><input type="checkbox" class="risk-check offense-check" value="Other penal laws"> Other offenses: <input type="text" placeholder="Specify" style="flex:1; padding: 4px;"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Family/Community Factors -->
+        <div class="acc-item">
+          <div class="acc-header" onclick="this.parentElement.classList.toggle('open'); this.classList.toggle('active')">
+            <span>Family / Community Factors</span> <span>▼</span>
+          </div>
+          <div class="acc-content">
+            <label class="check-item critical"><input type="checkbox" class="risk-check critical-check" value="Victim of abuse"> Child is a victim of abuse, identify (sexual, physical, emotional, verbal)</label>
+            <label class="check-item critical"><input type="checkbox" class="risk-check critical-check" value="Victim of neglect"> Child is a victim of neglect</label>
+            <label class="check-item critical"><input type="checkbox" class="risk-check critical-check" value="No adult guardian"> Child has no parents or no adult guardian in the household</label>
+            <label class="check-item"><input type="checkbox" class="risk-check" value="Parental criminal behavior"> History of parental criminal behavior</label>
+            <label class="check-item"><input type="checkbox" class="risk-check" value="Sibling criminal behavior"> History of sibling's criminal behavior</label>
+            <label class="check-item critical"><input type="checkbox" class="risk-check critical-check" value="Witness to domestic violence"> Witness to family/domestic violence</label>
+            <label class="check-item"><input type="checkbox" class="risk-check" value="Parents substance abuse"> Parents substance abuse</label>
+            <label class="check-item critical"><input type="checkbox" class="risk-check critical-check" value="Homeless"> Homeless</label>
+            <label class="check-item critical"><input type="checkbox" class="risk-check critical-check" value="Abandoned"> Abandoned</label>
+            <label class="check-item"><input type="checkbox" class="risk-check" value="Witness to community violence"> Witness to community violence</label>
+            <label class="check-item"><input type="checkbox" class="risk-check" value="Presence of support system"> Presence of support system (family, community, church, school)</label>
+          </div>
+        </div>
+
+        <!-- School Behavior -->
+        <div class="acc-item">
+          <div class="acc-header" onclick="this.parentElement.classList.toggle('open'); this.classList.toggle('active')">
+            <span>School Behavior</span> <span>▼</span>
+          </div>
+          <div class="acc-content">
+            <label class="check-item"><input type="checkbox" class="risk-check" value="Behaving well"> Child is behaving well in school</label>
+            <label class="check-item critical"><input type="checkbox" class="risk-check critical-check" value="Victim of bullying"> Child is a victim of bullying in school</label>
+            <label class="check-item"><input type="checkbox" class="risk-check" value="Moderate behavior problems"> Child has been observed to have moderate behavior problems in school</label>
+            <label class="check-item"><input type="checkbox" class="risk-check" value="Severe behavior problems"> Child had severe problems with behavior in school. Child has been reported for bullying in school.</label>
+          </div>
+        </div>
+
+        <!-- Juvenile Justice -->
+        <div class="acc-item">
+          <div class="acc-header" onclick="this.parentElement.classList.toggle('open'); this.classList.toggle('active')">
+            <span>Juvenile Justice (JJ) History</span> <span>▼</span>
+          </div>
+          <div class="acc-content">
+            <label class="check-item"><input type="checkbox" class="risk-check" value="First known occurrence"> Current criminal behavior is the first known occurrence</label>
+            <label class="check-item"><input type="checkbox" class="risk-check" value="Multiple delinquent acts"> Youth has engaged in multiple delinquent acts in the past year</label>
+            <div style="margin-top: 10px; font-weight: bold; font-size: 0.9rem;">Seriousness:</div>
+            <label class="check-item"><input type="checkbox" class="risk-check" value="Status violations"> Youth has engaged only in status violations or violations of local ordinances</label>
+            <label class="check-item"><input type="checkbox" class="risk-check" value="Criminal behavior"> Youth has engaged in criminal behavior</label>
+            <label class="check-item critical"><input type="checkbox" class="risk-check critical-check" value="Significant physical harm"> Youth has engaged in criminal behavior that places other citizens at risk of significant physical harm</label>
+          </div>
+        </div>
+
+        <!-- Peer Influences -->
+        <div class="acc-item">
+          <div class="acc-header" onclick="this.parentElement.classList.toggle('open'); this.classList.toggle('active')">
+            <span>Peer Influences</span> <span>▼</span>
+          </div>
+          <div class="acc-content">
+            <label class="check-item"><input type="checkbox" class="risk-check" value="Non-delinquent peers"> Youth's primary peer social network does not engage in delinquent behavior</label>
+            <label class="check-item"><input type="checkbox" class="risk-check" value="Delinquent peers"> Youth predominantly has peers who engage in delinquent behavior</label>
+            <label class="check-item critical"><input type="checkbox" class="risk-check critical-check" value="Criminal peers"> Youth's primary peer social network are known to engage in criminal behavior</label>
+          </div>
+        </div>
+      </div>
+
+      <!-- SIGNATORIES -->
+      <div class="form-section" style="border-bottom: none; margin-bottom: 0; padding-bottom: 0;">
+        <div class="print-signatures">
+          <div class="sig-block">
+            <div class="sig-label">Initial assessment made by:</div>
+            <div class="sig-line"></div>
+            <input type="text" id="ra-preparedBy" placeholder="Name & Signature" style="text-align: center; font-weight: bold; margin-bottom: 2px;">
+            <input type="text" id="ra-preparedPos" placeholder="Designation" value="Guidance Counselor (Designate)" style="text-align: center; font-size: 0.85rem; margin-bottom: 2px;">
+          </div>
+          
+          <div class="sig-block">
+            <div class="sig-label">Noted by:</div>
+            <div class="sig-line"></div>
+            <input type="text" id="ra-notedBy" value="SATURNINO P. CALANSI EdD" style="text-align: center; font-weight: bold; margin-bottom: 2px;">
+            <input type="text" id="ra-notedPos" value="Principal IV / School Head" style="text-align: center; font-size: 0.85rem; margin-bottom: 2px;">
+          </div>
+        </div>
+      </div>
+
+      <!-- BUTTONS -->
+      <div class="btn-row">
+        <button type="button" class="btn btn-save" onclick="saveAssessment()" id="btn-save">💾 Save Assessment</button>
+        <button type="button" class="btn btn-print" onclick="window.print()">🖨️ Print Form</button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- SMART ALERT BANNER -->
+  <div id="critical-alert">
+    <h4><i class="fas fa-exclamation-triangle"></i> IMMEDIATE REFERRAL REQUIRED</h4>
+    <p>You have checked a critical risk factor. Per DepEd guidelines, this requires <strong>immediate intervention and referral to LSWDO/DSWD within 8 hours</strong>.</p>
+  </div>
+
+  <script type="module">
+    import { auth, db } from "../../assets/js/firebase-config.js";
+    import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+    import { doc, getDoc, collection, addDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+    const urlParams = new URLSearchParams(window.location.search);
+    const classId = urlParams.get('classId');
+    const studentId = urlParams.get('studentId');
+
+    let CURRENT_STUDENT = null;
+
+    onAuthStateChanged(auth, async (user) => {
+      if (!user) { window.location.href = "../../login.html"; return; }
+      if (!classId || !studentId) { alert("Missing student information."); window.location.href = "student-records.html"; return; }
+
+      try {
+        const studentRef = doc(db, "classes", classId, "students", studentId);
+        const studentSnap = await getDoc(studentRef);
+        
+        if (studentSnap.exists()) {
+          CURRENT_STUDENT = { id: studentSnap.id, classId, ...studentSnap.data() };
+          
+          // Pre-fill Student Info
+          document.getElementById('ra-name').value = CURRENT_STUDENT.fullName || "";
+          document.getElementById('ra-age').value = CURRENT_STUDENT.age || "";
+          document.getElementById('ra-dob').value = CURRENT_STUDENT.birthDate || "";
+          document.getElementById('ra-sex').value = CURRENT_STUDENT.sex || "";
+          document.getElementById('ra-address').value = CURRENT_STUDENT.addressBarangay || "";
+          document.getElementById('ra-gradeLevel').value = CURRENT_STUDENT.classLabel || "";
+          
+          document.getElementById('ra-preparedBy').value = localStorage.getItem('gc_counselorName') || "";
+        }
+      } catch (error) {
+        console.error("Error loading student:", error);
+      }
+    });
+
+    // Smart Alert Logic
+    document.addEventListener('change', function(e) {
+      if (e.target.classList.contains('critical-check')) {
+        const alertBox = document.getElementById('critical-alert');
+        const anyChecked = document.querySelectorAll('.critical-check:checked').length > 0;
+        
+        if (anyChecked) {
+          alertBox.style.display = 'block';
+        } else {
+          alertBox.style.display = 'none';
+        }
+      }
+    });
+
+    window.saveAssessment = async function() {
+      if (!CURRENT_STUDENT) return;
+
+      const btn = document.getElementById('btn-save');
+      btn.textContent = "Saving..."; btn.disabled = true;
+
+      try {
+        // Gather checked boxes
+        const checkedValues = Array.from(document.querySelectorAll('.risk-check:checked')).map(cb => cb.value);
+        const hasCritical = document.querySelectorAll('.critical-check:checked').length > 0;
+
+        const dataToSave = {
+          riskFactors: checkedValues,
+          requiresImmediateReferral: hasCritical,
+          positiveActivity: document.getElementById('ra-positiveActivity').value,
+          caregiverOther: document.getElementById('ra-caregiverOther').value,
+          income: document.getElementById('ra-income').value,
+          siblings: document.getElementById('ra-siblings').value,
+          siblingsBelow: document.getElementById('ra-siblingsBelow').value,
+          ordinal: document.getElementById('ra-ordinal').value,
+          loggedBy: auth.currentUser.email,
+          timestamp: Date.now()
+        };
+
+        const refsRef = collection(db, "classes", classId, "students", studentId, "risk_assessments");
+        await addDoc(refsRef, dataToSave);
+        
+        alert("✅ Risk Assessment saved successfully!");
+        window.location.href = "student-records.html";
+
+      } catch (error) {
+        console.error("Error saving assessment:", error);
+        alert("❌ Failed to save assessment.");
+        btn.textContent = "💾 Save Assessment"; btn.disabled = false;
+      }
+    };
+  </script>
+</body>
+</html>
