@@ -18,11 +18,11 @@
       --gc-border: #e2e8f0;
       --gc-text-main: #1e293b;
       --gc-text-muted: #64748b;
-      --gc-radius: 12px;
-      --gc-shadow-sm: 0 1px 3px rgba(0,0,0,0.05), 0 1px 2px rgba(0,0,0,0.03);
-      --gc-shadow-md: 0 4px 6px -1px rgba(0,0,0,0.05), 0 2px 4px -1px rgba(0,0,0,0.03);
-      --gc-shadow-hover: 0 10px 15px -3px rgba(0,0,0,0.08), 0 4px 6px -2px rgba(0,0,0,0.04);
-      --gc-transition: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+      --gc-radius: 16px;
+      --gc-shadow-sm: 0 2px 4px rgba(0,0,0,0.02);
+      --gc-shadow-md: 0 10px 25px -5px rgba(0,0,0,0.05);
+      --gc-shadow-hover: 0 20px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.01);
+      --gc-transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
       --bright-blue: #2563eb;
     }
 
@@ -48,7 +48,7 @@
     .scphs-nav-links a {
       display: flex;
       align-items: center;
-      padding: 0 12px;
+      padding: 0 16px;
       color: #333;
       text-decoration: none;
       font-weight: 500;
@@ -80,18 +80,19 @@
     .scphs-search-area input {
       border: 1px solid #cbd5e1;
       padding: 6px 12px;
-      border-radius: 4px;
+      border-radius: 6px;
       font-size: 0.85rem;
       outline: none;
-      width: 120px;
+      width: 140px;
+      transition: border-color 0.2s;
     }
     .scphs-search-area input:focus { border-color: var(--gc-primary); }
     .scphs-search-area .icon-btn {
       background: none;
       border: 1px solid #cbd5e1;
       border-radius: 50%;
-      width: 30px;
-      height: 30px;
+      width: 32px;
+      height: 32px;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -99,7 +100,9 @@
       color: #333;
       font-weight: bold;
       font-size: 0.8rem;
+      transition: 0.2s;
     }
+    .scphs-search-area .icon-btn:hover { background: #fff; border-color: var(--gc-primary); color: var(--gc-primary); }
 
     /* Second Row: Branding & Time */
     .scphs-header-main {
@@ -174,33 +177,34 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 1rem 1.25rem;
-      border-radius: 8px;
+      padding: 1rem 1.5rem;
+      border-radius: var(--gc-radius);
       margin-top: 1.5rem;
       margin-bottom: 1.5rem;
       flex-wrap: wrap;
       gap: 1rem;
-      background-color: var(--bright-blue);
-      box-shadow: 0 4px 6px -1px rgba(37, 99, 235, 0.2);
+      /* Modern Gradient */
+      background: linear-gradient(135deg, #2563eb, #4f46e5);
+      box-shadow: 0 4px 15px -3px rgba(37, 99, 235, 0.3);
     }
     .gc-btn-back {
       display: inline-flex;
       align-items: center;
       gap: 0.5rem;
       background: #ffffff;
-      color: var(--bright-blue);
-      padding: 0.5rem 1rem;
+      color: #2563eb;
+      padding: 0.6rem 1.2rem;
       border-radius: 8px;
       font-size: 0.9rem;
-      font-weight: 600;
+      font-weight: 700;
       text-decoration: none;
       border: none;
       box-shadow: 0 2px 4px rgba(0,0,0,0.1);
       transition: all var(--gc-transition);
     }
     .gc-btn-back:hover {
-      background: #f1f5f9;
-      transform: translateX(-2px);
+      background: #f8fafc;
+      transform: translateY(-2px);
     }
     .gc-btn-primary {
       display: inline-flex;
@@ -209,49 +213,51 @@
       background: rgba(255, 255, 255, 0.15);
       border: 1px solid rgba(255, 255, 255, 0.4);
       color: #ffffff;
-      padding: 0.5rem 1.25rem;
+      padding: 0.6rem 1.2rem;
       border-radius: 8px;
       font-size: 0.9rem;
-      font-weight: 600;
+      font-weight: 700;
       text-decoration: none;
       backdrop-filter: blur(4px);
       transition: all var(--gc-transition);
     }
     .gc-btn-primary:hover {
       background: rgba(255, 255, 255, 0.25);
-      box-shadow: var(--gc-shadow-md);
+      transform: translateY(-2px);
     }
 
-    /* Hero Banner (Bright Blue) */
+    /* Hero Banner (Modern Gradient) */
     .gc-hero {
-      background: var(--bright-blue);
+      background: linear-gradient(135deg, #1e3a8a, #2563eb);
       color: #ffffff;
       border-radius: var(--gc-radius);
-      padding: 2.5rem 2rem;
+      padding: 3rem 2.5rem;
       margin-bottom: 2rem;
-      box-shadow: 0 10px 15px -3px rgba(37, 99, 235, 0.3);
+      box-shadow: 0 20px 25px -5px rgba(37, 99, 235, 0.2);
       position: relative;
       overflow: hidden;
     }
     .gc-hero::after {
       content: "🏫";
       position: absolute;
-      right: -10px;
-      bottom: -20px;
-      font-size: 10rem;
-      opacity: 0.15;
+      right: -20px;
+      bottom: -30px;
+      font-size: 12rem;
+      opacity: 0.1;
       pointer-events: none;
     }
     .gc-hero h1 {
       margin: 0 0 0.5rem;
-      font-size: 2.25rem;
-      letter-spacing: -0.02em;
+      font-size: 2.5rem;
+      letter-spacing: -0.03em;
+      font-weight: 800;
     }
     .gc-hero p {
       margin: 0;
-      font-size: 1.1rem;
+      font-size: 1.15rem;
       opacity: 0.9;
       max-width: 600px;
+      line-height: 1.5;
     }
 
     .gc-layout-grid {
@@ -270,12 +276,13 @@
 
     /* Content Cards */
     .gc-section-title {
-      font-size: 1.25rem;
-      font-weight: 700;
+      font-size: 1.4rem;
+      font-weight: 800;
       color: var(--gc-text-main);
-      margin: 0 0 1rem;
-      padding-bottom: 0.5rem;
-      border-bottom: 2px solid var(--gc-border);
+      margin: 0 0 1.25rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
     }
     .gc-card {
       background: #fff;
@@ -283,9 +290,12 @@
       border-radius: var(--gc-radius);
       padding: 1.5rem;
       box-shadow: var(--gc-shadow-sm);
-      transition: box-shadow var(--gc-transition);
+      transition: box-shadow var(--gc-transition), transform var(--gc-transition);
     }
-    .gc-card:hover { box-shadow: var(--gc-shadow-hover); }
+    .gc-card:hover { 
+      box-shadow: var(--gc-shadow-hover);
+      transform: translateY(-2px);
+    }
     
     .gc-info-grid {
       display: grid;
@@ -295,62 +305,76 @@
     }
     .gc-info-item {
       display: flex;
-      align-items: flex-start;
+      align-items: center;
       gap: 1rem;
     }
     .gc-info-icon {
-      background: var(--gc-bg-soft);
-      color: var(--gc-primary);
-      width: 42px;
-      height: 42px;
-      border-radius: 10px;
+      background: #eff6ff;
+      color: var(--bright-blue);
+      width: 48px;
+      height: 48px;
+      border-radius: 12px;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 1.25rem;
+      font-size: 1.5rem;
       flex-shrink: 0;
     }
     .gc-info-text h4 {
-      margin: 0 0 0.25rem;
-      font-size: 0.95rem;
+      margin: 0 0 0.2rem;
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
       color: var(--gc-text-muted);
-      font-weight: 600;
+      font-weight: 700;
     }
     .gc-info-text p, .gc-info-text a {
       margin: 0;
       font-size: 1rem;
       color: var(--gc-text-main);
-      font-weight: 500;
+      font-weight: 600;
       text-decoration: none;
     }
-    .gc-info-text a:hover { color: var(--gc-primary); text-decoration: underline; }
+    .gc-info-text a:hover { color: var(--bright-blue); }
 
     /* Service Cards */
     .gc-service-card {
       background: #fff;
       border: 1px solid var(--gc-border);
       border-radius: var(--gc-radius);
-      padding: 1.25rem;
+      padding: 1.5rem;
       box-shadow: var(--gc-shadow-sm);
-      transition: transform var(--gc-transition), box-shadow var(--gc-transition);
+      transition: transform var(--gc-transition), box-shadow var(--gc-transition), border-color var(--gc-transition);
       display: flex;
       flex-direction: column;
     }
     .gc-service-card:hover {
-      transform: translateY(-3px);
+      transform: translateY(-5px);
       box-shadow: var(--gc-shadow-hover);
-      border-color: #cbd5e1;
+      border-color: #bfdbfe;
+    }
+    .gc-service-icon {
+      font-size: 1.75rem;
+      background: #eff6ff;
+      width: 56px;
+      height: 56px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 14px;
+      margin-bottom: 1rem;
     }
     .gc-service-card h3 {
       margin: 0 0 0.5rem;
-      font-size: 1.1rem;
+      font-size: 1.15rem;
       color: var(--gc-text-main);
+      font-weight: 700;
     }
     .gc-service-card p {
       margin: 0;
-      font-size: 0.9rem;
+      font-size: 0.95rem;
       color: var(--gc-text-muted);
-      line-height: 1.5;
+      line-height: 1.6;
     }
 
     /* Sidebar & Accordion */
@@ -365,13 +389,13 @@
       background: #fff;
       border: 1px solid var(--gc-border);
       border-radius: var(--gc-radius);
-      padding: 1.25rem;
+      padding: 1.5rem;
       box-shadow: var(--gc-shadow-sm);
     }
     .gc-widget h3 {
-      margin: 0 0 1rem;
-      font-size: 1rem;
-      font-weight: 700;
+      margin: 0 0 1.25rem;
+      font-size: 1.05rem;
+      font-weight: 800;
       color: var(--gc-text-main);
       display: flex;
       align-items: center;
@@ -381,7 +405,7 @@
     .gc-accordion { display: flex; flex-direction: column; gap: 0.5rem; }
     .gc-acc-item {
       border: 1px solid var(--gc-border);
-      border-radius: 8px;
+      border-radius: 10px;
       overflow: hidden;
       background: #fff;
       transition: all var(--gc-transition);
@@ -392,32 +416,31 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
-      background: var(--gc-bg-soft);
+      background: #fff;
       padding: 0.85rem 1rem;
       border: none;
-      font-size: 0.9rem;
+      font-size: 0.95rem;
       font-weight: 600;
       color: var(--gc-text-main);
       cursor: pointer;
       text-align: left;
       transition: background var(--gc-transition);
-      outline: none; /* Removes the black focus box shown in your screenshot */
+      outline: none;
     }
-    .gc-acc-header:focus { outline: none; }
-    .gc-acc-header:hover { background: #f1f5f9; }
+    .gc-acc-header:hover { background: var(--gc-bg-soft); }
     .gc-acc-icon {
-      font-size: 0.7rem;
+      font-size: 0.75rem;
       color: var(--gc-text-muted);
       transition: transform 0.3s ease;
     }
+    .gc-acc-item.active { border-color: #bfdbfe; }
     .gc-acc-item.active .gc-acc-header {
       background: #eff6ff;
-      color: var(--gc-primary);
-      border-bottom: 1px solid var(--gc-border);
+      color: var(--bright-blue);
     }
     .gc-acc-item.active .gc-acc-icon {
       transform: rotate(180deg);
-      color: var(--gc-primary);
+      color: var(--bright-blue);
     }
     .gc-acc-content {
       max-height: 0;
@@ -428,7 +451,7 @@
     .gc-acc-content p {
       margin: 0;
       padding: 1rem;
-      font-size: 0.85rem;
+      font-size: 0.9rem;
       color: var(--gc-text-muted);
       line-height: 1.6;
     }
@@ -444,32 +467,31 @@
       display: flex;
       align-items: center;
       gap: 0.75rem;
-      padding: 0.75rem;
-      background: var(--gc-bg-soft);
-      border-radius: 8px;
+      padding: 0.85rem 1rem;
+      background: #fff;
+      border: 1px solid var(--gc-border);
+      border-radius: 10px;
       color: var(--gc-text-main);
       font-size: 0.9rem;
-      font-weight: 500;
+      font-weight: 600;
       text-decoration: none;
       transition: all var(--gc-transition);
-      border: 1px solid transparent;
     }
     .gc-quick-links a:hover {
-      background: #fff;
-      border-color: var(--gc-border);
-      box-shadow: var(--gc-shadow-sm);
-      color: var(--gc-primary);
-      transform: translateX(2px);
+      background: #eff6ff;
+      border-color: #bfdbfe;
+      color: var(--bright-blue);
+      transform: translateX(4px);
     }
 
-        /* Dropdown Menu Styles */
+    /* Dropdown Menu Styles */
     .scphs-nav-dropdown {
       position: relative;
       display: flex;
       align-items: stretch;
     }
     .scphs-nav-dropdown > a {
-      border-right: 1px solid #f1f5f9; /* Keeps the border consistent */
+      border-right: 1px solid #f1f5f9;
     }
     .scphs-dropdown-content {
       display: none;
@@ -477,10 +499,10 @@
       top: 100%;
       left: 0;
       background-color: #fff;
-      min-width: 240px;
-      box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1);
+      min-width: 250px;
+      box-shadow: 0 10px 25px -5px rgba(0,0,0,0.1);
       border: 1px solid var(--gc-border);
-      border-radius: 0 0 8px 8px;
+      border-radius: 0 0 12px 12px;
       z-index: 1000;
     }
     .scphs-nav-dropdown:hover .scphs-dropdown-content {
@@ -492,19 +514,19 @@
       text-decoration: none;
       display: block;
       font-size: 0.85rem;
-      font-weight: 500;
+      font-weight: 600;
       border-bottom: 1px solid #f1f5f9;
       text-align: left;
       border-right: none;
       transition: background 0.2s;
     }
     .scphs-dropdown-content a:hover {
-      background-color: var(--gc-bg-soft);
-      color: var(--gc-primary);
+      background-color: #eff6ff;
+      color: var(--bright-blue);
     }
     .scphs-dropdown-content a:last-child {
       border-bottom: none;
-      border-radius: 0 0 8px 8px;
+      border-radius: 0 0 12px 12px;
     }
   </style>
 </head>
@@ -577,14 +599,14 @@
   <!-- ===================== MAIN CONTENT ===================== -->
   <main class="gc-layout-wrap">
     
-    <!-- Breadcrumbs & Top Navigation (Bright Blue Background) -->
+    <!-- Breadcrumbs & Top Navigation -->
     <div class="gc-top-nav">
-      <nav aria-label="Breadcrumb" style="font-size: 0.9rem; color: #ffffff; display: flex; align-items: center; flex-wrap: wrap; gap: 0.25rem;">
+      <nav aria-label="Breadcrumb" style="font-size: 0.95rem; color: #ffffff; display: flex; align-items: center; flex-wrap: wrap; gap: 0.25rem;">
         <a href="../../index.html" style="color: #ffffff; text-decoration: none; opacity: 0.8; transition: opacity 0.2s;" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.8'">Home</a>
         <span style="margin: 0 0.5rem; opacity: 0.6;">/</span>
         <a href="../../index.html#support-services" style="color: #ffffff; text-decoration: none; opacity: 0.8; transition: opacity 0.2s;" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.8'">Support Services</a>
         <span style="margin: 0 0.5rem; opacity: 0.6;">/</span>
-        <strong style="color: #ffffff; font-weight: 700;">Guidance Center / Care Center</strong>
+        <strong style="color: #ffffff; font-weight: 800;">Guidance Center</strong>
       </nav>
       <div style="display: flex; gap: 0.75rem; flex-wrap: wrap; margin-top: 0.5rem;">
         <a href="../../index.html" class="gc-btn-back">
@@ -596,7 +618,7 @@
       </div>
     </div>
 
-    <!-- Hero Banner (Bright Blue) -->
+    <!-- Hero Banner -->
     <div class="gc-hero">
       <h1>Guidance Center</h1>
       <p>Fostering holistic student development through compassionate counseling, career guidance, and comprehensive support programs.</p>
@@ -612,7 +634,7 @@
             <div class="gc-info-icon">📍</div>
             <div class="gc-info-text">
               <h4>Location</h4>
-              <p>Main Building, Room GC-1</p>
+              <p>Main Building, GC-1</p>
             </div>
           </div>
           <div class="gc-card gc-info-item">
@@ -639,54 +661,98 @@
         </div>
 
         <!-- Core Services -->
-        <h2 class="gc-section-title">Our Core Services</h2>
-        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.25rem; margin-bottom: 2rem;">
+        <h2 class="gc-section-title"><span>✨</span> Our Core Services</h2>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.25rem; margin-bottom: 2.5rem;">
           <div class="gc-service-card">
-            <div style="font-size: 1.5rem; margin-bottom: 0.5rem;">🤝</div>
+            <div class="gc-service-icon">🤝</div>
             <h3>Individual & Group Counseling</h3>
             <p>Confidential sessions addressing personal, academic, and social concerns to promote mental well-being.</p>
           </div>
           <div class="gc-service-card">
-            <div style="font-size: 1.5rem; margin-bottom: 0.5rem;">🎯</div>
+            <div class="gc-service-icon">🎯</div>
             <h3>Career Guidance</h3>
             <p>Career orientation, life skills programs, and pathways planning for Junior and Senior High School learners.</p>
           </div>
           <div class="gc-service-card">
-            <div style="font-size: 1.5rem; margin-bottom: 0.5rem;">🔗</div>
+            <div class="gc-service-icon">🔗</div>
             <h3>Referrals & Coordination</h3>
             <p>Coordination with parents, guardians, teachers, and external professionals for comprehensive learner support.</p>
           </div>
           <div class="gc-service-card">
-            <div style="font-size: 1.5rem; margin-bottom: 0.5rem;">📋</div>
+            <div class="gc-service-icon">📋</div>
             <h3>Case Management</h3>
             <p>Confidential documentation and follow-through for student cases requiring sustained attention.</p>
           </div>
         </div>
 
-        <!-- Downloads -->
-        <h2 class="gc-section-title">Resources & Downloads</h2>
+        <!-- Digital Forms Hub (Updated from Downloads) -->
+        <h2 class="gc-section-title"><span>📂</span> Resources & Digital Forms</h2>
         <div class="gc-card" style="margin-bottom: 2rem;">
           <ul style="list-style: none; padding: 0; margin: 0; display: grid; gap: 1rem;">
-            <li style="display: flex; align-items: center; justify-content: space-between; padding-bottom: 1rem; border-bottom: 1px solid var(--gc-border);">
+            
+            <!-- Risk Assessment -->
+            <li style="display: flex; align-items: center; justify-content: space-between; padding-bottom: 1rem; border-bottom: 1px solid var(--gc-border); flex-wrap: wrap; gap: 1rem;">
               <div style="display: flex; align-items: center; gap: 0.75rem;">
-                <span style="font-size: 1.5rem;">📄</span>
+                <span style="font-size: 1.5rem; background: #eff6ff; padding: 0.5rem; border-radius: 8px;">🛡️</span>
                 <div>
-                  <strong style="display: block; color: var(--gc-text-main);">Guidance Referral Form</strong>
-                  <span style="font-size: 0.85rem; color: var(--gc-text-muted);">PDF Document • Used for student referrals</span>
+                  <strong style="display: block; color: var(--gc-text-main); font-size: 1rem;">Risk Assessment Tool (App A)</strong>
+                  <span style="font-size: 0.85rem; color: var(--gc-text-muted);">Interactive form for initial risk assessment</span>
                 </div>
               </div>
-              <a href="../assets/docs/guidance-referral-form.pdf" target="_blank" class="gc-btn-back" style="padding: 0.4rem 0.75rem; font-size: 0.85rem; color: var(--gc-primary); box-shadow: none; border: 1px solid var(--gc-border);">Download</a>
+              <a href="risk-assessment.html" class="gc-btn-back" style="padding: 0.5rem 1rem; font-size: 0.85rem; border: 1px solid var(--gc-border); box-shadow: none; color: var(--bright-blue);">Open Form</a>
             </li>
-            <li style="display: flex; align-items: center; justify-content: space-between;">
+
+            <!-- Referral for Service -->
+            <li style="display: flex; align-items: center; justify-content: space-between; padding-bottom: 1rem; border-bottom: 1px solid var(--gc-border); flex-wrap: wrap; gap: 1rem;">
               <div style="display: flex; align-items: center; gap: 0.75rem;">
-                <span style="font-size: 1.5rem;">📘</span>
+                <span style="font-size: 1.5rem; background: #eff6ff; padding: 0.5rem; border-radius: 8px;">📄</span>
                 <div>
-                  <strong style="display: block; color: var(--gc-text-main);">Programs & Services Brochure</strong>
-                  <span style="font-size: 0.85rem; color: var(--gc-text-muted);">PDF Document • Overview of guidance programs</span>
+                  <strong style="display: block; color: var(--gc-text-main); font-size: 1rem;">Referral for Service (App C)</strong>
+                  <span style="font-size: 0.85rem; color: var(--gc-text-muted);">Form for referring students to external agencies</span>
                 </div>
               </div>
-              <a href="../assets/docs/guidance-programs.pdf" target="_blank" class="gc-btn-back" style="padding: 0.4rem 0.75rem; font-size: 0.85rem; color: var(--gc-primary); box-shadow: none; border: 1px solid var(--gc-border);">Download</a>
+              <a href="student-records.html" class="gc-btn-back" style="padding: 0.5rem 1rem; font-size: 0.85rem; border: 1px solid var(--gc-border); box-shadow: none; color: var(--bright-blue);">Search Student</a>
             </li>
+
+            <!-- Restorative Justice -->
+            <li style="display: flex; align-items: center; justify-content: space-between; padding-bottom: 1rem; border-bottom: 1px solid var(--gc-border); flex-wrap: wrap; gap: 1rem;">
+              <div style="display: flex; align-items: center; gap: 0.75rem;">
+                <span style="font-size: 1.5rem; background: #eff6ff; padding: 0.5rem; border-radius: 8px;">🤝</span>
+                <div>
+                  <strong style="display: block; color: var(--gc-text-main); font-size: 1rem;">Restorative Justice Agreement (App E)</strong>
+                  <span style="font-size: 0.85rem; color: var(--gc-text-muted);">Conflict resolution agreement form</span>
+                </div>
+              </div>
+              <a href="student-records.html" class="gc-btn-back" style="padding: 0.5rem 1rem; font-size: 0.85rem; border: 1px solid var(--gc-border); box-shadow: none; color: var(--bright-blue);">Search Student</a>
+            </li>
+
+            <!-- CPC Directory -->
+            <li style="display: flex; align-items: center; justify-content: space-between; padding-bottom: 1rem; border-bottom: 1px solid var(--gc-border); flex-wrap: wrap; gap: 1rem;">
+              <div style="display: flex; align-items: center; gap: 0.75rem;">
+                <span style="font-size: 1.5rem; background: #eff6ff; padding: 0.5rem; border-radius: 8px;">🏫</span>
+                <div>
+                  <strong style="display: block; color: var(--gc-text-main); font-size: 1rem;">Child Protection Committee Directory</strong>
+                  <span style="font-size: 0.85rem; color: var(--gc-text-muted);">View the updated CPC chart and contacts</span>
+                </div>
+              </div>
+              <a href="cpc-directory.html" class="gc-btn-back" style="padding: 0.5rem 1rem; font-size: 0.85rem; border: 1px solid var(--gc-border); box-shadow: none; color: var(--bright-blue);">View Chart</a>
+            </li>
+
+            <!-- Consolidated Reports -->
+            <li style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem;">
+              <div style="display: flex; align-items: center; gap: 0.75rem;">
+                <span style="font-size: 1.5rem; background: #eff6ff; padding: 0.5rem; border-radius: 8px;">📊</span>
+                <div>
+                  <strong style="display: block; color: var(--gc-text-main); font-size: 1rem;">Consolidated Reports (App D & F)</strong>
+                  <span style="font-size: 0.85rem; color: var(--gc-text-muted);">School-wide CAR and CICL summary reports</span>
+                </div>
+              </div>
+              <div style="display: flex; gap: 0.5rem;">
+                <a href="consolidated-report-car.html" class="gc-btn-back" style="padding: 0.5rem 1rem; font-size: 0.85rem; border: 1px solid var(--gc-border); box-shadow: none; color: var(--bright-blue);">App D</a>
+                <a href="consolidated-report-cicl.html" class="gc-btn-back" style="padding: 0.5rem 1rem; font-size: 0.85rem; border: 1px solid var(--gc-border); box-shadow: none; color: var(--bright-blue);">App F</a>
+              </div>
+            </li>
+
           </ul>
         </div>
       </div>
@@ -698,7 +764,6 @@
         <div class="gc-widget">
           <h3><span>🚀</span> Quick Links</h3>
           <ul class="gc-quick-links">
-            <!-- ADD THIS NEW LINE -->
             <li><a href="student-records.html"><span>🔒</span> Student Records (SF1)</a></li>
             <li><a href="admission-slip.html"><span>📄</span> Issue Admission Slip</a></li>
             <li><a href="student-profile.html"><span>📜</span> Student Profile</a></li>
@@ -793,22 +858,22 @@
   </main>
 
   <!-- School Footer -->
-  <footer style="margin-top:2rem; background: #f8fafc; border-top: 1px solid var(--gc-border);">
-    <div class="wrap" style="padding: 2rem 0;">
+  <footer style="margin-top:2rem; background: #fff; border-top: 1px solid var(--gc-border);">
+    <div class="gc-layout-wrap" style="padding: 2rem 0;">
       <div class="foot-grid">
         <div>
-          <strong style="color: var(--gc-primary);">Sta. Cruz Pingkian High School</strong><br/>
-          Brgy. Sta. Cruz, Pingkian • Nueva Vizcaya • Philippines<br/>
-          Email: 300648@deped.gov.ph • Phone: +63 967-8848989
+          <strong style="color: var(--gc-primary); font-size: 1.05rem;">Sta. Cruz Pingkian High School</strong><br/>
+          <span style="color: var(--gc-text-muted); font-size: 0.9rem;">Brgy. Sta. Cruz, Pingkian • Nueva Vizcaya • Philippines</span><br/>
+          <span style="color: var(--gc-text-muted); font-size: 0.9rem;">Email: 300648@deped.gov.ph • Phone: +63 967-8848989</span>
         </div>
         <div>
-          <a href="#privacy">Privacy Notice</a> •
-          <a href="#foi">FOI</a> •
-          <a href="#sitemap">Sitemap</a> •
-          <a href="https://www.facebook.com/p/Santa-Cruz-Pingkian-High-School-Official-61554495084090/" target="_blank" rel="noopener">Facebook</a>
+          <a href="#privacy" style="color: var(--gc-text-muted); text-decoration: none;">Privacy Notice</a> •
+          <a href="#foi" style="color: var(--gc-text-muted); text-decoration: none;">FOI</a> •
+          <a href="#sitemap" style="color: var(--gc-text-muted); text-decoration: none;">Sitemap</a> •
+          <a href="https://www.facebook.com/p/Santa-Cruz-Pingkian-High-School-Official-61554495084090/" target="_blank" rel="noopener" style="color: var(--gc-text-muted); text-decoration: none;">Facebook</a>
         </div>
       </div>
-      <div class="copy" style="margin-top: 1.5rem; color: var(--gc-text-muted);">© <span id="yearNowSchool"></span> SCPHS. All rights reserved.</div>
+      <div class="copy" style="margin-top: 1.5rem; color: var(--gc-text-muted); font-size: 0.85rem;">© <span id="yearNowSchool"></span> SCPHS. All rights reserved.</div>
     </div>
   </footer>
 
