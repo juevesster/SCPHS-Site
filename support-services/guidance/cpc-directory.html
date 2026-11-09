@@ -26,11 +26,13 @@
     .header h1 { color: var(--gc-primary); font-size: 2rem; margin: 0 0 10px; text-transform: uppercase; letter-spacing: 1px; }
     .header p { color: var(--gc-text-muted); font-size: 1rem; max-width: 700px; margin: 0 auto; }
 
-    /* Edit Button */
-    .admin-controls { text-align: center; margin-bottom: 20px; display: none; }
-    .btn-edit { background: var(--gc-primary); color: white; border: none; padding: 10px 20px; border-radius: 8px; font-weight: bold; cursor: pointer; transition: 0.2s; display: inline-flex; align-items: center; gap: 8px; }
-    .btn-edit:hover { background: var(--gc-dark); }
-    .btn-edit.active { background: var(--danger); }
+    /* Admin & Print Controls */
+    .controls-row { text-align: center; margin-bottom: 20px; display: none; gap: 10px; justify-content: center; flex-wrap: wrap; }
+    .btn-ctrl { background: var(--gc-primary); color: white; border: none; padding: 10px 20px; border-radius: 8px; font-weight: bold; cursor: pointer; transition: 0.2s; display: inline-flex; align-items: center; gap: 8px; }
+    .btn-ctrl:hover { background: var(--gc-dark); }
+    .btn-ctrl.active { background: var(--danger); }
+    .btn-print { background: #475569; }
+    .btn-print:hover { background: #334155; }
 
     /* Org Chart Container */
     .org-chart { display: flex; flex-direction: column; align-items: center; gap: 20px; position: relative; }
@@ -89,7 +91,13 @@
     .bottom-level { display: flex; justify-content: center; gap: 40px; width: 100%; margin-top: -17px; position: relative; flex-wrap: wrap;}
     .bottom-level::before { content: ''; position: absolute; top: 17px; left: 25%; right: 25%; height: 3px; background: var(--gc-text); z-index: 0; }
 
-    /* Responsive adjustments */
+    /* Save Button (Only visible in Edit Mode) */
+    #save-controls { display: none; margin-top: 40px; text-align: center; }
+
+    /* Toast */
+    #toast { position: fixed; bottom: 20px; right: 20px; background: #16a34a; color: white; padding: 15px 25px; border-radius: 8px; font-weight: bold; box-shadow: 0 4px 12px rgba(0,0,0,0.15); display: none; z-index: 9999; }
+
+    /* Responsive */
     @media (max-width: 768px) {
       .sub-committee { flex-direction: column; align-items: center; gap: 10px; margin-top: 0; }
       .sub-committee::before { display: none; }
@@ -98,8 +106,46 @@
       .connector-horizontal { width: 100%; }
     }
 
-    /* Toast */
-    #toast { position: fixed; bottom: 20px; right: 20px; background: #16a34a; color: white; padding: 15px 25px; border-radius: 8px; font-weight: bold; box-shadow: 0 4px 12px rgba(0,0,0,0.15); display: none; z-index: 9999; }
+    /* --- PRINT STYLES (LANDSCAPE) --- */
+    @media print {
+      @page { size: A4 landscape; margin: 10mm; }
+      body { background: #fff; font-family: "Times New Roman", Times, serif; }
+      
+      .header { margin-bottom: 20px; }
+      .header h1 { color: #000; font-size: 18pt; }
+      .header p { display: none; } /* Hide subtitle on print */
+      
+      .controls-row, #save-controls { display: none !important; }
+      
+      /* Make cards look like the Word document */
+      .cpc-card {
+        box-shadow: none !important;
+        border: 2px solid #000;
+        background: #fef08a !important;
+        color: #000 !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+      }
+      .cpc-card.dark {
+        background: #1e3a8a !important;
+        color: #fff !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+      }
+      
+      .cpc-name { font-size: 12pt; color: #000; }
+      .cpc-pos { font-size: 10pt; color: #000; }
+      .cpc-contact { font-size: 9pt; color: #333; }
+      
+      .cpc-card.dark .cpc-name { color: #fff; }
+      
+      .connector-vertical, .connector-horizontal, .sub-committee::before, .bottom-level::before {
+        background: #000 !important;
+      }
+      
+      /* Prevent page breaks inside the chart */
+      .org-chart { page-break-inside: avoid; }
+    }
   </style>
 </head>
 <body>
@@ -110,10 +156,13 @@
       <p>Sta. Cruz Pingkian High School is committed to ensuring a safe, inclusive, and bully-free environment for all learners.</p>
     </div>
 
-    <!-- Admin Controls (Only visible to logged-in staff) -->
-    <div class="admin-controls" id="admin-controls">
-      <button class="btn-edit" id="btn-toggle-edit" onclick="toggleEditMode()">
+    <!-- Controls (Admin & Print) -->
+    <div class="controls-row" id="admin-controls">
+      <button class="btn-ctrl" id="btn-toggle-edit" onclick="toggleEditMode()">
         <i class="fas fa-edit"></i> Enable Edit Mode
+      </button>
+      <button class="btn-ctrl btn-print" onclick="window.print()">
+        <i class="fas fa-print"></i> Print Chart (Landscape)
       </button>
     </div>
 
@@ -218,9 +267,9 @@
 
     </div>
 
-    <!-- Save Button (Only visible in Edit Mode) -->
-    <div class="admin-controls" id="save-controls" style="display: none; margin-top: 40px;">
-      <button class="btn-edit" onclick="saveCommitteeData()" style="background: #16a34a;">
+    <!-- Save Button -->
+    <div id="save-controls">
+      <button class="btn-ctrl" onclick="saveCommitteeData()" style="background: #16a34a;">
         <i class="fas fa-save"></i> Save Changes
       </button>
     </div>
@@ -249,9 +298,9 @@
           
           if (userSnap.exists()) {
             const role = userSnap.data().primaryRole || userSnap.data().role;
-            // Allow admin or teacher to edit
+            // Allow admin or teacher to edit & print
             if (role === 'admin' || role === 'teacher' || role === 'superadmin') {
-              document.getElementById('admin-controls').style.display = 'block';
+              document.getElementById('admin-controls').style.display = 'flex';
             }
           }
         } catch (error) {
@@ -311,7 +360,7 @@
 
     // 4. Save Data to Firestore
     window.saveCommitteeData = async function() {
-      const btn = document.querySelector('#save-controls .btn-edit');
+      const btn = document.querySelector('#save-controls .btn-ctrl');
       const originalText = btn.innerHTML;
       btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...'; btn.disabled = true;
 
