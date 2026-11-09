@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>📋 Teacher's Guide - Smart Exam Checker</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #0f4c81;
+            --accent: #6366f1;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --gray-50: #f8fafc;
+            --gray-100: #f1f5f9;
+            --gray-200: #e2e8f0;
+            --gray-600: #475569;
+            --gray-800: #1e293b;
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--gray-50);
+            color: var(--gray-800);
+            line-height: 1.6;
+            margin: 0;
+            padding: 0;
+        }
+        .print-header { display: none; }
+        .container {
+            max-width: 900px;
+            margin: 40px auto;
+            background: white;
+            padding: 40px 50px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+        }
+        h1 { color: var(--primary); font-size: 2rem; border-bottom: 3px solid var(--primary); padding-bottom: 10px; margin-top: 0; }
+        h2 { color: var(--primary); font-size: 1.5rem; margin-top: 40px; border-bottom: 1px solid var(--gray-200); padding-bottom: 8px; }
+        h3 { color: var(--accent); font-size: 1.2rem; margin-top: 25px; }
+        p, li { color: var(--gray-600); font-size: 1rem; }
+        ul, ol { padding-left: 24px; }
+        li { margin-bottom: 8px; }
+        
+        .callout {
+            background: #eff6ff;
+            border-left: 4px solid var(--accent);
+            padding: 16px 20px;
+            border-radius: 0 8px 8px 0;
+            margin: 20px 0;
+        }
+        .callout.warning { background: #fffbeb; border-left-color: var(--warning); }
+        .callout.success { background: #f0fdf4; border-left-color: var(--success); }
+        
+        .step-box {
+            background: var(--gray-50);
+            border: 1px solid var(--gray-200);
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .step-number {
+            display: inline-block;
+            background: var(--primary);
+            color: white;
+            width: 28px;
+            height: 28px;
+            text-align: center;
+            line-height: 28px;
+            border-radius: 50%;
+            font-weight: bold;
+            margin-right: 10px;
+        }
+        
+        table { width: 100%; border-collapse: collapse; margin: 20px 0; font-size: 0.95rem; }
+        th, td { padding: 12px; text-align: left; border-bottom: 1px solid var(--gray-200); }
+        th { background: var(--gray-100); font-weight: 600; color: var(--gray-800); }
+        
+        .badge {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+        .bg-blue { background: #e0e7ff; color: #3730a3; }
+        .bg-green { background: #dcfce7; color: #166534; }
+        .bg-yellow { background: #fef3c7; color: #92400e; }
+        .bg-red { background: #fee2e2; color: #991b1b; }
+
+        /* Print Styles */
+        @media print {
+            @page { size: A4; margin: 15mm; }
+            body { background: white; }
+            .container { box-shadow: none; margin: 0; padding: 0; max-width: 100%; }
+            .print-header { display: block; text-align: center; margin-bottom: 30px; border-bottom: 2px solid #000; padding-bottom: 15px;}
+            .print-header img { height: 70px; margin-bottom: 10px; }
+            .print-header h1 { font-size: 14pt; border: none; margin: 5px 0; padding: 0;}
+            .print-header p { font-size: 11pt; margin: 2px 0; }
+            h1 { display: none; } /* Hide web H1 in favor of print header */
+            h2, h3 { page-break-after: avoid; }
+            .step-box, .callout { page-break-inside: avoid; }
+            table { page-break-inside: avoid; }
+            .no-print { display: none !important; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <!-- Print Header -->
+    <div class="print-header">
+        <img src="assets/images/deped-logo.png" alt="DepEd Logo">
+        <h1>Republic of the Philippines</h1>
+        <p style="font-weight: bold;">DEPARTMENT OF EDUCATION</p>
+        <p>Region II - Cagayan Valley</p>
+        <p>SCHOOLS DIVISION OF NUEVA VIZCAYA</p>
+        <p style="font-weight: bold; font-size: 14pt; margin-top: 10px;">STA. CRUZ PINGKIAN HIGH SCHOOL</p>
+        <p style="text-decoration: underline;">Pingkian, Kayapa, Nueva Vizcaya</p>
+        <br>
+        <h2 style="border:none; margin:0; padding:0;">SMART EXAM CHECKER - TEACHER'S USER GUIDE</h2>
+    </div>
+
+    <!-- Web Header -->
+    <div style="text-align: right; margin-bottom: 20px;" class="no-print">
+        <button onclick="window.print()" style="padding: 8px 16px; background: var(--primary); color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 600;">
+            <i class="fas fa-print"></i> Print this Guide
+        </button>
+    </div>
+
+    <h1>📋 Smart Exam Checker: User Guide</h1>
+    <p><strong>Welcome!</strong> The Smart Exam Checker is designed to make your grading workflow faster, more accurate, and integrated directly with the Electronic Class Record (ECR). This guide covers everything from selecting a class to utilizing AI for essay checking.</p>
+
+    <h2>I. Getting Started</h2>
+    <p>Before grading, make sure you have the correct Class, Subject, and Assessment selected.</p>
+    
+    <div class="step-box">
+        <h3 style="margin-top:0;"><span class="step-number">1</span> Select Context</h3>
+        <ul>
+            <li><strong>Class:</strong> Choose the class from your assigned list. Selecting a class automatically loads the students.</li>
+            <li><strong>Subject:</strong> Select the subject to filter the available assessments.</li>
+            <li><strong>Assessment:</strong> Choose the specific quiz or exam you are grading.</li>
+            <li><strong>Student:</strong> Select the student whose paper you are currently checking.</li>
+        </ul>
+    </div>
+
+    <div class="step-box">
+        <h3 style="margin-top:0;"><span class="step-number">2</span> Choose Assessment Type</h3>
+        <p>Under the <strong>"Save To"</strong> dropdown, choose where the grade will be recorded in the ECR:</p>
+        <ul>
+            <li><span class="badge bg-blue">Written Work (WW)</span></li>
+            <li><span class="badge bg-green">Performance Task (PT)</span></li>
+            <li><span class="badge bg-yellow">Quarterly Assessment (QA)</span></li>
+        </ul>
+        <div class="callout success" style="margin-bottom:0;">
+            <i class="fas fa-info-circle"></i> <strong>Averaging Mode:</strong> The system automatically averages this new score with any existing scores recorded for that category.
+        </div>
+    </div>
+
+    <h2>II. Manual & AI Grading</h2>
+    
+    <h3>A. Multiple Choice (MC)</h3>
+    <ol>
+        <li>Enter the correct answers in the <strong>Key to Correction</strong> boxes. (You can also click <strong>"AI Suggest"</strong> to auto-fill).</li>
+        <li>Enter the student's answers in the <strong>Student Answers</strong> boxes.</li>
+        <li>Click <strong>"AI Verify"</strong> to quickly see the score and detailed breakdown, or click <strong>"Grade Now"</strong> to finalize and save immediately.</li>
+    </ol>
+
+    <h3>B. True/False (T/F)</h3>
+    <p>Similar to MC, but you will input <strong>T</strong> or <strong>F</strong> in the respective fields. The system checks for exact matches.</p>
+
+    <h3>C. Matching Type</h3>
+    <ol>
+        <li>Select the <strong>Format</strong>: <em>Numbers to Letters (1 → A)</em> or <em>Letters to Numbers (A → 1)</em>.</li>
+        <li>Enter the key and the student's matching answers.</li>
+    </ol>
+
+    <h3>D. Identification</h3>
+    <ol>
+        <li>Enter the correct words in the Key boxes.</li>
+        <li>Type the student's answer. Don't worry about minor typos! Click <strong>"AI Verify & Spell Check"</strong>—the system uses fuzzy matching to detect near-misses (e.g., "Photosinthesis" instead of "Photosynthesis").</li>
+        <li>If the AI detects a partial match, you can click <strong>"Auto-Correct Spelling"</strong> to fix the student's answer instantly.</li>
+    </ol>
+
+    <h2>III. AI Essay Evaluation</h2>
+    <p>The Essay tab utilizes DeepSeek AI to transcribe, analyze, and suggest scores for handwritten or typed essays.</p>
+
+    <div class="step-box">
+        <h3 style="margin-top:0;"><span class="step-number">1</span> Upload or Type the Essay</h3>
+        <ul>
+            <li><strong>Option A (Handwritten):</strong> Click <strong>"Upload Essay Image"</strong>, select the photo of the paper, and click <strong>"AI Transcribe"</strong>. The AI will read the handwriting and paste the text into the box.</li>
+            <li><strong>Option B (Typed):</strong> Paste the essay text directly into the text box.</li>
+        </ul>
+    </div>
+
+    <div class="step-box">
+        <h3 style="margin-top:0;"><span class="step-number">2</span> AI Analysis</h3>
+        <p>Click <strong>"AI Analyze"</strong>. The system will check the essay against your Rubric and Max Score.</p>
+        <p>The AI will return:</p>
+        <ul>
+            <li><strong>Suggested Score</strong> (out of the max score).</li>
+            <li><strong>Analysis</strong> (Strengths, Areas for Improvement).</li>
+            <li><strong>Detected Language</strong> (Supports English, Tagalog, and Taglish).</li>
+        </ul>
+    </div>
+
+    <div class="step-box">
+        <h3 style="margin-top:0;"><span class="step-number">3</span> Teacher Final Say</h3>
+        <p>Review the AI's suggested score. You are the final judge! You can adjust the score in the <strong>Teacher Workspace</strong> box and add personalized feedback.</p>
+        <p>Click <strong>"Save to ECR"</strong> when you are satisfied.</p>
+    </div>
+
+    <h2>IV. Advanced Features</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Feature</th>
+                <th>How to Use</th>
+                <th>Benefit</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><strong>Save Key to DB</strong></td>
+                <td>Click the <span class="badge bg-green">Save Key</span> button after entering the answer key.</td>
+                <td>Saves the key to the database so you don't have to re-type it when checking the next student.</td>
+            </tr>
+            <tr>
+                <td><strong>Load Key from DB</strong></td>
+                <td>Click the <span class="badge bg-blue">Load Key</span> button.</td>
+                <td>Automatically fills the answer key boxes with the saved answers.</td>
+            </tr>
+            <tr>
+                <td><strong>Apply to All</strong></td>
+                <td>Click <span class="badge bg-yellow">Apply to All</span>.</td>
+                <td>Quickly copy the current key to all other question types (if applicable) or sync across tabs.</td>
+            </tr>
+            <tr>
+                <td><strong>Vision Upload</strong></td>
+                <td>Use the upload zone at the bottom of the MC/TF tabs.</td>
+                <td>Upload a photo of the answer sheet. AI will read the shaded bubbles and fill the student's answers automatically.</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h2>V. Troubleshooting</h2>
+    <div class="callout warning">
+        <strong><i class="fas fa-exclamation-triangle"></i> Common Issues:</strong>
+        <ul style="margin-bottom: 0; margin-top: 8px;">
+            <li><strong>Student list is empty:</strong> Ensure you have selected a Class first.</li>
+            <li><strong>"Not logged in" error:</strong> Your session may have expired. Refresh the page and log in again.</li>
+            <li><strong>AI Transcription fails:</strong> Ensure the image is clear, well-lit, and under 5MB. Avoid shadows on the paper.</li>
+            <li><strong>Grade not showing in ECR:</strong> Check the ECR Status banner at the top of the page to see if the sync was successful.</li>
+        </ul>
+    </div>
+
+    <div style="text-align: center; margin-top: 50px; color: var(--gray-600); font-size: 0.9rem; border-top: 1px solid var(--gray-200); padding-top: 20px;">
+        <p><strong>Smart Exam Checker</strong> • Project Development Initiative</p>
+        <p>Sta. Cruz Pingkian High School • 2026-2027</p>
+    </div>
+</div>
+
+</body>
+</html>
