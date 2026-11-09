@@ -96,6 +96,9 @@
     /* Toast */
     #toast { position: fixed; bottom: 20px; right: 20px; background: #16a34a; color: white; padding: 15px 25px; border-radius: 8px; font-weight: bold; box-shadow: 0 4px 12px rgba(0,0,0,0.15); display: none; z-index: 9999; }
 
+    /* Print Header (Hidden on web) */
+    .print-header { display: none; }
+
     /* Responsive */
     @media (max-width: 768px) {
       .sub-committee { flex-direction: column; align-items: center; gap: 10px; margin-top: 0; }
@@ -110,15 +113,22 @@
       @page { size: A4 landscape; margin: 10mm; }
       body { background: #fff; font-family: "Times New Roman", Times, serif; }
       
-      .header { margin-bottom: 20px; }
-      .header h1 { color: #000; font-size: 18pt; margin-bottom: 5px; }
+      /* Show DepEd Header */
+      .print-header { display: block !important; text-align: center !important; margin-bottom: 20px; }
+      .print-header img { display: block !important; margin: 0 auto 5px auto !important; height: 60px; }
+      .print-header h1 { font-size: 12pt; margin: 2px 0; font-weight: normal; }
+      .print-header .bold-title { font-size: 14pt; font-weight: bold; margin: 5px 0; }
+      
+      /* Hide web header text */
+      .header { margin-bottom: 10px; }
+      .header h1 { color: #000; font-size: 14pt; margin-bottom: 0; }
       .header p { display: none; }
       
       .controls-row, #save-controls { display: none !important; }
       
       .wrap { padding: 0; margin: 0; max-width: 100%; }
       
-      /* Force color printing */
+      /* Force color printing for Yellow Boxes */
       .cpc-card {
         box-shadow: none !important;
         border: 2px solid #000;
@@ -127,16 +137,19 @@
         -webkit-print-color-adjust: exact;
         print-color-adjust: exact;
       }
+      
+      /* FIX: Print Dark Boxes as White with Black text so they don't turn invisible */
       .cpc-card.dark {
-        background: #1e3a8a !important;
-        color: #fff !important;
+        background: #fff !important;
+        color: #000 !important;
+        border: 3px solid #000 !important;
       }
       
       .cpc-name { font-size: 12pt; color: #000; }
       .cpc-pos { font-size: 10pt; color: #000; }
       .cpc-contact { font-size: 9pt; color: #333; }
       
-      /* FIX: Use borders instead of background color so they print reliably */
+      /* Use borders instead of background color for lines */
       .connector-vertical { 
         height: 30px; 
         width: 0; 
@@ -153,7 +166,7 @@
         height: 0; 
         border-top: 3px solid #000; 
         background: transparent !important; 
-        top: 18px; /* Adjust for border */
+        top: 18px; 
       }
       .bottom-level::before { 
         height: 0; 
@@ -163,11 +176,22 @@
       }
       
       /* Make sure it fits on one page */
-      .org-chart { transform: scale(0.95); transform-origin: top center; page-break-inside: auto; }
+      .org-chart { transform: scale(0.95); transform-origin: top center; page-break-inside: avoid; }
     }
   </style>
 </head>
 <body>
+
+  <!-- HIDDEN PRINT HEADER (Shows only when printing) -->
+  <div class="print-header">
+    <img src="../../assets/images/deped-logo.png" alt="DepEd Logo">
+    <div style="font-size: 11px;">Republic of the Philippines</div>
+    <div class="bold-title">DEPARTMENT OF EDUCATION</div>
+    <div style="font-size: 11px;">Region II - Cagayan Valley</div>
+    <div style="font-size: 11px;">Schools Division of Nueva Vizcaya</div>
+    <div class="bold-title" style="margin-top: 5px;">STA. CRUZ PINGKIAN HIGH SCHOOL</div>
+    <div style="font-size: 11px; text-decoration: underline;">Pingkian, Kayapa, Nueva Vizcaya</div>
+  </div>
 
   <div class="wrap">
     <div class="header">
