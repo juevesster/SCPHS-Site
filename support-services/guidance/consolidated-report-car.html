@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Consolidated Report on CAR (Appendix D) – SCPHS</title>
+  <link rel="stylesheet" href="../../assets/css/styles.css" />
+  
+  <style>
+    :root {
+      --gc-primary: #0f4c81;
+      --gc-border: #e2e8f0;
+      --gc-text-main: #1e293b;
+      --gc-text-muted: #64748b;
+      --bright-blue: #2563eb;
+      --danger: #dc2626;
+      --success: #16a34a;
+    }
+
+    body { background: #f1f5f9; margin: 0; font-family: system-ui, -apple-system, sans-serif; }
+    .wrap { max-width: 1200px; margin: 0 auto; padding: 20px 16px; }
+
+    /* Header */
+    .header { background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; }
+    .header h1 { margin: 0; color: var(--gc-primary); font-size: 1.4rem; }
+    .back-link { color: var(--bright-blue); text-decoration: none; font-weight: 600; font-size: 0.9rem; }
+
+    /* Form Card */
+    .form-card { background: #fff; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); padding: 30px; margin-bottom: 30px; }
+    
+    .form-section { margin-bottom: 25px; border: 1px solid var(--gc-border); border-radius: 8px; padding: 20px; background: #fff; overflow-x: auto;}
+    .form-section h3 { margin-top: 0; color: var(--gc-primary); border-bottom: 1px solid var(--gc-border); padding-bottom: 10px; font-size: 1.1rem; text-transform: uppercase;}
+    
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px; }
+    .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px; margin-bottom: 15px; }
+    .grid-full { margin-bottom: 15px; }
+
+    label { display: block; font-size: 0.8rem; font-weight: 700; color: #333; margin-bottom: 5px; text-transform: uppercase; }
+    input, textarea { width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-family: inherit; font-size: 0.95rem; box-sizing: border-box; }
+    textarea { resize: vertical; min-height: 80px; }
+
+    /* Report Table */
+    .report-table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 0.85rem; }
+    .report-table th, .report-table td { border: 1px solid #cbd5e1; padding: 10px; text-align: center; }
+    .report-table th { background: #f8fafc; font-weight: 700; color: #1e293b; }
+    .report-table td { text-align: left; }
+    .report-table td.center { text-align: center; }
+    .report-table tr:hover { background: #f8fafc; }
+    
+    .text-input-cell { width: 100%; border: 1px solid transparent; padding: 6px; border-radius: 4px; font-family: inherit; font-size: 0.85rem; transition: 0.2s; }
+    .text-input-cell:focus { border-color: var(--bright-blue); outline: none; background: #fff; }
+    .text-input-cell:hover { border-color: #cbd5e1; background: #fff; }
+
+    /* Buttons */
+    .btn-row { display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px; padding-top: 20px; border-top: 1px solid var(--gc-border); }
+    .btn { padding: 12px 24px; border: none; border-radius: 6px; font-weight: bold; font-size: 0.95rem; cursor: pointer; transition: 0.2s; }
+    .btn-print { background: #475569; color: #fff; }
+    .btn-print:hover { background: #334155; }
+    .btn-refresh { background: var(--bright-blue); color: #fff; }
+    .btn-refresh:hover { background: #1d4ed8; }
+
+    /* --- PRINT STYLES --- */
+    @media print {
+      @page { size: A4 landscape; margin: 10mm; } /* Landscape to fit the wide table */
+      body { background: #fff; font-family: "Times New Roman", Times, serif; }
+      
+      .header, .back-link, .btn-row { display: none !important; }
+      
+      .wrap { padding: 0; max-width: 100%; }
+      .form-card { box-shadow: none; padding: 0; margin: 0; }
+      .form-section { border: none; padding: 0; margin-bottom: 15px; }
+      .form-section h3 { border-bottom: 1px solid #000; font-size: 12px; margin-bottom: 10px; font-weight: bold; text-transform: uppercase; font-family: sans-serif; }
+      
+      .print-header { display: block !important; text-align: center !important; margin-bottom: 20px; }
+      .print-header img { display: block !important; margin: 0 auto 10px auto !important; height: 60px; }
+      .print-header h1 { font-size: 14px; margin: 3px 0; font-weight: bold; }
+      .print-header p { font-size: 12px; margin: 2px 0; }
+      
+      /* Inputs as lines */
+      .grid-2, .grid-3 { gap: 15px; margin-bottom: 10px; }
+      label { font-size: 11px; color: #000; margin-bottom: 2px; text-transform: none; font-family: sans-serif; }
+      input, textarea { border: none; border-bottom: 1px solid #000; padding: 2px 0; border-radius: 0; font-size: 12px; background: transparent; font-family: "Times New Roman", Times, serif;}
+      textarea { border: 1px solid #000; padding: 5px; }
+      
+      /* Table */
+      .report-table { font-size: 11px; font-family: "Times New Roman", Times, serif; }
+      .report-table th, .report-table td { border: 1px solid #000; padding: 4px 6px; }
+      .report-table th { background: #e5e7eb !important; }
+      .text-input-cell { border: none; padding: 0; font-family: inherit; font-size: inherit; }
+      
+      .print-signatures { display: flex; justify-content: space-between; margin-top: 40px; page-break-inside: avoid; }
+      .sig-block { width: 30%; text-align: center; }
+      .sig-label { font-size: 11px; margin-bottom: 25px; text-align: left; font-family: sans-serif;}
+      .sig-line { border-bottom: 1px solid #000; height: 15px; margin-bottom: 3px; }
+      .sig-pos { font-size: 10px; color: #333; font-family: sans-serif; }
+    }
+    .print-header { display: none; }
+  </style>
+</head>
+<body>
+
+  <div class="wrap">
+    <div class="header">
+      <h1>📊 Consolidated Report on CAR (Appendix D)</h1>
+      <a href="student-records.html" class="back-link">← Back to Records</a>
+    </div>
+
+    <div class="form-card">
+      
+      <!-- Print Header -->
+      <div class="print-header">
+        <img src="../../assets/images/deped-logo.png" alt="DepEd Logo">
+        <div style="font-size: 11px;">Republic of the Philippines</div>
+        <div style="font-size: 13px; font-weight: bold;">DEPARTMENT OF EDUCATION</div>
+        <div style="font-size: 11px;">Region II - Cagayan Valley</div>
+        <div style="font-size: 11px;">Schools Division of Nueva Vizcaya</div>
+        <div style="font-size: 13px; font-weight: bold; margin-top: 10px;">STA. CRUZ PINGKIAN HIGH SCHOOL</div>
+        <div style="font-size: 16px; font-weight: bold; margin-top: 5px;">CONSOLIDATED REPORT ON CASES OF CHILDREN-AT-RISK (CAR)</div>
+        <div style="font-size: 11px; font-weight: bold; color: #dc2626; margin-top: 5px;">Appendix D</div>
+      </div>
+
+      <!-- HEADER INFO -->
+      <div class="form-section">
+        <div class="grid-2">
+          <div><label>School/Division/Region</label><input type="text" id="rep-school" value="Sta. Cruz Pingkian High School / Division of Nueva Vizcaya / Region II"></div>
+          <div><label>Period Covered</label><input type="text" id="rep-period" value="School Year 2026-2027"></div>
+        </div>
+      </div>
+
+      <!-- I. CHILDREN-AT-RISK TABLE -->
+      <div class="form-section">
+        <h3>I. CHILDREN-AT-RISK (CAR)</h3>
+        <p style="font-size: 0.85rem; color: #64748b; margin-top: -5px; margin-bottom: 15px;">The system automatically calculates Male and Female counts based on LRP records.</p>
+        
+        <table class="report-table">
+          <thead>
+            <tr>
+              <th rowspan="2" style="width: 35%;">Classification</th>
+              <th colspan="2">No. of Students</th>
+              <th rowspan="2" style="width: 20%;">Action Taken</th>
+              <th rowspan="2" style="width: 25%;">Remarks</th>
+            </tr>
+            <tr>
+              <th style="width: 7%;">Male</th>
+              <th style="width: 7%;">Female</th>
+            </tr>
+          </thead>
+          <tbody id="report-tbody">
+            <!-- Rows injected by JS -->
+          </tbody>
+          <tfoot>
+            <tr style="background: #f1f5f9; font-weight: bold;">
+              <td style="text-align: right;">TOTAL</td>
+              <td class="center" id="total-male">0</td>
+              <td class="center" id="total-female">0</td>
+              <td colspan="2"></td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+
+      <!-- II. DESCRIPTION OF ACTION -->
+      <div class="form-section">
+        <h3>II. Description of action taken by the school or division to alleviate the risk factors of the CAR:</h3>
+        <div class="grid-full">
+          <textarea id="rep-description" rows="4" placeholder="Describe the interventions, programs, or actions taken by the school..."></textarea>
+        </div>
+      </div>
+
+      <!-- SIGNATORIES -->
+      <div class="form-section" style="border-bottom: none; margin-bottom: 0; padding-bottom: 0;">
+        <div class="print-signatures">
+          <div class="sig-block">
+            <div class="sig-label">Prepared by:</div>
+            <div class="sig-line"></div>
+            <input type="text" id="rep-preparedBy" placeholder="Name of Guidance Counselor" style="text-align: center; font-weight: bold; margin-bottom: 2px;">
+            <input type="text" id="rep-preparedPos" placeholder="Designation" value="Guidance Counselor (Designate)" style="text-align: center; font-size: 0.85rem; margin-bottom: 2px;">
+            <div style="font-size: 0.85rem; color: #475569;" id="rep-dateDisplay">Date</div>
+          </div>
+          
+          <div class="sig-block">
+            <div class="sig-label">Noted by:</div>
+            <div class="sig-line"></div>
+            <input type="text" id="rep-notedBy" value="SATURNINO P. CALANSI EdD" style="text-align: center; font-weight: bold; margin-bottom: 2px;">
+            <input type="text" id="rep-notedPos" value="Principal IV / School Head" style="text-align: center; font-size: 0.85rem; margin-bottom: 2px;">
+            <div style="font-size: 0.85rem; color: #475569;" id="rep-dateNotedDisplay">Date</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- BUTTONS -->
+      <div class="btn-row">
+        <button type="button" class="btn btn-refresh" onclick="fetchDataAndAggregate()">🔄 Refresh Data</button>
+        <button type="button" class="btn btn-print" onclick="window.print()">🖨️ Print Report</button>
+      </div>
+
+    </div>
+  </div>
+
+  <script type="module">
+    import { auth, db } from "../../assets/js/firebase-config.js";
+    import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+    import { collection, getDocs, query, where, collectionGroup } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+    // Definitions of CAR categories mapped to checkbox values in the Case Monitoring form
+    const CAR_CATEGORIES = [
+      { id: "abuse", label: "1. Victim of abuse (sexual, physical, psychological, mental, economic and other mean)", keywords: ["Physical Abuse", "Sexual Abuse", "Verbal/Psychological Abuse", "Physical Bullying", "Social Bullying", "Cyber Bullying", "Gender-Based"] },
+      { id: "neglect", label: "2. Victim of neglect", keywords: ["Victims of Neglect"] },
+      { id: "dysfunctional", label: "3. Coming from a dysfunctional family or without parent or guardian", keywords: ["Dysfunctional"] },
+      { id: "gang", label: "4. Being member of a gang", keywords: ["Member of a Gang"] },
+      { id: "criminality", label: "5. Living in a community with a higher level of criminality", keywords: ["Criminality"] },
+      { id: "armed", label: "6. Living in a situation of armed conflict", keywords: ["Living in Armed Conflict"] },
+      { id: "status", label: "7. Committed a status Offense under Section 57 of RA 9344, as amended", keywords: ["CICL", "Status Offense", "Children in Conflict with the Law (CICL)"] },
+      { id: "prostituted", label: "8. Prostituted children", keywords: ["Prostituted", "Online Sexual Exploitation"] },
+      { id: "mendicant", label: "9. Mendicant under PD 1563", keywords: ["Mendicant"] },
+      { id: "solvent", label: "10. Solvent/ Rugby User", keywords: ["Solvent", "Rugby"] },
+      { id: "others", label: "11. Others", keywords: [] } // Catch-all
+    ];
+
+    onAuthStateChanged(auth, async (user) => {
+      if (!user) { window.location.href = "../../login.html"; return; }
+      
+      // Set current date
+      const today = new Date().toLocaleDateString('en-PH', { year: 'numeric', month: 'long', day: 'numeric' });
+      document.getElementById('rep-dateDisplay').textContent = today;
+      document.getElementById('rep-dateNotedDisplay').textContent = today;
+
+      // Pre-fill local storage from previous setting
+      document.getElementById('rep-preparedBy').value = localStorage.getItem('gc_counselorName') || "";
+
+      await buildTable();
+      await fetchDataAndAggregate();
+    });
+
+    // Generate the HTML Table Rows dynamically
+    async function buildTable() {
+      const tbody = document.getElementById('report-tbody');
+      tbody.innerHTML = CAR_CATEGORIES.map(cat => `
+        <tr>
+          <td>${cat.label}</td>
+          <td class="center" id="count-${cat.id}-m">0</td>
+          <td class="center" id="count-${cat.id}-f">0</td>
+          <td><input type="text" class="text-input-cell" id="action-${cat.id}" placeholder="e.g. Counseling"></td>
+          <td><input type="text" class="text-input-cell" id="remarks-${cat.id}" placeholder="e.g. Resolved"></td>
+        </tr>
+      `).join("");
+    }
+
+    // Fetch all students and aggregate their LRP records
+    window.fetchDataAndAggregate = async function() {
+      const btn = document.querySelector('.btn-refresh');
+      const originalText = btn.textContent;
+      btn.textContent = "Loading Data..."; btn.disabled = true;
+
+      // Reset counts
+      const counts = {};
+      CAR_CATEGORIES.forEach(c => counts[c.id] = { m: 0, f: 0 });
+      let otherCount = { m: 0, f: 0 };
+
+      try {
+        // 1. Fetch all classes
+        const classesSnap = await getDocs(collection(db, "classes"));
+        
+        // 2. Loop through classes -> students -> case_monitoring
+        const promises = classesSnap.docs.map(async (classDoc) => {
+          const studentsSnap = await getDocs(collection(db, "classes", classDoc.id, "students"));
+          
+          const studentPromises = studentsSnap.docs.map(async (studentDoc) => {
+            const student = studentDoc.data();
+            const gender = (student.sex || "").toLowerCase().trim();
+            const isMale = gender === 'male' || gender === 'm';
+            const isFemale = gender === 'female' || gender === 'f';
+            
+            // Skip if gender unknown
+            if (!isMale && !isFemale) return; 
+
+            // Fetch cases for this student
+            const casesSnap = await getDocs(collection(db, "classes", classDoc.id, "students", studentDoc.id, "case_monitoring"));
+            
+            casesSnap.forEach(caseDoc => {
+              const cData = caseDoc.data();
+              const types = cData.caseTypes || [];
+              
+              types.forEach(type => {
+                let matched = false;
+                // Match against predefined categories
+                for (const cat of CAR_CATEGORIES) {
+                  if (cat.id === 'others') continue; 
+                  
+                  // Check if the type string includes any of the keywords for this category
+                  if (cat.keywords.some(k => type.toLowerCase().includes(k.toLowerCase()))) {
+                    if (isMale) counts[cat.id].m++;
+                    if (isFemale) counts[cat.id].f++;
+                    matched = true;
+                    break; // Move to next type
+                  }
+                }
+                
+                // If it didn't match any specific category, add to Others
+                if (!matched && type && !type.toLowerCase().includes('bullying') && !type.toLowerCase().includes('abuse')) {
+                   if (isMale) otherCount.m++;
+                   if (isFemale) otherCount.f++;
+                }
+              });
+            });
+          });
+          
+          await Promise.all(studentPromises);
+        });
+
+        await Promise.all(promises);
+
+        // 3. Update the UI
+        let totalM = 0;
+        let totalF = 0;
+
+        CAR_CATEGORIES.forEach(cat => {
+          let m = counts[cat.id].m;
+          let f = counts[cat.id].f;
+          
+          if (cat.id === 'others') {
+            m = otherCount.m;
+            f = otherCount.f;
+          }
+
+          document.getElementById(`count-${cat.id}-m`).textContent = m;
+          document.getElementById(`count-${cat.id}-f`).textContent = f;
+          
+          totalM += m;
+          totalF += f;
+        });
+
+        document.getElementById('total-male').textContent = totalM;
+        document.getElementById('total-female').textContent = totalF;
+
+      } catch (error) {
+        console.error("Error aggregating data:", error);
+        alert("❌ Failed to load data from Firebase.");
+      } finally {
+        btn.textContent = originalText; btn.disabled = false;
+      }
+    };
+  </script>
+</body>
+</html>
