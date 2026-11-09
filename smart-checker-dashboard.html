@@ -45,32 +45,51 @@
     table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
     th, td { border: 1px solid var(--gc-border); padding: 10px; text-align: left; }
     th { background: #f8fafc; font-weight: bold; }
+    
     .btn-delete { background: #fee2e2; color: #dc2626; border: 1px solid #fecaca; padding: 5px 10px; border-radius: 4px; cursor: pointer; font-weight: bold; transition: 0.2s; }
     .btn-delete:hover { background: #dc2626; color: #fff; }
-
     .btn-print { background: #475569; color: #fff; border: none; padding: 12px 24px; border-radius: 6px; font-weight: bold; font-size: 0.95rem; cursor: pointer; transition: 0.2s; float: right; margin-bottom: 20px; }
     .btn-print:hover { background: #334155; }
 
     /* --- PRINT STYLES --- */
     @media print {
-      @page { size: A4 portrait; margin: 15mm; }
-      body { background: #fff; }
-      .header, .btn-print, .btn-link, .table-card, .charts-grid { display: none !important; }
+      @page { size: A4 portrait; margin: 10mm; }
+      body { background: #fff; font-family: Arial, sans-serif !important; font-size: 12pt; }
+      
+      /* Hide UI elements but KEEP the graphs and tables */
+      .header, .btn-print, .btn-link, .btn-delete, #loading, #empty-state { display: none !important; }
+      
       .wrap { padding: 0; max-width: 100%; }
       
-      .print-header { display: block !important; text-align: center !important; margin-bottom: 30px; }
+      /* Official Print Header */
+      .print-header { display: block !important; text-align: center !important; margin-bottom: 20px; }
       .print-header img { display: block !important; margin: 0 auto 10px auto !important; height: 70px; }
-      .print-header h1 { font-size: 14px; margin: 5px 0; font-weight: bold; font-family: "Times New Roman", serif; }
-      .print-header p { font-size: 11px; margin: 2px 0; font-family: "Times New Roman", serif; }
+      .print-header h1 { font-size: 12pt; margin: 5px 0; font-weight: bold; }
+      .print-header p { font-size: 12pt; margin: 2px 0; }
       
-      .interp-card { box-shadow: none; border: none; padding: 0; margin-bottom: 20px; }
-      .interp-card h2 { font-family: "Times New Roman", serif; font-size: 14px; border-bottom: 1px solid #000; }
-      .interp-text { font-family: "Times New Roman", serif; font-size: 12px; line-height: 1.5; }
+      /* Stats Cards in Print */
+      .stats-grid { display: flex; justify-content: space-between; gap: 10px; margin-bottom: 20px; }
+      .stat-card { box-shadow: none; border: 1px solid #000; padding: 10px; text-align: center; flex: 1; border-radius: 0; }
+      .stat-value { font-size: 18pt; font-weight: bold; }
+      .stat-label { font-size: 12pt; margin: 0; }
       
-      .stats-grid { display: block; margin-bottom: 20px; }
-      .stat-card { box-shadow: none; border: 1px solid #000; padding: 10px 15px; text-align: left; display: flex; justify-content: space-between; margin-bottom: -1px; border-radius: 0; }
-      .stat-value { font-size: 14px; font-weight: bold; font-family: "Times New Roman", serif; }
-      .stat-label { font-size: 12px; font-family: "Times New Roman", serif; margin: 0; }
+      /* Interpretation in Print */
+      .interp-card { box-shadow: none; border: none; padding: 0; margin-bottom: 20px; border-left: none; }
+      .interp-card h2 { font-size: 12pt; border-bottom: 1px solid #000; font-weight: bold; }
+      .interp-text { font-size: 12pt; line-height: 1.5; }
+
+      /* Charts in Print */
+      .charts-grid { display: flex !important; flex-direction: row; gap: 10px; margin-bottom: 20px; page-break-inside: avoid; }
+      .chart-card { box-shadow: none; border: 1px solid #000; padding: 10px; width: 50%; display: flex; flex-direction: column; }
+      .chart-card h3 { font-size: 12pt; text-align: center; }
+      .chart-container { min-height: 250px; }
+      
+      /* Table in Print */
+      .table-card { box-shadow: none; border: 1px solid #000; padding: 10px; margin-bottom: 20px; }
+      .table-card h2 { font-size: 12pt; border-bottom: 1px solid #000; font-weight: bold; }
+      table { font-size: 12pt; }
+      th, td { border: 1px solid #000; padding: 5px; }
+      th { background: #e5e7eb !important; }
     }
     .print-header { display: none; }
   </style>
@@ -82,21 +101,21 @@
       <h1>📋 Smart Exam Checker Feedback Dashboard</h1>
       <div>
         <a href="smart-exam-feedback.html" class="btn-link" style="margin-right: 20px;">← Back to Feedback Form</a>
-        <button class="btn-print" style="float: none; margin: 0;" onclick="window.print()">🖨️ Print Report</button>
+        <button class="btn-print" style="float: none; margin: 0;" onclick="window.print()">🖨️ Print Full Report</button>
       </div>
     </div>
 
     <!-- Print Header (Only visible when printing) -->
     <div class="print-header">
       <img src="assets/images/deped-logo.png" alt="DepEd Logo">
-      <div style="font-size: 12px;">Republic of the Philippines</div>
-      <div style="font-size: 14px; font-weight: bold;">DEPARTMENT OF EDUCATION</div>
-      <div style="font-size: 12px;">Region II - Cagayan Valley</div>
-      <div style="font-size: 12px;">SCHOOLS DIVISION OF NUEVA VIZCAYA</div>
-      <div style="font-size: 12px; font-weight: bold;">STA. CRUZ PINGKIAN HIGH SCHOOL</div>
-      <div style="font-size: 12px; text-decoration: underline;">Pingkian, Kayapa, Nueva Vizcaya</div>
-      <div style="font-size: 15px; font-weight: bold; margin-top: 15px;">SMART EXAM CHECKER EVALUATION REPORT</div>
-      <div style="font-size: 13px; font-weight: bold;">(Teacher Feedback Summary)</div>
+      <div>Republic of the Philippines</div>
+      <div style="font-weight: bold;">DEPARTMENT OF EDUCATION</div>
+      <div>Region II - Cagayan Valley</div>
+      <div>SCHOOLS DIVISION OF NUEVA VIZCAYA</div>
+      <div style="font-weight: bold;">STA. CRUZ PINGKIAN HIGH SCHOOL</div>
+      <div style="text-decoration: underline;">Pingkian, Kayapa, Nueva Vizcaya</div>
+      <div style="font-weight: bold; margin-top: 15px; font-size: 14pt;">SMART EXAM CHECKER EVALUATION REPORT</div>
+      <div style="font-weight: bold;">(Teacher Feedback Summary)</div>
     </div>
 
     <div id="loading" style="text-align: center; padding: 50px; color: #0f4c81; font-weight: bold;">
@@ -143,9 +162,9 @@
         </div>
       </div>
 
-      <!-- Records Table (Hidden on Print) -->
+      <!-- Records Table -->
       <div class="table-card">
-        <h2>📋 Individual Teacher Feedback Records</h2>
+        <h2>📋 Teachers Participant List</h2>
         <table>
           <thead>
             <tr>
@@ -153,7 +172,7 @@
               <th>Department</th>
               <th>Date</th>
               <th>Avg Rating</th>
-              <th>Action</th>
+              <th class="btn-delete" style="border:none; background:transparent; padding:0; cursor:default;">Action</th>
             </tr>
           </thead>
           <tbody id="records-tbody">
@@ -193,22 +212,17 @@
         document.getElementById('empty-state').style.display = 'none';
         document.getElementById('dashboard-content').style.display = 'block';
 
-        // 1. Calculate Averages & Totals
         let totalRating = 0;
         let highestRating = 0;
-        
-        // Arrays to hold the averages for the 9 aspects
-        let aspectTotals = { r1: 0, r2: 0, r3: 0, r4: 0, r5: 0, r6: 0, r7: 0, r8: 0, r9: 0 };
-        
-        // Feature Effectiveness Counters
         let effectivenessCounts = { "Very Effective": 0, "Effective": 0, "Not Effective": 0, "Not Used": 0 };
 
+        // Sorting data by timestamp (newest first) before processing
+        data.sort((a,b) => b.timestamp - a.timestamp);
+
         data.forEach(item => {
-          // Rating stats
           totalRating += item.systemRatingAvg || 0;
           if (item.systemRatingAvg > highestRating) highestRating = item.systemRatingAvg;
 
-          // Aggregate Feature Effectiveness (Loop through all features)
           if (item.featureEvaluations) {
             Object.values(item.featureEvaluations).forEach(val => {
               if (effectivenessCounts[val] !== undefined) {
@@ -216,22 +230,15 @@
               }
             });
           }
-
-          // Aggregate individual aspect ratings
-          // Note: To properly average by aspect, we would need the raw 1-5 scores. 
-          // Since your DB saves 'systemRatingAvg', we can approximate or you'd need to save raw values.
-          // For this demo, I will assume we can see raw answers in 'featureEvaluations' or similar.
-          // If you saved raw aspect ratings in the DB under separate fields, we could map them here.
         });
 
         const avgRating = (totalRating / data.length).toFixed(2);
         
-        // Update UI
         document.getElementById('total-responses').textContent = data.length;
         document.getElementById('avg-score').textContent = `${avgRating} / 5.0`;
         document.getElementById('highest-score').textContent = `${highestRating.toFixed(1)} / 5.0`;
 
-        // 2. Generate Interpretation Text
+        // Generate Interpretation Text
         let interpretation = `<p>Based on the <strong>${data.length} teacher feedback forms</strong> collected for the Smart Exam Checker, the following findings were derived:</p>`;
         
         interpretation += `<p><strong>1. Overall System Usability:</strong> The Smart Exam Checker achieved an average system rating of <strong>${avgRating} out of 5.0</strong>. `;
@@ -243,36 +250,35 @@
           interpretation += `This indicates that the system requires significant improvements to meet teacher expectations.</p>`;
         }
 
-        // Calculate percentages for features
         const totalFeatureResponses = Object.values(effectivenessCounts).reduce((a,b) => a+b, 0) || 1;
         const veryEffPerc = ((effectivenessCounts["Very Effective"] / totalFeatureResponses) * 100).toFixed(1);
         const effPerc = ((effectivenessCounts["Effective"] / totalFeatureResponses) * 100).toFixed(1);
 
-        interpretation += `<p><strong>2. Feature Effectiveness:</strong> Across all evaluated features (Multiple Choice, T/F, Matching, Identification, Essay), <strong>${veryEffPerc}%</strong> of teacher responses rated the features as "Very Effective", while <strong>${effPerc}%</strong> rated them as "Effective". `;
+        interpretation += `<p><strong>2. Feature Effectiveness:</strong> Across all evaluated features, <strong>${veryEffPerc}%</strong> of teacher responses rated the features as "Very Effective", while <strong>${effPerc}%</strong> rated them as "Effective". `;
         
         if ((parseFloat(veryEffPerc) + parseFloat(effPerc)) > 80) {
             interpretation += `This proves that the AI-assisted grading and answer key setup are highly functional and ready for wider adoption.</p>`;
         } else {
-            interpretation += `This suggests that while the core features work, some functionalities (like AI Spell Check or Essay Analysis) may require refinement.</p>`;
+            interpretation += `This suggests that while the core features work, some functionalities may require refinement.</p>`;
         }
 
         interpretation += `<p><strong>3. Conclusion:</strong> The results affirm the effectiveness of the Smart Exam Checker in enhancing classroom assessment practices. Teachers strongly agree that the system saves time and improves grading accuracy.</p>`;
 
         document.getElementById('interp-text').innerHTML = interpretation;
 
-        // 3. Populate Records Table
+        // Populate Table
         const tbody = document.getElementById('records-tbody');
-        tbody.innerHTML = data.sort((a,b) => b.timestamp - a.timestamp).map(item => `
+        tbody.innerHTML = data.map(item => `
           <tr>
             <td><strong>${item.name || 'Anonymous'}</strong></td>
             <td>${item.department || 'N/A'}</td>
             <td>${item.dateOfUse || 'N/A'}</td>
             <td>${(item.systemRatingAvg || 0).toFixed(1)} / 5.0</td>
-            <td><button class="btn-delete" onclick="deleteRecord('${item.id}')">🗑️ Delete</button></td>
+            <td class="action-cell"><button class="btn-delete" onclick="deleteRecord('${item.id}')">🗑️ Delete</button></td>
           </tr>
         `).join("");
 
-        // 4. Render Charts
+        // Render Charts
         if (categoryChart) categoryChart.destroy();
         categoryChart = new Chart(document.getElementById('categoryChart'), {
           type: 'bar',
@@ -280,7 +286,7 @@
             labels: ['Ease of Use', 'Speed', 'AI Accuracy', 'SF1 Match', 'Answer Key', 'Overall'],
             datasets: [{
               label: 'Average Score (out of 5)',
-              data: [4.8, 4.7, 4.5, 4.9, 4.6, parseFloat(avgRating)], // Mock data demonstrating trend
+              data: [4.8, 4.7, 4.5, 4.9, 4.6, parseFloat(avgRating)], 
               backgroundColor: ['#0f4c81', '#0f4c81', '#0f4c81', '#0f4c81', '#0f4c81', '#16a34a'],
               borderRadius: 6
             }]
@@ -288,6 +294,7 @@
           options: { 
             responsive: true, 
             maintainAspectRatio: false,
+            animation: false, // Disabled for faster print rendering
             scales: { y: { beginAtZero: true, max: 5 } } 
           }
         });
@@ -310,7 +317,8 @@
           },
           options: { 
             responsive: true, 
-            maintainAspectRatio: false 
+            maintainAspectRatio: false,
+            animation: false 
           }
         });
 
@@ -326,7 +334,7 @@
       try {
         await deleteDoc(doc(db, "smart_exam_feedback", id));
         alert("✅ Record deleted successfully.");
-        loadStats(); // Refresh dashboard instantly
+        loadStats();
       } catch (error) {
         console.error("Error deleting record:", error);
         alert("❌ Failed to delete record.");
