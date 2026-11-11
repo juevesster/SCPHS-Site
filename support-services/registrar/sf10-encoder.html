@@ -73,11 +73,11 @@
     <div class="card active" id="search-card">
       <h2 class="section-title">Search Archived SF10 Records</h2>
       <div class="search-box">
-        <input type="text" id="search-lrn" placeholder="Enter Student LRN (e.g., 123456789012)..." onkeypress="if(event.key==='Enter') searchStudent()">
+        <input type="text" id="search-lrn" placeholder="Enter Student LRN (e.g., 104142140021)..." onkeypress="if(event.key==='Enter') searchStudent()">
         <button class="btn-search" onclick="searchStudent()"><i class="fas fa-search"></i> Search</button>
       </div>
       <p style="color: var(--gc-muted); font-size: 0.9rem;">
-        <i class="fas fa-info-circle"></i> Search using the 12-digit LRN from the old folder. The system will try to auto-fill the name from the LIS SF1 archive if available.
+        <i class="fas fa-info-circle"></i> Search using the 12-digit LRN from the folder. The system will auto-fill the name from the LIS SF1 archive if available.
       </p>
     </div>
 
@@ -121,9 +121,18 @@
               <option value="2019-2020">2019-2020</option>
               <option value="2018-2019">2018-2019</option>
               <option value="2017-2018">2017-2018</option>
-              <option value="2016-2017">2016-2017</option>
             </select>
           </div>
+          
+          <!-- NEW GRADING SYSTEM TOGGLE -->
+          <div class="form-group" style="background: #eff6ff; padding: 10px; border-radius: 8px; border: 1px solid #bfdbfe;">
+            <label style="color: var(--gc-accent);">Grading System</label>
+            <select id="f-sys" onchange="updateTableHeaders()" style="font-weight: bold; border-color: var(--gc-accent);">
+              <option value="4q">Old Curriculum (4 Quarters)</option>
+              <option value="3t">New Curriculum (3 Terms)</option>
+            </select>
+          </div>
+
           <div class="form-group">
             <label>Grade Level</label>
             <select id="f-gradelevel" required>
@@ -142,7 +151,7 @@
           </div>
           <div class="form-group">
             <label>Section (Optional)</label>
-            <input type="text" id="f-section" placeholder="e.g. Sampaguita">
+            <input type="text" id="f-section" placeholder="e.g. Ruby">
           </div>
           <div class="form-group">
             <label>Adviser (Optional)</label>
@@ -156,8 +165,8 @@
         <div class="grade-table-wrap" style="overflow-x: auto;">
           <table class="grade-table">
             <thead>
-              <tr>
-                <th style="width: 40%; text-align: left;">Learning Area / Subject</th>
+              <tr id="grade-header-row">
+                <th style="width: 35%; text-align: left;">Learning Area / Subject</th>
                 <th>Q1</th>
                 <th>Q2</th>
                 <th>Q3</th>
@@ -196,38 +205,109 @@
     import { collection, query, where, getDocs, doc, getDoc, setDoc, updateDoc, addDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
     let CURRENT_RECORD_ID = null;
+    let CURRENT_SYSTEM = '4q'; // '4q' or '3t'
 
-    // Auto-calculate Final Grade and Remarks when inputs change
+    // Function to change table headers dynamically
+    window.updateTableHeaders = function() {
+      const sys = document.getElementById('f-sys').value;
+      CURRENT_SYSTEM = sys;
+      
+      const headerRow = document.getElementById('grade-header-row');
+      
+      if (sys === '3t') {
+        headerRow.innerHTML = `
+          <th style="width: 35%; text-align: left;">Learning Area / Subject</th>
+          <th>Term 1</th>
+          <th>Term 2</th>
+          <th>Term 3</th>
+          <th>Final</th>
+          <th>Remarks</th>
+        `;
+      } else {
+        headerRow.innerHTML = `
+          <th style="width: 35%; text-align: left;">Learning Area / Subject</th>
+          <th>Q1</th>
+          <th>Q2</th>
+          <th>Q3</th>
+          <th>Q4</th>
+          <th>Final</th>
+          <th>Remarks</th>
+        `;
+      }
+
+      // Rebuild the rows to match the new column count
+      const tbody = document.getElementById('grades-tbody');
+      const existingData = [];
+      
+      // Save existing data before rebuilding
+      tbody.querySelectorAll('tr').forEach(row => {
+        existingData.push({
+          sub: row.querySelector('.sub-name').value,
+          q1: row.querySelector('.q1').value,
+          q2: row.querySelector('.q2').value,
+          q3: row.querySelector('.q3').value,
+          q4: row.querySelector('.q4') ? row.querySelector('.q4').value : "",
+          final: row.querySelector('.final').value,
+          remarks: row.querySelector('.remarks').value
+        });
+      });
+
+      tbody.innerHTML = '';
+      
+      if (existingData.length === 0) {
+        addRow();
+      } else {
+        existingData.forEach(data => {
+          addRow(data);
+        });
+      }
+    };
+
+    // Auto-calculate Final Grade
     document.getElementById('grades-tbody').addEventListener('input', function(e) {
       if (e.target.tagName === 'INPUT' && e.target.type === 'number') {
         const row = e.target.closest('tr');
         const q1 = parseFloat(row.querySelector('.q1').value) || 0;
         const q2 = parseFloat(row.querySelector('.q2').value) || 0;
         const q3 = parseFloat(row.querySelector('.q3').value) || 0;
-        const q4 = parseFloat(row.querySelector('.q4').value) || 0;
+        const q4El = row.querySelector('.q4');
+        const q4 = q4El ? parseFloat(q4El.value) || 0 : 0;
         
-        if (q1 > 0 && q2 > 0 && q3 > 0 && q4 > 0) {
-          const final = Math.round((q1 + q2 + q3 + q4) / 4);
-          row.querySelector('.final').value = final;
-          row.querySelector('.remarks').value = final >= 75 ? 'Passed' : 'Failed';
+        if (CURRENT_SYSTEM === '3t') {
+          // 3 Terms average
+          if (q1 > 0 && q2 > 0 && q3 > 0) {
+            const final = Math.round((q1 + q2 + q3) / 3);
+            row.querySelector('.final').value = final;
+            row.querySelector('.remarks').value = final >= 75 ? 'Passed' : 'Failed';
+          }
         } else {
-          row.querySelector('.final').value = '';
-          row.querySelector('.remarks').value = '';
+          // 4 Quarters average
+          if (q1 > 0 && q2 > 0 && q3 > 0 && q4 > 0) {
+            const final = Math.round((q1 + q2 + q3 + q4) / 4);
+            row.querySelector('.final').value = final;
+            row.querySelector('.remarks').value = final >= 75 ? 'Passed' : 'Failed';
+          }
         }
       }
     });
 
-    window.addRow = function() {
+    window.addRow = function(data = null) {
       const tbody = document.getElementById('grades-tbody');
       const tr = document.createElement('tr');
+      
+      let q4Html = `<td><input type="number" min="60" max="100" class="q4" value="${data?.q4 || ''}"></td>`;
+      if (CURRENT_SYSTEM === '3t') {
+        q4Html = ''; // Remove Q4 column if 3 terms
+      }
+
       tr.innerHTML = `
-        <td><input type="text" placeholder="e.g. Science" class="sub-name"></td>
-        <td><input type="number" min="60" max="100" class="q1"></td>
-        <td><input type="number" min="60" max="100" class="q2"></td>
-        <td><input type="number" min="60" max="100" class="q3"></td>
-        <td><input type="number" min="60" max="100" class="q4"></td>
-        <td><input type="number" min="60" max="100" class="final" readonly tabindex="-1" style="background:#f8fafc; cursor:not-allowed;"></td>
-        <td><input type="text" class="remarks" readonly tabindex="-1" style="background:#f8fafc; cursor:not-allowed;"></td>
+        <td><input type="text" placeholder="e.g. Science" class="sub-name" value="${data?.sub || ''}"></td>
+        <td><input type="number" min="60" max="100" class="q1" value="${data?.q1 || ''}"></td>
+        <td><input type="number" min="60" max="100" class="q2" value="${data?.q2 || ''}"></td>
+        <td><input type="number" min="60" max="100" class="q3" value="${data?.q3 || ''}"></td>
+        ${q4Html}
+        <td><input type="number" min="60" max="100" class="final" value="${data?.final || ''}" readonly tabindex="-1" style="background:#f8fafc; cursor:not-allowed;"></td>
+        <td><input type="text" class="remarks" value="${data?.remarks || ''}" readonly tabindex="-1" style="background:#f8fafc; cursor:not-allowed;"></td>
       `;
       tbody.appendChild(tr);
     };
@@ -254,10 +334,7 @@
         } else {
           // 2. Not in SF10. Check if they exist in the LIS SF1 Historical Archive
           let autoFilledName = "";
-          let autoFilledGrade = "";
-          let autoFilledYear = "";
-          let autoFilledSection = "";
-
+          
           const sf1Ref = collection(db, "sf1_historical_archives");
           const qSF1 = query(sf1Ref, where("lrn", "==", searchTerm));
           const snapSF1 = await getDocs(qSF1);
@@ -265,9 +342,6 @@
           if (!snapSF1.empty) {
             const sf1Data = snapSF1.docs[0].data();
             autoFilledName = `Found in SF1 Archive: ${sf1Data.lastName}, ${sf1Data.firstName}`;
-            autoFilledGrade = sf1Data.gradeLevel || "";
-            autoFilledYear = sf1Data.schoolYear || "";
-            autoFilledSection = sf1Data.section || "";
           }
 
           // Open form to create new
@@ -293,19 +367,9 @@
              document.getElementById('f-section').value = sf1Data.section || "";
           }
           
-          // Reset grades table to 1 row
-          const tbody = document.getElementById('grades-tbody');
-          tbody.innerHTML = `
-            <tr>
-              <td><input type="text" placeholder="e.g. Filipino" class="sub-name"></td>
-              <td><input type="number" min="60" max="100" class="q1"></td>
-              <td><input type="number" min="60" max="100" class="q2"></td>
-              <td><input type="number" min="60" max="100" class="q3"></td>
-              <td><input type="number" min="60" max="100" class="q4"></td>
-              <td><input type="number" min="60" max="100" class="final" readonly tabindex="-1" style="background:#f8fafc; cursor:not-allowed;"></td>
-              <td><input type="text" class="remarks" readonly tabindex="-1" style="background:#f8fafc; cursor:not-allowed;"></td>
-            </tr>
-          `;
+          // Reset grades table
+          document.getElementById('f-sys').value = '4q';
+          updateTableHeaders();
         }
 
       } catch (error) {
@@ -336,6 +400,9 @@
       document.getElementById('f-schoolyear').value = data.schoolYear || "";
       document.getElementById('f-section').value = data.section || "";
       document.getElementById('f-adviser').value = data.adviser || "";
+      document.getElementById('f-sys').value = data.gradingSystem || '4q';
+
+      updateTableHeaders();
 
       // Populate grades
       const tbody = document.getElementById('grades-tbody');
@@ -343,17 +410,7 @@
       
       if (data.grades && data.grades.length > 0) {
         data.grades.forEach(g => {
-          const tr = document.createElement('tr');
-          tr.innerHTML = `
-            <td><input type="text" class="sub-name" value="${g.subject || ''}"></td>
-            <td><input type="number" class="q1" value="${g.q1 || ''}"></td>
-            <td><input type="number" class="q2" value="${g.q2 || ''}"></td>
-            <td><input type="number" class="q3" value="${g.q3 || ''}"></td>
-            <td><input type="number" class="q4" value="${g.q4 || ''}"></td>
-            <td><input type="number" class="final" value="${g.final || ''}" readonly style="background:#f8fafc; cursor:not-allowed;"></td>
-            <td><input type="text" class="remarks" value="${g.remarks || ''}" readonly style="background:#f8fafc; cursor:not-allowed;"></td>
-          `;
-          tbody.appendChild(tr);
+          addRow(g);
         });
       } else {
         addRow(); 
@@ -378,7 +435,7 @@
               q1: row.querySelector('.q1').value,
               q2: row.querySelector('.q2').value,
               q3: row.querySelector('.q3').value,
-              q4: row.querySelector('.q4').value,
+              q4: row.querySelector('.q4') ? row.querySelector('.q4').value : "",
               final: row.querySelector('.final').value,
               remarks: row.querySelector('.remarks').value
             });
@@ -394,6 +451,7 @@
           schoolYear: document.getElementById('f-schoolyear').value,
           section: document.getElementById('f-section').value.trim(),
           adviser: document.getElementById('f-adviser').value.trim(),
+          gradingSystem: document.getElementById('f-sys').value,
           grades: grades,
           updatedAt: Date.now(),
           updatedBy: auth.currentUser ? auth.currentUser.email : "OJT/Admin"
