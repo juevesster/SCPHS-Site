@@ -15,6 +15,7 @@
       --gc-border: #e2e8f0;
       --gc-text: #1e293b;
       --gc-muted: #64748b;
+      --gc-danger: #dc2626;
     }
     
     body { background: var(--gc-bg); margin: 0; font-family: 'Inter', system-ui, sans-serif; }
@@ -30,6 +31,10 @@
     .btn-search { background: var(--gc-primary); color: #fff; border: none; padding: 0 20px; border-radius: 8px; font-weight: 600; cursor: pointer; }
     .btn-print { background: #16a34a; color: #fff; border: none; padding: 10px 20px; border-radius: 8px; font-weight: 600; cursor: pointer; display: none; margin-left: auto;}
     
+    /* Access Denied Screen */
+    #access-denied { display: none; text-align: center; padding: 60px 20px; background: #fff; border-radius: 12px; border: 1px solid var(--gc-border); }
+    #access-denied h2 { color: var(--gc-danger); margin-bottom: 10px; }
+    
     /* Hidden Print Layout Container */
     #print-wrapper { display: none; }
 
@@ -39,7 +44,7 @@
     @media print {
       @page { size: legal portrait; margin: 0.3in; }
       body { background: #fff; }
-      .header, .search-box, #web-ui { display: none !important; }
+      .header, .search-box, #web-ui, #access-denied { display: none !important; }
       
       #print-wrapper { display: block !important; }
       
@@ -98,10 +103,18 @@
       <a href="index.html" style="color: var(--gc-primary); text-decoration: none; font-weight: 600;">← Back to Registrar</a>
     </div>
 
-    <div class="search-box">
-      <input type="text" id="search-lrn" placeholder="Enter Student LRN to pull up SF10..." onkeypress="if(event.key==='Enter') searchStudent()">
-      <button class="btn-search" onclick="searchStudent()">Search</button>
-      <button class="btn-print" id="btn-print" onclick="window.print()"><i class="fas fa-print"></i> Print SF10</button>
+    <div id="access-denied">
+      <h2><i class="fas fa-lock"></i> Access Denied</h2>
+      <p>You must be signed in as an Administrator or Registrar to access and print student records.</p>
+      <a href="index.html" style="display: inline-block; margin-top: 20px; padding: 10px 20px; background: var(--gc-primary); color: #fff; text-decoration: none; border-radius: 8px; font-weight: bold;">Back to Registrar</a>
+    </div>
+
+    <div id="search-area" style="display: none;">
+      <div class="search-box">
+        <input type="text" id="search-lrn" placeholder="Enter Student LRN to pull up SF10..." onkeypress="if(event.key==='Enter') searchStudent()">
+        <button class="btn-search" onclick="searchStudent()">Search</button>
+        <button class="btn-print" id="btn-print" onclick="window.print()"><i class="fas fa-print"></i> Print SF10</button>
+      </div>
     </div>
   </div>
 
@@ -142,7 +155,6 @@
         <div class="section-title-shaded">SCHOLASTIC RECORD</div>
         <div id="jhs-grades-page1"></div>
         
-        <!-- Placeholder for Page 1 Footer -->
         <div style="margin-top: 40px; display: flex; justify-content: space-between;">
           <div style="text-align: center; width: 45%;">
             <div class="cert-line"></div>
@@ -220,7 +232,6 @@
         <div class="section-title-shaded">SCHOLASTIC RECORD</div>
         <div id="shs-grades"></div>
 
-        <!-- Placeholder for SHS Footer -->
         <div style="margin-top: 40px; display: flex; justify-content: space-between;">
           <div style="text-align: center; width: 45%;">
             <div class="cert-line"></div>
@@ -237,9 +248,37 @@
   </div>
 
   <script type="module">
-    import { db } from "../../assets/js/firebase-config.js";
-    import { collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+    import { auth, db } from "../../assets/js/firebase-config.js";
+    import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+    import { collection, query, where, getDocs, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
+    // 1. Auth Check
+    onAuthStateChanged(auth, async (user) => {
+      if (!user) {
+        document.getElementById('access-denied').style.display = 'block';
+        return;
+      }
+      
+      try {
+        const userSnap = await getDoc(doc(db, "users", user.uid));
+        if (userSnap.exists()) {
+          const role = userSnap.data().primaryRole || userSnap.data().role;
+          // Only allow Admin, Superadmin, or Registrar to print SF10
+          if (role === 'admin' || role === 'superadmin' || role === 'registrar') {
+            document.getElementById('search-area').style.display = 'block';
+          } else {
+            document.getElementById('access-denied').style.display = 'block';
+          }
+        } else {
+          document.getElementById('access-denied').style.display = 'block';
+        }
+      } catch (error) {
+        console.error(error);
+        document.getElementById('access-denied').style.display = 'block';
+      }
+    });
+
+    // 2. Search and Print Logic
     window.searchStudent = async function() {
       const searchTerm = document.getElementById('search-lrn').value.trim();
       if (!searchTerm) return alert("Please enter an LRN.");
@@ -275,13 +314,11 @@
     function renderPrintView(data) {
       const isSHS = data.gradeLevel.includes('Grade 11') || data.gradeLevel.includes('Grade 12');
       
-      // Hide all layouts first
       document.getElementById('jhs-page1').style.display = 'none';
       document.getElementById('jhs-page2').style.display = 'none';
       document.getElementById('shs-page').style.display = 'none';
 
       if (isSHS) {
-        // Render SHS Layout
         document.getElementById('p-shs-lastname').textContent = data.lastName;
         document.getElementById('p-shs-firstname').textContent = data.firstName;
         document.getElementById('p-shs-middlename').textContent = data.middleName;
@@ -333,7 +370,6 @@
           `;
         });
 
-        // Calculate General Average
         let total = 0; let count = 0;
         data.grades.forEach(g => { if(g.final) { total += parseInt(g.final); count++; } });
         const genAve = count > 0 ? Math.round(total / count) : 0;
@@ -353,10 +389,6 @@
         document.getElementById('shs-page').style.display = 'block';
 
       } else {
-        // Render JHS Layout (Splitting into Page 1 and Page 2 based on Grade Level)
-        // For simplicity in this archive viewer, we'll put all grades on Page 1 if it's a single year, 
-        // or split if the OJT encoded multiple years (which we didn't allow in the encoder, so we'll just show the encoded year).
-        
         document.getElementById('p-lastname').textContent = data.lastName;
         document.getElementById('p-firstname').textContent = data.firstName;
         document.getElementById('p-middlename').textContent = data.middleName;
@@ -426,19 +458,15 @@
         </div>
         `;
         
-        // If it's Grade 7 or 8, show on page 1. If Grade 9 or 10, show on page 2.
         if (data.gradeLevel === 'Grade 7' || data.gradeLevel === 'Grade 8') {
           document.getElementById('jhs-grades-page1').innerHTML = html;
           document.getElementById('jhs-page1').style.display = 'block';
         } else {
           document.getElementById('jhs-grades-page2').innerHTML = html;
-          document.getElementById('jhs-page1').style.display = 'block'; // Show empty page 1 for printing
+          document.getElementById('jhs-page1').style.display = 'block';
           document.getElementById('jhs-page2').style.display = 'block';
         }
       }
-      
-      // Show the print button
-      document.getElementById('btn-print').style.display = 'block';
     }
   </script>
 </body>
