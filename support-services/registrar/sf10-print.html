@@ -149,7 +149,7 @@
   <div id="print-wrapper">
     <div class="paper">
       
-      <!-- JHS LAYOUT (PAGE 1 - Only shown for Grades 7/8) -->
+      <!-- JHS LAYOUT (PAGE 1 - Grades 7 & 8) -->
       <div class="page" id="jhs-page1" style="display: none;">
         <div class="sf10-header">
           <div class="header-left">
@@ -182,8 +182,7 @@
         <div class="section-title-shaded">SCHOLASTIC RECORD</div>
         <div id="jhs-grades-page1"></div>
         
-        <!-- Signatories only show on page 1 if grades are here (Grades 7/8) -->
-        <div id="jhs-page1-sigs" style="margin-top: 40px; display: flex; justify-content: space-between;">
+        <div style="margin-top: 40px; display: flex; justify-content: space-between;">
           <div style="text-align: center; width: 45%;">
             <div class="cert-line"></div>
             <div class="print-sig-name" id="print-adviser-name">_________________________</div>
@@ -197,9 +196,9 @@
         </div>
       </div>
 
-      <!-- JHS LAYOUT (PAGE 2 - Shown for Grades 9/10 or as continuation of 7/8) -->
+      <!-- JHS LAYOUT (PAGE 2 - Grades 9 & 10) -->
       <div class="page page-back" id="jhs-page2" style="display: none;">
-        <div style="font-size:8pt;text-align:right;margin-bottom:3px" id="jhs-page2-label">SF10-JHS | Page 2 of 2</div>
+        <div style="font-size:8pt;text-align:right;margin-bottom:3px">SF10-JHS | Page 2 of 2</div>
         <div class="section-title-shaded">SCHOLASTIC RECORD (Continued)</div>
         <div id="jhs-grades-page2"></div>
         
@@ -316,9 +315,14 @@
         const snapLrn = await getDocs(qLrn);
 
         if (!snapLrn.empty) {
-          const data = snapLrn.docs[0].data();
-          document.getElementById('input-adviser').value = data.adviser || "";
-          renderPrintView(data);
+          // Convert docs to array of data objects
+          const allRecords = snapLrn.docs.map(d => d.data());
+          
+          // Set Adviser input from the most recent record
+          document.getElementById('input-adviser').value = allRecords[0].adviser || "";
+          
+          renderPrintView(allRecords, searchTerm);
+          
           document.getElementById('signatory-panel').style.display = 'block';
           document.getElementById('btn-print').style.display = 'block';
         } else {
@@ -349,8 +353,16 @@
       document.getElementById('print-cert-principal').textContent = val;
     });
 
-    function renderPrintView(data) {
-      const isSHS = data.gradeLevel.includes('Grade 11') || data.gradeLevel.includes('Grade 12');
+    function renderPrintView(records, lrn) {
+      // Sort records by Grade Level (7, 8, 9, 10, 11, 12)
+      records.sort((a, b) => {
+        const gradeA = parseInt(a.gradeLevel.replace('Grade ', ''));
+        const gradeB = parseInt(b.gradeLevel.replace('Grade ', ''));
+        return gradeA - gradeB;
+      });
+
+      const firstRecord = records[0];
+      const isSHS = firstRecord.gradeLevel.includes('Grade 11') || firstRecord.gradeLevel.includes('Grade 12');
       
       document.getElementById('jhs-page1').style.display = 'none';
       document.getElementById('jhs-page2').style.display = 'none';
@@ -359,8 +371,9 @@
       document.getElementById('input-adviser').dispatchEvent(new Event('input'));
       document.getElementById('input-principal').dispatchEvent(new Event('input'));
 
-      function generateGradeTable(gradeData, includeGrades) {
-        const is3Term = data.gradingSystem === '3t';
+      // Helper to generate the table for a specific year record
+      function generateGradeTable(recordData) {
+        const is3Term = recordData.gradingSystem === '3t';
         const q4Header = is3Term ? '' : '<th style="width:7%">Q4</th>';
         
         let html = `
@@ -372,9 +385,9 @@
               <span><strong>Region:</strong> II</span>
             </div>
             <div style="display:flex;justify-content:space-between;flex-wrap:wrap;font-size:7pt;margin-bottom:4px">
-              <span><strong>Classified as Grade:</strong> ${data.gradeLevel.replace('Grade ', '')}</span>
-              <span><strong>Section:</strong> ${data.section || ''}</span>
-              <span><strong>School Year:</strong> ${data.schoolYear}</span>
+              <span><strong>Classified as Grade:</strong> ${recordData.gradeLevel.replace('Grade ', '')}</span>
+              <span><strong>Section:</strong> ${recordData.section || ''}</span>
+              <span><strong>School Year:</strong> ${recordData.schoolYear}</span>
               <span><strong>System:</strong> ${is3Term ? 'New Curriculum (3-Term)' : 'Old Curriculum (4-Quarter)'}</span>
             </div>
             <table style="width:100%; border-collapse:collapse;">
@@ -392,68 +405,83 @@
               <tbody>
         `;
 
-        if (!includeGrades) {
-          for (let i = 0; i < 8; i++) {
-            html += `<tr><td class="sn">_________________________</td><td></td><td></td><td></td>${is3Term ? '' : '<td></td>'}<td></td><td></td></tr>`;
-          }
-        } else {
-          data.grades.forEach(g => {
-            html += `
-              <tr>
-                <td class="sn">${g.subject}</td>
-                <td>${g.q1 || ''}</td>
-                <td>${g.q2 || ''}</td>
-                <td>${g.q3 || ''}</td>
-                ${is3Term ? '' : `<td>${g.q4 || ''}</td>`}
-                <td>${g.final || ''}</td>
-                <td>${g.remarks || ''}</td>
+        recordData.grades.forEach(g => {
+          html += `
+            <tr>
+              <td class="sn">${g.subject}</td>
+              <td>${g.q1 || ''}</td>
+              <td>${g.q2 || ''}</td>
+              <td>${g.q3 || ''}</td>
+              ${is3Term ? '' : `<td>${g.q4 || ''}</td>`}
+              <td>${g.final || ''}</td>
+              <td>${g.remarks || ''}</td>
+            </tr>
+          `;
+        });
+
+        let total = 0; let count = 0;
+        recordData.grades.forEach(g => { if(g.final) { total += parseInt(g.final); count++; } });
+        const genAve = count > 0 ? Math.round(total / count) : 0;
+
+        html += `
+              <tr class="ga">
+                <td colspan="${is3Term ? 4 : 5}">General Average</td>
+                <td>${genAve}%</td>
+                <td>${genAve >= 75 ? 'Passed' : 'Failed'}</td>
               </tr>
-            `;
-          });
-
-          let total = 0; let count = 0;
-          data.grades.forEach(g => { if(g.final) { total += parseInt(g.final); count++; } });
-          const genAve = count > 0 ? Math.round(total / count) : 0;
-
-          html += `<tr class="ga"><td colspan="${is3Term ? 4 : 5}">General Average</td><td>${genAve}%</td><td>${genAve >= 75 ? 'Passed' : 'Failed'}</td></tr>`;
-        }
-
-        html += `</tbody></table></div>`;
+            </tbody>
+          </table>
+        </div>
+        `;
         return html;
       }
 
+      // Set Student Info (from first record)
       if (isSHS) {
-        document.getElementById('p-shs-lastname').textContent = data.lastName;
-        document.getElementById('p-shs-firstname').textContent = data.firstName;
-        document.getElementById('p-shs-middlename').textContent = data.middleName;
-        document.getElementById('p-shs-lrn').textContent = data.lrn;
+        document.getElementById('p-shs-lastname').textContent = firstRecord.lastName;
+        document.getElementById('p-shs-firstname').textContent = firstRecord.firstName;
+        document.getElementById('p-shs-middlename').textContent = firstRecord.middleName;
+        document.getElementById('p-shs-lrn').textContent = lrn;
 
-        document.getElementById('shs-grades').innerHTML = generateGradeTable(data, true);
+        let shsHtml = '';
+        records.forEach(r => { shsHtml += generateGradeTable(r); });
+        document.getElementById('shs-grades').innerHTML = shsHtml;
         document.getElementById('shs-page').style.display = 'block';
       } else {
-        document.getElementById('p-lastname').textContent = data.lastName;
-        document.getElementById('p-firstname').textContent = data.firstName;
-        document.getElementById('p-middlename').textContent = data.middleName;
-        document.getElementById('p-lrn').textContent = data.lrn;
-        document.getElementById('p-cert-name').textContent = `${data.firstName} ${data.middleName} ${data.lastName}`;
-        document.getElementById('p-cert-lrn').textContent = data.lrn;
-        document.getElementById('p-cert-sy').textContent = data.schoolYear;
+        document.getElementById('p-lastname').textContent = firstRecord.lastName;
+        document.getElementById('p-firstname').textContent = firstRecord.firstName;
+        document.getElementById('p-middlename').textContent = firstRecord.middleName;
+        document.getElementById('p-lrn').textContent = lrn;
+        document.getElementById('p-cert-name').textContent = `${firstRecord.firstName} ${firstRecord.middleName} ${firstRecord.lastName}`;
+        document.getElementById('p-cert-lrn').textContent = lrn;
+        
+        // Use the latest school year for certification
+        const latestRecord = records[records.length - 1];
+        document.getElementById('p-cert-sy').textContent = latestRecord.schoolYear;
 
-        if (data.gradeLevel === 'Grade 7' || data.gradeLevel === 'Grade 8') {
-          // Grades 7/8 go to Page 1
-          document.getElementById('jhs-grades-page1').innerHTML = generateGradeTable(data, true);
-          document.getElementById('jhs-page1').style.display = 'block';
+        // Separate records for Page 1 (Grades 7,8) and Page 2 (Grades 9,10)
+        const page1Records = records.filter(r => r.gradeLevel === 'Grade 7' || r.gradeLevel === 'Grade 8');
+        const page2Records = records.filter(r => r.gradeLevel === 'Grade 9' || r.gradeLevel === 'Grade 10');
+
+        if (page1Records.length > 0) {
+          let p1Html = '';
+          page1Records.forEach(r => { p1Html += generateGradeTable(r); });
+          document.getElementById('jhs-grades-page1').innerHTML = p1Html;
         } else {
-          // Grades 9/10: Hide Page 1 Sigs, put actual grades on Page 2
-          document.getElementById('jhs-grades-page1').innerHTML = generateGradeTable(data, false);
-          document.getElementById('jhs-page1-sigs').style.display = 'none'; // Hide redundant sigs on Page 1
-          
-          document.getElementById('jhs-grades-page2').innerHTML = generateGradeTable(data, true);
-          document.getElementById('jhs-page2-label').textContent = "SF10-JHS | Page 2"; // Change label
-          
-          document.getElementById('jhs-page1').style.display = 'block';
-          document.getElementById('jhs-page2').style.display = 'block';
+          document.getElementById('jhs-grades-page1').innerHTML = '<p style="text-align:center;padding:20px;color:#888;">No Grades 7-8 records found.</p>';
         }
+
+        if (page2Records.length > 0) {
+          let p2Html = '';
+          page2Records.forEach(r => { p2Html += generateGradeTable(r); });
+          document.getElementById('jhs-grades-page2').innerHTML = p2Html;
+        } else {
+          document.getElementById('jhs-grades-page2').innerHTML = '<p style="text-align:center;padding:20px;color:#888;">No Grades 9-10 records found.</p>';
+        }
+
+        // Show both pages for a full JHS record
+        document.getElementById('jhs-page1').style.display = 'block';
+        document.getElementById('jhs-page2').style.display = 'block';
       }
     }
   </script>
