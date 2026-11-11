@@ -8,6 +8,7 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   
   <style>
+    /* Merged styles from both versions */
     :root {
       --gc-primary: #0f4c81;
       --gc-accent: #2563eb;
@@ -25,13 +26,14 @@
     body { background: #f1f5f9; margin: 0; font-family: 'Inter', system-ui, sans-serif; }
     .wrap { max-width: 1100px; margin: 0 auto; padding: 20px 16px; }
 
-    /* Header */
-    .page-header { text-align: center; margin-bottom: 30px; }
-    .page-header h1 { color: var(--gc-primary); font-size: 2rem; margin: 0 0 10px; font-weight: 800; }
-    .page-header p { color: var(--gc-muted); font-size: 1.1rem; margin: 0; }
+    /* Page Hero */
+    .page-hero { background: #fff; padding: 30px 0; border-bottom: 1px solid var(--gc-border); }
+    .page-hero .badge { background: #eff6ff; color: var(--gc-accent); padding: 5px 12px; border-radius: 20px; font-size: 0.8rem; font-weight: 700; margin-bottom: 10px; display: inline-block; }
+    .page-hero h1 { margin: 0 0 5px; color: var(--gc-primary); font-size: 2rem; font-weight: 800; }
+    .page-hero .meta { margin: 0; color: var(--gc-muted); font-size: 1rem; }
 
     /* Tabs */
-    .tabs { display: flex; justify-content: center; gap: 10px; margin-bottom: 20px; }
+    .tabs { display: flex; justify-content: center; gap: 10px; margin-bottom: 20px; margin-top: 20px; }
     .tab-btn { background: #fff; border: 1px solid var(--gc-border); padding: 10px 20px; border-radius: 8px; font-weight: 600; cursor: pointer; transition: 0.2s; color: var(--gc-muted); }
     .tab-btn.active { background: var(--gc-primary); color: #fff; border-color: var(--gc-primary); box-shadow: var(--shadow); }
     .tab-btn:hover:not(.active) { background: var(--gc-bg-soft); color: var(--gc-primary); }
@@ -58,7 +60,7 @@
     th { background: var(--gc-bg-soft); font-weight: 700; color: var(--gc-text); font-size: 0.85rem; text-transform: uppercase; }
     td { font-size: 0.95rem; color: #333; }
     
-    .badge { padding: 6px 10px; border-radius: 20px; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; }
+    .badge-status { padding: 6px 10px; border-radius: 20px; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; }
     .badge-pending { background: #fef3c7; color: var(--gc-warning); }
     .badge-processing { background: #e0f2fe; color: var(--gc-accent); }
     .badge-ready { background: #dcfce7; color: var(--gc-success); }
@@ -69,16 +71,26 @@
 
     /* Auth Notice */
     .admin-notice { background: #fef2f2; border: 1px solid #fecaca; color: #991b1b; padding: 15px; border-radius: 8px; text-align: center; margin-bottom: 20px; display: none; }
+
+    @media (max-width: 768px) {
+      .form-grid { grid-template-columns: 1fr; }
+      .tabs { flex-direction: column; }
+    }
   </style>
 </head>
 <body>
 
-  <div class="wrap">
-    <div class="page-header">
+  <!-- PAGE HERO -->
+  <div class="page-hero">
+    <div class="wrap">
+      <span class="badge">Confidential Records</span>
       <h1>Registrar's Office</h1>
-      <p>Request official school records and track their status online.</p>
+      <p class="meta">Request official school records and track their status online.</p>
     </div>
+  </div>
 
+  <main class="wrap">
+    
     <!-- TABS -->
     <div class="tabs">
       <button class="tab-btn active" onclick="switchTab('request')"><i class="fas fa-file-signature"></i> Request Document</button>
@@ -133,10 +145,6 @@
         <button onclick="loadAdminData()" class="btn-action" style="background: var(--gc-primary); color: #fff;"><i class="fas fa-sync-alt"></i> Refresh</button>
       </div>
 
-      <div class="admin-notice" id="admin-notice">
-        You are viewing this in read-only mode. Only Registrar Admins can update statuses.
-      </div>
-
       <div class="table-responsive">
         <table>
           <thead>
@@ -156,8 +164,97 @@
       </div>
     </div>
 
-  </div>
+  </main>
 
+  <!-- School Footer (SCPHS) -->
+  <footer style="margin-top: 40px; background: #fff; border-top: 1px solid var(--gc-border); padding: 20px 0;">
+    <div class="wrap">
+      <div class="foot-grid" style="display: flex; justify-content: space-between; flex-wrap: wrap; gap: 20px;">
+        <div>
+          <strong style="color: var(--gc-primary);">Sta. Cruz Pingkian High School</strong><br/>
+          <span style="font-size: 0.9rem; color: var(--gc-muted);">Brgy. Sta. Cruz, Pingkian • Nueva Vizcaya • Philippines</span><br/>
+          <span style="font-size: 0.9rem; color: var(--gc-muted);">Email: 300648@deped.gov.ph • Phone: +63 967-8848989</span>
+        </div>
+        <div style="font-size: 0.9rem;">
+          <a href="#privacy" style="color: var(--gc-muted); text-decoration: none;">Privacy Notice</a> •
+          <a href="#foi" style="color: var(--gc-muted); text-decoration: none;">FOI</a> •
+          <a href="#sitemap" style="color: var(--gc-muted); text-decoration: none;">Sitemap</a> •
+          <a href="https://www.facebook.com/p/Santa-Cruz-Pingkian-High-School-Official-61554495084090/" target="_blank" rel="noopener" style="color: var(--gc-muted); text-decoration: none;">Facebook</a>
+        </div>
+      </div>
+      <div class="copy" style="margin-top: 20px; font-size: 0.85rem; color: var(--gc-muted);">© 2026 SCPHS. All rights reserved.</div>
+    </div>
+  </footer>
+
+  <!-- GOVPH FOOTER -->
+  <footer class="govph-footer" role="contentinfo">
+    <div class="wrap govph-footer__grid">
+      <div class="govph-footer__col">
+        <h4>Republic of the Philippines</h4>
+        <p>All content is in the public domain unless otherwise stated.</p>
+      </div>
+      <div class="govph-footer__col">
+        <h4>About GOVPH</h4>
+        <ul class="govph-footer__links">
+          <li><a href="https://www.gov.ph/" target="_blank" rel="noopener">GOV.PH</a></li>
+          <li><a href="https://data.gov.ph/" target="_blank" rel="noopener">Open Data Portal</a></li>
+          <li><a href="https://www.officialgazette.gov.ph/" target="_blank" rel="noopener">Official Gazette</a></li>
+        </ul>
+      </div>
+      <div class="govph-footer__col">
+        <h4>Government Links</h4>
+        <ul class="govph-footer__links">
+          <li><a href="https://op-proper.gov.ph/" target="_blank" rel="noopener">Office of the President</a></li>
+          <li><a href="https://ovp.gov.ph/" target="_blank" rel="noopener">Office of the Vice President</a></li>
+          <li><a href="https://www.senate.gov.ph/" target="_blank" rel="noopener">Senate of the Philippines</a></li>
+          <li><a href="https://www.congress.gov.ph/" target="_blank" rel="noopener">House of Representatives</a></li>
+          <li><a href="https://sc.judiciary.gov.ph/" target="_blank" rel="noopener">Supreme Court</a></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="govph-footer__bar">
+      <div class="wrap">
+        <small>© <span id="yearNow"></span> Sta. Cruz Pingkian High School • A Philippine Government Website</small>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Chatbot mount -->
+  <div id="scphs-chatbot-root"></div>
+
+  <!-- Chatbot auto-loader -->
+  <script>
+  (function(){
+    const rootId = 'scphs-chatbot-root';
+    if (!document.getElementById(rootId)) {
+      const m = document.createElement('div');
+      m.id = rootId;
+      document.body.appendChild(m);
+    }
+    const tried = {};
+    function load(src, onOk, onFail){
+      if (tried[src]) return onFail && onFail();
+      tried[src] = true;
+      const s = document.createElement('script');
+      s.src = src; s.defer = true;
+      s.onload = onOk;
+      s.onerror = onFail;
+      document.body.appendChild(s);
+    }
+    load('/assets/js/chatbot.js', null, () =>
+      load('assets/js/chatbot.js', null, () =>
+        load('../assets/js/chatbot.js', null, () =>
+          load('../../assets/js/chatbot.js', null, () =>
+            console.warn('SCPHS chatbot: unable to load script from any known path.')
+          )
+        )
+      )
+    );
+  })();
+  </script>
+
+  <!-- Registrar Logic -->
   <script type="module">
     import { auth, db } from "../../assets/js/firebase-config.js";
     import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
@@ -192,7 +289,6 @@
 
       if (tab === 'admin') {
         loadAdminData();
-        // Real-time listener for new requests
         if (!unsubscribeRealtime) {
           const q = query(collection(db, "document_requests"), orderBy("timestamp", "desc"));
           unsubscribeRealtime = onSnapshot(q, (snapshot) => {
@@ -242,10 +338,7 @@
     // 4. Load Admin Data
     window.loadAdminData = async function() {
       if (!IS_ADMIN) return;
-      
       const q = query(collection(db, "document_requests"), orderBy("timestamp", "desc"));
-      const snapshot = await getDoc(doc(db, "config", "dummy")); // Dummy read to trigger auth, snapshot handles the rest
-      
       if (!unsubscribeRealtime) {
         unsubscribeRealtime = onSnapshot(q, (snap) => {
           renderTable(snap.docs);
@@ -289,7 +382,7 @@
             </td>
             <td><span style="font-weight: 600; color: var(--gc-accent);">${data.documentType}</span></td>
             <td>${data.purpose}</td>
-            <td><span class="badge ${badgeClass}">${data.status}</span></td>
+            <td><span class="badge-status ${badgeClass}">${data.status}</span></td>
             <td>${actionBtn}</td>
           </tr>
         `;
@@ -301,12 +394,14 @@
       if (!IS_ADMIN) return;
       try {
         await updateDoc(doc(db, "document_requests", id), { status: newStatus });
-        // Realtime listener will auto-update the table
       } catch (error) {
         console.error("Error updating status:", error);
         alert("❌ Failed to update status.");
       }
     };
+    
+    // Set current year
+    document.getElementById('yearNow').textContent = new Date().getFullYear();
   </script>
 </body>
 </html>
