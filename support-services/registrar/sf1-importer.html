@@ -145,18 +145,16 @@
           const data = new Uint8Array(e.target.result);
           const workbook = XLSX.read(data, { type: 'array' });
           
-          // Assume the first sheet contains the SF1 data
           const firstSheetName = workbook.SheetNames[0];
           const worksheet = workbook.Sheets[firstSheetName];
           
-          // Convert to JSON
-          const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+          // Convert to JSON (Array of Arrays)
+          const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1, defval: "" });
           
-          // Find the header row (usually row 3 or 4 in LIS SF1, but we'll scan for it)
+          // 1. Find the header row (Looks for "LRN" and "NAME")
           let headerRowIndex = -1;
           for (let i = 0; i < jsonData.length; i++) {
             const row = jsonData[i];
-            // Look for a row that contains "LRN" and "NAME"
             if (row && row.some(cell => String(cell).toUpperCase().includes("LRN")) && 
                 row.some(cell => String(cell).toUpperCase().includes("NAME"))) {
               headerRowIndex = i;
@@ -170,73 +168,70 @@
 
           const headers = jsonData[headerRowIndex].map(h => String(h).toUpperCase().trim());
           
-          // Find column indices
-          const lrnIndex = headers.findIndex(h => h.includes("LRN") || h.includes("LEARNER REFERENCE"));
-          const nameIndex = headers.findIndex(h => h.includes("NAME") && !h.includes("MOTHER") && !h.includes("FATHER"));
-          
-          // Note: LIS usually puts "LAST NAME, FIRST NAME, MIDDLE NAME" in one column, or separates them.
-          // We'll try to find separate columns first, then fallback to a combined name column.
-          let lastNameIndex = headers.findIndex(h => h === "LAST NAME" || h.includes("SURNAME"));
-          let firstNameIndex = headers.findIndex(h => h === "FIRST NAME" || h.includes("GIVEN NAME"));
-          let middleNameIndex = headers.findIndex(h => h.includes("MIDDLE NAME"));
-          
-          if (lastNameIndex === -1 && nameIndex !== -1) {
-             // If separate columns aren't found, we will just use the combined name column
-             console.log("Using combined name column.");
+          // 2. Locate exact columns
+          const lrnIndex = headers.findIndex(h => h.includes("LRN"));
+          const nameIndex = headers.findIndex(h => h.includes("NAME") && !h.includes("FATHER") && !h.includes("MOTHER") && !h.includes("GUARDIAN"));
+          const sexIndex = headers.findIndex(h => h.includes("SEX"));
+
+          if (lrnIndex === -1 || nameIndex === -1) {
+            throw new Error("Could not find LRN or NAME columns.");
           }
 
-          if (lrnIndex === -1) {
-            throw new Error("Could not find the LRN column.");
-          }
-
-          // Extract student rows
+          // 3. Extract Student Data
           const students = [];
           for (let i = headerRowIndex + 1; i < jsonData.length; i++) {
             const row = jsonData[i];
             if (!row || row.length === 0) continue;
             
             const lrn = String(row[lrnIndex] || "").trim();
-            if (lrn && lrn.length > 5) {
-              let firstName = "", lastName = "", middleName = "";
+            
+            // Skip totals or empty rows
+            if (!lrn || lrn.toUpperCase().includes("TOTAL") || isNaN(Number(lrn))) continue;
 
-              if (firstNameIndex !== -1 && lastNameIndex !== -1) {
-                firstName = String(row[firstNameIndex] || "").trim();
-                lastName = String(row[lastNameIndex] || "").trim();
-                middleName = String(row[middleNameIndex] || "").trim();
-              } else {
-                // If combined, just dump it in lastName for now
-                lastName = String(row[nameIndex] || "").trim();
-              }
-
-              students.push({
-                lrn: lrn,
-                lastName: lastName,
-                firstName: firstName,
-                middleName: middleName,
-                gradeLevel: grade,
-                schoolYear: year
-              });
+            // The SF1 file usually combines Last, First, Middle in one column. Let's split it.
+            const fullName = String(row[nameIndex] || "").trim();
+            let lastName = fullName, firstName = "", middleName = "";
+            
+            if (fullName.includes(',')) {
+              const parts = fullName.split(',');
+              lastName = parts[0].trim();
+              if (parts.length > 1) firstName = parts[1].trim();
+              if (parts.length > 2) middleName = parts[2].trim();
             }
+
+            students.push({
+              lrn: lrn,
+              lastName: lastName,
+              firstName: firstName,
+              middleName: middleName,
+              sex: String(row[sexIndex] || "").trim().toUpperCase(),
+              gradeLevel: grade,
+              schoolYear: year
+            });
           }
 
           if (students.length === 0) {
-            throw new Error("No valid student records found. Check if the LRN column is correct.");
+            throw new Error("No valid student records found. Check if the file format is correct.");
           }
 
-          // Save to Firebase using Batch Write (faster and safer)
+          // 4. Save to Firebase using Batch Write
           const batch = writeBatch(db);
           const archiveRef = collection(db, "sf1_historical_archives");
           
           students.forEach(s => {
-            const newDocRef = doc(archiveRef, `${year}_${s.lrn}`); // Unique ID per student per year
+            const newDocRef = doc(archiveRef, `${year}_${s.lrn}`); 
             batch.set(newDocRef, s);
           });
 
           await batch.commit();
 
-          // Success
           document.getElementById('alert-success').style.display = 'block';
           document.getElementById('alert-success').innerHTML = `✅ Successfully imported <b>${students.length}</b> students for ${grade} (${year}).`;
+          
+          // Reset file selection
+          document.getElementById('excel-file').value = "";
+          document.getElementById('file-info').style.display = 'none';
+          SELECTED_FILE = null;
 
         } catch (error) {
           console.error("Import error:", error);
