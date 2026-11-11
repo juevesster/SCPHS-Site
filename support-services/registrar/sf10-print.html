@@ -13,15 +13,12 @@
       --gc-accent: #2563eb;
       --gc-bg: #f1f5f9;
       --gc-border: #e2e8f0;
-      --gc-text: #1e293b;
-      --gc-muted: #64748b;
       --gc-danger: #dc2626;
     }
     
     body { background: var(--gc-bg); margin: 0; font-family: 'Inter', system-ui, sans-serif; }
     .wrap { max-width: 1000px; margin: 0 auto; padding: 20px 16px; }
 
-    /* Web Header */
     .header { background: #fff; padding: 20px; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;}
     .header h1 { margin: 0; color: var(--gc-primary); font-size: 1.5rem; font-weight: 800; }
     
@@ -30,7 +27,6 @@
     .search-box input:focus { border-color: var(--gc-accent); }
     .btn-search { background: var(--gc-primary); color: #fff; border: none; padding: 0 20px; border-radius: 8px; font-weight: 600; cursor: pointer; }
     
-    /* Signatory Inputs */
     .signatory-panel { background: #fff; padding: 20px; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); margin-bottom: 20px; display: none; }
     .signatory-panel h3 { margin-top: 0; color: var(--gc-primary); font-size: 1.1rem; border-bottom: 1px solid var(--gc-border); padding-bottom: 10px; margin-bottom: 15px; }
     .sig-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
@@ -40,11 +36,9 @@
     .btn-print { background: #16a34a; color: #fff; border: none; padding: 14px 24px; border-radius: 8px; font-weight: 700; font-size: 1rem; cursor: pointer; display: none; width: 100%; transition: 0.2s; }
     .btn-print:hover { background: #15803d; transform: translateY(-2px); }
     
-    /* Access Denied */
     #access-denied { display: none; text-align: center; padding: 60px 20px; background: #fff; border-radius: 12px; border: 1px solid var(--gc-border); }
     #access-denied h2 { color: var(--gc-danger); margin-bottom: 10px; }
     
-    /* Hidden Print Layout */
     #print-wrapper { display: none; }
 
     /* ============================================================
@@ -61,7 +55,6 @@
       .page { padding: 0 10px; min-height: 100vh; }
       .page-back { page-break-before: always; }
       
-      /* Header */
       .sf10-header { display: flex; align-items: center; justify-content: space-between; padding: 5px 0; border-bottom: 2px solid #000; margin-bottom: 5px; }
       .header-left { position: relative; text-align: center; width: 60px; }
       .header-seal { max-height: 55px; max-width: 55px; }
@@ -72,38 +65,31 @@
       .doc-subtitle { font-size: 8pt; font-style: italic; margin: 0; }
       .header-right { width: 60px; text-align: right; }
       
-      /* Section Titles */
       .sec-title { font-weight: bold; font-size: 8pt; text-align: center; text-transform: uppercase; background: #e8dcc8; border-top: 1px solid #000; border-bottom: 1px solid #000; padding: 2px 0; margin: 5px 0; -webkit-print-color-adjust: exact; }
       
-      /* Info Rows */
       .info-table { width: 100%; border-collapse: collapse; margin-bottom: 5px; }
       .info-table td { padding: 2px 5px; font-size: 8pt; }
       .lbl { font-weight: bold; white-space: nowrap; }
       .val { border-bottom: 1px solid #000; display: inline-block; min-width: 150px; padding: 0 5px; }
       
-      /* Eligibility Checkboxes */
       .elig-table { width: 100%; border-collapse: collapse; margin-bottom: 5px; font-size: 7.5pt; }
       .elig-table td { padding: 2px 5px; vertical-align: top; }
-      .chk-box { display: inline-block; width: 10px; height: 10px; border: 1px solid #000; margin-right: 5px; vertical-align: middle; }
+      .chk-box { display: inline-block; width: 10px; height: 10px; border: 1px solid #000; margin-right: 5px; vertical-align: middle; text-align: center; line-height: 10px; font-weight: bold; }
       
-      /* Main Grade Table */
       .grade-table { width: 100%; border-collapse: collapse; margin-bottom: 5px; font-size: 7.5pt; }
       .grade-table th, .grade-table td { border: 1px solid #000; padding: 2px; text-align: center; vertical-align: middle; }
       .grade-table th { background: #f0f0f0; font-weight: bold; -webkit-print-color-adjust: exact; }
       .grade-table td.sn { text-align: left; font-weight: bold; padding-left: 5px; }
       .grade-table tr.ga td { font-weight: bold; background: #f9f9f9; -webkit-print-color-adjust: exact; }
       
-      /* Remedial Table */
       .remedial-table { width: 100%; border-collapse: collapse; margin-bottom: 5px; font-size: 7.5pt; }
       .remedial-table th, .remedial-table td { border: 1px solid #000; padding: 2px; text-align: center; }
       .remedial-table th { background: #f0f0f0; font-weight: bold; -webkit-print-color-adjust: exact;}
       
-      /* Signatures */
       .signature-block { display: flex; justify-content: space-between; margin-top: 15px; font-size: 8pt; }
       .sig-box { width: 30%; text-align: center; }
       .sig-line { border-bottom: 1px solid #000; height: 15px; margin-bottom: 2px; }
       
-      /* Certification */
       .cert-box { border: 1px solid #000; padding: 10px; margin-top: 10px; font-size: 8pt; }
     }
   </style>
@@ -131,12 +117,12 @@
         <h3><i class="fas fa-edit"></i> Update Signatories for this Print</h3>
         <div class="sig-grid">
           <div class="sig-group">
-            <label>Class Adviser Name</label>
-            <input type="text" id="input-adviser" placeholder="Enter Adviser's Name">
-          </div>
-          <div class="sig-group">
             <label>Principal / School Head Name</label>
             <input type="text" id="input-principal" placeholder="Enter Principal's Name" value="SATURNINO P. CALANSI EdD">
+          </div>
+          <div class="sig-group">
+            <label>Date Prepared</label>
+            <input type="text" id="input-date" placeholder="e.g. 07/01/2024">
           </div>
         </div>
       </div>
@@ -151,21 +137,15 @@
       
       <!-- PAGE 1 (FRONT) -->
       <div class="page" id="jhs-page1" style="display: none;">
-        
-        <!-- Header -->
         <div class="sf10-header">
-          <div class="header-left">
-            <img src="../../assets/images/deped-logo.png" class="header-seal" alt="Logo">
-          </div>
+          <div class="header-left"><img src="../../assets/images/deped-logo.png" class="header-seal" alt="Logo"></div>
           <div class="header-center">
             <div class="republic">Republic of the Philippines</div>
             <div class="deped">Department of Education</div>
             <div class="doc-title">Learner Permanent Academic Record for Junior High School (SF10-JHS)</div>
-            <div class="doc-subtitle">(Formerly Form 137) | DO 009, s. 2026</div>
+            <div class="doc-subtitle">(Formerly Form 137)</div>
           </div>
-          <div class="header-right">
-            <img src="../../assets/images/scphslogo.png" class="header-seal" alt="Seal">
-          </div>
+          <div class="header-right"><img src="../../assets/images/scphslogo.png" class="header-seal" alt="Seal"></div>
         </div>
 
         <div class="sec-title">LEARNER'S INFORMATION</div>
@@ -187,47 +167,34 @@
         <table class="elig-table">
           <tr>
             <td style="width: 25%;">Elementary School Completer</td>
-            <td><span class="lbl">General Average:</span> <span class="val"></span></td>
-            <td><span class="lbl">Citation (if Any):</span> <span class="val"></span></td>
+            <td><span class="lbl">General Average:</span> <span class="val" id="p-elem-ga"></span></td>
+            <td><span class="lbl">Citation (if Any):</span> <span class="val" id="p-elem-citation"></span></td>
           </tr>
           <tr>
-            <td><span class="lbl">Name of Elementary School:</span> <span class="val" style="min-width: 200px;"></span></td>
-            <td><span class="lbl">School ID:</span> <span class="val"></span></td>
-            <td><span class="lbl">Address of School:</span> <span class="val"></span></td>
+            <td><span class="lbl">Name of Elementary School:</span> <span class="val" style="min-width: 200px;" id="p-elem-school"></span></td>
+            <td><span class="lbl">School ID:</span> <span class="val" id="p-elem-school-id"></span></td>
+            <td><span class="lbl">Address of School:</span> <span class="val" id="p-elem-address"></span></td>
           </tr>
           <tr>
             <td colspan="3" style="padding-top: 5px; font-weight: bold;">Other Credential Presented</td>
           </tr>
           <tr>
-            <td><span class="chk-box"></span> PEPT Passer</td>
-            <td><span class="lbl">Rating:</span> <span class="val"></span></td>
-            <td rowspan="2"><span class="lbl">Others (Pls. Specify):</span> <span class="val" style="min-width: 150px;"></span></td>
+            <td><span class="chk-box" id="chk-pept"></span> PEPT Passer</td>
+            <td><span class="lbl">Rating:</span> <span class="val" id="p-pept-rating"></span></td>
+            <td rowspan="2"><span class="lbl">Others (Pls. Specify):</span> <span class="val" style="min-width: 150px;" id="p-elem-others"></span></td>
           </tr>
           <tr>
-            <td><span class="chk-box"></span> ALS A & E Passer</td>
-            <td><span class="lbl">Rating:</span> <span class="val"></span></td>
+            <td><span class="chk-box" id="chk-als"></span> ALS A & E Passer</td>
+            <td><span class="lbl">Rating:</span> <span class="val" id="p-als-rating"></span></td>
           </tr>
           <tr>
-            <td colspan="2"><span class="lbl">Date of Examination/Assessment (mm/dd/yyyy):</span> <span class="val"></span></td>
-            <td><span class="lbl">Name and Address of Testing Center:</span> <span class="val"></span></td>
+            <td colspan="2"><span class="lbl">Date of Examination/Assessment (mm/dd/yyyy):</span> <span class="val" id="p-elem-exam-date"></span></td>
+            <td><span class="lbl">Name and Address of Testing Center:</span> <span class="val" id="p-elem-testing-center"></span></td>
           </tr>
         </table>
 
         <div class="sec-title">SCHOLASTIC RECORD</div>
         <div id="grades-page1"></div>
-
-        <div class="signature-block">
-          <div class="sig-box">
-            <div class="sig-line"></div>
-            <div class="print-sig-name" id="print-adviser-name1">_________________________</div>
-            <div>Class Adviser</div>
-          </div>
-          <div class="sig-box">
-            <div class="sig-line"></div>
-            <div class="print-sig-name" id="print-principal-name1">_________________________</div>
-            <div>Principal / School Head</div>
-          </div>
-        </div>
       </div>
 
       <!-- PAGE 2 (BACK) -->
@@ -251,7 +218,7 @@
           </table>
           <div class="signature-block" style="margin-top: 20px; justify-content: space-around; align-items: flex-end;">
             <div class="sig-box" style="width: 20%;">
-              <div class="sig-line"></div>
+              <div class="sig-line" id="p-cert-date-line"></div>
               <div>Date</div>
             </div>
             <div class="sig-box" style="width: 40%;">
@@ -269,18 +236,14 @@
       <!-- SHS LAYOUT (SIMILAR STRUCTURE) -->
       <div class="page" id="shs-page" style="display: none;">
         <div class="sf10-header">
-          <div class="header-left">
-            <img src="../../assets/images/deped-logo.png" class="header-seal" alt="Logo">
-          </div>
+          <div class="header-left"><img src="../../assets/images/deped-logo.png" class="header-seal" alt="Logo"></div>
           <div class="header-center">
             <div class="republic">Republic of the Philippines</div>
             <div class="deped">Department of Education</div>
             <div class="doc-title">Learner Permanent Academic Record for Senior High School (SF10-SHS)</div>
-            <div class="doc-subtitle">(Formerly Form 137) | DO 009, s. 2026</div>
+            <div class="doc-subtitle">(Formerly Form 137)</div>
           </div>
-          <div class="header-right">
-            <img src="../../assets/images/scphslogo.png" class="header-seal" alt="Seal">
-          </div>
+          <div class="header-right"><img src="../../assets/images/scphslogo.png" class="header-seal" alt="Seal"></div>
         </div>
 
         <div class="sec-title">LEARNER'S INFORMATION</div>
@@ -288,24 +251,35 @@
           <tr>
             <td><span class="lbl">LAST NAME:</span> <span class="val" id="p-shs-lastname">-</span></td>
             <td><span class="lbl">FIRST NAME:</span> <span class="val" id="p-shs-firstname">-</span></td>
+            <td><span class="lbl">NAME EXT. (Jr, I, II):</span> <span class="val" id="p-shs-extname">-</span></td>
             <td><span class="lbl">MIDDLE NAME:</span> <span class="val" id="p-shs-middlename">-</span></td>
-            <td><span class="lbl">LRN:</span> <span class="val" id="p-shs-lrn">-</span></td>
+          </tr>
+          <tr>
+            <td colspan="2"><span class="lbl">LRN:</span> <span class="val" id="p-shs-lrn">-</span></td>
+            <td><span class="lbl">Birthdate (mm/dd/yyyy):</span> <span class="val" id="p-shs-birthdate">-</span></td>
+            <td><span class="lbl">Sex:</span> <span class="val" id="p-shs-sex">-</span></td>
           </tr>
         </table>
 
         <div class="sec-title">SCHOLASTIC RECORD</div>
         <div id="shs-grades"></div>
-
-        <div class="signature-block">
-          <div class="sig-box">
-            <div class="sig-line"></div>
-            <div class="print-sig-name" id="print-shs-adviser-name">_________________________</div>
-            <div>Class Adviser</div>
-          </div>
-          <div class="sig-box">
-            <div class="sig-line"></div>
-            <div class="print-sig-name" id="print-shs-principal-name">_________________________</div>
-            <div>Principal / School Head</div>
+        
+        <div class="cert-box" style="margin-top: 20px;">
+          <div class="sec-title" style="margin-top: 0;">CERTIFICATION</div>
+          <p style="margin: 5px 0;">I CERTIFY that this is a true record of <strong id="p-shs-cert-name">_________________________</strong> with LRN <strong id="p-shs-cert-lrn">_________________________</strong> and that he/she is eligible for admission to Grade ________.</p>
+          <div class="signature-block" style="margin-top: 20px; justify-content: space-around; align-items: flex-end;">
+            <div class="sig-box" style="width: 20%;">
+              <div class="sig-line" id="p-shs-cert-date-line"></div>
+              <div>Date</div>
+            </div>
+            <div class="sig-box" style="width: 40%;">
+              <div class="sig-line"></div>
+              <div class="print-sig-name" id="print-shs-principal-name">_________________________</div>
+              <div>Signature of Principal/School Head over Printed Name</div>
+            </div>
+            <div class="sig-box" style="width: 20%;">
+              <div style="height: 40px; border: 1px solid #000; display: flex; align-items: center; justify-content: center; font-size: 7pt;">(Affix School Seal Here)</div>
+            </div>
           </div>
         </div>
       </div>
@@ -351,8 +325,6 @@
 
         if (!snapLrn.empty) {
           const allRecords = snapLrn.docs.map(d => d.data());
-          document.getElementById('input-adviser').value = allRecords[0].adviser || "";
-          
           renderPrintView(allRecords, searchTerm);
           
           document.getElementById('signatory-panel').style.display = 'block';
@@ -373,17 +345,16 @@
     };
 
     // Signatory listeners
-    document.getElementById('input-adviser').addEventListener('input', function() {
-      const val = this.value || "_________________________";
-      document.getElementById('print-adviser-name1').textContent = val;
-      document.getElementById('print-shs-adviser-name').textContent = val;
-    });
-
     document.getElementById('input-principal').addEventListener('input', function() {
       const val = this.value || "_________________________";
-      document.getElementById('print-principal-name1').textContent = val;
       document.getElementById('print-principal-name2').textContent = val;
       document.getElementById('print-shs-principal-name').textContent = val;
+    });
+
+    document.getElementById('input-date').addEventListener('input', function() {
+      const val = this.value || "";
+      document.getElementById('p-cert-date-line').textContent = val;
+      document.getElementById('p-shs-cert-date-line').textContent = val;
     });
 
     function renderPrintView(records, lrn) {
@@ -401,8 +372,8 @@
       document.getElementById('jhs-page2').style.display = 'none';
       document.getElementById('shs-page').style.display = 'none';
 
-      document.getElementById('input-adviser').dispatchEvent(new Event('input'));
       document.getElementById('input-principal').dispatchEvent(new Event('input'));
+      document.getElementById('input-date').dispatchEvent(new Event('input'));
 
       function generateGradeBlock(recordData) {
         const is3Term = recordData.gradingSystem === '3t';
@@ -500,7 +471,10 @@
         document.getElementById('p-shs-lastname').textContent = firstRecord.lastName;
         document.getElementById('p-shs-firstname').textContent = firstRecord.firstName;
         document.getElementById('p-shs-middlename').textContent = firstRecord.middleName;
+        document.getElementById('p-shs-extname').textContent = firstRecord.extName || '';
         document.getElementById('p-shs-lrn').textContent = lrn;
+        document.getElementById('p-shs-cert-name').textContent = `${firstRecord.firstName} ${firstRecord.middleName} ${firstRecord.lastName}`;
+        document.getElementById('p-shs-cert-lrn').textContent = lrn;
 
         let shsHtml = '';
         records.forEach(r => { shsHtml += generateGradeBlock(r); });
@@ -514,6 +488,25 @@
         document.getElementById('p-lrn').textContent = lrn;
         document.getElementById('p-cert-name').textContent = `${firstRecord.firstName} ${firstRecord.middleName} ${firstRecord.lastName}`;
         document.getElementById('p-cert-lrn').textContent = lrn;
+
+        // Eligibility Data
+        document.getElementById('p-elem-school').textContent = firstRecord.elemSchool || "";
+        document.getElementById('p-elem-school-id').textContent = firstRecord.elemSchoolId || "";
+        document.getElementById('p-elem-address').textContent = firstRecord.elemAddress || "";
+        document.getElementById('p-elem-ga').textContent = firstRecord.elemGA || "";
+        document.getElementById('p-elem-citation').textContent = firstRecord.elemCitation || "";
+        document.getElementById('p-elem-others').textContent = firstRecord.elemOthers || "";
+        document.getElementById('p-elem-exam-date').textContent = firstRecord.elemExamDate || "";
+        document.getElementById('p-elem-testing-center').textContent = firstRecord.elemTestingCenter || "";
+
+        if (firstRecord.peptRating) {
+          document.getElementById('chk-pept').textContent = "✓";
+          document.getElementById('p-pept-rating').textContent = firstRecord.peptRating;
+        }
+        if (firstRecord.alsRating) {
+          document.getElementById('chk-als').textContent = "✓";
+          document.getElementById('p-als-rating').textContent = firstRecord.alsRating;
+        }
         
         const latestRecord = records[records.length - 1];
         document.getElementById('p-cert-sy').textContent = latestRecord.schoolYear;
@@ -521,7 +514,6 @@
         const page1Records = records.filter(r => r.gradeLevel === 'Grade 7' || r.gradeLevel === 'Grade 8');
         const page2Records = records.filter(r => r.gradeLevel === 'Grade 9' || r.gradeLevel === 'Grade 10');
 
-        // Page 1
         if (page1Records.length > 0) {
           let p1Html = '';
           page1Records.forEach(r => { p1Html += generateGradeBlock(r); });
@@ -530,7 +522,6 @@
           document.getElementById('grades-page1').innerHTML = '<p style="text-align:center;padding:10px;">No Grades 7-8 records found.</p>';
         }
 
-        // Page 2
         if (page2Records.length > 0) {
           let p2Html = '';
           page2Records.forEach(r => { p2Html += generateGradeBlock(r); });
