@@ -1,195 +1,312 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="utf-8" />
+  <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Registrar – SCPHS</title>
-   <meta name="description" content="SCPHS Registrar – student records, certification, and document requests." />
+  <title>Registrar's Office – SCPHS</title>
   <link rel="stylesheet" href="../../assets/css/styles.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <style>
+    :root {
+      --gc-primary: #0f4c81;
+      --gc-accent: #2563eb;
+      --gc-bg-soft: #f8fafc;
+      --gc-border: #e2e8f0;
+      --gc-text: #1e293b;
+      --gc-muted: #64748b;
+      --gc-success: #16a34a;
+      --gc-warning: #d97706;
+      --gc-danger: #dc2626;
+      --radius: 12px;
+      --shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+    }
+
+    body { background: #f1f5f9; margin: 0; font-family: 'Inter', system-ui, sans-serif; }
+    .wrap { max-width: 1100px; margin: 0 auto; padding: 20px 16px; }
+
+    /* Header */
+    .page-header { text-align: center; margin-bottom: 30px; }
+    .page-header h1 { color: var(--gc-primary); font-size: 2rem; margin: 0 0 10px; font-weight: 800; }
+    .page-header p { color: var(--gc-muted); font-size: 1.1rem; margin: 0; }
+
+    /* Tabs */
+    .tabs { display: flex; justify-content: center; gap: 10px; margin-bottom: 20px; }
+    .tab-btn { background: #fff; border: 1px solid var(--gc-border); padding: 10px 20px; border-radius: 8px; font-weight: 600; cursor: pointer; transition: 0.2s; color: var(--gc-muted); }
+    .tab-btn.active { background: var(--gc-primary); color: #fff; border-color: var(--gc-primary); box-shadow: var(--shadow); }
+    .tab-btn:hover:not(.active) { background: var(--gc-bg-soft); color: var(--gc-primary); }
+
+    /* Forms & Cards */
+    .card { background: #fff; border-radius: var(--radius); box-shadow: var(--shadow); padding: 30px; border: 1px solid var(--gc-border); margin-bottom: 20px; display: none; }
+    .card.active { display: block; animation: fadeIn 0.3s ease; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px; }
+    .form-group { display: flex; flex-direction: column; }
+    .form-group label { font-size: 0.85rem; font-weight: 700; color: #333; margin-bottom: 8px; text-transform: uppercase; }
+    .form-group input, .form-group select, .form-group textarea { padding: 12px; border: 1px solid var(--gc-border); border-radius: 8px; font-family: inherit; font-size: 1rem; transition: 0.2s; }
+    .form-group input:focus, .form-group select:focus { border-color: var(--gc-accent); outline: none; box-shadow: 0 0 0 3px rgba(37,99,235,0.1); }
+    .form-group.full { grid-column: 1 / -1; }
+
+    .btn-submit { background: var(--gc-accent); color: #fff; border: none; padding: 14px 24px; border-radius: 8px; font-weight: 700; font-size: 1rem; cursor: pointer; width: 100%; transition: 0.2s; display: flex; justify-content: center; align-items: center; gap: 8px;}
+    .btn-submit:hover { background: #1d4ed8; transform: translateY(-2px); }
+
+    /* Admin Dashboard Table */
+    .table-responsive { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+    th, td { padding: 12px 15px; text-align: left; border-bottom: 1px solid var(--gc-border); }
+    th { background: var(--gc-bg-soft); font-weight: 700; color: var(--gc-text); font-size: 0.85rem; text-transform: uppercase; }
+    td { font-size: 0.95rem; color: #333; }
+    
+    .badge { padding: 6px 10px; border-radius: 20px; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; }
+    .badge-pending { background: #fef3c7; color: var(--gc-warning); }
+    .badge-processing { background: #e0f2fe; color: var(--gc-accent); }
+    .badge-ready { background: #dcfce7; color: var(--gc-success); }
+
+    .btn-action { padding: 6px 12px; border-radius: 6px; border: none; font-size: 0.8rem; font-weight: 600; cursor: pointer; transition: 0.2s; }
+    .btn-process { background: #e0f2fe; color: var(--gc-accent); }
+    .btn-ready { background: #dcfce7; color: var(--gc-success); }
+
+    /* Auth Notice */
+    .admin-notice { background: #fef2f2; border: 1px solid #fecaca; color: #991b1b; padding: 15px; border-radius: 8px; text-align: center; margin-bottom: 20px; display: none; }
+  </style>
 </head>
 <body>
 
-   <!-- PAGE HERO -->
-  <div class="page-hero">
-    <div class="wrap">
-      <span class="badge">Confidential Records</span>
-      <h1>Registrar</h1>
-      <p class="meta">Sta. Cruz Pingkian High School • Repository of Records and Confidenmtial Records of the learners and Graduates.</p>
+  <div class="wrap">
+    <div class="page-header">
+      <h1>Registrar's Office</h1>
+      <p>Request official school records and track their status online.</p>
     </div>
+
+    <!-- TABS -->
+    <div class="tabs">
+      <button class="tab-btn active" onclick="switchTab('request')"><i class="fas fa-file-signature"></i> Request Document</button>
+      <button class="tab-btn admin-only" onclick="switchTab('admin')" id="admin-tab" style="display: none;"><i class="fas fa-tasks"></i> Admin Dashboard</button>
+    </div>
+
+    <!-- PUBLIC: REQUEST FORM -->
+    <div class="card active" id="card-request">
+      <h2 style="margin-top: 0; color: var(--gc-primary); font-size: 1.3rem; border-bottom: 2px solid var(--gc-bg-soft); padding-bottom: 10px;">Document Request Form</h2>
+      <form id="request-form" onsubmit="submitRequest(event)">
+        <div class="form-grid">
+          <div class="form-group">
+            <label>Full Name (Last, First, Middle)</label>
+            <input type="text" id="req-name" required placeholder="Dela Cruz, Juan P.">
+          </div>
+          <div class="form-group">
+            <label>Learner Reference Number (LRN)</label>
+            <input type="text" id="req-lrn" required placeholder="12-digit LRN" maxlength="12">
+          </div>
+          <div class="form-group">
+            <label>Year Graduated / Last Attended</label>
+            <input type="text" id="req-year" required placeholder="e.g. 2022">
+          </div>
+          <div class="form-group">
+            <label>Document Requested</label>
+            <select id="req-doc" required>
+              <option value="">Select Document...</option>
+              <option value="SF10 (Form 137)">SF10 (Form 137) - Permanent Record</option>
+              <option value="Certificate of Enrollment">Certificate of Enrollment</option>
+              <option value="Transcript of Records (TOR)">Transcript of Records (TOR)</option>
+              <option value="Honorable Dismissal">Honorable Dismissal (Transfer Credentials)</option>
+              <option value="Certificate of Good Moral">Certificate of Good Moral</option>
+            </select>
+          </div>
+          <div class="form-group full">
+            <label>Purpose of Request</label>
+            <input type="text" id="req-purpose" required placeholder="e.g. For College Application, Employment, etc.">
+          </div>
+          <div class="form-group full">
+            <label>Contact Number / Email Address</label>
+            <input type="text" id="req-contact" required placeholder="0912-345-6789 / email@example.com">
+          </div>
+        </div>
+        <button type="submit" class="btn-submit" id="btn-submit-req"><i class="fas fa-paper-plane"></i> Submit Request</button>
+      </form>
+    </div>
+
+    <!-- ADMIN: DASHBOARD -->
+    <div class="card" id="card-admin">
+      <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid var(--gc-bg-soft); padding-bottom: 15px; margin-bottom: 20px;">
+        <h2 style="margin: 0; color: var(--gc-primary); font-size: 1.3rem;">Pending Document Requests</h2>
+        <button onclick="loadAdminData()" class="btn-action" style="background: var(--gc-primary); color: #fff;"><i class="fas fa-sync-alt"></i> Refresh</button>
+      </div>
+
+      <div class="admin-notice" id="admin-notice">
+        You are viewing this in read-only mode. Only Registrar Admins can update statuses.
+      </div>
+
+      <div class="table-responsive">
+        <table>
+          <thead>
+            <tr>
+              <th>Date Requested</th>
+              <th>Student Name & LRN</th>
+              <th>Document</th>
+              <th>Purpose</th>
+              <th>Status</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody id="admin-table-body">
+            <tr><td colspan="6" style="text-align: center; color: var(--gc-muted);">Loading requests...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
   </div>
 
-    <!-- Mini-header / Breadcrumb -->
-  <header class="mini-header">
-    <div class="wrap" style="display:flex; align-items:center; gap:12px; padding:10px 0">
-      <!-- LOCAL/OFFLINE: ../../index.html  |  ONLINE (optional): /index.html -->
-      <a href="../../index.html" class="brand">SCPHS</a>
+  <script type="module">
+    import { auth, db } from "../../assets/js/firebase-config.js";
+    import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+    import { collection, addDoc, onSnapshot, doc, updateDoc, query, orderBy, getDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
-      <nav aria-label="Breadcrumb" class="crumbs">
-        <!-- LOCAL/OFFLINE: ../../index.html  |  ONLINE: /index.html -->
-        <a href="../../index.html">Home</a>
-        /
-        <!-- If you add a landing page at /support-services/index.html use:
-             LOCAL: ../index.html  |  ONLINE: /support-services/index.html -->
-        <a href="../../index.html">Support Services</a>
-        /
-        <strong>Registrar Office</strong>
-      </nav>
-    </div>
-  </header>
+    let IS_ADMIN = false;
+    let unsubscribeRealtime = null;
 
-   <main class="wrap" style="margin-top:16px">
-    <article class="card">
-      <header style="padding:16px; border-bottom:1px solid var(--line)">
-        <h1 style="margin:0">About Registrar</h1>
-        <p class="meta">Student records, certification, and enrollment documentation.</p>
-      </header>
+    // 1. Check Auth
+    onAuthStateChanged(auth, async (user) => {
+      if (user) {
+        try {
+          const userSnap = await getDoc(doc(db, "users", user.uid));
+          if (userSnap.exists()) {
+            const role = userSnap.data().primaryRole || userSnap.data().role;
+            if (role === 'admin' || role === 'superadmin') {
+              IS_ADMIN = true;
+              document.getElementById('admin-tab').style.display = 'block';
+            }
+          }
+        } catch (error) { console.error(error); }
+      }
+    });
 
-      <section style="padding:16px; display:grid; gap:18px">
-        <div class="info-grid" style="display:grid; grid-template-columns: 1fr 1fr; gap:16px">
-          <div class="card soft">
-            <h3>Office Information</h3>
-            <ul class="list">
-              <li>Location: Administration Building</li>
-              <li>Email: <a href="mailto:300648@deped.gov.ph">300648@deped.gov.ph</a></li>
-              <li>Phone: +63 967‑8848989</li>
-            </ul>
-          </div>
+    // 2. Tab Switching
+    window.switchTab = function(tab) {
+      document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+      event.target.closest('.tab-btn').classList.add('active');
 
-          <div class="card soft">
-            <h3>Office Hours</h3>
-            <table class="table">
-              <tbody>
-                <tr><td>Monday–Friday</td><td>8:00 AM – 5:00 PM</td></tr>
-                <tr><td>Saturday–Sunday</td><td>Closed</td></tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
+      document.querySelectorAll('.card').forEach(card => card.classList.remove('active'));
+      document.getElementById(`card-${tab}`).classList.add('active');
 
-        <div class="card soft">
-          <h3>Services</h3>
-          <ul class="list">
-            <li>Form 137/138 processing (as applicable)</li>
-            <li>Certificates of Enrollment/Completion</li>
-            <li>Student record updates and verification</li>
-            <li>Document requests and release</li>
-          </ul>
-        </div>
+      if (tab === 'admin') {
+        loadAdminData();
+        // Real-time listener for new requests
+        if (!unsubscribeRealtime) {
+          const q = query(collection(db, "document_requests"), orderBy("timestamp", "desc"));
+          unsubscribeRealtime = onSnapshot(q, (snapshot) => {
+            renderTable(snapshot.docs);
+          });
+        }
+      } else {
+        if (unsubscribeRealtime) {
+          unsubscribeRealtime();
+          unsubscribeRealtime = null;
+        }
+      }
+    };
 
-        <div class="card soft">
-          <h3>Downloads</h3>
-          <ul class="list">
-            <li><a href="/assets/docs/registrar-request-form.pdf" target="_blank" rel="noopener">Document Request Form (PDF)</a></li>
-            <li><a href="/assets/docs/registrar-fees.pdf" target="_blank" rel="noopener">Fees & Processing Times (PDF)</a></li>
-          </ul>
-        </div>
+    // 3. Submit Request (Public)
+    window.submitRequest = async function(e) {
+      e.preventDefault();
+      const btn = document.getElementById('btn-submit-req');
+      const originalText = btn.innerHTML;
+      btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Submitting...'; btn.disabled = true;
 
-        <div class="card soft">
-          <h3>Notes</h3>
-          <p>Please bring a valid ID when claiming documents. Processing time may vary depending on volume and verification needs.</p>
-        </div>
-      </section>
-    </article>
-  </main>
+      try {
+        const reqData = {
+          name: document.getElementById('req-name').value.trim(),
+          lrn: document.getElementById('req-lrn').value.trim(),
+          year: document.getElementById('req-year').value.trim(),
+          documentType: document.getElementById('req-doc').value,
+          purpose: document.getElementById('req-purpose').value.trim(),
+          contact: document.getElementById('req-contact').value.trim(),
+          status: 'Pending',
+          timestamp: Date.now()
+        };
 
-  <footer class="govph-footer" role="contentinfo" style="margin-top:24px">
-    <div class="govph-footer__bar">
-      <div class="wrap"><small>© <span id="yearNow"></span> SCPHS</small></div>
-    </div>
-  </footer>
-  <script>document.getElementById('yearNow').textContent = new Date().getFullYear();</script>
+        await addDoc(collection(db, "document_requests"), reqData);
+        
+        alert(`✅ Request Submitted Successfully!\n\nStudent: ${reqData.name}\nDocument: ${reqData.documentType}\n\nPlease wait for the Registrar to process your request. You will be contacted at ${reqData.contact}.`);
+        document.getElementById('request-form').reset();
+
+      } catch (error) {
+        console.error("Error submitting request:", error);
+        alert("❌ Failed to submit request. Please try again.");
+      } finally {
+        btn.innerHTML = originalText; btn.disabled = false;
+      }
+    };
+
+    // 4. Load Admin Data
+    window.loadAdminData = async function() {
+      if (!IS_ADMIN) return;
+      
+      const q = query(collection(db, "document_requests"), orderBy("timestamp", "desc"));
+      const snapshot = await getDoc(doc(db, "config", "dummy")); // Dummy read to trigger auth, snapshot handles the rest
+      
+      if (!unsubscribeRealtime) {
+        unsubscribeRealtime = onSnapshot(q, (snap) => {
+          renderTable(snap.docs);
+        });
+      }
+    };
+
+    // 5. Render Table
+    function renderTable(docs) {
+      const tbody = document.getElementById('admin-table-body');
+      if (docs.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; padding: 20px;">No requests found.</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = docs.map(docSnap => {
+        const data = docSnap.data();
+        const id = docSnap.id;
+        
+        let badgeClass = "badge-pending";
+        let actionBtn = `<button class="btn-action btn-process" onclick="updateStatus('${id}', 'Processing')">Mark Processing</button>`;
+        
+        if (data.status === 'Processing') {
+          badgeClass = "badge-processing";
+          actionBtn = `<button class="btn-action btn-ready" onclick="updateStatus('${id}', 'Ready for Pickup')">Mark Ready</button>`;
+        } else if (data.status === 'Ready for Pickup') {
+          badgeClass = "badge-ready";
+          actionBtn = `<span style="font-size:0.8rem; color:var(--gc-muted);">Waiting for claim</span>`;
+        }
+
+        if (!IS_ADMIN) actionBtn = "-";
+
+        const dateStr = new Date(data.timestamp).toLocaleDateString('en-PH', { month: 'short', day: 'numeric', year: 'numeric' });
+
+        return `
+          <tr>
+            <td>${dateStr}</td>
+            <td>
+              <strong>${data.name}</strong><br>
+              <span style="font-size: 0.8rem; color: var(--gc-muted);">LRN: ${data.lrn} | Yr: ${data.year}</span>
+            </td>
+            <td><span style="font-weight: 600; color: var(--gc-accent);">${data.documentType}</span></td>
+            <td>${data.purpose}</td>
+            <td><span class="badge ${badgeClass}">${data.status}</span></td>
+            <td>${actionBtn}</td>
+          </tr>
+        `;
+      }).join("");
+    }
+
+    // 6. Update Status (Admin)
+    window.updateStatus = async function(id, newStatus) {
+      if (!IS_ADMIN) return;
+      try {
+        await updateDoc(doc(db, "document_requests", id), { status: newStatus });
+        // Realtime listener will auto-update the table
+      } catch (error) {
+        console.error("Error updating status:", error);
+        alert("❌ Failed to update status.");
+      }
+    };
+  </script>
 </body>
 </html>
-
-<!-- ======================= END ABOUT SECTION ======================= -->
-
-  <!-- School Footer (SCPHS) -->
-  <footer>
-    <div class="wrap">
-      <div class="foot-grid">
-        <div>
-          <strong>Sta. Cruz Pingkian High School</strong><br/>
-          Brgy. Sta. Cruz, Pingkian • Nueva Vizcaya • Philippines<br/>
-          Email: 300648@deped.gov.ph • Phone: +63 967-8848989
-        </div>
-        <div>
-          <a href="#privacy">Privacy Notice</a> •
-          <a href="#foi">FOI</a> •
-          <a href="#sitemap">Sitemap</a> •
-          <a href="https://www.facebook.com/p/Santa-Cruz-Pingkian-High-School-Official-61554495084090/" target="_blank" rel="noopener">Facebook</a>
-        </div>
-      </div>
-      <div class="copy">© 2026 SCPHS. All rights reserved.</div>
-    </div>
-  </footer>
-
-  <!-- ================== GOVPH FOOTER (final, official) ================== -->
-  <footer class="govph-footer" role="contentinfo">
-    <div class="wrap govph-footer__grid">
-      <div class="govph-footer__col">
-        <h4>Republic of the Philippines</h4>
-        <p>All content is in the public domain unless otherwise stated.</p>
-      </div>
-      <div class="govph-footer__col">
-        <h4>About GOVPH</h4>
-        <ul class="govph-footer__links">
-          <li><a href="https://www.gov.ph/" target="_blank" rel="noopener">GOV.PH</a></li>
-          <li><a href="https://data.gov.ph/" target="_blank" rel="noopener">Open Data Portal</a></li>
-          <li><a href="https://www.officialgazette.gov.ph/" target="_blank" rel="noopener">Official Gazette</a></li>
-        </ul>
-      </div>
-      <div class="govph-footer__col">
-        <h4>Government Links</h4>
-        <ul class="govph-footer__links">
-          <li><a href="https://op-proper.gov.ph/" target="_blank" rel="noopener">Office of the President</a></li>
-          <li><a href="https://ovp.gov.ph/" target="_blank" rel="noopener">Office of the Vice President</a></li>
-          <li><a href="https://www.senate.gov.ph/" target="_blank" rel="noopener">Senate of the Philippines</a></li>
-          <li><a href="https://www.congress.gov.ph/" target="_blank" rel="noopener">House of Representatives</a></li>
-          <li><a href="https://sc.judiciary.gov.ph/" target="_blank" rel="noopener">Supreme Court</a></li>
-        </ul>
-      </div>
-    </div>
-
-    <div class="govph-footer__bar">
-      <div class="wrap">
-        <small>© <span id="yearNow"></span> Sta. Cruz Pingkian High School • A Philippine Government Website</small>
-      </div>
-    </div>
-  </footer>
-
-           <!-- Chatbot mount -->
-<div id="scphs-chatbot-root"></div>
-
-<!-- Chatbot auto-loader: tries absolute path, then ../, then ../../ -->
-<script>
-(function(){
-  const rootId = 'scphs-chatbot-root';
-  if (!document.getElementById(rootId)) {
-    const m = document.createElement('div');
-    m.id = rootId;
-    document.body.appendChild(m);
-  }
-
-  const tried = {};
-  function load(src, onOk, onFail){
-    if (tried[src]) return onFail && onFail();
-    tried[src] = true;
-    const s = document.createElement('script');
-    s.src = src; s.defer = true;
-    s.onload = onOk;
-    s.onerror = onFail;
-    document.body.appendChild(s);
-  }
-
-  // Try absolute (works when hosted), then step-wise relatives (works offline)
-  load('/assets/js/chatbot.js', null, () =>
-    load('assets/js/chatbot.js', null, () =>
-      load('../assets/js/chatbot.js', null, () =>
-        load('../../assets/js/chatbot.js', null, () =>
-          console.warn('SCPHS chatbot: unable to load script from any known path.')
-        )
-      )
-    )
-  );
-})();
-</script>
