@@ -31,6 +31,13 @@
     .search-box input:focus { border-color: var(--gc-accent); }
     .btn-search { background: var(--gc-primary); color: #fff; border: none; padding: 0 20px; border-radius: 8px; font-weight: 600; cursor: pointer; }
 
+    /* Tabs */
+    .tabs { display: flex; gap: 10px; margin-bottom: 20px; }
+    .tab-btn { background: #fff; border: 1px solid var(--gc-border); padding: 10px 20px; border-radius: 8px; font-weight: 600; cursor: pointer; transition: 0.2s; color: var(--gc-muted); }
+    .tab-btn.active { background: var(--gc-primary); color: #fff; border-color: var(--gc-primary); }
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+
     /* Encoder Form */
     .card { background: #fff; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); padding: 30px; margin-bottom: 20px; display: none; }
     .card.active { display: block; animation: fadeIn 0.3s ease; }
@@ -82,7 +89,7 @@
         <button class="btn-search" onclick="searchStudent()"><i class="fas fa-search"></i> Search</button>
       </div>
       <p style="color: var(--gc-muted); font-size: 0.9rem;">
-        <i class="fas fa-info-circle"></i> Search using the 12-digit LRN from the folder. The system will auto-fill the name from the LIS SF1 archive if available.
+        <i class="fas fa-info-circle"></i> Search using the 12-digit LRN. The system will auto-fill the name from the LIS SF1 archive if available.
       </p>
     </div>
 
@@ -90,10 +97,16 @@
     <div class="card" id="encoder-card">
       <h2 class="section-title" id="form-title">Encode SF10 Record</h2>
       
+      <!-- TABS FOR ENCODER -->
+      <div class="tabs">
+        <button class="tab-btn active" onclick="switchEncTab('grades')">Yearly Grades</button>
+        <button class="tab-btn" onclick="switchEncTab('eligibility')">JHS Eligibility</button>
+      </div>
+
       <form id="sf10-form" onsubmit="saveSF10(event)">
         <input type="hidden" id="doc-id" value="">
         
-        <!-- Student Info -->
+        <!-- Common Student Info -->
         <div class="form-grid">
           <div class="form-group">
             <label>Last Name</label>
@@ -108,100 +121,149 @@
             <input type="text" id="f-middlename">
           </div>
           <div class="form-group">
+            <label>Name Extension (Jr, I, II)</label>
+            <input type="text" id="f-extname">
+          </div>
+          <div class="form-group">
             <label>LRN</label>
             <input type="text" id="f-lrn" required maxlength="12">
           </div>
+        </div>
+
+        <!-- TAB 1: GRADES -->
+        <div class="tab-content active" id="tab-grades">
+          <div class="form-grid">
+            <div class="form-group">
+              <label>Grade Level</label>
+              <select id="f-gradelevel" onchange="handleGradeChange()" required>
+                <option value="">Select Grade Level...</option>
+                <optgroup label="Junior High School">
+                  <option value="Grade 7">Grade 7</option>
+                  <option value="Grade 8">Grade 8</option>
+                  <option value="Grade 9">Grade 9</option>
+                  <option value="Grade 10">Grade 10</option>
+                </optgroup>
+                <optgroup label="Senior High School">
+                  <option value="Grade 11">Grade 11</option>
+                  <option value="Grade 12">Grade 12</option>
+                </optgroup>
+              </select>
+            </div>
+            <div class="form-group" id="track-group" style="display: none;">
+              <label>Track / Strand</label>
+              <select id="f-track" onchange="changeGradeLevel()">
+                <option value="">Select Track...</option>
+                <option value="Academic">Academic (STEM, ABM, HUMSS, GAS)</option>
+                <option value="TechPro">TechPro / TVL</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Historical School Year</label>
+              <select id="f-schoolyear" onchange="resetForNewYear()" required>
+                <option value="">Select School Year...</option>
+                <option value="2026-2027">2026-2027</option>
+                <option value="2025-2026">2025-2026</option>
+                <option value="2024-2025">2024-2025</option>
+                <option value="2023-2024">2023-2024</option>
+                <option value="2022-2023">2022-2023</option>
+                <option value="2021-2022">2021-2022</option>
+                <option value="2020-2021">2020-2021</option>
+                <option value="2019-2020">2019-2020</option>
+                <option value="2018-2019">2018-2019</option>
+              </select>
+            </div>
+            <div class="form-group" style="background: #eff6ff; padding: 10px; border-radius: 8px; border: 1px solid #bfdbfe;">
+              <label style="color: var(--gc-accent);">Grading System</label>
+              <select id="f-sys" onchange="updateTableHeaders()" style="font-weight: bold; border-color: var(--gc-accent);">
+                <option value="4q">Old Curriculum (4 Quarters)</option>
+                <option value="3t">New Curriculum (3 Terms)</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Section</label>
+              <input type="text" id="f-section" placeholder="e.g. Ruby">
+            </div>
+            <div class="form-group">
+              <label>Name of Adviser (for this year)</label>
+              <input type="text" id="f-adviser" placeholder="Adviser for this specific grade level">
+            </div>
+          </div>
+
+          <div style="display: flex; justify-content: space-between; align-items: center; margin: 20px 0 10px;">
+            <h3 style="font-size: 1rem; color: var(--gc-primary); margin: 0;">Subject Grades</h3>
+            <button type="button" class="btn-search" onclick="addRow()" style="padding: 8px 16px; font-size: 0.85rem; background: #475569;"><i class="fas fa-plus"></i> Add Subject Row</button>
+          </div>
           
-          <div class="form-group">
-            <label>Grade Level</label>
-            <select id="f-gradelevel" onchange="handleGradeChange()" required>
-              <option value="">Select Grade Level...</option>
-              <optgroup label="Junior High School">
-                <option value="Grade 7">Grade 7</option>
-                <option value="Grade 8">Grade 8</option>
-                <option value="Grade 9">Grade 9</option>
-                <option value="Grade 10">Grade 10</option>
-              </optgroup>
-              <optgroup label="Senior High School">
-                <option value="Grade 11">Grade 11</option>
-                <option value="Grade 12">Grade 12</option>
-              </optgroup>
-            </select>
-          </div>
-
-          <div class="form-group" id="track-group" style="display: none;">
-            <label>Track / Strand</label>
-            <select id="f-track" onchange="changeGradeLevel()">
-              <option value="">Select Track...</option>
-              <option value="Academic">Academic (STEM, ABM, HUMSS, GAS)</option>
-              <option value="TechPro">TechPro / TVL</option>
-              <option value="Custom">Custom / Other</option>
-            </select>
-          </div>
-
-          <div class="form-group">
-            <label>Historical School Year</label>
-            <select id="f-schoolyear" onchange="resetForNewYear()" required>
-              <option value="">Select School Year...</option>
-              <option value="2026-2027">2026-2027 (Current)</option>
-              <option value="2025-2026">2025-2026</option>
-              <option value="2024-2025">2024-2025</option>
-              <option value="2023-2024">2023-2024</option>
-              <option value="2022-2023">2022-2023</option>
-              <option value="2021-2022">2021-2022</option>
-              <option value="2020-2021">2020-2021</option>
-              <option value="2019-2020">2019-2020</option>
-              <option value="2018-2019">2018-2019</option>
-              <option value="2017-2018">2017-2018</option>
-            </select>
-          </div>
-
-          <div class="form-group" style="background: #eff6ff; padding: 10px; border-radius: 8px; border: 1px solid #bfdbfe;">
-            <label style="color: var(--gc-accent);">Grading System</label>
-            <select id="f-sys" onchange="updateTableHeaders()" style="font-weight: bold; border-color: var(--gc-accent);">
-              <option value="4q">Old Curriculum (4 Quarters)</option>
-              <option value="3t">New Curriculum (3 Terms)</option>
-            </select>
-          </div>
-
-          <div class="form-group">
-            <label>Section (Optional)</label>
-            <input type="text" id="f-section" placeholder="e.g. Ruby">
-          </div>
-          <div class="form-group">
-            <label>Adviser (Optional)</label>
-            <input type="text" id="f-adviser">
+          <div class="grade-table-wrap" style="overflow-x: auto;">
+            <table class="grade-table">
+              <thead>
+                <tr id="grade-header-row">
+                  <th style="width: 35%; text-align: left;">Learning Area / Subject</th>
+                  <th>Q1</th><th>Q2</th><th>Q3</th><th>Q4</th>
+                  <th>Final</th><th>Remarks</th>
+                </tr>
+              </thead>
+              <tbody id="grades-tbody"></tbody>
+            </table>
           </div>
         </div>
 
-        <div style="display: flex; justify-content: space-between; align-items: center; margin: 20px 0 10px;">
-          <h3 style="font-size: 1rem; color: var(--gc-primary); margin: 0;">Subject Grades</h3>
-          <button type="button" class="btn-search" onclick="addRow()" style="padding: 8px 16px; font-size: 0.85rem; background: #475569;"><i class="fas fa-plus"></i> Add Subject Row</button>
-        </div>
-        
-        <!-- Grades Table -->
-        <div class="grade-table-wrap" style="overflow-x: auto;">
-          <table class="grade-table">
-            <thead>
-              <tr id="grade-header-row">
-                <th style="width: 35%; text-align: left;">Learning Area / Subject</th>
-                <th>Q1</th>
-                <th>Q2</th>
-                <th>Q3</th>
-                <th>Q4</th>
-                <th>Final</th>
-                <th>Remarks</th>
-              </tr>
-            </thead>
-            <tbody id="grades-tbody">
-              <!-- Rows injected by JS -->
-            </tbody>
-          </table>
+        <!-- TAB 2: ELIGIBILITY -->
+        <div class="tab-content" id="tab-eligibility">
+          <p style="color: var(--gc-muted); font-size: 0.9rem; margin-bottom: 20px;">These details are saved to the student's master record and only need to be entered once.</p>
+          
+          <div class="form-grid">
+            <div class="form-group">
+              <label>Elementary School Completed</label>
+              <input type="text" id="f-elem-school" placeholder="Name of Elementary School">
+            </div>
+            <div class="form-group">
+              <label>Elem School ID</label>
+              <input type="text" id="f-elem-school-id" placeholder="School ID">
+            </div>
+            <div class="form-group full" style="grid-column: 1/-1;">
+              <label>Elem Address</label>
+              <input type="text" id="f-elem-address" placeholder="Address of Elementary School">
+            </div>
+            <div class="form-group">
+              <label>General Average</label>
+              <input type="text" id="f-elem-ga" placeholder="e.g. 88">
+            </div>
+            <div class="form-group">
+              <label>Citation (if any)</label>
+              <input type="text" id="f-elem-citation">
+            </div>
+          </div>
+
+          <h3 style="font-size: 1rem; color: var(--gc-primary); margin: 20px 0 10px; border-top: 1px solid #eee; padding-top: 15px;">Other Credentials</h3>
+          <div class="form-grid">
+            <div class="form-group">
+              <label>PEPT Passer? (Leave blank if No)</label>
+              <input type="text" id="f-pept-rating" placeholder="Rating">
+            </div>
+            <div class="form-group">
+              <label>ALS A&E Passer? (Leave blank if No)</label>
+              <input type="text" id="f-als-rating" placeholder="Rating">
+            </div>
+            <div class="form-group">
+              <label>Others (Specify)</label>
+              <input type="text" id="f-elem-others">
+            </div>
+            <div class="form-group">
+              <label>Date of Exam/Assessment</label>
+              <input type="text" id="f-elem-exam-date" placeholder="mm/dd/yyyy">
+            </div>
+            <div class="form-group full" style="grid-column: 1/-1;">
+              <label>Testing Center</label>
+              <input type="text" id="f-elem-testing-center" placeholder="Name and Address">
+            </div>
+          </div>
         </div>
 
+        <!-- SAVE/DELETE BUTTONS -->
         <div class="btn-row">
-          <button type="submit" class="btn-save" id="btn-save"><i class="fas fa-save"></i> Save Record</button>
-          <button type="button" class="btn-delete" id="btn-delete" onclick="deleteRecord()"><i class="fas fa-trash"></i> Delete Record</button>
+          <button type="submit" class="btn-save" id="btn-save"><i class="fas fa-save"></i> Save Year Record & Eligibility</button>
+          <button type="button" class="btn-delete" id="btn-delete" onclick="deleteRecord()"><i class="fas fa-trash"></i> Delete This Year</button>
         </div>
       </form>
     </div>
@@ -215,28 +277,18 @@
     let CURRENT_RECORD_ID = null;
     let CURRENT_SYSTEM = '4q';
 
+    // Added 'extName' to JHS subjects
     const SUBJECT_PRESETS = {
-      "JHS": [
-        "Filipino", "English", "Mathematics", "Science", 
-        "Araling Panlipunan", "Edukasyon sa Pagpapakatao", 
-        "TLE", "MAPEH"
-      ],
-      "SHS_Academic": [
-        "Oral Communication", "Reading and Writing", "Komunikasyon at Pananaliksik", 
-        "21st Century Literature", "General Mathematics", "Statistics and Probability", 
-        "Earth and Life Science", "Physical Science", "Personal Development", 
-        "Understanding Culture, Society, and Politics", "Physical Education and Health",
-        "Practical Research 1", "Practical Research 2", "Media and Information Literacy", 
-        "Empowerment Technologies", "Homeroom Guidance Program"
-      ],
-      "SHS_TechPro": [
-        "Oral Communication", "Reading and Writing", "Komunikasyon at Pananaliksik", 
-        "21st Century Literature", "General Mathematics", "Statistics and Probability", 
-        "Earth and Life Science", "Physical Science", "Personal Development", 
-        "Understanding Culture, Society, and Politics", "Physical Education and Health",
-        "Practical Research 1", "Practical Research 2", 
-        "Specialized TVL Subject 1", "Specialized TVL Subject 2", "Homeroom Guidance Program"
-      ]
+      "JHS": ["Filipino", "English", "Mathematics", "Science", "Araling Panlipunan", "Values Education", "Technology and Livelihood Education (TLE)", "MAPEH", "Music", "Arts", "Physical Education", "Health"],
+      "SHS_Academic": ["Oral Communication", "Reading and Writing", "Komunikasyon at Pananaliksik", "21st Century Literature", "General Mathematics", "Statistics and Probability", "Earth and Life Science", "Physical Science", "Personal Development", "Understanding Culture, Society, and Politics", "Physical Education and Health", "Practical Research 1", "Practical Research 2", "Media and Information Literacy", "Empowerment Technologies"],
+      "SHS_TechPro": ["Oral Communication", "Reading and Writing", "Komunikasyon at Pananaliksik", "21st Century Literature", "General Mathematics", "Statistics and Probability", "Earth and Life Science", "Physical Science", "Personal Development", "Understanding Culture, Society, and Politics", "Physical Education and Health", "Practical Research 1", "Practical Research 2", "Specialized TVL Subject 1", "Specialized TVL Subject 2"]
+    };
+
+    window.switchEncTab = function(tab) {
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      event.target.classList.add('active');
+      document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+      document.getElementById(`tab-${tab}`).classList.add('active');
     };
 
     window.updateTableHeaders = function() {
@@ -255,33 +307,21 @@
       tbody.querySelectorAll('tr').forEach(row => {
         existingData.push({
           sub: row.querySelector('.sub-name').value,
-          q1: row.querySelector('.q1').value,
-          q2: row.querySelector('.q2').value,
-          q3: row.querySelector('.q3').value,
+          q1: row.querySelector('.q1').value, q2: row.querySelector('.q2').value, q3: row.querySelector('.q3').value,
           q4: row.querySelector('.q4') ? row.querySelector('.q4').value : "",
-          final: row.querySelector('.final').value,
-          remarks: row.querySelector('.remarks').value
+          final: row.querySelector('.final').value, remarks: row.querySelector('.remarks').value
         });
       });
 
       tbody.innerHTML = '';
-      if (existingData.length === 0) {
-        addRow();
-      } else {
-        existingData.forEach(data => addRow(data));
-      }
+      if (existingData.length === 0) { addRow(); } else { existingData.forEach(data => addRow(data)); }
     };
 
     window.handleGradeChange = function() {
       const grade = document.getElementById('f-gradelevel').value;
       const trackGroup = document.getElementById('track-group');
-      
-      if (grade === 'Grade 11' || grade === 'Grade 12') {
-        trackGroup.style.display = 'block';
-      } else {
-        trackGroup.style.display = 'none';
-        document.getElementById('f-track').value = "";
-      }
+      if (grade === 'Grade 11' || grade === 'Grade 12') { trackGroup.style.display = 'block'; } 
+      else { trackGroup.style.display = 'none'; document.getElementById('f-track').value = ""; }
       changeGradeLevel();
       resetForNewYear(); 
     };
@@ -290,18 +330,15 @@
       const grade = document.getElementById('f-gradelevel').value;
       const track = document.getElementById('f-track').value;
       const tbody = document.getElementById('grades-tbody');
-      
       if (!grade) return;
 
       let subjects = [];
-      
       if (grade.includes('Grade 7') || grade.includes('Grade 8') || grade.includes('Grade 9') || grade.includes('Grade 10')) {
         subjects = SUBJECT_PRESETS["JHS"];
       } else if (grade.includes('Grade 11') || grade.includes('Grade 12')) {
         if (!track) return;
         if (track === "Academic") subjects = SUBJECT_PRESETS["SHS_Academic"];
         else if (track === "TechPro") subjects = SUBJECT_PRESETS["SHS_TechPro"];
-        else subjects = [];
       }
 
       const rows = tbody.querySelectorAll('tr');
@@ -309,37 +346,28 @@
 
       if (!hasData) {
         tbody.innerHTML = '';
-        if (subjects.length > 0) {
-          subjects.forEach(sub => addRow({ sub: sub }));
-        } else {
-          addRow();
-        }
+        if (subjects.length > 0) { subjects.forEach(sub => addRow({ sub: sub })); } 
+        else { addRow(); }
       }
     };
 
     window.resetForNewYear = function() {
       if (!CURRENT_RECORD_ID) return; 
-      
       const year = document.getElementById('f-schoolyear').value;
       const grade = document.getElementById('f-gradelevel').value;
-
       if (!year || !grade) return;
 
       document.getElementById('doc-id').value = "";
       CURRENT_RECORD_ID = null;
       document.getElementById('btn-delete').style.display = 'none';
-      
       document.getElementById('form-title').textContent = `Create New SF10 Record: ${grade} (${year})`;
       
       const tbody = document.getElementById('grades-tbody');
       tbody.innerHTML = '';
-      
       handleGradeChange(); 
-      
-      showStatus(`Switched to creating a new record for ${grade} (${year}). Grades cleared.`, 'status-found');
+      showStatus(`Switched to creating a new record for ${grade} (${year}).`, 'status-found');
     };
 
-    // Auto-calculate Final Grade
     document.getElementById('grades-tbody').addEventListener('input', function(e) {
       if (e.target.tagName === 'INPUT' && e.target.type === 'number') {
         const row = e.target.closest('tr');
@@ -368,11 +396,8 @@
     window.addRow = function(data = null) {
       const tbody = document.getElementById('grades-tbody');
       const tr = document.createElement('tr');
-      
       let q4Html = `<td><input type="number" min="60" max="100" class="q4" value="${data?.q4 || ''}"></td>`;
-      if (CURRENT_SYSTEM === '3t') {
-        q4Html = ''; 
-      }
+      if (CURRENT_SYSTEM === '3t') { q4Html = ''; }
 
       tr.innerHTML = `
         <td><input type="text" placeholder="Enter Subject" class="sub-name" value="${data?.sub || ''}"></td>
@@ -392,8 +417,7 @@
 
       const btn = document.querySelector('.btn-search');
       const originalText = btn.innerHTML;
-      btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
-      btn.disabled = true;
+      btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>'; btn.disabled = true;
 
       try {
         const sf10Ref = collection(db, "sf10_archives");
@@ -411,8 +435,7 @@
           records.sort((a,b) => b.schoolYear.localeCompare(a.schoolYear));
           const latestRecord = records[0];
           
-          showStatus(`✅ Found ${records.length} existing year(s) for this student. Showing latest: ${latestRecord.gradeLevel} (${latestRecord.schoolYear})`, 'status-success');
-          
+          showStatus(`✅ Found existing record. Showing latest: ${latestRecord.gradeLevel} (${latestRecord.schoolYear})`, 'status-success');
           loadRecord(latestRecord);
         } else {
           const statusMsg = sf1Data ? `Found in SF1 Archive: ${sf1Data.lastName}, ${sf1Data.firstName}. Please encode the grades below.` : 'No existing record found. You can encode a new SF10 below.';
@@ -439,23 +462,15 @@
             document.getElementById('grades-tbody').innerHTML = '';
             addRow();
           }
-          
           document.getElementById('f-sys').value = '4q';
           updateTableHeaders();
         }
-
-      } catch (error) {
-        console.error("Search error:", error);
-        alert("❌ Error searching database. Please check connection.");
-      } finally {
-        btn.innerHTML = originalText;
-        btn.disabled = false;
-      }
+      } catch (error) { console.error(error); alert("❌ Error searching database."); } 
+      finally { btn.innerHTML = originalText; btn.disabled = false; }
     };
 
     function loadRecord(data) {
       CURRENT_RECORD_ID = data.id;
-      
       document.getElementById('encoder-card').classList.add('active');
       document.getElementById('form-title').textContent = `View / Update SF10 Record (${data.gradeLevel})`;
       document.getElementById('btn-delete').style.display = 'flex';
@@ -464,12 +479,25 @@
       document.getElementById('f-lastname').value = data.lastName || "";
       document.getElementById('f-firstname').value = data.firstName || "";
       document.getElementById('f-middlename').value = data.middleName || "";
+      document.getElementById('f-extname').value = data.extName || "";
       document.getElementById('f-lrn').value = data.lrn || "";
       document.getElementById('f-gradelevel').value = data.gradeLevel || "";
       document.getElementById('f-schoolyear').value = data.schoolYear || "";
       document.getElementById('f-section').value = data.section || "";
       document.getElementById('f-adviser').value = data.adviser || "";
       document.getElementById('f-sys').value = data.gradingSystem || '4q';
+
+      // Load Eligibility
+      document.getElementById('f-elem-school').value = data.elemSchool || "";
+      document.getElementById('f-elem-school-id').value = data.elemSchoolId || "";
+      document.getElementById('f-elem-address').value = data.elemAddress || "";
+      document.getElementById('f-elem-ga').value = data.elemGA || "";
+      document.getElementById('f-elem-citation').value = data.elemCitation || "";
+      document.getElementById('f-pept-rating').value = data.peptRating || "";
+      document.getElementById('f-als-rating').value = data.alsRating || "";
+      document.getElementById('f-elem-others').value = data.elemOthers || "";
+      document.getElementById('f-elem-exam-date').value = data.elemExamDate || "";
+      document.getElementById('f-elem-testing-center').value = data.elemTestingCenter || "";
 
       if (data.gradeLevel === 'Grade 11' || data.gradeLevel === 'Grade 12') {
         document.getElementById('track-group').style.display = 'block';
@@ -479,18 +507,16 @@
       }
 
       updateTableHeaders();
-
       const tbody = document.getElementById('grades-tbody');
       tbody.innerHTML = '';
       
       if (data.grades && data.grades.length > 0) {
-        // IF the subject names are missing, we auto-fix them using the presets!
         const grade = data.gradeLevel;
         let defaultSubjects = SUBJECT_PRESETS["JHS"];
         if (grade.includes('11') || grade.includes('12')) defaultSubjects = SUBJECT_PRESETS["SHS_Academic"];
         
         data.grades.forEach((g, i) => {
-          if (!g.sub && defaultSubjects[i]) g.sub = defaultSubjects[i]; // Auto-fill name
+          if (!g.sub && defaultSubjects[i]) g.sub = defaultSubjects[i];
           addRow(g);
         });
       } else {
@@ -500,8 +526,7 @@
 
     window.deleteRecord = async function() {
       if (!CURRENT_RECORD_ID) return;
-      if (!confirm("Are you sure you want to DELETE this record? This cannot be undone.")) return;
-
+      if (!confirm("Are you sure you want to DELETE this specific year record? This cannot be undone.")) return;
       try {
         await deleteDoc(doc(db, "sf10_archives", CURRENT_RECORD_ID));
         alert("✅ Record Deleted Successfully!");
@@ -510,10 +535,7 @@
         document.getElementById('search-lrn').value = "";
         document.getElementById('status-banner').style.display = 'none';
         CURRENT_RECORD_ID = null;
-      } catch (error) {
-        console.error(error);
-        alert("❌ Failed to delete record.");
-      }
+      } catch (error) { console.error(error); alert("❌ Failed to delete record."); }
     };
 
     window.saveSF10 = async function(e) {
@@ -529,13 +551,9 @@
           const subject = row.querySelector('.sub-name').value.trim();
           if (subject) {
             grades.push({
-              sub: subject, 
-              q1: row.querySelector('.q1').value,
-              q2: row.querySelector('.q2').value,
-              q3: row.querySelector('.q3').value,
+              sub: subject, q1: row.querySelector('.q1').value, q2: row.querySelector('.q2').value, q3: row.querySelector('.q3').value,
               q4: row.querySelector('.q4') ? row.querySelector('.q4').value : "",
-              final: row.querySelector('.final').value,
-              remarks: row.querySelector('.remarks').value
+              final: row.querySelector('.final').value, remarks: row.querySelector('.remarks').value
             });
           }
         });
@@ -544,6 +562,7 @@
           lastName: document.getElementById('f-lastname').value.trim(),
           firstName: document.getElementById('f-firstname').value.trim(),
           middleName: document.getElementById('f-middlename').value.trim(),
+          extName: document.getElementById('f-extname').value.trim(),
           lrn: document.getElementById('f-lrn').value.trim(),
           gradeLevel: document.getElementById('f-gradelevel').value,
           track: document.getElementById('f-track').value,
@@ -551,6 +570,18 @@
           section: document.getElementById('f-section').value.trim(),
           adviser: document.getElementById('f-adviser').value.trim(),
           gradingSystem: document.getElementById('f-sys').value,
+          // Eligibility Data
+          elemSchool: document.getElementById('f-elem-school').value.trim(),
+          elemSchoolId: document.getElementById('f-elem-school-id').value.trim(),
+          elemAddress: document.getElementById('f-elem-address').value.trim(),
+          elemGA: document.getElementById('f-elem-ga').value.trim(),
+          elemCitation: document.getElementById('f-elem-citation').value.trim(),
+          peptRating: document.getElementById('f-pept-rating').value.trim(),
+          alsRating: document.getElementById('f-als-rating').value.trim(),
+          elemOthers: document.getElementById('f-elem-others').value.trim(),
+          elemExamDate: document.getElementById('f-elem-exam-date').value.trim(),
+          elemTestingCenter: document.getElementById('f-elem-testing-center').value.trim(),
+          // Grades
           grades: grades,
           updatedAt: Date.now(),
           updatedBy: auth.currentUser ? auth.currentUser.email : "OJT/Admin"
@@ -575,20 +606,13 @@
         document.getElementById('search-lrn').value = "";
         document.getElementById('status-banner').style.display = 'none';
         CURRENT_RECORD_ID = null;
-
-      } catch (error) {
-        console.error("Save error:", error);
-        alert("❌ Failed to save record.");
-      } finally {
-        btn.innerHTML = originalText; btn.disabled = false;
-      }
+      } catch (error) { console.error(error); alert("❌ Failed to save record."); } 
+      finally { btn.innerHTML = originalText; btn.disabled = false; }
     };
 
     function showStatus(msg, className) {
       const banner = document.getElementById('status-banner');
-      banner.textContent = msg;
-      banner.className = `status-banner ${className}`;
-      banner.style.display = 'block';
+      banner.textContent = msg; banner.className = `status-banner ${className}`; banner.style.display = 'block';
     }
   </script>
 </body>
