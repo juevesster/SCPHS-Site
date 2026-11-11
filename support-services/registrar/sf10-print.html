@@ -51,14 +51,10 @@
        OFFICIAL DEPED SF10 PRINT STYLES
        ============================================================ */
     @media print {
-      /* Force 8.5 x 13 Long Bond Paper (No "portrait" keyword to prevent bugs) */
       @page { size: 8.5in 13in; margin: 0.3in; }
       body { background: #fff; }
       
-      /* Hide all web UI */
       .header, .search-box, #web-ui, #access-denied, .signatory-panel { display: none !important; }
-      
-      /* Show only the print layout */
       #print-wrapper { display: block !important; }
       
       .paper { width: 100%; max-width: 1100px; margin: 0 auto; background: white; }
@@ -131,7 +127,6 @@
         <button class="btn-search" onclick="searchStudent()">Search</button>
       </div>
 
-      <!-- Editable Signatories for the current printout -->
       <div class="signatory-panel" id="signatory-panel">
         <h3><i class="fas fa-edit"></i> Update Signatories for this Print</h3>
         <div class="sig-grid">
@@ -154,7 +149,7 @@
   <div id="print-wrapper">
     <div class="paper">
       
-      <!-- JHS LAYOUT (PAGE 1) -->
+      <!-- JHS LAYOUT (PAGE 1 - Only shown for Grades 7/8) -->
       <div class="page" id="jhs-page1" style="display: none;">
         <div class="sf10-header">
           <div class="header-left">
@@ -187,7 +182,8 @@
         <div class="section-title-shaded">SCHOLASTIC RECORD</div>
         <div id="jhs-grades-page1"></div>
         
-        <div style="margin-top: 40px; display: flex; justify-content: space-between;">
+        <!-- Signatories only show on page 1 if grades are here (Grades 7/8) -->
+        <div id="jhs-page1-sigs" style="margin-top: 40px; display: flex; justify-content: space-between;">
           <div style="text-align: center; width: 45%;">
             <div class="cert-line"></div>
             <div class="print-sig-name" id="print-adviser-name">_________________________</div>
@@ -201,9 +197,9 @@
         </div>
       </div>
 
-      <!-- JHS LAYOUT (PAGE 2) -->
+      <!-- JHS LAYOUT (PAGE 2 - Shown for Grades 9/10 or as continuation of 7/8) -->
       <div class="page page-back" id="jhs-page2" style="display: none;">
-        <div style="font-size:8pt;text-align:right;margin-bottom:3px">SF10-JHS | Page 2 of 2</div>
+        <div style="font-size:8pt;text-align:right;margin-bottom:3px" id="jhs-page2-label">SF10-JHS | Page 2 of 2</div>
         <div class="section-title-shaded">SCHOLASTIC RECORD (Continued)</div>
         <div id="jhs-grades-page2"></div>
         
@@ -288,13 +284,8 @@
     import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
     import { collection, query, where, getDocs, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
-    // 1. Auth Check
     onAuthStateChanged(auth, async (user) => {
-      if (!user) {
-        document.getElementById('access-denied').style.display = 'block';
-        return;
-      }
-      
+      if (!user) { document.getElementById('access-denied').style.display = 'block'; return; }
       try {
         const userSnap = await getDoc(doc(db, "users", user.uid));
         if (userSnap.exists()) {
@@ -307,13 +298,9 @@
         } else {
           document.getElementById('access-denied').style.display = 'block';
         }
-      } catch (error) {
-        console.error(error);
-        document.getElementById('access-denied').style.display = 'block';
-      }
+      } catch (error) { document.getElementById('access-denied').style.display = 'block'; }
     });
 
-    // 2. Search and Print Logic
     window.searchStudent = async function() {
       const searchTerm = document.getElementById('search-lrn').value.trim();
       if (!searchTerm) return alert("Please enter an LRN.");
@@ -330,12 +317,8 @@
 
         if (!snapLrn.empty) {
           const data = snapLrn.docs[0].data();
-          
-          // Set the Adviser Input based on the data, or leave blank if none
           document.getElementById('input-adviser').value = data.adviser || "";
-
           renderPrintView(data);
-          
           document.getElementById('signatory-panel').style.display = 'block';
           document.getElementById('btn-print').style.display = 'block';
         } else {
@@ -353,7 +336,6 @@
       }
     };
 
-    // 3. Update Signatories when typed in the input
     document.getElementById('input-adviser').addEventListener('input', function() {
       const val = this.value || "_________________________";
       document.getElementById('print-adviser-name').textContent = val;
@@ -374,11 +356,9 @@
       document.getElementById('jhs-page2').style.display = 'none';
       document.getElementById('shs-page').style.display = 'none';
 
-      // Initialize Signatories
       document.getElementById('input-adviser').dispatchEvent(new Event('input'));
       document.getElementById('input-principal').dispatchEvent(new Event('input'));
 
-      // Helper function to generate the grade table HTML
       function generateGradeTable(gradeData, includeGrades) {
         const is3Term = data.gradingSystem === '3t';
         const q4Header = is3Term ? '' : '<th style="width:7%">Q4</th>';
@@ -412,19 +392,11 @@
               <tbody>
         `;
 
-        // If we don't include grades, render empty rows (for Page 1 placeholder)
         if (!includeGrades) {
           for (let i = 0; i < 8; i++) {
-            html += `
-              <tr>
-                <td class="sn">_________________________</td>
-                <td></td><td></td><td></td>${is3Term ? '' : '<td></td>'}
-                <td></td><td></td>
-              </tr>
-            `;
+            html += `<tr><td class="sn">_________________________</td><td></td><td></td><td></td>${is3Term ? '' : '<td></td>'}<td></td><td></td></tr>`;
           }
         } else {
-          // Render actual grades
           data.grades.forEach(g => {
             html += `
               <tr>
@@ -443,20 +415,10 @@
           data.grades.forEach(g => { if(g.final) { total += parseInt(g.final); count++; } });
           const genAve = count > 0 ? Math.round(total / count) : 0;
 
-          html += `
-                <tr class="ga">
-                  <td colspan="${is3Term ? 4 : 5}">General Average</td>
-                  <td>${genAve}%</td>
-                  <td>${genAve >= 75 ? 'Passed' : 'Failed'}</td>
-                </tr>
-          `;
+          html += `<tr class="ga"><td colspan="${is3Term ? 4 : 5}">General Average</td><td>${genAve}%</td><td>${genAve >= 75 ? 'Passed' : 'Failed'}</td></tr>`;
         }
 
-        html += `
-              </tbody>
-            </table>
-          </div>
-        `;
+        html += `</tbody></table></div>`;
         return html;
       }
 
@@ -468,7 +430,6 @@
 
         document.getElementById('shs-grades').innerHTML = generateGradeTable(data, true);
         document.getElementById('shs-page').style.display = 'block';
-
       } else {
         document.getElementById('p-lastname').textContent = data.lastName;
         document.getElementById('p-firstname').textContent = data.firstName;
@@ -479,13 +440,17 @@
         document.getElementById('p-cert-sy').textContent = data.schoolYear;
 
         if (data.gradeLevel === 'Grade 7' || data.gradeLevel === 'Grade 8') {
-          // For 7/8, print the actual grades on Page 1
+          // Grades 7/8 go to Page 1
           document.getElementById('jhs-grades-page1').innerHTML = generateGradeTable(data, true);
           document.getElementById('jhs-page1').style.display = 'block';
         } else {
-          // For 9/10, print an empty template on Page 1, and the actual grades on Page 2
+          // Grades 9/10: Hide Page 1 Sigs, put actual grades on Page 2
           document.getElementById('jhs-grades-page1').innerHTML = generateGradeTable(data, false);
+          document.getElementById('jhs-page1-sigs').style.display = 'none'; // Hide redundant sigs on Page 1
+          
           document.getElementById('jhs-grades-page2').innerHTML = generateGradeTable(data, true);
+          document.getElementById('jhs-page2-label').textContent = "SF10-JHS | Page 2"; // Change label
+          
           document.getElementById('jhs-page1').style.display = 'block';
           document.getElementById('jhs-page2').style.display = 'block';
         }
