@@ -88,16 +88,12 @@
         <input type="text" id="search-lrn" placeholder="Enter Student LRN (e.g., 104142140021)..." onkeypress="if(event.key==='Enter') searchStudent()">
         <button class="btn-search" onclick="searchStudent()"><i class="fas fa-search"></i> Search</button>
       </div>
-      <p style="color: var(--gc-muted); font-size: 0.9rem;">
-        <i class="fas fa-info-circle"></i> Search using the 12-digit LRN. The system will auto-fill the name from the LIS SF1 archive if available.
-      </p>
     </div>
 
     <!-- ENCODER FORM -->
     <div class="card" id="encoder-card">
       <h2 class="section-title" id="form-title">Encode SF10 Record</h2>
       
-      <!-- TABS FOR ENCODER -->
       <div class="tabs">
         <button class="tab-btn active" onclick="switchEncTab('grades')">Yearly Grades</button>
         <button class="tab-btn" onclick="switchEncTab('eligibility')">JHS Eligibility</button>
@@ -210,7 +206,7 @@
 
         <!-- TAB 2: ELIGIBILITY -->
         <div class="tab-content" id="tab-eligibility">
-          <p style="color: var(--gc-muted); font-size: 0.9rem; margin-bottom: 20px;">These details are saved to the student's master record and only need to be entered once.</p>
+          <p style="color: var(--gc-muted); font-size: 0.9rem; margin-bottom: 20px;">These details are saved to the student's master record.</p>
           
           <div class="form-grid">
             <div class="form-group">
@@ -260,7 +256,6 @@
           </div>
         </div>
 
-        <!-- SAVE/DELETE BUTTONS -->
         <div class="btn-row">
           <button type="submit" class="btn-save" id="btn-save"><i class="fas fa-save"></i> Save Year Record & Eligibility</button>
           <button type="button" class="btn-delete" id="btn-delete" onclick="deleteRecord()"><i class="fas fa-trash"></i> Delete This Year</button>
@@ -277,7 +272,7 @@
     let CURRENT_RECORD_ID = null;
     let CURRENT_SYSTEM = '4q';
 
-    // Added 'extName' to JHS subjects
+    // Subject Presets with separated MAPEH
     const SUBJECT_PRESETS = {
       "JHS": ["Filipino", "English", "Mathematics", "Science", "Araling Panlipunan", "Values Education", "Technology and Livelihood Education (TLE)", "MAPEH", "Music", "Arts", "Physical Education", "Health"],
       "SHS_Academic": ["Oral Communication", "Reading and Writing", "Komunikasyon at Pananaliksik", "21st Century Literature", "General Mathematics", "Statistics and Probability", "Earth and Life Science", "Physical Science", "Personal Development", "Understanding Culture, Society, and Politics", "Physical Education and Health", "Practical Research 1", "Practical Research 2", "Media and Information Literacy", "Empowerment Technologies"],

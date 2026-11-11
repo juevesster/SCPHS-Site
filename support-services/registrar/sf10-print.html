@@ -56,7 +56,8 @@
       .page-back { page-break-before: always; }
       
       .sf10-header { display: flex; align-items: center; justify-content: space-between; padding: 5px 0; border-bottom: 2px solid #000; margin-bottom: 5px; }
-      .header-left { position: relative; text-align: center; width: 60px; }
+      /* Swapped to match DepEd format: SCPHS left, DepEd right */
+      .header-left { position: relative; text-align: left; width: 60px; }
       .header-seal { max-height: 55px; max-width: 55px; }
       .header-center { text-align: center; flex: 1; }
       .republic { font-size: 10pt; margin: 0; }
@@ -138,14 +139,14 @@
       <!-- PAGE 1 (FRONT) -->
       <div class="page" id="jhs-page1" style="display: none;">
         <div class="sf10-header">
-          <div class="header-left"><img src="../../assets/images/deped-logo.png" class="header-seal" alt="Logo"></div>
+          <div class="header-left"><img src="../../assets/images/scphslogo.png" class="header-seal" alt="School Logo"></div>
           <div class="header-center">
             <div class="republic">Republic of the Philippines</div>
             <div class="deped">Department of Education</div>
             <div class="doc-title">Learner Permanent Academic Record for Junior High School (SF10-JHS)</div>
             <div class="doc-subtitle">(Formerly Form 137)</div>
           </div>
-          <div class="header-right"><img src="../../assets/images/scphslogo.png" class="header-seal" alt="Seal"></div>
+          <div class="header-right"><img src="../../assets/images/deped-logo.png" class="header-seal" alt="DepEd Logo"></div>
         </div>
 
         <div class="sec-title">LEARNER'S INFORMATION</div>
@@ -195,6 +196,25 @@
 
         <div class="sec-title">SCHOLASTIC RECORD</div>
         <div id="grades-page1"></div>
+
+        <div class="cert-box" style="margin-top: 20px;">
+          <div class="sec-title" style="margin-top: 0;">CERTIFICATION</div>
+          <p style="margin: 5px 0;">I CERTIFY that this is a true record of <strong id="p-cert-name1">_________________________</strong> with LRN <strong id="p-cert-lrn1">_________________________</strong> and that he/she is eligible for admission to Grade ________.</p>
+          <div class="signature-block" style="margin-top: 20px; justify-content: space-around; align-items: flex-end;">
+            <div class="sig-box" style="width: 20%;">
+              <div class="sig-line" id="p-cert-date-line1"></div>
+              <div>Date</div>
+            </div>
+            <div class="sig-box" style="width: 40%;">
+              <div class="sig-line"></div>
+              <div class="print-sig-name" id="print-principal-name1">_________________________</div>
+              <div>Signature of Principal/School Head over Printed Name</div>
+            </div>
+            <div class="sig-box" style="width: 20%;">
+              <div style="height: 40px; border: 1px solid #000; display: flex; align-items: center; justify-content: center; font-size: 7pt;">(Affix School Seal Here)</div>
+            </div>
+          </div>
+        </div>
       </div>
 
       <!-- PAGE 2 (BACK) -->
@@ -206,19 +226,19 @@
 
         <div class="cert-box">
           <div class="sec-title" style="margin-top: 0;">CERTIFICATION</div>
-          <p style="margin: 5px 0;">I CERTIFY that this is a true record of <strong id="p-cert-name">_________________________</strong> with LRN <strong id="p-cert-lrn">_________________________</strong> and that he/she is eligible for admission to Grade ________.</p>
+          <p style="margin: 5px 0;">I CERTIFY that this is a true record of <strong id="p-cert-name2">_________________________</strong> with LRN <strong id="p-cert-lrn2">_________________________</strong> and that he/she is eligible for admission to Grade ________.</p>
           <table class="info-table" style="margin-top: 10px;">
             <tr>
               <td><span class="lbl">Name of School:</span> <span class="val" style="min-width: 200px;">Sta. Cruz Pingkian High School</span></td>
               <td><span class="lbl">School ID:</span> <span class="val">300648</span></td>
             </tr>
             <tr>
-              <td colspan="2"><span class="lbl">Last School Year Attended:</span> <span class="val" id="p-cert-sy">-</span></td>
+              <td colspan="2"><span class="lbl">Last School Year Attended:</span> <span class="val" id="p-cert-sy2">-</span></td>
             </tr>
           </table>
           <div class="signature-block" style="margin-top: 20px; justify-content: space-around; align-items: flex-end;">
             <div class="sig-box" style="width: 20%;">
-              <div class="sig-line" id="p-cert-date-line"></div>
+              <div class="sig-line" id="p-cert-date-line2"></div>
               <div>Date</div>
             </div>
             <div class="sig-box" style="width: 40%;">
@@ -233,17 +253,17 @@
         </div>
       </div>
 
-      <!-- SHS LAYOUT (SIMILAR STRUCTURE) -->
+      <!-- SHS LAYOUT -->
       <div class="page" id="shs-page" style="display: none;">
         <div class="sf10-header">
-          <div class="header-left"><img src="../../assets/images/deped-logo.png" class="header-seal" alt="Logo"></div>
+          <div class="header-left"><img src="../../assets/images/scphslogo.png" class="header-seal" alt="School Logo"></div>
           <div class="header-center">
             <div class="republic">Republic of the Philippines</div>
             <div class="deped">Department of Education</div>
             <div class="doc-title">Learner Permanent Academic Record for Senior High School (SF10-SHS)</div>
             <div class="doc-subtitle">(Formerly Form 137)</div>
           </div>
-          <div class="header-right"><img src="../../assets/images/scphslogo.png" class="header-seal" alt="Seal"></div>
+          <div class="header-right"><img src="../../assets/images/deped-logo.png" class="header-seal" alt="DepEd Logo"></div>
         </div>
 
         <div class="sec-title">LEARNER'S INFORMATION</div>
@@ -347,13 +367,15 @@
     // Signatory listeners
     document.getElementById('input-principal').addEventListener('input', function() {
       const val = this.value || "_________________________";
+      document.getElementById('print-principal-name1').textContent = val;
       document.getElementById('print-principal-name2').textContent = val;
       document.getElementById('print-shs-principal-name').textContent = val;
     });
 
     document.getElementById('input-date').addEventListener('input', function() {
       const val = this.value || "";
-      document.getElementById('p-cert-date-line').textContent = val;
+      document.getElementById('p-cert-date-line1').textContent = val;
+      document.getElementById('p-cert-date-line2').textContent = val;
       document.getElementById('p-shs-cert-date-line').textContent = val;
     });
 
@@ -417,9 +439,15 @@
         `;
 
         recordData.grades.forEach(g => {
+          let rowClass = "sn";
+          // Indent MAPEH components
+          if (["Music", "Arts", "Physical Education", "Health"].includes(g.sub)) {
+            rowClass = "sn mapeh-indent";
+          }
+
           html += `
             <tr>
-              <td class="sn">${g.sub || ''}</td>
+              <td class="${rowClass}">${g.sub || ''}</td>
               <td>${g.q1 || ''}</td>
               <td>${g.q2 || ''}</td>
               <td>${g.q3 || ''}</td>
@@ -486,8 +514,12 @@
         document.getElementById('p-middlename').textContent = firstRecord.middleName;
         document.getElementById('p-extname').textContent = firstRecord.extName || '';
         document.getElementById('p-lrn').textContent = lrn;
-        document.getElementById('p-cert-name').textContent = `${firstRecord.firstName} ${firstRecord.middleName} ${firstRecord.lastName}`;
-        document.getElementById('p-cert-lrn').textContent = lrn;
+        
+        // Populate Certification on both pages
+        document.getElementById('p-cert-name1').textContent = `${firstRecord.firstName} ${firstRecord.middleName} ${firstRecord.lastName}`;
+        document.getElementById('p-cert-lrn1').textContent = lrn;
+        document.getElementById('p-cert-name2').textContent = `${firstRecord.firstName} ${firstRecord.middleName} ${firstRecord.lastName}`;
+        document.getElementById('p-cert-lrn2').textContent = lrn;
 
         // Eligibility Data
         document.getElementById('p-elem-school').textContent = firstRecord.elemSchool || "";
@@ -509,7 +541,7 @@
         }
         
         const latestRecord = records[records.length - 1];
-        document.getElementById('p-cert-sy').textContent = latestRecord.schoolYear;
+        document.getElementById('p-cert-sy2').textContent = latestRecord.schoolYear;
 
         const page1Records = records.filter(r => r.gradeLevel === 'Grade 7' || r.gradeLevel === 'Grade 8');
         const page2Records = records.filter(r => r.gradeLevel === 'Grade 9' || r.gradeLevel === 'Grade 10');
