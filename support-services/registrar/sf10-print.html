@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>SF10 Viewer / Print – SCPHS Registrar</title>
+  <link rel="stylesheet" href="../../assets/css/styles.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <style>
+    :root {
+      --gc-primary: #0f4c81;
+      --gc-accent: #2563eb;
+      --gc-bg: #f1f5f9;
+      --gc-border: #e2e8f0;
+      --gc-text: #1e293b;
+      --gc-muted: #64748b;
+    }
+    
+    body { background: var(--gc-bg); margin: 0; font-family: 'Inter', system-ui, sans-serif; }
+    .wrap { max-width: 1000px; margin: 0 auto; padding: 20px 16px; }
+
+    /* Web Header */
+    .header { background: #fff; padding: 20px; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;}
+    .header h1 { margin: 0; color: var(--gc-primary); font-size: 1.5rem; font-weight: 800; }
+    
+    .search-box { display: flex; gap: 10px; margin-bottom: 20px; }
+    .search-box input { flex: 1; padding: 12px 16px; border: 1px solid var(--gc-border); border-radius: 8px; font-size: 1rem; outline: none; }
+    .search-box input:focus { border-color: var(--gc-accent); }
+    .btn-search { background: var(--gc-primary); color: #fff; border: none; padding: 0 20px; border-radius: 8px; font-weight: 600; cursor: pointer; }
+    .btn-print { background: #16a34a; color: #fff; border: none; padding: 10px 20px; border-radius: 8px; font-weight: 600; cursor: pointer; display: none; margin-left: auto;}
+    
+    /* Hidden Print Layout Container */
+    #print-wrapper { display: none; }
+
+    /* ============================================================
+       OFFICIAL DEPED SF10 PRINT STYLES
+       ============================================================ */
+    @media print {
+      @page { size: legal portrait; margin: 0.3in; }
+      body { background: #fff; }
+      .header, .search-box, #web-ui { display: none !important; }
+      
+      #print-wrapper { display: block !important; }
+      
+      .paper { width: 100%; max-width: 1100px; margin: 0 auto; background: white; }
+      .page { padding: 10px 20px; min-height: 100vh; }
+      .page-back { page-break-before: always; }
+      
+      .sf10-header { display: flex; align-items: center; justify-content: center; padding: 8px 0; border-bottom: 2px solid #000; margin-bottom: 5px; gap: 8px; }
+      .header-left { position: relative; text-align: center; padding: 0; margin: 0; }
+      .header-seal { max-height: 70px; max-width: 70px; display: block; margin: 0 auto; padding-top: 5px; }
+      .form-code { font-size: 9pt; font-weight: bold; position: absolute; top: -10px; left: -60px; }
+      .header-center { text-align: center; padding: 0 8px; }
+      .republic { font-size: 11pt; letter-spacing: 0.5px; line-height: 1.1; margin: 0; }
+      .deped { font-size: 11pt; font-weight: bold; line-height: 1.1; margin: 0; }
+      .doc-title { font-size: 11pt; font-weight: bold; text-transform: uppercase; line-height: 1.1; white-space: nowrap; margin: 0; }
+      .doc-subtitle { font-size: 9pt; font-style: italic; line-height: 1.1; margin: 0; }
+      .header-right { text-align: center; padding: 0; margin: 0; }
+      .header-logo-right { max-height: 70px; max-width: 70px; display: block; margin: 0 auto; }
+      
+      .section-title-shaded { font-weight: bold; font-size: 8pt; text-align: center; text-transform: uppercase; background: #e8dcc8; padding: 2px 0; border-top: 1px solid #000; border-bottom: 1px solid #000; margin: 6px 0 4px; -webkit-print-color-adjust: exact; }
+      .lbl { font-weight: bold; white-space: nowrap; font-size: 8pt; }
+      .val { border-bottom: 1px solid #000; display: inline-block; min-width: 100px; padding: 0 3px; font-size: 8pt; }
+      .val-flex { border-bottom: 1px solid #000; display: inline-block; min-width: 80px; padding: 0 3px; flex: 1; font-size: 8pt; }
+      
+      .info-row { display: flex; gap: 12px; margin: 2px 0; }
+      .info-row-full { display: flex; gap: 8px; margin: 2px 0; }
+      
+      .elig-section { padding: 3px 15px; font-size: 7.5pt; }
+      .elig-row { display: flex; gap: 8px; margin: 2px 0; }
+      .elig-sep { border: none; border-top: 1px solid #000; margin: 3px 0; }
+      
+      table { width: 100%; border-collapse: collapse; font-size: 8pt; margin: 3px 0; }
+      table th, table td { border: 1px solid #000; padding: 2px 3px; text-align: center; vertical-align: middle; }
+      table th { background: #f0f0f0; font-weight: bold; font-size: 9pt; -webkit-print-color-adjust: exact; }
+      .sn { text-align: left; font-weight: bold; padding-left: 3px; font-size: 9.5pt; }
+      .sc { text-align: left; padding-left: 10px; font-style: italic; font-size: 6pt; }
+      .ga td { font-weight: bold; background: #f9f9f9; -webkit-print-color-adjust: exact; }
+      .term-header { background: #1c6e4a; color: white; padding: 2px 5px; border-radius: 3px; font-size: 7pt; display: inline-block; -webkit-print-color-adjust: exact;}
+      
+      .cert-content { padding: 8px 20px; font-size: 9pt; line-height: 2; }
+      .cert-bottom { display: flex; align-items: flex-start; padding: 8px 20px; margin-top: 5px; }
+      .cert-left { width: 30%; text-align: center; }
+      .cert-center { width: 40%; text-align: center; }
+      .cert-right { width: 30%; text-align: center; }
+      .cert-line { border-top: 1px solid #000; width: 140px; margin: 20px auto 3px; }
+      .seal-box { border: 2px solid #000; width: 80px; height: 80px; margin: 0 auto; display: flex; align-items: center; justify-content: center; font-size: 7pt; }
+      .rev-note { text-align: center; margin-top: 5px; font-size: 6pt; color: #555; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="wrap" id="web-ui">
+    <div class="header">
+      <h1><i class="fas fa-print"></i> SF10 Print Viewer</h1>
+      <a href="index.html" style="color: var(--gc-primary); text-decoration: none; font-weight: 600;">← Back to Registrar</a>
+    </div>
+
+    <div class="search-box">
+      <input type="text" id="search-lrn" placeholder="Enter Student LRN to pull up SF10..." onkeypress="if(event.key==='Enter') searchStudent()">
+      <button class="btn-search" onclick="searchStudent()">Search</button>
+      <button class="btn-print" id="btn-print" onclick="window.print()"><i class="fas fa-print"></i> Print SF10</button>
+    </div>
+  </div>
+
+  <!-- HIDDEN PRINT WRAPPER -->
+  <div id="print-wrapper">
+    <div class="paper">
+      
+      <!-- JHS LAYOUT (PAGE 1) -->
+      <div class="page" id="jhs-page1" style="display: none;">
+        <div class="sf10-header">
+          <div class="header-left">
+            <div class="form-code">SF10-JHS</div>
+            <img src="../../assets/images/deped-logo.png" class="header-seal" alt="Logo" onerror="this.src='https://ui-avatars.com/api/?name=DepEd&background=003366&color=fff'">
+          </div>
+          <div class="header-center">
+            <div class="republic">Republic of the Philippines</div>
+            <div class="deped">Department of Education</div>
+            <div class="doc-title">Learner Permanent Academic Record for Junior High School (SF10-JHS)</div>
+            <div class="doc-subtitle">(Formerly Form 137) | DO 009, s. 2026</div>
+          </div>
+          <div class="header-right">
+            <img src="../../assets/images/scphslogo.png" class="header-logo-right" alt="Seal" onerror="this.src='https://ui-avatars.com/api/?name=SCPHS&background=f1f5f9&color=003366'">
+          </div>
+        </div>
+        
+        <div class="section-title-shaded">LEARNER'S INFORMATION</div>
+        <div style="padding:3px 15px">
+          <div class="info-row">
+            <span class="lbl">LAST NAME:</span><span class="val" id="p-lastname">-</span>
+            <span class="lbl">FIRST NAME:</span><span class="val" id="p-firstname">-</span>
+          </div>
+          <div class="info-row">
+            <span class="lbl">MIDDLE NAME:</span><span class="val" id="p-middlename">-</span>
+            <span class="lbl">LRN:</span><span class="val" id="p-lrn">-</span>
+          </div>
+        </div>
+
+        <div class="section-title-shaded">SCHOLASTIC RECORD</div>
+        <div id="jhs-grades-page1"></div>
+        
+        <!-- Placeholder for Page 1 Footer -->
+        <div style="margin-top: 40px; display: flex; justify-content: space-between;">
+          <div style="text-align: center; width: 45%;">
+            <div class="cert-line"></div>
+            <strong>Class Adviser</strong>
+          </div>
+          <div style="text-align: center; width: 45%;">
+            <div class="cert-line"></div>
+            <strong>Principal / School Head</strong>
+          </div>
+        </div>
+      </div>
+
+      <!-- JHS LAYOUT (PAGE 2) -->
+      <div class="page page-back" id="jhs-page2" style="display: none;">
+        <div style="font-size:8pt;text-align:right;margin-bottom:3px">SF10-JHS | Page 2 of 2</div>
+        <div class="section-title-shaded">SCHOLASTIC RECORD (Continued)</div>
+        <div id="jhs-grades-page2"></div>
+        
+        <div class="section-title-shaded" style="margin-top:8px">CERTIFICATION</div>
+        <div class="cert-content">
+            <p>I CERTIFY that this is a true record of <strong id="p-cert-name">_________________________</strong> with LRN <strong id="p-cert-lrn">_________________________</strong> and that he/she is eligible for admission to Grade ________.</p>
+            <div class="elig-row">
+                <span class="lbl">Name of School:</span><span class="val-flex">Sta. Cruz Pingkian High School</span>
+                <span class="lbl">School ID:</span><span class="val">300648</span>
+            </div>
+            <div class="elig-row"><span class="lbl">Last School Year Attended:</span><span class="val" id="p-cert-sy">-</span></div>
+        </div>
+        <div class="cert-bottom">
+            <div class="cert-left">
+                <strong>Date:</strong>
+                <div class="cert-line" style="width:120px"></div>
+            </div>
+            <div class="cert-center">
+                <div class="cert-line"></div>
+                <strong>SATURNINO P. CALANSI EdD</strong><br>
+                Signature of Principal
+            </div>
+            <div class="cert-right">
+                <div class="seal-box"><small>(Seal)</small></div>
+                <div class="rev-note">DO 009, s. 2026 | DepEd LMS</div>
+            </div>
+        </div>
+      </div>
+
+      <!-- SHS LAYOUT -->
+      <div class="page" id="shs-page" style="display: none;">
+        <div class="sf10-header">
+          <div class="header-left">
+            <div class="form-code">SF10-SHS</div>
+            <img src="../../assets/images/deped-logo.png" class="header-seal" alt="Logo">
+          </div>
+          <div class="header-center">
+            <div class="republic">Republic of the Philippines</div>
+            <div class="deped">Department of Education</div>
+            <div class="doc-title">Learner Permanent Academic Record for Senior High School (SF10-SHS)</div>
+            <div class="doc-subtitle">(Formerly Form 137) | DO 009, s. 2026</div>
+          </div>
+          <div class="header-right">
+            <img src="../../assets/images/scphslogo.png" class="header-logo-right" alt="Seal">
+          </div>
+        </div>
+
+        <div class="section-title-shaded">LEARNER'S INFORMATION</div>
+        <div style="padding:3px 15px">
+          <div class="info-row">
+            <span class="lbl">LAST NAME:</span><span class="val" id="p-shs-lastname">-</span>
+            <span class="lbl">FIRST NAME:</span><span class="val" id="p-shs-firstname">-</span>
+          </div>
+          <div class="info-row">
+            <span class="lbl">MIDDLE NAME:</span><span class="val" id="p-shs-middlename">-</span>
+            <span class="lbl">LRN:</span><span class="val" id="p-shs-lrn">-</span>
+          </div>
+        </div>
+
+        <div class="section-title-shaded">SCHOLASTIC RECORD</div>
+        <div id="shs-grades"></div>
+
+        <!-- Placeholder for SHS Footer -->
+        <div style="margin-top: 40px; display: flex; justify-content: space-between;">
+          <div style="text-align: center; width: 45%;">
+            <div class="cert-line"></div>
+            <strong>Class Adviser</strong>
+          </div>
+          <div style="text-align: center; width: 45%;">
+            <div class="cert-line"></div>
+            <strong>Principal / School Head</strong>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <script type="module">
+    import { db } from "../../assets/js/firebase-config.js";
+    import { collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+    window.searchStudent = async function() {
+      const searchTerm = document.getElementById('search-lrn').value.trim();
+      if (!searchTerm) return alert("Please enter an LRN.");
+
+      const btn = document.querySelector('.btn-search');
+      const originalText = btn.innerHTML;
+      btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+      btn.disabled = true;
+
+      try {
+        const sf10Ref = collection(db, "sf10_archives");
+        const qLrn = query(sf10Ref, where("lrn", "==", searchTerm));
+        const snapLrn = await getDocs(qLrn);
+
+        if (!snapLrn.empty) {
+          const data = snapLrn.docs[0].data();
+          renderPrintView(data);
+          document.getElementById('btn-print').style.display = 'block';
+        } else {
+          alert("❌ No archived SF10 record found for this LRN. Please encode it first using the SF10 Encoder.");
+          document.getElementById('btn-print').style.display = 'none';
+          document.getElementById('print-wrapper').style.display = 'none';
+        }
+      } catch (error) {
+        console.error(error);
+        alert("❌ Error searching database.");
+      } finally {
+        btn.innerHTML = originalText;
+        btn.disabled = false;
+      }
+    };
+
+    function renderPrintView(data) {
+      const isSHS = data.gradeLevel.includes('Grade 11') || data.gradeLevel.includes('Grade 12');
+      
+      // Hide all layouts first
+      document.getElementById('jhs-page1').style.display = 'none';
+      document.getElementById('jhs-page2').style.display = 'none';
+      document.getElementById('shs-page').style.display = 'none';
+
+      if (isSHS) {
+        // Render SHS Layout
+        document.getElementById('p-shs-lastname').textContent = data.lastName;
+        document.getElementById('p-shs-firstname').textContent = data.firstName;
+        document.getElementById('p-shs-middlename').textContent = data.middleName;
+        document.getElementById('p-shs-lrn').textContent = data.lrn;
+
+        const is3Term = data.gradingSystem === '3t';
+        const q4Header = is3Term ? '' : '<th style="width:7%">Q4</th>';
+        
+        let html = `
+          <div style="margin:8px 0; border:1px solid #ccc; padding:6px; border-radius:4px">
+            <div style="display:flex;justify-content:space-between;flex-wrap:wrap;font-size:7pt;margin-bottom:4px">
+              <span><strong>School:</strong> Sta. Cruz Pingkian High School</span>
+              <span><strong>School ID:</strong> 300648</span>
+              <span><strong>Division:</strong> Nueva Vizcaya</span>
+              <span><strong>Region:</strong> II</span>
+            </div>
+            <div style="display:flex;justify-content:space-between;flex-wrap:wrap;font-size:7pt;margin-bottom:4px">
+              <span><strong>Classified as Grade:</strong> ${data.gradeLevel.replace('Grade ', '')}</span>
+              <span><strong>Section:</strong> ${data.section || ''}</span>
+              <span><strong>School Year:</strong> ${data.schoolYear}</span>
+              <span><strong>System:</strong> ${is3Term ? 'New Curriculum (3-Term)' : 'Old Curriculum (4-Quarter)'}</span>
+            </div>
+            <table style="width:100%; border-collapse:collapse;">
+              <thead>
+                <tr>
+                  <th style="width:30%; text-align:left;">LEARNING AREAS</th>
+                  <th>${is3Term ? 'Term 1' : 'Q1'}</th>
+                  <th>${is3Term ? 'Term 2' : 'Q2'}</th>
+                  <th>${is3Term ? 'Term 3' : 'Q3'}</th>
+                  ${q4Header}
+                  <th>FINAL RATING</th>
+                  <th>REMARKS</th>
+                </tr>
+              </thead>
+              <tbody>
+        `;
+
+        data.grades.forEach(g => {
+          html += `
+            <tr>
+              <td class="sn">${g.subject}</td>
+              <td>${g.q1 || ''}</td>
+              <td>${g.q2 || ''}</td>
+              <td>${g.q3 || ''}</td>
+              ${is3Term ? '' : `<td>${g.q4 || ''}</td>`}
+              <td>${g.final || ''}</td>
+              <td>${g.remarks || ''}</td>
+            </tr>
+          `;
+        });
+
+        // Calculate General Average
+        let total = 0; let count = 0;
+        data.grades.forEach(g => { if(g.final) { total += parseInt(g.final); count++; } });
+        const genAve = count > 0 ? Math.round(total / count) : 0;
+
+        html += `
+              <tr class="ga">
+                <td colspan="${is3Term ? 4 : 5}">General Average</td>
+                <td>${genAve}%</td>
+                <td>${genAve >= 75 ? 'Passed' : 'Failed'}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        `;
+        
+        document.getElementById('shs-grades').innerHTML = html;
+        document.getElementById('shs-page').style.display = 'block';
+
+      } else {
+        // Render JHS Layout (Splitting into Page 1 and Page 2 based on Grade Level)
+        // For simplicity in this archive viewer, we'll put all grades on Page 1 if it's a single year, 
+        // or split if the OJT encoded multiple years (which we didn't allow in the encoder, so we'll just show the encoded year).
+        
+        document.getElementById('p-lastname').textContent = data.lastName;
+        document.getElementById('p-firstname').textContent = data.firstName;
+        document.getElementById('p-middlename').textContent = data.middleName;
+        document.getElementById('p-lrn').textContent = data.lrn;
+        document.getElementById('p-cert-name').textContent = `${data.firstName} ${data.middleName} ${data.lastName}`;
+        document.getElementById('p-cert-lrn').textContent = data.lrn;
+        document.getElementById('p-cert-sy').textContent = data.schoolYear;
+
+        const is3Term = data.gradingSystem === '3t';
+        const q4Header = is3Term ? '' : '<th style="width:7%">Q4</th>';
+        
+        let html = `
+          <div style="margin:8px 0; border:1px solid #ccc; padding:6px; border-radius:4px">
+            <div style="display:flex;justify-content:space-between;flex-wrap:wrap;font-size:7pt;margin-bottom:4px">
+              <span><strong>School:</strong> Sta. Cruz Pingkian High School</span>
+              <span><strong>School ID:</strong> 300648</span>
+              <span><strong>Division:</strong> Nueva Vizcaya</span>
+              <span><strong>Region:</strong> II</span>
+            </div>
+            <div style="display:flex;justify-content:space-between;flex-wrap:wrap;font-size:7pt;margin-bottom:4px">
+              <span><strong>Classified as Grade:</strong> ${data.gradeLevel.replace('Grade ', '')}</span>
+              <span><strong>Section:</strong> ${data.section || ''}</span>
+              <span><strong>School Year:</strong> ${data.schoolYear}</span>
+              <span><strong>System:</strong> ${is3Term ? 'New Curriculum (3-Term)' : 'Old Curriculum (4-Quarter)'}</span>
+            </div>
+            <table style="width:100%; border-collapse:collapse;">
+              <thead>
+                <tr>
+                  <th style="width:30%; text-align:left;">LEARNING AREAS</th>
+                  <th>${is3Term ? 'Term 1' : 'Q1'}</th>
+                  <th>${is3Term ? 'Term 2' : 'Q2'}</th>
+                  <th>${is3Term ? 'Term 3' : 'Q3'}</th>
+                  ${q4Header}
+                  <th>FINAL RATING</th>
+                  <th>REMARKS</th>
+                </tr>
+              </thead>
+              <tbody>
+        `;
+
+        data.grades.forEach(g => {
+          html += `
+            <tr>
+              <td class="sn">${g.subject}</td>
+              <td>${g.q1 || ''}</td>
+              <td>${g.q2 || ''}</td>
+              <td>${g.q3 || ''}</td>
+              ${is3Term ? '' : `<td>${g.q4 || ''}</td>`}
+              <td>${g.final || ''}</td>
+              <td>${g.remarks || ''}</td>
+            </tr>
+          `;
+        });
+
+        let total = 0; let count = 0;
+        data.grades.forEach(g => { if(g.final) { total += parseInt(g.final); count++; } });
+        const genAve = count > 0 ? Math.round(total / count) : 0;
+
+        html += `
+              <tr class="ga">
+                <td colspan="${is3Term ? 4 : 5}">General Average</td>
+                <td>${genAve}%</td>
+                <td>${genAve >= 75 ? 'Passed' : 'Failed'}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        `;
+        
+        // If it's Grade 7 or 8, show on page 1. If Grade 9 or 10, show on page 2.
+        if (data.gradeLevel === 'Grade 7' || data.gradeLevel === 'Grade 8') {
+          document.getElementById('jhs-grades-page1').innerHTML = html;
+          document.getElementById('jhs-page1').style.display = 'block';
+        } else {
+          document.getElementById('jhs-grades-page2').innerHTML = html;
+          document.getElementById('jhs-page1').style.display = 'block'; // Show empty page 1 for printing
+          document.getElementById('jhs-page2').style.display = 'block';
+        }
+      }
+      
+      // Show the print button
+      document.getElementById('btn-print').style.display = 'block';
+    }
+  </script>
+</body>
+</html>
