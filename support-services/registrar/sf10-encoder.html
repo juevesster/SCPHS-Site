@@ -210,6 +210,7 @@
     let CURRENT_SYSTEM = '4q';
     let CURRENT_LRN = "";
 
+    // Subject Presets
     const SUBJECT_PRESETS = {
       "JHS": [
         "Filipino", "English", "Mathematics", "Science", 
@@ -313,27 +314,22 @@
       }
     };
 
-    // When the Year changes, clear the saved ID and clear the grade inputs so the OJT knows it's a new record!
     window.resetForNewYear = function() {
-      if (!CURRENT_RECORD_ID) return; // Only trigger if we are currently editing an existing record
+      if (!CURRENT_RECORD_ID) return; 
       
       const year = document.getElementById('f-schoolyear').value;
       const grade = document.getElementById('f-gradelevel').value;
 
       if (!year || !grade) return;
 
-      // Clear the hidden ID so it saves as a new document
       document.getElementById('doc-id').value = "";
       CURRENT_RECORD_ID = null;
       
-      // Update the form title to indicate a new record
       document.getElementById('form-title').textContent = `Create New SF10 Record: ${grade} (${year})`;
       
-      // Clear the grades table
       const tbody = document.getElementById('grades-tbody');
       tbody.innerHTML = '';
       
-      // Regenerate the empty subject rows
       handleGradeChange(); 
       
       showStatus(`Switched to creating a new record for ${grade} (${year}). Grades cleared.`, 'status-found');
@@ -413,8 +409,6 @@
         }
 
         if (!snapLrn.empty) {
-          // Found existing records. Let's load the most recent one to edit, 
-          // but show a message that there are multiple years.
           const records = snapLrn.docs.map(d => ({ id: d.id, ...d.data() }));
           
           // Sort by schoolYear descending
@@ -467,6 +461,7 @@
       }
     };
 
+    // Load Record Function
     function loadRecord(data) {
       CURRENT_RECORD_ID = data.id;
       
@@ -496,6 +491,7 @@
       const tbody = document.getElementById('grades-tbody');
       tbody.innerHTML = '';
       
+      // If the database has grades saved, we MUST populate the rows with them.
       if (data.grades && data.grades.length > 0) {
         data.grades.forEach(g => addRow(g));
       } else {
@@ -516,7 +512,7 @@
           const subject = row.querySelector('.sub-name').value.trim();
           if (subject) {
             grades.push({
-              subject: subject,
+              subject: subject, // Save the subject name!
               q1: row.querySelector('.q1').value,
               q2: row.querySelector('.q2').value,
               q3: row.querySelector('.q3').value,
@@ -544,20 +540,14 @@
         };
 
         const sf10Ref = collection(db, "sf10_archives");
-        
-        // Use Custom ID based on LRN + SchoolYear + GradeLevel to prevent duplicates!
         const customDocId = `${dataToSave.lrn}_${dataToSave.schoolYear}_${dataToSave.gradeLevel.replace(/\s+/g,'')}`;
-
-        // Check if this specific year/grade record already exists
         const docRef = doc(db, "sf10_archives", customDocId);
         const docSnap = await getDoc(docRef);
 
         if (docSnap.exists()) {
-          // It exists, update it
           await updateDoc(docRef, dataToSave);
           alert("✅ SF10 Record Updated Successfully!");
         } else {
-          // Doesn't exist, create new with custom ID
           dataToSave.createdAt = Date.now();
           await setDoc(docRef, dataToSave);
           alert("✅ New SF10 Record Saved Successfully!");
