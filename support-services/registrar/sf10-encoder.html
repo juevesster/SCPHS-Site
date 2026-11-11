@@ -20,7 +20,7 @@
     }
     
     body { background: var(--gc-bg); margin: 0; font-family: 'Inter', system-ui, sans-serif; }
-    .wrap { max-width: 1000px; margin: 0 auto; padding: 20px 16px; }
+    .wrap { max-width: 1100px; margin: 0 auto; padding: 20px 16px; }
 
     .header { background: #fff; padding: 20px; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;}
     .header h1 { margin: 0; color: var(--gc-primary); font-size: 1.5rem; font-weight: 800; }
@@ -46,6 +46,7 @@
     .grade-table th, .grade-table td { padding: 8px; border: 1px solid var(--gc-border); text-align: center; }
     .grade-table th { background: var(--gc-bg); font-size: 0.85rem; font-weight: 700; color: var(--gc-text); }
     .grade-table input { width: 100%; border: none; padding: 5px; text-align: center; font-size: 1rem; font-weight: 600; background: transparent; }
+    .grade-table input.sub-name { text-align: left; font-weight: 700; color: var(--gc-primary); }
     .grade-table input:focus { background: #eff6ff; outline: none; border-radius: 4px; }
 
     .btn-save { background: var(--gc-success); color: #fff; border: none; padding: 14px 24px; border-radius: 8px; font-weight: 700; font-size: 1rem; cursor: pointer; width: 100%; transition: 0.2s; display: flex; justify-content: center; align-items: center; gap: 8px; }
@@ -107,6 +108,35 @@
             <label>LRN</label>
             <input type="text" id="f-lrn" required maxlength="12">
           </div>
+          
+          <div class="form-group">
+            <label>Grade Level</label>
+            <select id="f-gradelevel" onchange="handleGradeChange()" required>
+              <option value="">Select Grade Level...</option>
+              <optgroup label="Junior High School">
+                <option value="Grade 7">Grade 7</option>
+                <option value="Grade 8">Grade 8</option>
+                <option value="Grade 9">Grade 9</option>
+                <option value="Grade 10">Grade 10</option>
+              </optgroup>
+              <optgroup label="Senior High School">
+                <option value="Grade 11">Grade 11</option>
+                <option value="Grade 12">Grade 12</option>
+              </optgroup>
+            </select>
+          </div>
+
+          <!-- Track/Strand (Only shows for SHS) -->
+          <div class="form-group" id="track-group" style="display: none;">
+            <label>Track / Strand</label>
+            <select id="f-track" onchange="changeGradeLevel()">
+              <option value="">Select Track...</option>
+              <option value="Academic">Academic (STEM, ABM, HUMSS, GAS)</option>
+              <option value="TechPro">TechPro / TVL</option>
+              <option value="Custom">Custom / Other</option>
+            </select>
+          </div>
+
           <div class="form-group">
             <label>Historical School Year</label>
             <select id="f-schoolyear" required>
@@ -123,8 +153,7 @@
               <option value="2017-2018">2017-2018</option>
             </select>
           </div>
-          
-          <!-- NEW GRADING SYSTEM TOGGLE -->
+
           <div class="form-group" style="background: #eff6ff; padding: 10px; border-radius: 8px; border: 1px solid #bfdbfe;">
             <label style="color: var(--gc-accent);">Grading System</label>
             <select id="f-sys" onchange="updateTableHeaders()" style="font-weight: bold; border-color: var(--gc-accent);">
@@ -133,22 +162,6 @@
             </select>
           </div>
 
-          <div class="form-group">
-            <label>Grade Level</label>
-            <select id="f-gradelevel" required>
-              <option value="">Select Grade Level...</option>
-              <optgroup label="Junior High School">
-                <option value="Grade 7">Grade 7</option>
-                <option value="Grade 8">Grade 8</option>
-                <option value="Grade 9">Grade 9</option>
-                <option value="Grade 10">Grade 10</option>
-              </optgroup>
-              <optgroup label="Senior High School">
-                <option value="Grade 11">Grade 11</option>
-                <option value="Grade 12">Grade 12</option>
-              </optgroup>
-            </select>
-          </div>
           <div class="form-group">
             <label>Section (Optional)</label>
             <input type="text" id="f-section" placeholder="e.g. Ruby">
@@ -159,7 +172,10 @@
           </div>
         </div>
 
-        <h3 style="font-size: 1rem; color: var(--gc-primary); margin: 20px 0 10px;">Subject Grades</h3>
+        <div style="display: flex; justify-content: space-between; align-items: center; margin: 20px 0 10px;">
+          <h3 style="font-size: 1rem; color: var(--gc-primary); margin: 0;">Subject Grades</h3>
+          <button type="button" class="btn-search" onclick="addRow()" style="padding: 8px 16px; font-size: 0.85rem; background: #475569;"><i class="fas fa-plus"></i> Add Subject Row</button>
+        </div>
         
         <!-- Grades Table -->
         <div class="grade-table-wrap" style="overflow-x: auto;">
@@ -176,25 +192,12 @@
               </tr>
             </thead>
             <tbody id="grades-tbody">
-              <!-- Default row -->
-              <tr>
-                <td><input type="text" placeholder="e.g. Filipino" class="sub-name"></td>
-                <td><input type="number" min="60" max="100" class="q1"></td>
-                <td><input type="number" min="60" max="100" class="q2"></td>
-                <td><input type="number" min="60" max="100" class="q3"></td>
-                <td><input type="number" min="60" max="100" class="q4"></td>
-                <td><input type="number" min="60" max="100" class="final" readonly tabindex="-1" style="background:#f8fafc; cursor:not-allowed;"></td>
-                <td><input type="text" class="remarks" readonly tabindex="-1" style="background:#f8fafc; cursor:not-allowed;"></td>
-              </tr>
+              <!-- Rows injected by JS -->
             </tbody>
           </table>
         </div>
-        
-        <div style="display: flex; gap: 10px; margin-bottom: 20px;">
-          <button type="button" class="btn-search" onclick="addRow()" style="padding: 10px; background: #475569;"><i class="fas fa-plus"></i> Add Subject Row</button>
-        </div>
 
-        <button type="submit" class="btn-save" id="btn-save"><i class="fas fa-save"></i> Save to Database</button>
+        <button type="submit" class="btn-save" id="btn-save" style="margin-top: 20px;"><i class="fas fa-save"></i> Save to Database</button>
       </form>
     </div>
   </div>
@@ -206,6 +209,31 @@
 
     let CURRENT_RECORD_ID = null;
     let CURRENT_SYSTEM = '4q'; // '4q' or '3t'
+
+    // Subject Presets based on standard DepEd SF10
+    const SUBJECT_PRESETS = {
+      "JHS": [
+        "Filipino", "English", "Mathematics", "Science", 
+        "Araling Panlipunan", "Edukasyon sa Pagpapakatao", 
+        "TLE", "MAPEH"
+      ],
+      "SHS_Academic": [
+        "Oral Communication", "Reading and Writing", "Komunikasyon at Pananaliksik", 
+        "21st Century Literature", "General Mathematics", "Statistics and Probability", 
+        "Earth and Life Science", "Physical Science", "Personal Development", 
+        "Understanding Culture, Society, and Politics", "Physical Education and Health",
+        "Practical Research 1", "Practical Research 2", "Media and Information Literacy", 
+        "Empowerment Technologies", "Homeroom Guidance Program"
+      ],
+      "SHS_TechPro": [
+        "Oral Communication", "Reading and Writing", "Komunikasyon at Pananaliksik", 
+        "21st Century Literature", "General Mathematics", "Statistics and Probability", 
+        "Earth and Life Science", "Physical Science", "Personal Development", 
+        "Understanding Culture, Society, and Politics", "Physical Education and Health",
+        "Practical Research 1", "Practical Research 2", 
+        "Specialized TVL Subject 1", "Specialized TVL Subject 2", "Homeroom Guidance Program"
+      ]
+    };
 
     // Function to change table headers dynamically
     window.updateTableHeaders = function() {
@@ -235,11 +263,9 @@
         `;
       }
 
-      // Rebuild the rows to match the new column count
+      // Rebuild rows to match column count
       const tbody = document.getElementById('grades-tbody');
       const existingData = [];
-      
-      // Save existing data before rebuilding
       tbody.querySelectorAll('tr').forEach(row => {
         existingData.push({
           sub: row.querySelector('.sub-name').value,
@@ -253,13 +279,57 @@
       });
 
       tbody.innerHTML = '';
-      
       if (existingData.length === 0) {
         addRow();
       } else {
-        existingData.forEach(data => {
-          addRow(data);
-        });
+        existingData.forEach(data => addRow(data));
+      }
+    };
+
+    // Show/Hide Track selector and reload presets
+    window.handleGradeChange = function() {
+      const grade = document.getElementById('f-gradelevel').value;
+      const trackGroup = document.getElementById('track-group');
+      
+      if (grade === 'Grade 11' || grade === 'Grade 12') {
+        trackGroup.style.display = 'block';
+      } else {
+        trackGroup.style.display = 'none';
+        document.getElementById('f-track').value = "";
+      }
+      changeGradeLevel();
+    };
+
+    // Function to load preset subjects
+    window.changeGradeLevel = function() {
+      const grade = document.getElementById('f-gradelevel').value;
+      const track = document.getElementById('f-track').value;
+      const tbody = document.getElementById('grades-tbody');
+      
+      if (!grade) return;
+
+      let subjects = [];
+      
+      if (grade.includes('Grade 7') || grade.includes('Grade 8') || grade.includes('Grade 9') || grade.includes('Grade 10')) {
+        subjects = SUBJECT_PRESETS["JHS"];
+      } else if (grade.includes('Grade 11') || grade.includes('Grade 12')) {
+        if (!track) return; // Wait for track to be selected
+        if (track === "Academic") subjects = SUBJECT_PRESETS["SHS_Academic"];
+        else if (track === "TechPro") subjects = SUBJECT_PRESETS["SHS_TechPro"];
+        else subjects = []; // Custom track
+      }
+
+      // Only auto-fill if the table is currently empty to prevent overwriting typed data
+      const rows = tbody.querySelectorAll('tr');
+      const hasData = rows.length > 1 || (rows.length === 1 && rows[0].querySelector('.sub-name').value !== "");
+
+      if (!hasData) {
+        tbody.innerHTML = '';
+        if (subjects.length > 0) {
+          subjects.forEach(sub => addRow({ sub: sub }));
+        } else {
+          addRow(); // Empty row for custom
+        }
       }
     };
 
@@ -274,14 +344,12 @@
         const q4 = q4El ? parseFloat(q4El.value) || 0 : 0;
         
         if (CURRENT_SYSTEM === '3t') {
-          // 3 Terms average
           if (q1 > 0 && q2 > 0 && q3 > 0) {
             const final = Math.round((q1 + q2 + q3) / 3);
             row.querySelector('.final').value = final;
             row.querySelector('.remarks').value = final >= 75 ? 'Passed' : 'Failed';
           }
         } else {
-          // 4 Quarters average
           if (q1 > 0 && q2 > 0 && q3 > 0 && q4 > 0) {
             const final = Math.round((q1 + q2 + q3 + q4) / 4);
             row.querySelector('.final').value = final;
@@ -297,11 +365,11 @@
       
       let q4Html = `<td><input type="number" min="60" max="100" class="q4" value="${data?.q4 || ''}"></td>`;
       if (CURRENT_SYSTEM === '3t') {
-        q4Html = ''; // Remove Q4 column if 3 terms
+        q4Html = ''; 
       }
 
       tr.innerHTML = `
-        <td><input type="text" placeholder="e.g. Science" class="sub-name" value="${data?.sub || ''}"></td>
+        <td><input type="text" placeholder="Enter Subject" class="sub-name" value="${data?.sub || ''}"></td>
         <td><input type="number" min="60" max="100" class="q1" value="${data?.q1 || ''}"></td>
         <td><input type="number" min="60" max="100" class="q2" value="${data?.q2 || ''}"></td>
         <td><input type="number" min="60" max="100" class="q3" value="${data?.q3 || ''}"></td>
@@ -329,7 +397,6 @@
         const snapLrn = await getDocs(qLrn);
 
         if (!snapLrn.empty) {
-          // Record found in SF10
           loadRecord(snapLrn.docs[0]);
         } else {
           // 2. Not in SF10. Check if they exist in the LIS SF1 Historical Archive
@@ -365,9 +432,14 @@
              document.getElementById('f-gradelevel').value = sf1Data.gradeLevel || "";
              document.getElementById('f-schoolyear').value = sf1Data.schoolYear || "";
              document.getElementById('f-section').value = sf1Data.section || "";
+             
+             // Trigger UI updates
+             handleGradeChange();
+          } else {
+            document.getElementById('grades-tbody').innerHTML = '';
+            addRow();
           }
           
-          // Reset grades table
           document.getElementById('f-sys').value = '4q';
           updateTableHeaders();
         }
@@ -402,6 +474,14 @@
       document.getElementById('f-adviser').value = data.adviser || "";
       document.getElementById('f-sys').value = data.gradingSystem || '4q';
 
+      // Handle Track visibility
+      if (data.gradeLevel === 'Grade 11' || data.gradeLevel === 'Grade 12') {
+        document.getElementById('track-group').style.display = 'block';
+        document.getElementById('f-track').value = data.track || "";
+      } else {
+        document.getElementById('track-group').style.display = 'none';
+      }
+
       updateTableHeaders();
 
       // Populate grades
@@ -409,9 +489,7 @@
       tbody.innerHTML = '';
       
       if (data.grades && data.grades.length > 0) {
-        data.grades.forEach(g => {
-          addRow(g);
-        });
+        data.grades.forEach(g => addRow(g));
       } else {
         addRow(); 
       }
@@ -448,6 +526,7 @@
           middleName: document.getElementById('f-middlename').value.trim(),
           lrn: document.getElementById('f-lrn').value.trim(),
           gradeLevel: document.getElementById('f-gradelevel').value,
+          track: document.getElementById('f-track').value,
           schoolYear: document.getElementById('f-schoolyear').value,
           section: document.getElementById('f-section').value.trim(),
           adviser: document.getElementById('f-adviser').value.trim(),
