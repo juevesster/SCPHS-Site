@@ -17,6 +17,7 @@
       --gc-text: #1e293b;
       --gc-muted: #64748b;
       --gc-success: #16a34a;
+      --gc-danger: #dc2626;
     }
     
     body { background: var(--gc-bg); margin: 0; font-family: 'Inter', system-ui, sans-serif; }
@@ -49,8 +50,11 @@
     .grade-table input.sub-name { text-align: left; font-weight: 700; color: var(--gc-primary); }
     .grade-table input:focus { background: #eff6ff; outline: none; border-radius: 4px; }
 
-    .btn-save { background: var(--gc-success); color: #fff; border: none; padding: 14px 24px; border-radius: 8px; font-weight: 700; font-size: 1rem; cursor: pointer; width: 100%; transition: 0.2s; display: flex; justify-content: center; align-items: center; gap: 8px; }
+    .btn-row { display: flex; gap: 10px; margin-top: 20px; }
+    .btn-save { flex: 1; background: var(--gc-success); color: #fff; border: none; padding: 14px 24px; border-radius: 8px; font-weight: 700; font-size: 1rem; cursor: pointer; transition: 0.2s; display: flex; justify-content: center; align-items: center; gap: 8px; }
     .btn-save:hover { background: #15803d; transform: translateY(-2px); }
+    .btn-delete { background: var(--gc-danger); color: #fff; border: none; padding: 14px 24px; border-radius: 8px; font-weight: 700; font-size: 1rem; cursor: pointer; transition: 0.2s; display: none; justify-content: center; align-items: center; gap: 8px; }
+    .btn-delete:hover { background: #b91c1c; transform: translateY(-2px); }
 
     /* Status Banner */
     .status-banner { padding: 15px; border-radius: 8px; margin-bottom: 20px; display: none; font-weight: 600; text-align: center; }
@@ -87,7 +91,6 @@
       <h2 class="section-title" id="form-title">Encode SF10 Record</h2>
       
       <form id="sf10-form" onsubmit="saveSF10(event)">
-        <!-- Hidden IDs -->
         <input type="hidden" id="doc-id" value="">
         
         <!-- Student Info -->
@@ -196,7 +199,10 @@
           </table>
         </div>
 
-        <button type="submit" class="btn-save" id="btn-save" style="margin-top: 20px;"><i class="fas fa-save"></i> Save to Database</button>
+        <div class="btn-row">
+          <button type="submit" class="btn-save" id="btn-save"><i class="fas fa-save"></i> Save Record</button>
+          <button type="button" class="btn-delete" id="btn-delete" onclick="deleteRecord()"><i class="fas fa-trash"></i> Delete Record</button>
+        </div>
       </form>
     </div>
   </div>
@@ -204,13 +210,11 @@
   <script type="module">
     import { auth, db } from "../../assets/js/firebase-config.js";
     import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-    import { collection, query, where, getDocs, doc, getDoc, setDoc, updateDoc, addDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+    import { collection, query, where, getDocs, doc, getDoc, setDoc, updateDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
     let CURRENT_RECORD_ID = null;
     let CURRENT_SYSTEM = '4q';
-    let CURRENT_LRN = "";
 
-    // Subject Presets
     const SUBJECT_PRESETS = {
       "JHS": [
         "Filipino", "English", "Mathematics", "Science", 
@@ -246,7 +250,6 @@
         headerRow.innerHTML = `<th style="width: 35%; text-align: left;">Learning Area / Subject</th><th>Q1</th><th>Q2</th><th>Q3</th><th>Q4</th><th>Final</th><th>Remarks</th>`;
       }
 
-      // Rebuild rows to match column count
       const tbody = document.getElementById('grades-tbody');
       const existingData = [];
       tbody.querySelectorAll('tr').forEach(row => {
@@ -324,6 +327,7 @@
 
       document.getElementById('doc-id').value = "";
       CURRENT_RECORD_ID = null;
+      document.getElementById('btn-delete').style.display = 'none';
       
       document.getElementById('form-title').textContent = `Create New SF10 Record: ${grade} (${year})`;
       
@@ -390,38 +394,27 @@
       const originalText = btn.innerHTML;
       btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
       btn.disabled = true;
-      CURRENT_LRN = searchTerm;
 
       try {
         const sf10Ref = collection(db, "sf10_archives");
-        
-        // Query for ALL records matching this LRN
         const qLrn = query(sf10Ref, where("lrn", "==", searchTerm));
         const snapLrn = await getDocs(qLrn);
 
-        // Check SF1 Archive for Name auto-fill
         let sf1Data = null;
         const sf1Ref = collection(db, "sf1_historical_archives");
         const qSF1 = query(sf1Ref, where("lrn", "==", searchTerm));
         const snapSF1 = await getDocs(qSF1);
-        if (!snapSF1.empty) {
-          sf1Data = snapSF1.docs[0].data();
-        }
+        if (!snapSF1.empty) sf1Data = snapSF1.docs[0].data();
 
         if (!snapLrn.empty) {
           const records = snapLrn.docs.map(d => ({ id: d.id, ...d.data() }));
-          
-          // Sort by schoolYear descending
           records.sort((a,b) => b.schoolYear.localeCompare(a.schoolYear));
-          
           const latestRecord = records[0];
           
           showStatus(`✅ Found ${records.length} existing year(s) for this student. Showing latest: ${latestRecord.gradeLevel} (${latestRecord.schoolYear})`, 'status-success');
           
           loadRecord(latestRecord);
-
         } else {
-          // No records found. Prompt to create new
           const statusMsg = sf1Data ? `Found in SF1 Archive: ${sf1Data.lastName}, ${sf1Data.firstName}. Please encode the grades below.` : 'No existing record found. You can encode a new SF10 below.';
           showStatus(statusMsg, sf1Data ? 'status-success' : 'status-warning');
           
@@ -430,11 +423,10 @@
           document.getElementById('sf10-form').reset();
           document.getElementById('doc-id').value = "";
           CURRENT_RECORD_ID = null;
+          document.getElementById('btn-delete').style.display = 'none';
           
-          // Auto-fill LRN
           document.getElementById('f-lrn').value = searchTerm;
 
-          // Auto-fill from SF1 if available
           if (sf1Data) {
              document.getElementById('f-lastname').value = sf1Data.lastName || "";
              document.getElementById('f-firstname').value = sf1Data.firstName || "";
@@ -461,12 +453,12 @@
       }
     };
 
-    // Load Record Function
     function loadRecord(data) {
       CURRENT_RECORD_ID = data.id;
       
       document.getElementById('encoder-card').classList.add('active');
       document.getElementById('form-title').textContent = `View / Update SF10 Record (${data.gradeLevel})`;
+      document.getElementById('btn-delete').style.display = 'flex';
       
       document.getElementById('doc-id').value = CURRENT_RECORD_ID;
       document.getElementById('f-lastname').value = data.lastName || "";
@@ -491,13 +483,38 @@
       const tbody = document.getElementById('grades-tbody');
       tbody.innerHTML = '';
       
-      // If the database has grades saved, we MUST populate the rows with them.
       if (data.grades && data.grades.length > 0) {
-        data.grades.forEach(g => addRow(g));
+        // IF the subject names are missing, we auto-fix them using the presets!
+        const grade = data.gradeLevel;
+        let defaultSubjects = SUBJECT_PRESETS["JHS"];
+        if (grade.includes('11') || grade.includes('12')) defaultSubjects = SUBJECT_PRESETS["SHS_Academic"];
+        
+        data.grades.forEach((g, i) => {
+          if (!g.sub && defaultSubjects[i]) g.sub = defaultSubjects[i]; // Auto-fill name
+          addRow(g);
+        });
       } else {
         addRow(); 
       }
     }
+
+    window.deleteRecord = async function() {
+      if (!CURRENT_RECORD_ID) return;
+      if (!confirm("Are you sure you want to DELETE this record? This cannot be undone.")) return;
+
+      try {
+        await deleteDoc(doc(db, "sf10_archives", CURRENT_RECORD_ID));
+        alert("✅ Record Deleted Successfully!");
+        document.getElementById('sf10-form').reset();
+        document.getElementById('encoder-card').classList.remove('active');
+        document.getElementById('search-lrn').value = "";
+        document.getElementById('status-banner').style.display = 'none';
+        CURRENT_RECORD_ID = null;
+      } catch (error) {
+        console.error(error);
+        alert("❌ Failed to delete record.");
+      }
+    };
 
     window.saveSF10 = async function(e) {
       e.preventDefault();
@@ -512,7 +529,7 @@
           const subject = row.querySelector('.sub-name').value.trim();
           if (subject) {
             grades.push({
-              subject: subject, // Save the subject name!
+              sub: subject, 
               q1: row.querySelector('.q1').value,
               q2: row.querySelector('.q2').value,
               q3: row.querySelector('.q3').value,
@@ -553,9 +570,7 @@
           alert("✅ New SF10 Record Saved Successfully!");
         }
         
-        // Reset form
         document.getElementById('sf10-form').reset();
-        document.getElementById('doc-id').value = "";
         document.getElementById('encoder-card').classList.remove('active');
         document.getElementById('search-lrn').value = "";
         document.getElementById('status-banner').style.display = 'none';
