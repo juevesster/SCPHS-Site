@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>SF10 Digital Archive – SCPHS Registrar</title>
+  <link rel="stylesheet" href="../../assets/css/styles.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <style>
+    :root {
+      --gc-primary: #0f4c81;
+      --gc-accent: #2563eb;
+      --gc-bg: #f1f5f9;
+      --gc-card: #ffffff;
+      --gc-border: #e2e8f0;
+      --gc-text: #1e293b;
+      --gc-muted: #64748b;
+      --gc-success: #16a34a;
+    }
+    
+    body { background: var(--gc-bg); margin: 0; font-family: 'Inter', system-ui, sans-serif; }
+    .wrap { max-width: 1000px; margin: 0 auto; padding: 20px 16px; }
+
+    .header { background: #fff; padding: 20px; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;}
+    .header h1 { margin: 0; color: var(--gc-primary); font-size: 1.5rem; font-weight: 800; }
+    
+    .search-box { display: flex; gap: 10px; margin-bottom: 20px; }
+    .search-box input { flex: 1; padding: 12px 16px; border: 1px solid var(--gc-border); border-radius: 8px; font-size: 1rem; outline: none; }
+    .search-box input:focus { border-color: var(--gc-accent); }
+    .btn-search { background: var(--gc-primary); color: #fff; border: none; padding: 0 20px; border-radius: 8px; font-weight: 600; cursor: pointer; }
+
+    /* Encoder Form */
+    .card { background: #fff; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); padding: 30px; margin-bottom: 20px; display: none; }
+    .card.active { display: block; animation: fadeIn 0.3s ease; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+    .section-title { font-size: 1.1rem; color: var(--gc-primary); border-bottom: 2px solid var(--gc-border); padding-bottom: 10px; margin-bottom: 20px; font-weight: 700; text-transform: uppercase; }
+
+    .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 20px; }
+    .form-group label { display: block; font-size: 0.8rem; font-weight: 700; color: #333; margin-bottom: 5px; text-transform: uppercase; }
+    .form-group input, .form-group select { width: 100%; padding: 10px; border: 1px solid var(--gc-border); border-radius: 6px; font-family: inherit; font-size: 0.95rem; }
+    
+    /* Grade Table */
+    .grade-table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
+    .grade-table th, .grade-table td { padding: 8px; border: 1px solid var(--gc-border); text-align: center; }
+    .grade-table th { background: var(--gc-bg); font-size: 0.85rem; font-weight: 700; color: var(--gc-text); }
+    .grade-table input { width: 100%; border: none; padding: 5px; text-align: center; font-size: 1rem; font-weight: 600; background: transparent; }
+    .grade-table input:focus { background: #eff6ff; outline: none; border-radius: 4px; }
+
+    .btn-save { background: var(--gc-success); color: #fff; border: none; padding: 14px 24px; border-radius: 8px; font-weight: 700; font-size: 1rem; cursor: pointer; width: 100%; transition: 0.2s; display: flex; justify-content: center; align-items: center; gap: 8px; }
+    .btn-save:hover { background: #15803d; transform: translateY(-2px); }
+
+    /* Status Banner */
+    .status-banner { padding: 15px; border-radius: 8px; margin-bottom: 20px; display: none; font-weight: 600; text-align: center; }
+    .status-success { background: #dcfce7; color: #166534; border: 1px solid #bbf7d0; }
+    .status-found { background: #e0f2fe; color: #1e40af; border: 1px solid #bfdbfe; }
+
+  </style>
+</head>
+<body>
+
+  <div class="wrap">
+    <div class="header">
+      <h1><i class="fas fa-file-archive"></i> SF10 Digital Archive</h1>
+      <a href="index.html" style="color: var(--gc-primary); text-decoration: none; font-weight: 600;">← Back to Registrar</a>
+    </div>
+
+    <div class="status-banner" id="status-banner"></div>
+
+    <!-- SEARCH SECTION -->
+    <div class="card active" id="search-card">
+      <h2 class="section-title">Search Student to Encode / View</h2>
+      <div class="search-box">
+        <input type="text" id="search-lrn" placeholder="Enter Student LRN or Full Name...">
+        <button class="btn-search" onclick="searchStudent()"><i class="fas fa-search"></i> Search</button>
+      </div>
+      <p style="color: var(--gc-muted); font-size: 0.9rem;">
+        <i class="fas fa-info-circle"></i> If the student is not found in the database, the encoder will be prompted to create a new SF10 record.
+      </p>
+    </div>
+
+    <!-- ENCODER FORM -->
+    <div class="card" id="encoder-card">
+      <h2 class="section-title" id="form-title">Encode SF10 Record</h2>
+      
+      <form id="sf10-form" onsubmit="saveSF10(event)">
+        <!-- Hidden IDs -->
+        <input type="hidden" id="doc-id" value="">
+        
+        <!-- Student Info -->
+        <div class="form-grid">
+          <div class="form-group">
+            <label>Last Name</label>
+            <input type="text" id="f-lastname" required>
+          </div>
+          <div class="form-group">
+            <label>First Name</label>
+            <input type="text" id="f-firstname" required>
+          </div>
+          <div class="form-group">
+            <label>Middle Name</label>
+            <input type="text" id="f-middlename">
+          </div>
+          <div class="form-group">
+            <label>LRN</label>
+            <input type="text" id="f-lrn" required maxlength="12">
+          </div>
+          <div class="form-group">
+            <label>Grade Level (e.g., Grade 7, Grade 11)</label>
+            <input type="text" id="f-gradelevel" required placeholder="Grade 7">
+          </div>
+          <div class="form-group">
+            <label>School Year</label>
+            <input type="text" id="f-schoolyear" required placeholder="2018-2019">
+          </div>
+          <div class="form-group">
+            <label>Section</label>
+            <input type="text" id="f-section" placeholder="e.g. Sampaguita">
+          </div>
+          <div class="form-group">
+            <label>Adviser</label>
+            <input type="text" id="f-adviser">
+          </div>
+        </div>
+
+        <h3 style="font-size: 1rem; color: var(--gc-primary); margin: 20px 0 10px;">Subject Grades</h3>
+        
+        <!-- Grades Table -->
+        <div class="grade-table-wrap" style="overflow-x: auto;">
+          <table class="grade-table">
+            <thead>
+              <tr>
+                <th style="width: 40%; text-align: left;">Learning Area / Subject</th>
+                <th>Q1</th>
+                <th>Q2</th>
+                <th>Q3</th>
+                <th>Q4</th>
+                <th>Final</th>
+                <th>Remarks</th>
+              </tr>
+            </thead>
+            <tbody id="grades-tbody">
+              <!-- Default 8 rows for JHS -->
+              <tr>
+                <td><input type="text" placeholder="e.g. Filipino" class="sub-name"></td>
+                <td><input type="number" min="60" max="100" class="q1"></td>
+                <td><input type="number" min="60" max="100" class="q2"></td>
+                <td><input type="number" min="60" max="100" class="q3"></td>
+                <td><input type="number" min="60" max="100" class="q4"></td>
+                <td><input type="number" min="60" max="100" class="final" readonly tabindex="-1" style="background:#f8fafc; cursor:not-allowed;"></td>
+                <td><input type="text" class="remarks" readonly tabindex="-1" style="background:#f8fafc; cursor:not-allowed;"></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        
+        <div style="display: flex; gap: 10px; margin-bottom: 20px;">
+          <button type="button" class="btn-search" onclick="addRow()" style="padding: 10px; background: #475569;"><i class="fas fa-plus"></i> Add Subject Row</button>
+        </div>
+
+        <button type="submit" class="btn-save" id="btn-save"><i class="fas fa-save"></i> Save to Database</button>
+      </form>
+    </div>
+  </div>
+
+  <script type="module">
+    import { auth, db } from "../../assets/js/firebase-config.js";
+    import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+    import { collection, query, where, getDocs, doc, getDoc, setDoc, updateDoc, addDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+    let CURRENT_RECORD_ID = null;
+
+    // Auto-calculate Final Grade and Remarks when inputs change
+    document.getElementById('grades-tbody').addEventListener('input', function(e) {
+      if (e.target.tagName === 'INPUT' && e.target.type === 'number') {
+        const row = e.target.closest('tr');
+        const q1 = parseFloat(row.querySelector('.q1').value) || 0;
+        const q2 = parseFloat(row.querySelector('.q2').value) || 0;
+        const q3 = parseFloat(row.querySelector('.q3').value) || 0;
+        const q4 = parseFloat(row.querySelector('.q4').value) || 0;
+        
+        // If all 4 quarters are filled, calculate average
+        if (q1 > 0 && q2 > 0 && q3 > 0 && q4 > 0) {
+          const final = Math.round((q1 + q2 + q3 + q4) / 4);
+          row.querySelector('.final').value = final;
+          row.querySelector('.remarks').value = final >= 75 ? 'Passed' : 'Failed';
+        } else {
+          row.querySelector('.final').value = '';
+          row.querySelector('.remarks').value = '';
+        }
+      }
+    });
+
+    // Add a new subject row
+    window.addRow = function() {
+      const tbody = document.getElementById('grades-tbody');
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td><input type="text" placeholder="e.g. Science" class="sub-name"></td>
+        <td><input type="number" min="60" max="100" class="q1"></td>
+        <td><input type="number" min="60" max="100" class="q2"></td>
+        <td><input type="number" min="60" max="100" class="q3"></td>
+        <td><input type="number" min="60" max="100" class="q4"></td>
+        <td><input type="number" min="60" max="100" class="final" readonly tabindex="-1" style="background:#f8fafc; cursor:not-allowed;"></td>
+        <td><input type="text" class="remarks" readonly tabindex="-1" style="background:#f8fafc; cursor:not-allowed;"></td>
+      `;
+      tbody.appendChild(tr);
+    };
+
+    // Search logic
+    window.searchStudent = async function() {
+      const searchTerm = document.getElementById('search-lrn').value.trim();
+      if (!searchTerm) return alert("Please enter an LRN or Name.");
+
+      const btn = document.querySelector('.btn-search');
+      btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+      btn.disabled = true;
+
+      try {
+        let found = false;
+        const sf10Ref = collection(db, "sf10_archives");
+
+        // Try searching by LRN first
+        const qLrn = query(sf10Ref, where("lrn", "==", searchTerm));
+        const snapLrn = await getDocs(qLrn);
+
+        if (!snapLrn.empty) {
+          loadRecord(snapLrn.docs[0]);
+          found = true;
+        } else {
+          // Try searching by Name (Exact match for simplicity)
+          const qName = query(sf10Ref, where("lastName", "==", searchTerm)); // Simplified search
+          const snapName = await getDocs(qName);
+          if (!snapName.empty) {
+            loadRecord(snapName.docs[0]);
+            found = true;
+          }
+        }
+
+        if (!found) {
+          // If not found, prompt to create new
+          showStatus('No existing record found. You can encode a new SF10 below.', 'status-found');
+          document.getElementById('encoder-card').classList.add('active');
+          document.getElementById('form-title').textContent = "Create New SF10 Record";
+          document.getElementById('sf10-form').reset();
+          document.getElementById('doc-id').value = "";
+          
+          // Auto-fill the search term into LRN or Last Name
+          if (/^\d{12}$/.test(searchTerm)) {
+            document.getElementById('f-lrn').value = searchTerm;
+          } else {
+            document.getElementById('f-lastname').value = searchTerm;
+          }
+        }
+
+      } catch (error) {
+        console.error("Search error:", error);
+        alert("❌ Error searching database.");
+      } finally {
+        btn.innerHTML = '<i class="fas fa-search"></i> Search';
+        btn.disabled = false;
+      }
+    };
+
+    // Load existing record into form
+    function loadRecord(docSnap) {
+      const data = docSnap.data();
+      CURRENT_RECORD_ID = docSnap.id;
+      
+      showStatus(`✅ Existing Record Found for ${data.lastName}, ${data.firstName}`, 'status-success');
+      
+      document.getElementById('encoder-card').classList.add('active');
+      document.getElementById('form-title').textContent = "View / Update SF10 Record";
+      
+      document.getElementById('doc-id').value = CURRENT_RECORD_ID;
+      document.getElementById('f-lastname').value = data.lastName || "";
+      document.getElementById('f-firstname').value = data.firstName || "";
+      document.getElementById('f-middlename').value = data.middleName || "";
+      document.getElementById('f-lrn').value = data.lrn || "";
+      document.getElementById('f-gradelevel').value = data.gradeLevel || "";
+      document.getElementById('f-schoolyear').value = data.schoolYear || "";
+      document.getElementById('f-section').value = data.section || "";
+      document.getElementById('f-adviser').value = data.adviser || "";
+
+      // Populate grades
+      const tbody = document.getElementById('grades-tbody');
+      tbody.innerHTML = '';
+      
+      if (data.grades && data.grades.length > 0) {
+        data.grades.forEach(g => {
+          const tr = document.createElement('tr');
+          tr.innerHTML = `
+            <td><input type="text" class="sub-name" value="${g.subject || ''}"></td>
+            <td><input type="number" class="q1" value="${g.q1 || ''}"></td>
+            <td><input type="number" class="q2" value="${g.q2 || ''}"></td>
+            <td><input type="number" class="q3" value="${g.q3 || ''}"></td>
+            <td><input type="number" class="q4" value="${g.q4 || ''}"></td>
+            <td><input type="number" class="final" value="${g.final || ''}" readonly style="background:#f8fafc; cursor:not-allowed;"></td>
+            <td><input type="text" class="remarks" value="${g.remarks || ''}" readonly style="background:#f8fafc; cursor:not-allowed;"></td>
+          `;
+          tbody.appendChild(tr);
+        });
+      } else {
+        addRow(); // Add one blank row if no grades
+      }
+    }
+
+    // Save logic
+    window.saveSF10 = async function(e) {
+      e.preventDefault();
+      const btn = document.getElementById('btn-save');
+      const originalText = btn.innerHTML;
+      btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...'; btn.disabled = true;
+
+      try {
+        // Gather grades from table
+        const rows = document.querySelectorAll('#grades-tbody tr');
+        const grades = [];
+        rows.forEach(row => {
+          const subject = row.querySelector('.sub-name').value.trim();
+          if (subject) {
+            grades.push({
+              subject: subject,
+              q1: row.querySelector('.q1').value,
+              q2: row.querySelector('.q2').value,
+              q3: row.querySelector('.q3').value,
+              q4: row.querySelector('.q4').value,
+              final: row.querySelector('.final').value,
+              remarks: row.querySelector('.remarks').value
+            });
+          }
+        });
+
+        const dataToSave = {
+          lastName: document.getElementById('f-lastname').value.trim(),
+          firstName: document.getElementById('f-firstname').value.trim(),
+          middleName: document.getElementById('f-middlename').value.trim(),
+          lrn: document.getElementById('f-lrn').value.trim(),
+          gradeLevel: document.getElementById('f-gradelevel').value.trim(),
+          schoolYear: document.getElementById('f-schoolyear').value.trim(),
+          section: document.getElementById('f-section').value.trim(),
+          adviser: document.getElementById('f-adviser').value.trim(),
+          grades: grades,
+          updatedAt: Date.now(),
+          updatedBy: auth.currentUser ? auth.currentUser.email : "OJT/Admin"
+        };
+
+        const sf10Ref = collection(db, "sf10_archives");
+
+        if (CURRENT_RECORD_ID) {
+          // Update existing
+          await updateDoc(doc(sf10Ref, CURRENT_RECORD_ID), dataToSave);
+          alert("✅ SF10 Record Updated Successfully!");
+        } else {
+          // Create new
+          dataToSave.createdAt = Date.now();
+          await addDoc(sf10Ref, dataToSave);
+          alert("✅ New SF10 Record Saved Successfully!");
+        }
+        
+        // Reset
+        document.getElementById('sf10-form').reset();
+        document.getElementById('doc-id').value = "";
+        document.getElementById('encoder-card').classList.remove('active');
+        document.getElementById('search-lrn').value = "";
+        document.getElementById('status-banner').style.display = 'none';
+
+      } catch (error) {
+        console.error("Save error:", error);
+        alert("❌ Failed to save record.");
+      } finally {
+        btn.innerHTML = originalText; btn.disabled = false;
+      }
+    };
+
+    function showStatus(msg, className) {
+      const banner = document.getElementById('status-banner');
+      banner.textContent = msg;
+      banner.className = `status-banner ${className}`;
+      banner.style.display = 'block';
+    }
+  </script>
+</body>
+</html>
