@@ -126,7 +126,6 @@
             </select>
           </div>
 
-          <!-- Track/Strand (Only shows for SHS) -->
           <div class="form-group" id="track-group" style="display: none;">
             <label>Track / Strand</label>
             <select id="f-track" onchange="changeGradeLevel()">
@@ -139,7 +138,7 @@
 
           <div class="form-group">
             <label>Historical School Year</label>
-            <select id="f-schoolyear" required>
+            <select id="f-schoolyear" onchange="resetForNewYear()" required>
               <option value="">Select School Year...</option>
               <option value="2026-2027">2026-2027 (Current)</option>
               <option value="2025-2026">2025-2026</option>
@@ -208,9 +207,9 @@
     import { collection, query, where, getDocs, doc, getDoc, setDoc, updateDoc, addDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
     let CURRENT_RECORD_ID = null;
-    let CURRENT_SYSTEM = '4q'; // '4q' or '3t'
+    let CURRENT_SYSTEM = '4q';
+    let CURRENT_LRN = "";
 
-    // Subject Presets based on standard DepEd SF10
     const SUBJECT_PRESETS = {
       "JHS": [
         "Filipino", "English", "Mathematics", "Science", 
@@ -235,32 +234,15 @@
       ]
     };
 
-    // Function to change table headers dynamically
     window.updateTableHeaders = function() {
       const sys = document.getElementById('f-sys').value;
       CURRENT_SYSTEM = sys;
-      
       const headerRow = document.getElementById('grade-header-row');
       
       if (sys === '3t') {
-        headerRow.innerHTML = `
-          <th style="width: 35%; text-align: left;">Learning Area / Subject</th>
-          <th>Term 1</th>
-          <th>Term 2</th>
-          <th>Term 3</th>
-          <th>Final</th>
-          <th>Remarks</th>
-        `;
+        headerRow.innerHTML = `<th style="width: 35%; text-align: left;">Learning Area / Subject</th><th>Term 1</th><th>Term 2</th><th>Term 3</th><th>Final</th><th>Remarks</th>`;
       } else {
-        headerRow.innerHTML = `
-          <th style="width: 35%; text-align: left;">Learning Area / Subject</th>
-          <th>Q1</th>
-          <th>Q2</th>
-          <th>Q3</th>
-          <th>Q4</th>
-          <th>Final</th>
-          <th>Remarks</th>
-        `;
+        headerRow.innerHTML = `<th style="width: 35%; text-align: left;">Learning Area / Subject</th><th>Q1</th><th>Q2</th><th>Q3</th><th>Q4</th><th>Final</th><th>Remarks</th>`;
       }
 
       // Rebuild rows to match column count
@@ -286,7 +268,6 @@
       }
     };
 
-    // Show/Hide Track selector and reload presets
     window.handleGradeChange = function() {
       const grade = document.getElementById('f-gradelevel').value;
       const trackGroup = document.getElementById('track-group');
@@ -298,9 +279,9 @@
         document.getElementById('f-track').value = "";
       }
       changeGradeLevel();
+      resetForNewYear(); 
     };
 
-    // Function to load preset subjects
     window.changeGradeLevel = function() {
       const grade = document.getElementById('f-gradelevel').value;
       const track = document.getElementById('f-track').value;
@@ -313,13 +294,12 @@
       if (grade.includes('Grade 7') || grade.includes('Grade 8') || grade.includes('Grade 9') || grade.includes('Grade 10')) {
         subjects = SUBJECT_PRESETS["JHS"];
       } else if (grade.includes('Grade 11') || grade.includes('Grade 12')) {
-        if (!track) return; // Wait for track to be selected
+        if (!track) return;
         if (track === "Academic") subjects = SUBJECT_PRESETS["SHS_Academic"];
         else if (track === "TechPro") subjects = SUBJECT_PRESETS["SHS_TechPro"];
-        else subjects = []; // Custom track
+        else subjects = [];
       }
 
-      // Only auto-fill if the table is currently empty to prevent overwriting typed data
       const rows = tbody.querySelectorAll('tr');
       const hasData = rows.length > 1 || (rows.length === 1 && rows[0].querySelector('.sub-name').value !== "");
 
@@ -328,9 +308,35 @@
         if (subjects.length > 0) {
           subjects.forEach(sub => addRow({ sub: sub }));
         } else {
-          addRow(); // Empty row for custom
+          addRow();
         }
       }
+    };
+
+    // When the Year changes, clear the saved ID and clear the grade inputs so the OJT knows it's a new record!
+    window.resetForNewYear = function() {
+      if (!CURRENT_RECORD_ID) return; // Only trigger if we are currently editing an existing record
+      
+      const year = document.getElementById('f-schoolyear').value;
+      const grade = document.getElementById('f-gradelevel').value;
+
+      if (!year || !grade) return;
+
+      // Clear the hidden ID so it saves as a new document
+      document.getElementById('doc-id').value = "";
+      CURRENT_RECORD_ID = null;
+      
+      // Update the form title to indicate a new record
+      document.getElementById('form-title').textContent = `Create New SF10 Record: ${grade} (${year})`;
+      
+      // Clear the grades table
+      const tbody = document.getElementById('grades-tbody');
+      tbody.innerHTML = '';
+      
+      // Regenerate the empty subject rows
+      handleGradeChange(); 
+      
+      showStatus(`Switched to creating a new record for ${grade} (${year}). Grades cleared.`, 'status-found');
     };
 
     // Auto-calculate Final Grade
@@ -380,60 +386,68 @@
       tbody.appendChild(tr);
     };
 
-    // Search logic
     window.searchStudent = async function() {
       const searchTerm = document.getElementById('search-lrn').value.trim();
       if (!searchTerm) return alert("Please enter an LRN.");
 
       const btn = document.querySelector('.btn-search');
+      const originalText = btn.innerHTML;
       btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
       btn.disabled = true;
+      CURRENT_LRN = searchTerm;
 
       try {
         const sf10Ref = collection(db, "sf10_archives");
         
-        // 1. Check if SF10 is already encoded
+        // Query for ALL records matching this LRN
         const qLrn = query(sf10Ref, where("lrn", "==", searchTerm));
         const snapLrn = await getDocs(qLrn);
 
+        // Check SF1 Archive for Name auto-fill
+        let sf1Data = null;
+        const sf1Ref = collection(db, "sf1_historical_archives");
+        const qSF1 = query(sf1Ref, where("lrn", "==", searchTerm));
+        const snapSF1 = await getDocs(qSF1);
+        if (!snapSF1.empty) {
+          sf1Data = snapSF1.docs[0].data();
+        }
+
         if (!snapLrn.empty) {
-          loadRecord(snapLrn.docs[0]);
-        } else {
-          // 2. Not in SF10. Check if they exist in the LIS SF1 Historical Archive
-          let autoFilledName = "";
+          // Found existing records. Let's load the most recent one to edit, 
+          // but show a message that there are multiple years.
+          const records = snapLrn.docs.map(d => ({ id: d.id, ...d.data() }));
           
-          const sf1Ref = collection(db, "sf1_historical_archives");
-          const qSF1 = query(sf1Ref, where("lrn", "==", searchTerm));
-          const snapSF1 = await getDocs(qSF1);
+          // Sort by schoolYear descending
+          records.sort((a,b) => b.schoolYear.localeCompare(a.schoolYear));
+          
+          const latestRecord = records[0];
+          
+          showStatus(`✅ Found ${records.length} existing year(s) for this student. Showing latest: ${latestRecord.gradeLevel} (${latestRecord.schoolYear})`, 'status-success');
+          
+          loadRecord(latestRecord);
 
-          if (!snapSF1.empty) {
-            const sf1Data = snapSF1.docs[0].data();
-            autoFilledName = `Found in SF1 Archive: ${sf1Data.lastName}, ${sf1Data.firstName}`;
-          }
-
-          // Open form to create new
-          const statusMsg = autoFilledName ? `✅ ${autoFilledName}. Please encode the grades below.` : 'No existing record found. You can encode a new SF10 below.';
-          showStatus(statusMsg, autoFilledName ? 'status-success' : 'status-warning');
+        } else {
+          // No records found. Prompt to create new
+          const statusMsg = sf1Data ? `Found in SF1 Archive: ${sf1Data.lastName}, ${sf1Data.firstName}. Please encode the grades below.` : 'No existing record found. You can encode a new SF10 below.';
+          showStatus(statusMsg, sf1Data ? 'status-success' : 'status-warning');
           
           document.getElementById('encoder-card').classList.add('active');
           document.getElementById('form-title').textContent = "Create New SF10 Record";
           document.getElementById('sf10-form').reset();
           document.getElementById('doc-id').value = "";
+          CURRENT_RECORD_ID = null;
           
           // Auto-fill LRN
           document.getElementById('f-lrn').value = searchTerm;
 
           // Auto-fill from SF1 if available
-          if (!snapSF1.empty) {
-             const sf1Data = snapSF1.docs[0].data();
+          if (sf1Data) {
              document.getElementById('f-lastname').value = sf1Data.lastName || "";
              document.getElementById('f-firstname').value = sf1Data.firstName || "";
              document.getElementById('f-middlename').value = sf1Data.middleName || "";
              document.getElementById('f-gradelevel').value = sf1Data.gradeLevel || "";
              document.getElementById('f-schoolyear').value = sf1Data.schoolYear || "";
              document.getElementById('f-section').value = sf1Data.section || "";
-             
-             // Trigger UI updates
              handleGradeChange();
           } else {
             document.getElementById('grades-tbody').innerHTML = '';
@@ -448,20 +462,16 @@
         console.error("Search error:", error);
         alert("❌ Error searching database. Please check connection.");
       } finally {
-        btn.innerHTML = '<i class="fas fa-search"></i> Search';
+        btn.innerHTML = originalText;
         btn.disabled = false;
       }
     };
 
-    // Load existing record into form
-    function loadRecord(docSnap) {
-      const data = docSnap.data();
-      CURRENT_RECORD_ID = docSnap.id;
-      
-      showStatus(`✅ Existing Record Found for ${data.lastName}, ${data.firstName}`, 'status-success');
+    function loadRecord(data) {
+      CURRENT_RECORD_ID = data.id;
       
       document.getElementById('encoder-card').classList.add('active');
-      document.getElementById('form-title').textContent = "View / Update SF10 Record";
+      document.getElementById('form-title').textContent = `View / Update SF10 Record (${data.gradeLevel})`;
       
       document.getElementById('doc-id').value = CURRENT_RECORD_ID;
       document.getElementById('f-lastname').value = data.lastName || "";
@@ -474,7 +484,6 @@
       document.getElementById('f-adviser').value = data.adviser || "";
       document.getElementById('f-sys').value = data.gradingSystem || '4q';
 
-      // Handle Track visibility
       if (data.gradeLevel === 'Grade 11' || data.gradeLevel === 'Grade 12') {
         document.getElementById('track-group').style.display = 'block';
         document.getElementById('f-track').value = data.track || "";
@@ -484,7 +493,6 @@
 
       updateTableHeaders();
 
-      // Populate grades
       const tbody = document.getElementById('grades-tbody');
       tbody.innerHTML = '';
       
@@ -495,7 +503,6 @@
       }
     }
 
-    // Save logic
     window.saveSF10 = async function(e) {
       e.preventDefault();
       const btn = document.getElementById('btn-save');
@@ -537,17 +544,26 @@
         };
 
         const sf10Ref = collection(db, "sf10_archives");
+        
+        // Use Custom ID based on LRN + SchoolYear + GradeLevel to prevent duplicates!
+        const customDocId = `${dataToSave.lrn}_${dataToSave.schoolYear}_${dataToSave.gradeLevel.replace(/\s+/g,'')}`;
 
-        if (CURRENT_RECORD_ID) {
-          await updateDoc(doc(sf10Ref, CURRENT_RECORD_ID), dataToSave);
+        // Check if this specific year/grade record already exists
+        const docRef = doc(db, "sf10_archives", customDocId);
+        const docSnap = await getDoc(docRef);
+
+        if (docSnap.exists()) {
+          // It exists, update it
+          await updateDoc(docRef, dataToSave);
           alert("✅ SF10 Record Updated Successfully!");
         } else {
+          // Doesn't exist, create new with custom ID
           dataToSave.createdAt = Date.now();
-          await addDoc(sf10Ref, dataToSave);
+          await setDoc(docRef, dataToSave);
           alert("✅ New SF10 Record Saved Successfully!");
         }
         
-        // Reset
+        // Reset form
         document.getElementById('sf10-form').reset();
         document.getElementById('doc-id').value = "";
         document.getElementById('encoder-card').classList.remove('active');
