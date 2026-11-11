@@ -55,6 +55,7 @@
     .status-banner { padding: 15px; border-radius: 8px; margin-bottom: 20px; display: none; font-weight: 600; text-align: center; }
     .status-success { background: #dcfce7; color: #166534; border: 1px solid #bbf7d0; }
     .status-found { background: #e0f2fe; color: #1e40af; border: 1px solid #bfdbfe; }
+    .status-warning { background: #fef3c7; color: #92400e; border: 1px solid #fcd34d; }
 
   </style>
 </head>
@@ -70,13 +71,13 @@
 
     <!-- SEARCH SECTION -->
     <div class="card active" id="search-card">
-      <h2 class="section-title">Search Student to Encode / View</h2>
+      <h2 class="section-title">Search Archived SF10 Records</h2>
       <div class="search-box">
-        <input type="text" id="search-lrn" placeholder="Enter Student LRN or Full Name...">
+        <input type="text" id="search-lrn" placeholder="Enter Student LRN (e.g., 123456789012)..." onkeypress="if(event.key==='Enter') searchStudent()">
         <button class="btn-search" onclick="searchStudent()"><i class="fas fa-search"></i> Search</button>
       </div>
       <p style="color: var(--gc-muted); font-size: 0.9rem;">
-        <i class="fas fa-info-circle"></i> If the student is not found in the database, the encoder will be prompted to create a new SF10 record.
+        <i class="fas fa-info-circle"></i> Search using the 12-digit LRN from the old folder. The system will try to auto-fill the name from the LIS SF1 archive if available.
       </p>
     </div>
 
@@ -107,19 +108,44 @@
             <input type="text" id="f-lrn" required maxlength="12">
           </div>
           <div class="form-group">
-            <label>Grade Level (e.g., Grade 7, Grade 11)</label>
-            <input type="text" id="f-gradelevel" required placeholder="Grade 7">
+            <label>Historical School Year</label>
+            <select id="f-schoolyear" required>
+              <option value="">Select School Year...</option>
+              <option value="2026-2027">2026-2027 (Current)</option>
+              <option value="2025-2026">2025-2026</option>
+              <option value="2024-2025">2024-2025</option>
+              <option value="2023-2024">2023-2024</option>
+              <option value="2022-2023">2022-2023</option>
+              <option value="2021-2022">2021-2022</option>
+              <option value="2020-2021">2020-2021</option>
+              <option value="2019-2020">2019-2020</option>
+              <option value="2018-2019">2018-2019</option>
+              <option value="2017-2018">2017-2018</option>
+              <option value="2016-2017">2016-2017</option>
+            </select>
           </div>
           <div class="form-group">
-            <label>School Year</label>
-            <input type="text" id="f-schoolyear" required placeholder="2018-2019">
+            <label>Grade Level</label>
+            <select id="f-gradelevel" required>
+              <option value="">Select Grade Level...</option>
+              <optgroup label="Junior High School">
+                <option value="Grade 7">Grade 7</option>
+                <option value="Grade 8">Grade 8</option>
+                <option value="Grade 9">Grade 9</option>
+                <option value="Grade 10">Grade 10</option>
+              </optgroup>
+              <optgroup label="Senior High School">
+                <option value="Grade 11">Grade 11</option>
+                <option value="Grade 12">Grade 12</option>
+              </optgroup>
+            </select>
           </div>
           <div class="form-group">
-            <label>Section</label>
+            <label>Section (Optional)</label>
             <input type="text" id="f-section" placeholder="e.g. Sampaguita">
           </div>
           <div class="form-group">
-            <label>Adviser</label>
+            <label>Adviser (Optional)</label>
             <input type="text" id="f-adviser">
           </div>
         </div>
@@ -141,7 +167,7 @@
               </tr>
             </thead>
             <tbody id="grades-tbody">
-              <!-- Default 8 rows for JHS -->
+              <!-- Default row -->
               <tr>
                 <td><input type="text" placeholder="e.g. Filipino" class="sub-name"></td>
                 <td><input type="number" min="60" max="100" class="q1"></td>
@@ -180,7 +206,6 @@
         const q3 = parseFloat(row.querySelector('.q3').value) || 0;
         const q4 = parseFloat(row.querySelector('.q4').value) || 0;
         
-        // If all 4 quarters are filled, calculate average
         if (q1 > 0 && q2 > 0 && q3 > 0 && q4 > 0) {
           const final = Math.round((q1 + q2 + q3 + q4) / 4);
           row.querySelector('.final').value = final;
@@ -192,7 +217,6 @@
       }
     });
 
-    // Add a new subject row
     window.addRow = function() {
       const tbody = document.getElementById('grades-tbody');
       const tr = document.createElement('tr');
@@ -211,52 +235,82 @@
     // Search logic
     window.searchStudent = async function() {
       const searchTerm = document.getElementById('search-lrn').value.trim();
-      if (!searchTerm) return alert("Please enter an LRN or Name.");
+      if (!searchTerm) return alert("Please enter an LRN.");
 
       const btn = document.querySelector('.btn-search');
       btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
       btn.disabled = true;
 
       try {
-        let found = false;
         const sf10Ref = collection(db, "sf10_archives");
-
-        // Try searching by LRN first
+        
+        // 1. Check if SF10 is already encoded
         const qLrn = query(sf10Ref, where("lrn", "==", searchTerm));
         const snapLrn = await getDocs(qLrn);
 
         if (!snapLrn.empty) {
+          // Record found in SF10
           loadRecord(snapLrn.docs[0]);
-          found = true;
         } else {
-          // Try searching by Name (Exact match for simplicity)
-          const qName = query(sf10Ref, where("lastName", "==", searchTerm)); // Simplified search
-          const snapName = await getDocs(qName);
-          if (!snapName.empty) {
-            loadRecord(snapName.docs[0]);
-            found = true;
-          }
-        }
+          // 2. Not in SF10. Check if they exist in the LIS SF1 Historical Archive
+          let autoFilledName = "";
+          let autoFilledGrade = "";
+          let autoFilledYear = "";
+          let autoFilledSection = "";
 
-        if (!found) {
-          // If not found, prompt to create new
-          showStatus('No existing record found. You can encode a new SF10 below.', 'status-found');
+          const sf1Ref = collection(db, "sf1_historical_archives");
+          const qSF1 = query(sf1Ref, where("lrn", "==", searchTerm));
+          const snapSF1 = await getDocs(qSF1);
+
+          if (!snapSF1.empty) {
+            const sf1Data = snapSF1.docs[0].data();
+            autoFilledName = `Found in SF1 Archive: ${sf1Data.lastName}, ${sf1Data.firstName}`;
+            autoFilledGrade = sf1Data.gradeLevel || "";
+            autoFilledYear = sf1Data.schoolYear || "";
+            autoFilledSection = sf1Data.section || "";
+          }
+
+          // Open form to create new
+          const statusMsg = autoFilledName ? `✅ ${autoFilledName}. Please encode the grades below.` : 'No existing record found. You can encode a new SF10 below.';
+          showStatus(statusMsg, autoFilledName ? 'status-success' : 'status-warning');
+          
           document.getElementById('encoder-card').classList.add('active');
           document.getElementById('form-title').textContent = "Create New SF10 Record";
           document.getElementById('sf10-form').reset();
           document.getElementById('doc-id').value = "";
           
-          // Auto-fill the search term into LRN or Last Name
-          if (/^\d{12}$/.test(searchTerm)) {
-            document.getElementById('f-lrn').value = searchTerm;
-          } else {
-            document.getElementById('f-lastname').value = searchTerm;
+          // Auto-fill LRN
+          document.getElementById('f-lrn').value = searchTerm;
+
+          // Auto-fill from SF1 if available
+          if (!snapSF1.empty) {
+             const sf1Data = snapSF1.docs[0].data();
+             document.getElementById('f-lastname').value = sf1Data.lastName || "";
+             document.getElementById('f-firstname').value = sf1Data.firstName || "";
+             document.getElementById('f-middlename').value = sf1Data.middleName || "";
+             document.getElementById('f-gradelevel').value = sf1Data.gradeLevel || "";
+             document.getElementById('f-schoolyear').value = sf1Data.schoolYear || "";
+             document.getElementById('f-section').value = sf1Data.section || "";
           }
+          
+          // Reset grades table to 1 row
+          const tbody = document.getElementById('grades-tbody');
+          tbody.innerHTML = `
+            <tr>
+              <td><input type="text" placeholder="e.g. Filipino" class="sub-name"></td>
+              <td><input type="number" min="60" max="100" class="q1"></td>
+              <td><input type="number" min="60" max="100" class="q2"></td>
+              <td><input type="number" min="60" max="100" class="q3"></td>
+              <td><input type="number" min="60" max="100" class="q4"></td>
+              <td><input type="number" min="60" max="100" class="final" readonly tabindex="-1" style="background:#f8fafc; cursor:not-allowed;"></td>
+              <td><input type="text" class="remarks" readonly tabindex="-1" style="background:#f8fafc; cursor:not-allowed;"></td>
+            </tr>
+          `;
         }
 
       } catch (error) {
         console.error("Search error:", error);
-        alert("❌ Error searching database.");
+        alert("❌ Error searching database. Please check connection.");
       } finally {
         btn.innerHTML = '<i class="fas fa-search"></i> Search';
         btn.disabled = false;
@@ -302,7 +356,7 @@
           tbody.appendChild(tr);
         });
       } else {
-        addRow(); // Add one blank row if no grades
+        addRow(); 
       }
     }
 
@@ -314,7 +368,6 @@
       btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...'; btn.disabled = true;
 
       try {
-        // Gather grades from table
         const rows = document.querySelectorAll('#grades-tbody tr');
         const grades = [];
         rows.forEach(row => {
@@ -337,8 +390,8 @@
           firstName: document.getElementById('f-firstname').value.trim(),
           middleName: document.getElementById('f-middlename').value.trim(),
           lrn: document.getElementById('f-lrn').value.trim(),
-          gradeLevel: document.getElementById('f-gradelevel').value.trim(),
-          schoolYear: document.getElementById('f-schoolyear').value.trim(),
+          gradeLevel: document.getElementById('f-gradelevel').value,
+          schoolYear: document.getElementById('f-schoolyear').value,
           section: document.getElementById('f-section').value.trim(),
           adviser: document.getElementById('f-adviser').value.trim(),
           grades: grades,
@@ -349,11 +402,9 @@
         const sf10Ref = collection(db, "sf10_archives");
 
         if (CURRENT_RECORD_ID) {
-          // Update existing
           await updateDoc(doc(sf10Ref, CURRENT_RECORD_ID), dataToSave);
           alert("✅ SF10 Record Updated Successfully!");
         } else {
-          // Create new
           dataToSave.createdAt = Date.now();
           await addDoc(sf10Ref, dataToSave);
           alert("✅ New SF10 Record Saved Successfully!");
@@ -365,6 +416,7 @@
         document.getElementById('encoder-card').classList.remove('active');
         document.getElementById('search-lrn').value = "";
         document.getElementById('status-banner').style.display = 'none';
+        CURRENT_RECORD_ID = null;
 
       } catch (error) {
         console.error("Save error:", error);
