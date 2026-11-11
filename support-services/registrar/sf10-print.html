@@ -29,7 +29,16 @@
     .search-box input { flex: 1; padding: 12px 16px; border: 1px solid var(--gc-border); border-radius: 8px; font-size: 1rem; outline: none; }
     .search-box input:focus { border-color: var(--gc-accent); }
     .btn-search { background: var(--gc-primary); color: #fff; border: none; padding: 0 20px; border-radius: 8px; font-weight: 600; cursor: pointer; }
-    .btn-print { background: #16a34a; color: #fff; border: none; padding: 10px 20px; border-radius: 8px; font-weight: 600; cursor: pointer; display: none; margin-left: auto;}
+    
+    /* Signatory Inputs (Web Only) */
+    .signatory-panel { background: #fff; padding: 20px; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); margin-bottom: 20px; display: none; }
+    .signatory-panel h3 { margin-top: 0; color: var(--gc-primary); font-size: 1.1rem; border-bottom: 1px solid var(--gc-border); padding-bottom: 10px; margin-bottom: 15px; }
+    .sig-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+    .sig-group label { display: block; font-size: 0.8rem; font-weight: 700; color: #333; margin-bottom: 5px; text-transform: uppercase; }
+    .sig-group input { width: 100%; padding: 10px; border: 1px solid var(--gc-border); border-radius: 6px; font-family: inherit; font-size: 0.95rem; }
+
+    .btn-print { background: #16a34a; color: #fff; border: none; padding: 14px 24px; border-radius: 8px; font-weight: 700; font-size: 1rem; cursor: pointer; display: none; width: 100%; transition: 0.2s; }
+    .btn-print:hover { background: #15803d; transform: translateY(-2px); }
     
     /* Access Denied Screen */
     #access-denied { display: none; text-align: center; padding: 60px 20px; background: #fff; border-radius: 12px; border: 1px solid var(--gc-border); }
@@ -42,10 +51,14 @@
        OFFICIAL DEPED SF10 PRINT STYLES
        ============================================================ */
     @media print {
-      @page { size: legal portrait; margin: 0.3in; }
+      /* Changed to 8.5x13 (Long Bond Paper) Portrait */
+      @page { size: 8.5in 13in portrait; margin: 0.3in; }
       body { background: #fff; }
-      .header, .search-box, #web-ui, #access-denied { display: none !important; }
       
+      /* Hide all web UI */
+      .header, .search-box, #web-ui, #access-denied, .signatory-panel { display: none !important; }
+      
+      /* Show only the print layout */
       #print-wrapper { display: block !important; }
       
       .paper { width: 100%; max-width: 1100px; margin: 0 auto; background: white; }
@@ -92,6 +105,10 @@
       .cert-line { border-top: 1px solid #000; width: 140px; margin: 20px auto 3px; }
       .seal-box { border: 2px solid #000; width: 80px; height: 80px; margin: 0 auto; display: flex; align-items: center; justify-content: center; font-size: 7pt; }
       .rev-note { text-align: center; margin-top: 5px; font-size: 6pt; color: #555; }
+
+      /* Signatory Output Print */
+      .print-sig-name { font-weight: bold; font-size: 9pt; margin: 0; }
+      .print-sig-pos { font-size: 8pt; margin: 0; }
     }
   </style>
 </head>
@@ -113,8 +130,24 @@
       <div class="search-box">
         <input type="text" id="search-lrn" placeholder="Enter Student LRN to pull up SF10..." onkeypress="if(event.key==='Enter') searchStudent()">
         <button class="btn-search" onclick="searchStudent()">Search</button>
-        <button class="btn-print" id="btn-print" onclick="window.print()"><i class="fas fa-print"></i> Print SF10</button>
       </div>
+
+      <!-- Editable Signatories for the current printout -->
+      <div class="signatory-panel" id="signatory-panel">
+        <h3><i class="fas fa-edit"></i> Update Signatories for this Print</h3>
+        <div class="sig-grid">
+          <div class="sig-group">
+            <label>Class Adviser Name</label>
+            <input type="text" id="input-adviser" placeholder="Enter Adviser's Name">
+          </div>
+          <div class="sig-group">
+            <label>Principal / School Head Name</label>
+            <input type="text" id="input-principal" placeholder="Enter Principal's Name" value="SATURNINO P. CALANSI EdD">
+          </div>
+        </div>
+      </div>
+
+      <button class="btn-print" id="btn-print" onclick="window.print()"><i class="fas fa-print"></i> Print SF10 (8.5 x 13 Long)</button>
     </div>
   </div>
 
@@ -158,11 +191,13 @@
         <div style="margin-top: 40px; display: flex; justify-content: space-between;">
           <div style="text-align: center; width: 45%;">
             <div class="cert-line"></div>
-            <strong>Class Adviser</strong>
+            <div class="print-sig-name" id="print-adviser-name">_________________________</div>
+            <div class="print-sig-pos">Class Adviser</div>
           </div>
           <div style="text-align: center; width: 45%;">
             <div class="cert-line"></div>
-            <strong>Principal / School Head</strong>
+            <div class="print-sig-name" id="print-principal-name">_________________________</div>
+            <div class="print-sig-pos">Principal / School Head</div>
           </div>
         </div>
       </div>
@@ -189,8 +224,8 @@
             </div>
             <div class="cert-center">
                 <div class="cert-line"></div>
-                <strong>SATURNINO P. CALANSI EdD</strong><br>
-                Signature of Principal
+                <div class="print-sig-name" id="print-cert-principal">_________________________</div>
+                <div class="print-sig-pos">Signature of Principal</div>
             </div>
             <div class="cert-right">
                 <div class="seal-box"><small>(Seal)</small></div>
@@ -235,11 +270,13 @@
         <div style="margin-top: 40px; display: flex; justify-content: space-between;">
           <div style="text-align: center; width: 45%;">
             <div class="cert-line"></div>
-            <strong>Class Adviser</strong>
+            <div class="print-sig-name" id="print-shs-adviser-name">_________________________</div>
+            <div class="print-sig-pos">Class Adviser</div>
           </div>
           <div style="text-align: center; width: 45%;">
             <div class="cert-line"></div>
-            <strong>Principal / School Head</strong>
+            <div class="print-sig-name" id="print-shs-principal-name">_________________________</div>
+            <div class="print-sig-pos">Principal / School Head</div>
           </div>
         </div>
       </div>
@@ -263,7 +300,6 @@
         const userSnap = await getDoc(doc(db, "users", user.uid));
         if (userSnap.exists()) {
           const role = userSnap.data().primaryRole || userSnap.data().role;
-          // Only allow Admin, Superadmin, or Registrar to print SF10
           if (role === 'admin' || role === 'superadmin' || role === 'registrar') {
             document.getElementById('search-area').style.display = 'block';
           } else {
@@ -295,10 +331,17 @@
 
         if (!snapLrn.empty) {
           const data = snapLrn.docs[0].data();
+          
+          // Set the Adviser Input based on the data, or leave blank if none
+          document.getElementById('input-adviser').value = data.adviser || "";
+
           renderPrintView(data);
+          
+          document.getElementById('signatory-panel').style.display = 'block';
           document.getElementById('btn-print').style.display = 'block';
         } else {
           alert("❌ No archived SF10 record found for this LRN. Please encode it first using the SF10 Encoder.");
+          document.getElementById('signatory-panel').style.display = 'none';
           document.getElementById('btn-print').style.display = 'none';
           document.getElementById('print-wrapper').style.display = 'none';
         }
@@ -311,12 +354,30 @@
       }
     };
 
+    // 3. Update Signatories when typed in the input
+    document.getElementById('input-adviser').addEventListener('input', function() {
+      const val = this.value || "_________________________";
+      document.getElementById('print-adviser-name').textContent = val;
+      document.getElementById('print-shs-adviser-name').textContent = val;
+    });
+
+    document.getElementById('input-principal').addEventListener('input', function() {
+      const val = this.value || "_________________________";
+      document.getElementById('print-principal-name').textContent = val;
+      document.getElementById('print-shs-principal-name').textContent = val;
+      document.getElementById('print-cert-principal').textContent = val;
+    });
+
     function renderPrintView(data) {
       const isSHS = data.gradeLevel.includes('Grade 11') || data.gradeLevel.includes('Grade 12');
       
       document.getElementById('jhs-page1').style.display = 'none';
       document.getElementById('jhs-page2').style.display = 'none';
       document.getElementById('shs-page').style.display = 'none';
+
+      // Initialize Signatories
+      document.getElementById('input-adviser').dispatchEvent(new Event('input'));
+      document.getElementById('input-principal').dispatchEvent(new Event('input'));
 
       if (isSHS) {
         document.getElementById('p-shs-lastname').textContent = data.lastName;
