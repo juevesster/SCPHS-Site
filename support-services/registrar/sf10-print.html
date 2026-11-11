@@ -51,8 +51,8 @@
        OFFICIAL DEPED SF10 PRINT STYLES
        ============================================================ */
     @media print {
-      /* Changed to 8.5x13 (Long Bond Paper) Portrait */
-      @page { size: 8.5in 13in portrait; margin: 0.3in; }
+      /* Force 8.5 x 13 Long Bond Paper (No "portrait" keyword to prevent bugs) */
+      @page { size: 8.5in 13in; margin: 0.3in; }
       body { background: #fff; }
       
       /* Hide all web UI */
@@ -106,7 +106,6 @@
       .seal-box { border: 2px solid #000; width: 80px; height: 80px; margin: 0 auto; display: flex; align-items: center; justify-content: center; font-size: 7pt; }
       .rev-note { text-align: center; margin-top: 5px; font-size: 6pt; color: #555; }
 
-      /* Signatory Output Print */
       .print-sig-name { font-weight: bold; font-size: 9pt; margin: 0; }
       .print-sig-pos { font-size: 8pt; margin: 0; }
     }
@@ -379,12 +378,8 @@
       document.getElementById('input-adviser').dispatchEvent(new Event('input'));
       document.getElementById('input-principal').dispatchEvent(new Event('input'));
 
-      if (isSHS) {
-        document.getElementById('p-shs-lastname').textContent = data.lastName;
-        document.getElementById('p-shs-firstname').textContent = data.firstName;
-        document.getElementById('p-shs-middlename').textContent = data.middleName;
-        document.getElementById('p-shs-lrn').textContent = data.lrn;
-
+      // Helper function to generate the grade table HTML
+      function generateGradeTable(gradeData, includeGrades) {
         const is3Term = data.gradingSystem === '3t';
         const q4Header = is3Term ? '' : '<th style="width:7%">Q4</th>';
         
@@ -417,36 +412,61 @@
               <tbody>
         `;
 
-        data.grades.forEach(g => {
-          html += `
-            <tr>
-              <td class="sn">${g.subject}</td>
-              <td>${g.q1 || ''}</td>
-              <td>${g.q2 || ''}</td>
-              <td>${g.q3 || ''}</td>
-              ${is3Term ? '' : `<td>${g.q4 || ''}</td>`}
-              <td>${g.final || ''}</td>
-              <td>${g.remarks || ''}</td>
-            </tr>
-          `;
-        });
+        // If we don't include grades, render empty rows (for Page 1 placeholder)
+        if (!includeGrades) {
+          for (let i = 0; i < 8; i++) {
+            html += `
+              <tr>
+                <td class="sn">_________________________</td>
+                <td></td><td></td><td></td>${is3Term ? '' : '<td></td>'}
+                <td></td><td></td>
+              </tr>
+            `;
+          }
+        } else {
+          // Render actual grades
+          data.grades.forEach(g => {
+            html += `
+              <tr>
+                <td class="sn">${g.subject}</td>
+                <td>${g.q1 || ''}</td>
+                <td>${g.q2 || ''}</td>
+                <td>${g.q3 || ''}</td>
+                ${is3Term ? '' : `<td>${g.q4 || ''}</td>`}
+                <td>${g.final || ''}</td>
+                <td>${g.remarks || ''}</td>
+              </tr>
+            `;
+          });
 
-        let total = 0; let count = 0;
-        data.grades.forEach(g => { if(g.final) { total += parseInt(g.final); count++; } });
-        const genAve = count > 0 ? Math.round(total / count) : 0;
+          let total = 0; let count = 0;
+          data.grades.forEach(g => { if(g.final) { total += parseInt(g.final); count++; } });
+          const genAve = count > 0 ? Math.round(total / count) : 0;
+
+          html += `
+                <tr class="ga">
+                  <td colspan="${is3Term ? 4 : 5}">General Average</td>
+                  <td>${genAve}%</td>
+                  <td>${genAve >= 75 ? 'Passed' : 'Failed'}</td>
+                </tr>
+          `;
+        }
 
         html += `
-              <tr class="ga">
-                <td colspan="${is3Term ? 4 : 5}">General Average</td>
-                <td>${genAve}%</td>
-                <td>${genAve >= 75 ? 'Passed' : 'Failed'}</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
+              </tbody>
+            </table>
+          </div>
         `;
-        
-        document.getElementById('shs-grades').innerHTML = html;
+        return html;
+      }
+
+      if (isSHS) {
+        document.getElementById('p-shs-lastname').textContent = data.lastName;
+        document.getElementById('p-shs-firstname').textContent = data.firstName;
+        document.getElementById('p-shs-middlename').textContent = data.middleName;
+        document.getElementById('p-shs-lrn').textContent = data.lrn;
+
+        document.getElementById('shs-grades').innerHTML = generateGradeTable(data, true);
         document.getElementById('shs-page').style.display = 'block';
 
       } else {
@@ -458,72 +478,14 @@
         document.getElementById('p-cert-lrn').textContent = data.lrn;
         document.getElementById('p-cert-sy').textContent = data.schoolYear;
 
-        const is3Term = data.gradingSystem === '3t';
-        const q4Header = is3Term ? '' : '<th style="width:7%">Q4</th>';
-        
-        let html = `
-          <div style="margin:8px 0; border:1px solid #ccc; padding:6px; border-radius:4px">
-            <div style="display:flex;justify-content:space-between;flex-wrap:wrap;font-size:7pt;margin-bottom:4px">
-              <span><strong>School:</strong> Sta. Cruz Pingkian High School</span>
-              <span><strong>School ID:</strong> 300648</span>
-              <span><strong>Division:</strong> Nueva Vizcaya</span>
-              <span><strong>Region:</strong> II</span>
-            </div>
-            <div style="display:flex;justify-content:space-between;flex-wrap:wrap;font-size:7pt;margin-bottom:4px">
-              <span><strong>Classified as Grade:</strong> ${data.gradeLevel.replace('Grade ', '')}</span>
-              <span><strong>Section:</strong> ${data.section || ''}</span>
-              <span><strong>School Year:</strong> ${data.schoolYear}</span>
-              <span><strong>System:</strong> ${is3Term ? 'New Curriculum (3-Term)' : 'Old Curriculum (4-Quarter)'}</span>
-            </div>
-            <table style="width:100%; border-collapse:collapse;">
-              <thead>
-                <tr>
-                  <th style="width:30%; text-align:left;">LEARNING AREAS</th>
-                  <th>${is3Term ? 'Term 1' : 'Q1'}</th>
-                  <th>${is3Term ? 'Term 2' : 'Q2'}</th>
-                  <th>${is3Term ? 'Term 3' : 'Q3'}</th>
-                  ${q4Header}
-                  <th>FINAL RATING</th>
-                  <th>REMARKS</th>
-                </tr>
-              </thead>
-              <tbody>
-        `;
-
-        data.grades.forEach(g => {
-          html += `
-            <tr>
-              <td class="sn">${g.subject}</td>
-              <td>${g.q1 || ''}</td>
-              <td>${g.q2 || ''}</td>
-              <td>${g.q3 || ''}</td>
-              ${is3Term ? '' : `<td>${g.q4 || ''}</td>`}
-              <td>${g.final || ''}</td>
-              <td>${g.remarks || ''}</td>
-            </tr>
-          `;
-        });
-
-        let total = 0; let count = 0;
-        data.grades.forEach(g => { if(g.final) { total += parseInt(g.final); count++; } });
-        const genAve = count > 0 ? Math.round(total / count) : 0;
-
-        html += `
-              <tr class="ga">
-                <td colspan="${is3Term ? 4 : 5}">General Average</td>
-                <td>${genAve}%</td>
-                <td>${genAve >= 75 ? 'Passed' : 'Failed'}</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-        `;
-        
         if (data.gradeLevel === 'Grade 7' || data.gradeLevel === 'Grade 8') {
-          document.getElementById('jhs-grades-page1').innerHTML = html;
+          // For 7/8, print the actual grades on Page 1
+          document.getElementById('jhs-grades-page1').innerHTML = generateGradeTable(data, true);
           document.getElementById('jhs-page1').style.display = 'block';
         } else {
-          document.getElementById('jhs-grades-page2').innerHTML = html;
+          // For 9/10, print an empty template on Page 1, and the actual grades on Page 2
+          document.getElementById('jhs-grades-page1').innerHTML = generateGradeTable(data, false);
+          document.getElementById('jhs-grades-page2').innerHTML = generateGradeTable(data, true);
           document.getElementById('jhs-page1').style.display = 'block';
           document.getElementById('jhs-page2').style.display = 'block';
         }
