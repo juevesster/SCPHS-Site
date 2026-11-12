@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>SF10 AI Importer – SCPHS Registrar</title>
+  <link rel="stylesheet" href="../../assets/css/styles.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <style>
+    :root {
+      --gc-primary: #0f4c81;
+      --gc-accent: #2563eb;
+      --gc-bg: #f1f5f9;
+      --gc-border: #e2e8f0;
+      --gc-text: #1e293b;
+      --gc-muted: #64748b;
+      --gc-success: #16a34a;
+      --gc-danger: #dc2626;
+    }
+    
+    body { background: var(--gc-bg); margin: 0; font-family: 'Inter', system-ui, sans-serif; }
+    .wrap { max-width: 900px; margin: 0 auto; padding: 20px 16px; }
+
+    .header { background: #fff; padding: 20px; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; }
+    .header h1 { margin: 0; color: var(--gc-primary); font-size: 1.5rem; font-weight: 800; }
+
+    .card { background: #fff; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); padding: 30px; margin-bottom: 20px; }
+    .section-title { font-size: 1.1rem; color: var(--gc-primary); border-bottom: 2px solid var(--gc-border); padding-bottom: 10px; margin-bottom: 20px; font-weight: 700; text-transform: uppercase; }
+
+    .upload-box { border: 2px dashed var(--gc-border); border-radius: 12px; padding: 40px; text-align: center; background: #f8fafc; cursor: pointer; transition: 0.2s; margin-bottom: 20px; }
+    .upload-box:hover { border-color: var(--gc-accent); background: #eff6ff; }
+    .upload-box i { font-size: 3rem; color: var(--gc-accent); margin-bottom: 15px; }
+    .upload-box p { margin: 0; font-weight: 600; color: var(--gc-primary); }
+    .upload-box span { font-size: 0.85rem; color: var(--gc-muted); }
+
+    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px; }
+    .form-group label { display: block; font-size: 0.8rem; font-weight: 700; color: #333; margin-bottom: 5px; text-transform: uppercase; }
+    .form-group input, .form-group select { width: 100%; padding: 10px; border: 1px solid var(--gc-border); border-radius: 6px; font-family: inherit; font-size: 0.95rem; }
+
+    .btn-process { background: var(--gc-success); color: #fff; border: none; padding: 14px 24px; border-radius: 8px; font-weight: 700; font-size: 1rem; cursor: pointer; width: 100%; transition: 0.2s; display: flex; justify-content: center; align-items: center; gap: 8px; }
+    .btn-process:hover { background: #15803d; transform: translateY(-2px); }
+    .btn-process:disabled { background: #94a3b8; cursor: not-allowed; transform: none; }
+
+    /* Results Table */
+    .result-table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+    .result-table th, .result-table td { padding: 10px; border: 1px solid var(--gc-border); text-align: center; }
+    .result-table th { background: var(--gc-bg); font-weight: 700; }
+    
+    .alert { padding: 15px; border-radius: 8px; margin-bottom: 20px; display: none; font-weight: 600; text-align: center; }
+    .alert-success { background: #dcfce7; color: #166534; }
+    .alert-error { background: #fee2e2; color: #991b1b; }
+
+  </style>
+  <!-- Google Gemini SDK -->
+  <script type="module">
+    import { GoogleGenerativeAI } from "https://esm.run/@google/generative-ai";
+    
+    // ⚠️ PASTE YOUR GEMINI API KEY HERE FOR TESTING
+    const GEMINI_API_KEY = "AQ.Ab8RN6LSFtus6RvLtS5gEh7J6Gfsry8z6RvjlZCWmhevgW-M6Q"; 
+    
+    let selectedFile = null;
+    let base64Image = null;
+
+    window.handleFileSelect = function(input) {
+      if (input.files.length > 0) {
+        selectedFile = input.files[0];
+        document.getElementById('file-name').textContent = selectedFile.name;
+        document.getElementById('file-info').style.display = 'block';
+        document.getElementById('btn-process').disabled = false;
+      }
+    };
+
+    window.processImage = async function() {
+      if (!selectedFile) return;
+      if (GEMINI_API_KEY === "YOUR_GEMINI_API_KEY_HERE") {
+        alert("⚠️ Please add your Gemini API Key to the code to test this feature.");
+        return;
+      }
+
+      const btn = document.getElementById('btn-process');
+      const originalText = btn.innerHTML;
+      btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> AI is Scanning...';
+      btn.disabled = true;
+
+      document.getElementById('alert-success').style.display = 'none';
+      document.getElementById('alert-error').style.display = 'none';
+
+      const reader = new FileReader();
+      reader.onload = async function(e) {
+        base64Image = e.target.result.split(',')[1];
+        
+        try {
+          const genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
+          const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+
+          const prompt = `
+            You are an AI data entry assistant for a school registrar.
+            I am uploading an image of a DepEd SF10 (Form 137) report card.
+            Please extract the grades for each subject.
+            
+            Return ONLY a valid JSON array in this exact format, nothing else:
+            [
+              {"subject": "Filipino", "q1": 85, "q2": 86, "q3": 87, "q4": 88},
+              {"subject": "English", "q1": 90, "q2": 91, "q3": 92, "q4": 93}
+            ]
+            
+            If the image has no grades, return [].
+          `;
+
+          const imageParts = [
+            { inlineData: { data: base64Image, mimeType: selectedFile.type } }
+          ];
+
+          const result = await model.generateContent([prompt, ...imageParts]);
+          const response = await result.response;
+          let text = response.text();
+          
+          // Clean up the AI response to parse JSON
+          text = text.replace(/```json/g, '').replace(/```/g, '').trim();
+          
+          const parsedData = JSON.parse(text);
+          
+          if (parsedData.length === 0) {
+            throw new Error("No grades could be found in the image.");
+          }
+
+          // Render results
+          const tbody = document.getElementById('result-tbody');
+          tbody.innerHTML = parsedData.map(g => `
+            <tr>
+              <td><strong>${g.subject}</strong></td>
+              <td>${g.q1 || ''}</td>
+              <td>${g.q2 || ''}</td>
+              <td>${g.q3 || ''}</td>
+              <td>${g.q4 || ''}</td>
+            </tr>
+          `).join('');
+
+          document.getElementById('alert-success').style.display = 'block';
+          document.getElementById('alert-success').innerHTML = '✅ AI successfully extracted the grades! Please review below.';
+          
+        } catch (error) {
+          console.error(error);
+          document.getElementById('alert-error').style.display = 'block';
+          document.getElementById('alert-error').textContent = "❌ AI Error: " + error.message;
+        } finally {
+          btn.innerHTML = originalText;
+          btn.disabled = false;
+        }
+      };
+      reader.readAsDataURL(selectedFile);
+    };
+  </script>
+</head>
+<body>
+
+  <div class="wrap">
+    <div class="header">
+      <h1><i class="fas fa-robot"></i> SF10 AI Importer</h1>
+      <a href="index.html" style="color: var(--gc-primary); text-decoration: none; font-weight: 600;">← Back to Registrar</a>
+    </div>
+
+    <div class="alert alert-success" id="alert-success"></div>
+    <div class="alert alert-error" id="alert-error"></div>
+
+    <div class="card">
+      <h2 class="section-title">Upload SF10 Image or PDF</h2>
+      
+      <div class="form-grid">
+        <div class="form-group">
+          <label>Grade Level</label>
+          <select id="imp-grade">
+            <option value="Grade 7">Grade 7</option>
+            <option value="Grade 8">Grade 8</option>
+            <option value="Grade 9">Grade 9</option>
+            <option value="Grade 10">Grade 10</option>
+            <option value="Grade 11">Grade 11</option>
+            <option value="Grade 12">Grade 12</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>School Year</label>
+          <select id="imp-year">
+            <option value="2025-2026">2025-2026</option>
+            <option value="2024-2025">2024-2025</option>
+            <option value="2023-2024">2023-2024</option>
+            <option value="2022-2023">2022-2023</option>
+            <option value="2021-2022">2021-2022</option>
+            <option value="2020-2021">2020-2021</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="upload-box" onclick="document.getElementById('excel-file').click()">
+        <i class="fas fa-file-image"></i>
+        <p>Click to select or drag & drop SF10 Image/PDF</p>
+        <span>Supports JPG, PNG, PDF</span>
+        <input type="file" id="excel-file" accept="image/*, .pdf" style="display: none;" onchange="handleFileSelect(this)">
+      </div>
+
+      <div id="file-info" style="display: none; margin-bottom: 20px; font-weight: 600; color: var(--gc-accent);">
+        <i class="fas fa-check-circle"></i> <span id="file-name">file.jpg</span> selected.
+      </div>
+
+      <button class="btn-process" id="btn-process" onclick="processImage()" disabled>
+        <i class="fas fa-magic"></i> Scan with AI
+      </button>
+
+      <!-- Results Preview -->
+      <div id="results-area" style="margin-top: 30px; display: none;">
+        <h3 style="font-size: 1.1rem; color: var(--gc-primary); margin-bottom: 15px;">AI Extraction Results</h3>
+        <table class="result-table">
+          <thead>
+            <tr>
+              <th>Subject</th>
+              <th>Q1</th>
+              <th>Q2</th>
+              <th>Q3</th>
+              <th>Q4</th>
+            </tr>
+          </thead>
+          <tbody id="result-tbody"></tbody>
+        </table>
+        <button class="btn-process" style="margin-top: 15px; background: var(--gc-accent);">
+          <i class="fas fa-save"></i> Save to Database
+        </button>
+      </div>
+
+    </div>
+  </div>
+</body>
+</html>
