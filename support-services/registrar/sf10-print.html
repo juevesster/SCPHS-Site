@@ -41,7 +41,7 @@
     
     #print-wrapper { display: none; }
 
-    /* ============================================================
+        /* ============================================================
        OFFICIAL DEPED SF10 PRINT STYLES (EXACT MATCH)
        ============================================================ */
        @media print {
@@ -59,18 +59,26 @@
       .page { padding: 0 10px; min-height: 100vh; }
       .page-back { page-break-before: always; }
       
-      .sf10-header { display: flex; align-items: center; justify-content: space-between; padding: 5px 0; border-bottom: 2px solid #000; margin-bottom: 5px; }
+      /* NEW FLEXBOX HEADER */
+      .sf10-header { 
+        display: flex; 
+        align-items: flex-end; /* Aligns the bottom of the logos with the bottom of the text */
+        justify-content: space-between; 
+        padding: 5px 0; 
+        border-bottom: 2px solid #000; 
+        margin-bottom: 5px; 
+        gap: 10px; /* Controls the spacing between logos and text */
+      }
       
       /* Left: Text + School Logo */
       .header-left { 
         display: flex; 
         flex-direction: column; 
         align-items: flex-start; 
-        width: 120px; 
-        gap: 2px;
+        gap: 5px;
       }
       .header-left-text {
-        font-size: 8pt;
+        font-size: 9pt;
         font-weight: bold;
         white-space: nowrap;
       }
@@ -79,7 +87,11 @@
         max-width: 75px; 
       }
       
-      .header-center { text-align: center; flex: 1; padding: 0 10px; }
+      .header-center { 
+        text-align: center; 
+        flex: 1; /* This makes the center text take up the middle space */
+        padding: 0 5px;
+      }
       .republic { font-size: 10pt; margin: 0; }
       .deped { font-size: 10pt; font-weight: bold; margin: 0; }
       .doc-title { font-size: 11pt; font-weight: bold; text-transform: uppercase; margin: 0; }
@@ -87,7 +99,6 @@
       
       /* Right: DepEd Logo */
       .header-right { 
-        width: 120px; 
         display: flex; 
         justify-content: flex-end;
       }
