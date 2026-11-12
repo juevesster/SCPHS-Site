@@ -56,9 +56,12 @@
       
       .paper { width: 100%; max-width: 8.5in; margin: 0 auto; background: white; }
       
-      /* FORCE EXACTLY 2 PAGES */
-      .page { padding: 0 5px; height: 12.6in; max-height: 12.6in; overflow: hidden; }
+      /* Page container */
+      .page { padding: 0 5px; }
       .page-back { page-break-before: always; }
+
+      /* Keep tables and boxes from splitting across pages */
+      .grade-table, .remedial-table, .cert-box { page-break-inside: avoid; }
 
       /* Header Adjustments */
       .sf10-header { display: flex; align-items: center; justify-content: space-between; padding: 2px 0; border-bottom: 1.5px solid #000; margin-bottom: 4px; }
@@ -100,7 +103,7 @@
       .remedial-table th { background: #f0f0f0; font-weight: bold; -webkit-print-color-adjust: exact;}
       
       /* Certification & Signatures */
-      .cert-box { border: 1px solid #000; padding: 5px 10px; margin-top: 5px; font-size: 7.5pt; }
+      .cert-box { border: 1px solid #000; padding: 5px 10px; margin-top: 10px; font-size: 7.5pt; }
       .signature-block { display: flex; justify-content: space-around; align-items: flex-end; margin-top: 10px; font-size: 7.5pt; }
       .sig-box { text-align: center; }
       .sig-line { border-bottom: 1px solid #000; height: 12px; margin-bottom: 2px; }
@@ -152,7 +155,6 @@
         </div>
       </div>
 
-      <!-- Direct window.print() call to prevent popup blocker -->
       <button class="btn-print" id="btn-print" onclick="window.print()"><i class="fas fa-print"></i> Print SF10 (8.5 x 13 Long)</button>
     </div>
   </div>
@@ -226,6 +228,26 @@
 
         <div class="sec-title">SCHOLASTIC RECORD</div>
         <div id="grades-page1"></div>
+
+        <!-- PAGE 1 CERTIFICATION -->
+        <div class="cert-box" style="margin-top: 10px;">
+          <div class="sec-title" style="margin-top: 0;">CERTIFICATION</div>
+          <p style="margin: 3px 0;">I CERTIFY that this is a true record of <strong id="p-cert-name1">_________________________</strong> with LRN <strong id="p-cert-lrn1">_________________________</strong> and that he/she is eligible for admission to Grade ________.</p>
+          <div class="signature-block" style="margin-top: 15px; justify-content: space-around; align-items: flex-end;">
+            <div class="sig-box" style="width: 20%;">
+              <div class="sig-line" id="p-cert-date-line1"></div>
+              <div>Date</div>
+            </div>
+            <div class="sig-box" style="width: 40%;">
+              <div class="sig-line"></div>
+              <div class="print-sig-name" id="print-principal-name1">_________________________</div>
+              <div>Signature of Principal/School Head over Printed Name</div>
+            </div>
+            <div class="sig-box" style="width: 20%;">
+              <div class="seal-box">(Affix School Seal Here)</div>
+            </div>
+          </div>
+        </div>
       </div>
 
       <!-- PAGE 2 (BACK) -->
@@ -235,6 +257,7 @@
         <div class="sec-title">SCHOLASTIC RECORD (Continued)</div>
         <div id="grades-page2"></div>
 
+        <!-- PAGE 2 CERTIFICATION -->
         <div class="cert-box" style="margin-top: 10px;">
           <div class="sec-title" style="margin-top: 0;">CERTIFICATION</div>
           <p style="margin: 3px 0;">I CERTIFY that this is a true record of <strong id="p-cert-name2">_________________________</strong> with LRN <strong id="p-cert-lrn2">_________________________</strong> and that he/she is eligible for admission to Grade ________.</p>
@@ -388,6 +411,7 @@
 
     document.getElementById('input-date').addEventListener('input', function() {
       const val = this.value || "";
+      document.getElementById('p-cert-date-line1').textContent = val;
       document.getElementById('p-cert-date-line2').textContent = val;
       document.getElementById('p-shs-cert-date-line').textContent = val;
     });
@@ -529,6 +553,8 @@
         document.getElementById('p-lrn').textContent = lrn;
         
         // Populate Certification on both pages
+        document.getElementById('p-cert-name1').textContent = `${firstRecord.firstName} ${firstRecord.middleName} ${firstRecord.lastName}`;
+        document.getElementById('p-cert-lrn1').textContent = lrn;
         document.getElementById('p-cert-name2').textContent = `${firstRecord.firstName} ${firstRecord.middleName} ${firstRecord.lastName}`;
         document.getElementById('p-cert-lrn2').textContent = lrn;
 
