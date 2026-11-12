@@ -173,7 +173,7 @@
     /* Admin Tools Grid */
     .admin-tools { 
       display: grid; 
-      grid-template-columns: 1fr 1fr; 
+      grid-template-columns: 1fr 1fr 1fr; /* Changed to 3 columns */
       gap: 15px; 
       margin-bottom: 30px; 
     }
@@ -195,6 +195,9 @@
     .tool-card i { font-size: 2rem; margin-bottom: 10px; display: block; }
     .tool-card span { display: block; font-weight: 700; font-size: 1rem; }
 
+    @media (max-width: 900px) {
+      .admin-tools { grid-template-columns: 1fr 1fr; }
+    }
     @media (max-width: 768px) {
       .form-grid { grid-template-columns: 1fr; }
       .tabs { width: 100%; flex-direction: column; }
@@ -221,9 +224,9 @@
     <div class="tabs">
       <button class="tab-btn active" onclick="switchTab('request', this)"><i class="fas fa-file-signature"></i> Request Document</button>
       <button class="tab-btn admin-only" onclick="switchTab('admin', this)" id="admin-tab" style="display: none;"><i class="fas fa-tasks"></i> Admin Dashboard</button>
-    <a href="sf10-print.html" style="background: #475569; color: #fff; text-decoration: none; padding: 8px 16px; border-radius: 6px; font-weight: 600; font-size: 0.9rem; display: inline-flex; align-items: center; gap: 8px;">
-    <i class="fas fa-print"></i> Print SF10
-    </a>
+      <a href="sf10-print.html" style="background: #475569; color: #fff; text-decoration: none; padding: 8px 16px; border-radius: 6px; font-weight: 600; font-size: 0.9rem; display: inline-flex; align-items: center; gap: 8px;">
+        <i class="fas fa-print"></i> Print SF10
+      </a>
     </div>
 
     <!-- PUBLIC: REQUEST FORM -->
@@ -269,7 +272,7 @@
       </form>
     </div>
 
-       <!-- ADMIN: DASHBOARD -->
+    <!-- ADMIN: DASHBOARD -->
     <div class="card" id="card-admin">
       
       <!-- Quick Tools for Admin/OJT -->
@@ -282,6 +285,11 @@
         <a href="sf10-encoder.html" class="tool-card" style="color: var(--gc-primary);">
           <i class="fas fa-file-archive"></i>
           <span>SF10 Digital Encoder</span>
+        </a>
+        <!-- NEW AI IMPORTER CARD -->
+        <a href="sf10-ai-importer.html" class="tool-card" style="color: #8b5cf6;">
+          <i class="fas fa-magic"></i>
+          <span>AI SF10 Importer</span>
         </a>
       </div>
 
