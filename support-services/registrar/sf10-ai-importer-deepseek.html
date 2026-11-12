@@ -10,7 +10,7 @@
   <style>
     :root {
       --primary: #0f172a;
-      --accent: #4d6bfe; /* DeepSeek Signature Blue */
+      --accent: #4d6bfe;
       --accent-light: #eff6ff;
       --accent-dark: #3b5bdb;
       --success: #10b981;
@@ -35,47 +35,27 @@
     }
 
     * { margin: 0; padding: 0; box-sizing: border-box; }
-    body {
-      font-family: 'Inter', sans-serif;
-      background: var(--gray-50);
-      min-height: 100vh;
-      color: var(--gray-900);
-    }
+    body { font-family: 'Inter', sans-serif; background: var(--gray-50); min-height: 100vh; color: var(--gray-900); }
 
-    /* ============================================================
-       LAYOUT & SIDEBAR
-       ============================================================ */
+    /* Layout & Sidebar */
     .app-container { display: flex; min-height: 100vh; }
     .sidebar {
-      width: 64px;
-      background: var(--primary);
-      color: white;
-      padding: 16px 0;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      position: fixed;
-      top: 0; left: 0; height: 100vh;
-      z-index: 100;
-      transition: var(--transition);
-      overflow: hidden;
+      width: 64px; background: var(--primary); color: white; padding: 16px 0;
+      display: flex; flex-direction: column; align-items: center;
+      position: fixed; top: 0; left: 0; height: 100vh; z-index: 100;
+      transition: var(--transition); overflow: hidden;
     }
     .sidebar:hover { width: 220px; }
     .sidebar .logo { font-size: 20px; font-weight: 900; margin-bottom: 20px; display: flex; align-items: center; gap: 10px; padding: 0 12px; white-space: nowrap; }
     .sidebar .logo span { display: none; }
     .sidebar:hover .logo span { display: inline; }
     .sidebar .nav-item {
-      display: flex; align-items: center; gap: 12px;
-      padding: 10px 14px; width: 100%;
-      color: rgba(255,255,255,0.6); text-decoration: none;
-      transition: var(--transition); border-radius: 10px;
-      margin: 2px 0; white-space: nowrap; cursor: pointer;
-      border: none; background: none; font-size: 13px; font-family: inherit;
+      display: flex; align-items: center; gap: 12px; padding: 10px 14px; width: 100%;
+      color: rgba(255,255,255,0.6); text-decoration: none; transition: var(--transition); border-radius: 10px;
+      margin: 2px 0; white-space: nowrap; cursor: pointer; border: none; background: none; font-size: 13px; font-family: inherit;
     }
     .sidebar .nav-item:hover, .sidebar .nav-item.active { 
-      background: rgba(77, 107, 254, 0.15); 
-      color: white; 
-      border-left: 3px solid var(--accent);
+      background: rgba(77, 107, 254, 0.15); color: white; border-left: 3px solid var(--accent);
     }
     .sidebar .nav-item i { font-size: 18px; min-width: 24px; text-align: center; }
     .sidebar .nav-item span { display: none; }
@@ -84,16 +64,12 @@
 
     .main-content { margin-left: 64px; flex: 1; padding: 20px 28px; min-height: 100vh; }
     
-    /* ============================================================
-       TOP HEADER
-       ============================================================ */
+    /* Top Header */
     .top-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 12px; }
     .title-section h1 { font-size: 24px; font-weight: 900; color: var(--accent); letter-spacing: -0.5px; display: flex; align-items: center; gap: 10px; }
     .title-section .subtitle { font-size: 13px; color: var(--gray-500); margin-top: 4px; }
     
-    /* ============================================================
-       MAIN CARD & FORM ELEMENTS
-       ============================================================ */
+    /* Cards & Forms */
     .main-card { background: white; border-radius: var(--radius-lg); box-shadow: var(--shadow-sm); border: 1px solid var(--gray-200); overflow: hidden; }
     .card-header { padding: 16px 24px; border-bottom: 1px solid var(--gray-200); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; background: var(--gray-50); }
     .card-header h2 { font-size: 15px; font-weight: 700; color: var(--gray-800); display: flex; align-items: center; gap: 8px; }
@@ -117,9 +93,7 @@
     .btn-ghost:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-light); }
     .btn-lg { padding: 14px 28px; font-size: 15px; }
 
-    /* ============================================================
-       UPLOAD ZONE & RESULTS TABLE
-       ============================================================ */
+    /* Upload Zone */
     .upload-zone { border: 2px dashed var(--gray-300); border-radius: var(--radius); padding: 50px 20px; text-align: center; cursor: pointer; transition: var(--transition); background: #fafafa; }
     .upload-zone:hover { border-color: var(--accent); background: var(--accent-light); }
     .upload-zone.has-files { border-color: var(--success); background: #f0fdf4; }
@@ -128,12 +102,16 @@
     .upload-zone p { color: var(--gray-700); font-size: 15px; font-weight: 700; margin-bottom: 4px; }
     .upload-zone .upload-hint { font-size: 12px; color: var(--gray-500); }
     
+    /* Results Table - Fixed Word Wrap */
     .result-table { width: 100%; border-collapse: collapse; margin-top: 20px; }
     .result-table th, .result-table td { padding: 10px; border: 1px solid var(--gray-200); text-align: center; }
     .result-table th { background: var(--gray-50); font-weight: 700; font-size: 12px; color: var(--gray-600); text-transform: uppercase; }
+    .result-table td { vertical-align: middle; }
     .result-table input { width: 100%; border: 1px solid transparent; text-align: center; padding: 8px; font-weight: bold; font-size: 14px; border-radius: 4px; font-family: inherit; background: transparent; }
     .result-table input:focus { border-color: var(--accent); outline: none; background: var(--accent-light); }
-    .result-table input.sub-name { text-align: left; color: var(--accent); }
+    /* Subject column specific fix */
+    .result-table td:first-child { width: 35%; text-align: left; }
+    .result-table input.sub-name { text-align: left; color: var(--accent); white-space: normal; word-wrap: break-word; }
 
     /* Toasts */
     .toast-container { position: fixed; top: 16px; right: 16px; z-index: 99999; display: flex; flex-direction: column; gap: 8px; max-width: 360px; width: 100%; }
@@ -154,19 +132,15 @@
     import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
     import { doc, getDoc, setDoc, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
-    // Load DeepSeek API key from localStorage
     let DEEPSEEK_API_KEY = localStorage.getItem('scphs_deepseek_key') || "";
     let selectedFile = null;
     let currentExtractedData = null;
 
-    // Ensure UI is ready
     document.addEventListener('DOMContentLoaded', () => {
-      // Show settings button if no key
       if (!DEEPSEEK_API_KEY) {
         document.getElementById('settings-btn').style.display = 'inline-flex';
         showToast('⚠️ DeepSeek API Key not configured.', 'warning');
       }
-      // Hide file info by default
       document.getElementById('file-info').style.display = 'none';
     });
 
@@ -188,7 +162,7 @@
       if (input.files.length > 0) {
         selectedFile = input.files[0];
         document.getElementById('file-name').textContent = selectedFile.name;
-        document.getElementById('file-info').style.display = 'block'; // <-- SHOW FILE NAME
+        document.getElementById('file-info').style.display = 'block'; 
         
         const zone = document.getElementById('upload-zone');
         zone.classList.add('has-files');
@@ -219,12 +193,17 @@
 
         while (attempt < maxRetries && !success) {
           try {
+            // UPDATED PROMPT: Tells AI to read EVERYTHING on the page.
             const prompt = `
               You are an AI data entry assistant for a school registrar.
               I am uploading an image of a DepEd SF10 (Form 137) report card.
-              Please extract the grades for each subject.
+              Please extract ALL grades for EVERY subject you can see on this page.
               
-              Return ONLY a valid JSON array in this exact format, nothing else:
+              CRITICAL INSTRUCTIONS:
+              1. Do NOT stop at the first "General Average". Keep reading down the page.
+              2. Remove any grade level text from the subject name (e.g., change "Filipino (Grade 7)" to just "Filipino").
+              3. Keep the exact subject names (including MAPEH components like "Music", "Arts").
+              4. Return ONLY a valid JSON array in this exact format, nothing else:
               [
                 {"subject": "Filipino", "q1": 85, "q2": 86, "q3": 87, "q4": 88},
                 {"subject": "English", "q1": 90, "q2": 91, "q3": 92, "q4": 93}
@@ -304,14 +283,12 @@
       reader.readAsDataURL(selectedFile);
     };
 
-    // Listen for edits in the table
     document.getElementById('result-tbody').addEventListener('input', function(e) {
       if (e.target.tagName === 'INPUT') {
         const index = e.target.dataset.index;
         const field = e.target.dataset.field;
-        const val = e.target.value;
         if (currentExtractedData && currentExtractedData[index]) {
-          currentExtractedData[index][field] = val;
+          currentExtractedData[index][field] = e.target.value;
         }
       }
     });
@@ -373,7 +350,6 @@
       }
     };
 
-    // Toast System
     window.showToast = function(message, type = 'success') {
       const container = document.getElementById('toastContainer');
       const toast = document.createElement('div');
@@ -393,31 +369,22 @@
 <div class="toast-container" id="toastContainer"></div>
 
 <div class="app-container">
-
-    <!-- SIDEBAR -->
     <nav class="sidebar">
         <div class="logo">
             <i class="fas fa-robot" style="color: var(--accent);"></i>
             <span>SCPHS AI</span>
         </div>
-        
-        <!-- Highlighted active tab -->
         <a class="nav-item active">
             <i class="fas fa-bolt"></i>
             <span>DeepSeek Vision</span>
         </a>
-        
-        <!-- Link back to index -->
         <a href="index.html" class="nav-item">
             <i class="fas fa-arrow-left"></i>
             <span>Back to Registrar</span>
         </a>
     </nav>
 
-    <!-- MAIN CONTENT -->
     <main class="main-content">
-        
-        <!-- TOP HEADER -->
         <div class="top-header">
             <div class="title-section">
                 <h1><i class="fas fa-microchip"></i> AI SF10 Importer</h1>
@@ -438,8 +405,6 @@
             </div>
 
             <div class="card-body">
-                
-                <!-- Selection Row -->
                 <div class="selection-row">
                     <div class="form-group">
                         <label><i class="fas fa-layer-group"></i> Grade Level</label>
@@ -464,7 +429,6 @@
                     </div>
                 </div>
 
-                <!-- Upload Zone -->
                 <div class="upload-zone" id="upload-zone" onclick="document.getElementById('excel-file').click()">
                     <div class="upload-icon"><i class="fas fa-cloud-upload-alt"></i></div>
                     <p>Click to select or drag & drop SF10 Image/PDF</p>
@@ -476,14 +440,12 @@
                     <i class="fas fa-check-circle"></i> <span id="file-name">file.jpg</span>
                 </div>
 
-                <!-- Action Button -->
                 <div style="margin-top: 24px; text-align: right;">
                     <button class="btn btn-accent btn-lg" id="btn-process" onclick="processImage()" disabled>
                         <i class="fas fa-magic"></i> Scan with DeepSeek AI
                     </button>
                 </div>
 
-                <!-- Results Area -->
                 <div id="results-area" style="margin-top: 30px; display: none; border-top: 1px solid var(--gray-200); padding-top: 24px;">
                     <h3 style="font-size: 18px; color: var(--accent); margin-bottom: 5px;"><i class="fas fa-check-square"></i> Extraction Results</h3>
                     <p style="font-size: 13px; color: var(--gray-500); margin-bottom: 20px;">Review the data below. You can click and edit any box to fix typos before saving.</p>
@@ -507,13 +469,11 @@
                         </button>
                     </div>
                 </div>
-
             </div>
         </div>
     </main>
 </div>
 
-<!-- SETTINGS MODAL -->
 <div class="modal-overlay" id="settings-modal">
     <div class="modal-content">
         <h3 style="font-size: 20px; color: var(--accent); margin-bottom: 10px;"><i class="fas fa-key"></i> Setup DeepSeek API Key</h3>
