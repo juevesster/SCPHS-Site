@@ -144,7 +144,7 @@
         </div>
       </div>
 
-      <button class="btn-print" id="btn-print" onclick="window.print()"><i class="fas fa-print"></i> Print SF10 (8.5 x 13 Long)</button>
+      <button class="btn-print" id="btn-print" onclick="triggerPrint()"><i class="fas fa-print"></i> Print SF10 (8.5 x 13 Long)</button>
     </div>
   </div>
 
@@ -404,6 +404,19 @@
       document.getElementById('p-cert-date-line2').textContent = val;
       document.getElementById('p-shs-cert-date-line').textContent = val;
     });
+
+    // NEW PRINT TRIGGER FUNCTION
+    window.triggerPrint = function() {
+      const btn = document.getElementById('btn-print');
+      const originalText = btn.innerHTML;
+      btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Preparing Print...';
+      
+      // Small delay ensures the hidden layout is fully painted before printing
+      setTimeout(() => {
+        window.print();
+        btn.innerHTML = originalText;
+      }, 500); 
+    };
 
     function renderPrintView(records, lrn) {
       // Sort by Grade Level
