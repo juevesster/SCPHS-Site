@@ -55,43 +55,36 @@
       .header, .search-box, #web-ui, #access-denied, .signatory-panel { display: none !important; }
       #print-wrapper { display: block !important; }
       
-      .paper { width: 100%; max-width: 8.5in; margin: 0 auto; background: white; }
-      .page { padding: 0 10px; min-height: 12.4in; }
+      .paper { width: 100%; max-width: 1100px; margin: 0 auto; background: white; }
+      .page { padding: 0 10px; min-height: 100vh; }
       .page-back { page-break-before: always; }
       
-      .sf10-header { display: flex; align-items: center; justify-content: space-between; padding: 5px 0; border-bottom: 2px solid #000; margin-bottom: 5px; position: relative; }
-      
-      /* Added SF10-JHS text at top left */
-      .header-form-code { position: absolute; top: -5px; left: 0; font-size: 9pt; font-weight: bold; }
-      
-      /* Slightly bigger logos */
-      .header-left { position: relative; text-align: left; width: 80px; padding-top: 10px; }
-      .header-seal { max-height: 70px; max-width: 70px; }
-      
+      .sf10-header { display: flex; align-items: center; justify-content: space-between; padding: 5px 0; border-bottom: 2px solid #000; margin-bottom: 5px; }
+      /* Left: School Logo, Center: Text, Right: DepEd Logo */
+      .header-left { position: relative; text-align: left; width: 60px; }
+      .header-seal { max-height: 55px; max-width: 55px; }
       .header-center { text-align: center; flex: 1; }
       .republic { font-size: 10pt; margin: 0; }
       .deped { font-size: 10pt; font-weight: bold; margin: 0; }
       .doc-title { font-size: 11pt; font-weight: bold; text-transform: uppercase; margin: 0; }
       .doc-subtitle { font-size: 8pt; font-style: italic; margin: 0; }
-      
-      .header-right { width: 80px; text-align: right; }
-      .header-logo-right { max-height: 50px; max-width: 90px; object-fit: contain; margin-top: 5px; }
+      .header-right { width: 60px; text-align: right; }
       
       .sec-title { font-weight: bold; font-size: 8pt; text-align: center; text-transform: uppercase; background: #e8dcc8; border-top: 1px solid #000; border-bottom: 1px solid #000; padding: 2px 0; margin: 5px 0; -webkit-print-color-adjust: exact; }
       
       .info-table { width: 100%; border-collapse: collapse; margin-bottom: 5px; }
       .info-table td { padding: 2px 5px; font-size: 8pt; }
       .lbl { font-weight: bold; white-space: nowrap; }
-      .val { border-bottom: 1px solid #000; display: inline-block; min-width: 120px; padding: 0 5px; }
+      .val { border-bottom: 1px solid #000; display: inline-block; min-width: 150px; padding: 0 5px; }
       
       .elig-table { width: 100%; border-collapse: collapse; margin-bottom: 5px; font-size: 7.5pt; }
       .elig-table td { padding: 2px 5px; vertical-align: top; }
       .chk-box { display: inline-block; width: 10px; height: 10px; border: 1px solid #000; margin-right: 5px; vertical-align: middle; text-align: center; line-height: 10px; font-weight: bold; }
       
-      .grade-table { width: 100%; border-collapse: collapse; margin-bottom: 5px; font-size: 7.5pt; table-layout: fixed; }
+      .grade-table { width: 100%; border-collapse: collapse; margin-bottom: 5px; font-size: 7.5pt; }
       .grade-table th, .grade-table td { border: 1px solid #000; padding: 2px; text-align: center; vertical-align: middle; }
       .grade-table th { background: #f0f0f0; font-weight: bold; -webkit-print-color-adjust: exact; }
-      .grade-table td.sn { text-align: left; font-weight: bold; padding-left: 5px; word-break: break-word; }
+      .grade-table td.sn { text-align: left; font-weight: bold; padding-left: 5px; }
       .grade-table td.mapeh-indent { padding-left: 15px; font-weight: normal; font-style: italic; }
       .grade-table tr.ga td { font-weight: bold; background: #f9f9f9; -webkit-print-color-adjust: exact; }
       
@@ -153,7 +146,8 @@
         </div>
       </div>
 
-      <button class="btn-print" id="btn-print" onclick="window.print()"><i class="fas fa-print"></i> Print SF10 (8.5 x 13 Portrait)</button>
+      <!-- Direct window.print() call to prevent popup blocker -->
+      <button class="btn-print" id="btn-print" onclick="window.print()"><i class="fas fa-print"></i> Print SF10 (8.5 x 13 Long)</button>
     </div>
   </div>
 
@@ -164,18 +158,14 @@
       <!-- PAGE 1 (FRONT) -->
       <div class="page" id="jhs-page1" style="display: none;">
         <div class="sf10-header">
-          <!-- Added SF10-JHS text here -->
-          <div class="header-form-code">SF10-JHS</div>
-          <div class="header-left"><img src="../../assets/images/deped-logo.png" class="header-seal" alt="DepEd Logo"></div>
+          <div class="header-left"><img src="../../assets/images/deped-logo.png" class="header-seal" alt="School Logo"></div>
           <div class="header-center">
             <div class="republic">Republic of the Philippines</div>
             <div class="deped">Department of Education</div>
             <div class="doc-title">Learner Permanent Academic Record for Junior High School (SF10-JHS)</div>
             <div class="doc-subtitle">(Formerly Form 137)</div>
           </div>
-          <div class="header-right">
-            <img src="../../assets/images/deped-seal.png" class="header-logo-right" alt="DepEd Seal" onerror="this.src='https://upload.wikimedia.org/wikipedia/commons/9/9a/Department_of_Education_%28DepEd%29_Seal.svg'">
-          </div>
+          <div class="header-right"><img src="../../assets/images/deped_seal.png" class="header-seal" alt="DepEd Logo"></div>
         </div>
 
         <div class="sec-title">LEARNER'S INFORMATION</div>
@@ -183,14 +173,12 @@
           <tr>
             <td><span class="lbl">LAST NAME:</span> <span class="val" id="p-lastname">-</span></td>
             <td><span class="lbl">FIRST NAME:</span> <span class="val" id="p-firstname">-</span></td>
-            <td><span class="lbl">NAME EXT.:</span> <span class="val" id="p-extname">-</span></td>
+            <td><span class="lbl">NAME EXT. (Jr, I, II):</span> <span class="val" id="p-extname">-</span></td>
+            <td><span class="lbl">MIDDLE NAME:</span> <span class="val" id="p-middlename">-</span></td>
           </tr>
           <tr>
-            <td colspan="2"><span class="lbl">MIDDLE NAME:</span> <span class="val" id="p-middlename">-</span></td>
-            <td><span class="lbl">LRN:</span> <span class="val" id="p-lrn">-</span></td>
-          </tr>
-          <tr>
-            <td colspan="2"><span class="lbl">Birthdate (mm/dd/yyyy):</span> <span class="val" id="p-birthdate">-</span></td>
+            <td colspan="2"><span class="lbl">Learner Reference Number (LRN):</span> <span class="val" id="p-lrn">-</span></td>
+            <td><span class="lbl">Birthdate (mm/dd/yyyy):</span> <span class="val" id="p-birthdate">-</span></td>
             <td><span class="lbl">Sex:</span> <span class="val" id="p-sex">-</span></td>
           </tr>
         </table>
@@ -203,11 +191,9 @@
             <td><span class="lbl">Citation (if Any):</span> <span class="val" id="p-elem-citation"></span></td>
           </tr>
           <tr>
-            <td colspan="2"><span class="lbl">Name of Elementary School:</span> <span class="val" style="min-width: 200px;" id="p-elem-school"></span></td>
+            <td><span class="lbl">Name of Elementary School:</span> <span class="val" style="min-width: 200px;" id="p-elem-school"></span></td>
             <td><span class="lbl">School ID:</span> <span class="val" id="p-elem-school-id"></span></td>
-          </tr>
-          <tr>
-            <td colspan="3"><span class="lbl">Address of School:</span> <span class="val" style="min-width: 300px;" id="p-elem-address"></span></td>
+            <td><span class="lbl">Address of School:</span> <span class="val" id="p-elem-address"></span></td>
           </tr>
           <tr>
             <td colspan="3" style="padding-top: 5px; font-weight: bold;">Other Credential Presented</td>
@@ -215,15 +201,15 @@
           <tr>
             <td><span class="chk-box" id="chk-pept"></span> PEPT Passer</td>
             <td><span class="lbl">Rating:</span> <span class="val" id="p-pept-rating"></span></td>
-            <td rowspan="2"><span class="lbl">Others:</span> <span class="val" style="min-width: 150px;" id="p-elem-others"></span></td>
+            <td rowspan="2"><span class="lbl">Others (Pls. Specify):</span> <span class="val" style="min-width: 150px;" id="p-elem-others"></span></td>
           </tr>
           <tr>
             <td><span class="chk-box" id="chk-als"></span> ALS A & E Passer</td>
             <td><span class="lbl">Rating:</span> <span class="val" id="p-als-rating"></span></td>
           </tr>
           <tr>
-            <td colspan="2"><span class="lbl">Date of Exam/Assessment:</span> <span class="val" id="p-elem-exam-date"></span></td>
-            <td><span class="lbl">Testing Center:</span> <span class="val" id="p-elem-testing-center"></span></td>
+            <td colspan="2"><span class="lbl">Date of Examination/Assessment (mm/dd/yyyy):</span> <span class="val" id="p-elem-exam-date"></span></td>
+            <td><span class="lbl">Name and Address of Testing Center:</span> <span class="val" id="p-elem-testing-center"></span></td>
           </tr>
         </table>
 
@@ -289,18 +275,14 @@
       <!-- SHS LAYOUT -->
       <div class="page" id="shs-page" style="display: none;">
         <div class="sf10-header">
-          <!-- Added SF10-SHS text here -->
-          <div class="header-form-code">SF10-SHS</div>
-          <div class="header-left"><img src="../../assets/images/deped-logo.png" class="header-seal" alt="DepEd Logo"></div>
+          <div class="header-left"><img src="../../assets/images/scphslogo.png" class="header-seal" alt="School Logo"></div>
           <div class="header-center">
             <div class="republic">Republic of the Philippines</div>
             <div class="deped">Department of Education</div>
             <div class="doc-title">Learner Permanent Academic Record for Senior High School (SF10-SHS)</div>
             <div class="doc-subtitle">(Formerly Form 137)</div>
           </div>
-          <div class="header-right">
-            <img src="../../assets/images/deped-seal.png" class="header-logo-right" alt="DepEd Seal" onerror="this.src='https://upload.wikimedia.org/wikipedia/commons/9/9a/Department_of_Education_%28DepEd%29_Seal.svg'">
-          </div>
+          <div class="header-right"><img src="../../assets/images/deped-logo.png" class="header-seal" alt="DepEd Logo"></div>
         </div>
 
         <div class="sec-title">LEARNER'S INFORMATION</div>
@@ -308,14 +290,12 @@
           <tr>
             <td><span class="lbl">LAST NAME:</span> <span class="val" id="p-shs-lastname">-</span></td>
             <td><span class="lbl">FIRST NAME:</span> <span class="val" id="p-shs-firstname">-</span></td>
-            <td><span class="lbl">NAME EXT.:</span> <span class="val" id="p-shs-extname">-</span></td>
+            <td><span class="lbl">NAME EXT. (Jr, I, II):</span> <span class="val" id="p-shs-extname">-</span></td>
+            <td><span class="lbl">MIDDLE NAME:</span> <span class="val" id="p-shs-middlename">-</span></td>
           </tr>
           <tr>
-            <td colspan="2"><span class="lbl">MIDDLE NAME:</span> <span class="val" id="p-shs-middlename">-</span></td>
-            <td><span class="lbl">LRN:</span> <span class="val" id="p-shs-lrn">-</span></td>
-          </tr>
-          <tr>
-            <td colspan="2"><span class="lbl">Birthdate (mm/dd/yyyy):</span> <span class="val" id="p-shs-birthdate">-</span></td>
+            <td colspan="2"><span class="lbl">LRN:</span> <span class="val" id="p-shs-lrn">-</span></td>
+            <td><span class="lbl">Birthdate (mm/dd/yyyy):</span> <span class="val" id="p-shs-birthdate">-</span></td>
             <td><span class="lbl">Sex:</span> <span class="val" id="p-shs-sex">-</span></td>
           </tr>
         </table>
