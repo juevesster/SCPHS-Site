@@ -75,15 +75,6 @@
     .card-header h2 { font-size: 15px; font-weight: 700; color: var(--gray-800); display: flex; align-items: center; gap: 8px; }
     .card-body { padding: 24px; }
 
-    .selection-row {
-      display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-      gap: 16px; margin-bottom: 20px; background: var(--gray-50);
-      padding: 16px; border-radius: var(--radius); border: 1px solid var(--gray-200);
-    }
-    .form-group label { display: block; font-weight: 700; font-size: 11px; color: var(--gray-500); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; }
-    .form-group input, .form-group select { width: 100%; padding: 10px 12px; border: 2px solid var(--gray-200); border-radius: 8px; font-size: 13px; font-family: inherit; background: white; transition: var(--transition); }
-    .form-group input:focus, .form-group select:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px rgba(77, 107, 254, 0.1); }
-
     .btn { padding: 10px 20px; border: none; border-radius: 8px; font-weight: 700; font-size: 13px; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; transition: var(--transition); font-family: inherit; }
     .btn:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
     .btn-accent { background: var(--accent); color: white; }
@@ -92,6 +83,7 @@
     .btn-ghost { background: transparent; color: var(--gray-600); border: 2px solid var(--gray-200); }
     .btn-ghost:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-light); }
     .btn-lg { padding: 14px 28px; font-size: 15px; }
+    .btn:disabled { opacity: 0.6; cursor: not-allowed; transform: none; box-shadow: none; }
 
     /* Upload Zone */
     .upload-zone { border: 2px dashed var(--gray-300); border-radius: var(--radius); padding: 50px 20px; text-align: center; cursor: pointer; transition: var(--transition); background: #fafafa; }
@@ -102,18 +94,21 @@
     .upload-zone p { color: var(--gray-700); font-size: 15px; font-weight: 700; margin-bottom: 4px; }
     .upload-zone .upload-hint { font-size: 12px; color: var(--gray-500); }
     
-    /* Results Table - Fixed Word Wrap */
-    .result-table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-    .result-table th, .result-table td { padding: 10px; border: 1px solid var(--gray-200); text-align: center; }
-    .result-table th { background: var(--gray-50); font-weight: 700; font-size: 12px; color: var(--gray-600); text-transform: uppercase; }
+    /* Result Sections */
+    .result-section { margin-bottom: 30px; border: 1px solid var(--gray-200); border-radius: var(--radius); overflow: hidden; }
+    .result-section-header { background: var(--gray-100); padding: 12px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--gray-200); }
+    .result-section-header h4 { font-size: 14px; font-weight: 700; color: var(--gray-800); margin: 0; }
+    
+    .result-table { width: 100%; border-collapse: collapse; }
+    .result-table th, .result-table td { padding: 8px; border: 1px solid var(--gray-200); text-align: center; }
+    .result-table th { background: var(--gray-50); font-weight: 700; font-size: 11px; color: var(--gray-600); text-transform: uppercase; }
     .result-table td { vertical-align: middle; }
-    .result-table input { width: 100%; border: 1px solid transparent; text-align: center; padding: 8px; font-weight: bold; font-size: 14px; border-radius: 4px; font-family: inherit; background: transparent; }
+    .result-table input { width: 100%; border: 1px solid transparent; text-align: center; padding: 6px; font-weight: bold; font-size: 14px; border-radius: 4px; font-family: inherit; background: transparent; }
     .result-table input:focus { border-color: var(--accent); outline: none; background: var(--accent-light); }
-    /* Subject column specific fix */
-    .result-table td:first-child { width: 35%; text-align: left; }
+    .result-table td:first-child { width: 40%; text-align: left; }
     .result-table input.sub-name { text-align: left; color: var(--accent); white-space: normal; word-wrap: break-word; }
-
-    /* Toasts */
+    
+    /* Toasts & Modals */
     .toast-container { position: fixed; top: 16px; right: 16px; z-index: 99999; display: flex; flex-direction: column; gap: 8px; max-width: 360px; width: 100%; }
     .toast { padding: 14px 18px; border-radius: var(--radius); background: white; box-shadow: var(--shadow-lg); border-left: 4px solid var(--accent); animation: slideIn 0.3s ease; display: flex; align-items: center; gap: 12px; font-size: 13px; font-weight: 600; }
     .toast.success { border-left-color: var(--success); }
@@ -121,7 +116,6 @@
     .toast.warning { border-left-color: var(--warning); }
     @keyframes slideIn { from { opacity: 0; transform: translateX(20px); } to { opacity: 1; transform: translateX(0); } }
 
-    /* Modal */
     .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(4px); z-index: 9999; justify-content: center; align-items: center; }
     .modal-overlay.show { display: flex; }
     .modal-content { background: white; border-radius: var(--radius-lg); padding: 30px; max-width: 500px; width: 92%; box-shadow: var(--shadow-lg); }
@@ -129,12 +123,11 @@
 
   <script type="module">
     import { auth, db } from "../../assets/js/firebase-config.js";
-    import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
     import { doc, getDoc, setDoc, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
     let DEEPSEEK_API_KEY = localStorage.getItem('scphs_deepseek_key') || "";
     let selectedFile = null;
-    let currentExtractedData = null;
+    let currentExtractedData = null; // Will hold an array of sections
 
     document.addEventListener('DOMContentLoaded', () => {
       if (!DEEPSEEK_API_KEY) {
@@ -163,11 +156,9 @@
         selectedFile = input.files[0];
         document.getElementById('file-name').textContent = selectedFile.name;
         document.getElementById('file-info').style.display = 'block'; 
-        
         const zone = document.getElementById('upload-zone');
         zone.classList.add('has-files');
         zone.querySelector('p').textContent = "File Selected!";
-        
         document.getElementById('btn-process').disabled = false;
       }
     };
@@ -180,7 +171,6 @@
       const originalText = btn.innerHTML;
       btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> DeepSeek is Scanning...';
       btn.disabled = true;
-
       document.getElementById('results-area').style.display = 'none';
 
       const reader = new FileReader();
@@ -193,23 +183,37 @@
 
         while (attempt < maxRetries && !success) {
           try {
-            // UPDATED PROMPT: Tells AI to read EVERYTHING on the page.
+            // BULLETPROOF PROMPT
             const prompt = `
-              You are an AI data entry assistant for a school registrar.
+              You are an expert AI data entry assistant for a school registrar. 
               I am uploading an image of a DepEd SF10 (Form 137) report card.
-              Please extract ALL grades for EVERY subject you can see on this page.
-              
+              This document may contain multiple grade levels (e.g., Grade 7 and Grade 8) on the same page.
+
               CRITICAL INSTRUCTIONS:
-              1. Do NOT stop at the first "General Average". Keep reading down the page.
-              2. Remove any grade level text from the subject name (e.g., change "Filipino (Grade 7)" to just "Filipino").
-              3. Keep the exact subject names (including MAPEH components like "Music", "Arts").
-              4. Return ONLY a valid JSON array in this exact format, nothing else:
-              [
-                {"subject": "Filipino", "q1": 85, "q2": 86, "q3": 87, "q4": 88},
-                {"subject": "English", "q1": 90, "q2": 91, "q3": 92, "q4": 93}
-              ]
+              1. Identify the grade level and school year for EACH block of subjects.
+              2. Extract the FINAL RATING for each subject.
+              3. Read carefully. Some grades are handwritten. DO NOT GUESS. If a number is illegible, empty, or crossed out, return null for that specific quarter.
+              4. Keep exact subject names (e.g., "Edukasyon sa Pagpapakatao (EsP)", "MAPEH").
               
-              If a grade is blank, use null. If the image has no grades, return [].
+              Return ONLY a valid JSON object in this exact format, nothing else:
+              {
+                "sections": [
+                  {
+                    "gradeLevel": "Grade 7",
+                    "schoolYear": "2022-2023",
+                    "subjects": [
+                      {"subject": "Filipino", "q1": 79, "q2": 79, "q3": 79, "q4": 79, "final": 79}
+                    ]
+                  },
+                  {
+                    "gradeLevel": "Grade 8",
+                    "schoolYear": "2023-2024",
+                    "subjects": [
+                      {"subject": "Filipino", "q1": 80, "q2": null, "q3": null, "q4": null, "final": 80}
+                    ]
+                  }
+                ]
+              }
             `;
 
             const response = await fetch("https://api.deepseek.com/v1/chat/completions", {
@@ -242,10 +246,13 @@
             let text = data.choices[0].message.content;
             
             text = text.replace(/```json/g, '').replace(/```/g, '').trim();
-            currentExtractedData = JSON.parse(text);
+            const parsedData = JSON.parse(text);
             
-            if (currentExtractedData.length === 0) throw new Error("No grades could be found in the image.");
+            if (!parsedData.sections || parsedData.sections.length === 0) {
+              throw new Error("No sections or grades could be found.");
+            }
             
+            currentExtractedData = parsedData;
             success = true;
 
           } catch (error) {
@@ -261,20 +268,8 @@
         }
 
         if (success && currentExtractedData) {
-          showToast('✅ DeepSeek extracted the grades! Please review.', 'success');
-          
-          const tbody = document.getElementById('result-tbody');
-          tbody.innerHTML = currentExtractedData.map((g, i) => `
-            <tr>
-              <td><input type="text" class="sub-name" value="${g.subject || ''}" data-index="${i}" data-field="subject"></td>
-              <td><input type="number" value="${g.q1 || ''}" data-index="${i}" data-field="q1"></td>
-              <td><input type="number" value="${g.q2 || ''}" data-index="${i}" data-field="q2"></td>
-              <td><input type="number" value="${g.q3 || ''}" data-index="${i}" data-field="q3"></td>
-              <td><input type="number" value="${g.q4 || ''}" data-index="${i}" data-field="q4"></td>
-            </tr>
-          `).join('');
-          
-          document.getElementById('results-area').style.display = 'block';
+          showToast('✅ Extraction complete! Please review carefully.', 'success');
+          renderExtractionUI();
         }
 
         btn.innerHTML = originalText;
@@ -283,16 +278,67 @@
       reader.readAsDataURL(selectedFile);
     };
 
-    document.getElementById('result-tbody').addEventListener('input', function(e) {
+    // Renders multiple tables dynamically
+    function renderExtractionUI() {
+      const container = document.getElementById('results-container');
+      container.innerHTML = ''; // Clear previous
+
+      currentExtractedData.sections.forEach((section, secIndex) => {
+        let rowsHtml = '';
+        section.subjects.forEach((sub, subIndex) => {
+          rowsHtml += `
+            <tr>
+              <td><input type="text" class="sub-name" value="${sub.subject || ''}" data-sec="${secIndex}" data-sub="${subIndex}" data-field="subject"></td>
+              <td><input type="number" value="${sub.q1 ?? ''}" data-sec="${secIndex}" data-sub="${subIndex}" data-field="q1"></td>
+              <td><input type="number" value="${sub.q2 ?? ''}" data-sec="${secIndex}" data-sub="${subIndex}" data-field="q2"></td>
+              <td><input type="number" value="${sub.q3 ?? ''}" data-sec="${secIndex}" data-sub="${subIndex}" data-field="q3"></td>
+              <td><input type="number" value="${sub.q4 ?? ''}" data-sec="${secIndex}" data-sub="${subIndex}" data-field="q4"></td>
+              <td><input type="number" value="${sub.final ?? ''}" data-sec="${secIndex}" data-sub="${subIndex}" data-field="final"></td>
+            </tr>
+          `;
+        });
+
+        container.innerHTML += `
+          <div class="result-section">
+            <div class="result-section-header">
+              <h4><i class="fas fa-layer-group"></i> ${section.gradeLevel || 'Unknown Grade'} (SY: ${section.schoolYear || 'Unknown'})</h4>
+              <span style="font-size: 12px; color: var(--gray-500);">${section.subjects.length} Subjects Found</span>
+            </div>
+            <table class="result-table">
+              <thead>
+                <tr>
+                  <th>Subject</th>
+                  <th>Q1</th>
+                  <th>Q2</th>
+                  <th>Q3</th>
+                  <th>Q4</th>
+                  <th>Final</th>
+                </tr>
+              </thead>
+              <tbody>${rowsHtml}</tbody>
+            </table>
+          </div>
+        `;
+      });
+
+      document.getElementById('results-area').style.display = 'block';
+    }
+
+    // Two-way binding for edits
+    document.getElementById('results-container').addEventListener('input', function(e) {
       if (e.target.tagName === 'INPUT') {
-        const index = e.target.dataset.index;
+        const sec = e.target.dataset.sec;
+        const sub = e.target.dataset.sub;
         const field = e.target.dataset.field;
-        if (currentExtractedData && currentExtractedData[index]) {
-          currentExtractedData[index][field] = e.target.value;
+        
+        if (currentExtractedData && currentExtractedData.sections[sec] && currentExtractedData.sections[sec].subjects[sub]) {
+          const val = e.target.value;
+          currentExtractedData.sections[sec].subjects[sub][field] = (field === 'subject') ? val : (val === '' ? null : Number(val));
         }
       }
     });
 
+    // Bulk Save Logic
     window.saveToDatabase = async function() {
       if (!currentExtractedData) return;
 
@@ -302,44 +348,60 @@
       btn.disabled = true;
 
       try {
-        const gradeLevel = document.getElementById('imp-grade').value;
-        const schoolYear = document.getElementById('imp-year').value;
+        const lrn = prompt("Please enter the 12-digit LRN for this student:");
+        if (!lrn || lrn.length !== 12) throw new Error("Invalid LRN. Must be 12 digits.");
         
-        const lrn = prompt("Please enter the 12-digit LRN for this student to save the record:");
-        if (!lrn || lrn.length !== 12) throw new Error("Invalid LRN.");
+        const lastName = prompt("Enter Student Last Name:");
+        const firstName = prompt("Enter Student First Name:");
+        if(!lastName || !firstName) throw new Error("Name is required.");
 
-        const sf10Ref = collection(db, "sf10_archives");
-        const qLrn = query(sf10Ref, where("lrn", "==", lrn), where("schoolYear", "==", schoolYear), where("gradeLevel", "==", gradeLevel));
-        const snapLrn = await getDocs(qLrn);
-        
-        if (!snapLrn.empty) {
-          throw new Error("A record for this student, school year, and grade level already exists.");
+        let savedCount = 0;
+
+        // Loop through each section (e.g., Grade 7, Grade 8) and save as separate documents
+        for (const section of currentExtractedData.sections) {
+          const gradeLevel = section.gradeLevel;
+          const schoolYear = section.schoolYear;
+          
+          if (!gradeLevel || !schoolYear) continue; // Skip if AI couldn't determine
+
+          const docId = `${lrn}_${schoolYear}_${gradeLevel.replace(/\s+/g, '')}`;
+          
+          // Check if exists
+          const sf10Ref = doc(db, "sf10_archives", docId);
+          const snap = await getDoc(sf10Ref);
+          if (snap.exists()) {
+             showToast(`⚠️ Record for ${gradeLevel} (${schoolYear}) already exists. Skipped.`, 'warning');
+             continue; // Skip this one, move to next
+          }
+
+          // Save Document
+          await setDoc(sf10Ref, {
+            lrn: lrn,
+            lastName: lastName,
+            firstName: firstName,
+            gradeLevel: gradeLevel,
+            schoolYear: schoolYear,
+            gradingSystem: "4q", 
+            grades: section.subjects,
+            adviser: "",
+            section: "",
+            createdAt: Date.now(),
+            importedVia: "DeepSeek Vision"
+          });
+          savedCount++;
         }
 
-        const docId = `${lrn}_${schoolYear}_${gradeLevel.replace(/\s+/g, '')}`;
-        
-        await setDoc(doc(db, "sf10_archives", docId), {
-          lrn: lrn,
-          lastName: "Imported", 
-          firstName: "From AI",
-          gradeLevel: gradeLevel,
-          schoolYear: schoolYear,
-          gradingSystem: "4q", 
-          grades: currentExtractedData,
-          adviser: "",
-          section: "",
-          createdAt: Date.now(),
-          importedVia: "DeepSeek Vision"
-        });
-
-        showToast("✅ Successfully saved to Database!", 'success');
-        
-        document.getElementById('results-area').style.display = 'none';
-        document.getElementById('upload-zone').classList.remove('has-files');
-        document.getElementById('upload-zone').querySelector('p').textContent = "Click to select or drag & drop SF10 Image/PDF";
-        document.getElementById('file-info').style.display = 'none';
-        selectedFile = null;
-        currentExtractedData = null;
+        if(savedCount > 0) {
+            showToast(`✅ Successfully saved ${savedCount} record(s) to Database!`, 'success');
+            // Reset UI
+            document.getElementById('results-area').style.display = 'none';
+            document.getElementById('upload-zone').classList.remove('has-files');
+            document.getElementById('upload-zone').querySelector('p').textContent = "Click to select or drag & drop SF10 Image/PDF";
+            document.getElementById('file-info').style.display = 'none';
+            document.getElementById('excel-file').value = ''; // clear input
+            selectedFile = null;
+            currentExtractedData = null;
+        }
 
       } catch (error) {
         console.error(error);
@@ -389,7 +451,7 @@
             <div class="title-section">
                 <h1><i class="fas fa-microchip"></i> AI SF10 Importer</h1>
                 <div class="subtitle">
-                    Powered by <strong>DeepSeek Vision</strong> • Extract grades automatically from photo or PDF
+                    Powered by <strong>DeepSeek Vision</strong> • Bulk extract multiple years from one page
                 </div>
             </div>
             <div class="user-section">
@@ -405,34 +467,10 @@
             </div>
 
             <div class="card-body">
-                <div class="selection-row">
-                    <div class="form-group">
-                        <label><i class="fas fa-layer-group"></i> Grade Level</label>
-                        <select id="imp-grade">
-                            <option value="Grade 7">Grade 7</option>
-                            <option value="Grade 8">Grade 8</option>
-                            <option value="Grade 9">Grade 9</option>
-                            <option value="Grade 10">Grade 10</option>
-                            <option value="Grade 11">Grade 11</option>
-                            <option value="Grade 12">Grade 12</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label><i class="fas fa-calendar-alt"></i> School Year</label>
-                        <select id="imp-year">
-                            <option value="2025-2026">2025-2026</option>
-                            <option value="2024-2025">2024-2025</option>
-                            <option value="2023-2024">2023-2024</option>
-                            <option value="2022-2023">2022-2023</option>
-                            <option value="2021-2022">2021-2022</option>
-                        </select>
-                    </div>
-                </div>
-
                 <div class="upload-zone" id="upload-zone" onclick="document.getElementById('excel-file').click()">
                     <div class="upload-icon"><i class="fas fa-cloud-upload-alt"></i></div>
                     <p>Click to select or drag & drop SF10 Image/PDF</p>
-                    <div class="upload-hint">Supports JPG, PNG, PDF • AI will read the grades</div>
+                    <div class="upload-hint">Supports JPG, PNG, PDF • AI will auto-detect Grade Levels</div>
                     <input type="file" id="excel-file" accept="image/*, .pdf" style="display: none;" onchange="handleFileSelect(this)">
                 </div>
                 
@@ -446,26 +484,18 @@
                     </button>
                 </div>
 
+                <!-- Results Area (Dynamically Populated) -->
                 <div id="results-area" style="margin-top: 30px; display: none; border-top: 1px solid var(--gray-200); padding-top: 24px;">
                     <h3 style="font-size: 18px; color: var(--accent); margin-bottom: 5px;"><i class="fas fa-check-square"></i> Extraction Results</h3>
-                    <p style="font-size: 13px; color: var(--gray-500); margin-bottom: 20px;">Review the data below. You can click and edit any box to fix typos before saving.</p>
+                    <p style="font-size: 13px; color: var(--gray-500); margin-bottom: 20px;">Review the data below. If the AI misread a handwritten grade, edit it before saving.</p>
                     
-                    <table class="result-table">
-                        <thead>
-                            <tr>
-                                <th>Subject</th>
-                                <th>Q1</th>
-                                <th>Q2</th>
-                                <th>Q3</th>
-                                <th>Q4</th>
-                            </tr>
-                        </thead>
-                        <tbody id="result-tbody"></tbody>
-                    </table>
+                    <div id="results-container">
+                        <!-- Tables will be injected here by JS -->
+                    </div>
                     
-                    <div style="margin-top: 24px; text-align: right;">
-                        <button class="btn btn-success btn-lg" id="btn-save" onclick="saveToDatabase()">
-                            <i class="fas fa-save"></i> Save to Database
+                    <div style="margin-top: 24px; text-align: right; position: sticky; bottom: 20px;">
+                        <button class="btn btn-success btn-lg" id="btn-save" onclick="saveToDatabase()" style="box-shadow: var(--shadow-md);">
+                            <i class="fas fa-save"></i> Save All Valid Sections to Database
                         </button>
                     </div>
                 </div>
@@ -474,10 +504,11 @@
     </main>
 </div>
 
+<!-- Settings Modal -->
 <div class="modal-overlay" id="settings-modal">
     <div class="modal-content">
         <h3 style="font-size: 20px; color: var(--accent); margin-bottom: 10px;"><i class="fas fa-key"></i> Setup DeepSeek API Key</h3>
-        <p style="font-size: 13px; color: var(--gray-500); margin-bottom: 20px;">Enter your DeepSeek API key below. This will be saved locally in this browser so you don't have to type it again.</p>
+        <p style="font-size: 13px; color: var(--gray-500); margin-bottom: 20px;">Enter your DeepSeek API key below. This will be saved locally in this browser.</p>
         <input type="password" id="api-key-input" placeholder="sk-..." style="width: 100%; padding: 14px; border: 2px solid var(--gray-200); border-radius: 8px; margin-bottom: 24px; font-size: 15px; font-family: monospace;">
         <div style="display: flex; gap: 12px; justify-content: flex-end;">
             <button onclick="document.getElementById('settings-modal').classList.remove('show')" class="btn btn-ghost">Cancel</button>
