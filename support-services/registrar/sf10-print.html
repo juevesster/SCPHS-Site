@@ -546,13 +546,14 @@
         recordData.grades.forEach(g => {
           let rowClass = "sn";
           // Indent MAPEH components
-          if (["Music", "Arts", "Physical Education", "Health"].includes(g.sub)) {
+          const subjectName = g.sub || g.subject || '';
+          if (["Music", "Arts", "Physical Education", "Health"].includes(subjectName)) {
             rowClass = "sn mapeh-indent";
           }
 
           html += `
             <tr>
-              <td class="${rowClass}">${g.sub || ''}</td>
+              <td class="${rowClass}">${g.sub || g.subject || ''}</td>
               <td>${g.q1 || ''}</td>
               <td>${g.q2 || ''}</td>
               <td>${g.q3 || ''}</td>
