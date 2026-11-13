@@ -620,10 +620,13 @@
         document.getElementById('p-extname').textContent = firstRecord.extName || '';
         document.getElementById('p-lrn').textContent = lrn;
         
-        // Populate Certification on both pages
-        document.getElementById('p-cert-name1').textContent = `${firstRecord.firstName} ${firstRecord.middleName} ${firstRecord.lastName}`;
+        // Populate Certification on both pages (with undefined safety check)
+        const mName = firstRecord.middleName && firstRecord.middleName !== 'undefined' ? firstRecord.middleName : '';
+        const fullName = `${firstRecord.firstName} ${mName} ${firstRecord.lastName}`.replace(/\s+/g, ' ').trim();
+        
+        document.getElementById('p-cert-name1').textContent = fullName;
         document.getElementById('p-cert-lrn1').textContent = lrn;
-        document.getElementById('p-cert-name2').textContent = `${firstRecord.firstName} ${firstRecord.middleName} ${firstRecord.lastName}`;
+        document.getElementById('p-cert-name2').textContent = fullName;
         document.getElementById('p-cert-lrn2').textContent = lrn;
 
         // Eligibility Data
@@ -664,7 +667,7 @@
           page2Records.forEach(r => { p2Html += generateGradeBlock(r); });
           document.getElementById('grades-page2').innerHTML = p2Html;
         } else {
-          document.getElementById('grades-page2').innerHTML = '<p style="text-align:center;padding:10px;">No Grades 9-10 records found.</p>';
+          document.getElementById('grades-page2').innerHTML = '';
         }
 
         document.getElementById('jhs-page1').style.display = 'block';
