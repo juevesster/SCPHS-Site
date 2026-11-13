@@ -161,24 +161,24 @@
         const base64Image = e.target.result.split(',')[1];
         
         let attempt = 0;
-        const maxRetries = 3;
+        const maxRetries = 2; // Reduced to 2 to prevent long waits
         let success = false;
 
         while (attempt < maxRetries && !success) {
           try {
             const genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
-            const model = genAI.getGenerativeModel({ model: "gemini-3.8-flash" });
+            // CORRECT MODEL NAME
+            const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
-            // Dynamic Prompt based on Curriculum
             let prompt = "";
             
             if (isSHS) {
               prompt = `
                 You are an expert AI data entry assistant for a school registrar. 
                 I am uploading an image of a DepEd Senior High School SF10 (Form 137) report card.
-                This document may contain multiple grade levels (e.g., Grade 11 and Grade 12) or multiple semesters on the same page.
+                This document may contain multiple grade levels or multiple semesters on the same page.
 
-                CRITICAL INSTRUCTIONS:
+                CRITICAL INSTRUCTIONS FOR SHS:
                 1. Identify the Grade Level (11 or 12), School Year, Semester (e.g., "FIRST SEMESTER"), and Track/Strand for EACH block.
                 2. The SHS form has Q1 and Q2 for 1st Semester, and Q3 and Q4 for 2nd Semester. Extract these 2 quarters AND the "SEM FINAL GRADE".
                 3. Extract whether the subject is "CORE", "APPLIED", or "SPECIALIZED".
@@ -228,16 +228,26 @@
             }
 
             const imageParts = [{ inlineData: { data: base64Image, mimeType: selectedFile.type } }];
-            const result = await model.generateContent([prompt, ...imageParts]);
-            let text = result.response.text();
             
+            // --- TIMEOUT LOGIC (45 Seconds) ---
+            const timeoutPromise = new Promise((_, reject) => 
+              setTimeout(() => reject(new Error("Gemini request timed out. The image might be too large or the server is unresponsive.")), 45000)
+            );
+
+            // Race the AI against the timer
+            const result = await Promise.race([
+              model.generateContent([prompt, ...imageParts]),
+              timeoutPromise
+            ]);
+            
+            let text = result.response.text();
             text = text.replace(/```json/g, '').replace(/```/g, '').trim();
             const parsedData = JSON.parse(text);
             
             if (!parsedData.sections || parsedData.sections.length === 0) throw new Error("No sections found.");
             
             currentExtractedData = parsedData;
-            currentExtractedData.isSHS = isSHS; // Flag for rendering
+            currentExtractedData.isSHS = isSHS;
             success = true;
 
           } catch (error) {
@@ -245,7 +255,7 @@
             attempt++;
             if (attempt < maxRetries) {
               showToast(`⏳ Gemini is busy. Retrying (${attempt}/${maxRetries})...`, 'warning');
-              await new Promise(r => setTimeout(r, attempt * 2000));
+              await new Promise(r => setTimeout(r, 2000));
             } else {
               showToast("❌ Gemini Error: " + error.message, 'error');
             }
@@ -273,7 +283,6 @@
         
         section.subjects.forEach((sub, subIndex) => {
           if (isSHS) {
-            // SHS Row (Q1, Q2, Final)
             rowsHtml += `
               <tr id="row-${secIndex}-${subIndex}">
                 <td><input type="text" value="${sub.type || 'CORE'}" data-sec="${secIndex}" data-sub="${subIndex}" data-field="type" style="width: 60px; font-size: 10px; text-align: center;"></td>
@@ -289,7 +298,6 @@
               </tr>
             `;
           } else {
-            // JHS Row (Q1-Q4, Final)
             rowsHtml += `
               <tr id="row-${secIndex}-${subIndex}">
                 <td><input type="text" class="sub-name" value="${sub.subject || ''}" data-sec="${secIndex}" data-sub="${subIndex}" data-field="subject"></td>
@@ -308,7 +316,6 @@
           }
         });
 
-        // Table Headers based on Curriculum
         let theadHtml = "";
         if (isSHS) {
           theadHtml = `
@@ -335,7 +342,6 @@
           `;
         }
 
-        // Section Title (Adds Semester and Track for SHS)
         let sectionTitle = `${section.gradeLevel || 'Unknown Grade'} (SY: ${section.schoolYear || 'Unknown'})`;
         if (isSHS) {
           sectionTitle += ` - ${section.semester || ''} | ${section.trackStrand || ''}`;
@@ -422,7 +428,6 @@
           const validSubjects = section.subjects.filter(s => s.subject && (s.q1 || s.q2 || s.q3 || s.q4 || s.final));
           if(validSubjects.length === 0) continue; 
 
-          // Build Document ID (Include Semester for SHS to avoid overwrite)
           let docId = `${lrn}_${schoolYear}_${gradeLevel.replace(/\s+/g, '')}`;
           
           if (isSHS) {
