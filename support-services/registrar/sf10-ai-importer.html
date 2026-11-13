@@ -57,6 +57,11 @@
     .btn-danger-ghost { background: transparent; color: var(--gray-400); padding: 6px; border-radius: 6px; cursor: pointer; transition: var(--transition); border: none; }
     .btn-danger-ghost:hover { color: var(--danger); background: #fee2e2; transform: scale(1.1); }
 
+    /* Forms */
+    .form-group { margin-bottom: 15px; }
+    .form-group label { display: block; font-size: 0.8rem; font-weight: 700; color: #333; margin-bottom: 5px; text-transform: uppercase; }
+    .form-group select { width: 100%; padding: 12px; border: 2px solid var(--gray-200); border-radius: 8px; font-family: inherit; font-size: 0.95rem; outline: none; }
+
     /* Upload Zone */
     .upload-zone { border: 2px dashed var(--gray-300); border-radius: var(--radius); padding: 50px 20px; text-align: center; cursor: pointer; transition: var(--transition); background: #fafafa; margin-bottom: 20px; }
     .upload-zone:hover { border-color: var(--accent); background: var(--accent-light); }
@@ -148,6 +153,9 @@
       btn.disabled = true;
       document.getElementById('results-area').style.display = 'none';
 
+      const curriculumType = document.getElementById('imp-curriculum').value;
+      const isSHS = curriculumType === 'SHS';
+
       const reader = new FileReader();
       reader.onload = async function(e) {
         const base64Image = e.target.result.split(',')[1];
@@ -159,40 +167,67 @@
         while (attempt < maxRetries && !success) {
           try {
             const genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
-            // FIXED MODEL NAME
-            // REVERTED TO THE WORKING MODEL
             const model = genAI.getGenerativeModel({ model: "gemini-3.8-flash" });
 
-            // BULLETPROOF PROMPT (Same as DeepSeek)
-            const prompt = `
-              You are an expert AI data entry assistant for a school registrar. 
-              I am uploading an image of a DepEd SF10 (Form 137) report card.
-              This document may contain multiple grade levels (e.g., Grade 7 and Grade 8) on the same page.
+            // Dynamic Prompt based on Curriculum
+            let prompt = "";
+            
+            if (isSHS) {
+              prompt = `
+                You are an expert AI data entry assistant for a school registrar. 
+                I am uploading an image of a DepEd Senior High School SF10 (Form 137) report card.
+                This document may contain multiple grade levels (e.g., Grade 11 and Grade 12) or multiple semesters on the same page.
 
-              CRITICAL INSTRUCTIONS:
-              1. Identify the grade level and school year for EACH block of subjects.
-              2. Extract the FINAL RATING for each subject.
-              3. Read carefully. Some grades are handwritten. DO NOT GUESS. If a number is illegible, empty, or crossed out, return null for that specific quarter.
-              4. Keep exact subject names (e.g., "Edukasyon sa Pagpapakatao (EsP)", "MAPEH").
-              
-              Return ONLY a valid JSON object in this exact format, nothing else:
-              {
-                "sections": [
-                  {
-                    "gradeLevel": "Grade 7",
-                    "schoolYear": "2022-2023",
-                    "subjects": [
-                      {"subject": "Filipino", "q1": 79, "q2": 79, "q3": 79, "q4": 79, "final": 79}
-                    ]
-                  }
-                ]
-              }
-            `;
+                CRITICAL INSTRUCTIONS:
+                1. Identify the Grade Level (11 or 12), School Year, Semester (e.g., "FIRST SEMESTER"), and Track/Strand for EACH block.
+                2. The SHS form has Q1 and Q2 for 1st Semester, and Q3 and Q4 for 2nd Semester. Extract these 2 quarters AND the "SEM FINAL GRADE".
+                3. Extract whether the subject is "CORE", "APPLIED", or "SPECIALIZED".
+                4. Read carefully. Some grades are handwritten. DO NOT GUESS. If a number is illegible, return null.
+                5. Keep exact subject names.
+                
+                Return ONLY a valid JSON object in this exact format:
+                {
+                  "sections": [
+                    {
+                      "gradeLevel": "Grade 11",
+                      "schoolYear": "2023-2024",
+                      "semester": "FIRST SEMESTER",
+                      "trackStrand": "STEM",
+                      "subjects": [
+                        {"subject": "General Mathematics", "type": "CORE", "q1": 85, "q2": 86, "final": 86}
+                      ]
+                    }
+                  ]
+                }
+              `;
+            } else {
+              prompt = `
+                You are an expert AI data entry assistant for a school registrar. 
+                I am uploading an image of a DepEd Junior High School SF10 (Form 137) report card.
+                This document may contain multiple grade levels (e.g., Grade 7 and Grade 8) on the same page.
 
-            const imageParts = [
-              { inlineData: { data: base64Image, mimeType: selectedFile.type } }
-            ];
+                CRITICAL INSTRUCTIONS:
+                1. Identify the grade level and school year for EACH block of subjects.
+                2. Extract the FINAL RATING for each subject.
+                3. Read carefully. Some grades are handwritten. DO NOT GUESS. If a number is illegible, return null.
+                4. Keep exact subject names (e.g., "Edukasyon sa Pagpapakatao (EsP)").
+                
+                Return ONLY a valid JSON object in this exact format:
+                {
+                  "sections": [
+                    {
+                      "gradeLevel": "Grade 7",
+                      "schoolYear": "2022-2023",
+                      "subjects": [
+                        {"subject": "Filipino", "q1": 79, "q2": 79, "q3": 79, "q4": 79, "final": 79}
+                      ]
+                    }
+                  ]
+                }
+              `;
+            }
 
+            const imageParts = [{ inlineData: { data: base64Image, mimeType: selectedFile.type } }];
             const result = await model.generateContent([prompt, ...imageParts]);
             let text = result.response.text();
             
@@ -202,6 +237,7 @@
             if (!parsedData.sections || parsedData.sections.length === 0) throw new Error("No sections found.");
             
             currentExtractedData = parsedData;
+            currentExtractedData.isSHS = isSHS; // Flag for rendering
             success = true;
 
           } catch (error) {
@@ -217,7 +253,7 @@
         }
 
         if (success && currentExtractedData) {
-          showToast('✅ Extraction complete! Please review and clear any hallucinated data.', 'success');
+          showToast('✅ Extraction complete! Please review.', 'success');
           renderExtractionUI();
         }
 
@@ -230,47 +266,91 @@
     function renderExtractionUI() {
       const container = document.getElementById('results-container');
       container.innerHTML = '';
+      const isSHS = currentExtractedData.isSHS;
 
       currentExtractedData.sections.forEach((section, secIndex) => {
         let rowsHtml = '';
+        
         section.subjects.forEach((sub, subIndex) => {
-          rowsHtml += `
-            <tr id="row-${secIndex}-${subIndex}">
-              <td><input type="text" class="sub-name" value="${sub.subject || ''}" data-sec="${secIndex}" data-sub="${subIndex}" data-field="subject"></td>
-              <td><input type="number" value="${sub.q1 ?? ''}" data-sec="${secIndex}" data-sub="${subIndex}" data-field="q1"></td>
-              <td><input type="number" value="${sub.q2 ?? ''}" data-sec="${secIndex}" data-sub="${subIndex}" data-field="q2"></td>
-              <td><input type="number" value="${sub.q3 ?? ''}" data-sec="${secIndex}" data-sub="${subIndex}" data-field="q3"></td>
-              <td><input type="number" value="${sub.q4 ?? ''}" data-sec="${secIndex}" data-sub="${subIndex}" data-field="q4"></td>
-              <td><input type="number" value="${sub.final ?? ''}" data-sec="${secIndex}" data-sub="${subIndex}" data-field="final"></td>
-              <td style="width: 40px;">
-                <button class="btn-danger-ghost" onclick="clearRow(${secIndex}, ${subIndex})" title="Clear all grades in this row">
-                  <i class="fas fa-eraser"></i>
-                </button>
-              </td>
+          if (isSHS) {
+            // SHS Row (Q1, Q2, Final)
+            rowsHtml += `
+              <tr id="row-${secIndex}-${subIndex}">
+                <td><input type="text" value="${sub.type || 'CORE'}" data-sec="${secIndex}" data-sub="${subIndex}" data-field="type" style="width: 60px; font-size: 10px; text-align: center;"></td>
+                <td><input type="text" class="sub-name" value="${sub.subject || ''}" data-sec="${secIndex}" data-sub="${subIndex}" data-field="subject"></td>
+                <td><input type="number" value="${sub.q1 || sub.q3 || ''}" data-sec="${secIndex}" data-sub="${subIndex}" data-field="q1"></td>
+                <td><input type="number" value="${sub.q2 || sub.q4 || ''}" data-sec="${secIndex}" data-sub="${subIndex}" data-field="q2"></td>
+                <td><input type="number" value="${sub.final ?? ''}" data-sec="${secIndex}" data-sub="${subIndex}" data-field="final"></td>
+                <td style="width: 40px;">
+                  <button class="btn-danger-ghost" onclick="clearRow(${secIndex}, ${subIndex})" title="Clear row">
+                    <i class="fas fa-eraser"></i>
+                  </button>
+                </td>
+              </tr>
+            `;
+          } else {
+            // JHS Row (Q1-Q4, Final)
+            rowsHtml += `
+              <tr id="row-${secIndex}-${subIndex}">
+                <td><input type="text" class="sub-name" value="${sub.subject || ''}" data-sec="${secIndex}" data-sub="${subIndex}" data-field="subject"></td>
+                <td><input type="number" value="${sub.q1 ?? ''}" data-sec="${secIndex}" data-sub="${subIndex}" data-field="q1"></td>
+                <td><input type="number" value="${sub.q2 ?? ''}" data-sec="${secIndex}" data-sub="${subIndex}" data-field="q2"></td>
+                <td><input type="number" value="${sub.q3 ?? ''}" data-sec="${secIndex}" data-sub="${subIndex}" data-field="q3"></td>
+                <td><input type="number" value="${sub.q4 ?? ''}" data-sec="${secIndex}" data-sub="${subIndex}" data-field="q4"></td>
+                <td><input type="number" value="${sub.final ?? ''}" data-sec="${secIndex}" data-sub="${subIndex}" data-field="final"></td>
+                <td style="width: 40px;">
+                  <button class="btn-danger-ghost" onclick="clearRow(${secIndex}, ${subIndex})" title="Clear row">
+                    <i class="fas fa-eraser"></i>
+                  </button>
+                </td>
+              </tr>
+            `;
+          }
+        });
+
+        // Table Headers based on Curriculum
+        let theadHtml = "";
+        if (isSHS) {
+          theadHtml = `
+            <tr>
+              <th style="width: 60px;">Type</th>
+              <th>Subject</th>
+              <th>Q1</th>
+              <th>Q2</th>
+              <th>Final</th>
+              <th>Clear</th>
             </tr>
           `;
-        });
+        } else {
+          theadHtml = `
+            <tr>
+              <th>Subject</th>
+              <th>Q1</th>
+              <th>Q2</th>
+              <th>Q3</th>
+              <th>Q4</th>
+              <th>Final</th>
+              <th>Clear</th>
+            </tr>
+          `;
+        }
+
+        // Section Title (Adds Semester and Track for SHS)
+        let sectionTitle = `${section.gradeLevel || 'Unknown Grade'} (SY: ${section.schoolYear || 'Unknown'})`;
+        if (isSHS) {
+          sectionTitle += ` - ${section.semester || ''} | ${section.trackStrand || ''}`;
+        }
 
         container.innerHTML += `
           <div class="result-section">
             <div class="result-section-header">
-              <h4><i class="fas fa-layer-group"></i> ${section.gradeLevel || 'Unknown Grade'} (SY: ${section.schoolYear || 'Unknown'})</h4>
+              <h4><i class="fas fa-layer-group"></i> ${sectionTitle}</h4>
               <button class="btn btn-ghost" style="padding: 4px 8px; font-size: 11px; border-color: var(--danger); color: var(--danger);" onclick="clearTable(${secIndex})">
                 <i class="fas fa-trash-alt"></i> Clear Table
               </button>
             </div>
             <table class="result-table">
-              <thead>
-                <tr>
-                  <th>Subject</th>
-                  <th>Q1</th>
-                  <th>Q2</th>
-                  <th>Q3</th>
-                  <th>Q4</th>
-                  <th>Final</th>
-                  <th>Clear</th>
-                </tr>
-              </thead>
+              <thead>${theadHtml}</thead>
               <tbody>${rowsHtml}</tbody>
             </table>
           </div>
@@ -280,20 +360,19 @@
       document.getElementById('results-area').style.display = 'block';
     }
 
-    // --- CLEAR FUNCTIONS ---
     window.clearRow = function(secIndex, subIndex) {
       const row = document.getElementById(`row-${secIndex}-${subIndex}`);
       const inputs = row.querySelectorAll('input');
       for (let i = 1; i < inputs.length; i++) {
         inputs[i].value = '';
         const field = inputs[i].dataset.field;
-        currentExtractedData.sections[secIndex].subjects[subIndex][field] = null;
+        if (field) currentExtractedData.sections[secIndex].subjects[subIndex][field] = null;
       }
       showToast('Row cleared.', 'warning');
     };
 
     window.clearTable = function(secIndex) {
-      if(!confirm("Are you sure you want to clear all grades for this entire table?")) return;
+      if(!confirm("Are you sure you want to clear all grades for this table?")) return;
       const section = currentExtractedData.sections[secIndex];
       section.subjects.forEach((sub) => {
         sub.q1 = null; sub.q2 = null; sub.q3 = null; sub.q4 = null; sub.final = null;
@@ -302,7 +381,6 @@
       showToast('Table cleared.', 'warning');
     };
 
-    // Two-way binding for edits
     document.getElementById('results-container').addEventListener('input', function(e) {
       if (e.target.tagName === 'INPUT') {
         const sec = e.target.dataset.sec;
@@ -311,7 +389,7 @@
         
         if (currentExtractedData && currentExtractedData.sections[sec] && currentExtractedData.sections[sec].subjects[sub]) {
           const val = e.target.value;
-          currentExtractedData.sections[sec].subjects[sub][field] = (field === 'subject') ? val : (val === '' ? null : Number(val));
+          currentExtractedData.sections[sec].subjects[sub][field] = (field === 'subject' || field === 'type') ? val : (val === '' ? null : Number(val));
         }
       }
     });
@@ -325,6 +403,7 @@
       btn.disabled = true;
 
       try {
+        const isSHS = currentExtractedData.isSHS;
         const lrn = prompt("Please enter the 12-digit LRN for this student:");
         if (!lrn || lrn.length !== 12) throw new Error("Invalid LRN. Must be 12 digits.");
         
@@ -340,11 +419,17 @@
           
           if (!gradeLevel || !schoolYear) continue; 
 
-          // Filter out completely empty rows
           const validSubjects = section.subjects.filter(s => s.subject && (s.q1 || s.q2 || s.q3 || s.q4 || s.final));
           if(validSubjects.length === 0) continue; 
 
-          const docId = `${lrn}_${schoolYear}_${gradeLevel.replace(/\s+/g, '')}`;
+          // Build Document ID (Include Semester for SHS to avoid overwrite)
+          let docId = `${lrn}_${schoolYear}_${gradeLevel.replace(/\s+/g, '')}`;
+          
+          if (isSHS) {
+            const sem = section.semester ? section.semester.replace(/\s+/g, '') : 'SEM';
+            docId += `_${sem}`;
+          }
+
           const sf10Ref = doc(db, "sf10_archives", docId);
           
           const snap = await getDoc(sf10Ref);
@@ -353,19 +438,28 @@
              continue; 
           }
 
-          await setDoc(sf10Ref, {
+          const saveData = {
             lrn: lrn,
             lastName: lastName,
             firstName: firstName,
             gradeLevel: gradeLevel,
             schoolYear: schoolYear,
-            gradingSystem: "4q", 
             grades: validSubjects.map(s => ({ ...s, subject: s.subject, sub: s.subject })),
             adviser: "",
             section: "",
             createdAt: Date.now(),
             importedVia: "Gemini Vision"
-          });
+          };
+
+          if (isSHS) {
+            saveData.gradingSystem = "semestral";
+            saveData.semester = section.semester || "";
+            saveData.trackStrand = section.trackStrand || "";
+          } else {
+            saveData.gradingSystem = "4q";
+          }
+
+          await setDoc(sf10Ref, saveData);
           savedCount++;
         }
 
@@ -423,12 +517,22 @@
     <div class="alert alert-info" id="alert-info"></div>
 
     <div class="card">
+      
+      <!-- NEW: Curriculum Dropdown -->
+      <div class="form-group" style="background: #eff6ff; padding: 15px; border-radius: 8px; border: 1px solid #bfdbfe; margin-bottom: 20px;">
+        <label style="color: #1e3a8a;"><i class="fas fa-graduation-cap"></i> Select Curriculum Type</label>
+        <select id="imp-curriculum" style="border-color: #93c5fd;">
+          <option value="JHS">Junior High School (Grades 7-10 | Quarterly Q1-Q4)</option>
+          <option value="SHS">Senior High School (Grades 11-12 | Semestral Q1-Q2)</option>
+        </select>
+      </div>
+
       <h2 style="font-size: 1.1rem; color: var(--accent); border-bottom: 2px solid var(--gray-200); padding-bottom: 10px; margin-bottom: 20px; font-weight: 700; text-transform: uppercase;">Upload SF10 Image or PDF</h2>
       
       <div class="upload-zone" id="upload-zone" onclick="document.getElementById('excel-file').click()">
         <div class="upload-icon"><i class="fas fa-cloud-upload-alt"></i></div>
         <p>Click to select or drag & drop SF10 Image/PDF</p>
-        <div class="upload-hint">Supports JPG, PNG, PDF • AI will auto-detect Grade Levels</div>
+        <div class="upload-hint">Supports JPG, PNG, PDF</div>
         <input type="file" id="excel-file" accept="image/*, .pdf" style="display: none;" onchange="handleFileSelect(this)">
       </div>
 
