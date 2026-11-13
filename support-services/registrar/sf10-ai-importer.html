@@ -3,80 +3,112 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>SF10 AI Importer – SCPHS Registrar</title>
+  <title>SF10 AI Importer (Gemini) – SCPHS Registrar</title>
   <link rel="stylesheet" href="../../assets/css/styles.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   
   <style>
     :root {
-      --gc-primary: #0f4c81;
-      --gc-accent: #2563eb;
-      --gc-bg: #f1f5f9;
-      --gc-border: #e2e8f0;
-      --gc-text: #1e293b;
-      --gc-muted: #64748b;
-      --gc-success: #16a34a;
-      --gc-danger: #dc2626;
+      --primary: #0f172a;
+      --accent: #4d6bfe;
+      --accent-light: #eff6ff;
+      --accent-dark: #3b5bdb;
+      --success: #10b981;
+      --danger: #ef4444;
+      --warning: #f59e0b;
+      --gray-50: #f8fafc;
+      --gray-100: #f1f5f9;
+      --gray-200: #e2e8f0;
+      --gray-300: #cbd5e1;
+      --gray-400: #94a3b8;
+      --gray-500: #64748b;
+      --gray-600: #475569;
+      --gray-700: #334155;
+      --gray-800: #1e293b;
+      --gray-900: #0f172a;
+      --radius: 12px;
+      --radius-lg: 20px;
+      --shadow-sm: 0 1px 3px rgba(0,0,0,0.06);
+      --shadow-md: 0 4px 20px rgba(0,0,0,0.08);
+      --shadow-lg: 0 20px 60px rgba(0,0,0,0.15);
+      --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Inter', sans-serif; background: var(--gray-50); min-height: 100vh; color: var(--gray-900); }
+
+    /* Layout */
+    .wrap { max-width: 1000px; margin: 0 auto; padding: 20px 16px; }
+    .header { background: #fff; padding: 20px; border-radius: var(--radius); box-shadow: var(--shadow-sm); margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; border: 1px solid var(--gray-200); }
+    .header h1 { margin: 0; color: var(--accent); font-size: 1.5rem; font-weight: 800; display: flex; align-items: center; gap: 10px; }
+
+    .card { background: #fff; border-radius: var(--radius-lg); box-shadow: var(--shadow-sm); padding: 30px; margin-bottom: 20px; border: 1px solid var(--gray-200); }
     
-    body { background: var(--gc-bg); margin: 0; font-family: 'Inter', system-ui, sans-serif; }
-    .wrap { max-width: 900px; margin: 0 auto; padding: 20px 16px; }
+    .btn { padding: 10px 20px; border: none; border-radius: 8px; font-weight: 700; font-size: 13px; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; transition: var(--transition); font-family: inherit; }
+    .btn:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+    .btn-accent { background: var(--accent); color: white; }
+    .btn-accent:hover { background: var(--accent-dark); }
+    .btn-success { background: var(--success); color: white; }
+    .btn-ghost { background: transparent; color: var(--gray-600); border: 2px solid var(--gray-200); }
+    .btn-ghost:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-light); }
+    .btn-lg { padding: 14px 28px; font-size: 15px; width: 100%; justify-content: center; }
+    .btn:disabled { opacity: 0.6; cursor: not-allowed; transform: none; box-shadow: none; }
+    .btn-danger-ghost { background: transparent; color: var(--gray-400); padding: 6px; border-radius: 6px; cursor: pointer; transition: var(--transition); border: none; }
+    .btn-danger-ghost:hover { color: var(--danger); background: #fee2e2; transform: scale(1.1); }
 
-    .header { background: #fff; padding: 20px; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; }
-    .header h1 { margin: 0; color: var(--gc-primary); font-size: 1.5rem; font-weight: 800; }
+    /* Upload Zone */
+    .upload-zone { border: 2px dashed var(--gray-300); border-radius: var(--radius); padding: 50px 20px; text-align: center; cursor: pointer; transition: var(--transition); background: #fafafa; margin-bottom: 20px; }
+    .upload-zone:hover { border-color: var(--accent); background: var(--accent-light); }
+    .upload-zone.has-files { border-color: var(--success); background: #f0fdf4; }
+    .upload-zone .upload-icon { font-size: 42px; color: var(--gray-400); margin-bottom: 12px; }
+    .upload-zone.has-files .upload-icon { color: var(--success); }
+    .upload-zone p { color: var(--gray-700); font-size: 15px; font-weight: 700; margin-bottom: 4px; }
+    .upload-zone .upload-hint { font-size: 12px; color: var(--gray-500); }
 
-    .card { background: #fff; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); padding: 30px; margin-bottom: 20px; }
-    .section-title { font-size: 1.1rem; color: var(--gc-primary); border-bottom: 2px solid var(--gc-border); padding-bottom: 10px; margin-bottom: 20px; font-weight: 700; text-transform: uppercase; }
-
-    .upload-box { border: 2px dashed var(--gc-border); border-radius: 12px; padding: 40px; text-align: center; background: #f8fafc; cursor: pointer; transition: 0.2s; margin-bottom: 20px; }
-    .upload-box:hover { border-color: var(--gc-accent); background: #eff6ff; }
-    .upload-box i { font-size: 3rem; color: var(--gc-accent); margin-bottom: 15px; }
-    .upload-box p { margin: 0; font-weight: 600; color: var(--gc-primary); }
-    .upload-box span { font-size: 0.85rem; color: var(--gc-muted); }
-
-    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px; }
-    .form-group label { display: block; font-size: 0.8rem; font-weight: 700; color: #333; margin-bottom: 5px; text-transform: uppercase; }
-    .form-group input, .form-group select { width: 100%; padding: 10px; border: 1px solid var(--gc-border); border-radius: 6px; font-family: inherit; font-size: 0.95rem; }
-
-    .btn-process { background: var(--gc-success); color: #fff; border: none; padding: 14px 24px; border-radius: 8px; font-weight: 700; font-size: 1rem; cursor: pointer; width: 100%; transition: 0.2s; display: flex; justify-content: center; align-items: center; gap: 8px; }
-    .btn-process:hover { background: #15803d; transform: translateY(-2px); }
-    .btn-process:disabled { background: #94a3b8; cursor: not-allowed; transform: none; }
-
-    .result-table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-    .result-table th, .result-table td { padding: 10px; border: 1px solid var(--gc-border); text-align: center; }
-    .result-table th { background: var(--gc-bg); font-weight: 700; }
+    /* Result Sections */
+    .result-section { margin-bottom: 30px; border: 1px solid var(--gray-200); border-radius: var(--radius); overflow: hidden; }
+    .result-section-header { background: var(--gray-100); padding: 12px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--gray-200); }
+    .result-section-header h4 { font-size: 14px; font-weight: 700; color: var(--gray-800); margin: 0; }
     
+    .result-table { width: 100%; border-collapse: collapse; }
+    .result-table th, .result-table td { padding: 8px; border: 1px solid var(--gray-200); text-align: center; }
+    .result-table th { background: var(--gray-50); font-weight: 700; font-size: 11px; color: var(--gray-600); text-transform: uppercase; }
+    .result-table td { vertical-align: middle; }
+    .result-table input { width: 100%; border: 1px solid transparent; text-align: center; padding: 6px; font-weight: bold; font-size: 14px; border-radius: 4px; font-family: inherit; background: transparent; }
+    .result-table input:focus { border-color: var(--accent); outline: none; background: var(--accent-light); }
+    .result-table td:first-child { width: 35%; text-align: left; }
+    .result-table input.sub-name { text-align: left; color: var(--accent); white-space: normal; word-wrap: break-word; }
+    
+    /* Alerts */
     .alert { padding: 15px; border-radius: 8px; margin-bottom: 20px; display: none; font-weight: 600; text-align: center; }
     .alert-success { background: #dcfce7; color: #166534; }
     .alert-error { background: #fee2e2; color: #991b1b; }
     .alert-info { background: #e0f2fe; color: #1e40af; }
 
-    .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 9999; justify-content: center; align-items: center; }
+    /* Modal */
+    .modal { display: none; position: fixed; inset: 0; background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(4px); z-index: 9999; justify-content: center; align-items: center; }
     .modal.show { display: flex; }
-    .modal-content { background: #fff; padding: 30px; border-radius: 12px; width: 90%; max-width: 500px; }
+    .modal-content { background: #fff; padding: 30px; border-radius: var(--radius-lg); width: 90%; max-width: 500px; box-shadow: var(--shadow-lg); }
   </style>
   
   <script type="module">
     import { GoogleGenerativeAI } from "https://esm.run/@google/generative-ai";
     import { auth, db } from "../../assets/js/firebase-config.js";
-    import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-    import { doc, getDoc, setDoc, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+    import { doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
-    // Load API key from localStorage
     let GEMINI_API_KEY = localStorage.getItem('scphs_gemini_api_key') || "";
     let selectedFile = null;
     let currentExtractedData = null;
 
-    // --- REMOVED AUTH CHECK SO IT WORKS IMMEDIATELY ---
-    // The page will now load instantly. We will rely on Firebase rules when saving.
-    
-    document.getElementById('file-info').style.display = 'none'; 
-    
-    if (!GEMINI_API_KEY) {
-      document.getElementById('settings-btn').style.display = 'inline-block';
-      document.getElementById('alert-error').style.display = 'block';
-      document.getElementById('alert-error').innerHTML = '⚠️ AI API Key not configured. Please click "Setup API Key" at the top right.';
-    }
+    document.addEventListener('DOMContentLoaded', () => {
+      if (!GEMINI_API_KEY) {
+        document.getElementById('settings-btn').style.display = 'inline-flex';
+        document.getElementById('alert-error').style.display = 'block';
+        document.getElementById('alert-error').innerHTML = '⚠️ Gemini API Key not configured. Please click "Setup API Key".';
+      }
+      document.getElementById('file-info').style.display = 'none';
+    });
 
     window.openSettings = function() {
       document.getElementById('api-key-input').value = GEMINI_API_KEY;
@@ -90,15 +122,19 @@
       document.getElementById('settings-modal').classList.remove('show');
       document.getElementById('settings-btn').style.display = 'none';
       document.getElementById('alert-error').style.display = 'none';
-      alert("✅ API Key saved to this browser!");
+      showToast("✅ Gemini API Key saved!", "success");
     };
 
     window.handleFileSelect = function(input) {
       if (input.files.length > 0) {
         selectedFile = input.files[0];
         document.getElementById('file-name').textContent = selectedFile.name;
-        document.getElementById('file-info').style.display = 'block';
-        document.getElementById('btn-process').disabled = false; // ENABLES THE BUTTON
+        document.getElementById('file-info').style.display = 'block'; 
+        
+        const zone = document.getElementById('upload-zone');
+        zone.classList.add('has-files');
+        zone.querySelector('p').textContent = "File Selected!";
+        document.getElementById('btn-process').disabled = false;
       }
     };
 
@@ -108,12 +144,8 @@
 
       const btn = document.getElementById('btn-process');
       const originalText = btn.innerHTML;
-      btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> AI is Scanning...';
+      btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Gemini is Scanning...';
       btn.disabled = true;
-
-      document.getElementById('alert-success').style.display = 'none';
-      document.getElementById('alert-error').style.display = 'none';
-      document.getElementById('alert-info').style.display = 'none';
       document.getElementById('results-area').style.display = 'none';
 
       const reader = new FileReader();
@@ -127,21 +159,33 @@
         while (attempt < maxRetries && !success) {
           try {
             const genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
-            // UPDATED TO THE CORRECT MODEL
-            const model = genAI.getGenerativeModel({ model: "gemini-3.8-flash" });
+            // FIXED MODEL NAME
+            const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
+            // BULLETPROOF PROMPT (Same as DeepSeek)
             const prompt = `
-              You are an AI data entry assistant for a school registrar.
+              You are an expert AI data entry assistant for a school registrar. 
               I am uploading an image of a DepEd SF10 (Form 137) report card.
-              Please extract the grades for each subject.
+              This document may contain multiple grade levels (e.g., Grade 7 and Grade 8) on the same page.
+
+              CRITICAL INSTRUCTIONS:
+              1. Identify the grade level and school year for EACH block of subjects.
+              2. Extract the FINAL RATING for each subject.
+              3. Read carefully. Some grades are handwritten. DO NOT GUESS. If a number is illegible, empty, or crossed out, return null for that specific quarter.
+              4. Keep exact subject names (e.g., "Edukasyon sa Pagpapakatao (EsP)", "MAPEH").
               
-              Return ONLY a valid JSON array in this exact format, nothing else:
-              [
-                {"subject": "Filipino", "q1": 85, "q2": 86, "q3": 87, "q4": 88},
-                {"subject": "English", "q1": 90, "q2": 91, "q3": 92, "q4": 93}
-              ]
-              
-              If the image has no grades, return [].
+              Return ONLY a valid JSON object in this exact format, nothing else:
+              {
+                "sections": [
+                  {
+                    "gradeLevel": "Grade 7",
+                    "schoolYear": "2022-2023",
+                    "subjects": [
+                      {"subject": "Filipino", "q1": 79, "q2": 79, "q3": 79, "q4": 79, "final": 79}
+                    ]
+                  }
+                ]
+              }
             `;
 
             const imageParts = [
@@ -150,53 +194,30 @@
 
             const result = await model.generateContent([prompt, ...imageParts]);
             let text = result.response.text();
+            
             text = text.replace(/```json/g, '').replace(/```/g, '').trim();
+            const parsedData = JSON.parse(text);
             
-            currentExtractedData = JSON.parse(text);
+            if (!parsedData.sections || parsedData.sections.length === 0) throw new Error("No sections found.");
             
-            if (currentExtractedData.length === 0) throw new Error("No grades could be found in the image.");
-            
+            currentExtractedData = parsedData;
             success = true;
 
           } catch (error) {
             console.warn(`Attempt ${attempt + 1} failed:`, error.message);
-            if (error.message.includes("503") || error.message.includes("high demand")) {
-              attempt++;
-              if (attempt < maxRetries) {
-                document.getElementById('alert-info').style.display = 'block';
-                document.getElementById('alert-info').innerHTML = `⏳ Google AI is busy. Retrying in ${attempt * 2} seconds...`;
-                await new Promise(r => setTimeout(r, attempt * 2000));
-              } else {
-                document.getElementById('alert-info').style.display = 'none';
-                document.getElementById('alert-error').style.display = 'block';
-                document.getElementById('alert-error').innerHTML = "❌ The AI model is currently overloaded. Please try again in a few minutes.";
-              }
+            attempt++;
+            if (attempt < maxRetries) {
+              showToast(`⏳ Gemini is busy. Retrying (${attempt}/${maxRetries})...`, 'warning');
+              await new Promise(r => setTimeout(r, attempt * 2000));
             } else {
-              document.getElementById('alert-info').style.display = 'none';
-              document.getElementById('alert-error').style.display = 'block';
-              document.getElementById('alert-error').textContent = "❌ AI Error: " + error.message;
-              break;
+              showToast("❌ Gemini Error: " + error.message, 'error');
             }
           }
         }
 
         if (success && currentExtractedData) {
-          document.getElementById('alert-info').style.display = 'none';
-          document.getElementById('alert-success').style.display = 'block';
-          document.getElementById('alert-success').innerHTML = '✅ AI successfully extracted the grades! Please review below.';
-          
-          const tbody = document.getElementById('result-tbody');
-          tbody.innerHTML = currentExtractedData.map(g => `
-            <tr>
-              <td><strong>${g.subject}</strong></td>
-              <td>${g.q1 || ''}</td>
-              <td>${g.q2 || ''}</td>
-              <td>${g.q3 || ''}</td>
-              <td>${g.q4 || ''}</td>
-            </tr>
-          `).join('');
-          
-          document.getElementById('results-area').style.display = 'block';
+          showToast('✅ Extraction complete! Please review and clear any hallucinated data.', 'success');
+          renderExtractionUI();
         }
 
         btn.innerHTML = originalText;
@@ -204,6 +225,95 @@
       };
       reader.readAsDataURL(selectedFile);
     };
+
+    function renderExtractionUI() {
+      const container = document.getElementById('results-container');
+      container.innerHTML = '';
+
+      currentExtractedData.sections.forEach((section, secIndex) => {
+        let rowsHtml = '';
+        section.subjects.forEach((sub, subIndex) => {
+          rowsHtml += `
+            <tr id="row-${secIndex}-${subIndex}">
+              <td><input type="text" class="sub-name" value="${sub.subject || ''}" data-sec="${secIndex}" data-sub="${subIndex}" data-field="subject"></td>
+              <td><input type="number" value="${sub.q1 ?? ''}" data-sec="${secIndex}" data-sub="${subIndex}" data-field="q1"></td>
+              <td><input type="number" value="${sub.q2 ?? ''}" data-sec="${secIndex}" data-sub="${subIndex}" data-field="q2"></td>
+              <td><input type="number" value="${sub.q3 ?? ''}" data-sec="${secIndex}" data-sub="${subIndex}" data-field="q3"></td>
+              <td><input type="number" value="${sub.q4 ?? ''}" data-sec="${secIndex}" data-sub="${subIndex}" data-field="q4"></td>
+              <td><input type="number" value="${sub.final ?? ''}" data-sec="${secIndex}" data-sub="${subIndex}" data-field="final"></td>
+              <td style="width: 40px;">
+                <button class="btn-danger-ghost" onclick="clearRow(${secIndex}, ${subIndex})" title="Clear all grades in this row">
+                  <i class="fas fa-eraser"></i>
+                </button>
+              </td>
+            </tr>
+          `;
+        });
+
+        container.innerHTML += `
+          <div class="result-section">
+            <div class="result-section-header">
+              <h4><i class="fas fa-layer-group"></i> ${section.gradeLevel || 'Unknown Grade'} (SY: ${section.schoolYear || 'Unknown'})</h4>
+              <button class="btn btn-ghost" style="padding: 4px 8px; font-size: 11px; border-color: var(--danger); color: var(--danger);" onclick="clearTable(${secIndex})">
+                <i class="fas fa-trash-alt"></i> Clear Table
+              </button>
+            </div>
+            <table class="result-table">
+              <thead>
+                <tr>
+                  <th>Subject</th>
+                  <th>Q1</th>
+                  <th>Q2</th>
+                  <th>Q3</th>
+                  <th>Q4</th>
+                  <th>Final</th>
+                  <th>Clear</th>
+                </tr>
+              </thead>
+              <tbody>${rowsHtml}</tbody>
+            </table>
+          </div>
+        `;
+      });
+
+      document.getElementById('results-area').style.display = 'block';
+    }
+
+    // --- CLEAR FUNCTIONS ---
+    window.clearRow = function(secIndex, subIndex) {
+      const row = document.getElementById(`row-${secIndex}-${subIndex}`);
+      const inputs = row.querySelectorAll('input');
+      for (let i = 1; i < inputs.length; i++) {
+        inputs[i].value = '';
+        const field = inputs[i].dataset.field;
+        currentExtractedData.sections[secIndex].subjects[subIndex][field] = null;
+      }
+      showToast('Row cleared.', 'warning');
+    };
+
+    window.clearTable = function(secIndex) {
+      if(!confirm("Are you sure you want to clear all grades for this entire table?")) return;
+      const section = currentExtractedData.sections[secIndex];
+      section.subjects.forEach((sub) => {
+        sub.q1 = null; sub.q2 = null; sub.q3 = null; sub.q4 = null; sub.final = null;
+      });
+      renderExtractionUI();
+      showToast('Table cleared.', 'warning');
+    };
+
+    // Two-way binding for edits
+    document.getElementById('results-container').addEventListener('input', function(e) {
+      if (e.target.tagName === 'INPUT') {
+        const sec = e.target.dataset.sec;
+        const sub = e.target.dataset.sub;
+        const field = e.target.dataset.field;
+        
+        if (currentExtractedData && currentExtractedData.sections[sec] && currentExtractedData.sections[sec].subjects[sub]) {
+          const val = e.target.value;
+          currentExtractedData.sections[sec].subjects[sub][field] = (field === 'subject') ? val : (val === '' ? null : Number(val));
+        }
+      }
+    });
 
     window.saveToDatabase = async function() {
       if (!currentExtractedData) return;
@@ -214,65 +324,96 @@
       btn.disabled = true;
 
       try {
-        const gradeLevel = document.getElementById('imp-grade').value;
-        const schoolYear = document.getElementById('imp-year').value;
+        const lrn = prompt("Please enter the 12-digit LRN for this student:");
+        if (!lrn || lrn.length !== 12) throw new Error("Invalid LRN. Must be 12 digits.");
         
-        const lrn = prompt("Please enter the 12-digit LRN for this student to save the record:");
-        if (!lrn || lrn.length !== 12) throw new Error("Invalid LRN.");
+        const lastName = prompt("Enter Student Last Name:");
+        const firstName = prompt("Enter Student First Name:");
+        if(!lastName || !firstName) throw new Error("Name is required.");
 
-        const sf10Ref = collection(db, "sf10_archives");
-        
-        const qLrn = query(sf10Ref, where("lrn", "==", lrn), where("schoolYear", "==", schoolYear), where("gradeLevel", "==", gradeLevel));
-        const snapLrn = await getDocs(qLrn);
-        
-        if (!snapLrn.empty) {
-          throw new Error("A record for this student, school year, and grade level already exists. Please delete the old record first.");
+        let savedCount = 0;
+
+        for (const section of currentExtractedData.sections) {
+          const gradeLevel = section.gradeLevel;
+          const schoolYear = section.schoolYear;
+          
+          if (!gradeLevel || !schoolYear) continue; 
+
+          // Filter out completely empty rows
+          const validSubjects = section.subjects.filter(s => s.subject && (s.q1 || s.q2 || s.q3 || s.q4 || s.final));
+          if(validSubjects.length === 0) continue; 
+
+          const docId = `${lrn}_${schoolYear}_${gradeLevel.replace(/\s+/g, '')}`;
+          const sf10Ref = doc(db, "sf10_archives", docId);
+          
+          const snap = await getDoc(sf10Ref);
+          if (snap.exists()) {
+             showToast(`⚠️ Record for ${gradeLevel} (${schoolYear}) already exists. Skipped.`, 'warning');
+             continue; 
+          }
+
+          await setDoc(sf10Ref, {
+            lrn: lrn,
+            lastName: lastName,
+            firstName: firstName,
+            gradeLevel: gradeLevel,
+            schoolYear: schoolYear,
+            gradingSystem: "4q", 
+            grades: validSubjects,
+            adviser: "",
+            section: "",
+            createdAt: Date.now(),
+            importedVia: "Gemini Vision"
+          });
+          savedCount++;
         }
 
-        const docId = `${lrn}_${schoolYear}_${gradeLevel.replace(/\s+/g, '')}`;
-        
-        await setDoc(doc(db, "sf10_archives", docId), {
-          lrn: lrn,
-          lastName: "Imported", 
-          firstName: "From AI",
-          gradeLevel: gradeLevel,
-          schoolYear: schoolYear,
-          gradingSystem: "4q", 
-          grades: currentExtractedData,
-          adviser: "",
-          section: "",
-          createdAt: Date.now(),
-          importedVia: "AI Vision"
-        });
-
-        alert("✅ Successfully saved to Database!");
-        
-        document.getElementById('results-area').style.display = 'none';
-        document.getElementById('file-info').style.display = 'none';
-        document.getElementById('alert-success').style.display = 'none';
-        selectedFile = null;
-        currentExtractedData = null;
+        if(savedCount > 0) {
+            showToast(`✅ Successfully saved ${savedCount} record(s) to Database!`, 'success');
+            document.getElementById('results-area').style.display = 'none';
+            document.getElementById('upload-zone').classList.remove('has-files');
+            document.getElementById('upload-zone').querySelector('p').textContent = "Click to select or drag & drop SF10 Image/PDF";
+            document.getElementById('file-info').style.display = 'none';
+            document.getElementById('excel-file').value = ''; 
+            selectedFile = null;
+            currentExtractedData = null;
+        }
 
       } catch (error) {
         console.error(error);
-        alert("❌ Save Error: " + error.message);
+        showToast("❌ Save Error: " + error.message, 'error');
       } finally {
         btn.innerHTML = originalText;
         btn.disabled = false;
       }
     };
+
+    window.showToast = function(message, type = 'success') {
+      const container = document.getElementById('toastContainer');
+      const toast = document.createElement('div');
+      toast.className = `toast ${type}`;
+      const icons = { success: 'fa-check-circle', error: 'fa-times-circle', warning: 'fa-exclamation-triangle' };
+      toast.innerHTML = `
+        <span class="toast-icon"><i class="fas ${icons[type] || icons.success}"></i></span>
+        <span>${message}</span>
+      `;
+      container.appendChild(toast);
+      setTimeout(() => { toast.style.opacity = '0'; setTimeout(() => toast.remove(), 300); }, 4000);
+    };
   </script>
 </head>
 <body>
 
+<div class="toast-container" id="toastContainer"></div>
+
   <div class="wrap">
     <div class="header">
-      <h1><i class="fas fa-robot"></i> SF10 AI Importer</h1>
+      <h1><i class="fas fa-robot"></i> SF10 AI Importer (Gemini)</h1>
       <div>
-        <button onclick="openSettings()" id="settings-btn" class="btn-search" style="background: #475569; display: none; margin-right: 10px;">
+        <button onclick="openSettings()" id="settings-btn" class="btn btn-ghost" style="display: none; margin-right: 10px;">
           <i class="fas fa-key"></i> Setup API Key
         </button>
-        <a href="index.html" style="color: var(--gc-primary); text-decoration: none; font-weight: 600;">← Back to Registrar</a>
+        <a href="index.html" style="color: var(--accent); text-decoration: none; font-weight: 600;">← Back to Registrar</a>
       </div>
     </div>
 
@@ -281,64 +422,36 @@
     <div class="alert alert-info" id="alert-info"></div>
 
     <div class="card">
-      <h2 class="section-title">Upload SF10 Image or PDF</h2>
+      <h2 style="font-size: 1.1rem; color: var(--accent); border-bottom: 2px solid var(--gray-200); padding-bottom: 10px; margin-bottom: 20px; font-weight: 700; text-transform: uppercase;">Upload SF10 Image or PDF</h2>
       
-      <div class="form-grid">
-        <div class="form-group">
-          <label>Grade Level</label>
-          <select id="imp-grade">
-            <option value="Grade 7">Grade 7</option>
-            <option value="Grade 8">Grade 8</option>
-            <option value="Grade 9">Grade 9</option>
-            <option value="Grade 10">Grade 10</option>
-            <option value="Grade 11">Grade 11</option>
-            <option value="Grade 12">Grade 12</option>
-          </select>
-        </div>
-        <div class="form-group">
-          <label>School Year</label>
-          <select id="imp-year">
-            <option value="2025-2026">2025-2026</option>
-            <option value="2024-2025">2024-2025</option>
-            <option value="2023-2024">2023-2024</option>
-            <option value="2022-2023">2022-2023</option>
-            <option value="2021-2022">2021-2022</option>
-          </select>
-        </div>
-      </div>
-
-      <div class="upload-box" onclick="document.getElementById('excel-file').click()">
-        <i class="fas fa-file-image"></i>
+      <div class="upload-zone" id="upload-zone" onclick="document.getElementById('excel-file').click()">
+        <div class="upload-icon"><i class="fas fa-cloud-upload-alt"></i></div>
         <p>Click to select or drag & drop SF10 Image/PDF</p>
-        <span>Supports JPG, PNG, PDF</span>
+        <div class="upload-hint">Supports JPG, PNG, PDF • AI will auto-detect Grade Levels</div>
         <input type="file" id="excel-file" accept="image/*, .pdf" style="display: none;" onchange="handleFileSelect(this)">
       </div>
 
-      <div id="file-info" style="display: none; margin-bottom: 20px; font-weight: 600; color: var(--gc-accent);">
-        <i class="fas fa-check-circle"></i> <span id="file-name">file.jpg</span> selected.
+      <div id="file-info" style="margin-top: 15px; font-weight: 700; color: var(--accent); font-size: 14px;">
+        <i class="fas fa-check-circle"></i> <span id="file-name">file.jpg</span>
       </div>
 
-      <button class="btn-process" id="btn-process" onclick="processImage()" disabled>
-        <i class="fas fa-magic"></i> Scan with AI
-      </button>
-
-      <div id="results-area" style="margin-top: 30px; display: none;">
-        <h3 style="font-size: 1.1rem; color: var(--gc-primary); margin-bottom: 15px;">AI Extraction Results</h3>
-        <table class="result-table">
-          <thead>
-            <tr>
-              <th>Subject</th>
-              <th>Q1</th>
-              <th>Q2</th>
-              <th>Q3</th>
-              <th>Q4</th>
-            </tr>
-          </thead>
-          <tbody id="result-tbody"></tbody>
-        </table>
-        <button class="btn-process" id="btn-save" onclick="saveToDatabase()" style="margin-top: 15px; background: var(--gc-accent);">
-          <i class="fas fa-save"></i> Save to Database
+      <div style="margin-top: 24px; text-align: right;">
+        <button class="btn btn-accent btn-lg" id="btn-process" onclick="processImage()" disabled>
+          <i class="fas fa-magic"></i> Scan with Gemini AI
         </button>
+      </div>
+
+      <div id="results-area" style="margin-top: 30px; display: none; border-top: 1px solid var(--gray-200); padding-top: 24px;">
+        <h3 style="font-size: 18px; color: var(--accent); margin-bottom: 5px;"><i class="fas fa-check-square"></i> Extraction Results</h3>
+        <p style="font-size: 13px; color: var(--gray-500); margin-bottom: 20px;">Review the data below. Use the <i class="fas fa-eraser" style="color: var(--danger);"></i> button to quickly clear rows that are blank on the physical paper.</p>
+        
+        <div id="results-container"></div>
+        
+        <div style="margin-top: 24px; text-align: right; position: sticky; bottom: 20px;">
+          <button class="btn btn-success btn-lg" id="btn-save" onclick="saveToDatabase()" style="box-shadow: var(--shadow-md);">
+            <i class="fas fa-save"></i> Save All Valid Sections to Database
+          </button>
+        </div>
       </div>
 
     </div>
@@ -346,12 +459,12 @@
 
   <div class="modal" id="settings-modal">
     <div class="modal-content">
-      <h3 style="margin-top: 0; color: var(--gc-primary);"><i class="fas fa-key"></i> Setup Gemini API Key</h3>
-      <p style="font-size: 0.9rem; color: var(--gc-muted);">Enter your Google Gemini API key below. This will be saved securely in this browser.</p>
-      <input type="password" id="api-key-input" placeholder="AIzaSy..." style="width: 100%; padding: 10px; border: 1px solid var(--gc-border); border-radius: 6px; margin-bottom: 15px;">
-      <div style="display: flex; gap: 10px; justify-content: flex-end;">
-        <button onclick="document.getElementById('settings-modal').classList.remove('show')" style="padding: 10px 20px; background: #e2e8f0; border: none; border-radius: 6px; cursor: pointer;">Cancel</button>
-        <button onclick="saveSettings()" style="padding: 10px 20px; background: var(--gc-success); color: #fff; border: none; border-radius: 6px; cursor: pointer; font-weight: bold;">Save Key</button>
+      <h3 style="font-size: 20px; color: var(--accent); margin-bottom: 10px;"><i class="fas fa-key"></i> Setup Gemini API Key</h3>
+      <p style="font-size: 13px; color: var(--gray-500); margin-bottom: 20px;">Enter your Google Gemini API key below. This will be saved locally in this browser.</p>
+      <input type="password" id="api-key-input" placeholder="AIzaSy..." style="width: 100%; padding: 14px; border: 2px solid var(--gray-200); border-radius: 8px; margin-bottom: 24px; font-size: 15px; font-family: monospace;">
+      <div style="display: flex; gap: 12px; justify-content: flex-end;">
+        <button onclick="document.getElementById('settings-modal').classList.remove('show')" class="btn btn-ghost">Cancel</button>
+        <button onclick="saveSettings()" class="btn btn-accent">Save Key</button>
       </div>
     </div>
   </div>
