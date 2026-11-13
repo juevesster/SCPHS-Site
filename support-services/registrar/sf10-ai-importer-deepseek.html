@@ -84,6 +84,8 @@
     .btn-ghost:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-light); }
     .btn-lg { padding: 14px 28px; font-size: 15px; }
     .btn:disabled { opacity: 0.6; cursor: not-allowed; transform: none; box-shadow: none; }
+    .btn-danger-ghost { background: transparent; color: var(--gray-400); padding: 6px; border-radius: 6px; cursor: pointer; transition: var(--transition); border: none; }
+    .btn-danger-ghost:hover { color: var(--danger); background: #fee2e2; transform: scale(1.1); }
 
     /* Upload Zone */
     .upload-zone { border: 2px dashed var(--gray-300); border-radius: var(--radius); padding: 50px 20px; text-align: center; cursor: pointer; transition: var(--transition); background: #fafafa; }
@@ -105,7 +107,7 @@
     .result-table td { vertical-align: middle; }
     .result-table input { width: 100%; border: 1px solid transparent; text-align: center; padding: 6px; font-weight: bold; font-size: 14px; border-radius: 4px; font-family: inherit; background: transparent; }
     .result-table input:focus { border-color: var(--accent); outline: none; background: var(--accent-light); }
-    .result-table td:first-child { width: 40%; text-align: left; }
+    .result-table td:first-child { width: 35%; text-align: left; }
     .result-table input.sub-name { text-align: left; color: var(--accent); white-space: normal; word-wrap: break-word; }
     
     /* Toasts & Modals */
@@ -123,11 +125,11 @@
 
   <script type="module">
     import { auth, db } from "../../assets/js/firebase-config.js";
-    import { doc, getDoc, setDoc, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+    import { doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
     let DEEPSEEK_API_KEY = localStorage.getItem('scphs_deepseek_key') || "";
     let selectedFile = null;
-    let currentExtractedData = null; // Will hold an array of sections
+    let currentExtractedData = null;
 
     document.addEventListener('DOMContentLoaded', () => {
       if (!DEEPSEEK_API_KEY) {
@@ -183,7 +185,6 @@
 
         while (attempt < maxRetries && !success) {
           try {
-            // BULLETPROOF PROMPT
             const prompt = `
               You are an expert AI data entry assistant for a school registrar. 
               I am uploading an image of a DepEd SF10 (Form 137) report card.
@@ -203,13 +204,6 @@
                     "schoolYear": "2022-2023",
                     "subjects": [
                       {"subject": "Filipino", "q1": 79, "q2": 79, "q3": 79, "q4": 79, "final": 79}
-                    ]
-                  },
-                  {
-                    "gradeLevel": "Grade 8",
-                    "schoolYear": "2023-2024",
-                    "subjects": [
-                      {"subject": "Filipino", "q1": 80, "q2": null, "q3": null, "q4": null, "final": 80}
                     ]
                   }
                 ]
@@ -244,13 +238,10 @@
 
             const data = await response.json();
             let text = data.choices[0].message.content;
-            
             text = text.replace(/```json/g, '').replace(/```/g, '').trim();
             const parsedData = JSON.parse(text);
             
-            if (!parsedData.sections || parsedData.sections.length === 0) {
-              throw new Error("No sections or grades could be found.");
-            }
+            if (!parsedData.sections || parsedData.sections.length === 0) throw new Error("No sections found.");
             
             currentExtractedData = parsedData;
             success = true;
@@ -268,7 +259,7 @@
         }
 
         if (success && currentExtractedData) {
-          showToast('✅ Extraction complete! Please review carefully.', 'success');
+          showToast('✅ Extraction complete! Please review and clear any hallucinated data.', 'success');
           renderExtractionUI();
         }
 
@@ -278,22 +269,26 @@
       reader.readAsDataURL(selectedFile);
     };
 
-    // Renders multiple tables dynamically
     function renderExtractionUI() {
       const container = document.getElementById('results-container');
-      container.innerHTML = ''; // Clear previous
+      container.innerHTML = '';
 
       currentExtractedData.sections.forEach((section, secIndex) => {
         let rowsHtml = '';
         section.subjects.forEach((sub, subIndex) => {
           rowsHtml += `
-            <tr>
+            <tr id="row-${secIndex}-${subIndex}">
               <td><input type="text" class="sub-name" value="${sub.subject || ''}" data-sec="${secIndex}" data-sub="${subIndex}" data-field="subject"></td>
               <td><input type="number" value="${sub.q1 ?? ''}" data-sec="${secIndex}" data-sub="${subIndex}" data-field="q1"></td>
               <td><input type="number" value="${sub.q2 ?? ''}" data-sec="${secIndex}" data-sub="${subIndex}" data-field="q2"></td>
               <td><input type="number" value="${sub.q3 ?? ''}" data-sec="${secIndex}" data-sub="${subIndex}" data-field="q3"></td>
               <td><input type="number" value="${sub.q4 ?? ''}" data-sec="${secIndex}" data-sub="${subIndex}" data-field="q4"></td>
               <td><input type="number" value="${sub.final ?? ''}" data-sec="${secIndex}" data-sub="${subIndex}" data-field="final"></td>
+              <td style="width: 40px;">
+                <button class="btn-danger-ghost" onclick="clearRow(${secIndex}, ${subIndex})" title="Clear all grades in this row">
+                  <i class="fas fa-eraser"></i>
+                </button>
+              </td>
             </tr>
           `;
         });
@@ -302,7 +297,9 @@
           <div class="result-section">
             <div class="result-section-header">
               <h4><i class="fas fa-layer-group"></i> ${section.gradeLevel || 'Unknown Grade'} (SY: ${section.schoolYear || 'Unknown'})</h4>
-              <span style="font-size: 12px; color: var(--gray-500);">${section.subjects.length} Subjects Found</span>
+              <button class="btn btn-ghost" style="padding: 4px 8px; font-size: 11px; border-color: var(--danger); color: var(--danger);" onclick="clearTable(${secIndex})">
+                <i class="fas fa-trash-alt"></i> Clear Table
+              </button>
             </div>
             <table class="result-table">
               <thead>
@@ -313,6 +310,7 @@
                   <th>Q3</th>
                   <th>Q4</th>
                   <th>Final</th>
+                  <th>Clear</th>
                 </tr>
               </thead>
               <tbody>${rowsHtml}</tbody>
@@ -323,6 +321,32 @@
 
       document.getElementById('results-area').style.display = 'block';
     }
+
+    // --- CLEAR FUNCTIONS ---
+    window.clearRow = function(secIndex, subIndex) {
+      const row = document.getElementById(`row-${secIndex}-${subIndex}`);
+      const inputs = row.querySelectorAll('input');
+      // Skip the first input (Subject Name), clear the rest
+      for (let i = 1; i < inputs.length; i++) {
+        inputs[i].value = '';
+        const field = inputs[i].dataset.field;
+        currentExtractedData.sections[secIndex].subjects[subIndex][field] = null;
+      }
+      showToast('Row cleared.', 'warning');
+    };
+
+    window.clearTable = function(secIndex) {
+      if(!confirm("Are you sure you want to clear all grades for this entire table?")) return;
+      
+      const section = currentExtractedData.sections[secIndex];
+      section.subjects.forEach((sub, subIndex) => {
+        sub.q1 = null; sub.q2 = null; sub.q3 = null; sub.q4 = null; sub.final = null;
+      });
+      
+      // Re-render only this table visually
+      renderExtractionUI();
+      showToast('Table cleared.', 'warning');
+    };
 
     // Two-way binding for edits
     document.getElementById('results-container').addEventListener('input', function(e) {
@@ -338,7 +362,6 @@
       }
     });
 
-    // Bulk Save Logic
     window.saveToDatabase = async function() {
       if (!currentExtractedData) return;
 
@@ -357,24 +380,25 @@
 
         let savedCount = 0;
 
-        // Loop through each section (e.g., Grade 7, Grade 8) and save as separate documents
         for (const section of currentExtractedData.sections) {
           const gradeLevel = section.gradeLevel;
           const schoolYear = section.schoolYear;
           
-          if (!gradeLevel || !schoolYear) continue; // Skip if AI couldn't determine
+          if (!gradeLevel || !schoolYear) continue; 
+
+          // Filter out completely empty rows before saving
+          const validSubjects = section.subjects.filter(s => s.subject && (s.q1 || s.q2 || s.q3 || s.q4 || s.final));
+          if(validSubjects.length === 0) continue; // Skip saving this section if totally empty
 
           const docId = `${lrn}_${schoolYear}_${gradeLevel.replace(/\s+/g, '')}`;
-          
-          // Check if exists
           const sf10Ref = doc(db, "sf10_archives", docId);
+          
           const snap = await getDoc(sf10Ref);
           if (snap.exists()) {
              showToast(`⚠️ Record for ${gradeLevel} (${schoolYear}) already exists. Skipped.`, 'warning');
-             continue; // Skip this one, move to next
+             continue; 
           }
 
-          // Save Document
           await setDoc(sf10Ref, {
             lrn: lrn,
             lastName: lastName,
@@ -382,7 +406,7 @@
             gradeLevel: gradeLevel,
             schoolYear: schoolYear,
             gradingSystem: "4q", 
-            grades: section.subjects,
+            grades: validSubjects, // Save only rows with data
             adviser: "",
             section: "",
             createdAt: Date.now(),
@@ -393,12 +417,11 @@
 
         if(savedCount > 0) {
             showToast(`✅ Successfully saved ${savedCount} record(s) to Database!`, 'success');
-            // Reset UI
             document.getElementById('results-area').style.display = 'none';
             document.getElementById('upload-zone').classList.remove('has-files');
             document.getElementById('upload-zone').querySelector('p').textContent = "Click to select or drag & drop SF10 Image/PDF";
             document.getElementById('file-info').style.display = 'none';
-            document.getElementById('excel-file').value = ''; // clear input
+            document.getElementById('excel-file').value = ''; 
             selectedFile = null;
             currentExtractedData = null;
         }
@@ -487,7 +510,7 @@
                 <!-- Results Area (Dynamically Populated) -->
                 <div id="results-area" style="margin-top: 30px; display: none; border-top: 1px solid var(--gray-200); padding-top: 24px;">
                     <h3 style="font-size: 18px; color: var(--accent); margin-bottom: 5px;"><i class="fas fa-check-square"></i> Extraction Results</h3>
-                    <p style="font-size: 13px; color: var(--gray-500); margin-bottom: 20px;">Review the data below. If the AI misread a handwritten grade, edit it before saving.</p>
+                    <p style="font-size: 13px; color: var(--gray-500); margin-bottom: 20px;">Review the data below. Use the <i class="fas fa-eraser" style="color: var(--danger);"></i> button to quickly clear rows that are blank on the physical paper.</p>
                     
                     <div id="results-container">
                         <!-- Tables will be injected here by JS -->
