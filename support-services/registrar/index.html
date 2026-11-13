@@ -309,23 +309,28 @@
       
       <!-- Quick Tools for Admin/OJT -->
       <h3 style="color: var(--gc-text); font-size: 1.1rem; margin-top: 0; margin-bottom: 15px;">🛠️ Registrar Tools (OJT Access)</h3>
-      <div class="admin-tools">
+            <div class="admin-tools">
         <a href="sf1-importer.html" class="tool-card" style="color: var(--gc-success);">
           <i class="fas fa-file-excel"></i>
           <span>Import LIS SF1</span>
         </a>
         <a href="sf10-encoder.html" class="tool-card" style="color: var(--gc-primary);">
           <i class="fas fa-file-archive"></i>
-          <span>SF10 Digital Encoder</span>
+          <span>JHS SF10 Encoder</span>
         </a>
-        <!-- NEW AI IMPORTER CARD -->
+        <!-- NEW SHS ENCODER CARD -->
+        <a href="sf10-encoder-shs.html" class="tool-card" style="color: #0f766e;">
+          <i class="fas fa-user-graduate"></i>
+          <span>SHS SF10 Encoder</span>
+        </a>
+        <!-- AI IMPORTER CARDS -->
         <a href="sf10-ai-importer.html" class="tool-card" style="color: #8b5cf6;">
           <i class="fas fa-magic"></i>
-          <span>AI Google GEMINI SF10 Importer</span>
+          <span>Gemini SF10 Importer</span>
         </a>
-          <a href="sf10-ai-importer-deepseek.html" class="tool-card" style="color: #4d6bfe;">
+        <a href="sf10-ai-importer-deepseek.html" class="tool-card" style="color: #4d6bfe;">
           <i class="fas fa-robot"></i>
-          <span>DeepSeek SF10 AI Importer</span>
+          <span>DeepSeek SF10 Importer</span>
         </a>
       </div>
 
@@ -640,16 +645,29 @@
           return;
         }
 
-        // We found a record. Let's grab the Document ID.
+                // We found a record. Let's grab the Document ID.
         // If there are multiple (e.g., Grade 7 and Grade 8), we pick the most recent one.
         let targetDocId = snap.docs[0].id; 
+        let isSHS = false;
+
         if(snap.docs.length > 1) {
             const sortedDocs = snap.docs.sort((a, b) => b.data().schoolYear.localeCompare(a.data().schoolYear));
             targetDocId = sortedDocs[0].id;
+            // Check if the latest record is SHS
+            const latestData = sortedDocs[0].data();
+            isSHS = latestData.gradeLevel === 'Grade 11' || latestData.gradeLevel === 'Grade 12' || latestData.gradingSystem === 'semestral';
+        } else {
+            // If only one record, check its grade level
+            const singleData = snap.docs[0].data();
+            isSHS = singleData.gradeLevel === 'Grade 11' || singleData.gradeLevel === 'Grade 12' || singleData.gradingSystem === 'semestral';
         }
 
-        // Redirect to the SF10 Print page, passing the Document ID in the URL
-        window.location.href = `sf10-print.html?id=${targetDocId}`;
+        // Redirect to the correct Print Page based on curriculum
+        if (isSHS) {
+            window.location.href = `sf10-print-shs.html?id=${targetDocId}`;
+        } else {
+            window.location.href = `sf10-print.html?id=${targetDocId}`;
+        }
 
       } catch (error) {
         console.error("Search Error:", error);

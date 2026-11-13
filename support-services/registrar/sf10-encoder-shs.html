@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>SHS SF10 Encoder – SCPHS Registrar</title>
+  <link rel="stylesheet" href="../../assets/css/styles.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <style>
+    :root {
+      --gc-primary: #0f4c81;
+      --gc-accent: #2563eb;
+      --gc-bg: #f1f5f9;
+      --gc-border: #e2e8f0;
+      --gc-text: #1e293b;
+      --gc-muted: #64748b;
+      --gc-success: #16a34a;
+      --gc-danger: #dc2626;
+    }
+    
+    body { background: var(--gc-bg); margin: 0; font-family: 'Inter', system-ui, sans-serif; }
+    .wrap { max-width: 1100px; margin: 0 auto; padding: 20px 16px; }
+
+    .header { background: #fff; padding: 20px; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;}
+    .header h1 { margin: 0; color: var(--gc-primary); font-size: 1.5rem; font-weight: 800; }
+    
+    .search-box { display: flex; gap: 10px; margin-bottom: 20px; }
+    .search-box input { flex: 1; padding: 12px 16px; border: 1px solid var(--gc-border); border-radius: 8px; font-size: 1rem; outline: none; }
+    .search-box input:focus { border-color: var(--gc-accent); }
+    .btn-search { background: var(--gc-primary); color: #fff; border: none; padding: 0 20px; border-radius: 8px; font-weight: 600; cursor: pointer; }
+
+    .card { background: #fff; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); padding: 30px; margin-bottom: 20px; display: none; }
+    .card.active { display: block; animation: fadeIn 0.3s ease; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+    .section-title { font-size: 1.1rem; color: var(--gc-primary); border-bottom: 2px solid var(--gc-border); padding-bottom: 10px; margin-bottom: 20px; font-weight: 700; text-transform: uppercase; }
+
+    .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 20px; }
+    .form-group label { display: block; font-size: 0.8rem; font-weight: 700; color: #333; margin-bottom: 5px; text-transform: uppercase; }
+    .form-group input, .form-group select { width: 100%; padding: 10px; border: 1px solid var(--gc-border); border-radius: 6px; font-family: inherit; font-size: 0.95rem; }
+    
+    .grade-table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
+    .grade-table th, .grade-table td { padding: 8px; border: 1px solid var(--gc-border); text-align: center; }
+    .grade-table th { background: var(--gc-bg); font-size: 0.85rem; font-weight: 700; color: var(--gc-text); }
+    .grade-table input, .grade-table select { width: 100%; border: none; padding: 5px; text-align: center; font-size: 1rem; font-weight: 600; background: transparent; }
+    .grade-table input.sub-name { text-align: left; font-weight: 700; color: var(--gc-primary); }
+    .grade-table input:focus, .grade-table select:focus { background: #eff6ff; outline: none; border-radius: 4px; }
+    .grade-table select.type-select { font-size: 0.75rem; text-align: center; font-weight: bold; color: #475569; }
+
+    .btn-row { display: flex; gap: 10px; margin-top: 20px; }
+    .btn-save { flex: 1; background: var(--gc-success); color: #fff; border: none; padding: 14px 24px; border-radius: 8px; font-weight: 700; font-size: 1rem; cursor: pointer; transition: 0.2s; display: flex; justify-content: center; align-items: center; gap: 8px; }
+    .btn-save:hover { background: #15803d; transform: translateY(-2px); }
+    .btn-delete { background: var(--gc-danger); color: #fff; border: none; padding: 14px 24px; border-radius: 8px; font-weight: 700; font-size: 1rem; cursor: pointer; transition: 0.2s; display: none; justify-content: center; align-items: center; gap: 8px; }
+    .btn-delete:hover { background: #b91c1c; transform: translateY(-2px); }
+
+    .status-banner { padding: 15px; border-radius: 8px; margin-bottom: 20px; display: none; font-weight: 600; text-align: center; }
+    .status-success { background: #dcfce7; color: #166534; border: 1px solid #bbf7d0; }
+    .status-warning { background: #fef3c7; color: #92400e; border: 1px solid #fcd34d; }
+  </style>
+</head>
+<body>
+
+  <div class="wrap">
+    <div class="header">
+      <h1><i class="fas fa-user-graduate"></i> SHS SF10 Encoder</h1>
+      <a href="index.html" style="color: var(--gc-primary); text-decoration: none; font-weight: 600;">← Back to Registrar</a>
+    </div>
+
+    <div class="status-banner" id="status-banner"></div>
+
+    <!-- SEARCH SECTION -->
+    <div class="card active" id="search-card">
+      <h2 class="section-title">Search SHS Student</h2>
+      <div class="search-box">
+        <input type="text" id="search-lrn" placeholder="Enter Student LRN to load or create record..." onkeypress="if(event.key==='Enter') searchStudent()">
+        <button class="btn-search" onclick="searchStudent()"><i class="fas fa-search"></i> Search</button>
+      </div>
+    </div>
+
+    <!-- ENCODER FORM -->
+    <div class="card" id="encoder-card">
+      <h2 class="section-title" id="form-title">Encode SHS SF10 Record</h2>
+      
+      <form id="sf10-form" onsubmit="saveSF10(event)">
+        <input type="hidden" id="doc-id" value="">
+        
+        <!-- Common Student Info -->
+        <div class="form-grid">
+          <div class="form-group">
+            <label>Last Name</label>
+            <input type="text" id="f-lastname" required>
+          </div>
+          <div class="form-group">
+            <label>First Name</label>
+            <input type="text" id="f-firstname" required>
+          </div>
+          <div class="form-group">
+            <label>Middle Name</label>
+            <input type="text" id="f-middlename">
+          </div>
+          <div class="form-group">
+            <label>Name Extension (Jr, I, II)</label>
+            <input type="text" id="f-extname">
+          </div>
+          <div class="form-group">
+            <label>LRN</label>
+            <input type="text" id="f-lrn" required maxlength="12">
+          </div>
+        </div>
+
+        <!-- SHS Specifics -->
+        <div class="form-grid" style="background: #eff6ff; padding: 15px; border-radius: 8px; border: 1px solid #bfdbfe;">
+          <div class="form-group">
+            <label>Grade Level</label>
+            <select id="f-gradelevel" onchange="changeGradeLevel()" required>
+              <option value="Grade 11">Grade 11</option>
+              <option value="Grade 12">Grade 12</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Semester</label>
+            <select id="f-semester" onchange="changeGradeLevel()" required>
+              <option value="FIRST SEMESTER">First Semester</option>
+              <option value="SECOND SEMESTER">Second Semester</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Track / Strand</label>
+            <select id="f-track" onchange="changeGradeLevel()" required>
+              <option value="">Select Track...</option>
+              <option value="Academic - STEM">Academic - STEM</option>
+              <option value="Academic - ABM">Academic - ABM</option>
+              <option value="Academic - HUMSS">Academic - HUMSS</option>
+              <option value="Academic - GAS">Academic - GAS</option>
+              <option value="TechPro - TVL">TechPro - TVL</option>
+              <option value="Sports">Sports</option>
+              <option value="Arts and Design">Arts and Design</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Historical School Year</label>
+            <select id="f-schoolyear" onchange="resetForNewYear()" required>
+              <option value="">Select School Year...</option>
+              <option value="2026-2027">2026-2027</option>
+              <option value="2025-2026">2025-2026</option>
+              <option value="2024-2025">2024-2025</option>
+              <option value="2023-2024">2023-2024</option>
+              <option value="2022-2023">2022-2023</option>
+              <option value="2021-2022">2021-2022</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Section</label>
+            <input type="text" id="f-section" placeholder="e.g. Ruby">
+          </div>
+          <div class="form-group">
+            <label>Name of Adviser</label>
+            <input type="text" id="f-adviser" placeholder="Adviser for this specific semester">
+          </div>
+        </div>
+
+        <div style="display: flex; justify-content: space-between; align-items: center; margin: 20px 0 10px;">
+          <h3 style="font-size: 1rem; color: var(--gc-primary); margin: 0;">Subject Grades</h3>
+          <button type="button" class="btn-search" onclick="addRow()" style="padding: 8px 16px; font-size: 0.85rem; background: #475569;"><i class="fas fa-plus"></i> Add Subject Row</button>
+        </div>
+        
+        <div class="grade-table-wrap" style="overflow-x: auto;">
+          <table class="grade-table">
+            <thead>
+              <tr>
+                <th style="width: 10%;">Type</th>
+                <th style="width: 35%; text-align: left;">Subject</th>
+                <th>Q1</th><th>Q2</th>
+                <th>Final</th><th>Remarks</th>
+              </tr>
+            </thead>
+            <tbody id="grades-tbody"></tbody>
+          </table>
+        </div>
+
+        <div class="btn-row">
+          <button type="submit" class="btn-save" id="btn-save"><i class="fas fa-save"></i> Save SHS Record</button>
+          <button type="button" class="btn-delete" id="btn-delete" onclick="deleteRecord()"><i class="fas fa-trash"></i> Delete This Semester</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script type="module">
+    import { auth, db } from "../../assets/js/firebase-config.js";
+    import { collection, query, where, getDocs, doc, getDoc, setDoc, updateDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+    let CURRENT_RECORD_ID = null;
+
+    // Subject Presets for SHS
+    const SHS_SUBJECTS = {
+      "CORE": ["Oral Communication", "Reading and Writing", "Komunikasyon at Pananaliksik", "21st Century Literature", "General Mathematics", "Statistics and Probability", "Earth and Life Science", "Physical Science", "Personal Development", "Understanding Culture, Society, and Politics", "Physical Education and Health", "Practical Research 1", "Practical Research 2", "Media and Information Literacy", "Empowerment Technologies"],
+      "APPLIED": ["English for Academic and Professional Purposes", "Practical Research 1", "Practical Research 2", "Filipino sa Piling Larang", "Empowerment Technologies", "Entrepreneurship", "Inquiries, Investigations, and Immersion"],
+      "SPECIALIZED": ["Pre-Calculus", "Basic Calculus", "General Physics 1", "General Physics 2", "General Chemistry 1", "General Chemistry 2", "General Biology 1", "General Biology 2", "Fundamentals of Accountancy, Business and Management 1", "Fundamentals of Accountancy, Business and Management 2", "Business Math", "Business Finance", "Organization and Management", "Principles of Marketing"]
+    };
+
+    window.changeGradeLevel = function() {
+      // Auto-populate if empty
+      const tbody = document.getElementById('grades-tbody');
+      const grade = document.getElementById('f-gradelevel').value;
+      const sem = document.getElementById('f-semester').value;
+      
+      if (tbody.querySelectorAll('tr').length <= 1) {
+        tbody.innerHTML = '';
+        // Just add Core subjects as defaults
+        SHS_SUBJECTS["CORE"].slice(0, 5).forEach(sub => addRow({ sub: sub, type: 'CORE' }));
+      }
+    };
+
+    window.resetForNewYear = function() {
+      if (!CURRENT_RECORD_ID) return; 
+      document.getElementById('doc-id').value = "";
+      CURRENT_RECORD_ID = null;
+      document.getElementById('btn-delete').style.display = 'none';
+      
+      const grade = document.getElementById('f-gradelevel').value;
+      const sem = document.getElementById('f-semester').value;
+      document.getElementById('form-title').textContent = `Create New SHS Record: ${grade} (${sem})`;
+      
+      document.getElementById('grades-tbody').innerHTML = '';
+      addRow({ sub: 'Oral Communication', type: 'CORE' });
+      showStatus(`Switched to creating a new record for ${grade} - ${sem}.`, 'status-warning');
+    };
+
+    // Auto-compute Final grade when Q1 and Q2 are entered
+    document.getElementById('grades-tbody').addEventListener('input', function(e) {
+      if (e.target.tagName === 'INPUT' && e.target.type === 'number') {
+        const row = e.target.closest('tr');
+        const q1 = parseFloat(row.querySelector('.q1').value) || 0;
+        const q2 = parseFloat(row.querySelector('.q2').value) || 0;
+        
+        if (q1 > 0 && q2 > 0) {
+          const final = Math.round((q1 + q2) / 2);
+          row.querySelector('.final').value = final;
+          row.querySelector('.remarks').value = final >= 75 ? 'Passed' : 'Failed';
+        }
+      }
+    });
+
+    window.addRow = function(data = null) {
+      const tbody = document.getElementById('grades-tbody');
+      const tr = document.createElement('tr');
+      
+      let typeOptions = `
+        <option value="CORE" ${data?.type === 'CORE' ? 'selected' : ''}>CORE</option>
+        <option value="APPLIED" ${data?.type === 'APPLIED' ? 'selected' : ''}>APPLIED</option>
+        <option value="SPECIALIZED" ${data?.type === 'SPECIALIZED' ? 'selected' : ''}>SPECIALIZED</option>
+      `;
+
+      tr.innerHTML = `
+        <td>
+          <select class="type-select" style="background: #f1f5f9; border: 1px solid #cbd5e1;">
+            ${typeOptions}
+          </select>
+        </td>
+        <td><input type="text" placeholder="Enter Subject" class="sub-name" value="${data?.sub || data?.subject || ''}"></td>
+        <td><input type="number" min="60" max="100" class="q1" value="${data?.q1 || ''}"></td>
+        <td><input type="number" min="60" max="100" class="q2" value="${data?.q2 || ''}"></td>
+        <td><input type="number" min="60" max="100" class="final" value="${data?.final || ''}" readonly tabindex="-1" style="background:#f8fafc; cursor:not-allowed;"></td>
+        <td><input type="text" class="remarks" value="${data?.remarks || ''}" readonly tabindex="-1" style="background:#f8fafc; cursor:not-allowed;"></td>
+      `;
+      tbody.appendChild(tr);
+    };
+
+    window.searchStudent = async function() {
+      const searchTerm = document.getElementById('search-lrn').value.trim();
+      if (!searchTerm) return alert("Please enter an LRN.");
+
+      const btn = document.querySelector('.btn-search');
+      const originalText = btn.innerHTML;
+      btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>'; btn.disabled = true;
+
+      try {
+        const sf10Ref = collection(db, "sf10_archives");
+        const qLrn = query(sf10Ref, where("lrn", "==", searchTerm));
+        const snapLrn = await getDocs(qLrn);
+
+        // Filter to only show SHS records
+        const shsRecords = snapLrn.docs.filter(d => d.data().gradingSystem === 'semestral');
+
+        if (shsRecords.length > 0) {
+          const records = shsRecords.map(d => ({ id: d.id, ...d.data() }));
+          records.sort((a,b) => b.schoolYear.localeCompare(a.schoolYear));
+          const latestRecord = records[0];
+          
+          showStatus(`✅ Found existing SHS record: ${latestRecord.gradeLevel} - ${latestRecord.semester} (${latestRecord.schoolYear})`, 'status-success');
+          loadRecord(latestRecord);
+        } else {
+          showStatus('No existing SHS record found. You can encode a new SHS SF10 below.', 'status-warning');
+          
+          document.getElementById('encoder-card').classList.add('active');
+          document.getElementById('form-title').textContent = "Create New SHS SF10 Record";
+          document.getElementById('sf10-form').reset();
+          document.getElementById('doc-id').value = "";
+          CURRENT_RECORD_ID = null;
+          document.getElementById('btn-delete').style.display = 'none';
+          
+          document.getElementById('f-lrn').value = searchTerm;
+          document.getElementById('grades-tbody').innerHTML = '';
+          addRow({ sub: 'Oral Communication', type: 'CORE' });
+        }
+      } catch (error) { console.error(error); alert("❌ Error searching database."); } 
+      finally { btn.innerHTML = originalText; btn.disabled = false; }
+    };
+
+    function loadRecord(data) {
+      CURRENT_RECORD_ID = data.id;
+      document.getElementById('encoder-card').classList.add('active');
+      document.getElementById('form-title').textContent = `Update SHS Record (${data.gradeLevel} - ${data.semester})`;
+      document.getElementById('btn-delete').style.display = 'flex';
+      
+      document.getElementById('doc-id').value = CURRENT_RECORD_ID;
+      document.getElementById('f-lastname').value = data.lastName || "";
+      document.getElementById('f-firstname').value = data.firstName || "";
+      document.getElementById('f-middlename').value = data.middleName || "";
+      document.getElementById('f-extname').value = data.extName || "";
+      document.getElementById('f-lrn').value = data.lrn || "";
+      document.getElementById('f-gradelevel').value = data.gradeLevel || "Grade 11";
+      document.getElementById('f-semester').value = data.semester || "FIRST SEMESTER";
+      document.getElementById('f-track').value = data.trackStrand || "";
+      document.getElementById('f-schoolyear').value = data.schoolYear || "";
+      document.getElementById('f-section').value = data.section || "";
+      document.getElementById('f-adviser').value = data.adviser || "";
+
+      const tbody = document.getElementById('grades-tbody');
+      tbody.innerHTML = '';
+      
+      if (data.grades && data.grades.length > 0) {
+        data.grades.forEach((g) => addRow(g));
+      } else {
+        addRow({ sub: 'Oral Communication', type: 'CORE' }); 
+      }
+    }
+
+    window.deleteRecord = async function() {
+      if (!CURRENT_RECORD_ID) return;
+      if (!confirm("Are you sure you want to DELETE this specific SHS semester record? This cannot be undone.")) return;
+      try {
+        await deleteDoc(doc(db, "sf10_archives", CURRENT_RECORD_ID));
+        alert("✅ Record Deleted Successfully!");
+        document.getElementById('sf10-form').reset();
+        document.getElementById('encoder-card').classList.remove('active');
+        document.getElementById('search-lrn').value = "";
+        document.getElementById('status-banner').style.display = 'none';
+        CURRENT_RECORD_ID = null;
+      } catch (error) { console.error(error); alert("❌ Failed to delete record."); }
+    };
+
+    window.saveSF10 = async function(e) {
+      e.preventDefault();
+      const btn = document.getElementById('btn-save');
+      const originalText = btn.innerHTML;
+      btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...'; btn.disabled = true;
+
+      try {
+        const rows = document.querySelectorAll('#grades-tbody tr');
+        const grades = [];
+        rows.forEach(row => {
+          const subject = row.querySelector('.sub-name').value.trim();
+          if (subject) {
+            grades.push({
+              sub: subject,
+              subject: subject,
+              type: row.querySelector('.type-select').value,
+              q1: row.querySelector('.q1').value, 
+              q2: row.querySelector('.q2').value,
+              final: row.querySelector('.final').value, 
+              remarks: row.querySelector('.remarks').value
+            });
+          }
+        });
+
+        const gradeLevel = document.getElementById('f-gradelevel').value;
+        const semester = document.getElementById('f-semester').value;
+        const schoolYear = document.getElementById('f-schoolyear').value;
+        const lrn = document.getElementById('f-lrn').value.trim();
+
+        if(!schoolYear) throw new Error("Please select a School Year.");
+
+        const dataToSave = {
+          lastName: document.getElementById('f-lastname').value.trim(),
+          firstName: document.getElementById('f-firstname').value.trim(),
+          middleName: document.getElementById('f-middlename').value.trim(),
+          extName: document.getElementById('f-extname').value.trim(),
+          lrn: lrn,
+          gradeLevel: gradeLevel,
+          semester: semester,
+          trackStrand: document.getElementById('f-track').value,
+          schoolYear: schoolYear,
+          section: document.getElementById('f-section').value.trim(),
+          adviser: document.getElementById('f-adviser').value.trim(),
+          gradingSystem: "semestral",
+          grades: grades,
+          updatedAt: Date.now(),
+          updatedBy: auth.currentUser ? auth.currentUser.email : "OJT/Admin"
+        };
+
+        // Custom Doc ID to include Semester (so 1st Sem and 2nd Sem don't overwrite each other)
+        const cleanSem = semester.replace(/\s+/g, '');
+        const customDocId = `${lrn}_${schoolYear}_${gradeLevel.replace(/\s+/g,'')}_${cleanSem}`;
+        const docRef = doc(db, "sf10_archives", customDocId);
+        const docSnap = await getDoc(docRef);
+
+        if (docSnap.exists()) {
+          await updateDoc(docRef, dataToSave);
+          alert("✅ SHS Record Updated Successfully!");
+        } else {
+          dataToSave.createdAt = Date.now();
+          await setDoc(docRef, dataToSave);
+          alert("✅ New SHS Record Saved Successfully!");
+        }
+        
+        document.getElementById('sf10-form').reset();
+        document.getElementById('encoder-card').classList.remove('active');
+        document.getElementById('search-lrn').value = "";
+        document.getElementById('status-banner').style.display = 'none';
+        CURRENT_RECORD_ID = null;
+      } catch (error) { console.error(error); alert("❌ Failed to save record: " + error.message); } 
+      finally { btn.innerHTML = originalText; btn.disabled = false; }
+    };
+
+    function showStatus(msg, className) {
+      const banner = document.getElementById('status-banner');
+      banner.textContent = msg; banner.className = `status-banner ${className}`; banner.style.display = 'block';
+    }
+  </script>
+</body>
+</html>

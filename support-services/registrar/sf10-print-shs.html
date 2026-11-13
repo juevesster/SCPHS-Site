@@ -1,0 +1,528 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>SHS SF10 Print Viewer – SCPHS Registrar</title>
+  <link rel="stylesheet" href="../../assets/css/styles.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <style>
+    :root {
+      --gc-primary: #0f4c81;
+      --gc-accent: #2563eb;
+      --gc-bg: #f1f5f9;
+      --gc-border: #e2e8f0;
+      --gc-danger: #dc2626;
+    }
+    
+    body { background: var(--gc-bg); margin: 0; font-family: 'Inter', system-ui, sans-serif; }
+    .wrap { max-width: 1100px; margin: 0 auto; padding: 20px 16px; }
+
+    .header { background: #fff; padding: 20px; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;}
+    .header h1 { margin: 0; color: var(--gc-primary); font-size: 1.5rem; font-weight: 800; }
+    
+    .search-box { display: flex; gap: 10px; margin-bottom: 20px; }
+    .search-box input { flex: 1; padding: 12px 16px; border: 1px solid var(--gc-border); border-radius: 8px; font-size: 1rem; outline: none; }
+    .search-box input:focus { border-color: var(--gc-accent); }
+    .btn-search { background: var(--gc-primary); color: #fff; border: none; padding: 0 20px; border-radius: 8px; font-weight: 600; cursor: pointer; }
+    
+    .signatory-panel { background: #fff; padding: 20px; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); margin-bottom: 20px; display: none; }
+    .signatory-panel h3 { margin-top: 0; color: var(--gc-primary); font-size: 1.1rem; border-bottom: 1px solid var(--gc-border); padding-bottom: 10px; margin-bottom: 15px; }
+    .sig-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+    .sig-group label { display: block; font-size: 0.8rem; font-weight: 700; color: #333; margin-bottom: 5px; text-transform: uppercase; }
+    .sig-group input { width: 100%; padding: 10px; border: 1px solid var(--gc-border); border-radius: 6px; font-family: inherit; font-size: 0.95rem; }
+
+    .btn-print { background: #16a34a; color: #fff; border: none; padding: 14px 24px; border-radius: 8px; font-weight: 700; font-size: 1rem; cursor: pointer; display: none; width: 100%; transition: 0.2s; }
+    .btn-print:hover { background: #15803d; transform: translateY(-2px); }
+    
+    #access-denied { display: none; text-align: center; padding: 60px 20px; background: #fff; border-radius: 12px; border: 1px solid var(--gc-border); }
+    #access-denied h2 { color: var(--gc-danger); margin-bottom: 10px; }
+    
+    #print-wrapper { display: none; }
+
+    /* ============================================================
+       OFFICIAL DEPED SHS SF10 PRINT STYLES
+       ============================================================ */
+    @media print {
+      @page { 
+        size: portrait 8.5in 13in; 
+        margin: 0.2in; 
+      }
+      body { background: #fff; font-family: "Arial Narrow", Arial, sans-serif; font-size: 7.5pt; line-height: 1.2; }
+      
+      .header, .search-box, #web-ui, #access-denied, .signatory-panel { display: none !important; }
+      #print-wrapper { display: block !important; }
+      
+      .paper { width: 100%; max-width: 8.5in; margin: 0 auto; background: white; }
+      .page { padding: 0 5px; }
+      .page-back { page-break-before: always; }
+
+      .grade-table, .remedial-table, .cert-box { page-break-inside: avoid; }
+
+      /* Header Adjustments */
+      .sf10-header { display: flex; align-items: center; justify-content: space-between; padding: 2px 0; border-bottom: 1.5px solid #000; margin-bottom: 4px; }
+      .header-left { display: flex; flex-direction: column; align-items: flex-start; width: 70px; }
+      .header-left-text { font-size: 8pt; font-weight: bold; margin-bottom: 2px; }
+      .header-seal { max-height: 50px; max-width: 50px; }
+      .header-center { text-align: center; flex: 1; padding: 0 5px; }
+      .republic { font-size: 8pt; margin: 0; }
+      .deped { font-size: 8.5pt; font-weight: bold; margin: 0; }
+      .doc-title { font-size: 10pt; font-weight: bold; text-transform: uppercase; margin: 0; }
+      .header-right { width: 70px; display: flex; justify-content: flex-end; }
+      
+      /* Section Headers (Tan Color) */
+      .sec-title { font-weight: bold; font-size: 8pt; text-align: center; text-transform: uppercase; background: #d9d9d9; border-top: 1px solid #000; border-bottom: 1px solid #000; padding: 1px 0; margin: 4px 0 2px 0; -webkit-print-color-adjust: exact; }
+      
+      /* Info Tables */
+      .info-table { width: 100%; border-collapse: collapse; margin-bottom: 2px; }
+      .info-table td { padding: 1px 3px; font-size: 7.5pt; }
+      .lbl { font-weight: bold; white-space: nowrap; }
+      .val { border-bottom: 1px solid #000; display: inline-block; min-width: 80px; padding: 0 3px; }
+      
+      /* Eligibility Tables */
+      .elig-table { width: 100%; border-collapse: collapse; margin-bottom: 2px; font-size: 7pt; }
+      .elig-table td { padding: 1px 3px; vertical-align: top; }
+      .chk-box { display: inline-block; width: 8px; height: 8px; border: 1px solid #000; margin-right: 3px; vertical-align: middle; text-align: center; line-height: 8px; font-weight: bold; }
+      
+      /* Grade Tables */
+      .grade-table { width: 100%; border-collapse: collapse; margin-bottom: 4px; font-size: 7pt; }
+      .grade-table th, .grade-table td { border: 1px solid #000; padding: 1px; text-align: center; vertical-align: middle; }
+      .grade-table th { background: #f0f0f0; font-weight: bold; -webkit-print-color-adjust: exact; }
+      .grade-table td.sn { text-align: left; font-weight: bold; padding-left: 3px; }
+      .grade-table tr.ga td { font-weight: bold; background: #f9f9f9; -webkit-print-color-adjust: exact; }
+      
+      /* Remedial Table */
+      .remedial-table { width: 100%; border-collapse: collapse; margin-bottom: 4px; font-size: 7pt; }
+      .remedial-table th, .remedial-table td { border: 1px solid #000; padding: 1px; text-align: center; }
+      .remedial-table th { background: #f0f0f0; font-weight: bold; -webkit-print-color-adjust: exact;}
+      
+      /* Certification & Signatures */
+      .cert-box { border: 1px solid #000; padding: 5px 10px; margin-top: 10px; font-size: 7.5pt; }
+      .signature-block { display: flex; justify-content: space-around; align-items: flex-end; margin-top: 10px; font-size: 7.5pt; }
+      .sig-box { text-align: center; }
+      .sig-line { border-bottom: 1px solid #000; height: 12px; margin-bottom: 2px; }
+      
+      .seal-box { 
+        width: 50px; height: 50px; border: 1px solid #000; 
+        display: flex; align-items: center; justify-content: center; 
+        font-size: 5.5pt; text-align: center; padding: 2px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="wrap" id="web-ui">
+    <div class="header">
+      <h1><i class="fas fa-print"></i> SHS SF10 Print Viewer</h1>
+      <a href="index.html" style="color: var(--gc-primary); text-decoration: none; font-weight: 600;">← Back to Registrar</a>
+    </div>
+
+    <div id="access-denied">
+      <h2><i class="fas fa-lock"></i> Access Denied</h2>
+      <p>You must be signed in as an Administrator or Registrar to access and print student records.</p>
+    </div>
+
+    <div id="search-area" style="display: none;">
+      
+      <!-- Search Box (Hidden if opened via URL) -->
+      <div class="search-box" id="manual-search-box">
+        <input type="text" id="search-lrn" placeholder="Enter Student LRN to pull up SHS SF10..." onkeypress="if(event.key==='Enter') searchStudent()">
+        <button class="btn-search" onclick="searchStudent()">Search</button>
+      </div>
+
+      <!-- Quick Link Message (Shown if opened via URL) -->
+      <div id="url-loaded-msg" style="display: none; background: #dcfce7; color: #166534; padding: 15px; border-radius: 8px; margin-bottom: 20px; font-weight: 600; text-align: center;">
+        <i class="fas fa-link"></i> Record loaded automatically from Dashboard. <a href="sf10-print-shs.html" style="color: #166534; text-decoration: underline;">Search another student</a>
+      </div>
+
+      <div class="signatory-panel" id="signatory-panel">
+        <h3><i class="fas fa-edit"></i> Update Signatories for this Print</h3>
+        <div class="sig-grid">
+          <div class="sig-group">
+            <label>Principal / School Head Name</label>
+            <input type="text" id="input-principal" placeholder="Enter Principal's Name" value="SATURNINO P. CALANSI EdD">
+          </div>
+          <div class="sig-group">
+            <label>Date Prepared</label>
+            <input type="text" id="input-date" placeholder="e.g. 07/01/2024">
+          </div>
+        </div>
+      </div>
+
+      <button class="btn-print" id="btn-print" onclick="window.print()"><i class="fas fa-print"></i> Print SHS SF10 (8.5 x 13 Long)</button>
+    </div>
+  </div>
+
+  <!-- HIDDEN PRINT WRAPPER -->
+  <div id="print-wrapper">
+    <div class="paper">
+      
+      <!-- SHS PAGE 1 (GRADE 11) -->
+      <div class="page" id="shs-page1">
+        <div class="sf10-header">
+          <div class="header-left">
+            <span class="header-left-text">SF10-SHS</span>
+            <img src="../../assets/images/deped-logo.png" class="header-seal" alt="DepEd Logo">
+          </div>
+          <div class="header-center">
+            <div class="republic">Republic of the Philippines</div>
+            <div class="deped">Department of Education</div>
+            <div class="doc-title">SENIOR HIGH SCHOOL STUDENT PERMANENT RECORD</div>
+          </div>
+          <div class="header-right"><img src="../../assets/images/deped_seal.png" class="header-seal" alt="DepEd Logo"></div>
+        </div>
+
+        <div class="sec-title">LEARNER'S INFORMATION</div>
+        <table class="info-table">
+          <tr>
+            <td><span class="lbl">LAST NAME:</span> <span class="val" id="shs-lastname">-</span></td>
+            <td><span class="lbl">FIRST NAME:</span> <span class="val" id="shs-firstname">-</span></td>
+            <td><span class="lbl">MIDDLE NAME:</span> <span class="val" id="shs-middlename">-</span></td>
+            <td><span class="lbl">EXT.:</span> <span class="val" id="shs-extname">-</span></td>
+          </tr>
+          <tr>
+            <td colspan="2"><span class="lbl">LRN:</span> <span class="val" id="shs-lrn">-</span></td>
+            <td><span class="lbl">Date of Birth (MM/DD/YYYY):</span> <span class="val" id="shs-birthdate">-</span></td>
+            <td><span class="lbl">Sex:</span> <span class="val" id="shs-sex">-</span></td>
+          </tr>
+          <tr>
+            <td colspan="3"><span class="lbl">Date of SHS Admission (MM/DD/YYYY):</span> <span class="val" id="shs-admission"></span></td>
+          </tr>
+        </table>
+
+        <div class="sec-title">ELIGIBILITY FOR SHS ENROLLMENT</div>
+        <table class="elig-table">
+          <tr>
+            <td><span class="chk-box"></span> High School Completer*</td>
+            <td><span class="lbl">Gen. Ave:</span> <span class="val"></span></td>
+            <td><span class="chk-box"></span> Junior High School Completer</td>
+            <td><span class="lbl">Gen. Ave:</span> <span class="val"></span></td>
+          </tr>
+          <tr>
+            <td><span class="lbl">Date of Graduation/Completion:</span> <span class="val"></span></td>
+            <td colspan="2"><span class="lbl">Name of School:</span> <span class="val"></span></td>
+            <td><span class="lbl">School Add.:</span> <span class="val"></span></td>
+          </tr>
+          <tr>
+            <td><span class="chk-box"></span> PEPT Passer**</td>
+            <td><span class="lbl">Rating:</span> <span class="val"></span></td>
+            <td><span class="chk-box"></span> ALS A&E Passer***</td>
+            <td><span class="lbl">Rating:</span> <span class="val"></span></td>
+          </tr>
+          <tr>
+            <td><span class="lbl">Date of Examination/Assessment:</span> <span class="val"></span></td>
+            <td colspan="3"><span class="lbl">Name & Address of CLC:</span> <span class="val"></span></td>
+          </tr>
+        </table>
+
+        <div class="sec-title">SCHOLASTIC RECORD</div>
+        <div id="shs-grades-page1"></div>
+      </div>
+
+      <!-- SHS PAGE 2 (GRADE 12) -->
+      <div class="page page-back" id="shs-page2">
+        <div class="sf10-header">
+          <div class="header-left">
+            <span class="header-left-text">SF10-SHS</span>
+            <img src="../../assets/images/deped-logo.png" class="header-seal" alt="DepEd Logo">
+          </div>
+          <div class="header-center">
+            <div class="republic">Republic of the Philippines</div>
+            <div class="deped">Department of Education</div>
+            <div class="doc-title">SENIOR HIGH SCHOOL STUDENT PERMANENT RECORD</div>
+          </div>
+          <div class="header-right"><img src="../../assets/images/deped_seal.png" class="header-seal" alt="DepEd Logo"></div>
+        </div>
+        
+        <div class="sec-title">SCHOLASTIC RECORD (Continued)</div>
+        <div id="shs-grades-page2"></div>
+
+        <div class="cert-box" style="margin-top: 10px;">
+          <div class="sec-title" style="margin-top: 0;">CERTIFICATION</div>
+          <p style="margin: 3px 0;">I CERTIFY that this is a true record of <strong id="shs-cert-name">_________________________</strong> with LRN <strong id="shs-cert-lrn">_________________________</strong> and that he/she is eligible for admission to Grade ________.</p>
+          
+          <table class="info-table" style="margin-top: 10px;">
+            <tr>
+              <td><span class="lbl">Track/Strand Accomplished:</span> <span class="val" id="shs-track-accomplished" style="min-width: 200px;"></span></td>
+              <td><span class="lbl">SHS General Average:</span> <span class="val" id="shs-gen-ave"></span></td>
+            </tr>
+            <tr>
+              <td><span class="lbl">Awards/Honors Received:</span> <span class="val" style="min-width: 200px;"></span></td>
+              <td><span class="lbl">Date of SHS Graduation:</span> <span class="val"></span></td>
+            </tr>
+          </table>
+
+          <div class="signature-block" style="margin-top: 25px; justify-content: space-around; align-items: flex-end;">
+            <div class="sig-box" style="width: 30%;">
+              <div class="sig-line" id="shs-cert-date-line"></div>
+              <div>Date</div>
+            </div>
+            <div class="sig-box" style="width: 40%;">
+              <div class="sig-line"></div>
+              <div class="print-sig-name" id="print-shs-principal-name">_________________________</div>
+              <div>Signature of Principal/School Head over Printed Name</div>
+            </div>
+            <div class="sig-box" style="width: 20%;">
+              <div class="seal-box">(Affix School Seal Here)</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <script type="module">
+    import { auth, db } from "../../assets/js/firebase-config.js";
+    import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+    import { collection, query, where, getDocs, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+    window.addEventListener('DOMContentLoaded', () => {
+      const urlParams = new URLSearchParams(window.location.search);
+      const docId = urlParams.get('id');
+      
+      if (docId) {
+        document.getElementById('manual-search-box').style.display = 'none';
+        document.getElementById('url-loaded-msg').style.display = 'block';
+        
+        onAuthStateChanged(auth, async (user) => {
+          if (!user) { document.getElementById('access-denied').style.display = 'block'; return; }
+          const userSnap = await getDoc(doc(db, "users", user.uid));
+          if (userSnap.exists()) {
+            const role = userSnap.data().primaryRole || userSnap.data().role;
+            if (['admin', 'superadmin', 'registrar'].includes(role)) {
+              loadRecordById(docId);
+            } else {
+              document.getElementById('access-denied').style.display = 'block';
+            }
+          }
+        });
+      } else {
+        onAuthStateChanged(auth, async (user) => {
+          if (!user) { document.getElementById('access-denied').style.display = 'block'; return; }
+          try {
+            const userSnap = await getDoc(doc(db, "users", user.uid));
+            if (userSnap.exists()) {
+              const role = userSnap.data().primaryRole || userSnap.data().role;
+              if (['admin', 'superadmin', 'registrar'].includes(role)) {
+                document.getElementById('search-area').style.display = 'block';
+              } else {
+                document.getElementById('access-denied').style.display = 'block';
+              }
+            }
+          } catch (e) { document.getElementById('access-denied').style.display = 'block'; }
+        });
+      }
+    });
+
+    async function loadRecordById(docId) {
+      try {
+        const lrn = docId.split('_')[0];
+        const docRef = doc(db, "sf10_archives", docId);
+        const docSnap = await getDoc(docRef);
+        
+        if (docSnap.exists()) {
+          const sf10Ref = collection(db, "sf10_archives");
+          const qLrn = query(sf10Ref, where("lrn", "==", lrn), where("gradingSystem", "==", "semestral"));
+          const snapLrn = await getDocs(qLrn);
+          
+          const allRecords = snapLrn.docs.map(d => d.data());
+          renderPrintView(allRecords, lrn);
+          
+          document.getElementById('signatory-panel').style.display = 'block';
+          document.getElementById('btn-print').style.display = 'block';
+          document.getElementById('search-area').style.display = 'block';
+        } else {
+          alert("❌ Record not found in database.");
+        }
+      } catch (error) {
+        console.error(error);
+        alert("❌ Error fetching record.");
+      }
+    }
+
+    window.searchStudent = async function() {
+      const searchTerm = document.getElementById('search-lrn').value.trim();
+      if (!searchTerm) return alert("Please enter an LRN.");
+
+      const btn = document.querySelector('.btn-search');
+      const originalText = btn.innerHTML;
+      btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+      btn.disabled = true;
+
+      try {
+        const sf10Ref = collection(db, "sf10_archives");
+        const qLrn = query(sf10Ref, where("lrn", "==", searchTerm), where("gradingSystem", "==", "semestral"));
+        const snapLrn = await getDocs(qLrn);
+
+        if (!snapLrn.empty) {
+          const allRecords = snapLrn.docs.map(d => d.data());
+          renderPrintView(allRecords, searchTerm);
+          
+          document.getElementById('signatory-panel').style.display = 'block';
+          document.getElementById('btn-print').style.display = 'block';
+        } else {
+          alert("❌ No archived SHS SF10 record found for this LRN.");
+          document.getElementById('signatory-panel').style.display = 'none';
+          document.getElementById('btn-print').style.display = 'none';
+          document.getElementById('print-wrapper').style.display = 'none';
+        }
+      } catch (error) {
+        console.error(error);
+        alert("❌ Error searching database.");
+      } finally {
+        btn.innerHTML = originalText;
+        btn.disabled = false;
+      }
+    };
+
+    // Signatory listeners
+    document.getElementById('input-principal').addEventListener('input', function() {
+      const val = this.value || "_________________________";
+      document.getElementById('print-shs-principal-name').textContent = val;
+    });
+
+    document.getElementById('input-date').addEventListener('input', function() {
+      const val = this.value || "";
+      document.getElementById('shs-cert-date-line').textContent = val;
+    });
+
+    function renderPrintView(records, lrn) {
+      const firstRecord = records[0];
+      const mName = firstRecord.middleName && firstRecord.middleName !== 'undefined' ? firstRecord.middleName : '';
+      const fullName = `${firstRecord.firstName} ${mName} ${firstRecord.lastName}`.replace(/\s+/g, ' ').trim();
+
+      document.getElementById('shs-lastname').textContent = firstRecord.lastName;
+      document.getElementById('shs-firstname').textContent = firstRecord.firstName;
+      document.getElementById('shs-middlename').textContent = mName;
+      document.getElementById('shs-extname').textContent = firstRecord.extName || '';
+      document.getElementById('shs-lrn').textContent = lrn;
+      document.getElementById('shs-cert-name').textContent = fullName;
+      document.getElementById('shs-cert-lrn').textContent = lrn;
+      
+      if (firstRecord.trackStrand) {
+        document.getElementById('shs-track-accomplished').textContent = firstRecord.trackStrand;
+      }
+
+      document.getElementById('input-principal').dispatchEvent(new Event('input'));
+      document.getElementById('input-date').dispatchEvent(new Event('input'));
+
+      // Helper to generate the SHS table block
+      function generateSHSBlock(recordData) {
+        let html = `
+          <table class="info-table" style="border: 1px solid #000; border-bottom: none; margin-bottom: 0; margin-top: 5px;">
+            <tr>
+              <td style="width: 25%;"><strong>SCHOOL:</strong> Sta. Cruz Pingkian High School</td>
+              <td style="width: 15%;"><strong>SCHOOL ID:</strong> 300648</td>
+              <td style="width: 15%;"><strong>GRADE LEVEL:</strong> ${recordData.gradeLevel.replace('Grade ', '')}</td>
+              <td style="width: 15%;"><strong>SECTION:</strong> ${recordData.section || ''}</td>
+              <td style="width: 15%;"><strong>SY:</strong> ${recordData.schoolYear}</td>
+              <td style="width: 15%;"><strong>SEM:</strong> ${recordData.semester || ''}</td>
+            </tr>
+            <tr>
+              <td colspan="6"><strong>TRACK/STRAND:</strong> ${recordData.trackStrand || ''}</td>
+            </tr>
+          </table>
+          
+          <table class="grade-table" style="margin-top: 0; border-top: none;">
+            <thead>
+              <tr>
+                <th rowspan="2" style="width: 10%;">CORE / APPLIED / SPECIALIZED</th>
+                <th rowspan="2" style="width: 40%; text-align: left; padding-left: 5px;">SUBJECTS</th>
+                <th colspan="2">Quarter</th>
+                <th rowspan="2" style="width: 12%;">SEM FINAL GRADE</th>
+                <th rowspan="2" style="width: 12%;">ACTION TAKEN</th>
+              </tr>
+              <tr>
+                <th>Q1</th>
+                <th>Q2</th>
+              </tr>
+            </thead>
+            <tbody>
+        `;
+
+        recordData.grades.forEach(g => {
+          const subjectName = g.sub || g.subject || '';
+          const subType = g.type || 'CORE';
+
+          html += `
+            <tr>
+              <td style="font-size: 6pt;">${subType}</td>
+              <td style="text-align: left; padding-left: 5px;">${subjectName}</td>
+              <td>${g.q1 || ''}</td>
+              <td>${g.q2 || ''}</td>
+              <td>${g.final || ''}</td>
+              <td>${g.remarks || ''}</td>
+            </tr>
+          `;
+        });
+
+        let total = 0; let count = 0;
+        recordData.grades.forEach(g => { if(g.final) { total += parseInt(g.final); count++; } });
+        const genAve = count > 0 ? Math.round(total / count) : 0;
+
+        html += `
+              <tr class="ga">
+                <td colspan="4" style="text-align: right; padding-right: 10px;">General Ave. for the Semester:</td>
+                <td>${genAve}%</td>
+                <td>${genAve >= 75 ? 'Passed' : 'Failed'}</td>
+              </tr>
+            </tbody>
+          </table>
+          
+          <table class="info-table" style="margin-top: 5px; border: 1px solid #000; margin-bottom: 15px;">
+              <tr>
+                  <td style="width: 50%;"><strong>REMARKS:</strong> _______________________________________</td>
+                  <td><strong>Certified True and Correct:</strong> __________________________</td>
+                  <td><strong>Date Checked:</strong> ____________</td>
+              </tr>
+              <tr>
+                  <td><strong>Prepared by:</strong> __________________________</td>
+                  <td colspan="2">Signature of Authorized Person over Printed Name, Designation</td>
+              </tr>
+          </table>
+        `;
+        return html;
+      }
+
+      // Filter records into Grade 11 (Page 1) and Grade 12 (Page 2)
+      const page1Records = records.filter(r => r.gradeLevel === 'Grade 11');
+      const page2Records = records.filter(r => r.gradeLevel === 'Grade 12');
+
+      if (page1Records.length > 0) {
+        let p1Html = '';
+        // Sort by semester so 1st Sem is on top
+        page1Records.sort((a,b) => a.semester.localeCompare(b.semester));
+        page1Records.forEach(r => { p1Html += generateSHSBlock(r); });
+        document.getElementById('shs-grades-page1').innerHTML = p1Html;
+        document.getElementById('shs-page1').style.display = 'block';
+      } else {
+        document.getElementById('shs-page1').style.display = 'none';
+      }
+
+      if (page2Records.length > 0) {
+        let p2Html = '';
+        page2Records.sort((a,b) => a.semester.localeCompare(b.semester));
+        page2Records.forEach(r => { p2Html += generateSHSBlock(r); });
+        document.getElementById('shs-grades-page2').innerHTML = p2Html;
+        document.getElementById('shs-page2').style.display = 'block';
+      } else {
+        document.getElementById('shs-page2').style.display = 'none';
+      }
+      
+      // Calculate overall SHS Gen Ave (Average of all semester gen aves)
+      let overallTotal = 0; let overallCount = 0;
+      records.forEach(r => {
+        let semTotal = 0; let semCount = 0;
+        r.grades.forEach(g => { if(g.final) { semTotal += parseInt(g.final); semCount++; } });
+        if(semCount > 0) { overallTotal += Math.round(semTotal/semCount); overallCount++; }
+      });
+      if(overallCount > 0) {
+        document.getElementById('shs-gen-ave').textContent = Math.round(overallTotal/overallCount);
+      }
+    }
+  </script>
+</body>
+</html>
