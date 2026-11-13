@@ -205,6 +205,32 @@
       .page-hero { padding: 30px 16px; }
       .page-hero h1 { font-size: 1.8rem; }
     }
+
+        /* Notification Badge */
+    .tab-btn { position: relative; }
+    .notification-dot {
+      position: absolute;
+      top: -4px;
+      right: -4px;
+      background: var(--gc-danger);
+      color: white;
+      font-size: 0.7rem;
+      font-weight: 800;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 2px solid #fff;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+      animation: pulse 2s infinite;
+    }
+    @keyframes pulse {
+      0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.7); }
+      70% { transform: scale(1); box-shadow: 0 0 0 6px rgba(220, 38, 38, 0); }
+      100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(220, 38, 38, 0); }
+    }
   </style>
 </head>
 <body>
@@ -224,6 +250,8 @@
     <div class="tabs">
       <button class="tab-btn active" onclick="switchTab('request', this)"><i class="fas fa-file-signature"></i> Request Document</button>
       <button class="tab-btn admin-only" onclick="switchTab('admin', this)" id="admin-tab" style="display: none;"><i class="fas fa-tasks"></i> Admin Dashboard</button>
+      <span class="notification-dot" id="admin-notif-badge" style="display: none;">0</span>
+      </button>
       <a href="sf10-print.html" style="background: #475569; color: #fff; text-decoration: none; padding: 8px 16px; border-radius: 6px; font-weight: 600; font-size: 0.9rem; display: inline-flex; align-items: center; gap: 8px;">
         <i class="fas fa-print"></i> Print SF10
       </a>
@@ -407,15 +435,16 @@
   </script>
 
   <!-- Registrar Logic -->
-  <script type="module">
+    <script type="module">
     import { auth, db } from "../../assets/js/firebase-config.js";
     import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-    import { collection, addDoc, onSnapshot, doc, updateDoc, query, orderBy, getDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+    import { collection, addDoc, onSnapshot, doc, updateDoc, query, orderBy, getDoc, where } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
     let IS_ADMIN = false;
     let unsubscribeRealtime = null;
+    let previousPendingCount = 0; // Tracks if a new request comes in
 
-    // 1. Check Auth
+    // 1. Check Auth & Start Listener
     onAuthStateChanged(auth, async (user) => {
       if (user) {
         try {
@@ -425,13 +454,65 @@
             if (role === 'admin' || role === 'superadmin' || role === 'teacher') {
               IS_ADMIN = true;
               document.getElementById('admin-tab').style.display = 'block';
+              // START LISTENING IMMEDIATELY IN BACKGROUND
+              startAdminListener(); 
             }
           }
-        } catch (error) { console.error(error); }
+        } catch (error) { console.error("Auth Error:", error); }
       }
     });
 
-    // 2. Tab Switching
+    // 2. The Robust Pipeline Listener
+    function startAdminListener() {
+      if (unsubscribeRealtime) return; // Prevent duplicate listeners
+      
+      // Query: Get latest requests
+      const q = query(collection(db, "document_requests"), orderBy("timestamp", "desc"));
+      
+      unsubscribeRealtime = onSnapshot(q, (snapshot) => {
+        const docs = snapshot.docs;
+        
+        // A. Render the table (always in background, updates instantly)
+        renderTable(docs);
+
+        // B. Calculate Pending Requests for the Badge
+        const pendingCount = docs.filter(d => d.data().status === 'Pending').length;
+        const badge = document.getElementById('admin-notif-badge');
+        
+        if (pendingCount > 0) {
+          badge.textContent = pendingCount;
+          badge.style.display = 'flex';
+        } else {
+          badge.style.display = 'none';
+        }
+
+        // C. Trigger Notification if a NEW request arrives
+        if (pendingCount > previousPendingCount && previousPendingCount !== 0) {
+          showAdminNotification();
+        }
+        previousPendingCount = pendingCount;
+      });
+    }
+
+    // 3. Visual & Audio Notification for Admin
+    function showAdminNotification() {
+      // Play a subtle ping sound (Optional - uses a free hosting url)
+      const audio = new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3');
+      audio.play().catch(e => console.log("Audio play blocked by browser"));
+
+      // Flash the tab title
+      let isOriginal = false;
+      const originalTitle = document.title;
+      setInterval(() => {
+        document.title = isOriginal ? "🚨 NEW DOCUMENT REQUEST!" : originalTitle;
+        isOriginal = !isOriginal;
+      }, 1000);
+      
+      // Stop flashing after 10 seconds
+      setTimeout(() => { document.title = originalTitle; }, 10000);
+    }
+
+    // 4. Tab Switching
     window.switchTab = function(tab, btnEl) {
       document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
       if(btnEl) btnEl.classList.add('active');
@@ -439,23 +520,14 @@
       document.querySelectorAll('.card').forEach(card => card.classList.remove('active'));
       document.getElementById(`card-${tab}`).classList.add('active');
 
+      // Hide the badge when the admin opens the tab
       if (tab === 'admin') {
-        loadAdminData();
-        if (!unsubscribeRealtime) {
-          const q = query(collection(db, "document_requests"), orderBy("timestamp", "desc"));
-          unsubscribeRealtime = onSnapshot(q, (snapshot) => {
-            renderTable(snapshot.docs);
-          });
-        }
-      } else {
-        if (unsubscribeRealtime) {
-          unsubscribeRealtime();
-          unsubscribeRealtime = null;
-        }
+        const badge = document.getElementById('admin-notif-badge');
+        if(badge) badge.style.display = 'none';
       }
     };
 
-    // 3. Submit Request (Public)
+    // 5. Submit Request (Public)
     window.submitRequest = async function(e) {
       e.preventDefault();
       const btn = document.getElementById('btn-submit-req');
@@ -476,7 +548,7 @@
 
         await addDoc(collection(db, "document_requests"), reqData);
         
-        alert(`✅ Request Submitted Successfully!\n\nStudent: ${reqData.name}\nDocument: ${reqData.documentType}\n\nPlease wait for the Registrar to process your request. You will be contacted at ${reqData.contact}.`);
+        alert(`✅ Request Submitted Successfully!\n\nStudent: ${reqData.name}\nDocument: ${reqData.documentType}\n\nPlease wait for the Registrar to process your request.`);
         document.getElementById('request-form').reset();
 
       } catch (error) {
@@ -487,20 +559,11 @@
       }
     };
 
-    // 4. Load Admin Data
-    window.loadAdminData = async function() {
-      if (!IS_ADMIN) return;
-      const q = query(collection(db, "document_requests"), orderBy("timestamp", "desc"));
-      if (!unsubscribeRealtime) {
-        unsubscribeRealtime = onSnapshot(q, (snap) => {
-          renderTable(snap.docs);
-        });
-      }
-    };
-
-    // 5. Render Table
+    // 6. Render Table
     function renderTable(docs) {
       const tbody = document.getElementById('admin-table-body');
+      if (!tbody) return;
+
       if (docs.length === 0) {
         tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; padding: 30px; color: var(--gc-muted);">No requests found.</td></tr>`;
         return;
@@ -523,7 +586,7 @@
 
         if (!IS_ADMIN) actionBtn = "-";
 
-        const dateStr = new Date(data.timestamp).toLocaleDateString('en-PH', { month: 'short', day: 'numeric', year: 'numeric' });
+        const dateStr = new Date(data.timestamp).toLocaleDateString('en-PH', { month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute:'2-digit' });
 
         return `
           <tr>
@@ -541,7 +604,7 @@
       }).join("");
     }
 
-    // 6. Update Status (Admin)
+    // 7. Update Status (Admin)
     window.updateStatus = async function(id, newStatus) {
       if (!IS_ADMIN) return;
       try {
