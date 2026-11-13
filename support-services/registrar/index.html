@@ -438,7 +438,7 @@
     <script type="module">
     import { auth, db } from "../../assets/js/firebase-config.js";
     import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-    import { collection, addDoc, onSnapshot, doc, updateDoc, query, orderBy, getDoc, where } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+    import { collection, addDoc, onSnapshot, doc, updateDoc, query, orderBy, getDoc, getDocs, where } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
     let IS_ADMIN = false;
     let unsubscribeRealtime = null;
@@ -592,7 +592,7 @@
           <tr>
             <td><span style="font-weight: 600;">${dateStr}</span></td>
             <td>
-              <strong style="color: var(--gc-primary);">${data.name}</strong><br>
+              <strong style="color: var(--gc-primary); cursor: pointer; text-decoration: underline;" onclick="viewStudentSF10('${data.lrn}')" title="Click to view/edit SF10">${data.name}</strong><br>
               <span style="font-size: 0.8rem; color: var(--gc-muted); font-family: monospace;">LRN: ${data.lrn} | Yr: ${data.year}</span>
             </td>
             <td><span style="font-weight: 700; color: var(--gc-accent); font-size: 0.85rem;">${data.documentType}</span></td>
@@ -612,6 +612,46 @@
       } catch (error) {
         console.error("Error updating status:", error);
         alert("❌ Failed to update status.");
+      }
+    };
+
+        // --- NEW: Route to SF10 Editor based on LRN ---
+    window.viewStudentSF10 = async function(lrn) {
+      if (!lrn) return alert("No LRN provided for this request.");
+      
+      const btn = event.target; 
+      const originalText = btn.innerHTML;
+      btn.innerHTML = "Searching...";
+      btn.style.color = "var(--gc-muted)";
+
+      try {
+        // Query the archive collection for this LRN
+        const q = query(collection(db, "sf10_archives"), where("lrn", "==", lrn));
+        const snap = await getDocs(q);
+
+        if (snap.empty) {
+          alert(`⚠️ No digital SF10 record found for LRN: ${lrn}.\n\nPlease use the AI Importer or SF10 Encoder to create one first.`);
+          btn.innerHTML = originalText;
+          btn.style.color = "var(--gc-primary)";
+          return;
+        }
+
+        // We found a record. Let's grab the Document ID.
+        // If there are multiple (e.g., Grade 7 and Grade 8), we pick the most recent one.
+        let targetDocId = snap.docs[0].id; 
+        if(snap.docs.length > 1) {
+            const sortedDocs = snap.docs.sort((a, b) => b.data().schoolYear.localeCompare(a.data().schoolYear));
+            targetDocId = sortedDocs[0].id;
+        }
+
+        // Redirect to the SF10 Print page, passing the Document ID in the URL
+        window.location.href = `sf10-print.html?id=${targetDocId}`;
+
+      } catch (error) {
+        console.error("Search Error:", error);
+        alert("❌ Error searching for student record.");
+        btn.innerHTML = originalText;
+        btn.style.color = "var(--gc-primary)";
       }
     };
     
