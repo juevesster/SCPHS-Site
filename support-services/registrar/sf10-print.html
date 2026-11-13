@@ -136,9 +136,16 @@
     </div>
 
     <div id="search-area" style="display: none;">
-      <div class="search-box">
+      
+      <!-- Search Box (Hidden if opened via URL) -->
+      <div class="search-box" id="manual-search-box">
         <input type="text" id="search-lrn" placeholder="Enter Student LRN to pull up SF10..." onkeypress="if(event.key==='Enter') searchStudent()">
         <button class="btn-search" onclick="searchStudent()">Search</button>
+      </div>
+
+      <!-- Quick Link Message (Shown if opened via URL) -->
+      <div id="url-loaded-msg" style="display: none; background: #dcfce7; color: #166534; padding: 15px; border-radius: 8px; margin-bottom: 20px; font-weight: 600; text-align: center;">
+        <i class="fas fa-link"></i> Record loaded automatically from Dashboard. <a href="sf10-print.html" style="color: #166534; text-decoration: underline;">Search another student</a>
       </div>
 
       <div class="signatory-panel" id="signatory-panel">
@@ -300,7 +307,7 @@
             <div class="doc-title">Learner Permanent Academic Record for Senior High School (SF10-SHS)</div>
             <div class="doc-subtitle">(Formerly Form 137)</div>
           </div>
-          <div class="header-right"><img src="../../assets/images/deped-seal.png" class="header-seal" alt="DepEd Logo"></div>
+          <div class="header-right"><img src="../../assets/images/deped_seal.png" class="header-seal" alt="DepEd Logo"></div>
         </div>
 
         <div class="sec-title">LEARNER'S INFORMATION</div>
@@ -349,23 +356,84 @@
     import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
     import { collection, query, where, getDocs, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
-    onAuthStateChanged(auth, async (user) => {
-      if (!user) { document.getElementById('access-denied').style.display = 'block'; return; }
-      try {
-        const userSnap = await getDoc(doc(db, "users", user.uid));
-        if (userSnap.exists()) {
-          const role = userSnap.data().primaryRole || userSnap.data().role;
-          if (role === 'admin' || role === 'superadmin' || role === 'registrar') {
-            document.getElementById('search-area').style.display = 'block';
-          } else {
+    // --- URL PARAMETER LISTENER ---
+    window.addEventListener('DOMContentLoaded', () => {
+      const urlParams = new URLSearchParams(window.location.search);
+      const docId = urlParams.get('id');
+      
+      if (docId) {
+        // Hide search, show loading
+        document.getElementById('manual-search-box').style.display = 'none';
+        document.getElementById('url-loaded-msg').style.display = 'block';
+        
+        // Wait for Auth to load before fetching the record
+        onAuthStateChanged(auth, async (user) => {
+          if (!user) {
             document.getElementById('access-denied').style.display = 'block';
+            document.getElementById('url-loaded-msg').style.display = 'none';
+            return;
           }
-        } else {
-          document.getElementById('access-denied').style.display = 'block';
-        }
-      } catch (error) { document.getElementById('access-denied').style.display = 'block'; }
+          const userSnap = await getDoc(doc(db, "users", user.uid));
+          if (userSnap.exists()) {
+            const role = userSnap.data().primaryRole || userSnap.data().role;
+            if (['admin', 'superadmin', 'registrar'].includes(role)) {
+              loadRecordById(docId);
+            } else {
+              document.getElementById('access-denied').style.display = 'block';
+            }
+          }
+        });
+      } else {
+        // Normal manual search auth check
+        onAuthStateChanged(auth, async (user) => {
+          if (!user) { document.getElementById('access-denied').style.display = 'block'; return; }
+          try {
+            const userSnap = await getDoc(doc(db, "users", user.uid));
+            if (userSnap.exists()) {
+              const role = userSnap.data().primaryRole || userSnap.data().role;
+              if (['admin', 'superadmin', 'registrar'].includes(role)) {
+                document.getElementById('search-area').style.display = 'block';
+              } else {
+                document.getElementById('access-denied').style.display = 'block';
+              }
+            }
+          } catch (e) { document.getElementById('access-denied').style.display = 'block'; }
+        });
+      }
     });
 
+    // --- Fetch record by Document ID ---
+    async function loadRecordById(docId) {
+      try {
+        // Parse LRN from docId (format: LRN_YEAR_GradeX)
+        const lrn = docId.split('_')[0];
+        
+        // We fetch the specific document that was clicked
+        const docRef = doc(db, "sf10_archives", docId);
+        const docSnap = await getDoc(docRef);
+        
+        if (docSnap.exists()) {
+          // Now, we also need to fetch ALL records for this LRN so the SF10 prints both pages if they exist
+          const sf10Ref = collection(db, "sf10_archives");
+          const qLrn = query(sf10Ref, where("lrn", "==", lrn));
+          const snapLrn = await getDocs(qLrn);
+          
+          const allRecords = snapLrn.docs.map(d => d.data());
+          renderPrintView(allRecords, lrn);
+          
+          document.getElementById('signatory-panel').style.display = 'block';
+          document.getElementById('btn-print').style.display = 'block';
+          document.getElementById('search-area').style.display = 'block';
+        } else {
+          alert("❌ Record not found in database.");
+        }
+      } catch (error) {
+        console.error(error);
+        alert("❌ Error fetching record.");
+      }
+    }
+
+    // --- EXISTING: Manual Search ---
     window.searchStudent = async function() {
       const searchTerm = document.getElementById('search-lrn').value.trim();
       if (!searchTerm) return alert("Please enter an LRN.");
