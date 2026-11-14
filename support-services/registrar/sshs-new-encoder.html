@@ -16,6 +16,7 @@
       --gc-muted: #64748b;
       --gc-success: #16a34a;
       --gc-danger: #dc2626;
+      --gc-accent: #0f766e;
     }
     body { background: var(--gc-bg); margin: 0; font-family: 'Inter', system-ui, sans-serif; }
     .wrap { max-width: 1100px; margin: 0 auto; padding: 20px 16px; }
@@ -23,7 +24,8 @@
     .header h1 { margin: 0; color: var(--gc-primary); font-size: 1.5rem; font-weight: 800; }
     
     .card { background: #fff; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); padding: 30px; margin-bottom: 20px; display: none; }
-    .card.active { display: block; }
+    .card.active { display: block; animation: fadeIn 0.3s ease; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
     
     .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 20px; }
     .form-group label { display: block; font-size: 0.8rem; font-weight: 700; color: #333; margin-bottom: 5px; text-transform: uppercase; }
@@ -39,6 +41,10 @@
     .btn-save { width: 100%; background: var(--gc-success); color: #fff; border: none; padding: 14px; border-radius: 8px; font-weight: 700; font-size: 1rem; cursor: pointer; }
     .btn-delete { background: var(--gc-danger); color: #fff; border: none; padding: 14px; border-radius: 8px; font-weight: 700; font-size: 1rem; cursor: pointer; display: none; }
     .btn-row { display: flex; gap: 10px; }
+    
+    .status-banner { padding: 15px; border-radius: 8px; margin-bottom: 20px; display: none; font-weight: 600; text-align: center; }
+    .status-success { background: #dcfce7; color: #166534; border: 1px solid #bbf7d0; }
+    .status-warning { background: #fef3c7; color: #92400e; border: 1px solid #fcd34d; }
   </style>
 </head>
 <body>
@@ -49,6 +55,8 @@
       <a href="index.html" style="color: var(--gc-primary); text-decoration: none; font-weight: 600;">← Back to Registrar</a>
     </div>
 
+    <div class="status-banner" id="status-banner"></div>
+
     <div class="card active" id="search-card" style="display: block;">
       <h2 style="margin-top: 0; color: var(--gc-primary);">Search Student LRN</h2>
       <div style="display: flex; gap: 10px;">
@@ -57,8 +65,12 @@
       </div>
     </div>
 
+    <!-- Container for Stacked Records -->
+    <div id="stacked-records-container"></div>
+
+    <!-- Form for New Record Entry -->
     <div class="card" id="encoder-card">
-      <h2 style="margin-top: 0; color: var(--gc-primary);">Encode New SSHS Record</h2>
+      <h2 style="margin-top: 0; color: var(--gc-primary);" id="form-title">Encode New SSHS Record</h2>
       
       <form id="sf10-form" onsubmit="saveSF10(event)">
         <input type="hidden" id="doc-id" value="">
@@ -143,7 +155,7 @@
 
     let CURRENT_RECORD_ID = null;
 
-    // Auto-compute Final grade
+    // Auto-compute Final grade in the NEW form
     document.getElementById('grades-tbody').addEventListener('input', function(e) {
       if (e.target.tagName === 'INPUT' && e.target.type === 'number') {
         const row = e.target.closest('tr');
@@ -187,10 +199,20 @@
 
         if (!snap.empty) {
           const records = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-          records.sort((a,b) => b.schoolYear.localeCompare(a.schoolYear));
-          loadRecord(records[0]);
+          
+          // Sort by Grade Level, then by Semester
+          records.sort((a,b) => {
+             if (a.gradeLevel !== b.gradeLevel) return a.gradeLevel.localeCompare(b.gradeLevel);
+             return a.semester.localeCompare(b.semester);
+          });
+          
+          // Hide the new form and show stacked records
+          document.getElementById('encoder-card').style.display = 'none'; 
+          showStatus(`✅ Found ${records.length} existing record(s). You can edit them below.`, 'status-success');
+          renderSHSStackedRecords(records, lrn);
         } else {
-          alert("No SSHS record found. You can create a new one.");
+          showStatus('No SSHS record found. You can create a new one below.', 'status-warning');
+          document.getElementById('stacked-records-container').innerHTML = '';
           document.getElementById('encoder-card').style.display = 'block';
           document.getElementById('f-lrn').value = lrn;
           document.getElementById('grades-tbody').innerHTML = '';
@@ -199,27 +221,134 @@
       } catch (error) { console.error(error); }
     };
 
-    function loadRecord(data) {
-      CURRENT_RECORD_ID = data.id;
-      document.getElementById('encoder-card').style.display = 'block';
-      document.getElementById('btn-delete').style.display = 'block';
-      
-      document.getElementById('doc-id').value = data.id;
-      document.getElementById('f-lastname').value = data.lastName || "";
-      document.getElementById('f-firstname').value = data.firstName || "";
-      document.getElementById('f-middlename').value = data.middleName || "";
-      document.getElementById('f-lrn').value = data.lrn || "";
-      document.getElementById('f-gradelevel').value = data.gradeLevel || "Grade 11";
-      document.getElementById('f-semester').value = data.semester || "FIRST SEMESTER";
-      document.getElementById('f-track').value = data.trackStrand || "";
-      document.getElementById('f-schoolyear').value = data.schoolYear || "";
-      document.getElementById('f-section').value = data.section || "";
+    // NEW FUNCTION: Render SHS records stacked
+    function renderSHSStackedRecords(records, lrn) {
+      const container = document.getElementById('stacked-records-container');
+      container.innerHTML = ''; 
 
-      const tbody = document.getElementById('grades-tbody');
-      tbody.innerHTML = '';
-      if (data.grades) data.grades.forEach(g => addRow(g));
-      else addRow();
+      records.forEach(record => {
+        const card = document.createElement('div');
+        card.className = 'card active';
+        card.style.marginBottom = '20px';
+        card.style.borderLeft = '5px solid var(--gc-accent)';
+        
+        let header = `
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 15px;">
+            <h3 style="margin:0; color:var(--gc-accent);">${record.gradeLevel} - ${record.semester} (${record.schoolYear})</h3>
+            <div style="display:flex; gap:10px;">
+              <span style="background:var(--gc-bg); padding:5px 10px; border-radius:5px; font-size:0.85rem; font-weight:700;">LRN: ${lrn}</span>
+              <span style="background:#e2e8f0; padding:5px 10px; border-radius:5px; font-size:0.85rem; font-weight:700;">${record.trackStrand || ''}</span>
+            </div>
+          </div>
+        `;
+
+        let tableHtml = `
+          <table class="grade-table" style="width:100%; border-collapse: collapse; font-size: 0.9rem;">
+            <thead>
+              <tr style="background: var(--gc-bg);">
+                <th style="padding:10px; text-align:center; border:1px solid var(--gc-border);">Type</th>
+                <th style="padding:10px; text-align:left; border:1px solid var(--gc-border);">Subject</th>
+                <th style="padding:10px; border:1px solid var(--gc-border);">Q1</th>
+                <th style="padding:10px; border:1px solid var(--gc-border);">Q2</th>
+                <th style="padding:10px; border:1px solid var(--gc-border);">Final</th>
+                <th style="padding:10px; border:1px solid var(--gc-border);">Remarks</th>
+              </tr>
+            </thead>
+            <tbody>
+        `;
+
+        record.grades.forEach((g, idx) => {
+          tableHtml += `
+            <tr>
+              <td style="padding:5px; border:1px solid var(--gc-border); font-size:0.75rem; text-align:center;">${g.type}</td>
+              <td style="padding:5px; border:1px solid var(--gc-border); font-weight:600;">${g.sub || g.subject}</td>
+              <td style="padding:5px; border:1px solid var(--gc-border); text-align:center;"><input type="number" value="${g.q1 || ''}" data-record="${record.id}" data-idx="${idx}" data-field="q1" style="width:60px; text-align:center; border:1px solid #ccc; border-radius:4px; padding:4px;"></td>
+              <td style="padding:5px; border:1px solid var(--gc-border); text-align:center;"><input type="number" value="${g.q2 || ''}" data-record="${record.id}" data-idx="${idx}" data-field="q2" style="width:60px; text-align:center; border:1px solid #ccc; border-radius:4px; padding:4px;"></td>
+              <td style="padding:5px; border:1px solid var(--gc-border); text-align:center; font-weight:bold;">${g.final || ''}</td>
+              <td style="padding:5px; border:1px solid var(--gc-border); text-align:center;">${g.remarks || ''}</td>
+            </tr>
+          `;
+        });
+
+        tableHtml += `</tbody></table>`;
+
+        let footer = `
+          <div style="text-align:right; margin-top:15px;">
+            <button onclick="saveSHSStackedRecord('${record.id}', this)" style="background:var(--gc-success); color:white; border:none; padding:8px 16px; border-radius:6px; font-weight:bold; cursor:pointer;">
+              <i class="fas fa-save"></i> Save Changes to ${record.semester}
+            </button>
+          </div>
+        `;
+
+        card.innerHTML = header + tableHtml + footer;
+        container.appendChild(card);
+      });
+      
+      const btn = document.createElement('button');
+      btn.className = 'btn-search';
+      btn.style.background = 'var(--gc-primary)';
+      btn.style.padding = '12px 24px';
+      btn.style.borderRadius = '8px';
+      btn.style.marginBottom = '20px';
+      btn.innerHTML = '<i class="fas fa-plus"></i> Encode Missing Semester';
+      btn.onclick = () => {
+         document.getElementById('stacked-records-container').innerHTML = '';
+         document.getElementById('encoder-card').style.display = 'block';
+         document.getElementById('f-lrn').value = lrn;
+         document.getElementById('sf10-form').reset();
+         document.getElementById('f-lrn').value = lrn;
+         document.getElementById('grades-tbody').innerHTML = '';
+         addRow();
+      };
+      container.appendChild(btn);
     }
+
+    // NEW FUNCTION: Save inline edits
+    window.saveSHSStackedRecord = async function(docId, btn) {
+      const originalText = btn.innerHTML;
+      btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
+      btn.disabled = true;
+
+      try {
+        const card = btn.closest('.card');
+        const inputs = card.querySelectorAll('input[type="number"]');
+        
+        const docRef = doc(db, "sf10_archives", docId);
+        const docSnap = await getDoc(docRef);
+        if (!docSnap.exists()) throw new Error("Record not found");
+
+        const data = docSnap.data();
+        
+        inputs.forEach(input => {
+          const idx = input.dataset.idx;
+          const field = input.dataset.field;
+          if (data.grades[idx]) {
+            data.grades[idx][field] = input.value === '' ? null : Number(input.value);
+            
+            // Recalculate Final & Remarks
+            const q1 = Number(data.grades[idx].q1) || 0;
+            const q2 = Number(data.grades[idx].q2) || 0;
+            if (q1>0 && q2>0) {
+               data.grades[idx].final = Math.round((q1+q2)/2);
+               data.grades[idx].remarks = data.grades[idx].final >= 75 ? 'PASSED' : 'FAILED';
+            }
+          }
+        });
+
+        await updateDoc(docRef, { grades: data.grades });
+        alert(`✅ ${data.gradeLevel} - ${data.semester} updated successfully!`);
+        
+        // Reload the view to reflect new final grades
+        searchStudent(); 
+
+      } catch (error) {
+        console.error(error);
+        alert("❌ Failed to save: " + error.message);
+      } finally {
+        btn.innerHTML = originalText;
+        btn.disabled = false;
+      }
+    };
 
     window.deleteRecord = async function() {
       if (!CURRENT_RECORD_ID || !confirm("Delete this record?")) return;
@@ -282,11 +411,21 @@
           await setDoc(docRef, dataToSave);
           alert("Saved successfully!");
         }
-        location.reload();
+        
+        // Clear form and search again to show the updated stacked view
+        document.getElementById('sf10-form').reset();
+        document.getElementById('encoder-card').style.display = 'none';
+        document.getElementById('search-lrn').value = lrn;
+        searchStudent();
 
       } catch (error) { console.error(error); alert("Error saving"); }
       finally { btn.innerHTML = 'Save'; btn.disabled = false; }
     };
+
+    function showStatus(msg, className) {
+      const banner = document.getElementById('status-banner');
+      banner.textContent = msg; banner.className = `status-banner ${className}`; banner.style.display = 'block';
+    }
   </script>
 </body>
 </html>

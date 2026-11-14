@@ -406,7 +406,7 @@
       tbody.appendChild(tr);
     };
 
-    window.searchStudent = async function() {
+        window.searchStudent = async function() {
       const searchTerm = document.getElementById('search-lrn').value.trim();
       if (!searchTerm) return alert("Please enter an LRN.");
 
@@ -419,49 +419,173 @@
         const qLrn = query(sf10Ref, where("lrn", "==", searchTerm));
         const snapLrn = await getDocs(qLrn);
 
-        let sf1Data = null;
-        const sf1Ref = collection(db, "sf1_historical_archives");
-        const qSF1 = query(sf1Ref, where("lrn", "==", searchTerm));
-        const snapSF1 = await getDocs(qSF1);
-        if (!snapSF1.empty) sf1Data = snapSF1.docs[0].data();
-
         if (!snapLrn.empty) {
+          // FOUND RECORDS! Let's render them all
           const records = snapLrn.docs.map(d => ({ id: d.id, ...d.data() }));
-          records.sort((a,b) => b.schoolYear.localeCompare(a.schoolYear));
-          const latestRecord = records[0];
           
-          showStatus(`✅ Found existing record. Showing latest: ${latestRecord.gradeLevel} (${latestRecord.schoolYear})`, 'status-success');
-          loadRecord(latestRecord);
+          // Sort by Grade Level (7 to 10)
+          records.sort((a, b) => parseInt(a.gradeLevel.replace('Grade ', '')) - parseInt(b.gradeLevel.replace('Grade ', '')));
+          
+          showStatus(`✅ Found ${records.length} existing record(s). You can edit them all below.`, 'status-success');
+          
+          // Hide the single form and show our stacked container
+          document.getElementById('encoder-card').style.display = 'none'; 
+          renderStackedRecords(records, searchTerm);
+
         } else {
-          const statusMsg = sf1Data ? `Found in SF1 Archive: ${sf1Data.lastName}, ${sf1Data.firstName}. Please encode the grades below.` : 'No existing record found. You can encode a new SF10 below.';
-          showStatus(statusMsg, sf1Data ? 'status-success' : 'status-warning');
-          
+          // NO RECORDS FOUND - Show empty form to create new
+          showStatus('No existing record found. You can encode a new record below.', 'status-warning');
           document.getElementById('encoder-card').classList.add('active');
           document.getElementById('form-title').textContent = "Create New SF10 Record";
           document.getElementById('sf10-form').reset();
           document.getElementById('doc-id').value = "";
           CURRENT_RECORD_ID = null;
           document.getElementById('btn-delete').style.display = 'none';
-          
           document.getElementById('f-lrn').value = searchTerm;
-
-          if (sf1Data) {
-             document.getElementById('f-lastname').value = sf1Data.lastName || "";
-             document.getElementById('f-firstname').value = sf1Data.firstName || "";
-             document.getElementById('f-middlename').value = sf1Data.middleName || "";
-             document.getElementById('f-gradelevel').value = sf1Data.gradeLevel || "";
-             document.getElementById('f-schoolyear').value = sf1Data.schoolYear || "";
-             document.getElementById('f-section').value = sf1Data.section || "";
-             handleGradeChange();
-          } else {
-            document.getElementById('grades-tbody').innerHTML = '';
-            addRow();
-          }
-          document.getElementById('f-sys').value = '4q';
-          updateTableHeaders();
+          document.getElementById('grades-tbody').innerHTML = '';
+          addRow();
         }
       } catch (error) { console.error(error); alert("❌ Error searching database."); } 
       finally { btn.innerHTML = originalText; btn.disabled = false; }
+    };
+
+    // NEW FUNCTION: Render all records as stacked cards
+    function renderStackedRecords(records, lrn) {
+      // Create a container if it doesn't exist
+      let container = document.getElementById('stacked-records-container');
+      if (!container) {
+        container = document.createElement('div');
+        container.id = 'stacked-records-container';
+        // Insert it right before the search card
+        const searchCard = document.getElementById('search-card');
+        searchCard.parentNode.insertBefore(container, searchCard.nextSibling);
+      }
+      container.innerHTML = ''; // Clear previous
+
+      records.forEach(record => {
+        // We clone the existing form structure for each year
+        const card = document.createElement('div');
+        card.className = 'card active';
+        card.style.marginBottom = '20px';
+        card.style.borderLeft = '5px solid var(--gc-accent)';
+        
+        // Build the read-only header for this year
+        let header = `
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 15px;">
+            <h3 style="margin:0; color:var(--gc-primary);">${record.gradeLevel} (${record.schoolYear})</h3>
+            <span style="background:var(--gc-bg); padding:5px 10px; border-radius:5px; font-size:0.85rem; font-weight:700;">LRN: ${lrn}</span>
+          </div>
+        `;
+
+        // We create a table to show the subjects
+        let tableHtml = `
+          <table class="grade-table" style="width:100%; border-collapse: collapse; font-size: 0.9rem;">
+            <thead>
+              <tr style="background: var(--gc-bg);">
+                <th style="padding:10px; text-align:left; border:1px solid var(--gc-border);">Subject</th>
+                <th style="padding:10px; border:1px solid var(--gc-border);">Q1</th>
+                <th style="padding:10px; border:1px solid var(--gc-border);">Q2</th>
+                <th style="padding:10px; border:1px solid var(--gc-border);">Q3</th>
+                <th style="padding:10px; border:1px solid var(--gc-border);">Q4</th>
+                <th style="padding:10px; border:1px solid var(--gc-border);">Final</th>
+              </tr>
+            </thead>
+            <tbody>
+        `;
+
+        record.grades.forEach((g, idx) => {
+          tableHtml += `
+            <tr>
+              <td style="padding:5px; border:1px solid var(--gc-border); font-weight:600;">${g.sub || g.subject}</td>
+              <td style="padding:5px; border:1px solid var(--gc-border); text-align:center;"><input type="number" value="${g.q1 || ''}" data-record="${record.id}" data-idx="${idx}" data-field="q1" style="width:60px; text-align:center; border:1px solid #ccc; border-radius:4px; padding:4px;"></td>
+              <td style="padding:5px; border:1px solid var(--gc-border); text-align:center;"><input type="number" value="${g.q2 || ''}" data-record="${record.id}" data-idx="${idx}" data-field="q2" style="width:60px; text-align:center; border:1px solid #ccc; border-radius:4px; padding:4px;"></td>
+              <td style="padding:5px; border:1px solid var(--gc-border); text-align:center;"><input type="number" value="${g.q3 || ''}" data-record="${record.id}" data-idx="${idx}" data-field="q3" style="width:60px; text-align:center; border:1px solid #ccc; border-radius:4px; padding:4px;"></td>
+              <td style="padding:5px; border:1px solid var(--gc-border); text-align:center;"><input type="number" value="${g.q4 || ''}" data-record="${record.id}" data-idx="${idx}" data-field="q4" style="width:60px; text-align:center; border:1px solid #ccc; border-radius:4px; padding:4px;"></td>
+              <td style="padding:5px; border:1px solid var(--gc-border); text-align:center; font-weight:bold;">${g.final || ''}</td>
+            </tr>
+          `;
+        });
+
+        tableHtml += `</tbody></table>`;
+
+        // Add a Save button for this specific year
+        let footer = `
+          <div style="text-align:right; margin-top:15px;">
+            <button onclick="saveStackedRecord('${record.id}', this)" style="background:var(--gc-success); color:white; border:none; padding:8px 16px; border-radius:6px; font-weight:bold; cursor:pointer;">
+              <i class="fas fa-save"></i> Save Changes to ${record.gradeLevel}
+            </button>
+          </div>
+        `;
+
+        card.innerHTML = header + tableHtml + footer;
+        container.appendChild(card);
+      });
+      
+      // Add a button to create a new record for the missing year
+      if (records.length < 4) {
+         const btn = document.createElement('button');
+         btn.className = 'btn-search';
+         btn.style.background = 'var(--gc-primary)';
+         btn.style.padding = '12px 24px';
+         btn.style.borderRadius = '8px';
+         btn.innerHTML = '<i class="fas fa-plus"></i> Encode Missing Year/Record';
+         btn.onclick = () => {
+           document.getElementById('stacked-records-container').innerHTML = '';
+           document.getElementById('encoder-card').classList.add('active');
+           document.getElementById('f-lrn').value = lrn;
+           document.getElementById('sf10-form').reset();
+           document.getElementById('f-lrn').value = lrn;
+         };
+         container.appendChild(btn);
+      }
+    }
+
+    // NEW FUNCTION: Save changes inline
+    window.saveStackedRecord = async function(docId, btn) {
+      const originalText = btn.innerHTML;
+      btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
+      btn.disabled = true;
+
+      try {
+        // Find the specific card we are saving
+        const card = btn.closest('.card');
+        const inputs = card.querySelectorAll('input[type="number"]');
+        
+        // We need to fetch the original record to merge changes
+        const docRef = doc(db, "sf10_archives", docId);
+        const docSnap = await getDoc(docRef);
+        if (!docSnap.exists()) throw new Error("Record not found");
+
+        const data = docSnap.data();
+        
+        // Update the grades array
+        inputs.forEach(input => {
+          const idx = input.dataset.idx;
+          const field = input.dataset.field;
+          if (data.grades[idx]) {
+            data.grades[idx][field] = input.value === '' ? null : Number(input.value);
+            
+            // Recalculate Final if Q1-Q4 are present
+            const q1 = Number(data.grades[idx].q1) || 0;
+            const q2 = Number(data.grades[idx].q2) || 0;
+            const q3 = Number(data.grades[idx].q3) || 0;
+            const q4 = Number(data.grades[idx].q4) || 0;
+            if (q1>0 && q2>0 && q3>0 && q4>0) {
+               data.grades[idx].final = Math.round((q1+q2+q3+q4)/4);
+               data.grades[idx].remarks = data.grades[idx].final >= 75 ? 'Passed' : 'Failed';
+            }
+          }
+        });
+
+        await updateDoc(docRef, { grades: data.grades });
+        alert(`✅ ${data.gradeLevel} updated successfully!`);
+      } catch (error) {
+        console.error(error);
+        alert("❌ Failed to save: " + error.message);
+      } finally {
+        btn.innerHTML = originalText;
+        btn.disabled = false;
+      }
     };
 
     function loadRecord(data) {
