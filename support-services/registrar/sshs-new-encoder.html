@@ -86,7 +86,7 @@
         <div class="form-grid" style="background: #eff6ff; padding: 15px; border-radius: 8px; border: 1px solid #bfdbfe;">
           <div class="form-group">
             <label>Grade Level</label>
-            <select id="f-gradelevel" required>
+            <select id="f-gradelevel" onchange="changeGradeLevel()" required>
               <option value="Grade 11">Grade 11</option>
               <option value="Grade 12">Grade 12</option>
             </select>
@@ -433,6 +433,17 @@
       const banner = document.getElementById('status-banner');
       banner.textContent = msg; banner.className = `status-banner ${className}`; banner.style.display = 'block';
     }
+
+        window.changeGradeLevel = function() {
+      const tbody = document.getElementById('grades-tbody');
+      // Only auto-populate if the table is empty or has just 1 blank row
+      if (tbody.querySelectorAll('tr').length <= 1) {
+        tbody.innerHTML = '';
+        // Auto-fill with common CORE subjects
+        const coreSubjects = ["Oral Communication", "General Mathematics", "Earth and Life Science", "Physical Education and Health", "Personal Development"];
+        coreSubjects.forEach(sub => addRow({ sub: sub, type: 'CORE' }));
+      }
+    };
   </script>
 </body>
 </html>
