@@ -5,267 +5,195 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Registrar's Office – SCPHS</title>
   <link rel="stylesheet" href="../../assets/css/styles.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   
   <style>
     :root {
-      --gc-primary: #0f4c81;
-      --gc-primary-hover: #0a365d;
-      --gc-accent: #2563eb;
-      --gc-bg: #f1f5f9;
-      --gc-card: #ffffff;
-      --gc-border: #e2e8f0;
-      --gc-text: #1e293b;
-      --gc-muted: #64748b;
-      --gc-success: #16a34a;
-      --gc-warning: #d97706;
-      --gc-danger: #dc2626;
+      --primary: #0f172a;
+      --primary-light: #1e293b;
+      --accent: #3b82f6;
+      --accent-hover: #2563eb;
+      --bg: #f8fafc;
+      --card-bg: #ffffff;
+      --text-main: #0f172a;
+      --text-muted: #64748b;
+      --border: #e2e8f0;
+      --success: #10b981;
+      --warning: #f59e0b;
+      --danger: #ef4444;
       --radius: 16px;
       --shadow-sm: 0 1px 3px rgba(0,0,0,0.05);
       --shadow-md: 0 10px 25px -5px rgba(0,0,0,0.05);
+      --shadow-lg: 0 20px 40px -10px rgba(0,0,0,0.1);
+      --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     }
 
-    body { background: var(--gc-bg); margin: 0; font-family: 'Inter', system-ui, sans-serif; }
-    .wrap { max-width: 1100px; margin: 0 auto; padding: 20px 16px; }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text-main); min-height: 100vh; display: flex; }
 
-    /* Modern Hero Header */
-    .page-hero {
-      background: linear-gradient(135deg, #1e3a8a, #2563eb);
-      color: white;
-      padding: 40px 0;
-      border-radius: 0 0 24px 24px;
-      margin-bottom: 30px;
-      box-shadow: 0 10px 20px -5px rgba(37, 99, 235, 0.2);
-      position: relative;
-      overflow: hidden;
+    /* --- SIDEBAR --- */
+    .sidebar {
+      width: 260px; background: var(--primary); color: white; padding: 24px; 
+      display: flex; flex-direction: column; position: fixed; height: 100vh; z-index: 100;
+      transition: var(--transition);
     }
-    .page-hero::after {
-      content: "🏛️";
-      position: absolute;
-      right: 5%;
-      top: 50%;
-      transform: translateY(-50%);
-      font-size: 8rem;
-      opacity: 0.1;
-      pointer-events: none;
+    .sidebar .logo { font-size: 20px; font-weight: 900; margin-bottom: 40px; display: flex; align-items: center; gap: 12px; color: white; text-decoration: none; }
+    .sidebar .logo i { color: var(--accent); font-size: 24px; }
+    .nav-item {
+      display: flex; align-items: center; gap: 12px; padding: 12px 16px; 
+      color: #94a3b8; text-decoration: none; border-radius: 10px; font-weight: 600; font-size: 14px;
+      transition: var(--transition); margin-bottom: 8px; cursor: pointer; border: none; background: transparent; width: 100%;
     }
-    .page-hero .badge { 
-      background: rgba(255,255,255,0.2); 
-      color: #fff; 
-      padding: 6px 14px; 
-      border-radius: 20px; 
-      font-size: 0.8rem; 
-      font-weight: 700; 
-      display: inline-block; 
-      backdrop-filter: blur(4px);
-      margin-bottom: 12px;
-    }
-    .page-hero h1 { margin: 0 0 8px; font-size: 2.2rem; font-weight: 800; letter-spacing: -0.5px; }
-    .page-hero p { margin: 0; color: #dbeafe; font-size: 1.1rem; max-width: 600px; }
+    .nav-item:hover, .nav-item.active { background: var(--primary-light); color: white; }
+    .nav-item.active { border-left: 4px solid var(--accent); }
+    .nav-item i { width: 20px; text-align: center; }
 
-    /* Modern Tabs */
-    .tabs { 
-      display: flex; 
-      gap: 10px; 
-      margin-bottom: 25px; 
-      background: #fff; 
-      padding: 8px; 
-      border-radius: 12px; 
-      box-shadow: var(--shadow-sm); 
-      width: fit-content;
-    }
-    .tab-btn { 
-      background: transparent; 
-      border: none; 
-      padding: 10px 20px; 
-      border-radius: 8px; 
-      font-weight: 700; 
-      font-size: 0.95rem;
-      cursor: pointer; 
-      transition: 0.2s; 
-      color: var(--gc-muted); 
-    }
-    .tab-btn.active { 
-      background: var(--gc-primary); 
-      color: #fff; 
-      box-shadow: 0 2px 4px rgba(15, 76, 129, 0.3); 
-    }
-    .tab-btn:hover:not(.active) { 
-      background: var(--gc-bg); 
-      color: var(--gc-primary); 
-    }
+    /* --- MAIN CONTENT --- */
+    .main-content { margin-left: 260px; flex: 1; padding: 30px 40px; min-height: 100vh; width: calc(100% - 260px); }
 
-    /* Cards */
-    .card { 
-      background: var(--gc-card); 
-      border-radius: var(--radius); 
-      box-shadow: var(--shadow-md); 
-      padding: 30px; 
-      border: 1px solid var(--gc-border); 
-      margin-bottom: 25px; 
-      display: none; 
+    /* --- HERO SECTION --- */
+    .hero {
+      background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
+      border-radius: 24px; padding: 40px; color: white; margin-bottom: 30px;
+      position: relative; overflow: hidden; box-shadow: var(--shadow-lg);
     }
-    .card.active { display: block; animation: fadeIn 0.4s ease; }
-    @keyframes fadeIn { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
+    .hero::after {
+      content: "🏛️"; position: absolute; right: 5%; top: 50%; transform: translateY(-50%);
+      font-size: 10rem; opacity: 0.1; pointer-events: none;
+    }
+    .hero h1 { font-size: 2.5rem; font-weight: 900; margin-bottom: 10px; letter-spacing: -1px; }
+    .hero p { font-size: 1.1rem; color: #bfdbfe; max-width: 600px; line-height: 1.5; }
+    .hero .badge { background: rgba(255,255,255,0.2); padding: 6px 14px; border-radius: 20px; font-size: 0.8rem; font-weight: 700; display: inline-block; margin-bottom: 15px; backdrop-filter: blur(4px); }
 
-    /* Form Styles */
-    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 25px; }
-    .form-group { display: flex; flex-direction: column; }
-    .form-group label { font-size: 0.85rem; font-weight: 700; color: var(--gc-text); margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px; }
-    .form-group input, .form-group select, .form-group textarea { 
-      padding: 14px; 
-      border: 1px solid var(--gc-border); 
-      border-radius: 10px; 
-      font-family: inherit; 
-      font-size: 1rem; 
-      transition: 0.2s; 
-      background: var(--gc-bg);
+    /* --- TABS --- */
+    .tabs { display: flex; gap: 12px; margin-bottom: 30px; }
+    .tab-btn {
+      background: white; border: 1px solid var(--border); padding: 12px 24px;
+      border-radius: 12px; font-weight: 700; font-size: 14px; cursor: pointer;
+      color: var(--text-muted); transition: var(--transition); display: flex; align-items: center; gap: 8px;
     }
-    .form-group input:focus, .form-group select:focus { 
-      background: #fff;
-      border-color: var(--gc-accent); 
-      outline: none; 
-      box-shadow: 0 0 0 4px rgba(37,99,235,0.1); 
-    }
-    .form-group.full { grid-column: 1 / -1; }
-
-    .btn-submit { 
-      background: var(--gc-accent); 
-      color: #fff; 
-      border: none; 
-      padding: 16px 24px; 
-      border-radius: 10px; 
-      font-weight: 700; 
-      font-size: 1rem; 
-      cursor: pointer; 
-      width: 100%; 
-      transition: 0.2s; 
-      display: flex; 
-      justify-content: center; 
-      align-items: center; 
-      gap: 8px;
-    }
-    .btn-submit:hover { background: #1d4ed8; transform: translateY(-2px); box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3); }
-
-    /* Admin Dashboard Table */
-    .table-responsive { 
-      overflow-x: auto; 
-      border-radius: 12px;
-      border: 1px solid var(--gc-border);
-    }
-    table { width: 100%; border-collapse: collapse; }
-    th, td { padding: 16px 20px; text-align: left; border-bottom: 1px solid var(--gc-border); }
-    th { background: var(--gc-bg); font-weight: 700; color: var(--gc-muted); font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.5px; }
-    td { font-size: 0.95rem; color: var(--gc-text); vertical-align: middle; }
-    tr:hover td { background: #f8fafc; }
+    .tab-btn:hover { border-color: var(--accent); color: var(--accent); }
+    .tab-btn.active { background: var(--primary); color: white; border-color: var(--primary); box-shadow: var(--shadow-md); }
     
-    .badge-status { padding: 6px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
-    .badge-pending { background: #fef3c7; color: var(--gc-warning); }
-    .badge-processing { background: #e0f2fe; color: var(--gc-accent); }
-    .badge-ready { background: #dcfce7; color: var(--gc-success); }
-
-    .btn-action { padding: 8px 14px; border-radius: 6px; border: none; font-size: 0.8rem; font-weight: 700; cursor: pointer; transition: 0.2s; }
-    .btn-process { background: #e0f2fe; color: var(--gc-accent); }
-    .btn-process:hover { background: var(--gc-accent); color: #fff; }
-    .btn-ready { background: #dcfce7; color: var(--gc-success); }
-    .btn-ready:hover { background: var(--gc-success); color: #fff; }
-
-    /* Admin Tools Grid */
-    .admin-tools { 
-      display: grid; 
-      grid-template-columns: 1fr 1fr 1fr; /* Changed to 3 columns */
-      gap: 15px; 
-      margin-bottom: 30px; 
-    }
-    .tool-card { 
-      background: #fff; 
-      border: 1px dashed var(--gc-border); 
-      padding: 20px; 
-      border-radius: 12px; 
-      text-align: center; 
-      text-decoration: none; 
-      color: var(--gc-text); 
-      transition: 0.2s; 
-    }
-    .tool-card:hover { 
-      border-color: var(--gc-accent); 
-      background: #eff6ff; 
-      transform: translateY(-2px); 
-    }
-    .tool-card i { font-size: 2rem; margin-bottom: 10px; display: block; }
-    .tool-card span { display: block; font-weight: 700; font-size: 1rem; }
-
-    @media (max-width: 900px) {
-      .admin-tools { grid-template-columns: 1fr 1fr; }
-    }
-    @media (max-width: 768px) {
-      .form-grid { grid-template-columns: 1fr; }
-      .tabs { width: 100%; flex-direction: column; }
-      .admin-tools { grid-template-columns: 1fr; }
-      .page-hero { padding: 30px 16px; }
-      .page-hero h1 { font-size: 1.8rem; }
-    }
-
-        /* Notification Badge */
+    /* Notification Badge */
     .tab-btn { position: relative; }
     .notification-dot {
-      position: absolute;
-      top: -4px;
-      right: -4px;
-      background: var(--gc-danger);
-      color: white;
-      font-size: 0.7rem;
-      font-weight: 800;
-      width: 20px;
-      height: 20px;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      border: 2px solid #fff;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+      position: absolute; top: -5px; right: -5px; background: var(--danger); color: white;
+      font-size: 0.7rem; font-weight: 800; width: 22px; height: 22px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center; border: 2px solid white;
       animation: pulse 2s infinite;
     }
     @keyframes pulse {
-      0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.7); }
-      70% { transform: scale(1); box-shadow: 0 0 0 6px rgba(220, 38, 38, 0); }
-      100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(220, 38, 38, 0); }
+      0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
+      70% { transform: scale(1); box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); }
+      100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+    }
+
+    /* --- CARDS --- */
+    .card { background: white; border-radius: var(--radius); box-shadow: var(--shadow-md); padding: 30px; border: 1px solid var(--border); display: none; margin-bottom: 30px; }
+    .card.active { display: block; animation: slideUp 0.4s ease; }
+    @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+    .section-title { font-size: 1.2rem; font-weight: 800; color: var(--primary); border-bottom: 2px solid var(--border); padding-bottom: 15px; margin-bottom: 25px; }
+
+    /* --- FORMS --- */
+    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 25px; }
+    .form-group { display: flex; flex-direction: column; }
+    .form-group label { font-size: 0.85rem; font-weight: 700; color: var(--text-main); margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px; }
+    .form-group input, .form-group select { padding: 14px; border: 1px solid var(--border); border-radius: 10px; font-family: inherit; font-size: 1rem; background: #f8fafc; transition: var(--transition); }
+    .form-group input:focus, .form-group select:focus { background: white; border-color: var(--accent); outline: none; box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1); }
+    .form-group.full { grid-column: 1 / -1; }
+
+    .btn-submit {
+      background: var(--accent); color: white; border: none; padding: 16px 24px;
+      border-radius: 10px; font-weight: 700; font-size: 1rem; cursor: pointer;
+      width: 100%; transition: var(--transition); display: flex; justify-content: center; align-items: center; gap: 8px;
+    }
+    .btn-submit:hover { background: var(--accent-hover); transform: translateY(-2px); box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3); }
+
+    /* --- ADMIN TOOLS GRID --- */
+    .admin-tools { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 40px; }
+    .tool-card {
+      background: white; border: 1px solid var(--border); padding: 25px;
+      border-radius: var(--radius); text-align: center; text-decoration: none;
+      color: var(--text-main); transition: var(--transition); display: flex; flex-direction: column; align-items: center; justify-content: center;
+    }
+    .tool-card:hover { transform: translateY(-5px); box-shadow: var(--shadow-lg); border-color: var(--accent); }
+    .tool-card i { font-size: 2.5rem; margin-bottom: 15px; }
+    .tool-card span { font-weight: 800; font-size: 0.95rem; }
+
+    /* --- DATA TABLE --- */
+    .table-responsive { overflow-x: auto; border-radius: 12px; border: 1px solid var(--border); background: white; }
+    table { width: 100%; border-collapse: collapse; }
+    th, td { padding: 16px 20px; text-align: left; border-bottom: 1px solid var(--border); }
+    th { background: #f8fafc; font-weight: 700; color: var(--text-muted); font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.5px; }
+    td { font-size: 0.95rem; color: var(--text-main); vertical-align: middle; }
+    tr:hover td { background: #f8fafc; }
+
+    /* Status Badges */
+    .badge-status { padding: 6px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; display: inline-block; }
+    .badge-pending { background: #fef3c7; color: #b45309; }
+    .badge-processing { background: #e0f2fe; color: #0369a1; }
+    .badge-ready { background: #dcfce7; color: #15803d; }
+
+    .btn-action { padding: 8px 16px; border-radius: 8px; border: none; font-size: 0.85rem; font-weight: 700; cursor: pointer; transition: var(--transition); display: inline-flex; align-items: center; gap: 6px; }
+    .btn-process { background: #e0f2fe; color: #0369a1; }
+    .btn-process:hover { background: #0369a1; color: white; }
+    .btn-ready { background: #dcfce7; color: #15803d; }
+    .btn-ready:hover { background: #15803d; color: white; }
+    .btn-archive { background: #f1f5f9; color: #475569; }
+    .btn-archive:hover { background: #475569; color: white; }
+
+    /* --- RESPONSIVE --- */
+    @media (max-width: 1024px) {
+      .sidebar { width: 80px; padding: 20px 10px; }
+      .sidebar .logo span, .nav-item span { display: none; }
+      .sidebar .logo i { margin: 0 auto; }
+      .nav-item { justify-content: center; padding: 15px 0; }
+      .main-content { margin-left: 80px; width: calc(100% - 80px); }
+    }
+    @media (max-width: 768px) {
+      .main-content { padding: 20px; }
+      .form-grid { grid-template-columns: 1fr; }
+      .hero h1 { font-size: 1.8rem; }
+      .tabs { flex-direction: column; }
     }
   </style>
 </head>
 <body>
 
-  <!-- MODERN HERO -->
-  <div class="page-hero">
-    <div class="wrap">
+  <!-- SIDEBAR -->
+  <nav class="sidebar">
+    <a href="#" class="logo"><i class="fas fa-university"></i> <span>SCPHS Portal</span></a>
+    
+    <button class="nav-item active" onclick="switchTab('request', this)">
+      <i class="fas fa-file-signature"></i> <span>Request Document</span>
+    </button>
+    
+    <button class="nav-item" onclick="switchTab('admin', this)" id="sidebar-admin-btn" style="display: none;">
+      <i class="fas fa-tasks"></i> <span>Admin Dashboard</span>
+      <span class="notification-dot" id="sidebar-notif-badge" style="display: none;">0</span>
+    </button>
+
+    <a href="sf10-print.html" class="nav-item" style="margin-top: auto;">
+      <i class="fas fa-print"></i> <span>Print SF10</span>
+    </a>
+  </nav>
+
+  <!-- MAIN CONTENT -->
+  <main class="main-content">
+    
+    <!-- HERO -->
+    <div class="hero">
       <span class="badge"><i class="fas fa-shield-alt"></i> Confidential Records</span>
       <h1>Registrar's Office</h1>
-      <p>Request official school records, track document statuses, and manage student archives.</p>
-    </div>
-  </div>
-
-  <main class="wrap">
-    
-        <!-- TABS -->
-    <div class="tabs">
-      <button class="tab-btn active" onclick="switchTab('request', this)"><i class="fas fa-file-signature"></i> Request Document</button>
-      
-      <!-- CORRECTED: The badge is now INSIDE the button -->
-      <button class="tab-btn admin-only" onclick="switchTab('admin', this)" id="admin-tab" style="display: none;">
-        <i class="fas fa-tasks"></i> Admin Dashboard
-        <span class="notification-dot" id="admin-notif-badge" style="display: none;">0</span>
-      </button>
-
-      <a href="sf10-print.html" style="background: #475569; color: #fff; text-decoration: none; padding: 8px 16px; border-radius: 6px; font-weight: 600; font-size: 0.9rem; display: inline-flex; align-items: center; gap: 8px;">
-        <i class="fas fa-print"></i> Print SF10
-      </a>
+      <p>Request official school records, track document statuses, and manage student archives with our new digital pipeline.</p>
     </div>
 
     <!-- PUBLIC: REQUEST FORM -->
     <div class="card active" id="card-request">
-      <h2 style="margin-top: 0; color: var(--gc-primary); font-size: 1.4rem; border-bottom: 2px solid var(--gc-bg); padding-bottom: 15px;">Document Request Form</h2>
-      <p style="color: var(--gc-muted); font-size: 0.9rem; margin-bottom: 25px;">Please fill out this form accurately. Processing takes 1-3 business days.</p>
-      
+      <h2 class="section-title">Document Request Form</h2>
       <form id="request-form" onsubmit="submitRequest(event)">
         <div class="form-grid">
           <div class="form-group">
@@ -304,51 +232,43 @@
       </form>
     </div>
 
-        <!-- ADMIN: DASHBOARD -->
-    <div class="admin-tools">
-      <a href="sf1-importer.html" class="tool-card" style="color: var(--gc-success);">
-        <i class="fas fa-file-excel"></i>
-        <span>Import LIS SF1</span>
-      </a>
+    <!-- ADMIN: DASHBOARD -->
+    <div class="card" id="card-admin">
       
-      <!-- JHS ENCODER -->
-      <a href="sf10-encoder.html" class="tool-card" style="color: var(--gc-primary);">
-        <i class="fas fa-file-archive"></i>
-        <span>JHS Encoder</span>
-      </a>
+      <h2 class="section-title">🛠️ Registrar Tools</h2>
+      <div class="admin-tools">
+        <a href="sf1-importer.html" class="tool-card" style="color: var(--success);">
+          <i class="fas fa-file-excel"></i>
+          <span>Import LIS SF1</span>
+        </a>
+        <a href="sf10-encoder.html" class="tool-card" style="color: var(--primary);">
+          <i class="fas fa-file-archive"></i>
+          <span>JHS Encoder</span>
+        </a>
+        <a href="sf10-encoder-shs.html" class="tool-card" style="color: #b45309;">
+          <i class="fas fa-history"></i>
+          <span>Legacy SHS Encoder</span>
+        </a>
+        <a href="sshs-new-encoder.html" class="tool-card" style="color: #0f766e;">
+          <i class="fas fa-user-graduate"></i>
+          <span>New SSHS Encoder</span>
+        </a>
+        <a href="sf10-ai-importer.html" class="tool-card" style="color: #8b5cf6;">
+          <i class="fas fa-magic"></i>
+          <span>Gemini AI Importer</span>
+        </a>
+        <a href="sf10-ai-importer-deepseek.html" class="tool-card" style="color: #4d6bfe;">
+          <i class="fas fa-robot"></i>
+          <span>DeepSeek AI Importer</span>
+        </a>
+      </div>
 
-      <!-- LEGACY SHS ENCODER -->
-      <a href="sf10-encoder-shs.html" class="tool-card" style="color: #b45309;">
-        <i class="fas fa-history"></i>
-        <span>Legacy SHS Encoder</span>
-      </a>
-
-      <!-- NEW SSHS ENCODER -->
-      <a href="sshs-new-encoder.html" class="tool-card" style="color: #0f766e;">
-        <i class="fas fa-user-graduate"></i>
-        <span>New SSHS Encoder</span>
-      </a>
-      
-      <!-- AI IMPORTERS -->
-      <a href="sf10-ai-importer.html" class="tool-card" style="color: #8b5cf6;">
-        <i class="fas fa-magic"></i>
-        <span>Gemini AI Importer</span>
-      </a>
-      <a href="sf10-ai-importer-deepseek.html" class="tool-card" style="color: #4d6bfe;">
-        <i class="fas fa-robot"></i>
-        <span>DeepSeek AI Importer</span>
-      </a>
-    </div>
-
-            <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid var(--gc-bg); padding-bottom: 15px; margin-bottom: 20px; flex-wrap: wrap; gap: 10px;">
-        
-        <!-- NEW: Sub-Tabs for Active vs Archived -->
+      <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid var(--border); padding-bottom: 15px; margin-bottom: 20px; flex-wrap: wrap; gap: 10px;">
         <div style="display: flex; gap: 10px;">
-          <button class="btn-action active" id="tab-active-btn" onclick="switchAdminSubTab('active')" style="background: var(--gc-primary); color: #fff; border: 1px solid var(--gc-primary);">📋 Active Requests</button>
-          <button class="btn-action" id="tab-archived-btn" onclick="switchAdminSubTab('archived')" style="background: var(--gc-bg); color: var(--gc-text); border: 1px solid var(--gc-border);">🗄️ Archived Records</button>
+          <button class="btn-action active" id="tab-active-btn" onclick="switchAdminSubTab('active')" style="background: var(--primary); color: #fff; padding: 10px 20px;">📋 Active Requests</button>
+          <button class="btn-action" id="tab-archived-btn" onclick="switchAdminSubTab('archived')" style="background: white; color: var(--text-muted); border: 1px solid var(--border); padding: 10px 20px;">🗄️ Archived Records</button>
         </div>
-
-        <button onclick="loadAdminData()" class="btn-action" style="background: #fff; color: var(--gc-primary); border: 1px solid var(--gc-border);"><i class="fas fa-sync-alt"></i> Refresh List</button>
+        <button onclick="loadAdminData()" class="btn-action" style="background: white; color: var(--primary); border: 1px solid var(--border);"><i class="fas fa-sync-alt"></i> Refresh</button>
       </div>
 
       <div class="table-responsive">
@@ -364,7 +284,7 @@
             </tr>
           </thead>
           <tbody id="admin-table-body">
-            <tr><td colspan="6" style="text-align: center; color: var(--gc-muted); padding: 30px;">Loading requests...</td></tr>
+            <tr><td colspan="6" style="text-align: center; padding: 30px; color: var(--text-muted);">Loading requests...</td></tr>
           </tbody>
         </table>
       </div>
@@ -372,60 +292,7 @@
 
   </main>
 
-  <!-- School Footer (SCPHS) -->
-  <footer style="margin-top: 40px; background: #fff; border-top: 1px solid var(--gc-border); padding: 30px 0;">
-    <div class="wrap">
-      <div class="foot-grid" style="display: flex; justify-content: space-between; flex-wrap: wrap; gap: 20px;">
-        <div>
-          <strong style="color: var(--gc-primary); font-size: 1.1rem;">Sta. Cruz Pingkian High School</strong><br/>
-          <span style="font-size: 0.9rem; color: var(--gc-muted);">Brgy. Sta. Cruz, Pingkian • Nueva Vizcaya • Philippines</span><br/>
-          <span style="font-size: 0.9rem; color: var(--gc-muted);">Email: 300648@deped.gov.ph • Phone: +63 967-8848989</span>
-        </div>
-        <div style="font-size: 0.9rem; line-height: 2;">
-          <a href="#privacy" style="color: var(--gc-muted); text-decoration: none; margin-right: 10px;">Privacy Notice</a>
-          <a href="#foi" style="color: var(--gc-muted); text-decoration: none; margin-right: 10px;">FOI</a>
-          <a href="#sitemap" style="color: var(--gc-muted); text-decoration: none; margin-right: 10px;">Sitemap</a>
-          <a href="https://www.facebook.com/p/Santa-Cruz-Pingkian-High-School-Official-61554495084090/" target="_blank" rel="noopener" style="color: var(--gc-muted); text-decoration: none;">Facebook</a>
-        </div>
-      </div>
-      <div class="copy" style="margin-top: 20px; font-size: 0.85rem; color: var(--gc-muted);">© 2026 SCPHS. All rights reserved.</div>
-    </div>
-  </footer>
-
-  <!-- GOVPH FOOTER -->
-  <footer class="govph-footer" role="contentinfo">
-    <div class="wrap govph-footer__grid">
-      <div class="govph-footer__col">
-        <h4>Republic of the Philippines</h4>
-        <p>All content is in the public domain unless otherwise stated.</p>
-      </div>
-      <div class="govph-footer__col">
-        <h4>About GOVPH</h4>
-        <ul class="govph-footer__links">
-          <li><a href="https://www.gov.ph/" target="_blank" rel="noopener">GOV.PH</a></li>
-          <li><a href="https://data.gov.ph/" target="_blank" rel="noopener">Open Data Portal</a></li>
-          <li><a href="https://www.officialgazette.gov.ph/" target="_blank" rel="noopener">Official Gazette</a></li>
-        </ul>
-      </div>
-      <div class="govph-footer__col">
-        <h4>Government Links</h4>
-        <ul class="govph-footer__links">
-          <li><a href="https://op-proper.gov.ph/" target="_blank" rel="noopener">Office of the President</a></li>
-          <li><a href="https://ovp.gov.ph/" target="_blank" rel="noopener">Office of the Vice President</a></li>
-          <li><a href="https://www.senate.gov.ph/" target="_blank" rel="noopener">Senate of the Philippines</a></li>
-          <li><a href="https://www.congress.gov.ph/" target="_blank" rel="noopener">House of Representatives</a></li>
-          <li><a href="https://sc.judiciary.gov.ph/" target="_blank" rel="noopener">Supreme Court</a></li>
-        </ul>
-      </div>
-    </div>
-    <div class="govph-footer__bar">
-      <div class="wrap">
-        <small>© <span id="yearNow"></span> Sta. Cruz Pingkian High School • A Philippine Government Website</small>
-      </div>
-    </div>
-  </footer>
-
-  <!-- Chatbot -->
+  <!-- Chatbot Root -->
   <div id="scphs-chatbot-root"></div>
   <script>
   (function(){
@@ -455,50 +322,45 @@
   })();
   </script>
 
-  <!-- Registrar Logic -->
-    <script type="module">
+  <!-- REGISTRAR LOGIC -->
+  <script type="module">
     import { auth, db } from "../../assets/js/firebase-config.js";
     import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
     import { collection, addDoc, onSnapshot, doc, updateDoc, query, orderBy, getDoc, getDocs, where } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
     let IS_ADMIN = false;
     let unsubscribeRealtime = null;
-    let previousPendingCount = 0; // Tracks if a new request comes in
+    let previousPendingCount = 0;
+    let CURRENT_ADMIN_SUB_TAB = 'active';
 
-    // 1. Check Auth & Start Listener
+    // 1. Auth Check
     onAuthStateChanged(auth, async (user) => {
       if (user) {
         try {
           const userSnap = await getDoc(doc(db, "users", user.uid));
           if (userSnap.exists()) {
             const role = userSnap.data().primaryRole || userSnap.data().role;
-            if (role === 'admin' || role === 'superadmin' || role === 'teacher') {
+            if (role === 'admin' || role === 'superadmin' || role === 'teacher' || role === 'registrar') {
               IS_ADMIN = true;
-              document.getElementById('admin-tab').style.display = 'block';
-              // START LISTENING IMMEDIATELY IN BACKGROUND
-              startAdminListener(); 
+              document.getElementById('sidebar-admin-btn').style.display = 'flex';
+              startAdminListener();
             }
           }
         } catch (error) { console.error("Auth Error:", error); }
       }
     });
 
-    // 2. The Robust Pipeline Listener
+    // 2. Real-time Listener
     function startAdminListener() {
-      if (unsubscribeRealtime) return; // Prevent duplicate listeners
-      
-      // Query: Get latest requests
+      if (unsubscribeRealtime) return;
       const q = query(collection(db, "document_requests"), orderBy("timestamp", "desc"));
       
       unsubscribeRealtime = onSnapshot(q, (snapshot) => {
         const docs = snapshot.docs;
-        
-        // A. Render the table (always in background, updates instantly)
         renderTable(docs);
 
-        // B. Calculate Pending Requests for the Badge
         const pendingCount = docs.filter(d => d.data().status === 'Pending').length;
-        const badge = document.getElementById('admin-notif-badge');
+        const badge = document.getElementById('sidebar-notif-badge');
         
         if (pendingCount > 0) {
           badge.textContent = pendingCount;
@@ -507,7 +369,6 @@
           badge.style.display = 'none';
         }
 
-        // C. Trigger Notification if a NEW request arrives
         if (pendingCount > previousPendingCount && previousPendingCount !== 0) {
           showAdminNotification();
         }
@@ -515,40 +376,34 @@
       });
     }
 
-    // 3. Visual & Audio Notification for Admin
+    // 3. Notification
     function showAdminNotification() {
-      // Play a subtle ping sound (Optional - uses a free hosting url)
       const audio = new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3');
-      audio.play().catch(e => console.log("Audio play blocked by browser"));
-
-      // Flash the tab title
+      audio.play().catch(e => console.log("Audio blocked"));
       let isOriginal = false;
       const originalTitle = document.title;
       setInterval(() => {
         document.title = isOriginal ? "🚨 NEW DOCUMENT REQUEST!" : originalTitle;
         isOriginal = !isOriginal;
       }, 1000);
-      
-      // Stop flashing after 10 seconds
       setTimeout(() => { document.title = originalTitle; }, 10000);
     }
 
     // 4. Tab Switching
     window.switchTab = function(tab, btnEl) {
-      document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+      document.querySelectorAll('.nav-item').forEach(btn => btn.classList.remove('active'));
       if(btnEl) btnEl.classList.add('active');
 
       document.querySelectorAll('.card').forEach(card => card.classList.remove('active'));
       document.getElementById(`card-${tab}`).classList.add('active');
 
-      // Hide the badge when the admin opens the tab
       if (tab === 'admin') {
-        const badge = document.getElementById('admin-notif-badge');
+        const badge = document.getElementById('sidebar-notif-badge');
         if(badge) badge.style.display = 'none';
       }
     };
 
-    // 5. Submit Request (Public)
+    // 5. Submit Request
     window.submitRequest = async function(e) {
       e.preventDefault();
       const btn = document.getElementById('btn-submit-req');
@@ -580,41 +435,39 @@
       }
     };
 
-        let CURRENT_ADMIN_SUB_TAB = 'active'; // 'active' or 'archived'
-
+    // 6. Admin Sub-Tabs
     window.switchAdminSubTab = function(tab) {
       CURRENT_ADMIN_SUB_TAB = tab;
       const activeBtn = document.getElementById('tab-active-btn');
       const archivedBtn = document.getElementById('tab-archived-btn');
       
       if (tab === 'active') {
-        activeBtn.style.background = 'var(--gc-primary)'; activeBtn.style.color = '#fff'; activeBtn.style.borderColor = 'var(--gc-primary)';
-        archivedBtn.style.background = 'var(--gc-bg)'; archivedBtn.style.color = 'var(--gc-text)'; archivedBtn.style.borderColor = 'var(--gc-border)';
+        activeBtn.style.background = 'var(--primary)'; activeBtn.style.color = '#fff'; activeBtn.style.borderColor = 'var(--primary)';
+        archivedBtn.style.background = 'white'; archivedBtn.style.color = 'var(--text-muted)'; archivedBtn.style.borderColor = 'var(--border)';
       } else {
-        activeBtn.style.background = 'var(--gc-bg)'; activeBtn.style.color = 'var(--gc-text)'; activeBtn.style.borderColor = 'var(--gc-border)';
-        archivedBtn.style.background = 'var(--gc-primary)'; archivedBtn.style.color = '#fff'; archivedBtn.style.borderColor = 'var(--gc-primary)';
+        activeBtn.style.background = 'white'; activeBtn.style.color = 'var(--text-muted)'; activeBtn.style.borderColor = 'var(--border)';
+        archivedBtn.style.background = 'var(--primary)'; archivedBtn.style.color = '#fff'; archivedBtn.style.borderColor = 'var(--primary)';
       }
       
-      loadAdminData(); // Re-render table based on new tab
+      if (unsubscribeRealtime) {
+        const q = query(collection(db, "document_requests"), orderBy("timestamp", "desc"));
+        getDocs(q).then(snap => renderTable(snap.docs));
+      }
     };
 
-    // 6. Render Table
+    // 7. Render Table
     function renderTable(docs) {
       const tbody = document.getElementById('admin-table-body');
       if (!tbody) return;
 
-      // Filter based on the selected sub-tab
       let filteredDocs = docs.filter(docSnap => {
         const status = docSnap.data().status;
-        if (CURRENT_ADMIN_SUB_TAB === 'active') {
-          return status !== 'Archived';
-        } else {
-          return status === 'Archived';
-        }
+        if (CURRENT_ADMIN_SUB_TAB === 'active') return status !== 'Archived';
+        else return status === 'Archived';
       });
 
       if (filteredDocs.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; padding: 30px; color: var(--gc-muted);">No ${CURRENT_ADMIN_SUB_TAB} requests found.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; padding: 30px; color: var(--text-muted);">No ${CURRENT_ADMIN_SUB_TAB} requests found.</td></tr>`;
         return;
       }
 
@@ -631,14 +484,14 @@
         } else if (data.status === 'Ready for Pickup') {
           badgeClass = "badge-ready";
           actionBtn = `
-            <div style="display: flex; gap: 5px;">
-              <span style="font-size:0.8rem; color:var(--gc-muted); font-weight:600; align-self: center; margin-right: 5px;">Waiting for claim</span>
-              <button class="btn-action" onclick="archiveRequest('${id}')" style="background: #e2e8f0; color: #475569;" title="Archive this record"><i class="fas fa-box"></i> Archive</button>
+            <div style="display: flex; gap: 8px;">
+              <span style="font-size:0.8rem; color:var(--text-muted); font-weight:600; align-self: center;">Waiting for claim</span>
+              <button class="btn-action btn-archive" onclick="archiveRequest('${id}')" title="Archive this record"><i class="fas fa-box"></i> Archive</button>
             </div>
           `;
         } else if (data.status === 'Archived') {
-          badgeClass = "badge-pending"; // Or a new grey badge
-          actionBtn = `<span style="font-size:0.8rem; color:var(--gc-muted); font-weight:600;">Claimed & Archived</span>`;
+          badgeClass = "badge-pending";
+          actionBtn = `<span style="font-size:0.8rem; color:var(--text-muted); font-weight:600;">Claimed & Archived</span>`;
         }
 
         if (!IS_ADMIN) actionBtn = "-";
@@ -647,12 +500,12 @@
 
         return `
           <tr>
-            <td><span style="font-weight: 600;">${dateStr}</span></td>
+            <td><span style="font-weight: 600; color: var(--text-muted);">${dateStr}</span></td>
             <td>
-              <strong style="color: var(--gc-primary); cursor: pointer; text-decoration: underline;" onclick="viewStudentSF10('${data.lrn}')" title="Click to view/edit SF10">${data.name}</strong><br>
-              <span style="font-size: 0.8rem; color: var(--gc-muted); font-family: monospace;">LRN: ${data.lrn} | Yr: ${data.year}</span>
+              <strong style="color: var(--primary); cursor: pointer; text-decoration: underline; font-size: 1rem;" onclick="viewStudentSF10('${data.lrn}')" title="Click to view/edit SF10">${data.name}</strong><br>
+              <span style="font-size: 0.8rem; color: var(--text-muted); font-family: monospace;">LRN: ${data.lrn} | Yr: ${data.year}</span>
             </td>
-            <td><span style="font-weight: 700; color: var(--gc-accent); font-size: 0.85rem;">${data.documentType}</span></td>
+            <td><span style="font-weight: 700; color: var(--accent); font-size: 0.85rem;">${data.documentType}</span></td>
             <td style="font-size: 0.85rem;">${data.purpose}</td>
             <td><span class="badge-status ${badgeClass}">${data.status}</span></td>
             <td>${actionBtn}</td>
@@ -661,7 +514,18 @@
       }).join("");
     }
 
-    // NEW: Archive function
+    // 8. Update Status
+    window.updateStatus = async function(id, newStatus) {
+      if (!IS_ADMIN) return;
+      try {
+        await updateDoc(doc(db, "document_requests", id), { status: newStatus });
+      } catch (error) {
+        console.error("Error updating status:", error);
+        alert("❌ Failed to update status.");
+      }
+    };
+
+    // 9. Archive Function
     window.archiveRequest = async function(id) {
       if (!IS_ADMIN) return;
       if(!confirm("Are you sure the student has claimed this document? This will move it to the Archived Records tab.")) return;
@@ -676,58 +540,41 @@
       }
     };
 
-    // 7. Update Status (Admin)
-    window.updateStatus = async function(id, newStatus) {
-      if (!IS_ADMIN) return;
-      try {
-        await updateDoc(doc(db, "document_requests", id), { status: newStatus });
-      } catch (error) {
-        console.error("Error updating status:", error);
-        alert("❌ Failed to update status.");
-      }
-    };
-
-        // --- NEW: Route to SF10 Editor based on LRN ---
+    // 10. Smart Routing to SF10
     window.viewStudentSF10 = async function(lrn) {
       if (!lrn) return alert("No LRN provided for this request.");
       
       const btn = event.target; 
       const originalText = btn.innerHTML;
       btn.innerHTML = "Searching...";
-      btn.style.color = "var(--gc-muted)";
+      btn.style.color = "var(--text-muted)";
 
       try {
-        // Query the archive collection for this LRN
         const q = query(collection(db, "sf10_archives"), where("lrn", "==", lrn));
         const snap = await getDocs(q);
 
         if (snap.empty) {
           alert(`⚠️ No digital SF10 record found for LRN: ${lrn}.\n\nPlease use the AI Importer or SF10 Encoder to create one first.`);
           btn.innerHTML = originalText;
-          btn.style.color = "var(--gc-primary)";
+          btn.style.color = "var(--primary)";
           return;
         }
 
-                // We found a record. Let's grab the Document ID.
-        // If there are multiple (e.g., Grade 7 and Grade 8), we pick the most recent one.
         let targetDocId = snap.docs[0].id; 
         let isSHS = false;
 
         if(snap.docs.length > 1) {
             const sortedDocs = snap.docs.sort((a, b) => b.data().schoolYear.localeCompare(a.data().schoolYear));
             targetDocId = sortedDocs[0].id;
-            // Check if the latest record is SHS
             const latestData = sortedDocs[0].data();
             isSHS = latestData.gradeLevel === 'Grade 11' || latestData.gradeLevel === 'Grade 12' || latestData.gradingSystem === 'semestral';
         } else {
-            // If only one record, check its grade level
             const singleData = snap.docs[0].data();
             isSHS = singleData.gradeLevel === 'Grade 11' || singleData.gradeLevel === 'Grade 12' || singleData.gradingSystem === 'semestral';
         }
 
-        // Redirect to the correct Print Page based on curriculum
         if (isSHS) {
-            window.location.href = `sf10-print-shs.html?id=${targetDocId}`;
+            window.location.href = `sshs-new-print.html?id=${targetDocId}`;
         } else {
             window.location.href = `sf10-print.html?id=${targetDocId}`;
         }
@@ -736,12 +583,9 @@
         console.error("Search Error:", error);
         alert("❌ Error searching for student record.");
         btn.innerHTML = originalText;
-        btn.style.color = "var(--gc-primary)";
+        btn.style.color = "var(--primary)";
       }
     };
-    
-    // Set current year
-    document.getElementById('yearNow').textContent = new Date().getFullYear();
   </script>
 </body>
 </html>

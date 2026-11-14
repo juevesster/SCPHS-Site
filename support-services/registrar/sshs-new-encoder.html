@@ -296,14 +296,37 @@
       btn.style.borderRadius = '8px';
       btn.style.marginBottom = '20px';
       btn.innerHTML = '<i class="fas fa-plus"></i> Encode Missing Semester';
-      btn.onclick = () => {
-         document.getElementById('stacked-records-container').innerHTML = '';
+            btn.onclick = () => {
+         // 1. Hide the stacked records
+         container.innerHTML = '';
+         
+         // 2. Show the form
          document.getElementById('encoder-card').style.display = 'block';
-         document.getElementById('f-lrn').value = lrn;
+         
+         // 3. Use the FIRST record as a template to pre-fill the student info
+         const firstRecord = records[0]; 
+         
+         // 4. Reset the form but pre-fill the common details
          document.getElementById('sf10-form').reset();
+         document.getElementById('f-lastname').value = firstRecord.lastName || "";
+         document.getElementById('f-firstname').value = firstRecord.firstName || "";
+         document.getElementById('f-middlename').value = firstRecord.middleName || "";
+         document.getElementById('f-extname').value = firstRecord.extName || "";
          document.getElementById('f-lrn').value = lrn;
+         document.getElementById('f-schoolyear').value = firstRecord.schoolYear || "";
+         document.getElementById('f-track').value = firstRecord.trackStrand || "";
+         document.getElementById('f-section').value = firstRecord.section || "";
+         document.getElementById('f-adviser').value = firstRecord.adviser || "";
+         
+         // 5. Reset the Semester dropdown to default
+         document.getElementById('f-semester').value = "FIRST SEMESTER"; 
+         
+         // 6. Clear the Grades table and add a blank row
          document.getElementById('grades-tbody').innerHTML = '';
          addRow();
+         
+         // Show the status message
+         showStatus(`Creating new semester for LRN: ${lrn}. Please select Grade Level and Semester.`, 'status-warning');
       };
       container.appendChild(btn);
     }
