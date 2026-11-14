@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>New SSHS SF10 Print Viewer – SCPHS Registrar</title>
+  <link rel="stylesheet" href="../../assets/css/styles.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <style>
+    :root { --gc-primary: #0f4c81; --gc-accent: #2563eb; --gc-bg: #f1f5f9; --gc-border: #e2e8f0; --gc-danger: #dc2626; }
+    body { background: var(--gc-bg); margin: 0; font-family: 'Inter', system-ui, sans-serif; }
+    .wrap { max-width: 1100px; margin: 0 auto; padding: 20px 16px; }
+    .header { background: #fff; padding: 20px; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; }
+    .header h1 { margin: 0; color: var(--gc-primary); font-size: 1.5rem; font-weight: 800; }
+    .search-box { display: flex; gap: 10px; margin-bottom: 20px; }
+    .search-box input { flex: 1; padding: 12px 16px; border: 1px solid var(--gc-border); border-radius: 8px; font-size: 1rem; outline: none; }
+    .btn-search { background: var(--gc-primary); color: #fff; border: none; padding: 0 20px; border-radius: 8px; font-weight: 600; cursor: pointer; }
+    .signatory-panel { background: #fff; padding: 20px; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); margin-bottom: 20px; display: none; }
+    .sig-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+    .sig-group label { display: block; font-size: 0.8rem; font-weight: 700; color: #333; margin-bottom: 5px; text-transform: uppercase; }
+    .sig-group input { width: 100%; padding: 10px; border: 1px solid var(--gc-border); border-radius: 6px; font-family: inherit; font-size: 0.95rem; }
+    .btn-print { background: #16a34a; color: #fff; border: none; padding: 14px 24px; border-radius: 8px; font-weight: 700; font-size: 1rem; cursor: pointer; display: none; width: 100%; transition: 0.2s; }
+    .btn-print:hover { background: #15803d; transform: translateY(-2px); }
+    #access-denied { display: none; text-align: center; padding: 60px 20px; background: #fff; border-radius: 12px; border: 1px solid var(--gc-border); }
+    #access-denied h2 { color: var(--gc-danger); margin-bottom: 10px; }
+    #print-wrapper { display: none; }
+
+    @media print {
+      @page { size: portrait 8.5in 13in; margin: 0.2in; }
+      body { background: #fff; font-family: "Arial Narrow", Arial, sans-serif; font-size: 7.5pt; line-height: 1.2; }
+      .header, .search-box, #web-ui, #access-denied, .signatory-panel { display: none !important; }
+      #print-wrapper { display: block !important; }
+      .paper { width: 100%; max-width: 8.5in; margin: 0 auto; background: white; }
+      .page { padding: 0 5px; }
+      .page-back { page-break-before: always; }
+      .grade-table, .summary-table, .cert-box { page-break-inside: avoid; }
+      .sf10-header { display: flex; align-items: center; justify-content: space-between; padding: 2px 0; border-bottom: 1.5px solid #000; margin-bottom: 4px; }
+      .header-left { display: flex; flex-direction: column; align-items: flex-start; width: 70px; }
+      .header-left-text { font-size: 8pt; font-weight: bold; margin-bottom: 2px; }
+      .header-seal { max-height: 50px; max-width: 50px; }
+      .header-center { text-align: center; flex: 1; padding: 0 5px; }
+      .republic { font-size: 8pt; margin: 0; }
+      .deped { font-size: 8.5pt; font-weight: bold; margin: 0; }
+      .doc-title { font-size: 10pt; font-weight: bold; text-transform: uppercase; margin: 0; }
+      .header-right { width: 70px; display: flex; justify-content: flex-end; }
+      .sec-title { font-weight: bold; font-size: 8pt; text-align: center; text-transform: uppercase; background: #e2e8f0; border-top: 1px solid #000; border-bottom: 1px solid #000; padding: 1px 0; margin: 4px 0 2px 0; -webkit-print-color-adjust: exact; }
+      .info-table { width: 100%; border-collapse: collapse; margin-bottom: 2px; }
+      .info-table td { padding: 1px 3px; font-size: 7.5pt; }
+      .lbl { font-weight: bold; white-space: nowrap; }
+      .val { border-bottom: 1px solid #000; display: inline-block; min-width: 80px; padding: 0 3px; }
+      .grade-table { width: 100%; border-collapse: collapse; margin-bottom: 4px; font-size: 7pt; }
+      .grade-table th, .grade-table td { border: 1px solid #000; padding: 1px; text-align: center; vertical-align: middle; }
+      .grade-table th { background: #f0f0f0; font-weight: bold; -webkit-print-color-adjust: exact; }
+      .grade-table td.sn { text-align: left; padding-left: 3px; }
+      .grade-table tr.ga td { font-weight: bold; background: #f9f9f9; -webkit-print-color-adjust: exact; }
+      .summary-table { width: 100%; border-collapse: collapse; margin-bottom: 4px; font-size: 7pt; }
+      .summary-table th, .summary-table td { border: 1px solid #000; padding: 1px; text-align: center; }
+      .summary-table th { background: #f0f0f0; font-weight: bold; }
+      .cert-box { border: 1px solid #000; padding: 5px 10px; margin-top: 10px; font-size: 7.5pt; }
+      .signature-block { display: flex; justify-content: space-around; align-items: flex-end; margin-top: 10px; font-size: 7.5pt; }
+      .sig-box { text-align: center; }
+      .sig-line { border-bottom: 1px solid #000; height: 12px; margin-bottom: 2px; }
+      .seal-box { width: 50px; height: 50px; border: 1px solid #000; display: flex; align-items: center; justify-content: center; font-size: 5.5pt; text-align: center; padding: 2px; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="wrap" id="web-ui">
+    <div class="header">
+      <h1><i class="fas fa-print"></i> New SSHS SF10 Print Viewer</h1>
+      <a href="index.html" style="color: var(--gc-primary); text-decoration: none; font-weight: 600;">← Back to Registrar</a>
+    </div>
+
+    <div id="access-denied"><h2><i class="fas fa-lock"></i> Access Denied</h2><p>You must be signed in as an Administrator or Registrar.</p></div>
+
+    <div id="search-area" style="display: none;">
+      <div class="search-box" id="manual-search-box">
+        <input type="text" id="search-lrn" placeholder="Enter Student LRN..." onkeypress="if(event.key==='Enter') searchStudent()">
+        <button class="btn-search" onclick="searchStudent()">Search</button>
+      </div>
+      <div id="url-loaded-msg" style="display: none; background: #dcfce7; color: #166534; padding: 15px; border-radius: 8px; margin-bottom: 20px; font-weight: 600; text-align: center;"><i class="fas fa-link"></i> Record loaded automatically. <a href="sshs-new-print.html" style="color: #166534; text-decoration: underline;">Search another</a></div>
+      
+      <div class="signatory-panel" id="signatory-panel">
+        <h3 style="margin-top: 0; color: var(--gc-primary); font-size: 1.1rem; border-bottom: 1px solid var(--gc-border); padding-bottom: 10px; margin-bottom: 15px;">Update Signatories</h3>
+        <div class="sig-grid">
+          <div class="sig-group"><label>Principal / School Head Name</label><input type="text" id="input-principal" value="SATURNINO P. CALANSI EdD"></div>
+          <div class="sig-group"><label>Date Prepared</label><input type="text" id="input-date" placeholder="e.g. 07/01/2024"></div>
+        </div>
+      </div>
+      <button class="btn-print" id="btn-print" onclick="window.print()"><i class="fas fa-print"></i> Print New SSHS SF10</button>
+    </div>
+  </div>
+
+  <!-- HIDDEN PRINT WRAPPER -->
+  <div id="print-wrapper">
+    <div class="paper">
+      <!-- PAGE 1 (GRADE 11) -->
+      <div class="page" id="shs-page1">
+        <div class="sf10-header">
+          <div class="header-left"><span class="header-left-text">SF10-SHS</span><img src="../../assets/images/deped-logo.png" class="header-seal" alt="DepEd Logo"></div>
+          <div class="header-center"><div class="republic">Republic of the Philippines</div><div class="deped">Department of Education</div><div class="doc-title">SENIOR HIGH SCHOOL STUDENT PERMANENT RECORD</div></div>
+          <div class="header-right"><img src="../../assets/images/deped_seal.png" class="header-seal" alt="DepEd Logo"></div>
+        </div>
+        <div class="sec-title">LEARNER'S INFORMATION</div>
+        <table class="info-table">
+          <tr>
+            <td><span class="lbl">LAST NAME:</span> <span class="val" id="shs-lastname">-</span></td>
+            <td><span class="lbl">FIRST NAME:</span> <span class="val" id="shs-firstname">-</span></td>
+            <td><span class="lbl">MIDDLE NAME:</span> <span class="val" id="shs-middlename">-</span></td>
+            <td><span class="lbl">EXT.:</span> <span class="val" id="shs-extname">-</span></td>
+          </tr>
+          <tr>
+            <td colspan="2"><span class="lbl">LRN:</span> <span class="val" id="shs-lrn">-</span></td>
+            <td><span class="lbl">Date of Birth:</span> <span class="val" id="shs-birthdate">-</span></td>
+            <td><span class="lbl">Sex:</span> <span class="val" id="shs-sex">-</span></td>
+          </tr>
+        </table>
+        <div class="sec-title">SCHOLASTIC RECORD</div>
+        <div id="shs-grades-page1"></div>
+        <div class="sec-title">SUMMARY OF FINAL GRADES FOR GRADE 11</div>
+        <div id="shs-summary-page1"></div>
+      </div>
+
+      <!-- PAGE 2 (GRADE 12) -->
+      <div class="page page-back" id="shs-page2">
+        <div class="sf10-header">
+          <div class="header-left"><span class="header-left-text">SF10-SHS</span><img src="../../assets/images/deped-logo.png" class="header-seal" alt="DepEd Logo"></div>
+          <div class="header-center"><div class="republic">Republic of the Philippines</div><div class="deped">Department of Education</div><div class="doc-title">SENIOR HIGH SCHOOL STUDENT PERMANENT RECORD</div></div>
+          <div class="header-right"><img src="../../assets/images/deped_seal.png" class="header-seal" alt="DepEd Logo"></div>
+        </div>
+        <div class="sec-title">SCHOLASTIC RECORD (Continued)</div>
+        <div id="shs-grades-page2"></div>
+        <div class="sec-title">SUMMARY OF FINAL GRADES FOR GRADE 12</div>
+        <div id="shs-summary-page2"></div>
+        <div class="cert-box" style="margin-top: 10px;">
+          <div class="sec-title" style="margin-top: 0;">CERTIFICATION</div>
+          <p style="margin: 3px 0;">I CERTIFY that this is a true record of <strong id="shs-cert-name">_________________________</strong> with LRN <strong id="shs-cert-lrn">_________________________</strong> and that he/she is eligible for admission to Grade ________.</p>
+          <div class="signature-block" style="margin-top: 25px; justify-content: space-around; align-items: flex-end;">
+            <div class="sig-box" style="width: 30%;"><div class="sig-line" id="shs-cert-date-line"></div><div>Date</div></div>
+            <div class="sig-box" style="width: 40%;"><div class="sig-line"></div><div class="print-sig-name" id="print-shs-principal-name">_________________________</div><div>Signature of Principal/School Head</div></div>
+            <div class="sig-box" style="width: 20%;"><div class="seal-box">(Affix School Seal Here)</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script type="module">
+    import { auth, db } from "../../assets/js/firebase-config.js";
+    import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+    import { collection, query, where, getDocs, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+    window.addEventListener('DOMContentLoaded', () => {
+      const urlParams = new URLSearchParams(window.location.search);
+      const docId = urlParams.get('id');
+      
+      if (docId) {
+        document.getElementById('manual-search-box').style.display = 'none';
+        document.getElementById('url-loaded-msg').style.display = 'block';
+        onAuthStateChanged(auth, async (user) => {
+          if (!user) return document.getElementById('access-denied').style.display = 'block';
+          const userSnap = await getDoc(doc(db, "users", user.uid));
+          if (userSnap.exists() && ['admin', 'superadmin', 'registrar'].includes(userSnap.data().primaryRole || userSnap.data().role)) {
+            loadRecordById(docId);
+          } else { document.getElementById('access-denied').style.display = 'block'; }
+        });
+      } else {
+        onAuthStateChanged(auth, async (user) => {
+          if (!user) return document.getElementById('access-denied').style.display = 'block';
+          const userSnap = await getDoc(doc(db, "users", user.uid));
+          if (userSnap.exists() && ['admin', 'superadmin', 'registrar'].includes(userSnap.data().primaryRole || userSnap.data().role)) {
+            document.getElementById('search-area').style.display = 'block';
+          } else { document.getElementById('access-denied').style.display = 'block'; }
+        });
+      }
+    });
+
+    async function loadRecordById(docId) {
+      const lrn = docId.split('_')[0];
+      const docSnap = await getDoc(doc(db, "sf10_archives", docId));
+      if (docSnap.exists()) {
+        const sf10Ref = collection(db, "sf10_archives");
+        const qLrn = query(sf10Ref, where("lrn", "==", lrn), where("gradingSystem", "==", "semestral"));
+        const snapLrn = await getDocs(qLrn);
+        renderPrintView(snapLrn.docs.map(d => d.data()), lrn);
+        document.getElementById('signatory-panel').style.display = 'block';
+        document.getElementById('btn-print').style.display = 'block';
+        document.getElementById('search-area').style.display = 'block';
+      } else { alert("❌ Record not found."); }
+    }
+
+    window.searchStudent = async function() {
+      const searchTerm = document.getElementById('search-lrn').value.trim();
+      if (!searchTerm) return alert("Enter LRN.");
+      try {
+        const qLrn = query(collection(db, "sf10_archives"), where("lrn", "==", searchTerm), where("gradingSystem", "==", "semestral"));
+        const snapLrn = await getDocs(qLrn);
+        if (!snapLrn.empty) {
+          renderPrintView(snapLrn.docs.map(d => d.data()), searchTerm);
+          document.getElementById('signatory-panel').style.display = 'block';
+          document.getElementById('btn-print').style.display = 'block';
+        } else { alert("❌ No SSHS record found."); }
+      } catch (error) { console.error(error); }
+    };
+
+    document.getElementById('input-principal').addEventListener('input', function() { document.getElementById('print-shs-principal-name').textContent = this.value || "_________________________"; });
+    document.getElementById('input-date').addEventListener('input', function() { document.getElementById('shs-cert-date-line').textContent = this.value || ""; });
+
+    function renderPrintView(records, lrn) {
+      const firstRecord = records[0];
+      const mName = firstRecord.middleName && firstRecord.middleName !== 'undefined' ? firstRecord.middleName : '';
+      const fullName = `${firstRecord.firstName} ${mName} ${firstRecord.lastName}`.replace(/\s+/g, ' ').trim();
+
+      document.getElementById('shs-lastname').textContent = firstRecord.lastName;
+      document.getElementById('shs-firstname').textContent = firstRecord.firstName;
+      document.getElementById('shs-middlename').textContent = mName;
+      document.getElementById('shs-extname').textContent = firstRecord.extName || '';
+      document.getElementById('shs-lrn').textContent = lrn;
+      document.getElementById('shs-cert-name').textContent = fullName;
+      document.getElementById('shs-cert-lrn').textContent = lrn;
+
+      document.getElementById('input-principal').dispatchEvent(new Event('input'));
+      document.getElementById('input-date').dispatchEvent(new Event('input'));
+
+      function generateSHSBlock(recordData) {
+        let html = `
+          <table class="info-table" style="border: 1px solid #000; border-bottom: none; margin-bottom: 0; margin-top: 5px; font-size: 7pt;">
+            <tr>
+              <td style="width: 25%;"><strong>SCHOOL:</strong> Sta. Cruz Pingkian High School</td>
+              <td style="width: 15%;"><strong>SCHOOL ID:</strong> 300648</td>
+              <td style="width: 15%;"><strong>GRADE LEVEL:</strong> ${recordData.gradeLevel.replace('Grade ', '')}</td>
+              <td style="width: 20%;"><strong>SECTION:</strong> ${recordData.section || ''}</td>
+              <td style="width: 15%;"><strong>SY:</strong> ${recordData.schoolYear}</td>
+              <td style="width: 10%;"><strong>SEM:</strong> ${recordData.semester || ''}</td>
+            </tr>
+            <tr><td colspan="6"><strong>TRACK/STRAND:</strong> ${recordData.trackStrand || ''}</td></tr>
+          </table>
+          <table class="grade-table" style="margin-top: 0; border-top: none;">
+            <thead>
+              <tr>
+                <th rowspan="2" style="width: 12%;">CORE / APPLIED / SPECIALIZED</th>
+                <th rowspan="2" style="width: 40%; text-align: left; padding-left: 5px;">SUBJECTS</th>
+                <th colspan="2">Quarter</th>
+                <th rowspan="2" style="width: 12%;">SEM FINAL GRADE</th>
+                <th rowspan="2" style="width: 12%;">ACTION TAKEN</th>
+              </tr>
+              <tr><th>Q1</th><th>Q2</th></tr>
+            </thead>
+            <tbody>
+        `;
+        recordData.grades.forEach(g => {
+          html += `<tr><td style="font-size: 6pt;">${g.type || 'CORE'}</td><td class="sn">${g.sub || g.subject || ''}</td><td>${g.q1 || ''}</td><td>${g.q2 || ''}</td><td>${g.final || ''}</td><td>${g.remarks || ''}</td></tr>`;
+        });
+        let total = 0, count = 0;
+        recordData.grades.forEach(g => { if(g.final) { total += parseInt(g.final); count++; } });
+        const genAve = count > 0 ? Math.round(total / count) : 0;
+        html += `<tr class="ga"><td colspan="4" style="text-align: right; padding-right: 10px;">General Ave. for the Semester:</td><td>${genAve}%</td><td>${genAve >= 75 ? 'PASSED' : 'FAILED'}</td></tr></tbody></table>
+          <table class="info-table" style="margin-top: 5px; border: 1px solid #000; margin-bottom: 10px; font-size: 7pt;">
+              <tr><td style="width: 50%;"><strong>REMARKS:</strong> _______________________________________</td><td><strong>Certified True and Correct:</strong> __________________________</td><td><strong>Date Checked:</strong> ____________</td></tr>
+              <tr><td><strong>Prepared by:</strong> __________________________</td><td colspan="2">Signature of Authorized Person over Printed Name, Designation</td></tr>
+          </table>`;
+        return html;
+      }
+
+      function generateSummaryTable(recordsForGrade) {
+        if (recordsForGrade.length === 0) return '<p style="text-align:center;font-size:7pt;">No records found.</p>';
+        let html = `<table class="summary-table"><thead><tr><th rowspan="2" style="width: 10%;">TRACK</th><th rowspan="2" style="width: 40%; text-align: left;">SUBJECTS</th><th colspan="4">QUARTERLY GRADE</th><th colspan="2">REMEDIAL</th><th rowspan="2" style="width: 10%;">FINAL GRADE</th><th rowspan="2" style="width: 10%;">ACTION TAKEN</th></tr><tr><th>Q1</th><th>Q2</th><th>Q3</th><th>Q4</th><th>Sem. 1</th><th>Sem. 2</th></tr></thead><tbody>`;
+        const subjectMap = {};
+        recordsForGrade.forEach(rec => {
+          rec.grades.forEach(g => {
+            const subName = g.sub || g.subject;
+            if (!subjectMap[subName]) subjectMap[subName] = { type: g.type, q1: null, q2: null, q3: null, q4: null, final: null, remarks: null };
+            if (rec.semester.includes('FIRST')) { subjectMap[subName].q1 = g.q1; subjectMap[subName].q2 = g.q2; subjectMap[subName].sem1 = g.final; }
+            else if (rec.semester.includes('SECOND')) { subjectMap[subName].q3 = g.q1; subjectMap[subName].q4 = g.q2; subjectMap[subName].sem2 = g.final; }
+            subjectMap[subName].remarks = g.remarks;
+            if(g.final) subjectMap[subName].final = g.final;
+          });
+        });
+        Object.keys(subjectMap).forEach(subName => {
+          const d = subjectMap[subName];
+          html += `<tr><td style="font-size: 6pt;">${d.type}</td><td class="sn">${subName}</td><td>${d.q1 || ''}</td><td>${d.q2 || ''}</td><td>${d.q3 || ''}</td><td>${d.q4 || ''}</td><td>${d.sem1 || ''}</td><td>${d.sem2 || ''}</td><td>${d.final || ''}</td><td>${d.remarks || ''}</td></tr>`;
+        });
+        html += `</tbody></table>`;
+        return html;
+      }
+
+      const page1Records = records.filter(r => r.gradeLevel === 'Grade 11').sort((a,b) => a.semester.localeCompare(b.semester));
+      const page2Records = records.filter(r => r.gradeLevel === 'Grade 12').sort((a,b) => a.semester.localeCompare(b.semester));
+
+      if (page1Records.length > 0) {
+        document.getElementById('shs-grades-page1').innerHTML = page1Records.map(generateSHSBlock).join('');
+        document.getElementById('shs-summary-page1').innerHTML = generateSummaryTable(page1Records);
+        document.getElementById('shs-page1').style.display = 'block';
+      } else document.getElementById('shs-page1').style.display = 'none';
+
+      if (page2Records.length > 0) {
+        document.getElementById('shs-grades-page2').innerHTML = page2Records.map(generateSHSBlock).join('');
+        document.getElementById('shs-summary-page2').innerHTML = generateSummaryTable(page2Records);
+        document.getElementById('shs-page2').style.display = 'block';
+      } else document.getElementById('shs-page2').style.display = 'none';
+    }
+  </script>
+</body>
+</html>
