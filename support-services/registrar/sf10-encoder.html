@@ -406,7 +406,7 @@
       tbody.appendChild(tr);
     };
 
-        window.searchStudent = async function() {
+            window.searchStudent = async function() {
       const searchTerm = document.getElementById('search-lrn').value.trim();
       if (!searchTerm) return alert("Please enter an LRN.");
 
@@ -420,21 +420,19 @@
         const snapLrn = await getDocs(qLrn);
 
         if (!snapLrn.empty) {
-          // FOUND RECORDS! Let's render them all
           const records = snapLrn.docs.map(d => ({ id: d.id, ...d.data() }));
-          
-          // Sort by Grade Level (7 to 10)
           records.sort((a, b) => parseInt(a.gradeLevel.replace('Grade ', '')) - parseInt(b.gradeLevel.replace('Grade ', '')));
           
-          showStatus(`✅ Found ${records.length} existing record(s). You can edit them all below.`, 'status-success');
+          showStatus(`✅ Found ${records.length} existing record(s). You can edit them below.`, 'status-success');
           
-          // Hide the single form and show our stacked container
-          document.getElementById('encoder-card').style.display = 'none'; 
+          // HIDE THE BLANK FORM AND SHOW THE STACKED RECORDS
+          document.getElementById('encoder-card').classList.remove('active'); 
           renderStackedRecords(records, searchTerm);
 
         } else {
-          // NO RECORDS FOUND - Show empty form to create new
+          // NO RECORDS FOUND - SHOW BLANK FORM
           showStatus('No existing record found. You can encode a new record below.', 'status-warning');
+          document.getElementById('stacked-records-container').innerHTML = '';
           document.getElementById('encoder-card').classList.add('active');
           document.getElementById('form-title').textContent = "Create New SF10 Record";
           document.getElementById('sf10-form').reset();
@@ -522,19 +520,24 @@
       });
       
       // Add a button to create a new record for the missing year
+            // Add a button to create a new record for the missing year
       if (records.length < 4) {
          const btn = document.createElement('button');
          btn.className = 'btn-search';
          btn.style.background = 'var(--gc-primary)';
          btn.style.padding = '12px 24px';
          btn.style.borderRadius = '8px';
+         btn.style.marginTop = '10px';
          btn.innerHTML = '<i class="fas fa-plus"></i> Encode Missing Year/Record';
          btn.onclick = () => {
+           // Hide stacked records, show the blank form
            document.getElementById('stacked-records-container').innerHTML = '';
            document.getElementById('encoder-card').classList.add('active');
-           document.getElementById('f-lrn').value = lrn;
+           document.getElementById('form-title').textContent = "Create New SF10 Record";
            document.getElementById('sf10-form').reset();
-           document.getElementById('f-lrn').value = lrn;
+           document.getElementById('f-lrn').value = lrn; // Pre-fill LRN
+           document.getElementById('grades-tbody').innerHTML = '';
+           addRow();
          };
          container.appendChild(btn);
       }
