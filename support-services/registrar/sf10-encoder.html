@@ -336,16 +336,34 @@
          btn.style.borderRadius = '8px';
          btn.style.marginBottom = '20px';
          btn.innerHTML = '<i class="fas fa-plus"></i> Encode Missing Year/Record';
-                  btn.onclick = () => {
+          btn.onclick = () => {
+           // 1. Hide the stacked records
            container.innerHTML = '';
+           
+           // 2. Show the form
            document.getElementById('encoder-card').style.display = 'block';
            document.getElementById('encoder-card').classList.add('active');
-           document.getElementById('sf10-form').reset();
-           document.getElementById('f-lrn').value = lrn; // Pre-fill LRN
            
-           // Clear the table and add ONE blank row so it doesn't crash
+           // 3. Use the FIRST record as a template to pre-fill the student info
+           const firstRecord = records[0]; 
+           
+           // 4. Reset the form but pre-fill the common details
+           document.getElementById('sf10-form').reset();
+           document.getElementById('f-lastname').value = firstRecord.lastName || "";
+           document.getElementById('f-firstname').value = firstRecord.firstName || "";
+           document.getElementById('f-middlename').value = firstRecord.middleName || "";
+           document.getElementById('f-extname').value = firstRecord.extName || "";
+           document.getElementById('f-lrn').value = lrn;
+           document.getElementById('f-schoolyear').value = firstRecord.schoolYear || "";
+           document.getElementById('f-sys').value = firstRecord.gradingSystem || "4q";
+           document.getElementById('f-section').value = firstRecord.section || "";
+           document.getElementById('f-adviser').value = firstRecord.adviser || "";
+           
+           // 5. Clear the Grade Level and Grades so the encoder can select the new year
+           document.getElementById('f-gradelevel').value = ""; 
            document.getElementById('grades-tbody').innerHTML = '';
-           addRow(); 
+           addRow();
+         };
            
            // Show the status message
            showStatus(`Creating new record for LRN: ${lrn}. Please select Grade Level and School Year.`, 'status-warning');
