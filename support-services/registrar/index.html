@@ -330,9 +330,15 @@
         </a>
       </div>
 
-      <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid var(--gc-bg); padding-bottom: 15px; margin-bottom: 20px; flex-wrap: wrap; gap: 10px;">
-        <h3 style="color: var(--gc-text); font-size: 1.1rem; margin: 0;">📋 Pending Document Requests</h3>
-        <button onclick="loadAdminData()" class="btn-action" style="background: var(--gc-bg); color: var(--gc-primary); border: 1px solid var(--gc-border);"><i class="fas fa-sync-alt"></i> Refresh List</button>
+            <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid var(--gc-bg); padding-bottom: 15px; margin-bottom: 20px; flex-wrap: wrap; gap: 10px;">
+        
+        <!-- NEW: Sub-Tabs for Active vs Archived -->
+        <div style="display: flex; gap: 10px;">
+          <button class="btn-action active" id="tab-active-btn" onclick="switchAdminSubTab('active')" style="background: var(--gc-primary); color: #fff; border: 1px solid var(--gc-primary);">📋 Active Requests</button>
+          <button class="btn-action" id="tab-archived-btn" onclick="switchAdminSubTab('archived')" style="background: var(--gc-bg); color: var(--gc-text); border: 1px solid var(--gc-border);">🗄️ Archived Records</button>
+        </div>
+
+        <button onclick="loadAdminData()" class="btn-action" style="background: #fff; color: var(--gc-primary); border: 1px solid var(--gc-border);"><i class="fas fa-sync-alt"></i> Refresh List</button>
       </div>
 
       <div class="table-responsive">
@@ -564,17 +570,45 @@
       }
     };
 
+        let CURRENT_ADMIN_SUB_TAB = 'active'; // 'active' or 'archived'
+
+    window.switchAdminSubTab = function(tab) {
+      CURRENT_ADMIN_SUB_TAB = tab;
+      const activeBtn = document.getElementById('tab-active-btn');
+      const archivedBtn = document.getElementById('tab-archived-btn');
+      
+      if (tab === 'active') {
+        activeBtn.style.background = 'var(--gc-primary)'; activeBtn.style.color = '#fff'; activeBtn.style.borderColor = 'var(--gc-primary)';
+        archivedBtn.style.background = 'var(--gc-bg)'; archivedBtn.style.color = 'var(--gc-text)'; archivedBtn.style.borderColor = 'var(--gc-border)';
+      } else {
+        activeBtn.style.background = 'var(--gc-bg)'; activeBtn.style.color = 'var(--gc-text)'; activeBtn.style.borderColor = 'var(--gc-border)';
+        archivedBtn.style.background = 'var(--gc-primary)'; archivedBtn.style.color = '#fff'; archivedBtn.style.borderColor = 'var(--gc-primary)';
+      }
+      
+      loadAdminData(); // Re-render table based on new tab
+    };
+
     // 6. Render Table
     function renderTable(docs) {
       const tbody = document.getElementById('admin-table-body');
       if (!tbody) return;
 
-      if (docs.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; padding: 30px; color: var(--gc-muted);">No requests found.</td></tr>`;
+      // Filter based on the selected sub-tab
+      let filteredDocs = docs.filter(docSnap => {
+        const status = docSnap.data().status;
+        if (CURRENT_ADMIN_SUB_TAB === 'active') {
+          return status !== 'Archived';
+        } else {
+          return status === 'Archived';
+        }
+      });
+
+      if (filteredDocs.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; padding: 30px; color: var(--gc-muted);">No ${CURRENT_ADMIN_SUB_TAB} requests found.</td></tr>`;
         return;
       }
 
-      tbody.innerHTML = docs.map(docSnap => {
+      tbody.innerHTML = filteredDocs.map(docSnap => {
         const data = docSnap.data();
         const id = docSnap.id;
         
@@ -586,7 +620,15 @@
           actionBtn = `<button class="btn-action btn-ready" onclick="updateStatus('${id}', 'Ready for Pickup')"><i class="fas fa-check"></i> Mark Ready</button>`;
         } else if (data.status === 'Ready for Pickup') {
           badgeClass = "badge-ready";
-          actionBtn = `<span style="font-size:0.8rem; color:var(--gc-muted); font-weight:600;">Waiting for claim</span>`;
+          actionBtn = `
+            <div style="display: flex; gap: 5px;">
+              <span style="font-size:0.8rem; color:var(--gc-muted); font-weight:600; align-self: center; margin-right: 5px;">Waiting for claim</span>
+              <button class="btn-action" onclick="archiveRequest('${id}')" style="background: #e2e8f0; color: #475569;" title="Archive this record"><i class="fas fa-box"></i> Archive</button>
+            </div>
+          `;
+        } else if (data.status === 'Archived') {
+          badgeClass = "badge-pending"; // Or a new grey badge
+          actionBtn = `<span style="font-size:0.8rem; color:var(--gc-muted); font-weight:600;">Claimed & Archived</span>`;
         }
 
         if (!IS_ADMIN) actionBtn = "-";
@@ -608,6 +650,21 @@
         `;
       }).join("");
     }
+
+    // NEW: Archive function
+    window.archiveRequest = async function(id) {
+      if (!IS_ADMIN) return;
+      if(!confirm("Are you sure the student has claimed this document? This will move it to the Archived Records tab.")) return;
+      try {
+        await updateDoc(doc(db, "document_requests", id), { 
+          status: 'Archived',
+          archivedAt: Date.now()
+        });
+      } catch (error) {
+        console.error("Error archiving:", error);
+        alert("❌ Failed to archive request.");
+      }
+    };
 
     // 7. Update Status (Admin)
     window.updateStatus = async function(id, newStatus) {
