@@ -336,15 +336,19 @@
          btn.style.borderRadius = '8px';
          btn.style.marginBottom = '20px';
          btn.innerHTML = '<i class="fas fa-plus"></i> Encode Missing Year/Record';
-         btn.onclick = () => {
+                  btn.onclick = () => {
            container.innerHTML = '';
            document.getElementById('encoder-card').style.display = 'block';
            document.getElementById('encoder-card').classList.add('active');
-           document.getElementById('f-lrn').value = lrn;
            document.getElementById('sf10-form').reset();
-           document.getElementById('f-lrn').value = lrn;
+           document.getElementById('f-lrn').value = lrn; // Pre-fill LRN
+           
+           // Clear the table and add ONE blank row so it doesn't crash
            document.getElementById('grades-tbody').innerHTML = '';
-           addRow();
+           addRow(); 
+           
+           // Show the status message
+           showStatus(`Creating new record for LRN: ${lrn}. Please select Grade Level and School Year.`, 'status-warning');
          };
          container.appendChild(btn);
       }
