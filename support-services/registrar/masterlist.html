@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Student Masterlist – SCPHS Registrar</title>
+  <link rel="stylesheet" href="../../assets/css/styles.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <style>
+    :root {
+      --primary: #0f172a;
+      --accent: #3b82f6;
+      --bg: #f8fafc;
+      --border: #e2e8f0;
+      --text-main: #0f172a;
+      --text-muted: #64748b;
+      --success: #10b981;
+      --warning: #f59e0b;
+      --danger: #ef4444;
+      --radius: 16px;
+      --shadow-sm: 0 1px 3px rgba(0,0,0,0.05);
+      --shadow-md: 0 10px 25px -5px rgba(0,0,0,0.05);
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text-main); min-height: 100vh; display: flex; }
+
+    /* Sidebar (Copied from index) */
+    .sidebar {
+      width: 260px; background: var(--primary); color: white; padding: 24px; 
+      display: flex; flex-direction: column; position: fixed; height: 100vh; z-index: 100;
+    }
+    .sidebar .logo { font-size: 20px; font-weight: 900; margin-bottom: 40px; display: flex; align-items: center; gap: 12px; color: white; text-decoration: none; }
+    .sidebar .logo i { color: var(--accent); font-size: 24px; }
+    .nav-item {
+      display: flex; align-items: center; gap: 12px; padding: 12px 16px; 
+      color: #94a3b8; text-decoration: none; border-radius: 10px; font-weight: 600; font-size: 14px;
+      transition: all 0.2s; margin-bottom: 8px; cursor: pointer; border: none; background: transparent; width: 100%;
+    }
+    .nav-item:hover, .nav-item.active { background: #1e293b; color: white; }
+    .nav-item.active { border-left: 4px solid var(--accent); }
+
+    /* Main Content */
+    .main-content { margin-left: 260px; flex: 1; padding: 30px 40px; width: calc(100% - 260px); }
+
+    /* Header */
+    .page-header { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 30px; }
+    .page-header h1 { font-size: 2rem; font-weight: 900; color: var(--primary); letter-spacing: -0.5px; }
+    .page-header p { color: var(--text-muted); margin-top: 5px; }
+
+    /* Controls */
+    .controls-card { background: white; border-radius: var(--radius); padding: 20px; box-shadow: var(--shadow-sm); border: 1px solid var(--border); margin-bottom: 20px; display: flex; flex-wrap: wrap; gap: 15px; align-items: center; }
+    
+    .search-wrapper { flex: 1; min-width: 300px; position: relative; }
+    .search-wrapper i { position: absolute; left: 15px; top: 50%; transform: translateY(-50%); color: var(--text-muted); }
+    .search-wrapper input { width: 100%; padding: 14px 14px 14px 45px; border: 2px solid var(--border); border-radius: 10px; font-size: 1rem; font-family: inherit; transition: 0.2s; }
+    .search-wrapper input:focus { border-color: var(--accent); outline: none; box-shadow: 0 0 0 4px rgba(59,130,246,0.1); }
+
+    .filter-group { display: flex; gap: 8px; flex-wrap: wrap; }
+    .filter-btn { padding: 10px 16px; border-radius: 8px; border: 1px solid var(--border); background: white; font-weight: 700; font-size: 0.85rem; cursor: pointer; transition: 0.2s; color: var(--text-muted); }
+    .filter-btn:hover { border-color: var(--accent); color: var(--accent); }
+    .filter-btn.active { background: var(--primary); color: white; border-color: var(--primary); }
+
+    .btn-export { background: var(--success); color: white; border: none; padding: 12px 20px; border-radius: 8px; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: 0.2s; }
+    .btn-export:hover { background: #059669; transform: translateY(-2px); }
+
+    /* Table */
+    .table-card { background: white; border-radius: var(--radius); box-shadow: var(--shadow-sm); border: 1px solid var(--border); overflow: hidden; }
+    .table-responsive { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; }
+    th, td { padding: 16px 20px; text-align: left; border-bottom: 1px solid var(--border); }
+    th { background: #f8fafc; font-weight: 700; color: var(--text-muted); font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.5px; }
+    td { font-size: 0.95rem; color: var(--text-main); }
+    tr:hover td { background: #f1f5f9; }
+
+    .student-name { font-weight: 800; color: var(--accent); cursor: pointer; text-decoration: none; font-size: 1rem; }
+    .student-name:hover { text-decoration: underline; }
+    
+    .badge { padding: 6px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: 800; }
+    .bg-jhs { background: #e0f2fe; color: #0369a1; }
+    .bg-shs { background: #fce7f3; color: #be185d; }
+
+    /* Loading State */
+    .loading { text-align: center; padding: 50px; color: var(--text-muted); font-weight: 600; }
+  </style>
+</head>
+<body>
+
+  <!-- SIDEBAR -->
+  <nav class="sidebar">
+    <a href="#" class="logo"><i class="fas fa-university"></i> <span>SCPHS Portal</span></a>
+    
+    <a href="index.html" class="nav-item">
+      <i class="fas fa-file-signature"></i> <span>Request Document</span>
+    </a>
+    
+    <a href="index.html" class="nav-item">
+      <i class="fas fa-tasks"></i> <span>Admin Dashboard</span>
+    </a>
+
+    <a href="masterlist.html" class="nav-item active" style="background: #1e293b; color: white; border-left: 4px solid var(--accent);">
+      <i class="fas fa-address-book"></i> <span>Masterlist Directory</span>
+    </a>
+
+    <a href="../../../index.html" class="nav-item" style="margin-top: auto;">
+      <i class="fas fa-home"></i> <span>Return to Main Site</span>
+    </a>
+  </nav>
+
+  <!-- MAIN CONTENT -->
+  <main class="main-content">
+    
+    <div class="page-header">
+      <div>
+        <h1>Student Masterlist</h1>
+        <p>Search, filter, and manage all archived student records.</p>
+      </div>
+      <button class="btn-export" onclick="exportToCSV()">
+        <i class="fas fa-file-csv"></i> Export to CSV
+      </button>
+    </div>
+
+    <!-- CONTROLS -->
+    <div class="controls-card">
+      <div class="search-wrapper">
+        <i class="fas fa-search"></i>
+        <input type="text" id="search-input" placeholder="Search by Name, LRN, or Year..." oninput="filterMasterlist()">
+      </div>
+      
+      <div class="filter-group" id="filter-group">
+        <button class="filter-btn active" onclick="setFilter('all', this)">All</button>
+        <button class="filter-btn" onclick="setFilter('Grade 7', this)">Grade 7</button>
+        <button class="filter-btn" onclick="setFilter('Grade 8', this)">Grade 8</button>
+        <button class="filter-btn" onclick="setFilter('Grade 9', this)">Grade 9</button>
+        <button class="filter-btn" onclick="setFilter('Grade 10', this)">Grade 10</button>
+        <button class="filter-btn" onclick="setFilter('Grade 11', this)">Grade 11</button>
+        <button class="filter-btn" onclick="setFilter('Grade 12', this)">Grade 12</button>
+      </div>
+    </div>
+
+    <!-- TABLE -->
+    <div class="table-card">
+      <div class="table-responsive">
+        <table>
+          <thead>
+            <tr>
+              <th>Student Name</th>
+              <th>LRN</th>
+              <th>Grade Level</th>
+              <th>School Year</th>
+              <th>Track/Strand</th>
+              <th>Last Updated</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody id="masterlist-body">
+            <tr><td colspan="7" class="loading"><i class="fas fa-spinner fa-spin"></i> Loading students...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </main>
+
+  <script type="module">
+    import { auth, db } from "../../assets/js/firebase-config.js";
+    import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+    import { collection, getDocs, query, orderBy, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+    let allStudents = [];
+    let filteredStudents = [];
+    let currentFilter = 'all';
+
+    // 1. Auth Check
+    onAuthStateChanged(auth, async (user) => {
+      if (!user) { window.location.href = "index.html"; return; }
+      
+      const userSnap = await getDoc(doc(db, "users", user.uid));
+      if (userSnap.exists()) {
+        const role = userSnap.data().primaryRole || userSnap.data().role;
+        if (['admin', 'superadmin', 'registrar', 'teacher'].includes(role)) {
+          loadMasterlist();
+        } else {
+          alert("Access Denied. Admin only.");
+          window.location.href = "index.html";
+        }
+      }
+    });
+
+    // 2. Load Data from Firebase
+    async function loadMasterlist() {
+      try {
+        const q = query(collection(db, "sf10_archives"), orderBy("lastName", "asc"));
+        const snap = await getDocs(q);
+        
+        allStudents = snap.docs.map(d => {
+          const data = d.data();
+          return {
+            id: d.id,
+            ...data,
+            // Ensure we have a full name for searching
+            fullName: `${data.lastName || ''}, ${data.firstName || ''} ${data.middleName || ''}`.trim()
+          };
+        });
+
+        // Deduplicate by LRN (Since a student might have Grade 7, 8, 9, 10 in the DB)
+        // We want the Masterlist to show each student ONCE, with their latest record.
+        const uniqueStudents = {};
+        allStudents.forEach(student => {
+          if (!uniqueStudents[student.lrn]) {
+            uniqueStudents[student.lrn] = student;
+          } else {
+            // If we find a newer record (e.g., Grade 8 over Grade 7), update the unique object
+            const existing = uniqueStudents[student.lrn];
+            if (student.gradeLevel > existing.gradeLevel) {
+              uniqueStudents[student.lrn] = student;
+            }
+          }
+        });
+
+        filteredStudents = Object.values(uniqueStudents);
+        renderTable();
+        
+      } catch (error) {
+        console.error("Error loading masterlist:", error);
+        document.getElementById('masterlist-body').innerHTML = `<tr><td colspan="7" class="loading" style="color: var(--danger);">❌ Failed to load database.</td></tr>`;
+      }
+    }
+
+    // 3. Render Table
+    function renderTable() {
+      const tbody = document.getElementById('masterlist-body');
+      
+      if (filteredStudents.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="7" class="loading">No students found matching your search.</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = filteredStudents.map(student => {
+        // Determine if JHS or SHS for the badge color
+        const isSHS = student.gradeLevel.includes('11') || student.gradeLevel.includes('12');
+        const badgeClass = isSHS ? 'bg-shs' : 'bg-jhs';
+        
+        const dateStr = student.updatedAt 
+          ? new Date(student.updatedAt).toLocaleDateString('en-PH', { month: 'short', day: 'numeric', year: 'numeric' })
+          : 'N/A';
+
+        return `
+          <tr>
+            <td>
+              <a href="#" class="student-name" onclick="openStudentRecord('${student.id}')">
+                ${student.fullName}
+              </a>
+            </td>
+            <td style="font-family: monospace; font-weight: 600;">${student.lrn}</td>
+            <td><span class="badge ${badgeClass}">${student.gradeLevel || 'N/A'}</span></td>
+            <td>${student.schoolYear || 'N/A'}</td>
+            <td>${student.trackStrand || '-'}</td>
+            <td style="color: var(--text-muted); font-size: 0.85rem;">${dateStr}</td>
+            <td>
+              <button onclick="openStudentRecord('${student.id}')" style="background: #e0f2fe; color: #0369a1; border: none; padding: 8px 12px; border-radius: 6px; font-weight: 700; cursor: pointer; font-size: 0.8rem;">
+                <i class="fas fa-folder-open"></i> Open
+              </button>
+            </td>
+          </tr>
+        `;
+      }).join("");
+    }
+
+    // 4. Filter Logic
+    window.filterMasterlist = function() {
+      const searchTerm = document.getElementById('search-input').value.toLowerCase();
+      
+      filteredStudents = Object.values(allStudents).filter(student => {
+        // Deduplicate logic again (quickly)
+        const matchesSearch = 
+          (student.fullName || '').toLowerCase().includes(searchTerm) ||
+          (student.lrn || '').includes(searchTerm) ||
+          (student.schoolYear || '').includes(searchTerm);
+          
+        const matchesGrade = currentFilter === 'all' || student.gradeLevel === currentFilter;
+
+        return matchesSearch && matchesGrade;
+      });
+
+      // Re-deduplicate after search
+      const unique = {};
+      filteredStudents.forEach(s => { unique[s.lrn] = s; });
+      filteredStudents = Object.values(unique);
+
+      renderTable();
+    };
+
+    window.setFilter = function(grade, btnEl) {
+      document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
+      btnEl.classList.add('active');
+      currentFilter = grade;
+      filterMasterlist();
+    };
+
+    // 5. Smart Routing to Print Page
+    window.openStudentRecord = function(docId) {
+      // We redirect to the print page, passing the ID
+      // The print page will handle the rest (fetching all years, detecting JHS/SHS)
+      const student = allStudents.find(s => s.id === docId);
+      if (!student) return;
+
+      const isSHS = student.gradeLevel === 'Grade 11' || student.gradeLevel === 'Grade 12' || student.gradingSystem === 'semestral';
+      
+      if (isSHS) {
+        window.location.href = `sshs-new-print.html?id=${docId}`;
+      } else {
+        window.location.href = `sf10-print.html?id=${docId}`;
+      }
+    };
+
+    // 6. Export to CSV
+    window.exportToCSV = function() {
+      if (filteredStudents.length === 0) return alert("No data to export.");
+      
+      const headers = ["Last Name", "First Name", "Middle Name", "LRN", "Grade Level", "School Year", "Track/Strand"];
+      const rows = filteredStudents.map(s => [
+        s.lastName || '', s.firstName || '', s.middleName || '', s.lrn || '', s.gradeLevel || '', s.schoolYear || '', s.trackStrand || ''
+      ]);
+
+      let csvContent = "data:text/csv;charset=utf-8," 
+        + headers.join(",") + "\n" 
+        + rows.map(e => e.join(",")).join("\n");
+
+      const encodedUri = encodeURI(csvContent);
+      const link = document.createElement("a");
+      link.setAttribute("href", encodedUri);
+      link.setAttribute("download", `SCPHS_Masterlist_${new Date().toISOString().split('T')[0]}.csv`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    };
+
+  </script>
+</body>
+</html>
