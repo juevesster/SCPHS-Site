@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Certificate Generator – SCPHS Registrar</title>
+  <link rel="stylesheet" href="../../assets/css/styles.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <style>
+    :root {
+      --primary: #0f172a;
+      --accent: #3b82f6;
+      --bg: #f8fafc;
+      --border: #e2e8f0;
+      --text-main: #0f172a;
+      --text-muted: #64748b;
+      --success: #10b981;
+      --warning: #f59e0b;
+      --danger: #ef4444;
+      --radius: 16px;
+      --shadow-sm: 0 1px 3px rgba(0,0,0,0.05);
+      --shadow-md: 0 10px 25px -5px rgba(0,0,0,0.05);
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text-main); min-height: 100vh; display: flex; }
+
+    /* Sidebar (Same as Masterlist) */
+    .sidebar {
+      width: 260px; background: var(--primary); color: white; padding: 24px; 
+      display: flex; flex-direction: column; position: fixed; height: 100vh; z-index: 100;
+    }
+    .sidebar .logo { font-size: 20px; font-weight: 900; margin-bottom: 40px; display: flex; align-items: center; gap: 12px; color: white; text-decoration: none; }
+    .sidebar .logo i { color: var(--accent); font-size: 24px; }
+    .nav-item {
+      display: flex; align-items: center; gap: 12px; padding: 12px 16px; 
+      color: #94a3b8; text-decoration: none; border-radius: 10px; font-weight: 600; font-size: 14px;
+      transition: all 0.2s; margin-bottom: 8px; cursor: pointer; border: none; background: transparent; width: 100%;
+    }
+    .nav-item:hover, .nav-item.active { background: #1e293b; color: white; }
+    .nav-item.active { border-left: 4px solid var(--accent); }
+
+    /* Main Content */
+    .main-content { margin-left: 260px; flex: 1; padding: 30px 40px; width: calc(100% - 260px); }
+
+    /* UI Cards */
+    .ui-card { background: white; border-radius: var(--radius); padding: 25px; box-shadow: var(--shadow-sm); border: 1px solid var(--border); margin-bottom: 20px; }
+    .section-title { font-size: 1.1rem; font-weight: 800; color: var(--primary); border-bottom: 2px solid var(--border); padding-bottom: 10px; margin-bottom: 20px; }
+    
+    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+    .form-group { display: flex; flex-direction: column; }
+    .form-group label { font-size: 0.8rem; font-weight: 700; color: var(--text-main); margin-bottom: 8px; text-transform: uppercase; }
+    .form-group input, .form-group select { padding: 12px; border: 1px solid var(--border); border-radius: 8px; font-family: inherit; font-size: 0.95rem; background: #f8fafc; transition: 0.2s; }
+    .form-group input:focus, .form-group select:focus { background: white; border-color: var(--accent); outline: none; box-shadow: 0 0 0 3px rgba(59,130,246,0.1); }
+
+    /* Toggle Switch */
+    .toggle-wrapper { display: flex; align-items: center; justify-content: space-between; background: #eff6ff; padding: 15px; border-radius: 10px; border: 1px solid #bfdbfe; margin-bottom: 20px; }
+    .toggle-label { font-weight: 700; color: #1e3a8a; font-size: 0.9rem; }
+    .toggle-desc { font-size: 0.75rem; color: #3b82f6; }
+    .switch { position: relative; display: inline-block; width: 50px; height: 28px; }
+    .switch input { opacity: 0; width: 0; height: 0; }
+    .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #cbd5e1; transition: .4s; border-radius: 34px; }
+    .slider:before { position: absolute; content: ""; height: 20px; width: 20px; left: 4px; bottom: 4px; background-color: white; transition: .4s; border-radius: 50%; }
+    input:checked + .slider { background-color: var(--success); }
+    input:checked + .slider:before { transform: translateX(22px); }
+
+    .btn-generate { background: var(--accent); color: white; border: none; padding: 14px 24px; border-radius: 8px; font-weight: 700; font-size: 1rem; cursor: pointer; width: 100%; transition: 0.2s; display: flex; justify-content: center; align-items: center; gap: 8px; }
+    .btn-generate:hover { background: #2563eb; transform: translateY(-2px); }
+
+    .btn-print { background: var(--success); color: white; border: none; padding: 14px 24px; border-radius: 8px; font-weight: 700; font-size: 1rem; cursor: pointer; width: 100%; transition: 0.2s; display: none; margin-top: 15px; }
+    .btn-print:hover { background: #059669; transform: translateY(-2px); }
+
+    #certificate-wrapper { display: none; }
+
+    /* ============================================================
+       OFFICIAL DEPED CERTIFICATE PRINT STYLES
+       ============================================================ */
+    @media print {
+      @page { 
+        size: portrait 8.5in 13in; /* Long bond paper */
+        margin: 0.5in; 
+      }
+      body { background: white; display: block; }
+      .sidebar, .main-content, .ui-card, #search-area { display: none !important; }
+      
+      #certificate-wrapper { display: block !important; }
+      
+      .paper { 
+        width: 100%; 
+        max-width: 8.5in; 
+        margin: 0 auto; 
+        background: white; 
+        padding: 20px;
+        border: 3px double #000; 
+        position: relative;
+        min-height: 11in;
+      }
+
+      .cert-header { text-align: center; margin-bottom: 30px; }
+      .cert-header .republic { font-size: 12pt; font-family: "Times New Roman", serif; }
+      .cert-header .deped { font-size: 14pt; font-weight: bold; font-family: "Times New Roman", serif; }
+      .cert-header .region { font-size: 11pt; font-family: "Times New Roman", serif; }
+      .cert-header .division { font-size: 11pt; font-family: "Times New Roman", serif; }
+      .cert-header .school { font-size: 12pt; font-weight: bold; font-family: "Times New Roman", serif; margin-top: 5px; }
+      .cert-header .address { font-size: 10pt; font-family: "Times New Roman", serif; font-style: italic; }
+      
+      .cert-title { text-align: center; font-size: 22pt; font-weight: bold; font-family: "Times New Roman", serif; letter-spacing: 2px; margin: 40px 0; text-transform: uppercase; text-decoration: underline; }
+
+      .cert-body { font-size: 13pt; font-family: "Times New Roman", serif; line-height: 2; text-align: justify; text-indent: 50px; margin-bottom: 40px; }
+      .cert-body strong { font-weight: bold; text-transform: uppercase; }
+
+      .cert-signature { display: flex; justify-content: flex-end; margin-top: 60px; padding-right: 40px; }
+      .sig-block { text-align: center; }
+      .sig-name { font-size: 12pt; font-weight: bold; font-family: "Times New Roman", serif; border-bottom: 1px solid #000; padding-bottom: 2px; min-width: 250px; margin-bottom: 5px; }
+      .sig-title { font-size: 10pt; font-family: "Times New Roman", serif; }
+
+      .cert-date { text-align: left; font-size: 11pt; font-family: "Times New Roman", serif; margin-top: 40px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- SIDEBAR -->
+  <nav class="sidebar">
+    <a href="#" class="logo"><i class="fas fa-university"></i> <span>SCPHS Portal</span></a>
+    
+    <a href="index.html" class="nav-item">
+      <i class="fas fa-file-signature"></i> <span>Request Document</span>
+    </a>
+    
+    <a href="index.html" class="nav-item">
+      <i class="fas fa-tasks"></i> <span>Admin Dashboard</span>
+    </a>
+
+    <a href="masterlist.html" class="nav-item">
+      <i class="fas fa-address-book"></i> <span>Masterlist Directory</span>
+    </a>
+
+    <a href="certificate-generator.html" class="nav-item active" style="background: #1e293b; color: white; border-left: 4px solid var(--accent);">
+      <i class="fas fa-certificate"></i> <span>Certificate Generator</span>
+    </a>
+
+    <a href="../../../index.html" class="nav-item" style="margin-top: auto;">
+      <i class="fas fa-home"></i> <span>Return to Main Site</span>
+    </a>
+  </nav>
+
+  <!-- MAIN CONTENT -->
+  <main class="main-content">
+    
+    <div class="ui-card" id="search-area">
+      <h2 class="section-title">Search Student Record</h2>
+      <div class="form-grid" style="grid-template-columns: 1fr auto; align-items: end;">
+        <div class="form-group">
+          <label>Enter Student LRN or Name</label>
+          <input type="text" id="search-input" placeholder="e.g. 104109150006 or Dela Cruz" onkeypress="if(event.key==='Enter') searchStudent()">
+        </div>
+        <button class="btn-generate" onclick="searchStudent()" style="width: auto; padding: 12px 30px;">
+          <i class="fas fa-search"></i> Search
+        </button>
+      </div>
+    </div>
+
+    <div class="ui-card" id="form-area" style="display: none;">
+      <h2 class="section-title">Certificate Details</h2>
+      
+      <div class="form-grid">
+        <div class="form-group">
+          <label>Student Name</label>
+          <input type="text" id="c-name" readonly style="background: #e2e8f0; font-weight: bold; color: var(--primary);">
+        </div>
+        <div class="form-group">
+          <label>LRN</label>
+          <input type="text" id="c-lrn" readonly style="background: #e2e8f0; font-weight: bold;">
+        </div>
+        <div class="form-group">
+          <label>Grade Level</label>
+          <input type="text" id="c-grade" readonly style="background: #e2e8f0; font-weight: bold;">
+        </div>
+        <div class="form-group">
+          <label>School Year</label>
+          <input type="text" id="c-sy" readonly style="background: #e2e8f0; font-weight: bold;">
+        </div>
+      </div>
+
+      <div class="form-grid" style="margin-top: 20px;">
+        <div class="form-group">
+          <label>Certificate Type</label>
+          <select id="c-type" onchange="toggleGoodMoral()">
+            <option value="enrollment">Certificate of Enrollment</option>
+            <option value="goodmoral">Certificate of Good Moral Character</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Date Issued</label>
+          <input type="text" id="c-date" placeholder="e.g. November 15, 2026">
+        </div>
+        <div class="form-group">
+          <label>School Head / Principal</label>
+          <input type="text" id="c-principal" value="SATURNINO P. CALANSI EdD">
+        </div>
+      </div>
+
+      <!-- Toggle for Good Moral (Hidden by default) -->
+      <div id="goodmoral-toggle-area" style="display: none;">
+        <div class="toggle-wrapper">
+          <div>
+            <div class="toggle-label">Does this student have NO record of misdemeanor?</div>
+            <div class="toggle-desc">Toggle ON for Good Moral. Toggle OFF if there is a record.</div>
+          </div>
+          <label class="switch">
+            <input type="checkbox" id="c-moral-status" onchange="updateMoralText()" checked>
+            <span class="slider"></span>
+          </label>
+        </div>
+      </div>
+
+      <button class="btn-generate" onclick="generateCertificate()" style="margin-top: 20px;">
+        <i class="fas fa-file-signature"></i> Generate Certificate
+      </button>
+
+      <button class="btn-print" id="btn-print" onclick="window.print()">
+        <i class="fas fa-print"></i> Print Certificate
+      </button>
+    </div>
+
+  </main>
+
+  <!-- HIDDEN PRINT WRAPPER -->
+  <div id="certificate-wrapper">
+    <div class="paper">
+      
+      <div class="cert-header">
+        <div class="republic">Republic of the Philippines</div>
+        <div class="deped">Department of Education</div>
+        <div class="region">Region II - Cagayan Valley</div>
+        <div class="division">Schools Division of Nueva Vizcaya</div>
+        <div class="school">STA. CRUZ PINGKIAN HIGH SCHOOL</div>
+        <div class="address">Brgy. Sta. Cruz, Pingkian, Nueva Vizcaya</div>
+      </div>
+
+      <div class="cert-title" id="print-title">CERTIFICATE OF ENROLLMENT</div>
+
+      <div class="cert-body" id="print-body">
+        <!-- Content injected by JS -->
+      </div>
+
+      <div class="cert-signature">
+        <div class="sig-block">
+          <div class="sig-name" id="print-principal">SATURNINO P. CALANSI EdD</div>
+          <div class="sig-title">Principal / School Head</div>
+        </div>
+      </div>
+
+      <div class="cert-date" id="print-date">
+        Date: _______________
+      </div>
+
+    </div>
+  </div>
+
+  <script type="module">
+    import { auth, db } from "../../assets/js/firebase-config.js";
+    import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+    import { collection, query, where, getDocs, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+    let currentStudent = null;
+
+    // 1. Auth Check
+    onAuthStateChanged(auth, async (user) => {
+      if (!user) { window.location.href = "index.html"; return; }
+      const userSnap = await getDoc(doc(db, "users", user.uid));
+      if (userSnap.exists()) {
+        const role = userSnap.data().primaryRole || userSnap.data().role;
+        if (!['admin', 'superadmin', 'registrar', 'teacher'].includes(role)) {
+          alert("Access Denied. Admin only.");
+          window.location.href = "index.html";
+        }
+      }
+    });
+
+    // 2. Search Student
+    window.searchStudent = async function() {
+      const term = document.getElementById('search-input').value.trim();
+      if (!term) return alert("Please enter a name or LRN.");
+
+      const btn = event.target;
+      const originalText = btn.innerHTML;
+      btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Searching...';
+      btn.disabled = true;
+
+      try {
+        // We search by LRN first, then by Name if LRN fails
+        const q = query(collection(db, "sf10_archives"), where("lrn", "==", term));
+        let snap = await getDocs(q);
+
+        if (snap.empty) {
+          // Fallback: Search by Last Name
+          const qName = query(collection(db, "sf10_archives"), where("lastName", ">=", term), where("lastName", "<=", term + '\uf8ff'));
+          snap = await getDocs(qName);
+        }
+
+        if (!snap.empty) {
+          // Get the latest record for this student
+          const records = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+          records.sort((a, b) => b.schoolYear.localeCompare(a.schoolYear));
+          currentStudent = records[0];
+
+          // Fill the form
+          document.getElementById('c-name').value = `${currentStudent.firstName} ${currentStudent.middleName || ''} ${currentStudent.lastName}`.trim();
+          document.getElementById('c-lrn').value = currentStudent.lrn;
+          document.getElementById('c-grade').value = currentStudent.gradeLevel;
+          document.getElementById('c-sy').value = currentStudent.schoolYear;
+          
+          // Show the form
+          document.getElementById('form-area').style.display = 'block';
+          document.getElementById('btn-print').style.display = 'none';
+          
+          // Auto-set date to today
+          const today = new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+          document.getElementById('c-date').value = today;
+
+          btn.innerHTML = originalText;
+          btn.disabled = false;
+          document.getElementById('form-area').scrollIntoView({ behavior: 'smooth' });
+
+        } else {
+          alert("❌ No student found with that LRN or Name.");
+          btn.innerHTML = originalText;
+          btn.disabled = false;
+        }
+      } catch (error) {
+        console.error(error);
+        alert("❌ Error searching database.");
+        btn.innerHTML = originalText;
+        btn.disabled = false;
+      }
+    };
+
+    // 3. Toggle Logic
+    window.toggleGoodMoral = function() {
+      const type = document.getElementById('c-type').value;
+      const toggleArea = document.getElementById('goodmoral-toggle-area');
+      if (type === 'goodmoral') {
+        toggleArea.style.display = 'block';
+      } else {
+        toggleArea.style.display = 'none';
+      }
+      document.getElementById('btn-print').style.display = 'none';
+    };
+
+    // 4. Generate Certificate
+    window.generateCertificate = function() {
+      if (!currentStudent) return alert("Please search for a student first.");
+
+      const type = document.getElementById('c-type').value;
+      const dateVal = document.getElementById('c-date').value || '_______________________';
+      const principal = document.getElementById('c-principal').value || '_______________________';
+      const name = document.getElementById('c-name').value;
+      const lrn = document.getElementById('c-lrn').value;
+      const grade = document.getElementById('c-grade').value;
+      const sy = document.getElementById('c-sy').value;
+
+      document.getElementById('print-principal').textContent = principal;
+      document.getElementById('print-date').textContent = `Date Issued: ${dateVal}`;
+
+      if (type === 'enrollment') {
+        document.getElementById('print-title').textContent = "CERTIFICATE OF ENROLLMENT";
+        document.getElementById('print-body').innerHTML = `
+          <p>This is to certify that, according to the records filed in this office, <strong>${name}</strong> with Learner Reference Number <strong>${lrn}</strong> is currently enrolled in <strong>${grade}</strong> during the School Year <strong>${sy}</strong>.</p>
+          <p>This certification is issued upon the request of the herein interested party for whatever legal purpose it may serve.</p>
+        `;
+      } else {
+        document.getElementById('print-title').textContent = "CERTIFICATE OF GOOD MORAL CHARACTER";
+        const isGood = document.getElementById('c-moral-status').checked;
+        
+        let moralText = "";
+        if (isGood) {
+          moralText = `This further certifies that he/she is a law-abiding student with <strong>good moral character</strong> and that he/she <strong>bears no record of misdemeanor</strong>.`;
+        } else {
+          moralText = `This further certifies that he/she is a bona fide student. However, please be advised that the student has a <strong>record of minor infraction on file</strong>.`;
+        }
+
+        document.getElementById('print-body').innerHTML = `
+          <p>To Whom It May Concern:</p>
+          <p>This is to certify that <strong>${name}</strong>, with Learner Reference Number <strong>${lrn}</strong>, is a bona fide student of Sta. Cruz Pingkian High School for the School Year <strong>${sy}</strong>.</p>
+          <p>${moralText}</p>
+          <p>This certification is issued upon his/her request for whatever legal purpose it may serve.</p>
+        `;
+      }
+
+      document.getElementById('btn-print').style.display = 'flex';
+      document.getElementById('btn-print').scrollIntoView({ behavior: 'smooth' });
+    };
+  </script>
+</body>
+</html>
