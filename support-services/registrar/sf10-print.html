@@ -6,7 +6,8 @@
   <title>SF10 Viewer / Print – SCPHS Registrar</title>
   <link rel="stylesheet" href="../../assets/css/styles.css" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  
+  <script src="https://cdn.jsdelivr.net/npm/qrious@4.0.2/dist/qrious.min.js"></script>
+
   <style>
     :root {
       --gc-primary: #0f4c81;
@@ -290,6 +291,11 @@
             <div class="sig-box" style="width: 20%;">
               <div class="seal-box">(Affix School Seal Here)</div>
             </div>
+                    <!-- QR CODE -->
+        <div style="text-align: right; margin-top: 20px; padding-right: 20px;">
+          <canvas id="qr-canvas-jhs" style="width: 80px; height: 80px;"></canvas>
+          <div style="font-size: 7pt; font-family: 'Arial Narrow', sans-serif; margin-top: 2px;">Scan to Verify</div>
+        </div>
           </div>
         </div>
       </div>
@@ -672,6 +678,18 @@
         }
 
         document.getElementById('jhs-page1').style.display = 'block';
+                // Generate QR Code for JHS
+        const qrCanvas = document.getElementById('qr-canvas-jhs');
+        if (qrCanvas) {
+          new QRious({
+            element: qrCanvas,
+            value: lrn,
+            size: 150,
+            background: 'white',
+            foreground: 'black',
+            level: 'H'
+          });
+        }
         document.getElementById('jhs-page2').style.display = 'block';
       }
     }
