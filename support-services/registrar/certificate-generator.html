@@ -7,7 +7,8 @@
   <link rel="stylesheet" href="../../assets/css/styles.css" />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  
+  <script src="https://cdn.jsdelivr.net/npm/qrious@4.0.2/dist/qrious.min.js"></script>
+
   <style>
     :root {
       --primary: #0f172a;
@@ -257,8 +258,16 @@
         </div>
       </div>
 
-      <div class="cert-date" id="print-date">
-        Date: _______________
+            <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-top: 40px;">
+        <div class="cert-date" id="print-date" style="margin-top: 0;">
+          Date: _______________
+        </div>
+        
+        <!-- QR Code Container -->
+        <div style="text-align: right;">
+          <canvas id="qr-canvas" style="width: 80px; height: 80px;"></canvas>
+          <div style="font-size: 8pt; font-family: 'Times New Roman', serif; margin-top: 2px;">Scan to verify</div>
+        </div>
       </div>
 
     </div>
@@ -392,6 +401,19 @@
           <p>${moralText}</p>
           <p>This certification is issued upon his/her request for whatever legal purpose it may serve.</p>
         `;
+      }
+
+            // --- GENERATE QR CODE ---
+      const qrCanvas = document.getElementById('qr-canvas');
+      if (qrCanvas) {
+        new QRious({
+          element: qrCanvas,
+          value: lrn, // The QR code contains the student's LRN
+          size: 150,
+          background: 'white',
+          foreground: 'black',
+          level: 'H'
+        });
       }
 
       document.getElementById('btn-print').style.display = 'flex';
