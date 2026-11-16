@@ -84,6 +84,10 @@
 
     /* Loading State */
     .loading { text-align: center; padding: 50px; color: var(--text-muted); font-weight: 600; }
+
+    /* Delete Button */
+    .btn-delete { background: #fee2e2; color: #dc2626; border: none; padding: 8px 12px; border-radius: 6px; font-weight: 700; cursor: pointer; font-size: 0.8rem; transition: 0.2s; display: inline-flex; align-items: center; gap: 6px; }
+    .btn-delete:hover { background: #dc2626; color: white; }
   </style>
 </head>
 <body>
@@ -102,6 +106,10 @@
 
     <a href="masterlist.html" class="nav-item active" style="background: #1e293b; color: white; border-left: 4px solid var(--accent);">
       <i class="fas fa-address-book"></i> <span>Masterlist Directory</span>
+    </a>
+
+    <a href="certificate-generator.html" class="nav-item">
+      <i class="fas fa-certificate"></i> <span>Certificate Generator</span>
     </a>
 
     <a href="../../../index.html" class="nav-item" style="margin-top: auto;">
@@ -167,7 +175,7 @@
   <script type="module">
     import { auth, db } from "../../assets/js/firebase-config.js";
     import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-    import { collection, getDocs, query, orderBy, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+    import { collection, getDocs, query, orderBy, doc, getDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
     let allStudents = [];
     let filteredStudents = [];
@@ -206,13 +214,11 @@
         });
 
         // Deduplicate by LRN (Since a student might have Grade 7, 8, 9, 10 in the DB)
-        // We want the Masterlist to show each student ONCE, with their latest record.
         const uniqueStudents = {};
         allStudents.forEach(student => {
           if (!uniqueStudents[student.lrn]) {
             uniqueStudents[student.lrn] = student;
           } else {
-            // If we find a newer record (e.g., Grade 8 over Grade 7), update the unique object
             const existing = uniqueStudents[student.lrn];
             if (student.gradeLevel > existing.gradeLevel) {
               uniqueStudents[student.lrn] = student;
@@ -239,7 +245,6 @@
       }
 
       tbody.innerHTML = filteredStudents.map(student => {
-        // Determine if JHS or SHS for the badge color
         const isSHS = student.gradeLevel.includes('11') || student.gradeLevel.includes('12');
         const badgeClass = isSHS ? 'bg-shs' : 'bg-jhs';
         
@@ -259,9 +264,12 @@
             <td>${student.schoolYear || 'N/A'}</td>
             <td>${student.trackStrand || '-'}</td>
             <td style="color: var(--text-muted); font-size: 0.85rem;">${dateStr}</td>
-            <td>
+            <td style="display: flex; gap: 8px;">
               <button onclick="openStudentRecord('${student.id}')" style="background: #e0f2fe; color: #0369a1; border: none; padding: 8px 12px; border-radius: 6px; font-weight: 700; cursor: pointer; font-size: 0.8rem;">
                 <i class="fas fa-folder-open"></i> Open
+              </button>
+              <button class="btn-delete" onclick="deleteStudentRecord('${student.id}', '${student.fullName.replace(/'/g, "\\'")}')">
+                <i class="fas fa-trash"></i> Delete
               </button>
             </td>
           </tr>
@@ -273,8 +281,7 @@
     window.filterMasterlist = function() {
       const searchTerm = document.getElementById('search-input').value.toLowerCase();
       
-      filteredStudents = Object.values(allStudents).filter(student => {
-        // Deduplicate logic again (quickly)
+      let tempList = Object.values(allStudents).filter(student => {
         const matchesSearch = 
           (student.fullName || '').toLowerCase().includes(searchTerm) ||
           (student.lrn || '').includes(searchTerm) ||
@@ -287,7 +294,7 @@
 
       // Re-deduplicate after search
       const unique = {};
-      filteredStudents.forEach(s => { unique[s.lrn] = s; });
+      tempList.forEach(s => { unique[s.lrn] = s; });
       filteredStudents = Object.values(unique);
 
       renderTable();
@@ -302,8 +309,6 @@
 
     // 5. Smart Routing to Print Page
     window.openStudentRecord = function(docId) {
-      // We redirect to the print page, passing the ID
-      // The print page will handle the rest (fetching all years, detecting JHS/SHS)
       const student = allStudents.find(s => s.id === docId);
       if (!student) return;
 
@@ -316,7 +321,30 @@
       }
     };
 
-    // 6. Export to CSV
+    // 6. Delete Function
+    window.deleteStudentRecord = async function(docId, studentName) {
+      if (!confirm(`⚠️ Are you sure you want to DELETE the record for ${studentName}?\n\nThis action cannot be undone!`)) {
+        return;
+      }
+
+      try {
+        // Delete the document from Firestore
+        await deleteDoc(doc(db, "sf10_archives", docId));
+        
+        // Remove it from the local array so we don't have to reload the whole database
+        allStudents = allStudents.filter(s => s.id !== docId);
+        
+        // Re-run the filter to update the UI
+        filterMasterlist();
+        
+        alert("✅ Record deleted successfully!");
+      } catch (error) {
+        console.error("Error deleting record:", error);
+        alert("❌ Failed to delete record: " + error.message);
+      }
+    };
+
+    // 7. Export to CSV
     window.exportToCSV = function() {
       if (filteredStudents.length === 0) return alert("No data to export.");
       
