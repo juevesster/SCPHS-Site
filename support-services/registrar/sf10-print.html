@@ -347,12 +347,19 @@
               <div class="print-sig-name" id="print-shs-principal-name">_________________________</div>
               <div>Signature of Principal/School Head over Printed Name</div>
             </div>
-            <div class="sig-box" style="width: 20%;">
-              <div class="seal-box">(Affix School Seal Here)</div>
-            </div>
+                      <div class="sig-box" style="width: 20%;">
+            <div class="seal-box">(Affix School Seal Here)</div>
           </div>
         </div>
+
+        <!-- NEW: QR CODE FOR SHS -->
+        <div style="text-align: right; margin-top: 15px; padding-right: 20px;">
+          <canvas id="qr-canvas-shs" style="width: 80px; height: 80px;"></canvas>
+          <div style="font-size: 7pt; font-family: 'Arial Narrow', sans-serif; margin-top: 2px;">Scan to Verify</div>
+        </div>
+
       </div>
+    </div>
 
     </div>
   </div>
@@ -620,6 +627,18 @@
         records.forEach(r => { shsHtml += generateGradeBlock(r); });
         document.getElementById('shs-grades').innerHTML = shsHtml;
         document.getElementById('shs-page').style.display = 'block';
+                // Generate QR Code for SHS Fallback Page
+        const qrCanvasSHS = document.getElementById('qr-canvas-shs');
+        if (qrCanvasSHS) {
+          new QRious({
+            element: qrCanvasSHS,
+            value: lrn,
+            size: 150,
+            background: 'white',
+            foreground: 'black',
+            level: 'H'
+          });
+        }
       } else {
         document.getElementById('p-lastname').textContent = firstRecord.lastName;
         document.getElementById('p-firstname').textContent = firstRecord.firstName;
