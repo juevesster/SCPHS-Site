@@ -261,6 +261,10 @@
               <div class="menu-icon" style="background: linear-gradient(135deg, #f59e0b, #fbbf24);"><i class="fas fa-table"></i></div>
               <div class="menu-info"><h4>Consolidated Grades</h4><p>Edit all students · <span id="linkConsolidatedGradesTerm">Term 1</span></p></div>
             </a>
+              <a href="#" class="menu-card" id="btnPublishSf10" style="background: linear-gradient(135deg, #fdf4ff, #fae8ff); border-color: #d8b4fe;">
+              <div class="menu-icon" style="background: linear-gradient(135deg, #d946ef, #a21caf);"><i class="fas fa-cloud-upload-alt"></i></div>
+              <div class="menu-info"><h4>Publish to SF10</h4><p>Send grades to Registrar</p></div>
+            </a>
             <a href="adviser-approvals.html" class="menu-card">
               <div class="menu-icon" style="background: linear-gradient(135deg, #10b981, #34d399);"><i class="fas fa-check-double"></i></div>
               <div class="menu-info"><h4>Grade Approvals</h4><p>Review & approve ECRs</p></div>
@@ -294,7 +298,7 @@
   <script type="module">
     import { auth, db } from "./assets/js/firebase-config.js";
     import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-    import { collection, getDocs, query, where } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+    import { collection, getDocs, query, where, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
     import { getCurrentUserProfile } from "./assets/js/roles.js";
 
     let CURRENT_USER = null;
@@ -411,6 +415,132 @@
     });
 
     init();
+
+        // ============================================================
+    // PUBLISH TO SF10 ARCHIVE (REGISTRAR BRIDGE)
+    // ============================================================
+    document.getElementById('btnPublishSf10').addEventListener('click', async (e) => {
+      e.preventDefault();
+      
+      if (MY_CLASSES.length === 0) {
+        alert("⚠️ You don't have any advisory classes to publish.");
+        return;
+      }
+
+      // If they have multiple classes, ask which one to publish
+      let selectedClass = MY_CLASSES[0];
+      if (MY_CLASSES.length > 1) {
+        const options = MY_CLASSES.map((c, i) => `${i + 1}. ${c.classLabel}`).join('\n');
+        const choice = prompt(`Which class do you want to publish to the SF10 Archive?\n\n${options}\n\nEnter the number:`);
+        const idx = parseInt(choice) - 1;
+        if (isNaN(idx) || !MY_CLASSES[idx]) return;
+        selectedClass = MY_CLASSES[idx];
+      }
+
+      const confirmMsg = `🚀 PUBLISH TO REGISTRAR\n\nClass: ${selectedClass.classLabel}\nGrade: ${selectedClass.gradeLevel}\nSchool Year: ${selectedClass.schoolYear || 'Not Set'}\n\nThis will calculate the final grades from all 4 terms and save them to the Registrar's SF10 Archive.\n\nProceed?`;
+      
+      if (!confirm(confirmMsg)) return;
+
+      const btn = document.getElementById('btnPublishSf10');
+      const originalHTML = btn.innerHTML;
+      btn.innerHTML = `<div class="menu-icon" style="background: #e2e8f0;"><i class="fas fa-spinner fa-spin" style="color: #64748b;"></i></div><div class="menu-info"><h4>Publishing...</h4><p>Please wait</p></div>`;
+      btn.style.pointerEvents = 'none';
+
+      try {
+        const classId = selectedClass.id;
+        const schoolYear = selectedClass.schoolYear || "2024-2025";
+        const gradeLevel = selectedClass.gradeLevel || "";
+        const section = selectedClass.section || "";
+        const trackStrand = selectedClass.trackStrand || "";
+
+        // 1. Get all students
+        const studentsSnap = await getDocs(collection(db, "classes", classId, "students"));
+        const students = studentsSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+
+        if (students.length === 0) throw new Error("No students found in this class.");
+
+        // 2. Get all subjects (ECR documents)
+        const ecrSnap = await getDocs(collection(db, "classes", classId, "ecr"));
+        const subjects = ecrSnap.docs.map(d => ({ code: d.id, ...d.data() }));
+
+        if (subjects.length === 0) throw new Error("No subjects found. Teachers must submit ECRs first.");
+
+        let publishedCount = 0;
+
+        // 3. For each student, compile the grades from all 4 terms
+        for (const student of students) {
+          const gradesArray = [];
+          
+          for (const subject of subjects) {
+            const termGrades = { q1: null, q2: null, q3: null, q4: null };
+            
+            // Fetch scores for Term 1, 2, 3, 4
+            for (let term = 1; term <= 4; term++) {
+              try {
+                const scoreRef = doc(db, "classes", classId, "ecr", subject.code, "terms", String(term), "scores", student.id);
+                const scoreSnap = await getDoc(scoreRef);
+                if (scoreSnap.exists()) {
+                  const data = scoreSnap.data();
+                  const tg = data?.computed?.termGrade;
+                  if (tg != null && !isNaN(tg)) {
+                    termGrades[`q${term}`] = Math.round(tg);
+                  }
+                }
+              } catch (err) { /* ignore missing term */ }
+            }
+
+            // Calculate Final Grade
+            const validQuarters = [termGrades.q1, termGrades.q2, termGrades.q3, termGrades.q4].filter(q => q != null);
+            if (validQuarters.length === 0) continue; // Skip subject if no grades at all
+
+            const finalGrade = Math.round(validQuarters.reduce((a, b) => a + b, 0) / validQuarters.length);
+
+            gradesArray.push({
+              sub: subject.subjectName || subject.code,
+              subject: subject.subjectName || subject.code,
+              q1: termGrades.q1, q2: termGrades.q2, q3: termGrades.q3, q4: termGrades.q4,
+              final: finalGrade,
+              remarks: finalGrade >= 75 ? "Passed" : "Failed"
+            });
+          }
+
+          if (gradesArray.length === 0) continue;
+
+          // 4. Save to Registrar's sf10_archives
+          const docId = `${student.lrn}_${schoolYear}_${gradeLevel.replace(/\s+/g, '')}`;
+          const docRef = doc(db, "sf10_archives", docId);
+
+          await setDoc(docRef, {
+            lrn: student.lrn || "",
+            lastName: (student.fullName || "").split(",")[0]?.trim() || student.fullName || "",
+            firstName: (student.fullName || "").split(",")[1]?.trim() || "",
+            middleName: "",
+            extName: "",
+            gradeLevel: gradeLevel,
+            schoolYear: schoolYear,
+            section: section,
+            trackStrand: trackStrand,
+            gradingSystem: gradeLevel.includes("11") || gradeLevel.includes("12") ? "semestral" : "4q",
+            grades: gradesArray,
+            adviser: CURRENT_PROFILE.name || "",
+            publishedAt: Date.now(),
+            publishedBy: CURRENT_USER.email || "",
+            importedVia: "Adviser ECR Publish"
+          }, { merge: true });
+
+          publishedCount++;
+        }
+
+        alert(`✅ SUCCESS!\n\nPublished ${publishedCount} students to the SF10 Archive.\n\nThe Registrar can now print their official SF10s.`);
+
+      } catch (error) {
+        console.error("Publish Error:", error);
+        alert(`❌ Publish Failed:\n\n${error.message}`);
+      } finally {
+        btn.innerHTML = originalHTML;
+        btn.style.pointerEvents = 'auto';
+      }
+    });
   </script>
 </body>
 </html>
