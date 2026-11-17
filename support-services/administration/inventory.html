@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Property Inventory – Admin Office</title>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <style>
+    :root {
+      --sidebar-bg: #0f172a;
+      --bg-color: #f4f7f9;
+      --primary: #0f766e;
+      --text-main: #1e293b;
+      --text-muted: #64748b;
+      --border: #e2e8f0;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Outfit', sans-serif; }
+    body { background: var(--bg-color); color: var(--text-main); display: flex; min-height: 100vh; }
+
+    /* Sidebar (Reused) */
+    .sidebar { width: 260px; background: var(--sidebar-bg); color: #fff; display: flex; flex-direction: column; position: fixed; height: 100vh; }
+    .sidebar-brand { padding: 30px 24px; font-size: 1.4rem; font-weight: 800; display: flex; align-items: center; gap: 12px; border-bottom: 1px solid rgba(255,255,255,0.05); }
+    .sidebar-brand i { color: #14b8a6; }
+    .sidebar-menu { flex: 1; padding: 24px 16px; display: flex; flex-direction: column; gap: 8px; }
+    .menu-item { display: flex; align-items: center; gap: 14px; padding: 14px 18px; border-radius: 12px; color: #94a3b8; text-decoration: none; font-weight: 500; font-size: 0.95rem; transition: all 0.2s; }
+    .menu-item:hover { background: #1e293b; color: #fff; }
+    .menu-item.active { background: linear-gradient(90deg, #0f766e, #14b8a6); color: #fff; }
+
+    /* Main Content */
+    .main-content { margin-left: 260px; flex: 1; padding: 32px; }
+    .topbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
+    .topbar h1 { font-size: 1.8rem; font-weight: 800; }
+
+    /* Tabs */
+    .tabs { display: flex; gap: 10px; margin-bottom: 20px; }
+    .tab-btn { padding: 10px 20px; border-radius: 8px; border: 1px solid var(--border); background: #fff; font-weight: 700; cursor: pointer; transition: 0.2s; color: var(--text-muted); }
+    .tab-btn.active { background: var(--primary); color: #fff; border-color: var(--primary); }
+
+    /* Table */
+    .table-container { background: #fff; border-radius: 16px; border: 1px solid var(--border); overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.02); }
+    .table-responsive { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+    th, td { padding: 14px 16px; text-align: left; border-bottom: 1px solid var(--border); }
+    th { background: #f8fafc; font-weight: 700; color: var(--text-muted); text-transform: uppercase; font-size: 0.75rem; letter-spacing: 0.5px; }
+    td { color: var(--text-main); }
+    tr:hover td { background: #f8fafc; }
+    
+    .badge { padding: 4px 10px; border-radius: 20px; font-size: 0.75rem; font-weight: 700; }
+    .badge-green { background: #dcfce7; color: #166534; }
+    .badge-red { background: #fee2e2; color: #991b1b; }
+  </style>
+</head>
+<body>
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sidebar-brand"><i class="fas fa-building"></i> <span>Admin Office</span></div>
+    <div class="sidebar-menu">
+      <a href="index.html" class="menu-item"><i class="fas fa-home"></i> <span>Overview</span></a>
+      <a href="inventory.html" class="menu-item active"><i class="fas fa-boxes"></i> <span>Property Inventory</span></a>
+      <a href="../registrar/index.html" class="menu-item"><i class="fas fa-file-signature"></i> <span>Registrar</span></a>
+    </div>
+  </aside>
+
+  <!-- MAIN CONTENT -->
+  <main class="main-content">
+    <div class="topbar">
+      <h1>📦 Property Inventory</h1>
+      <button class="tab-btn active" style="background: var(--primary); color: #fff; border: none; cursor: default;">
+        <i class="fas fa-user-shield"></i> Custodian: Nisan K. Binwag
+      </button>
+    </div>
+
+    <div class="tabs">
+      <button class="tab-btn active" onclick="switchTab('high')">High Value (P5k - P50k)</button>
+      <button class="tab-btn" onclick="switchTab('low')">Low Value (Under P5k)</button>
+    </div>
+
+    <div class="table-container">
+      <div class="table-responsive">
+        <table>
+          <thead>
+            <tr>
+              <th>Article / Description</th>
+              <th>Property No.</th>
+              <th>Date Acquired</th>
+              <th>Unit Value</th>
+              <th>Qty (Card)</th>
+              <th>Qty (Count)</th>
+              <th>Total Cost</th>
+              <th>Accountable Officer</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody id="inventory-body">
+            <tr><td colspan="9" style="text-align: center; padding: 30px; color: var(--text-muted);">Loading inventory data...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </main>
+
+  <script type="module">
+    import { db } from "../../assets/js/firebase-config.js";
+    import { collection, getDocs } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+    let allItems = [];
+    let currentTab = 'high';
+
+    async function loadInventory() {
+      try {
+        const snap = await getDocs(collection(db, "property_inventory"));
+        allItems = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+        renderTable();
+      } catch (error) {
+        console.error("Error loading inventory:", error);
+        document.getElementById('inventory-body').innerHTML = `<tr><td colspan="9" style="text-align: center; color: red;">Failed to load data.</td></tr>`;
+      }
+    }
+
+    window.switchTab = function(tab) {
+      currentTab = tab;
+      document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+      event.target.classList.add('active');
+      renderTable();
+    };
+
+    function renderTable() {
+      const tbody = document.getElementById('inventory-body');
+      const filtered = allItems.filter(item => item.category === currentTab);
+
+      if (filtered.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="9" style="text-align: center; padding: 30px; color: var(--text-muted);">No items found for this category.</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = filtered.map(item => {
+        const isShort = item.qtyPerCount < item.qtyPerCard;
+        const statusBadge = isShort 
+          ? `<span class="badge badge-red">Shortage</span>` 
+          : `<span class="badge badge-green">Complete</span>`;
+
+        return `
+          <tr>
+            <td>
+              <strong>${item.article}</strong><br>
+              <span style="font-size: 0.8rem; color: var(--text-muted);">${item.description || ''}</span>
+            </td>
+            <td style="font-family: monospace;">${item.propertyNumber || '-'}</td>
+            <td>${item.dateAcquired || '-'}</td>
+            <td>₱${Number(item.unitValue).toLocaleString()}</td>
+            <td style="text-align: center; font-weight: bold;">${item.qtyPerCard}</td>
+            <td style="text-align: center; font-weight: bold; color: ${isShort ? 'red' : 'green'};">${item.qtyPerCount}</td>
+            <td>₱${Number(item.totalCost).toLocaleString()}</td>
+            <td>${item.accountableOfficer || '-'}</td>
+            <td>${statusBadge}</td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    document.addEventListener('DOMContentLoaded', loadInventory);
+  </script>
+</body>
+</html>
