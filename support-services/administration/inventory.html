@@ -32,7 +32,7 @@
     .menu-item.active { background: linear-gradient(90deg, var(--primary), var(--primary-light)); color: #fff; }
 
     /* Main Content */
-    .main-content { margin-left: 260px; flex: 1; padding: 32px; }
+    .main-content { margin-left: 260px; flex: 1; padding: 32px; display: flex; flex-direction: column; }
     .topbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
     .topbar h1 { font-size: 1.8rem; font-weight: 800; }
 
@@ -45,17 +45,65 @@
     .btn-danger:hover { background: #b91c1c; }
     .btn-sm { padding: 6px 12px; font-size: 0.75rem; }
 
-    /* Tabs */
-    .tabs { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; }
-    .tab-btn { padding: 10px 20px; border-radius: 8px; border: 1px solid var(--border); background: #fff; font-weight: 700; cursor: pointer; transition: 0.2s; color: var(--text-muted); }
-    .tab-btn.active { background: var(--primary); color: #fff; border-color: var(--primary); }
+    /* ================= BOOK TABS ================= */
+    .book-tabs {
+      display: flex;
+      align-items: flex-end;
+      gap: 6px;
+      margin-bottom: -1px; /* Pull tabs down to touch the container */
+      padding-left: 20px;
+      z-index: 10;
+      position: relative;
+      flex-wrap: wrap;
+    }
+
+    .tab-btn {
+      padding: 12px 24px;
+      border: 1px solid var(--border);
+      border-bottom: none;
+      background: #e2e8f0;
+      color: var(--text-muted);
+      font-weight: 700;
+      font-size: 0.9rem;
+      cursor: pointer;
+      border-radius: 12px 12px 0 0;
+      transition: all 0.2s ease;
+      position: relative;
+      top: 4px; /* Push inactive tabs slightly down */
+      box-shadow: inset 0 -3px 5px rgba(0,0,0,0.02);
+    }
+
+    .tab-btn:hover {
+      background: #cbd5e1;
+      top: 2px;
+    }
+
+    .tab-btn.active {
+      background: #fff;
+      color: var(--primary);
+      top: 0;
+      padding-top: 14px; /* Slightly taller when active */
+      border-top: 3px solid var(--primary);
+      box-shadow: 0 -4px 10px rgba(0,0,0,0.03);
+      z-index: 2;
+    }
+
+    /* The main container that looks like a folder */
+    .tab-content-container {
+      background: #fff;
+      border-radius: 0 16px 16px 16px;
+      border: 1px solid var(--border);
+      box-shadow: 0 10px 25px -5px rgba(0,0,0,0.05);
+      position: relative;
+      z-index: 1;
+      overflow: hidden;
+    }
 
     /* Table */
-    .table-container { background: #fff; border-radius: 16px; border: 1px solid var(--border); overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.02); }
     .table-responsive { overflow-x: auto; }
     table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
     th, td { padding: 14px 16px; text-align: left; border-bottom: 1px solid var(--border); }
-    th { background: #f8fafc; font-weight: 700; color: var(--text-muted); text-transform: uppercase; font-size: 0.75rem; letter-spacing: 0.5px; }
+    th { background: #f8fafc; font-weight: 700; color: var(--text-muted); text-transform: uppercase; font-size: 0.75rem; letter-spacing: 0.5px; border-top: 1px solid var(--border); }
     td { color: var(--text-main); vertical-align: middle; }
     tr:hover td { background: #f8fafc; }
     
@@ -132,11 +180,11 @@
       </div>
     </div>
 
-    <!-- Dynamic Tabs -->
-    <div class="tabs" id="category-tabs"></div>
+    <!-- Book Tabs -->
+    <div class="book-tabs" id="category-tabs"></div>
 
-    <!-- Table -->
-    <div class="table-container">
+    <!-- Tab Content Container (Looks like a folder) -->
+    <div class="tab-content-container">
       <div class="table-responsive">
         <table>
           <thead>
@@ -174,7 +222,7 @@
         <input type="hidden" id="itemId">
         
         <div class="form-group full">
-          <label>Article (Type)</label>
+          <label>Article (Category)</label>
           <input type="text" id="f-article" placeholder="e.g. Furniture and Fixtures">
         </div>
         <div class="form-group full">
@@ -298,9 +346,8 @@
     import { collection, getDocs, doc, setDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
     let allItems = [];
-    let currentTab = 'Furniture and Fixtures'; // Default tab
+    let currentTab = 'Furniture and Fixtures'; 
 
-    // 1. Define Categories (Matches Excel Tabs)
     const CATEGORIES = [
       "Furniture and Fixtures",
       "Office Equipment",
@@ -312,7 +359,6 @@
       "Technical & Scientific Equipment"
     ];
 
-    // 2. Render Tabs
     function renderTabs() {
       const tabsContainer = document.getElementById('category-tabs');
       tabsContainer.innerHTML = CATEGORIES.map(cat => `
@@ -320,7 +366,6 @@
       `).join('');
     }
 
-    // 3. Load Data
     async function loadInventory() {
       try {
         const snap = await getDocs(collection(db, "property_inventory"));
@@ -332,7 +377,6 @@
       }
     }
 
-    // 4. Switch Tabs
     window.switchTab = function(tab, btnEl) {
       currentTab = tab;
       document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
@@ -340,14 +384,13 @@
       renderTable();
     };
 
-    // 5. Render Table
     function renderTable() {
       const tbody = document.getElementById('inventory-body');
       const filtered = allItems.filter(item => item.article === currentTab);
 
       if (filtered.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="12" style="text-align: center; padding: 30px; color: var(--text-muted);">No items found. Click "Add New Item" to start.</td></tr>`;
-        renderPrintArea([]); // Clear print area
+        tbody.innerHTML = `<tr><td colspan="12" style="text-align: center; padding: 40px; color: var(--text-muted);"><div style="font-size: 2rem; margin-bottom: 10px;">📂</div>No items found in this folder. Click "Add New Item" to start.</td></tr>`;
+        renderPrintArea([]);
         return;
       }
 
@@ -378,13 +421,12 @@
       renderPrintArea(filtered);
     }
 
-    // 6. Render Print Area
     function renderPrintArea(items) {
       const printTbody = document.getElementById('print-tbody');
       let total = 0;
 
       if (items.length === 0) {
-        printTbody.innerHTML = `<tr><td colspan="11" style="text-align: center; padding: 20px;">No items for this category.</td></tr>`;
+        printTbody.innerHTML = `<tr><td colspan="11" style="text-align: center; padding: 20px;">No items in this folder.</td></tr>`;
       } else {
         printTbody.innerHTML = items.map(item => {
           total += Number(item.totalCost);
@@ -410,11 +452,10 @@
       document.getElementById('print-category-label').textContent = currentTab.toUpperCase();
     }
 
-    // 7. Modal Controls
     window.openModal = function() {
       document.getElementById('modalTitle').textContent = "➕ Add New Property";
       document.getElementById('itemId').value = "";
-      document.getElementById('f-article').value = currentTab; // Auto-fill category
+      document.getElementById('f-article').value = currentTab; 
       document.getElementById('f-description').value = "";
       document.getElementById('f-propertyNumber').value = "";
       document.getElementById('f-dateAcquired').value = "";
@@ -432,14 +473,12 @@
       document.getElementById('itemModal').classList.remove('show');
     };
 
-    // 8. Auto-Calculate Total
     window.calcTotal = function() {
       const unit = parseFloat(document.getElementById('f-unitValue').value) || 0;
       const qty = parseFloat(document.getElementById('f-qtyPerCount').value) || 0;
       document.getElementById('f-totalCost').value = (unit * qty).toFixed(2);
     };
 
-    // 9. Save Item
     window.saveItem = async function() {
       const id = document.getElementById('itemId').value;
       const description = document.getElementById('f-description').value.trim();
@@ -475,7 +514,6 @@
       }
     };
 
-    // 10. Edit Item
     window.editItem = function(id) {
       const item = allItems.find(i => i.id === id);
       if (!item) return;
@@ -497,7 +535,6 @@
       document.getElementById('itemModal').classList.add('show');
     };
 
-    // 11. Delete Item
     window.deleteItem = async function(id, description) {
       if (!confirm(`Are you sure you want to delete "${description}"?`)) return;
 
