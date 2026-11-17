@@ -131,7 +131,7 @@
       <h1>📦 Property Inventory</h1>
       <div style="display: flex; gap: 10px;">
         <button class="btn btn-outline" onclick="openSignatoryModal()">
-          <i class="fas fa-users-cog"></i> Signatories
+          <i class="fas fa-users-cog"></i> Settings & Signatories
         </button>
         <button class="btn" style="background: #475569; color: #fff;" onclick="window.print()">
           <i class="fas fa-print"></i> Print Report
@@ -180,10 +180,9 @@
       </div>
       <div class="modal-body">
         <input type="hidden" id="itemId">
-        
         <div class="form-group full">
           <label>Article (Category)</label>
-          <input type="text" id="f-article" placeholder="e.g. Furniture and Fixtures" readonly style="background: #f1f5f9;">
+          <input type="text" id="f-article" readonly style="background: #f1f5f9;">
         </div>
         <div class="form-group full">
           <label>Description</label>
@@ -199,7 +198,7 @@
         </div>
         <div class="form-group">
           <label>Unit Value (₱)</label>
-          <input type="number" id="f-unitValue" placeholder="e.g. 120" oninput="calcTotal()">
+          <input type="number" id="f-unitValue" oninput="calcTotal()">
         </div>
         <div class="form-group">
           <label>Unit of Measure</label>
@@ -215,7 +214,7 @@
         </div>
         <div class="form-group">
           <label>Total Cost (₱)</label>
-          <input type="number" id="f-totalCost" readonly style="background: #f1f5f9; font-weight: bold;">
+          <input type="number" id="f-totalCost" readonly style="background: #f1f5f9;">
         </div>
         <div class="form-group">
           <label>Source of Fund</label>
@@ -223,7 +222,7 @@
         </div>
         <div class="form-group full">
           <label>Accountable Officer</label>
-          <input type="text" id="f-accountableOfficer" placeholder="e.g. Dolores C. Dodon">
+          <input type="text" id="f-accountableOfficer">
         </div>
       </div>
       <div class="modal-footer">
@@ -233,14 +232,40 @@
     </div>
   </div>
 
-  <!-- SIGNATORY MODAL -->
+    <!-- SETTINGS MODAL -->
   <div class="modal" id="signatoryModal">
     <div class="modal-content">
       <div class="modal-header">
-        <h3>✍️ Update Signatories</h3>
+        <h3>⚙️ Report Settings & Signatories</h3>
         <button onclick="closeModal('signatoryModal')" style="background: none; border: none; font-size: 1.5rem; cursor: pointer;">&times;</button>
       </div>
+      
       <div class="modal-body">
+        <!-- School & Principal Info -->
+        <div class="form-group full">
+          <label>School Name</label>
+          <input type="text" id="set-school-name" placeholder="e.g. Sta Cruz Pingkian High School">
+        </div>
+        <div class="form-group">
+          <label>Principal Name</label>
+          <input type="text" id="set-principal-name" placeholder="e.g. Dolores C. Dodon, PhD">
+        </div>
+        <div class="form-group">
+          <label>Principal Title</label>
+          <input type="text" id="set-principal-title" placeholder="e.g. Principal III">
+        </div>
+
+        <!-- Date Fields -->
+        <div class="form-group">
+          <label>Report Date ("As of")</label>
+          <input type="text" id="set-asof-date" placeholder="e.g. December 31, 2023">
+        </div>
+        <div class="form-group">
+          <label>Accountability Date</label>
+          <input type="text" id="set-accountability-date" placeholder="e.g. August 2, 2021">
+        </div>
+
+        <!-- Signatories -->
         <div class="form-group full">
           <label>Certified Correct By (Names)</label>
           <input type="text" id="sig-certified">
@@ -268,9 +293,10 @@
           <input type="text" id="sig-verified-title">
         </div>
       </div>
+      
       <div class="modal-footer">
         <button class="btn btn-outline" onclick="closeModal('signatoryModal')">Cancel</button>
-        <button class="btn btn-primary" onclick="saveSignatories()">💾 Save Signatories</button>
+        <button class="btn btn-primary" onclick="saveSignatories()">💾 Save Settings</button>
       </div>
     </div>
   </div>
@@ -283,12 +309,12 @@
       <h2 style="background: #c6e0b4; display: inline-block; padding: 2px 10px; border: 1px solid #000; font-size: 11pt;">(Cost of each item is P 5,000.00 or less)</h2>
       <h3 id="print-category-label" style="font-weight: bold; font-size: 12pt; margin-top: 5px; color: #000;">FURNITURES AND FIXTURES</h3>
       <h3 style="font-size: 11pt; font-weight: normal; margin: 0;">(Type of Property, Plant and Equipment)</h3>
-      <h3 style="font-size: 11pt; font-weight: bold; margin: 5px 0;">As of December 31, 2023</h3>
+      <h3 style="font-size: 11pt; font-weight: bold; margin: 5px 0;">As of <span id="print-asof-date"></span></h3>
     </div>
 
     <div style="margin-top: 20px; font-size: 10pt;">
-      <strong>SCHOOL:</strong> <span style="border-bottom: 1px solid #000; display: inline-block; width: 300px;">Sta Cruz Pingkian High School</span> <br><br>
-      For which, <strong>Dolores C. Dodon, PhD,</strong> <span style="border-bottom: 1px solid #000; display: inline-block; width: 100px; text-align: center;">Principal III</span> accountable, having assumed such accountability on <span style="border-bottom: 1px solid #000; display: inline-block; width: 150px; text-align: center;">August 2, 2021</span>.
+      <strong>SCHOOL:</strong> <span id="print-school-name" style="border-bottom: 1px solid #000; display: inline-block; width: 300px;"></span> <br><br>
+      For which, <strong id="print-principal-name"></strong>, <span id="print-principal-title" style="border-bottom: 1px solid #000; display: inline-block; width: 100px; text-align: center;"></span> accountable, having assumed such accountability on <span id="print-accountability-date" style="border-bottom: 1px solid #000; display: inline-block; width: 150px; text-align: center;"></span>.
     </div>
 
     <table class="print-table">
@@ -323,7 +349,6 @@
       </tfoot>
     </table>
 
-    <!-- DYNAMIC SIGNATORIES -->
     <table class="sig-table">
       <tr>
         <td style="width: 35%;"><strong>Certified Correct by:</strong></td>
@@ -365,8 +390,13 @@
       "Technical & Scientific Equipment"
     ];
 
-    // Default Signatories (Fallback)
-    const DEFAULT_SIGS = {
+       // Defaults
+    const DEFAULT_SETTINGS = {
+      schoolName: "Sta Cruz Pingkian High School",
+      principalName: "Dolores C. Dodon, PhD",
+      principalTitle: "Principal III",
+      asOfDate: "December 31, 2023",
+      accountabilityDate: "August 2, 2021",
       certified: "DARNA A. BUGNAY/NISAN K. BINWAG/DAISY ANN BALASYA/EFRENA TIAGO",
       certifiedTitle: "Administrative Assistant II/Sch. Property Custodian/Inventory Committee Members",
       approved: "DOLORES C. DODON, PhD",
@@ -426,8 +456,8 @@
             <td>${item.accountableOfficer || '-'}</td>
             <td>
               <div class="action-btns">
-                <button class="btn btn-sm" style="background: #e0f2fe; color: #0369a1;" onclick="editItem('${item.id}')" title="Edit"><i class="fas fa-edit"></i></button>
-                <button class="btn btn-sm btn-danger" onclick="deleteItem('${item.id}', '${item.description}')" title="Delete"><i class="fas fa-trash"></i></button>
+                <button class="btn btn-sm" style="background: #e0f2fe; color: #0369a1;" onclick="editItem('${item.id}')"><i class="fas fa-edit"></i></button>
+                <button class="btn btn-sm btn-danger" onclick="deleteItem('${item.id}', '${item.description}')"><i class="fas fa-trash"></i></button>
               </div>
             </td>
           </tr>
@@ -498,7 +528,6 @@
     window.saveItem = async function() {
       const id = document.getElementById('itemId').value;
       const description = document.getElementById('f-description').value.trim();
-      
       if (!description) return alert("Description is required.");
 
       const data = {
@@ -553,7 +582,6 @@
 
     window.deleteItem = async function(id, description) {
       if (!confirm(`Are you sure you want to delete "${description}"?`)) return;
-
       try {
         await deleteDoc(doc(db, "property_inventory", id));
         await loadInventory();
@@ -563,11 +591,16 @@
       }
     };
 
-    // --- SIGNATORY LOGIC ---
-    function loadSignatories() {
-      const saved = JSON.parse(localStorage.getItem('inventory_signatories')) || DEFAULT_SIGS;
+    // --- SETTINGS & SIGNATORY LOGIC ---
+    function loadSettings() {
+      const saved = JSON.parse(localStorage.getItem('inventory_settings')) || DEFAULT_SETTINGS;
       
       // Update Print Area
+      document.getElementById('print-school-name').textContent = saved.schoolName;
+      document.getElementById('print-principal-name').textContent = saved.principalName;
+      document.getElementById('print-principal-title').textContent = saved.principalTitle;
+      document.getElementById('print-asof-date').textContent = saved.asOfDate;
+      document.getElementById('print-accountability-date').textContent = saved.accountabilityDate;
       document.getElementById('print-sig-certified').textContent = saved.certified;
       document.getElementById('print-sig-certified-title').textContent = saved.certifiedTitle;
       document.getElementById('print-sig-approved').textContent = saved.approved;
@@ -577,18 +610,30 @@
     }
 
     window.openSignatoryModal = function() {
-      const saved = JSON.parse(localStorage.getItem('inventory_signatories')) || DEFAULT_SIGS;
+      const saved = JSON.parse(localStorage.getItem('inventory_settings')) || DEFAULT_SETTINGS;
+      
+      document.getElementById('set-school-name').value = saved.schoolName;
+      document.getElementById('set-principal-name').value = saved.principalName;
+      document.getElementById('set-principal-title').value = saved.principalTitle;
+      document.getElementById('set-asof-date').value = saved.asOfDate;
+      document.getElementById('set-accountability-date').value = saved.accountabilityDate;
       document.getElementById('sig-certified').value = saved.certified;
       document.getElementById('sig-certified-title').value = saved.certifiedTitle;
       document.getElementById('sig-approved').value = saved.approved;
       document.getElementById('sig-approved-title').value = saved.approvedTitle;
       document.getElementById('sig-verified').value = saved.verified;
       document.getElementById('sig-verified-title').value = saved.verifiedTitle;
+      
       document.getElementById('signatoryModal').classList.add('show');
     };
 
     window.saveSignatories = function() {
-      const sigs = {
+      const settings = {
+        schoolName: document.getElementById('set-school-name').value,
+        principalName: document.getElementById('set-principal-name').value,
+        principalTitle: document.getElementById('set-principal-title').value,
+        asOfDate: document.getElementById('set-asof-date').value,
+        accountabilityDate: document.getElementById('set-accountability-date').value,
         certified: document.getElementById('sig-certified').value,
         certifiedTitle: document.getElementById('sig-certified-title').value,
         approved: document.getElementById('sig-approved').value,
@@ -597,15 +642,15 @@
         verifiedTitle: document.getElementById('sig-verified-title').value,
       };
       
-      localStorage.setItem('inventory_signatories', JSON.stringify(sigs));
-      loadSignatories(); // Refresh print area
+      localStorage.setItem('inventory_settings', JSON.stringify(settings));
+      loadSettings();
       closeModal('signatoryModal');
-      alert("✅ Signatories updated successfully!");
+      alert("✅ Report settings updated successfully!");
     };
 
     document.addEventListener('DOMContentLoaded', () => {
       renderTabs();
-      loadSignatories();
+      loadSettings();
       loadInventory();
     });
   </script>
