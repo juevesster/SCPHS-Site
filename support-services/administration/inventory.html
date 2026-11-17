@@ -44,69 +44,27 @@
     .btn-danger { background: var(--danger); color: #fff; }
     .btn-danger:hover { background: #b91c1c; }
     .btn-sm { padding: 6px 12px; font-size: 0.75rem; }
+    .btn-outline { background: transparent; border: 2px solid var(--border); color: var(--text-muted); }
+    .btn-outline:hover { border-color: var(--primary); color: var(--primary); }
 
     /* ================= BOOK TABS ================= */
-    .book-tabs {
-      display: flex;
-      align-items: flex-end;
-      gap: 6px;
-      margin-bottom: -1px;
-      padding-left: 20px;
-      z-index: 10;
-      position: relative;
-      flex-wrap: wrap;
-    }
+    .book-tabs { display: flex; align-items: flex-end; gap: 6px; margin-bottom: -1px; padding-left: 20px; z-index: 10; position: relative; flex-wrap: wrap; }
+    .tab-btn { padding: 12px 24px; border: 1px solid var(--border); border-bottom: none; background: #e2e8f0; color: var(--text-muted); font-weight: 700; font-size: 0.9rem; cursor: pointer; border-radius: 12px 12px 0 0; transition: all 0.2s ease; position: relative; top: 4px; box-shadow: inset 0 -3px 5px rgba(0,0,0,0.02); }
+    .tab-btn:hover { background: #cbd5e1; top: 2px; }
+    .tab-btn:focus { outline: none; }
+    .tab-btn.active { background: #fff; top: 0; padding-top: 14px; box-shadow: 0 -4px 10px rgba(0,0,0,0.03); z-index: 2; }
+    
+    /* Dynamic Colors */
+    .tab-btn[data-category="Furniture and Fixtures"].active { border-top: 4px solid #3b82f6; color: #3b82f6; }
+    .tab-btn[data-category="Office Equipment"].active { border-top: 4px solid #8b5cf6; color: #8b5cf6; }
+    .tab-btn[data-category="Other Machinery & Equipment"].active { border-top: 4px solid #f59e0b; color: #f59e0b; }
+    .tab-btn[data-category="Agricultural Equipment"].active { border-top: 4px solid #10b981; color: #10b981; }
+    .tab-btn[data-category="Printing Equipment"].active { border-top: 4px solid #ef4444; color: #ef4444; }
+    .tab-btn[data-category="IT Equipment"].active { border-top: 4px solid #0ea5e9; color: #0ea5e9; }
+    .tab-btn[data-category="Communication Equipment"].active { border-top: 4px solid #ec4899; color: #ec4899; }
+    .tab-btn[data-category="Technical & Scientific Equipment"].active { border-top: 4px solid #14b8a6; color: #14b8a6; }
 
-    .tab-btn {
-      padding: 12px 24px;
-      border: 1px solid var(--border);
-      border-bottom: none;
-      background: #e2e8f0;
-      color: var(--text-muted);
-      font-weight: 700;
-      font-size: 0.9rem;
-      cursor: pointer;
-      border-radius: 12px 12px 0 0;
-      transition: all 0.2s ease;
-      position: relative;
-      top: 4px;
-      box-shadow: inset 0 -3px 5px rgba(0,0,0,0.02);
-    }
-
-    .tab-btn:hover {
-      background: #cbd5e1;
-      top: 2px;
-    }
-
-    /* Color Coding Logic (Active State) */
-    .tab-btn.active {
-      background: #fff;
-      top: 0;
-      padding-top: 14px;
-      box-shadow: 0 -4px 10px rgba(0,0,0,0.03);
-      z-index: 2;
-    }
-
-    /* Dynamic Colors for Active Tabs */
-    .tab-btn[data-category="Furniture and Fixtures"].active { border-top: 4px solid #3b82f6; color: #3b82f6; } /* Blue */
-    .tab-btn[data-category="Office Equipment"].active { border-top: 4px solid #8b5cf6; color: #8b5cf6; } /* Purple */
-    .tab-btn[data-category="Other Machinery & Equipment"].active { border-top: 4px solid #f59e0b; color: #f59e0b; } /* Orange */
-    .tab-btn[data-category="Agricultural Equipment"].active { border-top: 4px solid #10b981; color: #10b981; } /* Green */
-    .tab-btn[data-category="Printing Equipment"].active { border-top: 4px solid #ef4444; color: #ef4444; } /* Red */
-    .tab-btn[data-category="IT Equipment"].active { border-top: 4px solid #0ea5e9; color: #0ea5e9; } /* Sky Blue */
-    .tab-btn[data-category="Communication Equipment"].active { border-top: 4px solid #ec4899; color: #ec4899; } /* Pink */
-    .tab-btn[data-category="Technical & Scientific Equipment"].active { border-top: 4px solid #14b8a6; color: #14b8a6; } /* Teal */
-
-    /* The container below the tabs */
-    .tab-content-container {
-      background: #fff;
-      border-radius: 0 16px 16px 16px;
-      border: 1px solid var(--border);
-      box-shadow: 0 10px 25px -5px rgba(0,0,0,0.05);
-      position: relative;
-      z-index: 1;
-      overflow: hidden;
-    }
+    .tab-content-container { background: #fff; border-radius: 0 16px 16px 16px; border: 1px solid var(--border); box-shadow: 0 10px 25px -5px rgba(0,0,0,0.05); position: relative; z-index: 1; overflow: hidden; }
 
     /* Table */
     .table-responsive { overflow-x: auto; }
@@ -115,14 +73,9 @@
     th { background: #f8fafc; font-weight: 700; color: var(--text-muted); text-transform: uppercase; font-size: 0.75rem; letter-spacing: 0.5px; border-top: 1px solid var(--border); }
     td { color: var(--text-main); vertical-align: middle; }
     tr:hover td { background: #f8fafc; }
-    
-    .badge { padding: 4px 10px; border-radius: 20px; font-size: 0.75rem; font-weight: 700; }
-    .badge-green { background: #dcfce7; color: #166534; }
-    .badge-red { background: #fee2e2; color: #991b1b; }
-
     .action-btns { display: flex; gap: 6px; }
 
-    /* Modal */
+    /* Modals */
     .modal { position: fixed; inset: 0; background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(4px); display: none; justify-content: center; align-items: center; z-index: 1000; padding: 20px; }
     .modal.show { display: flex; }
     .modal-content { background: #fff; border-radius: 16px; width: 100%; max-width: 600px; box-shadow: 0 20px 40px rgba(0,0,0,0.2); overflow: hidden; }
@@ -147,19 +100,16 @@
       .print-header { text-align: center; margin-bottom: 20px; }
       .print-header img { height: 60px; margin-bottom: 10px; }
       .print-header h1 { font-size: 14pt; font-weight: bold; margin: 0; text-transform: uppercase; }
-      .print-header h2 { font-size: 11pt; font-weight: normal; margin: 5px 0; }
-      .print-header h3 { font-size: 11pt; font-weight: normal; margin: 0; font-style: italic; }
-
-      .print-info { margin-bottom: 15px; font-size: 10pt; }
       
       .print-table { width: 100%; border-collapse: collapse; font-size: 9pt; margin-bottom: 20px; }
       .print-table th, .print-table td { border: 1px solid #000; padding: 4px; text-align: center; }
       .print-table th { background: #f0f0f0; font-weight: bold; }
       .print-table td.left { text-align: left; }
-      
-      .print-footer { display: flex; justify-content: space-between; font-size: 9pt; margin-top: 30px; }
-      .sig-block { text-align: center; width: 30%; }
-      .sig-name { border-bottom: 1px solid #000; font-weight: bold; padding-bottom: 2px; margin-bottom: 2px; }
+
+      .sig-table { width: 100%; border: none; margin-top: 30px; font-size: 9pt; }
+      .sig-table td { border: none; vertical-align: bottom; }
+      .sig-name { border-bottom: 1px solid #000; text-align: center; font-weight: bold; padding-bottom: 2px; }
+      .sig-title { text-align: center; font-size: 8pt; }
     }
   </style>
 </head>
@@ -180,6 +130,9 @@
     <div class="topbar">
       <h1>📦 Property Inventory</h1>
       <div style="display: flex; gap: 10px;">
+        <button class="btn btn-outline" onclick="openSignatoryModal()">
+          <i class="fas fa-users-cog"></i> Signatories
+        </button>
         <button class="btn" style="background: #475569; color: #fff;" onclick="window.print()">
           <i class="fas fa-print"></i> Print Report
         </button>
@@ -189,10 +142,8 @@
       </div>
     </div>
 
-    <!-- Book Tabs -->
     <div class="book-tabs" id="category-tabs"></div>
 
-    <!-- Tab Content Container -->
     <div class="tab-content-container">
       <div class="table-responsive">
         <table>
@@ -220,25 +171,24 @@
     </div>
   </main>
 
-  <!-- ADD/EDIT MODAL -->
+  <!-- ITEM MODAL -->
   <div class="modal" id="itemModal">
     <div class="modal-content">
       <div class="modal-header">
         <h3 id="modalTitle">➕ Add New Property</h3>
-        <button onclick="closeModal()" style="background: none; border: none; font-size: 1.5rem; cursor: pointer;">&times;</button>
+        <button onclick="closeModal('itemModal')" style="background: none; border: none; font-size: 1.5rem; cursor: pointer;">&times;</button>
       </div>
       <div class="modal-body">
         <input type="hidden" id="itemId">
         
         <div class="form-group full">
           <label>Article (Category)</label>
-          <input type="text" id="f-article" placeholder="e.g. Furniture and Fixtures">
+          <input type="text" id="f-article" placeholder="e.g. Furniture and Fixtures" readonly style="background: #f1f5f9;">
         </div>
         <div class="form-group full">
           <label>Description</label>
           <input type="text" id="f-description" placeholder="e.g. picture frames">
         </div>
-        
         <div class="form-group">
           <label>Property Number</label>
           <input type="text" id="f-propertyNumber" placeholder="e.g. 2023-02-73/74">
@@ -247,7 +197,6 @@
           <label>Date Acquired</label>
           <input type="date" id="f-dateAcquired">
         </div>
-
         <div class="form-group">
           <label>Unit Value (₱)</label>
           <input type="number" id="f-unitValue" placeholder="e.g. 120" oninput="calcTotal()">
@@ -256,7 +205,6 @@
           <label>Unit of Measure</label>
           <input type="text" id="f-unitOfMeasure" placeholder="e.g. pcs">
         </div>
-
         <div class="form-group">
           <label>Qty (Per Property Card)</label>
           <input type="number" id="f-qtyPerCard" value="1" oninput="calcTotal()">
@@ -265,7 +213,6 @@
           <label>Qty (Physical Count)</label>
           <input type="number" id="f-qtyPerCount" value="1" oninput="calcTotal()">
         </div>
-
         <div class="form-group">
           <label>Total Cost (₱)</label>
           <input type="number" id="f-totalCost" readonly style="background: #f1f5f9; font-weight: bold;">
@@ -274,15 +221,56 @@
           <label>Source of Fund</label>
           <input type="text" id="f-sourceOfFund" placeholder="e.g. MOOE">
         </div>
-
         <div class="form-group full">
           <label>Accountable Officer</label>
           <input type="text" id="f-accountableOfficer" placeholder="e.g. Dolores C. Dodon">
         </div>
       </div>
       <div class="modal-footer">
-        <button class="btn" onclick="closeModal()" style="background: #e2e8f0; color: #333;">Cancel</button>
+        <button class="btn btn-outline" onclick="closeModal('itemModal')">Cancel</button>
         <button class="btn btn-success" onclick="saveItem()">💾 Save Item</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- SIGNATORY MODAL -->
+  <div class="modal" id="signatoryModal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>✍️ Update Signatories</h3>
+        <button onclick="closeModal('signatoryModal')" style="background: none; border: none; font-size: 1.5rem; cursor: pointer;">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group full">
+          <label>Certified Correct By (Names)</label>
+          <input type="text" id="sig-certified">
+        </div>
+        <div class="form-group full">
+          <label>Certified Correct By (Titles)</label>
+          <input type="text" id="sig-certified-title">
+        </div>
+        
+        <div class="form-group full">
+          <label>Approved By (Name)</label>
+          <input type="text" id="sig-approved">
+        </div>
+        <div class="form-group full">
+          <label>Approved By (Title)</label>
+          <input type="text" id="sig-approved-title">
+        </div>
+
+        <div class="form-group full">
+          <label>Verified By (Name)</label>
+          <input type="text" id="sig-verified">
+        </div>
+        <div class="form-group full">
+          <label>Verified By (Title)</label>
+          <input type="text" id="sig-verified-title">
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-outline" onclick="closeModal('signatoryModal')">Cancel</button>
+        <button class="btn btn-primary" onclick="saveSignatories()">💾 Save Signatories</button>
       </div>
     </div>
   </div>
@@ -291,34 +279,38 @@
   <div id="print-area">
     <div class="print-header">
       <img src="../../assets/images/deped-logo.png" alt="DepEd Logo">
-      <h1>Report on the Physical Count of Issued Semi-Expendable Property</h1>
-      <h2 id="print-type-label">LOW VALUED ITEMS (Cost of each item is P5,000.00 or less)</h2>
-      <h3 id="print-category-label">FURNITURES AND FIXTURES</h3>
-      <h3 id="print-date-label">As of December 31, 2023</h3>
+      <h1>REPORT ON THE PHYSICAL COUNT OF ISSUED SEMI-EXPENDABLE PROPERTY- LOW VALUED ITEMS</h1>
+      <h2 style="background: #c6e0b4; display: inline-block; padding: 2px 10px; border: 1px solid #000; font-size: 11pt;">(Cost of each item is P 5,000.00 or less)</h2>
+      <h3 id="print-category-label" style="font-weight: bold; font-size: 12pt; margin-top: 5px; color: #000;">FURNITURES AND FIXTURES</h3>
+      <h3 style="font-size: 11pt; font-weight: normal; margin: 0;">(Type of Property, Plant and Equipment)</h3>
+      <h3 style="font-size: 11pt; font-weight: bold; margin: 5px 0;">As of December 31, 2023</h3>
     </div>
 
-    <div class="print-info">
-      <strong>SCHOOL:</strong> Sta Cruz Pingkian High School <br>
-      For which, <strong>Dolores C. Dodon, PhD, Principal III</strong> accountable, having assumed such accountability on <strong>August 2, 2021</strong>.
+    <div style="margin-top: 20px; font-size: 10pt;">
+      <strong>SCHOOL:</strong> <span style="border-bottom: 1px solid #000; display: inline-block; width: 300px;">Sta Cruz Pingkian High School</span> <br><br>
+      For which, <strong>Dolores C. Dodon, PhD,</strong> <span style="border-bottom: 1px solid #000; display: inline-block; width: 100px; text-align: center;">Principal III</span> accountable, having assumed such accountability on <span style="border-bottom: 1px solid #000; display: inline-block; width: 150px; text-align: center;">August 2, 2021</span>.
     </div>
 
     <table class="print-table">
       <thead>
         <tr>
-          <th rowspan="2">Article</th>
-          <th rowspan="2">Description</th>
-          <th rowspan="2">Date of Acquisition</th>
-          <th rowspan="2">Property Number</th>
-          <th rowspan="2">Unit of Measure</th>
-          <th rowspan="2">Unit Value</th>
+          <th rowspan="2" style="width: 15%;">Article</th>
+          <th rowspan="2" style="width: 20%;">Description</th>
+          <th rowspan="2" style="width: 10%;">Date of Acquisition</th>
+          <th rowspan="2" style="width: 15%;">Property Number</th>
+          <th rowspan="2" style="width: 8%;">Unit of Measure</th>
+          <th rowspan="2" style="width: 8%;">Unit Value</th>
           <th colspan="2">Quantity</th>
-          <th rowspan="2">Total Cost</th>
-          <th rowspan="2">Source of Fund</th>
-          <th rowspan="2">Accountable Officer</th>
+          <th rowspan="2" style="width: 10%;">Total Cost<br>Unit Value x Physical Count</th>
+          <th rowspan="2" style="width: 8%;">Source of Fund</th>
+          <th colspan="2">SHORTAGE/OVERAGE</th>
+          <th rowspan="2" style="width: 10%;">Remarks<br>Accountable Officer</th>
         </tr>
         <tr>
-          <th>per Property Card</th>
-          <th>per Physical Count</th>
+          <th style="font-size: 7pt;">per<br>Property Card</th>
+          <th style="font-size: 7pt;">per<br>Physical Count</th>
+          <th style="font-size: 7pt;">Quantity</th>
+          <th style="font-size: 7pt;">Value</th>
         </tr>
       </thead>
       <tbody id="print-tbody"></tbody>
@@ -326,28 +318,33 @@
         <tr>
           <td colspan="8" style="text-align: right; font-weight: bold;">TOTAL</td>
           <td id="print-total-cost" style="font-weight: bold;">₱0.00</td>
-          <td colspan="2"></td>
+          <td colspan="4"></td>
         </tr>
       </tfoot>
     </table>
 
-    <div class="print-footer">
-      <div class="sig-block">
-        <div style="font-size: 8pt; margin-bottom: 15px;">Certified Correct by:</div>
-        <div class="sig-name">DARNA A. BUGNAY / NISAN K. BINWAG</div>
-        <div style="font-size: 8pt;">Administrative Assistant II / Sch. Property Custodian</div>
-      </div>
-      <div class="sig-block">
-        <div style="font-size: 8pt; margin-bottom: 15px;">Approved by:</div>
-        <div class="sig-name">DOLORES C. DODON, PhD</div>
-        <div style="font-size: 8pt;">School Head</div>
-      </div>
-      <div class="sig-block">
-        <div style="font-size: 8pt; margin-bottom: 15px;">Verified by:</div>
-        <div class="sig-name">ROBERT C. ROSAL JR.</div>
-        <div style="font-size: 8pt;">State Auditor IV</div>
-      </div>
-    </div>
+    <!-- DYNAMIC SIGNATORIES -->
+    <table class="sig-table">
+      <tr>
+        <td style="width: 35%;"><strong>Certified Correct by:</strong></td>
+        <td style="width: 30%;"><strong>Approved by:</strong></td>
+        <td style="width: 35%;"><strong>Verified by:</strong></td>
+      </tr>
+      <tr>
+        <td style="padding-top: 40px;">
+          <div class="sig-name" id="print-sig-certified"></div>
+          <div class="sig-title" id="print-sig-certified-title"></div>
+        </td>
+        <td style="padding-top: 40px;">
+          <div class="sig-name" id="print-sig-approved"></div>
+          <div class="sig-title" id="print-sig-approved-title"></div>
+        </td>
+        <td style="padding-top: 40px;">
+          <div class="sig-name" id="print-sig-verified"></div>
+          <div class="sig-title" id="print-sig-verified-title"></div>
+        </td>
+      </tr>
+    </table>
   </div>
 
   <script type="module">
@@ -367,6 +364,16 @@
       "Communication Equipment",
       "Technical & Scientific Equipment"
     ];
+
+    // Default Signatories (Fallback)
+    const DEFAULT_SIGS = {
+      certified: "DARNA A. BUGNAY/NISAN K. BINWAG/DAISY ANN BALASYA/EFRENA TIAGO",
+      certifiedTitle: "Administrative Assistant II/Sch. Property Custodian/Inventory Committee Members",
+      approved: "DOLORES C. DODON, PhD",
+      approvedTitle: "School Head",
+      verified: "ROBERT C. ROSAL JR.",
+      verifiedTitle: "State Auditor IV"
+    };
 
     function renderTabs() {
       const tabsContainer = document.getElementById('category-tabs');
@@ -478,8 +485,8 @@
       document.getElementById('itemModal').classList.add('show');
     };
 
-    window.closeModal = function() {
-      document.getElementById('itemModal').classList.remove('show');
+    window.closeModal = function(id) {
+      document.getElementById(id).classList.remove('show');
     };
 
     window.calcTotal = function() {
@@ -515,7 +522,7 @@
           const newDocRef = doc(collection(db, "property_inventory"));
           await setDoc(newDocRef, data);
         }
-        closeModal();
+        closeModal('itemModal');
         await loadInventory();
       } catch (error) {
         console.error("Save Error:", error);
@@ -556,8 +563,49 @@
       }
     };
 
+    // --- SIGNATORY LOGIC ---
+    function loadSignatories() {
+      const saved = JSON.parse(localStorage.getItem('inventory_signatories')) || DEFAULT_SIGS;
+      
+      // Update Print Area
+      document.getElementById('print-sig-certified').textContent = saved.certified;
+      document.getElementById('print-sig-certified-title').textContent = saved.certifiedTitle;
+      document.getElementById('print-sig-approved').textContent = saved.approved;
+      document.getElementById('print-sig-approved-title').textContent = saved.approvedTitle;
+      document.getElementById('print-sig-verified').textContent = saved.verified;
+      document.getElementById('print-sig-verified-title').textContent = saved.verifiedTitle;
+    }
+
+    window.openSignatoryModal = function() {
+      const saved = JSON.parse(localStorage.getItem('inventory_signatories')) || DEFAULT_SIGS;
+      document.getElementById('sig-certified').value = saved.certified;
+      document.getElementById('sig-certified-title').value = saved.certifiedTitle;
+      document.getElementById('sig-approved').value = saved.approved;
+      document.getElementById('sig-approved-title').value = saved.approvedTitle;
+      document.getElementById('sig-verified').value = saved.verified;
+      document.getElementById('sig-verified-title').value = saved.verifiedTitle;
+      document.getElementById('signatoryModal').classList.add('show');
+    };
+
+    window.saveSignatories = function() {
+      const sigs = {
+        certified: document.getElementById('sig-certified').value,
+        certifiedTitle: document.getElementById('sig-certified-title').value,
+        approved: document.getElementById('sig-approved').value,
+        approvedTitle: document.getElementById('sig-approved-title').value,
+        verified: document.getElementById('sig-verified').value,
+        verifiedTitle: document.getElementById('sig-verified-title').value,
+      };
+      
+      localStorage.setItem('inventory_signatories', JSON.stringify(sigs));
+      loadSignatories(); // Refresh print area
+      closeModal('signatoryModal');
+      alert("✅ Signatories updated successfully!");
+    };
+
     document.addEventListener('DOMContentLoaded', () => {
       renderTabs();
+      loadSignatories();
       loadInventory();
     });
   </script>
