@@ -12,7 +12,7 @@
       --sidebar-bg: #0f172a;
       --sidebar-hover: #1e293b;
       --bg-color: #f4f7f9;
-      --primary: #0f766e; /* Teal for Admin */
+      --primary: #0f766e;
       --primary-light: #14b8a6;
       --text-main: #1e293b;
       --text-muted: #64748b;
@@ -25,7 +25,7 @@
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Outfit', sans-serif; }
     body { background: var(--bg-color); color: var(--text-main); display: flex; min-height: 100vh; }
 
-    /* ================= SIDEBAR ================= */
+    /* Sidebar */
     .sidebar { width: 260px; background: var(--sidebar-bg); color: #fff; display: flex; flex-direction: column; z-index: 1000; position: fixed; height: 100vh; }
     .sidebar-brand { padding: 30px 24px; font-size: 1.4rem; font-weight: 800; display: flex; align-items: center; gap: 12px; border-bottom: 1px solid rgba(255,255,255,0.05); }
     .sidebar-brand i { color: var(--primary-light); }
@@ -36,7 +36,7 @@
     .menu-item .icon { font-size: 1.2rem; width: 24px; text-align: center; }
     .sidebar-footer { padding: 20px; border-top: 1px solid rgba(255,255,255,0.05); }
 
-    /* ================= MAIN CONTENT ================= */
+    /* Main Content */
     .main-content { margin-left: 260px; flex: 1; display: flex; flex-direction: column; position: relative; }
     
     .orb { position: absolute; border-radius: 50%; filter: blur(100px); z-index: 0; opacity: 0.4; pointer-events: none; }
@@ -73,16 +73,41 @@
     .menu-info h4 { font-size: 0.95rem; font-weight: 700; color: var(--text-main); margin-bottom: 2px; }
     .menu-info p { font-size: 0.75rem; color: var(--text-muted); }
 
+    /* Staff Directory Style */
     .staff-list { list-style: none; }
-    .staff-list li { padding: 10px 0; border-bottom: 1px solid #f1f5f9; display: flex; justify-content: space-between; font-size: 0.9rem; }
+    .staff-list li { padding: 10px 0; border-bottom: 1px solid #f1f5f9; display: flex; justify-content: space-between; font-size: 0.9rem; align-items: center; }
     .staff-list li:last-child { border-bottom: none; }
-    .staff-list strong { color: var(--text-main); }
-    .staff-list span { color: var(--text-muted); font-weight: 500; }
+    .staff-list strong { color: var(--text-main); font-weight: 700; }
+    .staff-list span { color: var(--text-muted); font-weight: 500; text-align: right; }
 
-    /* ================= RESPONSIVE ================= */
-    @media (max-width: 1024px) {
-      .bento-grid { grid-template-columns: repeat(2, 1fr); }
+    /* ================= CHATBOT FIX ================= */
+    /* This forces the chatbot to float bottom-right and ignore page layout */
+    #scphs-chatbot-root {
+      position: fixed !important;
+      bottom: 20px !important;
+      right: 20px !important;
+      z-index: 99999 !important;
+      width: auto !important;
+      height: auto !important;
     }
+    /* Hide any raw text inputs if the chatbot script fails to load its CSS */
+    #scphs-chatbot-root input[type="text"] {
+      display: none !important;
+    }
+    #scphs-chatbot-root button {
+      border-radius: 50% !important;
+      width: 60px !important;
+      height: 60px !important;
+      background: var(--primary) !important;
+      color: white !important;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.2) !important;
+      border: none !important;
+      cursor: pointer !important;
+      font-size: 1.5rem !important;
+    }
+
+    /* Responsive */
+    @media (max-width: 1024px) { .bento-grid { grid-template-columns: repeat(2, 1fr); } }
     @media (max-width: 768px) {
       .sidebar { transform: translateX(-100%); transition: transform 0.3s; }
       .main-content { margin-left: 0; }
@@ -90,87 +115,9 @@
       .topbar { flex-direction: column; align-items: flex-start; gap: 16px; height: auto; padding: 16px; }
       .menu-grid { grid-template-columns: 1fr; }
     }
-
-        /* Chatbot Container Fix */
-    #scphs-chatbot-root {
-      position: fixed;
-      bottom: 20px;
-      right: 20px;
-      z-index: 99999;
-    }
   </style>
 </head>
 <body>
-  <script type="module">
-  import { db } from "../../assets/js/firebase-config.js";
-  import { collection, getDocs, query, where } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
-  
-  async function loadStaffDirectory() {
-    const listContainer = document.getElementById('staff-directory-list');
-    if (!listContainer) return;
-
-    try {
-      const usersRef = collection(db, "users");
-      const snap = await getDocs(usersRef);
-
-      // 1. Filter and collect staff members
-      const staff = [];
-      snap.forEach(doc => {
-        const data = doc.data();
-        const role = data.primaryRole || data.role || "user";
-
-        // We only want to show Admins, Teachers, and Staff (skip parents/students)
-        if (["superadmin", "admin", "teacher", "staff", "head_teacher", "master_teacher", "adas", "property_custodian"].includes(role)) {
-          staff.push({
-            id: doc.id,
-            name: data.name || `${data.firstName || ''} ${data.lastName || ''}`.trim() || "Unnamed Staff",
-            role: role.replace('_', ' ').toUpperCase(), // Make it look nice
-            secondaryRole: data.secondaryRole || "", 
-            order: getRoleOrder(role)
-          });
-        }
-      });
-
-      // 2. Sort by role order (Principal first, then Head Teachers, etc.)
-      staff.sort((a, b) => a.order - b.order);
-
-      // 3. Render the list
-      if (staff.length === 0) {
-        listContainer.innerHTML = `<li style="text-align:center; color: var(--text-muted);">No staff found in the database.</li>`;
-        return;
-      }
-
-      listContainer.innerHTML = staff.map(person => `
-        <li>
-          <strong>${person.role}</strong>
-          <span>${person.name}</span>
-        </li>
-      `).join('');
-
-    } catch (error) {
-      console.error("Error loading staff:", error);
-      listContainer.innerHTML = `<li style="color: var(--danger);">Failed to load staff directory.</li>`;
-    }
-  }
-
-  // Helper function to sort roles correctly
-  function getRoleOrder(role) {
-    const orderMap = {
-      "superadmin": 1,
-      "admin": 2,       // Principal
-      "head_teacher": 3,
-      "master_teacher": 4,
-      "teacher": 5,
-      "adas": 6,
-      "property_custodian": 7,
-      "staff": 8
-    };
-    return orderMap[role] || 99;
-  }
-
-  // Run the function when the page loads
-  document.addEventListener('DOMContentLoaded', loadStaffDirectory);
-</script>
 
   <!-- SIDEBAR -->
   <aside class="sidebar">
@@ -220,7 +167,7 @@
         <div class="bento-card stat-card">
           <div class="stat-icon teal"><i class="fas fa-users"></i></div>
           <div>
-            <div class="stat-value">11</div>
+            <div class="stat-value" id="stat-total-staff">11</div>
             <div class="stat-label">Total Staff</div>
           </div>
         </div>
@@ -251,19 +198,11 @@
           <div class="card-header">
             <div class="card-title"><i class="fas fa-address-book" style="color: var(--primary);"></i> Staff Directory</div>
           </div>
-            <ul class="staff-list" id="staff-directory-list">
+          <!-- ONLY THIS UL SHOULD EXIST. NO EXTRA LI TAGS BELOW IT. -->
+          <ul class="staff-list" id="staff-directory-list">
             <li style="justify-content: center; color: var(--text-muted); padding: 20px;">
               <i class="fas fa-spinner fa-spin" style="margin-right: 10px;"></i> Loading staff directory...
             </li>
-          </ul>
-            <li><strong>Head Teacher</strong> <span>Garlymane C. Pitlongay</span></li>
-            <li><strong>Head Teacher</strong> <span>Wilfred P. Ligmayo</span></li>
-            <li><strong>Head Teacher</strong> <span>Nisan K. Binwag</span></li>
-            <li><strong>Master Teacher</strong> <span>Janette C. Kindo EdD</span></li>
-            <li><strong>Master Teacher</strong> <span>Merylene P. Marquez</span></li>
-            <li><strong>ADAS</strong> <span>Darna C. Bugnay</span></li>
-            <li><strong>Administrative Officer</strong> <span>Maryjane P. Mariano</span></li>
-            <li><strong>Property Custodian</strong> <span>Nisan K. Binwag</span></li>
           </ul>
         </div>
 
@@ -308,6 +247,76 @@
   <!-- Chatbot Mount -->
   <div id="scphs-chatbot-root"></div>
 
+  <!-- FIREBASE & STAFF DIRECTORY LOGIC -->
+  <script type="module">
+    import { db } from "../../assets/js/firebase-config.js";
+    import { collection, getDocs } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+    
+    async function loadStaffDirectory() {
+      const listContainer = document.getElementById('staff-directory-list');
+      if (!listContainer) return;
+
+      try {
+        const usersRef = collection(db, "users");
+        const snap = await getDocs(usersRef);
+
+        const staff = [];
+        snap.forEach(doc => {
+          const data = doc.data();
+          const role = data.primaryRole || data.role || "user";
+
+          if (["superadmin", "admin", "teacher", "staff", "head_teacher", "master_teacher", "adas", "property_custodian"].includes(role)) {
+            staff.push({
+              id: doc.id,
+              name: data.name || `${data.firstName || ''} ${data.lastName || ''}`.trim() || "Unnamed Staff",
+              role: role.replace('_', ' ').toUpperCase(),
+              order: getRoleOrder(role)
+            });
+          }
+        });
+
+        staff.sort((a, b) => a.order - b.order);
+
+        if (staff.length === 0) {
+          listContainer.innerHTML = `<li style="text-align:center; color: var(--text-muted); padding: 20px;">No staff found in the database.</li>`;
+          return;
+        }
+
+        // Update the stat card dynamically
+        const statStaff = document.getElementById('stat-total-staff');
+        if (statStaff) statStaff.textContent = staff.length;
+
+        listContainer.innerHTML = staff.map(person => `
+          <li>
+            <strong>${person.role}</strong>
+            <span>${person.name}</span>
+          </li>
+        `).join('');
+
+      } catch (error) {
+        console.error("Error loading staff:", error);
+        listContainer.innerHTML = `<li style="color: var(--danger); padding: 20px; text-align: center;">Failed to load staff directory.</li>`;
+      }
+    }
+
+    function getRoleOrder(role) {
+      const orderMap = {
+        "superadmin": 1,
+        "admin": 2,
+        "head_teacher": 3,
+        "master_teacher": 4,
+        "teacher": 5,
+        "adas": 6,
+        "property_custodian": 7,
+        "staff": 8
+      };
+      return orderMap[role] || 99;
+    }
+
+    document.addEventListener('DOMContentLoaded', loadStaffDirectory);
+  </script>
+
+  <!-- Chatbot Loader -->
   <script>
   (function(){
     const rootId = 'scphs-chatbot-root';
