@@ -80,8 +80,15 @@
     .staff-list strong { color: var(--text-main); font-weight: 700; }
     .staff-list span { color: var(--text-muted); font-weight: 500; text-align: right; }
 
-    /* ================= CHATBOT FIX ================= */
-    /* This forces the chatbot to float bottom-right and ignore page layout */
+       /* ================= CHATBOT CLEANUP ================= */
+    /* Hide the broken raw elements injected by chatbot.js */
+    #scphs-chatbot-root > div > div:not(.chat-window),
+    #scphs-chatbot-root > div > button:not(#chat-toggle),
+    #scphs-chatbot-root > div > input {
+      display: none !important;
+    }
+
+    /* Style the main container */
     #scphs-chatbot-root {
       position: fixed !important;
       bottom: 20px !important;
@@ -90,20 +97,15 @@
       width: auto !important;
       height: auto !important;
     }
-    /* Hide any raw text inputs if the chatbot script fails to load its CSS */
-    #scphs-chatbot-root input[type="text"] {
-      display: none !important;
-    }
-    #scphs-chatbot-root button {
-      border-radius: 50% !important;
-      width: 60px !important;
-      height: 60px !important;
-      background: var(--primary) !important;
-      color: white !important;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.2) !important;
+
+    /* If the script creates a main wrapper, make it invisible so only the floating icon shows */
+    #scphs-chatbot-root > div {
+      background: transparent !important;
+      box-shadow: none !important;
       border: none !important;
-      cursor: pointer !important;
-      font-size: 1.5rem !important;
+      width: auto !important;
+      height: auto !important;
+      padding: 0 !important;
     }
 
     /* Responsive */
@@ -316,6 +318,15 @@
     document.addEventListener('DOMContentLoaded', loadStaffDirectory);
   </script>
 
+
+  <!-- Chatbot Mount -->
+  <div id="scphs-chatbot-root"></div>
+
+  <!-- MANUAL CHAT BUTTON (Fixes the broken UI) -->
+  <button onclick="toggleChatBot()" style="position: fixed; bottom: 30px; right: 30px; width: 60px; height: 60px; border-radius: 50%; background: var(--primary); color: white; border: none; cursor: pointer; box-shadow: 0 4px 12px rgba(15, 118, 110, 0.4); z-index: 99999; font-size: 1.5rem; display: flex; align-items: center; justify-content: center; transition: transform 0.2s;">
+    <i class="fas fa-comment-dots"></i>
+  </button>
+
   <!-- Chatbot Loader -->
   <script>
   (function(){
@@ -343,6 +354,28 @@
       )
     );
   })();
+
+   
+    function toggleChatBot() {
+      // This tries to find the chat window inside the injected root
+      const root = document.getElementById('scphs-chatbot-root');
+      if (root) {
+        // Usually, the script puts the chat window in a specific div. 
+        // We will toggle the first child that isn't a button.
+        const chatWindow = root.querySelector('div');
+        if (chatWindow) {
+          if (chatWindow.style.display === 'none') {
+            chatWindow.style.display = 'block';
+          } else {
+            chatWindow.style.display = 'none';
+          }
+        } else {
+          // If the script hasn't loaded properly, show an alert
+          alert("The chatbot is currently loading or unavailable. Please try again later.");
+        }
+      }
+    }
+
   </script>
 </body>
 </html>
