@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Seed Inventory Data</title>
+</head>
+<body style="font-family: sans-serif; padding: 50px; text-align: center;">
+  <h1>Push Inventory to Firebase</h1>
+  <p>This will push all the High and Low value items from your Excel files into the database.</p>
+  <button id="btnSeed" style="padding: 15px 30px; font-size: 18px; cursor: pointer; background: green; color: white; border: none; border-radius: 8px;">
+    🚀 Start Seeding
+  </button>
+  <div id="status" style="margin-top: 20px; font-weight: bold;"></div>
+
+  <script type="module">
+    import { db } from "../../assets/js/firebase-config.js";
+    import { collection, doc, setDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+    // A sample of the data extracted from your Excel files
+    const HIGH_VALUE_DATA = [
+      { article: "Computer acer veriton 7100 Cel-556", dateAcquired: "2001-04-19", propNo: "2001-04-001", unit: "unit", value: 42600, qtyCard: 1, qtyCount: 1, fund: "DEpEd Central", officer: "Dolores C. Dodon" },
+      { article: "Personal computer Pentium IV-1.7 Microprocessor", dateAcquired: "2002-09-20", propNo: "2002-09-001", unit: "unit", value: 42600, qtyCard: 1, qtyCount: 1, fund: "DepEdNV", officer: "Dolores C. Dodon" },
+      { article: "DCP-720", dateAcquired: "2023-02-17", propNo: "2023-02-056", unit: "unit", value: 13663.4, qtyCard: 1, qtyCount: 1, fund: "MOOE", officer: "Janette Kindot" },
+      { article: "DCP-L2540DW", dateAcquired: "2023-11-15", propNo: "2023-11-0102", unit: "unit", value: 17500, qtyCard: 1, qtyCount: 1, fund: "MOOE", officer: "Merylene Marquez" },
+      { article: "Laptop-Lenovo Thinkpad E14 Gen 5", dateAcquired: "2024-07-16", propNo: "2024-07-70", unit: "PC", value: 31221, qtyCard: 1, qtyCount: 1, fund: "Central", officer: "Arman Puyao" },
+      { article: "TCL 4K UHD LED TV 55\"", dateAcquired: "2023-12-12", propNo: "2023-12-106", unit: "units", value: 28149.21, qtyCard: 2, qtyCount: 2, fund: "Region", officer: "Apple W. Velasco" },
+    ];
+
+    const LOW_VALUE_DATA = [
+      { article: "picture frames", dateAcquired: "2023-02-20", propNo: "23-02-20", unit: "pcs", value: 120, qtyCard: 13, qtyCount: 13, fund: "MOOE", officer: "Dolores C. Dodon" },
+      { article: "Toilet Brush", dateAcquired: "2023-02-16", propNo: "2023-02-026", unit: "pc", value: 180, qtyCard: 1, qtyCount: 1, fund: "MOOE", officer: "Joan Dayag" },
+      { article: "Crosscut saw", dateAcquired: "2016-11-07", propNo: "2016-11-001", unit: "pc", value: 450, qtyCard: 8, qtyCount: 8, fund: "DepEdRO2", officer: "Nover D. Paclit" },
+      { article: "stapler #35", dateAcquired: "2022-12-02", propNo: "2022-12-092", unit: "pcs", value: 250, qtyCard: 4, qtyCount: 4, fund: "MOOE", officer: "Darna A. Bugnay" },
+      { article: "knapsack sprayer", dateAcquired: "2016-12-01", propNo: "2016-12-026", unit: "pc", value: 2700, qtyCard: 1, qtyCount: 1, fund: "DepEdRO2", officer: "Bilenia A. Aladog" },
+    ];
+
+    document.getElementById('btnSeed').addEventListener('click', async () => {
+      const btn = document.getElementById('btnSeed');
+      const status = document.getElementById('status');
+      btn.disabled = true;
+      btn.textContent = "Seeding...";
+      status.textContent = "Pushing data to Firebase...";
+
+      try {
+        // Push High Value
+        for (const item of HIGH_VALUE_DATA) {
+          const docId = `high_${item.propNo.replace(/[^a-zA-Z0-9]/g, '')}`;
+          await setDoc(doc(db, "property_inventory", docId), {
+            category: "high",
+            type: "IT/Equipment",
+            article: item.article,
+            dateAcquired: item.dateAcquired,
+            propertyNumber: item.propNo,
+            unitOfMeasure: item.unit,
+            unitValue: item.value,
+            qtyPerCard: item.qtyCard,
+            qtyPerCount: item.qtyCount,
+            totalCost: item.value * item.qtyCount,
+            sourceOfFund: item.fund,
+            accountableOfficer: item.officer
+          });
+        }
+
+        // Push Low Value
+        for (const item of LOW_VALUE_DATA) {
+          const docId = `low_${item.propNo.replace(/[^a-zA-Z0-9]/g, '')}`;
+          await setDoc(doc(db, "property_inventory", docId), {
+            category: "low",
+            type: "Furniture/Tools",
+            article: item.article,
+            dateAcquired: item.dateAcquired,
+            propertyNumber: item.propNo,
+            unitOfMeasure: item.unit,
+            unitValue: item.value,
+            qtyPerCard: item.qtyCard,
+            qtyPerCount: item.qtyCount,
+            totalCost: item.value * item.qtyCount,
+            sourceOfFund: item.fund,
+            accountableOfficer: item.officer
+          });
+        }
+
+        status.textContent = "✅ Success! Data seeded. You can now view it in inventory.html.";
+        status.style.color = "green";
+        btn.textContent = "Done!";
+
+      } catch (error) {
+        console.error(error);
+        status.textContent = "❌ Error: " + error.message;
+        status.style.color = "red";
+        btn.disabled = false;
+      }
+    });
+  </script>
+</body>
+</html>
