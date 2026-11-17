@@ -46,7 +46,7 @@
     .btn-sm { padding: 6px 12px; font-size: 0.75rem; }
 
     /* Tabs */
-    .tabs { display: flex; gap: 10px; margin-bottom: 20px; }
+    .tabs { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; }
     .tab-btn { padding: 10px 20px; border-radius: 8px; border: 1px solid var(--border); background: #fff; font-weight: 700; cursor: pointer; transition: 0.2s; color: var(--text-muted); }
     .tab-btn.active { background: var(--primary); color: #fff; border-color: var(--primary); }
 
@@ -78,6 +78,32 @@
     .form-group input, .form-group select { padding: 10px; border: 1px solid var(--border); border-radius: 8px; font-size: 0.9rem; font-family: inherit; outline: none; }
     .form-group input:focus { border-color: var(--primary); }
     .modal-footer { padding: 16px 24px; border-top: 1px solid var(--border); display: flex; justify-content: flex-end; gap: 10px; background: #f8fafc; }
+
+    /* ================= PRINT LAYOUT ================= */
+    #print-area { display: none; }
+    @media print {
+      @page { size: landscape; margin: 0.5in; }
+      body { background: white; display: block; }
+      .sidebar, .main-content, .modal { display: none !important; }
+      #print-area { display: block !important; font-family: "Times New Roman", serif; }
+      
+      .print-header { text-align: center; margin-bottom: 20px; }
+      .print-header img { height: 60px; margin-bottom: 10px; }
+      .print-header h1 { font-size: 14pt; font-weight: bold; margin: 0; text-transform: uppercase; }
+      .print-header h2 { font-size: 11pt; font-weight: normal; margin: 5px 0; }
+      .print-header h3 { font-size: 11pt; font-weight: normal; margin: 0; font-style: italic; }
+
+      .print-info { margin-bottom: 15px; font-size: 10pt; }
+      
+      .print-table { width: 100%; border-collapse: collapse; font-size: 9pt; margin-bottom: 20px; }
+      .print-table th, .print-table td { border: 1px solid #000; padding: 4px; text-align: center; }
+      .print-table th { background: #f0f0f0; font-weight: bold; }
+      .print-table td.left { text-align: left; }
+      
+      .print-footer { display: flex; justify-content: space-between; font-size: 9pt; margin-top: 30px; }
+      .sig-block { text-align: center; width: 30%; }
+      .sig-name { border-bottom: 1px solid #000; font-weight: bold; padding-bottom: 2px; margin-bottom: 2px; }
+    }
   </style>
 </head>
 <body>
@@ -96,35 +122,41 @@
   <main class="main-content">
     <div class="topbar">
       <h1>📦 Property Inventory</h1>
-      <button class="btn btn-primary" onclick="openModal()">
-        <i class="fas fa-plus"></i> Add New Item
-      </button>
+      <div style="display: flex; gap: 10px;">
+        <button class="btn" style="background: #475569; color: #fff;" onclick="window.print()">
+          <i class="fas fa-print"></i> Print Report
+        </button>
+        <button class="btn btn-primary" onclick="openModal()">
+          <i class="fas fa-plus"></i> Add New Item
+        </button>
+      </div>
     </div>
 
-    <div class="tabs">
-      <button class="tab-btn active" onclick="switchTab('high', this)">High Value (P5k - P50k)</button>
-      <button class="tab-btn" onclick="switchTab('low', this)">Low Value (Under P5k)</button>
-    </div>
+    <!-- Dynamic Tabs -->
+    <div class="tabs" id="category-tabs"></div>
 
+    <!-- Table -->
     <div class="table-container">
       <div class="table-responsive">
         <table>
           <thead>
             <tr>
-              <th>Article / Description</th>
-              <th>Property No.</th>
+              <th>Article</th>
+              <th>Description</th>
               <th>Date Acquired</th>
+              <th>Property No.</th>
+              <th>Unit</th>
               <th>Unit Value</th>
               <th>Qty (Card)</th>
               <th>Qty (Count)</th>
               <th>Total Cost</th>
+              <th>Fund</th>
               <th>Officer</th>
-              <th>Status</th>
               <th>Actions</th>
             </tr>
           </thead>
           <tbody id="inventory-body">
-            <tr><td colspan="10" style="text-align: center; padding: 30px; color: var(--text-muted);">Loading inventory data...</td></tr>
+            <tr><td colspan="12" style="text-align: center; padding: 30px; color: var(--text-muted);">Loading inventory data...</td></tr>
           </tbody>
         </table>
       </div>
@@ -142,13 +174,17 @@
         <input type="hidden" id="itemId">
         
         <div class="form-group full">
-          <label>Article / Description</label>
-          <input type="text" id="f-article" placeholder="e.g. Laptop-Lenovo Thinkpad E14 Gen 5">
+          <label>Article (Type)</label>
+          <input type="text" id="f-article" placeholder="e.g. Furniture and Fixtures">
+        </div>
+        <div class="form-group full">
+          <label>Description</label>
+          <input type="text" id="f-description" placeholder="e.g. picture frames">
         </div>
         
         <div class="form-group">
           <label>Property Number</label>
-          <input type="text" id="f-propertyNumber" placeholder="e.g. 2024-07-70">
+          <input type="text" id="f-propertyNumber" placeholder="e.g. 2023-02-73/74">
         </div>
         <div class="form-group">
           <label>Date Acquired</label>
@@ -157,11 +193,11 @@
 
         <div class="form-group">
           <label>Unit Value (₱)</label>
-          <input type="number" id="f-unitValue" placeholder="e.g. 31221" oninput="calcTotal()">
+          <input type="number" id="f-unitValue" placeholder="e.g. 120" oninput="calcTotal()">
         </div>
         <div class="form-group">
           <label>Unit of Measure</label>
-          <input type="text" id="f-unitOfMeasure" placeholder="e.g. PC, pcs, unit">
+          <input type="text" id="f-unitOfMeasure" placeholder="e.g. pcs">
         </div>
 
         <div class="form-group">
@@ -179,12 +215,12 @@
         </div>
         <div class="form-group">
           <label>Source of Fund</label>
-          <input type="text" id="f-sourceOfFund" placeholder="e.g. MOOE, Central, Donation">
+          <input type="text" id="f-sourceOfFund" placeholder="e.g. MOOE">
         </div>
 
         <div class="form-group full">
           <label>Accountable Officer</label>
-          <input type="text" id="f-accountableOfficer" placeholder="e.g. Arman Puyao">
+          <input type="text" id="f-accountableOfficer" placeholder="e.g. Dolores C. Dodon">
         </div>
       </div>
       <div class="modal-footer">
@@ -194,27 +230,109 @@
     </div>
   </div>
 
+  <!-- HIDDEN PRINT AREA -->
+  <div id="print-area">
+    <div class="print-header">
+      <img src="../../assets/images/deped-logo.png" alt="DepEd Logo">
+      <h1>Report on the Physical Count of Issued Semi-Expendable Property</h1>
+      <h2 id="print-type-label">LOW VALUED ITEMS (Cost of each item is P5,000.00 or less)</h2>
+      <h3 id="print-category-label">FURNITURES AND FIXTURES</h3>
+      <h3 id="print-date-label">As of December 31, 2023</h3>
+    </div>
+
+    <div class="print-info">
+      <strong>SCHOOL:</strong> Sta Cruz Pingkian High School <br>
+      For which, <strong>Dolores C. Dodon, PhD, Principal III</strong> accountable, having assumed such accountability on <strong>August 2, 2021</strong>.
+    </div>
+
+    <table class="print-table">
+      <thead>
+        <tr>
+          <th rowspan="2">Article</th>
+          <th rowspan="2">Description</th>
+          <th rowspan="2">Date of Acquisition</th>
+          <th rowspan="2">Property Number</th>
+          <th rowspan="2">Unit of Measure</th>
+          <th rowspan="2">Unit Value</th>
+          <th colspan="2">Quantity</th>
+          <th rowspan="2">Total Cost</th>
+          <th rowspan="2">Source of Fund</th>
+          <th rowspan="2">Accountable Officer</th>
+        </tr>
+        <tr>
+          <th>per Property Card</th>
+          <th>per Physical Count</th>
+        </tr>
+      </thead>
+      <tbody id="print-tbody"></tbody>
+      <tfoot>
+        <tr>
+          <td colspan="8" style="text-align: right; font-weight: bold;">TOTAL</td>
+          <td id="print-total-cost" style="font-weight: bold;">₱0.00</td>
+          <td colspan="2"></td>
+        </tr>
+      </tfoot>
+    </table>
+
+    <div class="print-footer">
+      <div class="sig-block">
+        <div style="font-size: 8pt; margin-bottom: 15px;">Certified Correct by:</div>
+        <div class="sig-name">DARNA A. BUGNAY / NISAN K. BINWAG</div>
+        <div style="font-size: 8pt;">Administrative Assistant II / Sch. Property Custodian</div>
+      </div>
+      <div class="sig-block">
+        <div style="font-size: 8pt; margin-bottom: 15px;">Approved by:</div>
+        <div class="sig-name">DOLORES C. DODON, PhD</div>
+        <div style="font-size: 8pt;">School Head</div>
+      </div>
+      <div class="sig-block">
+        <div style="font-size: 8pt; margin-bottom: 15px;">Verified by:</div>
+        <div class="sig-name">ROBERT C. ROSAL JR.</div>
+        <div style="font-size: 8pt;">State Auditor IV</div>
+      </div>
+    </div>
+  </div>
+
   <script type="module">
     import { db } from "../../assets/js/firebase-config.js";
-    import { collection, getDocs, doc, setDoc, deleteDoc, query, orderBy } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+    import { collection, getDocs, doc, setDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
     let allItems = [];
-    let currentTab = 'high';
+    let currentTab = 'Furniture and Fixtures'; // Default tab
 
-    // 1. Load Data
+    // 1. Define Categories (Matches Excel Tabs)
+    const CATEGORIES = [
+      "Furniture and Fixtures",
+      "Office Equipment",
+      "Other Machinery & Equipment",
+      "Agricultural Equipment",
+      "Printing Equipment",
+      "IT Equipment",
+      "Communication Equipment",
+      "Technical & Scientific Equipment"
+    ];
+
+    // 2. Render Tabs
+    function renderTabs() {
+      const tabsContainer = document.getElementById('category-tabs');
+      tabsContainer.innerHTML = CATEGORIES.map(cat => `
+        <button class="tab-btn ${cat === currentTab ? 'active' : ''}" onclick="switchTab('${cat}', this)">${cat}</button>
+      `).join('');
+    }
+
+    // 3. Load Data
     async function loadInventory() {
       try {
-        const q = query(collection(db, "property_inventory"), orderBy("article", "asc"));
-        const snap = await getDocs(q);
+        const snap = await getDocs(collection(db, "property_inventory"));
         allItems = snap.docs.map(d => ({ id: d.id, ...d.data() }));
         renderTable();
       } catch (error) {
         console.error("Error loading inventory:", error);
-        document.getElementById('inventory-body').innerHTML = `<tr><td colspan="10" style="text-align: center; color: red;">Failed to load data.</td></tr>`;
+        document.getElementById('inventory-body').innerHTML = `<tr><td colspan="12" style="text-align: center; color: red;">Failed to load data.</td></tr>`;
       }
     }
 
-    // 2. Switch Tabs
+    // 4. Switch Tabs
     window.switchTab = function(tab, btnEl) {
       currentTab = tab;
       document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
@@ -222,57 +340,90 @@
       renderTable();
     };
 
-    // 3. Render Table
+    // 5. Render Table
     function renderTable() {
       const tbody = document.getElementById('inventory-body');
-      const filtered = allItems.filter(item => item.category === currentTab);
+      const filtered = allItems.filter(item => item.article === currentTab);
 
       if (filtered.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="10" style="text-align: center; padding: 30px; color: var(--text-muted);">No items found. Click "Add New Item" to start.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="12" style="text-align: center; padding: 30px; color: var(--text-muted);">No items found. Click "Add New Item" to start.</td></tr>`;
+        renderPrintArea([]); // Clear print area
         return;
       }
 
       tbody.innerHTML = filtered.map(item => {
-        const isShort = item.qtyPerCount < item.qtyPerCard;
-        const statusBadge = isShort 
-          ? `<span class="badge badge-red">Shortage</span>` 
-          : `<span class="badge badge-green">Complete</span>`;
-
         return `
           <tr>
-            <td><strong>${item.article}</strong></td>
-            <td style="font-family: monospace;">${item.propertyNumber || '-'}</td>
+            <td>${item.article}</td>
+            <td><strong>${item.description || '-'}</strong></td>
             <td>${item.dateAcquired || '-'}</td>
+            <td style="font-family: monospace;">${item.propertyNumber || '-'}</td>
+            <td>${item.unitOfMeasure || '-'}</td>
             <td>₱${Number(item.unitValue).toLocaleString()}</td>
             <td style="text-align: center; font-weight: bold;">${item.qtyPerCard}</td>
-            <td style="text-align: center; font-weight: bold; color: ${isShort ? 'red' : 'green'};">${item.qtyPerCount}</td>
+            <td style="text-align: center; font-weight: bold;">${item.qtyPerCount}</td>
             <td>₱${Number(item.totalCost).toLocaleString()}</td>
+            <td>${item.sourceOfFund || '-'}</td>
             <td>${item.accountableOfficer || '-'}</td>
-            <td>${statusBadge}</td>
             <td>
               <div class="action-btns">
                 <button class="btn btn-sm" style="background: #e0f2fe; color: #0369a1;" onclick="editItem('${item.id}')" title="Edit"><i class="fas fa-edit"></i></button>
-                <button class="btn btn-sm btn-danger" onclick="deleteItem('${item.id}', '${item.article}')" title="Delete"><i class="fas fa-trash"></i></button>
+                <button class="btn btn-sm btn-danger" onclick="deleteItem('${item.id}', '${item.description}')" title="Delete"><i class="fas fa-trash"></i></button>
               </div>
             </td>
           </tr>
         `;
       }).join('');
+
+      renderPrintArea(filtered);
     }
 
-    // 4. Modal Controls
+    // 6. Render Print Area
+    function renderPrintArea(items) {
+      const printTbody = document.getElementById('print-tbody');
+      let total = 0;
+
+      if (items.length === 0) {
+        printTbody.innerHTML = `<tr><td colspan="11" style="text-align: center; padding: 20px;">No items for this category.</td></tr>`;
+      } else {
+        printTbody.innerHTML = items.map(item => {
+          total += Number(item.totalCost);
+          return `
+            <tr>
+              <td class="left">${item.article}</td>
+              <td class="left">${item.description || ''}</td>
+              <td>${item.dateAcquired || ''}</td>
+              <td>${item.propertyNumber || ''}</td>
+              <td>${item.unitOfMeasure || ''}</td>
+              <td>₱${Number(item.unitValue).toLocaleString()}</td>
+              <td>${item.qtyPerCard}</td>
+              <td>${item.qtyPerCount}</td>
+              <td>₱${Number(item.totalCost).toLocaleString()}</td>
+              <td>${item.sourceOfFund || ''}</td>
+              <td class="left">${item.accountableOfficer || ''}</td>
+            </tr>
+          `;
+        }).join('');
+      }
+      
+      document.getElementById('print-total-cost').textContent = `₱${total.toLocaleString()}`;
+      document.getElementById('print-category-label').textContent = currentTab.toUpperCase();
+    }
+
+    // 7. Modal Controls
     window.openModal = function() {
       document.getElementById('modalTitle').textContent = "➕ Add New Property";
       document.getElementById('itemId').value = "";
-      document.getElementById('f-article').value = "";
+      document.getElementById('f-article').value = currentTab; // Auto-fill category
+      document.getElementById('f-description').value = "";
       document.getElementById('f-propertyNumber').value = "";
       document.getElementById('f-dateAcquired').value = "";
       document.getElementById('f-unitValue').value = "";
-      document.getElementById('f-unitOfMeasure').value = "PC";
+      document.getElementById('f-unitOfMeasure').value = "pcs";
       document.getElementById('f-qtyPerCard').value = "1";
       document.getElementById('f-qtyPerCount').value = "1";
       document.getElementById('f-totalCost').value = "";
-      document.getElementById('f-sourceOfFund').value = "";
+      document.getElementById('f-sourceOfFund').value = "MOOE";
       document.getElementById('f-accountableOfficer').value = "";
       document.getElementById('itemModal').classList.add('show');
     };
@@ -281,23 +432,23 @@
       document.getElementById('itemModal').classList.remove('show');
     };
 
-    // 5. Auto-Calculate Total Cost
+    // 8. Auto-Calculate Total
     window.calcTotal = function() {
       const unit = parseFloat(document.getElementById('f-unitValue').value) || 0;
       const qty = parseFloat(document.getElementById('f-qtyPerCount').value) || 0;
       document.getElementById('f-totalCost').value = (unit * qty).toFixed(2);
     };
 
-    // 6. Save Item (Create or Update)
+    // 9. Save Item
     window.saveItem = async function() {
       const id = document.getElementById('itemId').value;
-      const article = document.getElementById('f-article').value.trim();
+      const description = document.getElementById('f-description').value.trim();
       
-      if (!article) return alert("Article/Description is required.");
+      if (!description) return alert("Description is required.");
 
       const data = {
-        category: currentTab,
-        article: article,
+        article: document.getElementById('f-article').value,
+        description: description,
         propertyNumber: document.getElementById('f-propertyNumber').value.trim(),
         dateAcquired: document.getElementById('f-dateAcquired').value,
         unitValue: parseFloat(document.getElementById('f-unitValue').value) || 0,
@@ -311,14 +462,11 @@
 
       try {
         if (id) {
-          // Update existing
           await setDoc(doc(db, "property_inventory", id), data, { merge: true });
         } else {
-          // Create new
           const newDocRef = doc(collection(db, "property_inventory"));
           await setDoc(newDocRef, data);
         }
-        
         closeModal();
         await loadInventory();
       } catch (error) {
@@ -327,7 +475,7 @@
       }
     };
 
-    // 7. Edit Item
+    // 10. Edit Item
     window.editItem = function(id) {
       const item = allItems.find(i => i.id === id);
       if (!item) return;
@@ -335,6 +483,7 @@
       document.getElementById('modalTitle').textContent = "✏️ Edit Property";
       document.getElementById('itemId').value = item.id;
       document.getElementById('f-article').value = item.article || "";
+      document.getElementById('f-description').value = item.description || "";
       document.getElementById('f-propertyNumber').value = item.propertyNumber || "";
       document.getElementById('f-dateAcquired').value = item.dateAcquired || "";
       document.getElementById('f-unitValue').value = item.unitValue || "";
@@ -348,9 +497,9 @@
       document.getElementById('itemModal').classList.add('show');
     };
 
-    // 8. Delete Item
-    window.deleteItem = async function(id, article) {
-      if (!confirm(`Are you sure you want to delete "${article}"?\n\nThis action cannot be undone.`)) return;
+    // 11. Delete Item
+    window.deleteItem = async function(id, description) {
+      if (!confirm(`Are you sure you want to delete "${description}"?`)) return;
 
       try {
         await deleteDoc(doc(db, "property_inventory", id));
@@ -361,7 +510,10 @@
       }
     };
 
-    document.addEventListener('DOMContentLoaded', loadInventory);
+    document.addEventListener('DOMContentLoaded', () => {
+      renderTabs();
+      loadInventory();
+    });
   </script>
 </body>
 </html>
