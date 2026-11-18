@@ -121,7 +121,7 @@
 
   </main>
 
-  <script type="module">
+    <script type="module">
     import { db } from "../../assets/js/firebase-config.js";
     import { collection, doc, setDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
@@ -156,7 +156,6 @@
       const sheetName = document.getElementById('sheet-select').value;
       const worksheet = workbook.Sheets[sheetName];
       
-      // Convert sheet to array of arrays
       const rawData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
       
       if (rawData.length === 0) {
@@ -164,27 +163,19 @@
         return;
       }
 
-      // Find the actual header row (skipping the title rows at the top)
-            // Find the actual header row by looking specifically for "Description" AND "Property"
+      // Find the actual header row
       let headerRowIndex = -1;
       for (let i = 0; i < rawData.length; i++) {
         const row = rawData[i];
         if (!row) continue;
-        
-        // Join the whole row into one lowercase string to make searching easier
         const rowString = row.join(' ').toLowerCase();
-        
-        // We know the real header row MUST contain these words
         if (rowString.includes('description') && rowString.includes('property')) {
           headerRowIndex = i;
           break;
         }
       }
 
-      if (headerRowIndex === -1) {
-        // Fallback: assume row 0 is header
-        headerRowIndex = 0; 
-      }
+      if (headerRowIndex === -1) headerRowIndex = 0; 
 
       currentHeaders = rawData[headerRowIndex];
       currentSheetData = rawData.slice(headerRowIndex + 1);
@@ -193,40 +184,51 @@
       renderPreview();
     };
 
-    // 3. Render Mapping Dropdowns
+    // 3. Render Mapping Dropdowns & Auto-Map
     function renderMappingUI() {
       const container = document.getElementById('mapping-container');
       const requiredFields = [
-        { key: 'article', label: 'Article (Category)' },
-        { key: 'description', label: 'Description' },
-        { key: 'propertyNumber', label: 'Property Number' },
-        { key: 'dateAcquired', label: 'Date Acquired' },
-        { key: 'unitOfMeasure', label: 'Unit of Measure' },
-        { key: 'unitValue', label: 'Unit Value' },
-        { key: 'qtyPerCard', label: 'Qty (Property Card)' },
-        { key: 'qtyPerCount', label: 'Qty (Physical Count)' },
-        { key: 'sourceOfFund', label: 'Source of Fund' },
-        { key: 'accountableOfficer', label: 'Accountable Officer' }
+        { key: 'article', label: 'Article (Category)', keywords: ['article'] },
+        { key: 'description', label: 'Description', keywords: ['description'] },
+        { key: 'propertyNumber', label: 'Property Number', keywords: ['property', 'number'] },
+        { key: 'dateAcquired', label: 'Date Acquired', keywords: ['date', 'acquisition'] },
+        { key: 'unitOfMeasure', label: 'Unit of Measure', keywords: ['unit', 'measure'] },
+        { key: 'unitValue', label: 'Unit Value', keywords: ['unit', 'value'] },
+        { key: 'qtyPerCard', label: 'Qty (Property Card)', keywords: ['quantity', 'card'] },
+        { key: 'qtyPerCount', label: 'Qty (Physical Count)', keywords: ['quantity', 'physical'] },
+        { key: 'sourceOfFund', label: 'Source of Fund', keywords: ['source', 'fund'] },
+        { key: 'accountableOfficer', label: 'Accountable Officer', keywords: ['accountable', 'officer'] }
       ];
 
-      container.innerHTML = requiredFields.map(field => `
-        <div class="form-group">
-          <label>${field.label}</label>
-          <select id="map-${field.key}">
-            <option value="">-- Select Column --</option>
-            ${currentHeaders.map((h, i) => `<option value="${i}">${h || 'Column ' + (i+1)}</option>`).join('')}
-          </select>
-        </div>
-      `).join('');
+      container.innerHTML = requiredFields.map(field => {
+        // AUTO-MAP LOGIC: Try to find a header that matches the keywords
+        let autoSelectedIndex = "";
+        for (let i = 0; i < currentHeaders.length; i++) {
+          const headerStr = String(currentHeaders[i]).toLowerCase();
+          if (field.keywords.every(kw => headerStr.includes(kw))) {
+            autoSelectedIndex = i;
+            break;
+          }
+        }
 
-      // Auto-select the sheet name as the Article (Category)
+        return `
+          <div class="form-group">
+            <label>${field.label}</label>
+            <select id="map-${field.key}">
+              <option value="">-- Select Column --</option>
+              ${currentHeaders.map((h, i) => `<option value="${i}" ${i == autoSelectedIndex ? 'selected' : ''}>${h || 'Column ' + (i+1)}</option>`).join('')}
+            </select>
+          </div>
+        `;
+      }).join('');
+
+      // Force Article to use Sheet Name by default
       const sheetName = document.getElementById('sheet-select').value;
       const articleDropdown = document.getElementById('map-article');
-      // We will just inject a fake option for the category since it's usually the sheet name
       articleDropdown.innerHTML += `<option value="__SHEET_NAME__" selected>Use Sheet Name (${sheetName})</option>`;
     }
 
-    // 4. Render Preview Table
+    // 4. Render Preview Table (With Date Fixer)
     function renderPreview() {
       const thead = document.getElementById('preview-head');
       const tbody = document.getElementById('preview-body');
@@ -234,11 +236,22 @@
       thead.innerHTML = `<tr>${currentHeaders.map(h => `<th>${h}</th>`).join('')}</tr>`;
       
       tbody.innerHTML = currentSheetData.slice(0, 5).map(row => {
-        return `<tr>${currentHeaders.map((_, i) => `<td>${row[i] || ''}</td>`).join('')}</tr>`;
+        return `<tr>${currentHeaders.map((header, i) => {
+          let cellValue = row[i] || '';
+          
+          // FIX EXCEL DATES: If the header is Date and the value is a number, convert it
+          if (String(header).toLowerCase().includes('date') && typeof cellValue === 'number') {
+             // Convert Excel serial number to JS Date
+             const dateObj = new Date(Math.round((cellValue - 25569) * 86400 * 1000));
+             cellValue = dateObj.toISOString().split('T')[0]; // YYYY-MM-DD
+          }
+
+          return `<td>${cellValue}</td>`;
+        }).join('')}</tr>`;
       }).join('');
     }
 
-    // 5. Save to Firebase
+    // 5. Save to Firebase (With Date Fixer)
     window.saveToDatabase = async function() {
       const mapping = {
         article: document.getElementById('map-article').value,
@@ -253,12 +266,9 @@
         accountableOfficer: document.getElementById('map-accountableOfficer').value,
       };
 
-      if (!mapping.description) {
-        return alert("Please map the 'Description' column.");
-      }
+      if (!mapping.description) return alert("Please map the 'Description' column.");
 
       const sheetName = document.getElementById('sheet-select').value;
-      // Capitalize the sheet name to look nice as a Category
       const categoryName = sheetName.charAt(0).toUpperCase() + sheetName.slice(1);
 
       if (!confirm(`Are you sure you want to import ${currentSheetData.length} rows from "${sheetName}"?`)) return;
@@ -271,22 +281,22 @@
       let successCount = 0;
 
       for (const row of currentSheetData) {
-        // Skip empty rows
         if (!row || row.length === 0 || !row[mapping.description]) continue;
 
-        // Determine Article (Category)
-        let articleVal = "";
-        if (mapping.article === "__SHEET_NAME__") {
-          articleVal = categoryName;
-        } else {
-          articleVal = row[mapping.article] || categoryName;
+        let articleVal = (mapping.article === "__SHEET_NAME__") ? categoryName : (row[mapping.article] || categoryName);
+        
+        // Fix Date formatting
+        let dateVal = row[mapping.dateAcquired] || "";
+        if (typeof dateVal === 'number') {
+             const dateObj = new Date(Math.round((dateVal - 25569) * 86400 * 1000));
+             dateVal = dateObj.toISOString().split('T')[0];
         }
 
         const data = {
           article: articleVal,
           description: row[mapping.description] || "",
           propertyNumber: row[mapping.propertyNumber] || "",
-          dateAcquired: row[mapping.dateAcquired] || "",
+          dateAcquired: dateVal,
           unitOfMeasure: row[mapping.unitOfMeasure] || "",
           unitValue: parseFloat(row[mapping.unitValue]) || 0,
           qtyPerCard: parseInt(row[mapping.qtyPerCard]) || 0,
@@ -295,7 +305,6 @@
           accountableOfficer: row[mapping.accountableOfficer] || ""
         };
 
-        // Calculate total cost automatically
         data.totalCost = data.unitValue * data.qtyPerCount;
 
         try {
@@ -309,7 +318,6 @@
 
       alert(`✅ Successfully imported ${successCount} items from "${sheetName}" to the database!`);
       
-      // Ask if they want to import another sheet
       if (confirm("Do you want to import another sheet from this file?")) {
         btn.innerHTML = originalText;
         btn.disabled = false;
