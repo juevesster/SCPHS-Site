@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Import Inventory – Admin Office</title>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <!-- SheetJS Library for Excel Parsing -->
+  <script src="https://cdn.sheetjs.com/xlsx-0.20.2/package/dist/xlsx.full.min.js"></script>
+  
+  <style>
+    :root {
+      --sidebar-bg: #0f172a;
+      --bg-color: #f4f7f9;
+      --primary: #0f766e;
+      --text-main: #1e293b;
+      --text-muted: #64748b;
+      --border: #e2e8f0;
+      --danger: #dc2626;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Outfit', sans-serif; }
+    body { background: var(--bg-color); color: var(--text-main); display: flex; min-height: 100vh; }
+
+    /* Sidebar */
+    .sidebar { width: 260px; background: var(--sidebar-bg); color: #fff; display: flex; flex-direction: column; position: fixed; height: 100vh; z-index: 100; }
+    .sidebar-brand { padding: 30px 24px; font-size: 1.4rem; font-weight: 800; display: flex; align-items: center; gap: 12px; border-bottom: 1px solid rgba(255,255,255,0.05); }
+    .sidebar-brand i { color: #14b8a6; }
+    .sidebar-menu { flex: 1; padding: 24px 16px; display: flex; flex-direction: column; gap: 8px; }
+    .menu-item { display: flex; align-items: center; gap: 14px; padding: 14px 18px; border-radius: 12px; color: #94a3b8; text-decoration: none; font-weight: 500; font-size: 0.95rem; transition: all 0.2s; }
+    .menu-item:hover { background: #1e293b; color: #fff; }
+    .menu-item.active { background: linear-gradient(90deg, #0f766e, #14b8a6); color: #fff; }
+
+    /* Main Content */
+    .main-content { margin-left: 260px; flex: 1; padding: 32px; }
+    .topbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
+    .topbar h1 { font-size: 1.8rem; font-weight: 800; }
+
+    /* Cards */
+    .card { background: #fff; border-radius: 16px; padding: 30px; box-shadow: 0 4px 6px rgba(0,0,0,0.02); border: 1px solid var(--border); margin-bottom: 20px; }
+    
+    .upload-zone { border: 2px dashed var(--border); border-radius: 12px; padding: 40px; text-align: center; cursor: pointer; background: #f8fafc; transition: 0.2s; }
+    .upload-zone:hover { border-color: var(--primary); background: #eff6ff; }
+    .upload-zone i { font-size: 3rem; color: var(--primary); margin-bottom: 15px; }
+    
+    .btn { padding: 10px 18px; border-radius: 8px; border: none; cursor: pointer; font-weight: 700; font-size: 0.85rem; display: inline-flex; align-items: center; gap: 8px; transition: 0.2s; }
+    .btn-primary { background: var(--primary); color: #fff; }
+    .btn-success { background: #10b981; color: #fff; }
+    
+    /* Table */
+    .table-wrap { overflow-x: auto; max-height: 500px; border: 1px solid var(--border); border-radius: 8px; margin-top: 20px; }
+    table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+    th, td { padding: 10px 12px; border-bottom: 1px solid var(--border); text-align: left; }
+    th { background: #f8fafc; position: sticky; top: 0; }
+    
+    .mapping-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px; background: #f8fafc; padding: 20px; border-radius: 12px; }
+    .form-group label { display: block; font-size: 0.75rem; font-weight: 700; color: var(--text-muted); margin-bottom: 5px; }
+    .form-group select { width: 100%; padding: 10px; border: 1px solid var(--border); border-radius: 8px; }
+  </style>
+</head>
+<body>
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sidebar-brand"><i class="fas fa-building"></i> <span>Admin Office</span></div>
+    <div class="sidebar-menu">
+      <a href="index.html" class="menu-item"><i class="fas fa-home"></i> <span>Overview</span></a>
+      <a href="inventory.html" class="menu-item"><i class="fas fa-boxes"></i> <span>Property Inventory</span></a>
+      <a href="inventory-importer.html" class="menu-item active"><i class="fas fa-file-import"></i> <span>Import Excel</span></a>
+    </div>
+  </aside>
+
+  <!-- MAIN CONTENT -->
+  <main class="main-content">
+    <div class="topbar">
+      <h1>📥 Import Inventory Data</h1>
+    </div>
+
+    <div class="card">
+      <div class="upload-zone" onclick="document.getElementById('excel-file').click()">
+        <i class="fas fa-file-excel"></i>
+        <h3>Click to upload your RPCSP Excel File</h3>
+        <p style="color: var(--text-muted); font-size: 0.9rem;">Supports .xlsx and .csv formats</p>
+        <input type="file" id="excel-file" accept=".xlsx, .xls, .csv" style="display: none;" onchange="handleFileUpload(this)">
+      </div>
+    </div>
+
+    <!-- Mapping & Preview Area (Hidden by default) -->
+    <div class="card" id="preview-area" style="display: none;">
+      <h3>🎯 Map Your Columns</h3>
+      <p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 15px;">Match your Excel column headers to the database fields.</p>
+      
+      <div class="mapping-grid" id="mapping-container">
+        <!-- Dropdowns injected by JS -->
+      </div>
+
+      <h3>👁️ Preview Data (First 5 rows)</h3>
+      <div class="table-wrap">
+        <table>
+          <thead id="preview-head"></thead>
+          <tbody id="preview-body"></tbody>
+        </table>
+      </div>
+
+      <div style="margin-top: 20px; text-align: right;">
+        <button class="btn btn-success" onclick="saveToDatabase()">
+          <i class="fas fa-cloud-upload-alt"></i> Import All Data to Database
+        </button>
+      </div>
+    </div>
+
+  </main>
+
+  <script type="module">
+    import { db } from "../../assets/js/firebase-config.js";
+    import { collection, doc, setDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+    let rawExcelData = [];
+    let headers = [];
+
+    // 1. Handle File Upload & Parsing
+    window.handleFileUpload = function(input) {
+      const file = input.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        const data = new Uint8Array(e.target.result);
+        const workbook = XLSX.read(data, { type: 'array' });
+        
+        // Get the first sheet
+        const firstSheetName = workbook.SheetNames[0];
+        const worksheet = workbook.Sheets[firstSheetName];
+        
+        // Convert to JSON array
+        rawExcelData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+        
+        if (rawExcelData.length === 0) {
+          alert("The Excel file is empty.");
+          return;
+        }
+
+        // Assuming the first row is the header
+        headers = rawExcelData[0];
+        rawExcelData = rawExcelData.slice(1); // Remove header row
+
+        renderMappingUI();
+        renderPreview();
+        
+        document.getElementById('preview-area').style.display = 'block';
+      };
+      reader.readAsArrayBuffer(file);
+    };
+
+    // 2. Render Column Mapping Dropdowns
+    function renderMappingUI() {
+      const container = document.getElementById('mapping-container');
+      const requiredFields = [
+        { key: 'article', label: 'Article (Category)' },
+        { key: 'description', label: 'Description' },
+        { key: 'propertyNumber', label: 'Property Number' },
+        { key: 'dateAcquired', label: 'Date of Acquisition' },
+        { key: 'unitOfMeasure', label: 'Unit of Measure' },
+        { key: 'unitValue', label: 'Unit Value' },
+        { key: 'qtyPerCard', label: 'Quantity (Property Card)' },
+        { key: 'qtyPerCount', label: 'Quantity (Physical Count)' },
+        { key: 'sourceOfFund', label: 'Source of Fund' },
+        { key: 'accountableOfficer', label: 'Accountable Officer' }
+      ];
+
+      container.innerHTML = requiredFields.map(field => `
+        <div class="form-group">
+          <label>${field.label}</label>
+          <select id="map-${field.key}">
+            <option value="">-- Select Excel Column --</option>
+            ${headers.map((h, i) => `<option value="${i}">${h || 'Column ' + (i+1)}</option>`).join('')}
+          </select>
+        </div>
+      `).join('');
+    }
+
+    // 3. Render Preview Table
+    function renderPreview() {
+      const thead = document.getElementById('preview-head');
+      const tbody = document.getElementById('preview-body');
+
+      thead.innerHTML = `<tr>${headers.map(h => `<th>${h}</th>`).join('')}</tr>`;
+      
+      // Show first 5 rows for preview
+      tbody.innerHTML = rawExcelData.slice(0, 5).map(row => {
+        return `<tr>${headers.map((_, i) => `<td>${row[i] || ''}</td>`).join('')}</tr>`;
+      }).join('');
+    }
+
+    // 4. Save to Firebase
+    window.saveToDatabase = async function() {
+      // Get mapping values
+      const mapping = {
+        article: document.getElementById('map-article').value,
+        description: document.getElementById('map-description').value,
+        propertyNumber: document.getElementById('map-propertyNumber').value,
+        dateAcquired: document.getElementById('map-dateAcquired').value,
+        unitOfMeasure: document.getElementById('map-unitOfMeasure').value,
+        unitValue: document.getElementById('map-unitValue').value,
+        qtyPerCard: document.getElementById('map-qtyPerCard').value,
+        qtyPerCount: document.getElementById('map-qtyPerCount').value,
+        sourceOfFund: document.getElementById('map-sourceOfFund').value,
+        accountableOfficer: document.getElementById('map-accountableOfficer').value,
+      };
+
+      if (!mapping.article || !mapping.description) {
+        return alert("Please map at least the 'Article' and 'Description' columns.");
+      }
+
+      if (!confirm(`Are you sure you want to import ${rawExcelData.length} rows?`)) return;
+
+      const btn = event.target;
+      const originalText = btn.innerHTML;
+      btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Importing...';
+      btn.disabled = true;
+
+      let successCount = 0;
+
+      for (const row of rawExcelData) {
+        // Skip empty rows
+        if (!row || row.length === 0 || !row[mapping.description]) continue;
+
+        const data = {
+          article: row[mapping.article] || "Uncategorized",
+          description: row[mapping.description] || "",
+          propertyNumber: row[mapping.propertyNumber] || "",
+          dateAcquired: row[mapping.dateAcquired] || "",
+          unitOfMeasure: row[mapping.unitOfMeasure] || "",
+          unitValue: parseFloat(row[mapping.unitValue]) || 0,
+          qtyPerCard: parseInt(row[mapping.qtyPerCard]) || 0,
+          qtyPerCount: parseInt(row[mapping.qtyPerCount]) || 0,
+          sourceOfFund: row[mapping.sourceOfFund] || "",
+          accountableOfficer: row[mapping.accountableOfficer] || ""
+        };
+
+        // Calculate total cost automatically
+        data.totalCost = data.unitValue * data.qtyPerCount;
+
+        try {
+          const newDocRef = doc(collection(db, "property_inventory"));
+          await setDoc(newDocRef, data);
+          successCount++;
+        } catch (error) {
+          console.error("Error saving row:", error, row);
+        }
+      }
+
+      alert(`✅ Successfully imported ${successCount} items to the database!`);
+      window.location.href = "inventory.html"; // Redirect back to the main inventory
+    };
+  </script>
+</body>
+</html>
