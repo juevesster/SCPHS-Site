@@ -165,10 +165,17 @@
       }
 
       // Find the actual header row (skipping the title rows at the top)
+            // Find the actual header row by looking specifically for "Description" AND "Property"
       let headerRowIndex = -1;
       for (let i = 0; i < rawData.length; i++) {
         const row = rawData[i];
-        if (row && row.some(cell => String(cell).toLowerCase().includes('description') || String(cell).toLowerCase().includes('article'))) {
+        if (!row) continue;
+        
+        // Join the whole row into one lowercase string to make searching easier
+        const rowString = row.join(' ').toLowerCase();
+        
+        // We know the real header row MUST contain these words
+        if (rowString.includes('description') && rowString.includes('property')) {
           headerRowIndex = i;
           break;
         }
