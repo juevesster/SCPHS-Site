@@ -94,27 +94,108 @@
     .modal-footer { padding: 16px 24px; border-top: 1px solid var(--border); display: flex; justify-content: flex-end; gap: 10px; background: #f8fafc; }
 
     /* ================= PRINT LAYOUT ================= */
-    #print-area { display: none; }
-    @media print {
-      @page { size: landscape; margin: 0.5in; }
-      body { background: white; display: block; }
-      .sidebar, .main-content, .modal { display: none !important; }
-      #print-area { display: block !important; font-family: "Times New Roman", serif; }
-      
-      .print-header { text-align: center; margin-bottom: 20px; }
-      .print-header img { height: 60px; margin-bottom: 10px; }
-      .print-header h1 { font-size: 14pt; font-weight: bold; margin: 0; text-transform: uppercase; }
-      
-      .print-table { width: 100%; border-collapse: collapse; font-size: 8pt; margin-bottom: 20px; table-layout: fixed; }
-      .print-table th, .print-table td { border: 1px solid #000; padding: 4px; text-align: center; word-wrap: break-word; }
-      .print-table th { background: #f0f0f0; font-weight: bold; font-size: 7pt; }
-      .print-table td.left { text-align: left; }
+#print-area { display: none; }
 
-      .sig-table { width: 100%; border: none; margin-top: 30px; font-size: 9pt; }
-      .sig-table td { border: none; vertical-align: bottom; }
-      .sig-name { border-bottom: 1px solid #000; text-align: center; font-weight: bold; padding-bottom: 2px; }
-      .sig-title { text-align: center; font-size: 8pt; }
-    }
+@media print {
+  @page {
+    size: landscape;
+    margin: 0.3in;
+  }
+
+  body {
+    background: white;
+    display: block;
+  }
+
+  .sidebar,
+  .main-content,
+  .modal {
+    display: none !important;
+  }
+
+  #print-area {
+    display: block !important;
+    width: 100%;
+    font-family: "Times New Roman", serif;
+  }
+
+  .print-header {
+    text-align: center;
+    margin-bottom: 12px;
+  }
+
+  .print-header img {
+    height: 45px;
+    margin-bottom: 5px;
+  }
+
+  .print-header h1 {
+    font-size: 11pt;
+    font-weight: bold;
+    margin: 0;
+    text-transform: uppercase;
+  }
+
+  .print-table {
+    width: 100%;
+    border-collapse: collapse;
+    table-layout: fixed;
+    font-size: 7pt;
+    margin-bottom: 15px;
+  }
+
+  .print-table thead {
+    display: table-header-group;
+  }
+
+  .print-table tr {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  .print-table th,
+  .print-table td {
+    border: 1px solid #000;
+    padding: 3px;
+    text-align: center;
+    vertical-align: middle;
+    overflow-wrap: anywhere;
+  }
+
+  .print-table th {
+    background: #f0f0f0 !important;
+    font-weight: bold;
+    font-size: 6.5pt;
+  }
+
+  .print-table td.left {
+    text-align: left;
+  }
+
+  .sig-table {
+    width: 100%;
+    border: none;
+    margin-top: 20px;
+    font-size: 9pt;
+  }
+
+  .sig-table td {
+    border: none;
+    vertical-align: bottom;
+  }
+
+  .sig-name {
+    border-bottom: 1px solid #000;
+    text-align: center;
+    font-weight: bold;
+    padding-bottom: 2px;
+  }
+
+  .sig-title {
+    text-align: center;
+    font-size: 8pt;
+  }
+}
   </style>
 </head>
 <body>
