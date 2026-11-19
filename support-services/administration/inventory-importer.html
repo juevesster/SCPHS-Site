@@ -281,7 +281,8 @@
       if (!mapping.qtyPerCard || !mapping.qtyPerCount) return alert("Please map the Quantity columns.");
 
       const sheetName = document.getElementById('sheet-select').value;
-      const categoryName = sheetName.charAt(0).toUpperCase() + sheetName.slice(1);
+      // Capitalize Every Word to match the Tabs perfectly
+      const categoryName = sheetName.replace(/\w\S*/g, (txt) => txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase());
 
       if (!confirm(`Import ${currentSheetData.length} rows from "${sheetName}"?`)) return;
 
