@@ -137,40 +137,41 @@
   }
 
   .print-table {
-    width: 100%;
-    border-collapse: collapse;
-    table-layout: fixed;
-    font-size: 7pt;
-    margin-bottom: 15px;
-  }
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+  font-size: 7pt;
+  margin-bottom: 15px;
+}
 
-  .print-table thead {
-    display: table-header-group;
-  }
+.print-table thead {
+  display: table-header-group;
+}
 
-  .print-table tr {
-    break-inside: avoid;
-    page-break-inside: avoid;
-  }
+.print-table tr {
+  break-inside: avoid;
+  page-break-inside: avoid;
+}
 
-  .print-table th,
-  .print-table td {
-    border: 1px solid #000;
-    padding: 3px;
-    text-align: center;
-    vertical-align: middle;
-    overflow-wrap: anywhere;
-  }
+.print-table th,
+.print-table td {
+  border: 1px solid #000;
+  padding: 3px;
+  text-align: center;
+  vertical-align: middle;
+  line-height: 1.15;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
 
-  .print-table th {
-    background: #f0f0f0 !important;
-    font-weight: bold;
-    font-size: 6.5pt;
-  }
+.print-table th {
+  background: #f0f0f0 !important;
+  font-size: 6.5pt;
+}
 
-  .print-table td.left {
-    text-align: left;
-  }
+.print-table td.left {
+  text-align: left;
+}
 
   .sig-table {
     width: 100%;
@@ -406,36 +407,50 @@
     </div>
 
     <table class="print-table">
-      <thead>
-        <tr>
-          <th rowspan="2" style="width: 15%;">Article</th>
-          <th rowspan="2" style="width: 20%;">Description</th>
-          <th rowspan="2" style="width: 10%;">Date of Acquisition</th>
-          <th rowspan="2" style="width: 15%;">Property Number</th>
-          <th rowspan="2" style="width: 8%;">Unit of Measure</th>
-          <th rowspan="2" style="width: 8%;">Unit Value</th>
-          <th colspan="2">Quantity</th>
-          <th rowspan="2" style="width: 10%;">Total Cost<br>Unit Value x Physical Count</th>
-          <th rowspan="2" style="width: 8%;">Source of Fund</th>
-          <th colspan="2">SHORTAGE/OVERAGE</th>
-          <th rowspan="2" style="width: 10%;">Remarks<br>Accountable Officer</th>
-        </tr>
-        <tr>
-          <th style="font-size: 7pt;">per<br>Property Card</th>
-          <th style="font-size: 7pt;">per<br>Physical Count</th>
-          <th style="font-size: 7pt;">Quantity</th>
-          <th style="font-size: 7pt;">Value</th>
-        </tr>
-      </thead>
-      <tbody id="print-tbody"></tbody>
-      <tfoot>
-        <tr>
-          <td colspan="8" style="text-align: right; font-weight: bold;">TOTAL</td>
-          <td id="print-total-cost" style="font-weight: bold;">₱0.00</td>
-          <td colspan="4"></td>
-        </tr>
-      </tfoot>
-    </table>
+  <colgroup>
+    <col style="width: 9%">
+    <col style="width: 14%">
+    <col style="width: 8%">
+    <col style="width: 12%">
+    <col style="width: 6%">
+    <col style="width: 7%">
+    <col style="width: 6%">
+    <col style="width: 6%">
+    <col style="width: 8%">
+    <col style="width: 7%">
+    <col style="width: 5%">
+    <col style="width: 5%">
+    <col style="width: 7%">
+  </colgroup>
+
+  <thead>
+    <tr>
+      <th>Article</th>
+      <th>Description</th>
+      <th>Date Acquired</th>
+      <th>Property Number</th>
+      <th>Unit</th>
+      <th>Unit Value</th>
+      <th>Qty per Card</th>
+      <th>Qty per Count</th>
+      <th>Total Cost</th>
+      <th>Source of Fund</th>
+      <th>Shortage / Overage Qty</th>
+      <th>Shortage / Overage Value</th>
+      <th>Accountable Officer</th>
+    </tr>
+  </thead>
+
+  <tbody id="print-tbody"></tbody>
+
+  <tfoot>
+    <tr>
+      <td colspan="8" style="text-align: right; font-weight: bold;">TOTAL</td>
+      <td id="print-total-cost" style="font-weight: bold;">₱0.00</td>
+      <td colspan="4"></td>
+    </tr>
+  </tfoot>
+</table>
 
     <table class="sig-table">
       <tr>
@@ -603,24 +618,35 @@
         printTbody.innerHTML = `<tr><td colspan="11" style="text-align: center; padding: 20px;">No items in this folder.</td></tr>`;
       } else {
         printTbody.innerHTML = items.map(item => {
-          total += Number(item.totalCost);
-          return `
-            <tr>
-              <td class="left">${item.article}</td>
-              <td class="left">${item.description || ''}</td>
-              <td>${item.dateAcquired || ''}</td>
-              <td>${item.propertyNumber || ''}</td>
-              <td>${item.unitOfMeasure || ''}</td>
-              <td>₱${Number(item.unitValue).toLocaleString()}</td>
-              <td>${item.qtyPerCard}</td>
-              <td>${item.qtyPerCount}</td>
-              <td>₱${Number(item.totalCost).toLocaleString()}</td>
-              <td>${item.sourceOfFund || ''}</td>
-              <td class="left">${item.accountableOfficer || ''}</td>
-            </tr>
-          `;
-        }).join('');
-      }
+  const unitValue = Number(item.unitValue) || 0;
+  const qtyPerCard = Number(item.qtyPerCard) || 0;
+  const qtyPerCount = Number(item.qtyPerCount) || 0;
+  const totalCost = Number(item.totalCost) || unitValue * qtyPerCount;
+
+  // Positive means overage; negative means shortage.
+  const varianceQty = qtyPerCount - qtyPerCard;
+  const varianceValue = varianceQty * unitValue;
+
+  total += totalCost;
+
+  return `
+    <tr>
+      <td class="left">${item.article || ''}</td>
+      <td class="left">${item.description || ''}</td>
+      <td>${item.dateAcquired || ''}</td>
+      <td>${item.propertyNumber || ''}</td>
+      <td>${item.unitOfMeasure || ''}</td>
+      <td>₱${unitValue.toLocaleString()}</td>
+      <td>${qtyPerCard}</td>
+      <td>${qtyPerCount}</td>
+      <td>₱${totalCost.toLocaleString()}</td>
+      <td>${item.sourceOfFund || ''}</td>
+      <td>${varianceQty > 0 ? '+' : ''}${varianceQty}</td>
+      <td>₱${Math.abs(varianceValue).toLocaleString()}</td>
+      <td class="left">${item.accountableOfficer || ''}</td>
+    </tr>
+  `;
+}).join('');
       
       document.getElementById('print-total-cost').textContent = `₱${total.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
       document.getElementById('print-category-label').textContent = currentTab.toUpperCase();
