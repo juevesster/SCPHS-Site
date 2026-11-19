@@ -75,6 +75,10 @@
     tr:hover td { background: #f8fafc; }
     .action-btns { display: flex; gap: 6px; }
 
+    /* Orphan warning */
+    .orphan-warning { display: none; margin: 12px 0 0 0; padding: 10px 14px; background: #fef3c7; border: 1px solid #fcd34d; border-radius: 8px; color: #92400e; font-size: 0.85rem; }
+    .orphan-warning.show { display: block; }
+
     /* Modals */
     .modal { position: fixed; inset: 0; background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(4px); display: none; justify-content: center; align-items: center; z-index: 1000; padding: 20px; }
     .modal.show { display: flex; }
@@ -133,7 +137,6 @@
         <button class="btn btn-outline" onclick="openSignatoryModal()">
           <i class="fas fa-users-cog"></i> Settings & Signatories
         </button>
-        <!-- CORRECTED: Import Excel Button -->
         <a href="inventory-importer.html" class="btn" style="background: #f59e0b; color: #fff; text-decoration: none;">
           <i class="fas fa-file-import"></i> Import Excel
         </a>
@@ -147,6 +150,9 @@
     </div>
 
     <div class="book-tabs" id="category-tabs"></div>
+
+    <!-- Orphan warning banner (only appears when there are unmatched rows) -->
+    <div class="orphan-warning" id="orphan-warning"></div>
 
     <div class="tab-content-container">
       <div class="table-responsive">
@@ -236,7 +242,7 @@
     </div>
   </div>
 
-    <!-- SETTINGS MODAL -->
+  <!-- SETTINGS MODAL -->
   <div class="modal" id="signatoryModal">
     <div class="modal-content">
       <div class="modal-header">
@@ -245,7 +251,6 @@
       </div>
       
       <div class="modal-body">
-        <!-- School & Principal Info -->
         <div class="form-group full">
           <label>School Name</label>
           <input type="text" id="set-school-name" placeholder="e.g. Sta Cruz Pingkian High School">
@@ -259,7 +264,6 @@
           <input type="text" id="set-principal-title" placeholder="e.g. Principal III">
         </div>
 
-        <!-- Date Fields -->
         <div class="form-group">
           <label>Report Date ("As of")</label>
           <input type="text" id="set-asof-date" placeholder="e.g. December 31, 2023">
@@ -269,7 +273,6 @@
           <input type="text" id="set-accountability-date" placeholder="e.g. August 2, 2021">
         </div>
 
-        <!-- Signatories -->
         <div class="form-group full">
           <label>Certified Correct By (Names)</label>
           <input type="text" id="sig-certified">
@@ -394,7 +397,32 @@
       "Technical & Scientific Equipment"
     ];
 
-       // Defaults
+    // === FIX: Normalize categories so casing/whitespace/punctuation variants still match ===
+    function normalizeCategory(s) {
+      if (s === null || s === undefined) return '';
+      return String(s)
+        .replace(/\s+/g, ' ')
+        .trim()
+        .toLowerCase();
+    }
+
+    // Forgiving lookup: try exact normalized match, then fuzzy (strip non-alphanumerics)
+    function findCanonicalCategory(raw) {
+      const norm = normalizeCategory(raw);
+      if (!norm) return null;
+      // exact normalized
+      const exact = CATEGORIES.find(c => normalizeCategory(c) === norm);
+      if (exact) return exact;
+      // fuzzy: strip everything but a-z0-9
+      const fuzzy = s => normalizeCategory(s).replace(/[^a-z0-9]/g, '');
+      const byFuzzy = CATEGORIES.find(c => fuzzy(c) === fuzzy(raw));
+      if (byFuzzy) return byFuzzy;
+      // fuzzy substring
+      const sub = CATEGORIES.find(c => fuzzy(c).includes(fuzzy(raw)) || fuzzy(raw).includes(fuzzy(c)));
+      return sub || null;
+    }
+
+    // Defaults
     const DEFAULT_SETTINGS = {
       schoolName: "Sta Cruz Pingkian High School",
       principalName: "Dolores C. Dodon, PhD",
@@ -420,6 +448,20 @@
       try {
         const snap = await getDocs(collection(db, "property_inventory"));
         allItems = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+
+        // Warn if any rows have an article that doesn't map to a known category
+        const orphans = allItems.filter(i => !findCanonicalCategory(i.article));
+        const warn = document.getElementById('orphan-warning');
+        if (orphans.length > 0) {
+          const distinct = [...new Set(orphans.map(o => o.article || '(blank)'))];
+          warn.innerHTML = `⚠️ <strong>${orphans.length}</strong> row(s) in the database have an unrecognized "article" value: ` +
+            distinct.map(v => `<code>${v}</code>`).join(', ') +
+            `. These won't appear in any tab. Re-import them or edit the article to match one of the 8 categories.`;
+          warn.classList.add('show');
+        } else {
+          warn.classList.remove('show');
+        }
+
         renderTable();
       } catch (error) {
         console.error("Error loading inventory:", error);
@@ -436,7 +478,8 @@
 
     function renderTable() {
       const tbody = document.getElementById('inventory-body');
-      const filtered = allItems.filter(item => item.article === currentTab);
+      // === FIX: use fuzzy/canonical comparison instead of strict === ===
+      const filtered = allItems.filter(item => findCanonicalCategory(item.article) === currentTab);
 
       if (filtered.length === 0) {
         tbody.innerHTML = `<tr><td colspan="12" style="text-align: center; padding: 40px; color: var(--text-muted);"><div style="font-size: 2rem; margin-bottom: 10px;">📂</div>No items found in this folder. Click "Add New Item" to start.</td></tr>`;
@@ -461,7 +504,7 @@
             <td>
               <div class="action-btns">
                 <button class="btn btn-sm" style="background: #e0f2fe; color: #0369a1;" onclick="editItem('${item.id}')"><i class="fas fa-edit"></i></button>
-                <button class="btn btn-sm btn-danger" onclick="deleteItem('${item.id}', '${item.description}')"><i class="fas fa-trash"></i></button>
+                <button class="btn btn-sm btn-danger" onclick="deleteItem('${item.id}', '${(item.description || '').replace(/'/g, "\\'")}')"><i class="fas fa-trash"></i></button>
               </div>
             </td>
           </tr>
@@ -599,7 +642,6 @@
     function loadSettings() {
       const saved = JSON.parse(localStorage.getItem('inventory_settings')) || DEFAULT_SETTINGS;
       
-      // Update Print Area
       document.getElementById('print-school-name').textContent = saved.schoolName;
       document.getElementById('print-principal-name').textContent = saved.principalName;
       document.getElementById('print-principal-title').textContent = saved.principalTitle;
