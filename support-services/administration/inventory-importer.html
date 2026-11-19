@@ -121,7 +121,7 @@
 
   </main>
 
-    <script type="module">
+      <script type="module">
     import { db } from "../../assets/js/firebase-config.js";
     import { collection, doc, setDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
@@ -139,7 +139,6 @@
         const data = new Uint8Array(e.target.result);
         workbook = XLSX.read(data, { type: 'array' });
         
-        // Populate Sheet Selector
         const sheetSelect = document.getElementById('sheet-select');
         sheetSelect.innerHTML = workbook.SheetNames.map(name => 
           `<option value="${name}">${name}</option>`
@@ -157,11 +156,7 @@
       const worksheet = workbook.Sheets[sheetName];
       
       const rawData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
-      
-      if (rawData.length === 0) {
-        alert("This sheet is empty.");
-        return;
-      }
+      if (rawData.length === 0) return alert("This sheet is empty.");
 
       // Find the actual header row
       let headerRowIndex = -1;
@@ -184,7 +179,7 @@
       renderPreview();
     };
 
-    // 3. Render Mapping Dropdowns & Auto-Map
+    // 3. Render Mapping Dropdowns & Smart Auto-Map
     function renderMappingUI() {
       const container = document.getElementById('mapping-container');
       const requiredFields = [
@@ -201,14 +196,34 @@
       ];
 
       container.innerHTML = requiredFields.map(field => {
-        // AUTO-MAP LOGIC: Try to find a header that matches the keywords
         let autoSelectedIndex = "";
+        
+        // SMART AUTO-MAP: Look at the headers AND the data to guess
         for (let i = 0; i < currentHeaders.length; i++) {
           const headerStr = String(currentHeaders[i]).toLowerCase();
-          if (field.keywords.every(kw => headerStr.includes(kw))) {
+          
+          // Check if header matches keywords
+          let headerMatch = field.keywords.every(kw => headerStr.includes(kw));
+          
+          if (headerMatch) {
             autoSelectedIndex = i;
             break;
           }
+        }
+
+        // Special handling for the two "QUANTITY" columns
+        if (field.key === 'qtyPerCard') {
+           // Find the first column named "quantity"
+           autoSelectedIndex = currentHeaders.findIndex(h => String(h).toLowerCase() === 'quantity');
+        }
+        if (field.key === 'qtyPerCount') {
+           // Find the second column named "quantity"
+           const indices = currentHeaders.map((h, i) => String(h).toLowerCase() === 'quantity' ? i : -1).filter(i => i !== -1);
+           if (indices.length > 1) autoSelectedIndex = indices[1];
+        }
+        if (field.key === 'accountableOfficer') {
+           // Often stored under Remarks
+           autoSelectedIndex = currentHeaders.findIndex(h => String(h).toLowerCase().includes('remark'));
         }
 
         return `
@@ -222,13 +237,13 @@
         `;
       }).join('');
 
-      // Force Article to use Sheet Name by default
+      // Force Article to use Sheet Name
       const sheetName = document.getElementById('sheet-select').value;
       const articleDropdown = document.getElementById('map-article');
       articleDropdown.innerHTML += `<option value="__SHEET_NAME__" selected>Use Sheet Name (${sheetName})</option>`;
     }
 
-    // 4. Render Preview Table (With Date Fixer)
+    // 4. Render Preview Table
     function renderPreview() {
       const thead = document.getElementById('preview-head');
       const tbody = document.getElementById('preview-body');
@@ -238,20 +253,16 @@
       tbody.innerHTML = currentSheetData.slice(0, 5).map(row => {
         return `<tr>${currentHeaders.map((header, i) => {
           let cellValue = row[i] || '';
-          
-          // FIX EXCEL DATES: If the header is Date and the value is a number, convert it
           if (String(header).toLowerCase().includes('date') && typeof cellValue === 'number') {
-             // Convert Excel serial number to JS Date
              const dateObj = new Date(Math.round((cellValue - 25569) * 86400 * 1000));
-             cellValue = dateObj.toISOString().split('T')[0]; // YYYY-MM-DD
+             cellValue = dateObj.toISOString().split('T')[0];
           }
-
           return `<td>${cellValue}</td>`;
         }).join('')}</tr>`;
       }).join('');
     }
 
-    // 5. Save to Firebase (With Date Fixer)
+    // 5. Save to Firebase
     window.saveToDatabase = async function() {
       const mapping = {
         article: document.getElementById('map-article').value,
@@ -267,11 +278,12 @@
       };
 
       if (!mapping.description) return alert("Please map the 'Description' column.");
+      if (!mapping.qtyPerCard || !mapping.qtyPerCount) return alert("Please map the Quantity columns.");
 
       const sheetName = document.getElementById('sheet-select').value;
       const categoryName = sheetName.charAt(0).toUpperCase() + sheetName.slice(1);
 
-      if (!confirm(`Are you sure you want to import ${currentSheetData.length} rows from "${sheetName}"?`)) return;
+      if (!confirm(`Import ${currentSheetData.length} rows from "${sheetName}"?`)) return;
 
       const btn = event.target;
       const originalText = btn.innerHTML;
@@ -285,7 +297,6 @@
 
         let articleVal = (mapping.article === "__SHEET_NAME__") ? categoryName : (row[mapping.article] || categoryName);
         
-        // Fix Date formatting
         let dateVal = row[mapping.dateAcquired] || "";
         if (typeof dateVal === 'number') {
              const dateObj = new Date(Math.round((dateVal - 25569) * 86400 * 1000));
@@ -316,9 +327,9 @@
         }
       }
 
-      alert(`✅ Successfully imported ${successCount} items from "${sheetName}" to the database!`);
+      alert(`✅ Successfully imported ${successCount} items from "${sheetName}"!`);
       
-      if (confirm("Do you want to import another sheet from this file?")) {
+      if (confirm("Import another sheet from this file?")) {
         btn.innerHTML = originalText;
         btn.disabled = false;
         window.scrollTo(0, 0);
