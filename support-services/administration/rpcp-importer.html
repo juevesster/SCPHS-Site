@@ -3,286 +3,487 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RPCP Land Inventory | Appendix 73</title>
 
-<title>RPCP Land Inventory</title>
+<link href="https://googleapis.com" rel="stylesheet">
+<link rel="stylesheet" href="https://cloudflare.com">
+<script src="https://sheetjs.com"></script>
 
-<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-<script src="https://cdn.sheetjs.com/xlsx-0.20.2/package/dist/xlsx.full.min.js"></script>
 <style>
-
-:root{
-    --sidebar-bg:#0f172a;
-    --primary:#0f766e;
-    --primary-light:#14b8a6;
-    --danger:#dc2626;
-    --bg:#f4f7f9;
-    --border:#e2e8f0;
-    --text:#1e293b;
-    --muted:#64748b;
+:root {
+    --sidebar-bg: #0f172a;
+    --sidebar-hover: #1e293b;
+    --primary: #0f766e;
+    --primary-dark: #0d9488;
+    --primary-light: #14b8a6;
+    --success: #16a34a;
+    --success-hover: #15803d;
+    --warning: #d97706;
+    --danger: #dc2626;
+    --danger-hover: #b91c1c;
+    --secondary: #475569;
+    --secondary-hover: #334155;
+    --bg: #f1f5f9;
+    --card-bg: #ffffff;
+    --border: #e2e8f0;
+    --text: #1e293b;
+    --muted: #64748b;
 }
 
-*{
-    margin:0;
-    padding:0;
-    box-sizing:border-box;
-    font-family:'Outfit',sans-serif;
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Outfit', sans-serif;
 }
 
-body{
-    background:var(--bg);
-    display:flex;
-    min-height:100vh;
+body {
+    background: var(--bg);
+    color: var(--text);
+    display: flex;
+    min-height: 100vh;
 }
 
 /* SIDEBAR */
-
-.sidebar{
-    width:260px;
-    background:var(--sidebar-bg);
-    color:white;
-    position:fixed;
-    height:100vh;
+.sidebar {
+    width: 260px;
+    background: var(--sidebar-bg);
+    color: white;
+    position: fixed;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    z-index: 100;
 }
 
-.sidebar-brand{
-    padding:28px;
-    font-size:1.3rem;
-    font-weight:800;
-    border-bottom:1px solid rgba(255,255,255,.08);
+.sidebar-brand {
+    padding: 26px 24px;
+    font-size: 1.35rem;
+    font-weight: 800;
+    letter-spacing: 0.5px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    display: flex;
+    align-items: center;
+    gap: 12px;
 }
 
-.sidebar-menu{
-    padding:20px;
+.sidebar-brand i {
+    color: var(--primary-light);
 }
 
-.menu-item{
-    display:flex;
-    gap:12px;
-    align-items:center;
-    text-decoration:none;
-    color:#cbd5e1;
-    padding:14px;
-    border-radius:10px;
-    margin-bottom:8px;
+.sidebar-menu {
+    padding: 20px 16px;
+    flex: 1;
 }
 
-.menu-item:hover{
-    background:#1e293b;
+.menu-item {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    text-decoration: none;
+    color: #cbd5e1;
+    padding: 14px 16px;
+    border-radius: 10px;
+    margin-bottom: 8px;
+    font-weight: 500;
+    transition: all 0.2s ease;
 }
 
-.menu-item.active{
-    background:linear-gradient(
-        90deg,
-        var(--primary),
-        var(--primary-light)
-    );
-    color:white;
+.menu-item:hover {
+    background: var(--sidebar-hover);
+    color: white;
 }
 
-/* MAIN */
-
-.main-content{
-    margin-left:260px;
-    flex:1;
-    padding:30px;
+.menu-item.active {
+    background: linear-gradient(90deg, var(--primary), var(--primary-light));
+    color: white;
+    font-weight: 600;
+    box-shadow: 0 4px 12px rgba(15, 118, 110, 0.3);
 }
 
-.topbar{
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
-    margin-bottom:20px;
+/* MAIN CONTENT */
+.main-content {
+    margin-left: 260px;
+    flex: 1;
+    padding: 32px;
+    max-width: calc(100vw - 260px);
 }
 
-.topbar h1{
-    font-size:1.8rem;
+.topbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 16px;
+    margin-bottom: 24px;
 }
 
-/* CARD */
+.topbar h1 {
+    font-size: 1.75rem;
+    font-weight: 800;
+    color: var(--sidebar-bg);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
 
-.card{
-    background:white;
-    border-radius:16px;
-    padding:24px;
-    border:1px solid var(--border);
-    margin-bottom:20px;
+.topbar-actions {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+/* CARDS */
+.card {
+    background: var(--card-bg);
+    border-radius: 16px;
+    padding: 24px;
+    border: 1px solid var(--border);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+    margin-bottom: 24px;
+}
+
+.card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--border);
+}
+
+.card-header h2 {
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: var(--sidebar-bg);
 }
 
 /* FORM */
-
-.form-grid{
-    display:grid;
-    grid-template-columns:repeat(3,1fr);
-    gap:16px;
+.form-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
 }
 
-.form-group{
-    display:flex;
-    flex-direction:column;
+@media (max-width: 1024px) {
+    .form-grid { grid-template-columns: repeat(2, 1fr); }
 }
 
-.form-group label{
-    font-size:.75rem;
-    font-weight:700;
-    color:var(--muted);
-    margin-bottom:6px;
-    text-transform:uppercase;
+@media (max-width: 640px) {
+    .form-grid { grid-template-columns: 1fr; }
 }
 
-.form-group input{
-    border:1px solid var(--border);
-    border-radius:8px;
-    padding:10px;
+.form-group {
+    display: flex;
+    flex-direction: column;
+}
+
+.form-group label {
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: var(--muted);
+    margin-bottom: 6px;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+}
+
+.form-group input,
+.form-group select {
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 12px;
+    font-size: 0.95rem;
+    color: var(--text);
+    background: #f8fafc;
+    transition: border-color 0.2s, background 0.2s;
+}
+
+.form-group input:focus,
+.form-group select:focus {
+    outline: none;
+    border-color: var(--primary);
+    background: #ffffff;
+    box-shadow: 0 0 0 3px rgba(15, 118, 110, 0.1);
+}
+
+.form-actions {
+    margin-top: 20px;
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
 }
 
 /* BUTTONS */
-
-.btn{
-    border:none;
-    cursor:pointer;
-    border-radius:8px;
-    padding:10px 18px;
-    font-weight:700;
+.btn {
+    border: none;
+    cursor: pointer;
+    border-radius: 8px;
+    padding: 10px 16px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.2s ease;
 }
 
-.btn-primary{
-    background:var(--primary);
-    color:white;
+.btn-sm {
+    padding: 6px 10px;
+    font-size: 0.8rem;
 }
 
-.btn-danger{
-    background:var(--danger);
-    color:white;
-}
+.btn-primary { background: var(--primary); color: white; }
+.btn-primary:hover { background: var(--primary-dark); }
 
-.btn-print{
-    background:#475569;
-    color:white;
-}
+.btn-success { background: var(--success); color: white; }
+.btn-success:hover { background: var(--success-hover); }
 
-.action-btns{
-    display:flex;
-    gap:8px;
+.btn-warning { background: var(--warning); color: white; }
+.btn-warning:hover { opacity: 0.9; }
+
+.btn-danger { background: var(--danger); color: white; }
+.btn-danger:hover { background: var(--danger-hover); }
+
+.btn-secondary { background: var(--secondary); color: white; }
+.btn-secondary:hover { background: var(--secondary-hover); }
+
+.btn-outline {
+    background: white;
+    color: var(--text);
+    border: 1px solid var(--border);
 }
+.btn-outline:hover { background: #f8fafc; }
 
 /* TABLE */
-
-.table-wrap{
-    overflow-x:auto;
+.table-wrap {
+    overflow-x: auto;
 }
 
-table{
-    width:100%;
-    border-collapse:collapse;
+table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.9rem;
 }
 
-th,td{
-    padding:12px;
-    border-bottom:1px solid var(--border);
+th, td {
+    padding: 12px 14px;
+    border-bottom: 1px solid var(--border);
+    text-align: left;
 }
 
-th{
-    background:#f8fafc;
+th {
+    background: #f8fafc;
+    font-weight: 700;
+    color: var(--muted);
+    text-transform: uppercase;
+    font-size: 0.75rem;
+    letter-spacing: 0.5px;
 }
 
-/* PRINT */
-
-#print-area{
-    display:none;
+tbody tr:hover {
+    background: #f8fafc;
 }
 
-@media print{
+.num-col {
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+}
 
-    body{
-        display:block;
-        background:white;
+.action-btns {
+    display: flex;
+    gap: 6px;
+}
+
+.empty-state {
+    text-align: center;
+    padding: 32px;
+    color: var(--muted);
+}
+
+/* MODAL */
+.modal-backdrop {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.6);
+    z-index: 999;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+}
+
+.modal-backdrop.active {
+    display: flex;
+}
+
+.modal-box {
+    background: white;
+    border-radius: 16px;
+    width: 100%;
+    max-width: 540px;
+    padding: 24px;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.15);
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 18px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--border);
+}
+
+.modal-close {
+    background: none;
+    border: none;
+    font-size: 1.25rem;
+    cursor: pointer;
+    color: var(--muted);
+}
+
+/* PRINT AREA (APPENDIX 73) */
+#print-area {
+    display: none;
+}
+
+@media print {
+    @page {
+        size: landscape;
+        margin: 12mm;
+    }
+
+    body {
+        display: block;
+        background: white;
+        color: black;
     }
 
     .sidebar,
-    .main-content{
-        display:none !important;
+    .main-content,
+    .modal-backdrop {
+        display: none !important;
     }
 
-    #print-area{
-        display:block !important;
+    #print-area {
+        display: block !important;
+        width: 100%;
     }
 
-    #print-area table{
-        width:100%;
-        border-collapse:collapse;
+    .appendix-tag {
+        text-align: right;
+        font-style: italic;
+        font-size: 11px;
+        margin-bottom: 4px;
     }
 
-    #print-area th,
-    #print-area td{
-        border:1px solid black;
-        padding:4px;
-        font-size:10px;
+    .print-header {
+        text-align: center;
+        margin-bottom: 14px;
     }
 
+    .print-header h2 {
+        font-size: 14px;
+        font-weight: 800;
+        text-transform: uppercase;
+    }
+
+    .print-header h3 {
+        font-size: 13px;
+        font-weight: 700;
+        text-decoration: underline;
+        margin-top: 4px;
+    }
+
+    .print-header p {
+        font-size: 11px;
+    }
+
+    .print-meta {
+        font-size: 11px;
+        margin-bottom: 10px;
+        line-height: 1.5;
+    }
+
+    #print-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-bottom: 24px;
+    }
+
+    #print-table th,
+    #print-table td {
+        border: 1px solid black;
+        padding: 5px 6px;
+        font-size: 10px;
+        color: black;
+    }
+
+    #print-table th {
+        background: #f1f5f9 !important;
+        text-align: center;
+        font-weight: 700;
+    }
+
+    .signatory-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 20px;
+        page-break-inside: avoid;
+    }
+
+    .signatory-table td {
+        border: none !important;
+        padding: 4px 10px;
+        vertical-align: top;
+        font-size: 10.5px;
+        width: 33.33%;
+    }
+
+    .sig-names {
+        padding-top: 32px !important;
+        font-weight: 700;
+    }
 }
-
 </style>
 </head>
-
 <body>
 
 <!-- SIDEBAR -->
-
 <aside class="sidebar">
-
-<div class="sidebar-brand">
-<i class="fas fa-landmark"></i>
- RPCP
-</div>
-
-<div class="sidebar-menu">
-
-<a href="#" class="menu-item active">
-<i class="fas fa-globe"></i>
-<span>Land</span>
-</a>
-
-<a href="#" class="menu-item">
-<i class="fas fa-building"></i>
-<span>Buildings</span>
-</a>
-
-<a href="#" class="menu-item">
-<i class="fas fa-road"></i>
-<span>Structures</span>
-</a>
-
-</div>
-
+    <div class="sidebar-brand">
+        <i class="fas fa-landmark"></i>
+        <span>RPCP PORTAL</span>
+    </div>
+    <nav class="sidebar-menu">
+        <a href="#land" class="menu-item active">
+            <i class="fas fa-globe"></i>
+            <span>Land</span>
+        </a>
+        <a href="#buildings" class="menu-item" onclick="alert('Buildings module link ready for routing.')">
+            <i class="fas fa-building"></i>
+            <span>Buildings</span>
+        </a>
+        <a href="#structures" class="menu-item" onclick="alert('Structures module link ready for routing.')">
+            <i class="fas fa-road"></i>
+            <span>Structures</span>
+        </a>
+    </nav>
 </aside>
 
-<!-- MAIN -->
-
+<!-- MAIN CONTENT -->
 <main class="main-content">
+    <div class="topbar">
+        <h1>🌎 RPCP - LAND</h1>
+        <div class="topbar-actions">
+            <button class="btn btn-outline" onclick="downloadTemplate()">
+                <i class="fas fa-download"></i> Template
+            </button>
+            <input type="file" id="excelFile" accept=".xlsx,.xls,.csv" hidden onchange="handleExcelImport(event)">
+            <button class="btn btn-success" onclick="document.getElementById('excelFile').click()">
+                <i class="fas fa-file-import"></i> Import Excel
+            </button>
 
-<div class="topbar">
-
-<h1>🌎 RPCP - LAND</h1>
-
-<div>
-
-<button class="btn btn-print" onclick="window.print()">
-<i class="fas fa-print"></i>
-Print Appendix 73
-</button>
-<input
- type="file"
- id="excelFile"
- accept=".xlsx,.xls"
- hidden>
-
-<button
- class="btn btn-success"
- onclick="excelFile.click()">
-<i class="fas fa-file-import"></i>
-Import Excel
-</button>
 </div>
 </div>
 
