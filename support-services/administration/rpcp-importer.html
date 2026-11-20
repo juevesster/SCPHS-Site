@@ -845,34 +845,56 @@ document.getElementById("excelFile").addEventListener("change", function(evt) {
                 return;
             }
 
-            // 3. Build column index map from the detected header row
-            const headers = rawRows[headerRowIndex].map(h =>
-                String(h).toLowerCase().replace(/\s+/g, " ").trim()
+            // 3. Scan up to 4 rows below the main header row (handles blank spacer rows + merged headers)
+            let subHeaderOffset = 0;
+            for (let offset = 1; offset <= 4; offset++) {
+                const checkRow = rawRows[headerRowIndex + offset] || [];
+                const checkText = checkRow.map(c => String(c).toLowerCase()).join(" ");
+                if (checkText.includes("adjusted market") || checkText.includes("assessed value")) {
+                    subHeaderOffset = offset;
+                }
+            }
+
+            const maxCols = Math.max(
+                rawRows[headerRowIndex].length,
+                (rawRows[headerRowIndex + subHeaderOffset] || []).length,
+                9
             );
 
+            const mergedHeaders = [];
+            for (let c = 0; c < maxCols; c++) {
+                const parts = [];
+                for (let offset = 0; offset <= subHeaderOffset; offset++) {
+                    const val = (rawRows[headerRowIndex + offset] || [])[c];
+                    if (val !== undefined && String(val).trim() !== "") {
+                        parts.push(String(val).toLowerCase().replace(/\s+/g, " ").trim());
+                    }
+                }
+                mergedHeaders.push(parts.join(" "));
+            }
+
             const findCol = (keywords) =>
-                headers.findIndex(h => keywords.some(kw => h.includes(kw)));
+                mergedHeaders.findIndex(h => keywords.some(kw => h.includes(kw)));
+
+            // Map by header name, with exact DepEd Appendix 73 column index fallbacks (0-8)
+            const artCol = findCol(["article"]);
+            const base = artCol >= 0 ? artCol : 0;
 
             const colIdx = {
-                article: findCol(["article"]),
-                description: findCol(["description", "desc"]),
-                lotArea: findCol(["lot area", "area"]),
-                owner: findCol(["registered owner", "owner"]),
-                tct: findCol(["tct"]),
-                mode: findCol(["mode"]),
-                cost: findCol(["cost"]),
-                market: findCol(["market"]),
-                assessed: findCol(["assessed"])
+                article: base,
+                description: findCol(["description", "desc"]) >= 0 ? findCol(["description", "desc"]) : base + 1,
+                lotArea: findCol(["lot area", "area"]) >= 0 ? findCol(["lot area", "area"]) : base + 2,
+                owner: findCol(["registered owner", "owner"]) >= 0 ? findCol(["registered owner", "owner"]) : base + 3,
+                tct: findCol(["tct"]) >= 0 ? findCol(["tct"]) : base + 4,
+                mode: findCol(["mode"]) >= 0 ? findCol(["mode"]) : base + 5,
+                cost: findCol(["cost"]) >= 0 ? findCol(["cost"]) : base + 6,
+                market: findCol(["adjusted market", "market"]) >= 0 ? findCol(["adjusted market", "market"]) : base + 7,
+                assessed: findCol(["assessed"]) >= 0 ? findCol(["assessed"]) : base + 8
             };
 
-            const parseMoney = (val) => {
-                if (typeof val === "number") return val;
-                return parseFloat(String(val || 0).replace(/[^0-9.-]/g, "")) || 0;
-            };
-
-            // 4. Extract data rows below the header row
+            // 4. Extract data rows below the header + sub-header rows
             let count = 0;
-            for (let r = headerRowIndex + 1; r < rawRows.length; r++) {
+            for (let r = headerRowIndex + subHeaderOffset + 1; r < rawRows.length; r++) {
                 const row = rawRows[r];
                 if (!row || row.every(cell => String(cell).trim() === "")) continue;
 
