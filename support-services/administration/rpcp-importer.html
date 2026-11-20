@@ -1,0 +1,613 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>RPCP Land Inventory</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+<style>
+
+:root{
+    --sidebar-bg:#0f172a;
+    --primary:#0f766e;
+    --primary-light:#14b8a6;
+    --danger:#dc2626;
+    --bg:#f4f7f9;
+    --border:#e2e8f0;
+    --text:#1e293b;
+    --muted:#64748b;
+}
+
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:'Outfit',sans-serif;
+}
+
+body{
+    background:var(--bg);
+    display:flex;
+    min-height:100vh;
+}
+
+/* SIDEBAR */
+
+.sidebar{
+    width:260px;
+    background:var(--sidebar-bg);
+    color:white;
+    position:fixed;
+    height:100vh;
+}
+
+.sidebar-brand{
+    padding:28px;
+    font-size:1.3rem;
+    font-weight:800;
+    border-bottom:1px solid rgba(255,255,255,.08);
+}
+
+.sidebar-menu{
+    padding:20px;
+}
+
+.menu-item{
+    display:flex;
+    gap:12px;
+    align-items:center;
+    text-decoration:none;
+    color:#cbd5e1;
+    padding:14px;
+    border-radius:10px;
+    margin-bottom:8px;
+}
+
+.menu-item:hover{
+    background:#1e293b;
+}
+
+.menu-item.active{
+    background:linear-gradient(
+        90deg,
+        var(--primary),
+        var(--primary-light)
+    );
+    color:white;
+}
+
+/* MAIN */
+
+.main-content{
+    margin-left:260px;
+    flex:1;
+    padding:30px;
+}
+
+.topbar{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-bottom:20px;
+}
+
+.topbar h1{
+    font-size:1.8rem;
+}
+
+/* CARD */
+
+.card{
+    background:white;
+    border-radius:16px;
+    padding:24px;
+    border:1px solid var(--border);
+    margin-bottom:20px;
+}
+
+/* FORM */
+
+.form-grid{
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    gap:16px;
+}
+
+.form-group{
+    display:flex;
+    flex-direction:column;
+}
+
+.form-group label{
+    font-size:.75rem;
+    font-weight:700;
+    color:var(--muted);
+    margin-bottom:6px;
+    text-transform:uppercase;
+}
+
+.form-group input{
+    border:1px solid var(--border);
+    border-radius:8px;
+    padding:10px;
+}
+
+/* BUTTONS */
+
+.btn{
+    border:none;
+    cursor:pointer;
+    border-radius:8px;
+    padding:10px 18px;
+    font-weight:700;
+}
+
+.btn-primary{
+    background:var(--primary);
+    color:white;
+}
+
+.btn-danger{
+    background:var(--danger);
+    color:white;
+}
+
+.btn-print{
+    background:#475569;
+    color:white;
+}
+
+.action-btns{
+    display:flex;
+    gap:8px;
+}
+
+/* TABLE */
+
+.table-wrap{
+    overflow-x:auto;
+}
+
+table{
+    width:100%;
+    border-collapse:collapse;
+}
+
+th,td{
+    padding:12px;
+    border-bottom:1px solid var(--border);
+}
+
+th{
+    background:#f8fafc;
+}
+
+/* PRINT */
+
+#print-area{
+    display:none;
+}
+
+@media print{
+
+    body{
+        display:block;
+        background:white;
+    }
+
+    .sidebar,
+    .main-content{
+        display:none !important;
+    }
+
+    #print-area{
+        display:block !important;
+    }
+
+    #print-area table{
+        width:100%;
+        border-collapse:collapse;
+    }
+
+    #print-area th,
+    #print-area td{
+        border:1px solid black;
+        padding:4px;
+        font-size:10px;
+    }
+
+}
+
+</style>
+</head>
+
+<body>
+
+<!-- SIDEBAR -->
+
+<aside class="sidebar">
+
+<div class="sidebar-brand">
+<i class="fas fa-landmark"></i>
+ RPCP
+</div>
+
+<div class="sidebar-menu">
+
+<a href="#" class="menu-item active">
+<i class="fas fa-globe"></i>
+<span>Land</span>
+</a>
+
+<a href="#" class="menu-item">
+<i class="fas fa-building"></i>
+<span>Buildings</span>
+</a>
+
+<a href="#" class="menu-item">
+<i class="fas fa-road"></i>
+<span>Structures</span>
+</a>
+
+</div>
+
+</aside>
+
+<!-- MAIN -->
+
+<main class="main-content">
+
+<div class="topbar">
+
+<h1>🌎 RPCP - LAND</h1>
+
+<div>
+
+<button class="btn btn-print" onclick="window.print()">
+<i class="fas fa-print"></i>
+Print Appendix 73
+</button>
+
+</div>
+
+</div>
+
+<!-- FORM -->
+
+<div class="card">
+
+<h2 style="margin-bottom:15px">
+Land Record Entry
+</h2>
+
+<div class="form-grid">
+
+<div class="form-group">
+<label>Article</label>
+<input id="article" value="Land">
+</div>
+
+<div class="form-group">
+<label>Description</label>
+<input id="description">
+</div>
+
+<div class="form-group">
+<label>Lot Area</label>
+<input id="lotArea">
+</div>
+
+<div class="form-group">
+<label>Registered Owner</label>
+<input id="registeredOwner">
+</div>
+
+<div class="form-group">
+<label>TCT Number</label>
+<input id="tctNumber">
+</div>
+
+<div class="form-group">
+<label>Mode of Acquisition</label>
+<input id="mode">
+</div>
+
+<div class="form-group">
+<label>Cost Of Acquisition</label>
+<input type="number" id="cost">
+</div>
+
+<div class="form-group">
+<label>Adjusted Market Value</label>
+<input type="number" id="market">
+</div>
+
+<div class="form-group">
+<label>Assessed Value</label>
+<input type="number" id="assessed">
+</div>
+
+</div>
+
+<br>
+
+<button class="btn btn-primary" onclick="saveRecord()">
+💾 Save Record
+</button>
+
+</div>
+
+<!-- TABLE -->
+
+<div class="card">
+
+<h2 style="margin-bottom:15px;">
+Encoded Land Records
+</h2>
+
+<div class="table-wrap">
+
+<table>
+
+<thead>
+
+<tr>
+<th>Article</th>
+<th>Description</th>
+<th>Lot Area</th>
+<th>Owner</th>
+<th>TCT</th>
+<th>Cost</th>
+<th>Market</th>
+<th>Assessed</th>
+<th>Actions</th>
+</tr>
+
+</thead>
+
+<tbody id="land-body"></tbody>
+
+</table>
+
+</div>
+
+</div>
+
+</main>
+
+<!-- PRINT AREA -->
+
+<div id="print-area">
+
+<center>
+
+<h2>
+REPORT ON THE PHYSICAL COUNT OF
+PROPERTY, PLANT AND EQUIPMENT
+</h2>
+
+<h3>LAND</h3>
+
+<h4>(Type of Property, Plant and Equipment)</h4>
+
+<h4>
+As at December 31, 2023
+</h4>
+
+</center>
+
+<br>
+
+<p>
+<b>SCHOOL:</b>
+Sta. Cruz Pingkian High School
+</p>
+
+<br>
+
+<table>
+
+<thead>
+
+<tr>
+<th>Article</th>
+<th>Description</th>
+<th>Lot Area</th>
+<th>Owner</th>
+<th>TCT Number</th>
+<th>Mode</th>
+<th>Cost</th>
+<th>Market</th>
+<th>Assessed</th>
+</tr>
+
+</thead>
+
+<tbody id="print-body"></tbody>
+
+<tfoot>
+
+<tr>
+
+<td colspan="6">
+<b>TOTAL</b>
+</td>
+
+<td id="totalCost"></td>
+<td id="totalMarket"></td>
+<td id="totalAssessed"></td>
+
+</tr>
+
+</tfoot>
+
+</table>
+
+<br><br>
+
+<table style="width:100%;border:none">
+
+<tr>
+<td>Certified Correct By</td>
+<td>Approved By</td>
+<td>Verified By</td>
+</tr>
+
+<tr>
+<td style="padding-top:50px;">
+DARNA A. BUGNAY<br>
+NISAN K. BINWAG<br>
+DAISY ANN BALASYA<br>
+EFRENA TIAGO
+</td>
+
+<td style="padding-top:50px;">
+DOLORES C. DODON, PhD
+</td>
+
+<td style="padding-top:50px;">
+ROBERT C. ROSAL JR.
+</td>
+
+</tr>
+
+</table>
+
+</div>
+
+<script>
+
+let records=[];
+
+function saveRecord(){
+
+const data={
+
+article:article.value,
+description:description.value,
+lotArea:lotArea.value,
+owner:registeredOwner.value,
+tct:tctNumber.value,
+mode:mode.value,
+
+cost:Number(cost.value||0),
+market:Number(market.value||0),
+assessed:Number(assessed.value||0)
+
+};
+
+records.push(data);
+
+renderTable();
+
+document.querySelectorAll("input").forEach(x=>{
+
+if(x.id!=="article")
+x.value="";
+
+});
+
+}
+
+function renderTable(){
+
+const body=document.getElementById("land-body");
+
+body.innerHTML="";
+
+let totalCost=0;
+let totalMarket=0;
+let totalAssessed=0;
+
+records.forEach((r,index)=>{
+
+totalCost+=r.cost;
+totalMarket+=r.market;
+totalAssessed+=r.assessed;
+
+body.innerHTML+=`
+<tr>
+
+<td>${r.article}</td>
+<td>${r.description}</td>
+<td>${r.lotArea}</td>
+<td>${r.owner}</td>
+<td>${r.tct}</td>
+<td>₱${r.cost.toLocaleString()}</td>
+<td>₱${r.market.toLocaleString()}</td>
+<td>₱${r.assessed.toLocaleString()}</td>
+
+<td>
+
+<div class="action-btns">
+
+<button onclick="deleteRecord(${index})"
+class="btn btn-danger">
+Delete
+</button>
+
+</div>
+
+</td>
+
+</tr>
+`;
+});
+
+renderPrint(totalCost,totalMarket,totalAssessed);
+
+}
+
+function deleteRecord(index){
+
+records.splice(index,1);
+
+renderTable();
+
+}
+
+function renderPrint(tc,tm,ta){
+
+const p=document.getElementById("print-body");
+
+p.innerHTML="";
+
+records.forEach(r=>{
+
+p.innerHTML+=`
+<tr>
+
+<td>${r.article}</td>
+<td>${r.description}</td>
+<td>${r.lotArea}</td>
+<td>${r.owner}</td>
+<td>${r.tct}</td>
+<td>${r.mode}</td>
+<td>₱${r.cost.toLocaleString()}</td>
+<td>₱${r.market.toLocaleString()}</td>
+<td>₱${r.assessed.toLocaleString()}</td>
+
+</tr>
+`;
+
+});
+
+totalCost.innerHTML=
+"₱"+tc.toLocaleString();
+
+totalMarket.innerHTML=
+"₱"+tm.toLocaleString();
+
+totalAssessed.innerHTML=
+"₱"+ta.toLocaleString();
+
+}
+
+</script>
+
+</body>
+</html>
