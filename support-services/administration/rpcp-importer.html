@@ -881,7 +881,7 @@ document.getElementById("excelFile").addEventListener("change", function(evt) {
                 const article = colIdx.article >= 0 ? String(row[colIdx.article]).trim() : "";
 
                 // Skip sub-header rows or "TOTAL" footer rows
-                const combinedCheck = `${article} ${desc}`.toLowerCase();
+                const combinedCheck = row.map(c => String(c).toLowerCase().trim()).join(" ");
                 if (combinedCheck.includes("total") || (!desc && !tct)) continue;
 
                 records.push({
