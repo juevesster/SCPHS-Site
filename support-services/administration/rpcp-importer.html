@@ -5,26 +5,20 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>RPCP Land Inventory | Appendix 73</title>
 
-<link href="https://googleapis.com" rel="stylesheet">
-<link rel="stylesheet" href="https://cloudflare.com">
-<script src="https://sheetjs.com"></script>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<script src="https://cdn.sheetjs.com/xlsx-0.20.2/package/dist/xlsx.full.min.js"></script>
 
 <style>
 :root {
     --sidebar-bg: #0f172a;
     --sidebar-hover: #1e293b;
     --primary: #0f766e;
-    --primary-dark: #0d9488;
     --primary-light: #14b8a6;
     --success: #16a34a;
-    --success-hover: #15803d;
-    --warning: #d97706;
     --danger: #dc2626;
-    --danger-hover: #b91c1c;
-    --secondary: #475569;
-    --secondary-hover: #334155;
-    --bg: #f1f5f9;
-    --card-bg: #ffffff;
+    --warning: #d97706;
+    --bg: #f4f7f9;
     --border: #e2e8f0;
     --text: #1e293b;
     --muted: #64748b;
@@ -51,29 +45,21 @@ body {
     color: white;
     position: fixed;
     height: 100vh;
-    display: flex;
-    flex-direction: column;
-    z-index: 100;
+    z-index: 10;
 }
 
 .sidebar-brand {
-    padding: 26px 24px;
-    font-size: 1.35rem;
+    padding: 28px;
+    font-size: 1.3rem;
     font-weight: 800;
-    letter-spacing: 0.5px;
     border-bottom: 1px solid rgba(255, 255, 255, 0.08);
     display: flex;
     align-items: center;
-    gap: 12px;
-}
-
-.sidebar-brand i {
-    color: var(--primary-light);
+    gap: 10px;
 }
 
 .sidebar-menu {
-    padding: 20px 16px;
-    flex: 1;
+    padding: 20px;
 }
 
 .menu-item {
@@ -82,11 +68,10 @@ body {
     align-items: center;
     text-decoration: none;
     color: #cbd5e1;
-    padding: 14px 16px;
+    padding: 14px;
     border-radius: 10px;
     margin-bottom: 8px;
-    font-weight: 500;
-    transition: all 0.2s ease;
+    transition: background 0.2s;
 }
 
 .menu-item:hover {
@@ -98,15 +83,13 @@ body {
     background: linear-gradient(90deg, var(--primary), var(--primary-light));
     color: white;
     font-weight: 600;
-    box-shadow: 0 4px 12px rgba(15, 118, 110, 0.3);
 }
 
-/* MAIN CONTENT */
+/* MAIN */
 .main-content {
     margin-left: 260px;
     flex: 1;
-    padding: 32px;
-    max-width: calc(100vw - 260px);
+    padding: 30px;
 }
 
 .topbar {
@@ -114,17 +97,12 @@ body {
     justify-content: space-between;
     align-items: center;
     flex-wrap: wrap;
-    gap: 16px;
-    margin-bottom: 24px;
+    gap: 12px;
+    margin-bottom: 20px;
 }
 
 .topbar h1 {
-    font-size: 1.75rem;
-    font-weight: 800;
-    color: var(--sidebar-bg);
-    display: flex;
-    align-items: center;
-    gap: 10px;
+    font-size: 1.8rem;
 }
 
 .topbar-actions {
@@ -133,29 +111,21 @@ body {
     flex-wrap: wrap;
 }
 
-/* CARDS */
+/* CARD */
 .card {
-    background: var(--card-bg);
+    background: white;
     border-radius: 16px;
     padding: 24px;
     border: 1px solid var(--border);
+    margin-bottom: 20px;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
-    margin-bottom: 24px;
 }
 
 .card-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 20px;
-    padding-bottom: 12px;
-    border-bottom: 1px solid var(--border);
-}
-
-.card-header h2 {
-    font-size: 1.15rem;
-    font-weight: 700;
-    color: var(--sidebar-bg);
+    margin-bottom: 16px;
 }
 
 /* FORM */
@@ -165,11 +135,11 @@ body {
     gap: 16px;
 }
 
-@media (max-width: 1024px) {
+@media (max-width: 900px) {
     .form-grid { grid-template-columns: repeat(2, 1fr); }
 }
 
-@media (max-width: 640px) {
+@media (max-width: 600px) {
     .form-grid { grid-template-columns: 1fr; }
 }
 
@@ -184,33 +154,22 @@ body {
     color: var(--muted);
     margin-bottom: 6px;
     text-transform: uppercase;
-    letter-spacing: 0.4px;
 }
 
 .form-group input,
 .form-group select {
     border: 1px solid var(--border);
     border-radius: 8px;
-    padding: 10px 12px;
+    padding: 10px;
     font-size: 0.95rem;
-    color: var(--text);
     background: #f8fafc;
-    transition: border-color 0.2s, background 0.2s;
 }
 
 .form-group input:focus,
 .form-group select:focus {
     outline: none;
     border-color: var(--primary);
-    background: #ffffff;
-    box-shadow: 0 0 0 3px rgba(15, 118, 110, 0.1);
-}
-
-.form-actions {
-    margin-top: 20px;
-    display: flex;
-    gap: 10px;
-    flex-wrap: wrap;
+    background: white;
 }
 
 /* BUTTONS */
@@ -218,13 +177,17 @@ body {
     border: none;
     cursor: pointer;
     border-radius: 8px;
-    padding: 10px 16px;
-    font-size: 0.9rem;
-    font-weight: 600;
+    padding: 10px 18px;
+    font-weight: 700;
     display: inline-flex;
     align-items: center;
     gap: 8px;
-    transition: all 0.2s ease;
+    font-size: 0.9rem;
+    transition: opacity 0.2s;
+}
+
+.btn:hover {
+    opacity: 0.9;
 }
 
 .btn-sm {
@@ -233,26 +196,16 @@ body {
 }
 
 .btn-primary { background: var(--primary); color: white; }
-.btn-primary:hover { background: var(--primary-dark); }
-
 .btn-success { background: var(--success); color: white; }
-.btn-success:hover { background: var(--success-hover); }
-
 .btn-warning { background: var(--warning); color: white; }
-.btn-warning:hover { opacity: 0.9; }
-
 .btn-danger { background: var(--danger); color: white; }
-.btn-danger:hover { background: var(--danger-hover); }
+.btn-print { background: #475569; color: white; }
+.btn-outline { background: white; color: var(--text); border: 1px solid var(--border); }
 
-.btn-secondary { background: var(--secondary); color: white; }
-.btn-secondary:hover { background: var(--secondary-hover); }
-
-.btn-outline {
-    background: white;
-    color: var(--text);
-    border: 1px solid var(--border);
+.action-btns {
+    display: flex;
+    gap: 6px;
 }
-.btn-outline:hover { background: #f8fafc; }
 
 /* TABLE */
 .table-wrap {
@@ -262,87 +215,65 @@ body {
 table {
     width: 100%;
     border-collapse: collapse;
-    font-size: 0.9rem;
 }
 
 th, td {
-    padding: 12px 14px;
+    padding: 12px;
     border-bottom: 1px solid var(--border);
     text-align: left;
+    font-size: 0.9rem;
 }
 
 th {
     background: #f8fafc;
-    font-weight: 700;
     color: var(--muted);
-    text-transform: uppercase;
     font-size: 0.75rem;
-    letter-spacing: 0.5px;
+    text-transform: uppercase;
 }
 
-tbody tr:hover {
-    background: #f8fafc;
-}
-
-.num-col {
+.num {
     text-align: right;
-    font-variant-numeric: tabular-nums;
 }
 
-.action-btns {
-    display: flex;
-    gap: 6px;
-}
-
-.empty-state {
-    text-align: center;
-    padding: 32px;
-    color: var(--muted);
-}
-
-/* MODAL */
-.modal-backdrop {
+/* MODAL (FIXED) */
+.modal {
     display: none;
     position: fixed;
     inset: 0;
     background: rgba(15, 23, 42, 0.6);
-    z-index: 999;
+    z-index: 1000;
     align-items: center;
     justify-content: center;
     padding: 20px;
 }
 
-.modal-backdrop.active {
+.modal.open {
     display: flex;
 }
 
-.modal-box {
+.modal-content {
     background: white;
     border-radius: 16px;
-    width: 100%;
-    max-width: 540px;
     padding: 24px;
-    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.15);
+    width: 100%;
+    max-width: 480px;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2);
 }
 
 .modal-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 18px;
-    padding-bottom: 12px;
+    margin-bottom: 16px;
+    padding-bottom: 10px;
     border-bottom: 1px solid var(--border);
 }
 
-.modal-close {
-    background: none;
-    border: none;
-    font-size: 1.25rem;
-    cursor: pointer;
-    color: var(--muted);
+.modal-content .form-group {
+    margin-bottom: 12px;
 }
 
-/* PRINT AREA (APPENDIX 73) */
+/* PRINT */
 #print-area {
     display: none;
 }
@@ -356,65 +287,27 @@ tbody tr:hover {
     body {
         display: block;
         background: white;
-        color: black;
     }
 
     .sidebar,
     .main-content,
-    .modal-backdrop {
+    .modal {
         display: none !important;
     }
 
     #print-area {
         display: block !important;
-        width: 100%;
-    }
-
-    .appendix-tag {
-        text-align: right;
-        font-style: italic;
-        font-size: 11px;
-        margin-bottom: 4px;
-    }
-
-    .print-header {
-        text-align: center;
-        margin-bottom: 14px;
-    }
-
-    .print-header h2 {
-        font-size: 14px;
-        font-weight: 800;
-        text-transform: uppercase;
-    }
-
-    .print-header h3 {
-        font-size: 13px;
-        font-weight: 700;
-        text-decoration: underline;
-        margin-top: 4px;
-    }
-
-    .print-header p {
-        font-size: 11px;
-    }
-
-    .print-meta {
-        font-size: 11px;
-        margin-bottom: 10px;
-        line-height: 1.5;
     }
 
     #print-table {
         width: 100%;
         border-collapse: collapse;
-        margin-bottom: 24px;
     }
 
     #print-table th,
     #print-table td {
         border: 1px solid black;
-        padding: 5px 6px;
+        padding: 5px;
         font-size: 10px;
         color: black;
     }
@@ -422,589 +315,573 @@ tbody tr:hover {
     #print-table th {
         background: #f1f5f9 !important;
         text-align: center;
-        font-weight: 700;
     }
 
-    .signatory-table {
+    .sig-table {
         width: 100%;
         border-collapse: collapse;
-        margin-top: 20px;
+        margin-top: 24px;
         page-break-inside: avoid;
     }
 
-    .signatory-table td {
+    .sig-table td {
         border: none !important;
-        padding: 4px 10px;
-        vertical-align: top;
+        padding: 4px 8px;
         font-size: 10.5px;
+        vertical-align: top;
         width: 33.33%;
-    }
-
-    .sig-names {
-        padding-top: 32px !important;
-        font-weight: 700;
     }
 }
 </style>
 </head>
+
 <body>
 
 <!-- SIDEBAR -->
 <aside class="sidebar">
     <div class="sidebar-brand">
         <i class="fas fa-landmark"></i>
-        <span>RPCP PORTAL</span>
+        <span>RPCP</span>
     </div>
-    <nav class="sidebar-menu">
-        <a href="#land" class="menu-item active">
+
+    <div class="sidebar-menu">
+        <a href="#" class="menu-item active">
             <i class="fas fa-globe"></i>
             <span>Land</span>
         </a>
-        <a href="#buildings" class="menu-item" onclick="alert('Buildings module link ready for routing.')">
+        <a href="#" class="menu-item">
             <i class="fas fa-building"></i>
             <span>Buildings</span>
         </a>
-        <a href="#structures" class="menu-item" onclick="alert('Structures module link ready for routing.')">
+        <a href="#" class="menu-item">
             <i class="fas fa-road"></i>
             <span>Structures</span>
         </a>
-    </nav>
+    </div>
 </aside>
 
-<!-- MAIN CONTENT -->
+<!-- MAIN -->
 <main class="main-content">
+
     <div class="topbar">
         <h1>🌎 RPCP - LAND</h1>
         <div class="topbar-actions">
             <button class="btn btn-outline" onclick="downloadTemplate()">
                 <i class="fas fa-download"></i> Template
             </button>
-            <input type="file" id="excelFile" accept=".xlsx,.xls,.csv" hidden onchange="handleExcelImport(event)">
+            <input type="file" id="excelFile" accept=".xlsx,.xls,.csv" hidden>
             <button class="btn btn-success" onclick="document.getElementById('excelFile').click()">
                 <i class="fas fa-file-import"></i> Import Excel
             </button>
+            <button class="btn btn-print" onclick="window.print()">
+                <i class="fas fa-print"></i> Print Appendix 73
+            </button>
+        </div>
+    </div>
 
-</div>
-</div>
+    <!-- FORM -->
+    <div class="card">
+        <div class="card-header">
+            <h2 id="formTitle">Land Record Entry</h2>
+            <button class="btn btn-outline btn-sm" onclick="openSettings()">
+                <i class="fas fa-cog"></i> Report Settings
+            </button>
+        </div>
 
-<!-- FORM -->
+        <input type="hidden" id="editIndex" value="-1">
 
-<div class="card">
+        <div class="form-grid">
+            <div class="form-group">
+                <label>Article</label>
+                <input id="article" value="Land">
+            </div>
+            <div class="form-group">
+                <label>Description</label>
+                <input id="description" placeholder="e.g., Main Campus Site">
+            </div>
+            <div class="form-group">
+                <label>Lot Area</label>
+                <input id="lotArea" placeholder="e.g., 10,000 sq.m.">
+            </div>
+            <div class="form-group">
+                <label>Registered Owner</label>
+                <input id="registeredOwner" placeholder="e.g., Department of Education">
+            </div>
+            <div class="form-group">
+                <label>TCT Number</label>
+                <input id="tctNumber" placeholder="e.g., TCT-12345">
+            </div>
+            <div class="form-group">
+                <label>Mode of Acquisition</label>
+                <input id="mode" placeholder="e.g., Donation / Purchase">
+            </div>
+            <div class="form-group">
+                <label>Cost Of Acquisition (₱)</label>
+                <input type="number" step="0.01" id="cost" placeholder="0.00">
+            </div>
+            <div class="form-group">
+                <label>Adjusted Market Value (₱)</label>
+                <input type="number" step="0.01" id="market" placeholder="0.00">
+            </div>
+            <div class="form-group">
+                <label>Assessed Value (₱)</label>
+                <input type="number" step="0.01" id="assessed" placeholder="0.00">
+            </div>
+        </div>
 
-<h2 style="margin-bottom:15px">
-Land Record Entry
-</h2>
+        <br>
 
-<div class="form-grid">
+        <div class="action-btns">
+            <button class="btn btn-primary" id="saveBtn" onclick="saveRecord()">
+                <i class="fas fa-save"></i> Save Record
+            </button>
+            <button class="btn btn-outline" id="cancelEditBtn" style="display:none;" onclick="resetForm()">
+                Cancel Edit
+            </button>
+        </div>
+    </div>
 
-<div class="form-group">
-<label>Article</label>
-<input id="article" value="Land">
-</div>
+    <!-- TABLE -->
+    <div class="card">
+        <div class="card-header">
+            <h2>Encoded Land Records (<span id="recordCount">0</span>)</h2>
+            <button class="btn btn-danger btn-sm" onclick="clearAllRecords()">
+                <i class="fas fa-trash"></i> Clear All
+            </button>
+        </div>
 
-<div class="form-group">
-<label>Description</label>
-<input id="description">
-</div>
-
-<div class="form-group">
-<label>Lot Area</label>
-<input id="lotArea">
-</div>
-
-<div class="form-group">
-<label>Registered Owner</label>
-<input id="registeredOwner">
-</div>
-
-<div class="form-group">
-<label>TCT Number</label>
-<input id="tctNumber">
-</div>
-
-<div class="form-group">
-<label>Mode of Acquisition</label>
-<input id="mode">
-</div>
-
-<div class="form-group">
-<label>Cost Of Acquisition</label>
-<input type="number" id="cost">
-</div>
-
-<div class="form-group">
-<label>Adjusted Market Value</label>
-<input type="number" id="market">
-</div>
-
-<div class="form-group">
-<label>Assessed Value</label>
-<input type="number" id="assessed">
-</div>
-
-</div>
-
-<br>
-
-<button class="btn btn-primary" onclick="saveRecord()">
-💾 Save Record
-</button>
-<button
- class="btn btn-primary"
- onclick="openSettings()">
- <i class="fas fa-cog"></i>
- Settings
-</button>
-</div>
-
-<!-- TABLE -->
-
-<div class="card">
-
-<h2 style="margin-bottom:15px;">
-Encoded Land Records
-</h2>
-
-<div class="table-wrap">
-
-<table>
-
-<thead>
-
-<tr>
-<th>Article</th>
-<th>Description</th>
-<th>Lot Area</th>
-<th>Owner</th>
-<th>TCT</th>
-<th>Cost</th>
-<th>Market</th>
-<th>Assessed</th>
-<th>Actions</th>
-</tr>
-
-</thead>
-
-<tbody id="land-body"></tbody>
-
-</table>
-
-</div>
-
-</div>
+        <div class="table-wrap">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Article</th>
+                        <th>Description</th>
+                        <th>Lot Area</th>
+                        <th>Owner</th>
+                        <th>TCT</th>
+                        <th>Mode</th>
+                        <th class="num">Cost</th>
+                        <th class="num">Market</th>
+                        <th class="num">Assessed</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="land-body"></tbody>
+            </table>
+        </div>
+    </div>
 
 </main>
 
 <!-- PRINT AREA -->
-
 <div id="print-area">
+    <p style="text-align:right;font-style:italic;font-size:11px;">Appendix 73</p>
+    <div style="text-align:center;">
+        <h2 style="font-size:14px;">REPORT ON THE PHYSICAL COUNT OF PROPERTY, PLANT AND EQUIPMENT</h2>
+        <h3 style="font-size:13px;text-decoration:underline;margin-top:4px;">LAND</h3>
+        <p style="font-size:11px;">(Type of Property, Plant and Equipment)</p>
+        <p style="font-size:11px;font-weight:bold;margin-top:4px;">
+            As at <span id="printAsOfDate">December 31, 2023</span>
+        </p>
+    </div>
 
-<center>
+    <br>
 
-<h2>
-REPORT ON THE PHYSICAL COUNT OF
-PROPERTY, PLANT AND EQUIPMENT
-</h2>
+    <div style="font-size:11px;line-height:1.5;">
+        <p><b>SCHOOL:</b> <span id="printSchoolName">Sta. Cruz Pingkian High School</span></p>
+        <p>
+            For which <b id="printPrincipalName">DOLORES C. DODON, PhD</b>,
+            <span id="printPrincipalPosition">School Principal</span>,
+            is accountable, having assumed such accountability on
+            <span id="printAccountabilityDate">December 31, 2023</span>.
+        </p>
+    </div>
 
-<h3>LAND</h3>
+    <br>
 
-<h4>(Type of Property, Plant and Equipment)</h4>
+    <table id="print-table">
+        <thead>
+            <tr>
+                <th>Article</th>
+                <th>Description</th>
+                <th>Lot Area</th>
+                <th>Owner</th>
+                <th>TCT Number</th>
+                <th>Mode</th>
+                <th>Cost</th>
+                <th>Market</th>
+                <th>Assessed</th>
+            </tr>
+        </thead>
+        <tbody id="print-body"></tbody>
+        <tfoot>
+            <tr>
+                <td colspan="6"><b>TOTAL</b></td>
+                <td class="num" id="totalCost"></td>
+                <td class="num" id="totalMarket"></td>
+                <td class="num" id="totalAssessed"></td>
+            </tr>
+        </tfoot>
+    </table>
 
-<h4>
-As at December 31, 2023
-</h4>
+    <table class="sig-table">
+        <tr>
+            <td>Certified Correct By:</td>
+            <td>Approved By:</td>
+            <td>Verified By:</td>
+        </tr>
+        <tr>
+            <td style="padding-top:40px;font-weight:bold;">
+                DARNA A. BUGNAY<br>
+                NISAN K. BINWAG<br>
+                DAISY ANN BALASYA<br>
+                EFRENA TIAGO
+            </td>
+            <td style="padding-top:40px;font-weight:bold;">
+                <span id="sigPrincipalName">DOLORES C. DODON, PhD</span><br>
+                <span id="sigPrincipalPosition" style="font-weight:normal;">School Principal</span>
+            </td>
+            <td style="padding-top:40px;font-weight:bold;">
+                ROBERT C. ROSAL JR.
+            </td>
+        </tr>
+    </table>
+</div>
 
-</center>
+<!-- SETTINGS MODAL -->
+<div class="modal" id="settingsModal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2>RPCP Report Settings</h2>
+            <button class="btn btn-outline btn-sm" onclick="closeSettings()">✕</button>
+        </div>
 
-<br>
+        <div class="form-group">
+            <label>School Name</label>
+            <input id="setSchoolName">
+        </div>
+        <div class="form-group">
+            <label>Principal Name</label>
+            <input id="setPrincipalName">
+        </div>
+        <div class="form-group">
+            <label>Position</label>
+            <input id="setPrincipalPosition">
+        </div>
+        <div class="form-group">
+            <label>As Of Date</label>
+            <input id="setAsOfDate">
+        </div>
+        <div class="form-group">
+            <label>Accountability Date</label>
+            <input id="setAccountabilityDate">
+        </div>
 
-<p>
-<b>SCHOOL:</b>
-Sta. Cruz Pingkian High School
-</p>
+        <br>
 
-<br>
-
-<table>
-
-<thead>
-
-<tr>
-<th>Article</th>
-<th>Description</th>
-<th>Lot Area</th>
-<th>Owner</th>
-<th>TCT Number</th>
-<th>Mode</th>
-<th>Cost</th>
-<th>Market</th>
-<th>Assessed</th>
-</tr>
-
-</thead>
-
-<tbody id="print-body"></tbody>
-
-<tfoot>
-
-<tr>
-
-<td colspan="6">
-<b>TOTAL</b>
-</td>
-
-<td id="totalCost"></td>
-<td id="totalMarket"></td>
-<td id="totalAssessed"></td>
-
-</tr>
-
-</tfoot>
-
-</table>
-
-<br><br>
-
-<table style="width:100%;border:none">
-
-<tr>
-<td>Certified Correct By</td>
-<td>Approved By</td>
-<td>Verified By</td>
-</tr>
-
-<tr>
-<td style="padding-top:50px;">
-DARNA A. BUGNAY<br>
-NISAN K. BINWAG<br>
-DAISY ANN BALASYA<br>
-EFRENA TIAGO
-</td>
-
-<td style="padding-top:50px;">
-DOLORES C. DODON, PhD
-</td>
-
-<td style="padding-top:50px;">
-ROBERT C. ROSAL JR.
-</td>
-
-</tr>
-
-</table>
-
+        <div class="action-btns">
+            <button class="btn btn-primary" onclick="saveSettings()">Save Settings</button>
+            <button class="btn btn-outline" onclick="closeSettings()">Cancel</button>
+        </div>
+    </div>
 </div>
 
 <script>
+const RECORDS_KEY = "rpcp_land_records";
+const SETTINGS_KEY = "rpcp_settings";
 
-let records=[];
+let records = JSON.parse(localStorage.getItem(RECORDS_KEY)) || [];
 
-function saveRecord(){
-
-const data={
-
-article:article.value,
-description:description.value,
-lotArea:lotArea.value,
-owner:registeredOwner.value,
-tct:tctNumber.value,
-mode:mode.value,
-
-cost:Number(cost.value||0),
-market:Number(market.value||0),
-assessed:Number(assessed.value||0)
-
-};
-
-records.push(data);
-
-renderTable();
-
-document.querySelectorAll("input").forEach(x=>{
-
-if(x.id!=="article")
-x.value="";
-
-});
-
+function formatMoney(val) {
+    return "₱" + Number(val || 0).toLocaleString("en-PH", {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+    });
 }
 
-function renderTable(){
-
-const body=document.getElementById("land-body");
-
-body.innerHTML="";
-
-let totalCost=0;
-let totalMarket=0;
-let totalAssessed=0;
-
-records.forEach((r,index)=>{
-
-totalCost+=r.cost;
-totalMarket+=r.market;
-totalAssessed+=r.assessed;
-
-body.innerHTML+=`
-<tr>
-
-<td>${r.article}</td>
-<td>${r.description}</td>
-<td>${r.lotArea}</td>
-<td>${r.owner}</td>
-<td>${r.tct}</td>
-<td>₱${r.cost.toLocaleString()}</td>
-<td>₱${r.market.toLocaleString()}</td>
-<td>₱${r.assessed.toLocaleString()}</td>
-
-<td>
-
-<div class="action-btns">
-
-<button onclick="deleteRecord(${index})"
-class="btn btn-danger">
-Delete
-</button>
-
-</div>
-
-</td>
-
-</tr>
-`;
-});
-
-renderPrint(totalCost,totalMarket,totalAssessed);
-
+function escapeHTML(str) {
+    return String(str || "").replace(/[&<>"']/g, m => ({
+        "&": "&amp;",
+        "<": "&lt;",
+        ">": "&gt;",
+        '"': "&quot;",
+        "'": "&#39;"
+    }[m]));
 }
 
-function deleteRecord(index){
-
-records.splice(index,1);
-
-renderTable();
-
+function saveToStorage() {
+    localStorage.setItem(RECORDS_KEY, JSON.stringify(records));
 }
 
-function renderPrint(tc,tm,ta){
-
-const p=document.getElementById("print-body");
-
-p.innerHTML="";
-
-records.forEach(r=>{
-
-p.innerHTML+=`
-<tr>
-
-<td>${r.article}</td>
-<td>${r.description}</td>
-<td>${r.lotArea}</td>
-<td>${r.owner}</td>
-<td>${r.tct}</td>
-<td>${r.mode}</td>
-<td>₱${r.cost.toLocaleString()}</td>
-<td>₱${r.market.toLocaleString()}</td>
-<td>₱${r.assessed.toLocaleString()}</td>
-
-</tr>
-`;
-
-});
-
-totalCost.innerHTML=
-"₱"+tc.toLocaleString();
-
-totalMarket.innerHTML=
-"₱"+tm.toLocaleString();
-
-totalAssessed.innerHTML=
-"₱"+ta.toLocaleString();
-
-}
-
-function openSettings(){
-
-    const settings =
-    JSON.parse(
-        localStorage.getItem(
-            "rpcp_settings"
-        )
-    ) || {};
-
-    setSchoolName.value =
-        settings.schoolName || "";
-
-    setPrincipalName.value =
-        settings.principalName || "";
-
-    setPrincipalPosition.value =
-        settings.principalPosition || "";
-
-    setAsOfDate.value =
-        settings.asOfDate || "";
-
-    setAccountabilityDate.value =
-        settings.accountabilityDate || "";
-
-    settingsModal.style.display="block";
-}
-
-function saveSettings(){
+function saveRecord() {
+    const desc = document.getElementById("description").value.trim();
+    if (!desc) {
+        alert("Please enter a Description for the land record.");
+        return;
+    }
 
     const data = {
-
-        schoolName:
-        setSchoolName.value,
-
-        principalName:
-        setPrincipalName.value,
-
-        principalPosition:
-        setPrincipalPosition.value,
-
-        asOfDate:
-        setAsOfDate.value,
-
-        accountabilityDate:
-        setAccountabilityDate.value
-
+        article: document.getElementById("article").value.trim() || "Land",
+        description: desc,
+        lotArea: document.getElementById("lotArea").value.trim(),
+        owner: document.getElementById("registeredOwner").value.trim(),
+        tct: document.getElementById("tctNumber").value.trim(),
+        mode: document.getElementById("mode").value.trim(),
+        cost: Number(document.getElementById("cost").value || 0),
+        market: Number(document.getElementById("market").value || 0),
+        assessed: Number(document.getElementById("assessed").value || 0)
     };
 
-    localStorage.setItem(
-        "rpcp_settings",
-        JSON.stringify(data)
-    );
+    const editIdx = parseInt(document.getElementById("editIndex").value, 10);
+    if (editIdx >= 0) {
+        records[editIdx] = data;
+    } else {
+        records.push(data);
+    }
 
+    saveToStorage();
+    resetForm();
+    renderTable();
+}
+
+function editRecord(index) {
+    const r = records[index];
+    document.getElementById("editIndex").value = index;
+    document.getElementById("article").value = r.article;
+    document.getElementById("description").value = r.description;
+    document.getElementById("lotArea").value = r.lotArea;
+    document.getElementById("registeredOwner").value = r.owner;
+    document.getElementById("tctNumber").value = r.tct;
+    document.getElementById("mode").value = r.mode;
+    document.getElementById("cost").value = r.cost;
+    document.getElementById("market").value = r.market;
+    document.getElementById("assessed").value = r.assessed;
+
+    document.getElementById("formTitle").textContent = "Edit Land Record";
+    document.getElementById("saveBtn").innerHTML = '<i class="fas fa-check"></i> Update Record';
+    document.getElementById("cancelEditBtn").style.display = "inline-flex";
+    window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+function resetForm() {
+    document.getElementById("editIndex").value = "-1";
+    document.getElementById("article").value = "Land";
+    ["description", "lotArea", "registeredOwner", "tctNumber", "mode", "cost", "market", "assessed"]
+        .forEach(id => document.getElementById(id).value = "");
+
+    document.getElementById("formTitle").textContent = "Land Record Entry";
+    document.getElementById("saveBtn").innerHTML = '<i class="fas fa-save"></i> Save Record';
+    document.getElementById("cancelEditBtn").style.display = "none";
+}
+
+function deleteRecord(index) {
+    if (!confirm("Delete this record?")) return;
+    records.splice(index, 1);
+    saveToStorage();
+    renderTable();
+}
+
+function clearAllRecords() {
+    if (!records.length) return;
+    if (!confirm("Are you sure you want to delete ALL records?")) return;
+    records = [];
+    saveToStorage();
+    renderTable();
+}
+
+function renderTable() {
+    const body = document.getElementById("land-body");
+    document.getElementById("recordCount").textContent = records.length;
+    body.innerHTML = "";
+
+    let totalCost = 0;
+    let totalMarket = 0;
+    let totalAssessed = 0;
+
+    if (records.length === 0) {
+        body.innerHTML = '<tr><td colspan="10" style="text-align:center;color:#64748b;padding:24px;">No records encoded yet.</td></tr>';
+        renderPrint(0, 0, 0);
+        return;
+    }
+
+    records.forEach((r, index) => {
+        totalCost += r.cost;
+        totalMarket += r.market;
+        totalAssessed += r.assessed;
+
+        body.innerHTML += `
+        <tr>
+            <td>${escapeHTML(r.article)}</td>
+            <td>${escapeHTML(r.description)}</td>
+            <td>${escapeHTML(r.lotArea)}</td>
+            <td>${escapeHTML(r.owner)}</td>
+            <td>${escapeHTML(r.tct)}</td>
+            <td>${escapeHTML(r.mode)}</td>
+            <td class="num">${formatMoney(r.cost)}</td>
+            <td class="num">${formatMoney(r.market)}</td>
+            <td class="num">${formatMoney(r.assessed)}</td>
+            <td>
+                <div class="action-btns">
+                    <button onclick="editRecord(${index})" class="btn btn-warning btn-sm">Edit</button>
+                    <button onclick="deleteRecord(${index})" class="btn btn-danger btn-sm">Delete</button>
+                </div>
+            </td>
+        </tr>`;
+    });
+
+    renderPrint(totalCost, totalMarket, totalAssessed);
+}
+
+function renderPrint(tc, tm, ta) {
+    const p = document.getElementById("print-body");
+    p.innerHTML = "";
+
+    records.forEach(r => {
+        p.innerHTML += `
+        <tr>
+            <td>${escapeHTML(r.article)}</td>
+            <td>${escapeHTML(r.description)}</td>
+            <td>${escapeHTML(r.lotArea)}</td>
+            <td>${escapeHTML(r.owner)}</td>
+            <td>${escapeHTML(r.tct)}</td>
+            <td>${escapeHTML(r.mode)}</td>
+            <td class="num">${formatMoney(r.cost)}</td>
+            <td class="num">${formatMoney(r.market)}</td>
+            <td class="num">${formatMoney(r.assessed)}</td>
+        </tr>`;
+    });
+
+    document.getElementById("totalCost").textContent = formatMoney(tc);
+    document.getElementById("totalMarket").textContent = formatMoney(tm);
+    document.getElementById("totalAssessed").textContent = formatMoney(ta);
+}
+
+/* SETTINGS */
+function openSettings() {
+    const settings = JSON.parse(localStorage.getItem(SETTINGS_KEY)) || {};
+    document.getElementById("setSchoolName").value = settings.schoolName || "Sta. Cruz Pingkian High School";
+    document.getElementById("setPrincipalName").value = settings.principalName || "DOLORES C. DODON, PhD";
+    document.getElementById("setPrincipalPosition").value = settings.principalPosition || "School Principal";
+    document.getElementById("setAsOfDate").value = settings.asOfDate || "December 31, 2023";
+    document.getElementById("setAccountabilityDate").value = settings.accountabilityDate || "December 31, 2023";
+
+    document.getElementById("settingsModal").classList.add("open");
+}
+
+function closeSettings() {
+    document.getElementById("settingsModal").classList.remove("open");
+}
+
+function saveSettings() {
+    const data = {
+        schoolName: document.getElementById("setSchoolName").value.trim(),
+        principalName: document.getElementById("setPrincipalName").value.trim(),
+        principalPosition: document.getElementById("setPrincipalPosition").value.trim(),
+        asOfDate: document.getElementById("setAsOfDate").value.trim(),
+        accountabilityDate: document.getElementById("setAccountabilityDate").value.trim()
+    };
+
+    localStorage.setItem(SETTINGS_KEY, JSON.stringify(data));
     applySettings();
-
-    alert(
-      "Settings Saved"
-    );
-
-    settingsModal.style.display="none";
+    closeSettings();
+    alert("Settings saved.");
 }
 
-function applySettings(){
+function applySettings() {
+    const settings = JSON.parse(localStorage.getItem(SETTINGS_KEY)) || {};
 
-    const settings =
-    JSON.parse(
-       localStorage.getItem(
-        "rpcp_settings"
-       )
-    ) || {};
-
-    printSchoolName.textContent =
-       settings.schoolName || "";
-
-    printPrincipalName.textContent =
-       settings.principalName || "";
-
-    printPrincipalPosition.textContent =
-       settings.principalPosition || "";
-
-    printAsOfDate.textContent =
-       settings.asOfDate || "";
-
-    printAccountabilityDate.textContent =
-       settings.accountabilityDate || "";
+    document.getElementById("printSchoolName").textContent =
+        settings.schoolName || "Sta. Cruz Pingkian High School";
+    document.getElementById("printPrincipalName").textContent =
+        settings.principalName || "DOLORES C. DODON, PhD";
+    document.getElementById("sigPrincipalName").textContent =
+        settings.principalName || "DOLORES C. DODON, PhD";
+    document.getElementById("printPrincipalPosition").textContent =
+        settings.principalPosition || "School Principal";
+    document.getElementById("sigPrincipalPosition").textContent =
+        settings.principalPosition || "School Principal";
+    document.getElementById("printAsOfDate").textContent =
+        settings.asOfDate || "December 31, 2023";
+    document.getElementById("printAccountabilityDate").textContent =
+        settings.accountabilityDate || "December 31, 2023";
 }
 
+/* EXCEL IMPORT & TEMPLATE */
+document.getElementById("excelFile").addEventListener("change", function(evt) {
+    const file = evt.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        try {
+            const data = new Uint8Array(e.target.result);
+            const workbook = XLSX.read(data, { type: "array" });
+            const sheet = workbook.Sheets[workbook.SheetNames[0]];
+            const rows = XLSX.utils.sheet_to_json(sheet, { defval: "" });
+
+            if (!rows.length) {
+                alert("The Excel file has no data rows.");
+                return;
+            }
+
+            let count = 0;
+            rows.forEach(row => {
+                const norm = {};
+                Object.keys(row).forEach(k => norm[k.trim().toLowerCase()] = row[k]);
+
+                const desc = norm["description"] || norm["desc"] || "";
+                if (!desc && !norm["tct number"] && !norm["tct"]) return;
+
+                records.push({
+                    article: String(norm["article"] || "Land").trim(),
+                    description: String(desc).trim(),
+                    lotArea: String(norm["lot area"] || norm["area"] || "").trim(),
+                    owner: String(norm["registered owner"] || norm["owner"] || "").trim(),
+                    tct: String(norm["tct number"] || norm["tct"] || "").trim(),
+                    mode: String(norm["mode of acquisition"] || norm["mode"] || "").trim(),
+                    cost: parseFloat(String(norm["cost of acquisition"] || norm["cost"] || 0).replace(/[^0-9.-]/g, "")) || 0,
+                    market: parseFloat(String(norm["adjusted market value"] || norm["market"] || 0).replace(/[^0-9.-]/g, "")) || 0,
+                    assessed: parseFloat(String(norm["assessed value"] || norm["assessed"] || 0).replace(/[^0-9.-]/g, "")) || 0
+                });
+                count++;
+            });
+
+            saveToStorage();
+            renderTable();
+            alert(`Successfully imported ${count} record(s).`);
+        } catch (err) {
+            console.error(err);
+            alert("Failed to read Excel file. Please check the file format.");
+        } finally {
+            evt.target.value = "";
+        }
+    };
+
+    reader.readAsArrayBuffer(file);
+});
+
+function downloadTemplate() {
+    const template = [{
+        "Article": "Land",
+        "Description": "Main School Site",
+        "Lot Area": "10,000 sq.m.",
+        "Registered Owner": "Department of Education",
+        "TCT Number": "TCT-001234",
+        "Mode of Acquisition": "Donation",
+        "Cost of Acquisition": 1200000,
+        "Adjusted Market Value": 2500000,
+        "Assessed Value": 1800000
+    }];
+    const ws = XLSX.utils.json_to_sheet(template);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Land_Template");
+    XLSX.writeFile(wb, "RPCP_Land_Template.xlsx");
+}
+
+/* INIT */
 applySettings();
-
-excelFile.addEventListener(
-"change",
-
-function(evt){
-
-const file =
-evt.target.files[0];
-
-if(!file) return;
-
-const reader =
-new FileReader();
-
-reader.onload =
-function(e){
-
-const data =
-new Uint8Array(
-e.target.result
-);
-
-const workbook =
-XLSX.read(
-data,
-{
-type:"array"
-});
-
-const sheet =
-workbook.Sheets[
-workbook.SheetNames[0]
-];
-
-const rows =
-XLSX.utils.sheet_to_json(
-sheet,
-{
-header:1,
-defval:""
-});
-
-console.log(rows);
-
-alert(
-"Workbook loaded successfully."
-);
-
-};
-
-reader.readAsArrayBuffer(
-file
-);
-
-});
+renderTable();
 </script>
-<div
- class="modal"
- id="settingsModal">
-
-<div class="modal-content">
-
-<h2>
-RPCP Report Settings
-</h2>
-
-<label>School Name</label>
-<input id="setSchoolName">
-
-<label>Principal Name</label>
-<input id="setPrincipalName">
-
-<label>Position</label>
-<input id="setPrincipalPosition">
-
-<label>As Of Date</label>
-<input id="setAsOfDate">
-
-<label>Accountability Date</label>
-<input id="setAccountabilityDate">
-
-<br><br>
-
-<button
- class="btn btn-primary"
- onclick="saveSettings()">
-
-Save
-
-</button>
-
-</div>
-
-</div>
 
 </body>
 </html>
