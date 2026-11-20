@@ -233,9 +233,10 @@ th {
 
 .num {
     text-align: right;
+    font-variant-numeric: tabular-nums;
 }
 
-/* MODAL (FIXED) */
+/* MODAL */
 .modal {
     display: none;
     position: fixed;
@@ -345,15 +346,15 @@ th {
     </div>
 
     <div class="sidebar-menu">
-        <a href="#" class="menu-item active">
+        <a href="#land" class="menu-item active">
             <i class="fas fa-globe"></i>
             <span>Land</span>
         </a>
-        <a href="#" class="menu-item">
+        <a href="#buildings" class="menu-item">
             <i class="fas fa-building"></i>
             <span>Buildings</span>
         </a>
-        <a href="#" class="menu-item">
+        <a href="#structures" class="menu-item">
             <i class="fas fa-road"></i>
             <span>Structures</span>
         </a>
@@ -806,7 +807,7 @@ function applySettings() {
         settings.accountabilityDate || "December 31, 2023";
 }
 
-/* EXCEL IMPORT & TEMPLATE */
+/* SMART EXCEL IMPORT & TEMPLATE */
 document.getElementById("excelFile").addEventListener("change", function(evt) {
     const file = evt.target.files[0];
     if (!file) return;
@@ -816,39 +817,90 @@ document.getElementById("excelFile").addEventListener("change", function(evt) {
         try {
             const data = new Uint8Array(e.target.result);
             const workbook = XLSX.read(data, { type: "array" });
-            const sheet = workbook.Sheets[workbook.SheetNames[0]];
-            const rows = XLSX.utils.sheet_to_json(sheet, { defval: "" });
 
-            if (!rows.length) {
-                alert("The Excel file has no data rows.");
+            // 1. Find the "Land" tab automatically (case-insensitive), or fall back to the first tab
+            const landSheetName = workbook.SheetNames.find(name =>
+                name.toLowerCase().includes("land")
+            ) || workbook.SheetNames[0];
+
+            const sheet = workbook.Sheets[landSheetName];
+
+            // 2. Read raw 2D array so we can locate the real header row (skipping DepEd report titles)
+            const rawRows = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: "" });
+
+            let headerRowIndex = -1;
+            for (let i = 0; i < Math.min(rawRows.length, 25); i++) {
+                const rowText = rawRows[i].map(cell => String(cell).toLowerCase().trim());
+                if (
+                    rowText.some(c => c.includes("description") || c.includes("tct") || c.includes("lot area")) &&
+                    rowText.filter(c => c !== "").length >= 3
+                ) {
+                    headerRowIndex = i;
+                    break;
+                }
+            }
+
+            if (headerRowIndex === -1) {
+                alert(`Could not find table headers (Article, Description, Lot Area, etc.) in sheet "${landSheetName}".`);
                 return;
             }
 
-            let count = 0;
-            rows.forEach(row => {
-                const norm = {};
-                Object.keys(row).forEach(k => norm[k.trim().toLowerCase()] = row[k]);
+            // 3. Build column index map from the detected header row
+            const headers = rawRows[headerRowIndex].map(h =>
+                String(h).toLowerCase().replace(/\s+/g, " ").trim()
+            );
 
-                const desc = norm["description"] || norm["desc"] || "";
-                if (!desc && !norm["tct number"] && !norm["tct"]) return;
+            const findCol = (keywords) =>
+                headers.findIndex(h => keywords.some(kw => h.includes(kw)));
+
+            const colIdx = {
+                article: findCol(["article"]),
+                description: findCol(["description", "desc"]),
+                lotArea: findCol(["lot area", "area"]),
+                owner: findCol(["registered owner", "owner"]),
+                tct: findCol(["tct"]),
+                mode: findCol(["mode"]),
+                cost: findCol(["cost"]),
+                market: findCol(["market"]),
+                assessed: findCol(["assessed"])
+            };
+
+            const parseMoney = (val) => {
+                if (typeof val === "number") return val;
+                return parseFloat(String(val || 0).replace(/[^0-9.-]/g, "")) || 0;
+            };
+
+            // 4. Extract data rows below the header row
+            let count = 0;
+            for (let r = headerRowIndex + 1; r < rawRows.length; r++) {
+                const row = rawRows[r];
+                if (!row || row.every(cell => String(cell).trim() === "")) continue;
+
+                const desc = colIdx.description >= 0 ? String(row[colIdx.description]).trim() : "";
+                const tct = colIdx.tct >= 0 ? String(row[colIdx.tct]).trim() : "";
+                const article = colIdx.article >= 0 ? String(row[colIdx.article]).trim() : "";
+
+                // Skip sub-header rows or "TOTAL" footer rows
+                const combinedCheck = `${article} ${desc}`.toLowerCase();
+                if (combinedCheck.includes("total") || (!desc && !tct)) continue;
 
                 records.push({
-                    article: String(norm["article"] || "Land").trim(),
-                    description: String(desc).trim(),
-                    lotArea: String(norm["lot area"] || norm["area"] || "").trim(),
-                    owner: String(norm["registered owner"] || norm["owner"] || "").trim(),
-                    tct: String(norm["tct number"] || norm["tct"] || "").trim(),
-                    mode: String(norm["mode of acquisition"] || norm["mode"] || "").trim(),
-                    cost: parseFloat(String(norm["cost of acquisition"] || norm["cost"] || 0).replace(/[^0-9.-]/g, "")) || 0,
-                    market: parseFloat(String(norm["adjusted market value"] || norm["market"] || 0).replace(/[^0-9.-]/g, "")) || 0,
-                    assessed: parseFloat(String(norm["assessed value"] || norm["assessed"] || 0).replace(/[^0-9.-]/g, "")) || 0
+                    article: article || "Land",
+                    description: desc,
+                    lotArea: colIdx.lotArea >= 0 ? String(row[colIdx.lotArea]).trim() : "",
+                    owner: colIdx.owner >= 0 ? String(row[colIdx.owner]).trim() : "",
+                    tct: tct,
+                    mode: colIdx.mode >= 0 ? String(row[colIdx.mode]).trim() : "",
+                    cost: colIdx.cost >= 0 ? parseMoney(row[colIdx.cost]) : 0,
+                    market: colIdx.market >= 0 ? parseMoney(row[colIdx.market]) : 0,
+                    assessed: colIdx.assessed >= 0 ? parseMoney(row[colIdx.assessed]) : 0
                 });
                 count++;
-            });
+            }
 
             saveToStorage();
             renderTable();
-            alert(`Successfully imported ${count} record(s).`);
+            alert(`Successfully imported ${count} record(s) from sheet "${landSheetName}".`);
         } catch (err) {
             console.error(err);
             alert("Failed to read Excel file. Please check the file format.");
