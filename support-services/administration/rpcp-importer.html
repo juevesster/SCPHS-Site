@@ -892,6 +892,11 @@ document.getElementById("excelFile").addEventListener("change", function(evt) {
                 assessed: findCol(["assessed"]) >= 0 ? findCol(["assessed"]) : base + 8
             };
 
+            const parseMoney = (val) => {
+                if (typeof val === "number") return val;
+                return parseFloat(String(val || 0).replace(/[^0-9.-]/g, "")) || 0;
+            };
+
             // 4. Extract data rows below the header + sub-header rows
             let count = 0;
             for (let r = headerRowIndex + subHeaderOffset + 1; r < rawRows.length; r++) {
