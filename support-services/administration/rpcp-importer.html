@@ -8,7 +8,7 @@
 
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-
+<script src="https://cdn.sheetjs.com/xlsx-0.20.2/package/dist/xlsx.full.min.js"></script>
 <style>
 
 :root{
@@ -271,9 +271,19 @@ th{
 <i class="fas fa-print"></i>
 Print Appendix 73
 </button>
+<input
+ type="file"
+ id="excelFile"
+ accept=".xlsx,.xls"
+ hidden>
 
+<button
+ class="btn btn-success"
+ onclick="excelFile.click()">
+<i class="fas fa-file-import"></i>
+Import Excel
+</button>
 </div>
-
 </div>
 
 <!-- FORM -->
@@ -338,7 +348,12 @@ Land Record Entry
 <button class="btn btn-primary" onclick="saveRecord()">
 💾 Save Record
 </button>
-
+<button
+ class="btn btn-primary"
+ onclick="openSettings()">
+ <i class="fas fa-cog"></i>
+ Settings
+</button>
 </div>
 
 <!-- TABLE -->
@@ -607,7 +622,188 @@ totalAssessed.innerHTML=
 
 }
 
+function openSettings(){
+
+    const settings =
+    JSON.parse(
+        localStorage.getItem(
+            "rpcp_settings"
+        )
+    ) || {};
+
+    setSchoolName.value =
+        settings.schoolName || "";
+
+    setPrincipalName.value =
+        settings.principalName || "";
+
+    setPrincipalPosition.value =
+        settings.principalPosition || "";
+
+    setAsOfDate.value =
+        settings.asOfDate || "";
+
+    setAccountabilityDate.value =
+        settings.accountabilityDate || "";
+
+    settingsModal.style.display="block";
+}
+
+function saveSettings(){
+
+    const data = {
+
+        schoolName:
+        setSchoolName.value,
+
+        principalName:
+        setPrincipalName.value,
+
+        principalPosition:
+        setPrincipalPosition.value,
+
+        asOfDate:
+        setAsOfDate.value,
+
+        accountabilityDate:
+        setAccountabilityDate.value
+
+    };
+
+    localStorage.setItem(
+        "rpcp_settings",
+        JSON.stringify(data)
+    );
+
+    applySettings();
+
+    alert(
+      "Settings Saved"
+    );
+
+    settingsModal.style.display="none";
+}
+
+function applySettings(){
+
+    const settings =
+    JSON.parse(
+       localStorage.getItem(
+        "rpcp_settings"
+       )
+    ) || {};
+
+    printSchoolName.textContent =
+       settings.schoolName || "";
+
+    printPrincipalName.textContent =
+       settings.principalName || "";
+
+    printPrincipalPosition.textContent =
+       settings.principalPosition || "";
+
+    printAsOfDate.textContent =
+       settings.asOfDate || "";
+
+    printAccountabilityDate.textContent =
+       settings.accountabilityDate || "";
+}
+
+applySettings();
+
+excelFile.addEventListener(
+"change",
+
+function(evt){
+
+const file =
+evt.target.files[0];
+
+if(!file) return;
+
+const reader =
+new FileReader();
+
+reader.onload =
+function(e){
+
+const data =
+new Uint8Array(
+e.target.result
+);
+
+const workbook =
+XLSX.read(
+data,
+{
+type:"array"
+});
+
+const sheet =
+workbook.Sheets[
+workbook.SheetNames[0]
+];
+
+const rows =
+XLSX.utils.sheet_to_json(
+sheet,
+{
+header:1,
+defval:""
+});
+
+console.log(rows);
+
+alert(
+"Workbook loaded successfully."
+);
+
+};
+
+reader.readAsArrayBuffer(
+file
+);
+
+});
 </script>
+<div
+ class="modal"
+ id="settingsModal">
+
+<div class="modal-content">
+
+<h2>
+RPCP Report Settings
+</h2>
+
+<label>School Name</label>
+<input id="setSchoolName">
+
+<label>Principal Name</label>
+<input id="setPrincipalName">
+
+<label>Position</label>
+<input id="setPrincipalPosition">
+
+<label>As Of Date</label>
+<input id="setAsOfDate">
+
+<label>Accountability Date</label>
+<input id="setAccountabilityDate">
+
+<br><br>
+
+<button
+ class="btn btn-primary"
+ onclick="saveSettings()">
+
+Save
+
+</button>
+
+</div>
+
+</div>
 
 </body>
 </html>
