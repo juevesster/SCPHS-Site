@@ -9,9 +9,6 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 <script src="https://cdn.sheetjs.com/xlsx-0.20.2/package/dist/xlsx.full.min.js"></script>
 
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
-
 <style>
 :root {
     --sidebar-bg: #0f172a;
@@ -141,8 +138,8 @@ body {
     font-size: 0.74rem;
     padding: 4px 10px;
     border-radius: 999px;
-    background: #e2e8f0;
-    color: #334155;
+    background: #fee2e2;
+    color: #991b1b;
     font-weight: 600;
 }
 
@@ -294,13 +291,6 @@ body {
 
 @media (max-width: 1024px) {
     .form-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-}
-
-@media (max-width: 640px) {
-    .form-grid { grid-template-columns: minmax(0, 1fr); }
-    .sidebar { position: static; width: 100%; height: auto; }
-    body { flex-direction: column; }
-    .main-content { margin-left: 0; padding: 16px; }
 }
 
 .form-group {
@@ -502,6 +492,25 @@ th {
     color: var(--text);
 }
 
+/* MOBILE */
+@media (max-width: 640px) {
+    .form-grid { grid-template-columns: minmax(0, 1fr); }
+    .sidebar { position: static; width: 100%; height: auto; }
+    body { flex-direction: column; }
+    .main-content { margin-left: 0; padding: 16px; }
+
+    .switch-tabs {
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        padding-bottom: 10px;
+    }
+    .switch-tab { flex-shrink: 0; }
+    .switch-tab.active::after { bottom: -11px; }
+
+    #searchBox { width: 100% !important; }
+}
+
 /* PRINT */
 #print-area {
     display: none;
@@ -590,7 +599,7 @@ th {
         <div>
             <h1>📦 RPCSP — High Value Items (Annex A.8)</h1>
             <div class="sync-row">
-                <span class="sync-badge" id="syncBadge">Local Storage Mode (Paste Firebase Config to Sync)</span>
+                <span class="sync-badge" id="syncBadge">Connecting to Firestore...</span>
             </div>
         </div>
         <div class="topbar-actions">
@@ -905,33 +914,21 @@ th {
     </div>
 </div>
 
-<script>
-const firebaseConfig = {
-    apiKey: "YOUR_API_KEY",
-    authDomain: "YOUR_PROJECT.firebaseapp.com",
-    projectId: "YOUR_PROJECT_ID",
-    storageBucket: "YOUR_PROJECT.appspot.com",
-    messagingSenderId: "YOUR_SENDER_ID",
-    appId: "YOUR_APP_ID"
-};
+<script type="module">
+import { db } from "../../assets/js/firebase-config.js";
+import {
+    collection,
+    getDocs,
+    doc,
+    setDoc,
+    addDoc,
+    deleteDoc,
+    writeBatch,
+    getDoc
+} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
-let db = null;
-let useFirestore = false;
-
-try {
-    if (firebaseConfig.apiKey && !firebaseConfig.apiKey.startsWith("YOUR_")) {
-        firebase.initializeApp(firebaseConfig);
-        db = firebase.firestore();
-        useFirestore = true;
-    }
-} catch (e) {
-    console.warn("Firebase init fallback to localStorage:", e);
-}
-
-const LOCAL_RECORDS_KEY = "rpcsp_high_value_records_v1";
-const LOCAL_SETTINGS_KEY = "rpcsp_high_value_settings_v1";
 const FS_COLLECTION = "rpcp_high_value_records";
-const FS_SETTINGS_DOC = "rpcp_high_value_settings/default";
+const FS_SETTINGS_DOC = doc(db, "rpcp_high_value_settings", "default");
 
 let records = [];
 let activeCategory = "__ALL__";
@@ -990,7 +987,7 @@ function getDisplayGroup(rawGroup) {
     return clean;
 }
 
-function toggleNormalizeGroups() {
+window.toggleNormalizeGroups = function() {
     normalizeGroups = !normalizeGroups;
     activeCategory = "__ALL__";
     document.getElementById("activeFilterLabel").textContent = "All Sheets";
@@ -999,17 +996,12 @@ function toggleNormalizeGroups() {
         : "Group Similar Sheets: Off";
     rebuildCategoryUI();
     renderTable();
-}
+};
 
-function updateSyncBadge() {
+function updateSyncBadge(connected = true, msg = "Connected to Firestore") {
     const badge = document.getElementById("syncBadge");
-    if (useFirestore) {
-        badge.textContent = "Connected to Firestore";
-        badge.classList.add("firestore");
-    } else {
-        badge.textContent = "Local Storage Mode (Paste Firebase Config to Sync)";
-        badge.classList.remove("firestore");
-    }
+    badge.textContent = msg;
+    badge.classList.toggle("firestore", connected);
 }
 
 function formatMoney(val) {
@@ -1025,43 +1017,36 @@ function escapeHTML(str) {
     }[m]));
 }
 
-function autoCalcTotal() {
+window.autoCalcTotal = function() {
     const uVal = parseFloat(document.getElementById("unitValue").value) || 0;
     const qCnt = parseFloat(document.getElementById("qtyCount").value) || 0;
     if (uVal > 0 && qCnt > 0) {
         document.getElementById("totalCostInput").value = (uVal * qCnt).toFixed(2);
     }
-}
+};
 
-/* DATA PERSISTENCE */
+/* FIRESTORE DATA PERSISTENCE */
 async function loadRecords() {
-    if (useFirestore) {
-        const snap = await db.collection(FS_COLLECTION).get();
-        records = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-    } else {
-        records = JSON.parse(localStorage.getItem(LOCAL_RECORDS_KEY)) || [];
+    try {
+        const snap = await getDocs(collection(db, FS_COLLECTION));
+        records = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+        updateSyncBadge(true, "Connected to Firestore");
+        rebuildCategoryUI();
+        renderTable();
+    } catch (err) {
+        console.error("Firestore load error:", err);
+        updateSyncBadge(false, "Firestore Error: " + err.message);
     }
-    rebuildCategoryUI();
-    renderTable();
 }
 
 async function persistRecord(item) {
-    if (useFirestore) {
-        if (item.id) {
-            const { id, ...payload } = item;
-            await db.collection(FS_COLLECTION).doc(id).set(payload, { merge: true });
-            return item.id;
-        } else {
-            const ref = await db.collection(FS_COLLECTION).add(item);
-            return ref.id;
-        }
-    } else {
-        if (!item.id) item.id = "hv_" + Date.now() + "_" + Math.random().toString(36).slice(2, 7);
-        const idx = records.findIndex(r => r.id === item.id);
-        if (idx >= 0) records[idx] = item;
-        else records.push(item);
-        localStorage.setItem(LOCAL_RECORDS_KEY, JSON.stringify(records));
+    if (item.id) {
+        const { id, ...payload } = item;
+        await setDoc(doc(db, FS_COLLECTION, id), payload, { merge: true });
         return item.id;
+    } else {
+        const ref = await addDoc(collection(db, FS_COLLECTION), item);
+        return ref.id;
     }
 }
 
@@ -1110,26 +1095,28 @@ async function applyImportBatch(candidateItems, mode) {
         }
     }
 
-    if (useFirestore) {
-        const batch = db.batch();
-        itemsToAdd.forEach(item => {
-            const docRef = db.collection(FS_COLLECTION).doc();
-            item.id = docRef.id;
-            batch.set(docRef, item);
-        });
-        itemsToOverwrite.forEach(item => {
-            const { id, ...payload } = item;
-            batch.set(db.collection(FS_COLLECTION).doc(id), payload, { merge: true });
+    const ops = [
+        ...itemsToAdd.map(item => ({ type: "add", item })),
+        ...itemsToOverwrite.map(item => ({ type: "set", item }))
+    ];
+
+    for (let i = 0; i < ops.length; i += 450) {
+        const chunk = ops.slice(i, i + 450);
+        const batch = writeBatch(db);
+        chunk.forEach(op => {
+            if (op.type === "add") {
+                const docRef = doc(collection(db, FS_COLLECTION));
+                op.item.id = docRef.id;
+                batch.set(docRef, op.item);
+            } else {
+                const { id, ...payload } = op.item;
+                batch.set(doc(db, FS_COLLECTION, id), payload, { merge: true });
+            }
         });
         await batch.commit();
-        records.push(...itemsToAdd);
-    } else {
-        itemsToAdd.forEach((item, i) => {
-            item.id = "hv_" + Date.now() + "_" + i + "_" + Math.random().toString(36).slice(2, 6);
-        });
-        records.push(...itemsToAdd);
-        localStorage.setItem(LOCAL_RECORDS_KEY, JSON.stringify(records));
     }
+
+    records.push(...itemsToAdd);
 
     return {
         added: itemsToAdd.length,
@@ -1138,52 +1125,41 @@ async function applyImportBatch(candidateItems, mode) {
     };
 }
 
-async function removeRecordById(id) {
-    if (useFirestore) {
-        await db.collection(FS_COLLECTION).doc(id).delete();
-    }
-    records = records.filter(r => r.id !== id);
-    if (!useFirestore) {
-        localStorage.setItem(LOCAL_RECORDS_KEY, JSON.stringify(records));
-    }
-}
-
 async function removeManyByIds(ids) {
     if (!ids.length) return;
-    if (useFirestore) {
-        const batch = db.batch();
-        ids.forEach(id => batch.delete(db.collection(FS_COLLECTION).doc(id)));
+    for (let i = 0; i < ids.length; i += 450) {
+        const chunk = ids.slice(i, i + 450);
+        const batch = writeBatch(db);
+        chunk.forEach(id => batch.delete(doc(db, FS_COLLECTION, id)));
         await batch.commit();
     }
     const idSet = new Set(ids);
     records = records.filter(r => !idSet.has(r.id));
-    if (!useFirestore) {
-        localStorage.setItem(LOCAL_RECORDS_KEY, JSON.stringify(records));
-    }
 }
 
-async function deleteAllRecords() {
+window.deleteAllRecords = async function() {
     if (!records.length) {
         alert("There are no records in the database to delete.");
         return;
     }
-    const ok = confirm(`Delete ALL ${records.length} records in the database? This cannot be undone.`);
+    const ok = confirm(`Delete ALL ${records.length} records in Firestore? This cannot be undone.`);
     if (!ok) return;
 
-    const allIds = records.map(r => r.id);
-    await removeManyByIds(allIds);
-    records = [];
-    if (!useFirestore) {
-        localStorage.setItem(LOCAL_RECORDS_KEY, JSON.stringify([]));
+    try {
+        await removeManyByIds(records.map(r => r.id));
+        records = [];
+        activeCategory = "__ALL__";
+        document.getElementById("activeFilterLabel").textContent = "All Sheets";
+        rebuildCategoryUI();
+        renderTable();
+    } catch (err) {
+        console.error("Delete all error:", err);
+        alert("Firestore delete error: " + err.message);
     }
-    activeCategory = "__ALL__";
-    document.getElementById("activeFilterLabel").textContent = "All Sheets";
-    rebuildCategoryUI();
-    renderTable();
-}
+};
 
 /* CRUD & FORM (SILENT SAVE) */
-async function saveRecord() {
+window.saveRecord = async function() {
     const desc = document.getElementById("description").value.trim();
     const propNo = document.getElementById("propertyNo").value.trim();
 
@@ -1211,22 +1187,27 @@ async function saveRecord() {
         updatedAt: new Date().toISOString()
     };
 
-    const savedId = await persistRecord(item);
-    item.id = savedId;
+    try {
+        const savedId = await persistRecord(item);
+        item.id = savedId;
 
-    if (existingId) {
-        const idx = records.findIndex(r => r.id === existingId);
-        if (idx >= 0) records[idx] = item;
-    } else if (useFirestore) {
-        records.push(item);
+        if (existingId) {
+            const idx = records.findIndex(r => r.id === existingId);
+            if (idx >= 0) records[idx] = item;
+        } else {
+            records.push(item);
+        }
+
+        window.resetForm();
+        rebuildCategoryUI();
+        renderTable();
+    } catch (err) {
+        console.error("Save error:", err);
+        alert("Firestore save error: " + err.message);
     }
+};
 
-    resetForm();
-    rebuildCategoryUI();
-    renderTable();
-}
-
-function editRecord(id) {
+window.editRecord = function(id) {
     const r = records.find(x => x.id === id);
     if (!r) return;
 
@@ -1248,9 +1229,9 @@ function editRecord(id) {
     document.getElementById("saveBtn").innerHTML = '<i class="fas fa-check"></i> Update Record';
     document.getElementById("cancelEditBtn").style.display = "inline-flex";
     window.scrollTo({ top: 0, behavior: "smooth" });
-}
+};
 
-function resetForm() {
+window.resetForm = function() {
     document.getElementById("editId").value = "";
     ["sheetGroup", "article", "description", "dateAcquired", "propertyNo", "unitMeasure",
      "unitValue", "qtyCard", "qtyCount", "totalCostInput", "fundSource", "accountableOfficer"]
@@ -1259,24 +1240,35 @@ function resetForm() {
     document.getElementById("formTitle").textContent = "High Value Item Entry";
     document.getElementById("saveBtn").innerHTML = '<i class="fas fa-save"></i> Save Record';
     document.getElementById("cancelEditBtn").style.display = "none";
-}
+};
 
-async function deleteRecord(id) {
-    await removeRecordById(id);
-    rebuildCategoryUI();
-    renderTable();
-}
+window.deleteRecord = async function(id) {
+    try {
+        await deleteDoc(doc(db, FS_COLLECTION, id));
+        records = records.filter(r => r.id !== id);
+        rebuildCategoryUI();
+        renderTable();
+    } catch (err) {
+        console.error("Delete error:", err);
+        alert("Firestore delete error: " + err.message);
+    }
+};
 
-async function clearFilteredOrAll() {
+window.clearFilteredOrAll = async function() {
     const shown = getFilteredRecords();
     if (!shown.length) return;
-    await removeManyByIds(shown.map(r => r.id));
-    if (activeCategory !== "__ALL__" && !records.some(r => getDisplayGroup(r.sheetGroup) === activeCategory)) {
-        activeCategory = "__ALL__";
+    try {
+        await removeManyByIds(shown.map(r => r.id));
+        if (activeCategory !== "__ALL__" && !records.some(r => getDisplayGroup(r.sheetGroup) === activeCategory)) {
+            activeCategory = "__ALL__";
+        }
+        rebuildCategoryUI();
+        renderTable();
+    } catch (err) {
+        console.error("Clear shown error:", err);
+        alert("Firestore delete error: " + err.message);
     }
-    rebuildCategoryUI();
-    renderTable();
-}
+};
 
 /* SIDEBAR + SWITCH TABS + TABLE RENDERING */
 function rebuildCategoryUI() {
@@ -1321,14 +1313,14 @@ function rebuildCategoryUI() {
     tabsEl.innerHTML = tabsHtml;
 }
 
-function selectCategory(cat) {
+window.selectCategory = function(cat) {
     activeCategory = cat;
     document.getElementById("activeFilterLabel").textContent = cat === "__ALL__" ? "All Sheets" : cat;
     document.getElementById("printCategoryTitle").textContent =
         cat === "__ALL__" ? "SEMI-EXPENDABLE PROPERTY — HIGH VALUED ITEMS" : cat.toUpperCase();
     rebuildCategoryUI();
     renderTable();
-}
+};
 
 function getFilteredRecords() {
     const q = (document.getElementById("searchBox").value || "").toLowerCase().trim();
@@ -1341,7 +1333,7 @@ function getFilteredRecords() {
     });
 }
 
-function renderTable() {
+window.renderTable = function() {
     const shown = getFilteredRecords();
     const body = document.getElementById("items-body");
     document.getElementById("recordCount").textContent = shown.length;
@@ -1388,7 +1380,7 @@ function renderTable() {
     `).join("");
 
     renderPrint(shown, sumQty, sumCost);
-}
+};
 
 function renderPrint(shown, sumQty, sumCost) {
     const p = document.getElementById("print-body");
@@ -1569,20 +1561,20 @@ document.getElementById("excelFile").addEventListener("change", function(evt) {
     reader.readAsArrayBuffer(file);
 });
 
-function closeSheetModal() {
+window.closeSheetModal = function() {
     document.getElementById("sheetModal").classList.remove("open");
     pendingWorkbook = null;
-}
+};
 
-function toggleAllSheets(checked) {
+window.toggleAllSheets = function(checked) {
     document.querySelectorAll(".sheet-checkbox").forEach(cb => {
         if (!checked || cb.parentElement.style.opacity !== "0.55") {
             cb.checked = checked;
         }
     });
-}
+};
 
-async function confirmSheetImport() {
+window.confirmSheetImport = async function() {
     if (!pendingWorkbook) return;
     const selectedBoxes = [...document.querySelectorAll(".sheet-checkbox:checked")];
     if (!selectedBoxes.length) return;
@@ -1596,13 +1588,18 @@ async function confirmSheetImport() {
         toAdd.push(...rows);
     });
 
-    await applyImportBatch(toAdd, mode);
-    closeSheetModal();
-    rebuildCategoryUI();
-    renderTable();
-}
+    try {
+        await applyImportBatch(toAdd, mode);
+        window.closeSheetModal();
+        rebuildCategoryUI();
+        renderTable();
+    } catch (err) {
+        console.error("Import error:", err);
+        alert("Firestore import error: " + err.message);
+    }
+};
 
-function downloadTemplate() {
+window.downloadTemplate = function() {
     const sample = [{
         "Article": "IT Equipment",
         "Description": "Laptop-Lenovo Thinkpad E14 Gen 5",
@@ -1620,7 +1617,7 @@ function downloadTemplate() {
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, "IT-Equipment-DCP 2025");
     XLSX.writeFile(wb, "RPCSP_High_Value_Template.xlsx");
-}
+};
 
 /* SETTINGS */
 const DEFAULT_SETTINGS = {
@@ -1634,31 +1631,31 @@ const DEFAULT_SETTINGS = {
 };
 
 async function loadSettings() {
-    if (useFirestore) {
-        const doc = await db.doc(FS_SETTINGS_DOC).get();
-        return { ...DEFAULT_SETTINGS, ...(doc.exists ? doc.data() : {}) };
+    try {
+        const snap = await getDoc(FS_SETTINGS_DOC);
+        return { ...DEFAULT_SETTINGS, ...(snap.exists() ? snap.data() : {}) };
+    } catch {
+        return DEFAULT_SETTINGS;
     }
-    return { ...DEFAULT_SETTINGS, ...(JSON.parse(localStorage.getItem(LOCAL_SETTINGS_KEY)) || {}) };
 }
 
-function openSettings() {
-    loadSettings().then(s => {
-        document.getElementById("setSchoolName").value = s.schoolName;
-        document.getElementById("setPrincipalName").value = s.principalName;
-        document.getElementById("setPrincipalPosition").value = s.principalPosition;
-        document.getElementById("setAsOfDate").value = s.asOfDate;
-        document.getElementById("setAccountabilityDate").value = s.accountabilityDate;
-        document.getElementById("setCertifiedBy").value = s.certifiedBy;
-        document.getElementById("setVerifiedBy").value = s.verifiedBy;
-        document.getElementById("settingsModal").classList.add("open");
-    });
-}
+window.openSettings = async function() {
+    const s = await loadSettings();
+    document.getElementById("setSchoolName").value = s.schoolName;
+    document.getElementById("setPrincipalName").value = s.principalName;
+    document.getElementById("setPrincipalPosition").value = s.principalPosition;
+    document.getElementById("setAsOfDate").value = s.asOfDate;
+    document.getElementById("setAccountabilityDate").value = s.accountabilityDate;
+    document.getElementById("setCertifiedBy").value = s.certifiedBy;
+    document.getElementById("setVerifiedBy").value = s.verifiedBy;
+    document.getElementById("settingsModal").classList.add("open");
+};
 
-function closeSettings() {
+window.closeSettings = function() {
     document.getElementById("settingsModal").classList.remove("open");
-}
+};
 
-async function saveSettings() {
+window.saveSettings = async function() {
     const data = {
         schoolName: document.getElementById("setSchoolName").value.trim(),
         principalName: document.getElementById("setPrincipalName").value.trim(),
@@ -1669,15 +1666,15 @@ async function saveSettings() {
         verifiedBy: document.getElementById("setVerifiedBy").value.trim()
     };
 
-    if (useFirestore) {
-        await db.doc(FS_SETTINGS_DOC).set(data, { merge: true });
-    } else {
-        localStorage.setItem(LOCAL_SETTINGS_KEY, JSON.stringify(data));
+    try {
+        await setDoc(FS_SETTINGS_DOC, data, { merge: true });
+        await applySettings();
+        window.closeSettings();
+    } catch (err) {
+        console.error("Save settings error:", err);
+        alert("Firestore settings error: " + err.message);
     }
-
-    await applySettings();
-    closeSettings();
-}
+};
 
 async function applySettings() {
     const s = await loadSettings();
@@ -1693,7 +1690,6 @@ async function applySettings() {
 
 /* INIT */
 (async function init() {
-    updateSyncBadge();
     await applySettings();
     await loadRecords();
 })();

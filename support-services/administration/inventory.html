@@ -20,39 +20,40 @@
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Outfit', sans-serif; }
-    body { background: var(--bg-color); color: var(--text-main); display: flex; min-height: 100vh; }
+    body { background: var(--bg-color); color: var(--text-main); display: flex; min-height: 100vh; overflow-x: hidden; }
 
     /* Sidebar */
-    .sidebar { width: 260px; background: var(--sidebar-bg); color: #fff; display: flex; flex-direction: column; position: fixed; height: 100vh; z-index: 100; }
-    .sidebar-brand { padding: 30px 24px; font-size: 1.4rem; font-weight: 800; display: flex; align-items: center; gap: 12px; border-bottom: 1px solid rgba(255,255,255,0.05); }
+    .sidebar { width: 260px; flex-shrink: 0; background: var(--sidebar-bg); color: #fff; display: flex; flex-direction: column; position: fixed; top: 0; left: 0; height: 100vh; z-index: 100; overflow-y: auto; }
+    .sidebar-brand { padding: 26px 24px; font-size: 1.35rem; font-weight: 800; display: flex; align-items: center; gap: 12px; border-bottom: 1px solid rgba(255,255,255,0.05); }
     .sidebar-brand i { color: var(--primary-light); }
-    .sidebar-menu { flex: 1; padding: 24px 16px; display: flex; flex-direction: column; gap: 8px; }
-    .menu-item { display: flex; align-items: center; gap: 14px; padding: 14px 18px; border-radius: 12px; color: #94a3b8; text-decoration: none; font-weight: 500; font-size: 0.95rem; transition: all 0.2s; }
+    .sidebar-menu { flex: 1; padding: 20px 16px; display: flex; flex-direction: column; gap: 8px; }
+    .menu-item { display: flex; align-items: center; gap: 14px; padding: 13px 16px; border-radius: 12px; color: #94a3b8; text-decoration: none; font-weight: 500; font-size: 0.92rem; transition: all 0.2s; }
     .menu-item:hover { background: #1e293b; color: #fff; }
-    .menu-item.active { background: linear-gradient(90deg, var(--primary), var(--primary-light)); color: #fff; }
+    .menu-item.active { background: linear-gradient(90deg, var(--primary), var(--primary-light)); color: #fff; font-weight: 600; }
 
     /* Main Content */
-    .main-content { margin-left: 260px; flex: 1; padding: 32px; display: flex; flex-direction: column; }
-    .topbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
-    .topbar h1 { font-size: 1.8rem; font-weight: 800; }
+    .main-content { margin-left: 260px; flex: 1; min-width: 0; padding: 32px; display: flex; flex-direction: column; }
+    .topbar { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; margin-bottom: 24px; }
+    .topbar h1 { font-size: 1.75rem; font-weight: 800; }
+    .topbar-actions { display: flex; gap: 10px; flex-wrap: wrap; }
 
     /* Buttons */
-    .btn { padding: 10px 18px; border-radius: 8px; border: none; cursor: pointer; font-weight: 700; font-size: 0.85rem; display: inline-flex; align-items: center; gap: 8px; transition: 0.2s; }
+    .btn { padding: 10px 16px; border-radius: 8px; border: none; cursor: pointer; font-weight: 700; font-size: 0.85rem; display: inline-flex; align-items: center; gap: 8px; transition: 0.2s; white-space: nowrap; }
     .btn-primary { background: var(--primary); color: #fff; }
     .btn-primary:hover { background: #0d5e56; }
     .btn-success { background: #10b981; color: #fff; }
     .btn-danger { background: var(--danger); color: #fff; }
     .btn-danger:hover { background: #b91c1c; }
     .btn-sm { padding: 6px 12px; font-size: 0.75rem; }
-    .btn-outline { background: transparent; border: 2px solid var(--border); color: var(--text-muted); }
+    .btn-outline { background: #fff; border: 2px solid var(--border); color: var(--text-muted); }
     .btn-outline:hover { border-color: var(--primary); color: var(--primary); }
 
     /* ================= BOOK TABS ================= */
-    .book-tabs { display: flex; align-items: flex-end; gap: 6px; margin-bottom: -1px; padding-left: 20px; z-index: 10; position: relative; flex-wrap: wrap; }
-    .tab-btn { padding: 12px 24px; border: 1px solid var(--border); border-bottom: none; background: #e2e8f0; color: var(--text-muted); font-weight: 700; font-size: 0.9rem; cursor: pointer; border-radius: 12px 12px 0 0; transition: all 0.2s ease; position: relative; top: 4px; box-shadow: inset 0 -3px 5px rgba(0,0,0,0.02); }
+    .book-tabs { display: flex; align-items: flex-end; gap: 6px; margin-bottom: -1px; padding-left: 16px; z-index: 10; position: relative; flex-wrap: wrap; }
+    .tab-btn { padding: 11px 18px; border: 1px solid var(--border); border-bottom: none; background: #e2e8f0; color: var(--text-muted); font-weight: 700; font-size: 0.86rem; cursor: pointer; border-radius: 12px 12px 0 0; transition: all 0.2s ease; position: relative; top: 4px; box-shadow: inset 0 -3px 5px rgba(0,0,0,0.02); }
     .tab-btn:hover { background: #cbd5e1; top: 2px; }
     .tab-btn:focus { outline: none; }
-    .tab-btn.active { background: #fff; top: 0; padding-top: 14px; box-shadow: 0 -4px 10px rgba(0,0,0,0.03); z-index: 2; }
+    .tab-btn.active { background: #fff; top: 0; padding-top: 13px; box-shadow: 0 -4px 10px rgba(0,0,0,0.03); z-index: 2; }
     
     /* Dynamic Colors */
     .tab-btn[data-category="Furniture and Fixtures"].active { border-top: 4px solid #3b82f6; color: #3b82f6; }
@@ -67,9 +68,9 @@
     .tab-content-container { background: #fff; border-radius: 0 16px 16px 16px; border: 1px solid var(--border); box-shadow: 0 10px 25px -5px rgba(0,0,0,0.05); position: relative; z-index: 1; overflow: hidden; }
 
     /* Table */
-    .table-responsive { overflow-x: auto; }
+    .table-responsive { overflow-x: auto; -webkit-overflow-scrolling: touch; }
     table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
-    th, td { padding: 14px 16px; text-align: left; border-bottom: 1px solid var(--border); }
+    th, td { padding: 13px 14px; text-align: left; border-bottom: 1px solid var(--border); white-space: nowrap; }
     th { background: #f8fafc; font-weight: 700; color: var(--text-muted); text-transform: uppercase; font-size: 0.75rem; letter-spacing: 0.5px; border-top: 1px solid var(--border); }
     td { color: var(--text-main); vertical-align: middle; }
     tr:hover td { background: #f8fafc; }
@@ -86,150 +87,167 @@
     .modal-header { padding: 20px 24px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
     .modal-header h3 { font-size: 1.2rem; font-weight: 800; color: var(--primary); }
     .modal-body { padding: 24px; max-height: 70vh; overflow-y: auto; display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-    .form-group { display: flex; flex-direction: column; }
+    .form-group { display: flex; flex-direction: column; min-width: 0; }
     .form-group.full { grid-column: span 2; }
     .form-group label { font-size: 0.75rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; margin-bottom: 6px; }
-    .form-group input, .form-group select { padding: 10px; border: 1px solid var(--border); border-radius: 8px; font-size: 0.9rem; font-family: inherit; outline: none; }
+    .form-group input, .form-group select { padding: 10px; border: 1px solid var(--border); border-radius: 8px; font-size: 0.9rem; font-family: inherit; outline: none; width: 100%; }
     .form-group input:focus { border-color: var(--primary); }
     .modal-footer { padding: 16px 24px; border-top: 1px solid var(--border); display: flex; justify-content: flex-end; gap: 10px; background: #f8fafc; }
 
+    /* Mobile Responsiveness */
+    @media (max-width: 820px) {
+      body { flex-direction: column; }
+      .sidebar { position: static; width: 100%; height: auto; }
+      .sidebar-brand { padding: 18px 20px; }
+      .sidebar-menu { padding: 12px; gap: 6px; }
+      .menu-item { padding: 10px 14px; font-size: 0.88rem; }
+      .main-content { margin-left: 0; padding: 18px; }
+      .topbar h1 { font-size: 1.45rem; }
+      .book-tabs { padding-left: 0; flex-wrap: nowrap; overflow-x: auto; -webkit-overflow-scrolling: touch; gap: 6px; margin-bottom: 10px; }
+      .tab-btn { top: 0; flex-shrink: 0; border-radius: 10px; border-bottom: 1px solid var(--border); padding: 9px 14px; font-size: 0.82rem; }
+      .tab-btn.active { padding-top: 9px; border-top: 1px solid var(--border); border-color: var(--primary); background: #f0fdfa; color: var(--primary); }
+      .tab-content-container { border-radius: 14px; }
+      .modal-body { grid-template-columns: 1fr; }
+      .form-group.full { grid-column: span 1; }
+    }
+
     /* ================= PRINT LAYOUT ================= */
-#print-area { display: none; }
+    #print-area { display: none; }
 
-@media print {
-  @page {
-    size: landscape;
-    margin: 0.3in;
-  }
+    @media print {
+      @page {
+        size: landscape;
+        margin: 0.3in;
+      }
 
-  body {
-    background: white;
-    display: block;
-  }
+      body {
+        background: white;
+        display: block;
+      }
 
-  .sidebar,
-  .main-content,
-  .modal {
-    display: none !important;
-  }
+      .sidebar,
+      .main-content,
+      .modal {
+        display: none !important;
+      }
 
-  #print-area {
-    display: block !important;
-    width: 100%;
-    font-family: "Times New Roman", serif;
-  }
+      #print-area {
+        display: block !important;
+        width: 100%;
+        font-family: "Times New Roman", serif;
+      }
 
-  .print-header {
-    text-align: center;
-    margin-bottom: 12px;
-  }
+      .print-header {
+        text-align: center;
+        margin-bottom: 12px;
+      }
 
-  .print-header img {
-    height: 45px;
-    margin-bottom: 5px;
-  }
+      .print-header img {
+        height: 45px;
+        margin-bottom: 5px;
+      }
 
-  .print-header h1 {
-    font-size: 11pt;
-    font-weight: bold;
-    margin: 0;
-    text-transform: uppercase;
-  }
+      .print-header h1 {
+        font-size: 11pt;
+        font-weight: bold;
+        margin: 0;
+        text-transform: uppercase;
+      }
 
-  .print-table {
-  width: 100%;
-  border-collapse: collapse;
-  table-layout: fixed;
-  font-size: 7pt;
-  margin-bottom: 15px;
-}
+      .print-table {
+        width: 100%;
+        border-collapse: collapse;
+        table-layout: fixed;
+        font-size: 7pt;
+        margin-bottom: 15px;
+      }
 
-.print-table thead {
-  display: table-header-group;
-}
+      .print-table thead {
+        display: table-header-group;
+      }
 
-.print-table tr {
-  break-inside: avoid;
-  page-break-inside: avoid;
-}
+      .print-table tr {
+        break-inside: avoid;
+        page-break-inside: avoid;
+      }
 
-.print-table th,
-.print-table td {
-  border: 1px solid #000;
-  padding: 3px;
-  text-align: center;
-  vertical-align: middle;
-  line-height: 1.15;
-  white-space: normal;
-  overflow-wrap: anywhere;
-}
+      .print-table th,
+      .print-table td {
+        border: 1px solid #000;
+        padding: 3px;
+        text-align: center;
+        vertical-align: middle;
+        line-height: 1.15;
+        white-space: normal;
+        overflow-wrap: anywhere;
+      }
 
-.print-table th {
-  background: #f0f0f0 !important;
-  font-size: 6.5pt;
-}
+      .print-table th {
+        background: #f0f0f0 !important;
+        font-size: 6.5pt;
+      }
 
-.print-table td.left {
-  text-align: left;
-}
+      .print-table td.left {
+        text-align: left;
+      }
 
-  .sig-table {
-    width: 100%;
-    border: none;
-    margin-top: 20px;
-    font-size: 9pt;
-  }
+      .sig-table {
+        width: 100%;
+        border: none;
+        margin-top: 20px;
+        font-size: 9pt;
+      }
 
-  .sig-table td {
-    border: none;
-    vertical-align: bottom;
-  }
+      .sig-table td {
+        border: none;
+        vertical-align: bottom;
+      }
 
-  .sig-name {
-    border-bottom: 1px solid #000;
-    text-align: center;
-    font-weight: bold;
-    padding-bottom: 2px;
-  }
+      .sig-name {
+        border-bottom: 1px solid #000;
+        text-align: center;
+        font-weight: bold;
+        padding-bottom: 2px;
+      }
 
-  .sig-title {
-    text-align: center;
-    font-size: 8pt;
-  }
-}
+      .sig-title {
+        text-align: center;
+        font-size: 8pt;
+      }
+    }
 
-.print-header{
-    text-align:center;
-    margin-bottom:20px;
-}
+    .print-header{
+        text-align:center;
+        margin-bottom:20px;
+    }
 
-.deped-logo{
-    width:90px;
-    display:block;
-    margin:auto;
-    margin-bottom:10px;
-}
+    .deped-logo{
+        width:90px;
+        display:block;
+        margin:auto;
+        margin-bottom:10px;
+    }
 
-.print-header h1{
-    font-size:18pt;
-    font-weight:800;
-    margin:0;
-}
+    .print-header h1{
+        font-size:18pt;
+        font-weight:800;
+        margin:0;
+    }
 
-.print-header h2{
-    font-size:16pt;
-    margin-top:8px;
-}
+    .print-header h2{
+        font-size:16pt;
+        margin-top:8px;
+    }
 
-.print-header h3{
-    font-size:12pt;
-    margin:4px 0;
-}
+    .print-header h3{
+        font-size:12pt;
+        margin:4px 0;
+    }
 
-.school-info{
-    font-size:11pt;
-    margin-bottom:20px;
-}
+    .school-info{
+        font-size:11pt;
+        margin-bottom:20px;
+    }
   </style>
 </head>
 <body>
@@ -240,9 +258,9 @@
     <div class="sidebar-menu">
       <a href="index.html" class="menu-item"><i class="fas fa-home"></i> <span>Overview</span></a>
       <a href="inventory.html" class="menu-item active"><i class="fas fa-boxes"></i> <span>Property Inventory - RPCSP-LOW VALUE SCPHS-DCP</span></a>
-       <a href="rpcp-importer.html" class="menu-item active"><i class="fas fa-boxes"></i> <span>Property Inventory - RPCP Sta. Cruz Pingkian HS</span></a>
-      <a href="rcps-highvalue-importer.html" class="menu-item active"><i class="fas fa-boxes"></i> <span>Property Inventory - RPCSP-HIGH VALUE SCPHS-DCP</span></a>
-       <a href="../registrar/index.html" class="menu-item"><i class="fas fa-file-signature"></i> <span>Registrar</span></a>
+      <a href="rpcp-importer.html" class="menu-item"><i class="fas fa-boxes"></i> <span>Property Inventory - RPCP Sta. Cruz Pingkian HS</span></a>
+      <a href="rcps-highvalue-importer.html" class="menu-item"><i class="fas fa-boxes"></i> <span>Property Inventory - RPCSP-HIGH VALUE SCPHS-DCP</span></a>
+      <a href="../registrar/index.html" class="menu-item"><i class="fas fa-file-signature"></i> <span>Registrar</span></a>
     </div>
   </aside>
 
@@ -250,7 +268,7 @@
   <main class="main-content">
     <div class="topbar">
       <h1>📦 Property Inventory</h1>
-      <div style="display: flex; gap: 10px;">
+      <div class="topbar-actions">
         <button class="btn btn-outline" onclick="openSignatoryModal()">
           <i class="fas fa-users-cog"></i> Settings & Signatories
         </button>
@@ -442,50 +460,50 @@
     </div>
 
     <table class="print-table">
-  <colgroup>
-    <col style="width: 9%">
-    <col style="width: 14%">
-    <col style="width: 8%">
-    <col style="width: 12%">
-    <col style="width: 6%">
-    <col style="width: 7%">
-    <col style="width: 6%">
-    <col style="width: 6%">
-    <col style="width: 8%">
-    <col style="width: 7%">
-    <col style="width: 5%">
-    <col style="width: 5%">
-    <col style="width: 7%">
-  </colgroup>
+      <colgroup>
+        <col style="width: 9%">
+        <col style="width: 14%">
+        <col style="width: 8%">
+        <col style="width: 12%">
+        <col style="width: 6%">
+        <col style="width: 7%">
+        <col style="width: 6%">
+        <col style="width: 6%">
+        <col style="width: 8%">
+        <col style="width: 7%">
+        <col style="width: 5%">
+        <col style="width: 5%">
+        <col style="width: 7%">
+      </colgroup>
 
-  <thead>
-    <tr>
-      <th>Article</th>
-      <th>Description</th>
-      <th>Date Acquired</th>
-      <th>Property Number</th>
-      <th>Unit</th>
-      <th>Unit Value</th>
-      <th>Qty per Card</th>
-      <th>Qty per Count</th>
-      <th>Total Cost</th>
-      <th>Source of Fund</th>
-      <th>Shortage / Overage Qty</th>
-      <th>Shortage / Overage Value</th>
-      <th>Accountable Officer</th>
-    </tr>
-  </thead>
+      <thead>
+        <tr>
+          <th>Article</th>
+          <th>Description</th>
+          <th>Date Acquired</th>
+          <th>Property Number</th>
+          <th>Unit</th>
+          <th>Unit Value</th>
+          <th>Qty per Card</th>
+          <th>Qty per Count</th>
+          <th>Total Cost</th>
+          <th>Source of Fund</th>
+          <th>Shortage / Overage Qty</th>
+          <th>Shortage / Overage Value</th>
+          <th>Accountable Officer</th>
+        </tr>
+      </thead>
 
-  <tbody id="print-tbody"></tbody>
+      <tbody id="print-tbody"></tbody>
 
-  <tfoot>
-    <tr>
-      <td colspan="8" style="text-align: right; font-weight: bold;">TOTAL</td>
-      <td id="print-total-cost" style="font-weight: bold;">₱0.00</td>
-      <td colspan="4"></td>
-    </tr>
-  </tfoot>
-</table>
+      <tfoot>
+        <tr>
+          <td colspan="8" style="text-align: right; font-weight: bold;">TOTAL</td>
+          <td id="print-total-cost" style="font-weight: bold;">₱0.00</td>
+          <td colspan="4"></td>
+        </tr>
+      </tfoot>
+    </table>
 
     <table class="sig-table">
       <tr>
@@ -528,7 +546,16 @@
       "Technical & Scientific Equipment"
     ];
 
-    // === FIX: Normalize categories so casing/whitespace/punctuation variants still match ===
+    function escapeHTML(str) {
+      return String(str ?? "").replace(/[&<>"']/g, m => ({
+        "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
+      }[m]));
+    }
+
+    function escapeJS(str) {
+      return String(str ?? "").replace(/\\/g, "\\\\").replace(/'/g, "\\'");
+    }
+
     function normalizeCategory(s) {
       if (s === null || s === undefined) return '';
       return String(s)
@@ -537,23 +564,18 @@
         .toLowerCase();
     }
 
-    // Forgiving lookup: try exact normalized match, then fuzzy (strip non-alphanumerics)
     function findCanonicalCategory(raw) {
       const norm = normalizeCategory(raw);
       if (!norm) return null;
-      // exact normalized
       const exact = CATEGORIES.find(c => normalizeCategory(c) === norm);
       if (exact) return exact;
-      // fuzzy: strip everything but a-z0-9
       const fuzzy = s => normalizeCategory(s).replace(/[^a-z0-9]/g, '');
       const byFuzzy = CATEGORIES.find(c => fuzzy(c) === fuzzy(raw));
       if (byFuzzy) return byFuzzy;
-      // fuzzy substring
       const sub = CATEGORIES.find(c => fuzzy(c).includes(fuzzy(raw)) || fuzzy(raw).includes(fuzzy(c)));
       return sub || null;
     }
 
-    // Defaults
     const DEFAULT_SETTINGS = {
       schoolName: "Sta Cruz Pingkian High School",
       principalName: "Dolores C. Dodon, PhD",
@@ -571,7 +593,7 @@
     function renderTabs() {
       const tabsContainer = document.getElementById('category-tabs');
       tabsContainer.innerHTML = CATEGORIES.map(cat => `
-        <button class="tab-btn ${cat === currentTab ? 'active' : ''}" data-category="${cat}" onclick="switchTab('${cat}', this)">${cat}</button>
+        <button type="button" class="tab-btn ${cat === currentTab ? 'active' : ''}" data-category="${escapeHTML(cat)}" onclick="switchTab('${escapeJS(cat)}', this)">${escapeHTML(cat)}</button>
       `).join('');
     }
 
@@ -580,13 +602,12 @@
         const snap = await getDocs(collection(db, "property_inventory"));
         allItems = snap.docs.map(d => ({ id: d.id, ...d.data() }));
 
-        // Warn if any rows have an article that doesn't map to a known category
         const orphans = allItems.filter(i => !findCanonicalCategory(i.article));
         const warn = document.getElementById('orphan-warning');
         if (orphans.length > 0) {
           const distinct = [...new Set(orphans.map(o => o.article || '(blank)'))];
           warn.innerHTML = `⚠️ <strong>${orphans.length}</strong> row(s) in the database have an unrecognized "article" value: ` +
-            distinct.map(v => `<code>${v}</code>`).join(', ') +
+            distinct.map(v => `<code>${escapeHTML(v)}</code>`).join(', ') +
             `. These won't appear in any tab. Re-import them or edit the article to match one of the 8 categories.`;
           warn.classList.add('show');
         } else {
@@ -603,13 +624,12 @@
     window.switchTab = function(tab, btnEl) {
       currentTab = tab;
       document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
-      btnEl.classList.add('active');
+      if (btnEl) btnEl.classList.add('active');
       renderTable();
     };
 
     function renderTable() {
       const tbody = document.getElementById('inventory-body');
-      // === FIX: use fuzzy/canonical comparison instead of strict === ===
       const filtered = allItems.filter(item => findCanonicalCategory(item.article) === currentTab);
 
       if (filtered.length === 0) {
@@ -621,21 +641,21 @@
       tbody.innerHTML = filtered.map(item => {
         return `
           <tr>
-            <td>${item.article}</td>
-            <td><strong>${item.description || '-'}</strong></td>
-            <td>${item.dateAcquired || '-'}</td>
-            <td style="font-family: monospace;">${item.propertyNumber || '-'}</td>
-            <td>${item.unitOfMeasure || '-'}</td>
-            <td>₱${Number(item.unitValue).toLocaleString()}</td>
-            <td style="text-align: center; font-weight: bold;">${item.qtyPerCard}</td>
-            <td style="text-align: center; font-weight: bold;">${item.qtyPerCount}</td>
-            <td>₱${Number(item.totalCost).toLocaleString()}</td>
-            <td>${item.sourceOfFund || '-'}</td>
-            <td>${item.accountableOfficer || '-'}</td>
+            <td>${escapeHTML(item.article)}</td>
+            <td><strong>${escapeHTML(item.description || '-')}</strong></td>
+            <td>${escapeHTML(item.dateAcquired || '-')}</td>
+            <td style="font-family: monospace;">${escapeHTML(item.propertyNumber || '-')}</td>
+            <td>${escapeHTML(item.unitOfMeasure || '-')}</td>
+            <td>₱${Number(item.unitValue || 0).toLocaleString()}</td>
+            <td style="text-align: center; font-weight: bold;">${escapeHTML(item.qtyPerCard ?? 0)}</td>
+            <td style="text-align: center; font-weight: bold;">${escapeHTML(item.qtyPerCount ?? 0)}</td>
+            <td>₱${Number(item.totalCost || 0).toLocaleString()}</td>
+            <td>${escapeHTML(item.sourceOfFund || '-')}</td>
+            <td>${escapeHTML(item.accountableOfficer || '-')}</td>
             <td>
               <div class="action-btns">
-                <button class="btn btn-sm" style="background: #e0f2fe; color: #0369a1;" onclick="editItem('${item.id}')"><i class="fas fa-edit"></i></button>
-                <button class="btn btn-sm btn-danger" onclick="deleteItem('${item.id}', '${(item.description || '').replace(/'/g, "\\'")}')"><i class="fas fa-trash"></i></button>
+                <button type="button" class="btn btn-sm" style="background: #e0f2fe; color: #0369a1;" onclick="editItem('${escapeJS(item.id)}')"><i class="fas fa-edit"></i></button>
+                <button type="button" class="btn btn-sm btn-danger" onclick="deleteItem('${escapeJS(item.id)}', '${escapeJS(item.description || '')}')"><i class="fas fa-trash"></i></button>
               </div>
             </td>
           </tr>
@@ -650,38 +670,37 @@
       let total = 0;
 
       if (items.length === 0) {
-        printTbody.innerHTML = `<tr><td colspan="11" style="text-align: center; padding: 20px;">No items in this folder.</td></tr>`;
+        printTbody.innerHTML = `<tr><td colspan="13" style="text-align: center; padding: 20px;">No items in this folder.</td></tr>`;
       } else {
         printTbody.innerHTML = items.map(item => {
-  const unitValue = Number(item.unitValue) || 0;
-  const qtyPerCard = Number(item.qtyPerCard) || 0;
-  const qtyPerCount = Number(item.qtyPerCount) || 0;
-  const totalCost = Number(item.totalCost) || unitValue * qtyPerCount;
+          const unitValue = Number(item.unitValue) || 0;
+          const qtyPerCard = Number(item.qtyPerCard) || 0;
+          const qtyPerCount = Number(item.qtyPerCount) || 0;
+          const totalCost = Number(item.totalCost) || unitValue * qtyPerCount;
 
-  // Positive means overage; negative means shortage.
-  const varianceQty = qtyPerCount - qtyPerCard;
-  const varianceValue = varianceQty * unitValue;
+          const varianceQty = qtyPerCount - qtyPerCard;
+          const varianceValue = varianceQty * unitValue;
 
-  total += totalCost;
+          total += totalCost;
 
-  return `
-    <tr>
-      <td class="left">${item.article || ''}</td>
-      <td class="left">${item.description || ''}</td>
-      <td>${item.dateAcquired || ''}</td>
-      <td>${item.propertyNumber || ''}</td>
-      <td>${item.unitOfMeasure || ''}</td>
-      <td>₱${unitValue.toLocaleString()}</td>
-      <td>${qtyPerCard}</td>
-      <td>${qtyPerCount}</td>
-      <td>₱${totalCost.toLocaleString()}</td>
-      <td>${item.sourceOfFund || ''}</td>
-      <td>${varianceQty > 0 ? '+' : ''}${varianceQty}</td>
-      <td>₱${Math.abs(varianceValue).toLocaleString()}</td>
-      <td class="left">${item.accountableOfficer || ''}</td>
-    </tr>
-  `;
-}).join('');
+          return `
+            <tr>
+              <td class="left">${escapeHTML(item.article || '')}</td>
+              <td class="left">${escapeHTML(item.description || '')}</td>
+              <td>${escapeHTML(item.dateAcquired || '')}</td>
+              <td>${escapeHTML(item.propertyNumber || '')}</td>
+              <td>${escapeHTML(item.unitOfMeasure || '')}</td>
+              <td>₱${unitValue.toLocaleString()}</td>
+              <td>${qtyPerCard}</td>
+              <td>${qtyPerCount}</td>
+              <td>₱${totalCost.toLocaleString()}</td>
+              <td>${escapeHTML(item.sourceOfFund || '')}</td>
+              <td>${varianceQty > 0 ? '+' : ''}${varianceQty}</td>
+              <td>₱${Math.abs(varianceValue).toLocaleString()}</td>
+              <td class="left">${escapeHTML(item.accountableOfficer || '')}</td>
+            </tr>
+          `;
+        }).join('');
       }
       
       document.getElementById('print-total-cost').textContent = `₱${total.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;

@@ -20,9 +20,9 @@
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Outfit', sans-serif; }
-    body { background: var(--bg-color); color: var(--text-main); display: flex; min-height: 100vh; }
+    body { background: var(--bg-color); color: var(--text-main); display: flex; min-height: 100vh; overflow-x: hidden; }
 
-    .sidebar { width: 260px; background: var(--sidebar-bg); color: #fff; display: flex; flex-direction: column; position: fixed; height: 100vh; z-index: 100; }
+    .sidebar { width: 260px; flex-shrink: 0; background: var(--sidebar-bg); color: #fff; display: flex; flex-direction: column; position: fixed; top: 0; left: 0; height: 100vh; z-index: 100; overflow-y: auto; }
     .sidebar-brand { padding: 30px 24px; font-size: 1.4rem; font-weight: 800; display: flex; align-items: center; gap: 12px; border-bottom: 1px solid rgba(255,255,255,0.05); }
     .sidebar-brand i { color: #14b8a6; }
     .sidebar-menu { flex: 1; padding: 24px 16px; display: flex; flex-direction: column; gap: 8px; }
@@ -30,9 +30,13 @@
     .menu-item:hover { background: #1e293b; color: #fff; }
     .menu-item.active { background: linear-gradient(90deg, #0f766e, #14b8a6); color: #fff; }
 
-    .main-content { margin-left: 260px; flex: 1; padding: 32px; }
-    .topbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
+    .main-content { margin-left: 260px; flex: 1; min-width: 0; padding: 32px; }
+    .topbar { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; margin-bottom: 24px; }
     .topbar h1 { font-size: 1.8rem; font-weight: 800; }
+
+    .sync-badge { display: inline-block; margin-top: 6px; font-size: 0.75rem; padding: 4px 10px; border-radius: 999px; background: #fef3c7; color: #92400e; font-weight: 700; }
+    .sync-badge.ok { background: #dcfce7; color: #166534; }
+    .sync-badge.err { background: #fee2e2; color: #991b1b; }
 
     .card { background: #fff; border-radius: 16px; padding: 30px; box-shadow: 0 4px 6px rgba(0,0,0,0.02); border: 1px solid var(--border); margin-bottom: 20px; }
 
@@ -49,7 +53,7 @@
 
     .table-wrap { overflow-x: auto; max-height: 360px; border: 1px solid var(--border); border-radius: 8px; margin-top: 16px; }
     table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
-    th, td { padding: 10px 12px; border-bottom: 1px solid var(--border); text-align: left; }
+    th, td { padding: 10px 12px; border-bottom: 1px solid var(--border); text-align: left; white-space: nowrap; }
     th { background: #f8fafc; position: sticky; top: 0; }
 
     .mapping-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 15px; margin-bottom: 20px; background: #f8fafc; padding: 20px; border-radius: 12px; }
@@ -58,7 +62,7 @@
 
     .sheet-selector { background: #e0f2fe; padding: 20px; border-radius: 12px; margin-bottom: 20px; display: flex; align-items: center; gap: 15px; border: 1px solid #bae6fd; flex-wrap: wrap; }
     .sheet-selector label { font-weight: 700; color: #0369a1; }
-    .sheet-selector select { padding: 10px; border: 1px solid #7dd3fc; border-radius: 8px; font-size: 1rem; font-weight: 700; color: #0369a1; outline: none; min-width: 260px; }
+    .sheet-selector select { padding: 10px; border: 1px solid #7dd3fc; border-radius: 8px; font-size: 1rem; font-weight: 700; color: #0369a1; outline: none; min-width: 240px; max-width: 100%; }
 
     .status-banner { display: none; margin-top: 12px; padding: 12px 16px; background: #d1fae5; border: 1px solid #6ee7b7; border-radius: 8px; color: #065f46; font-size: 0.85rem; }
     .status-banner.show { display: block; }
@@ -70,6 +74,17 @@
     .log-ok { color: #4ade80; }
     .log-skip { color: #fbbf24; }
     .log-info { color: #93c5fd; }
+    .log-err { color: #f87171; }
+
+    @media (max-width: 768px) {
+      body { flex-direction: column; }
+      .sidebar { position: static; width: 100%; height: auto; }
+      .sidebar-brand { padding: 18px 20px; }
+      .sidebar-menu { padding: 12px; gap: 6px; }
+      .menu-item { padding: 10px 14px; font-size: 0.88rem; }
+      .main-content { margin-left: 0; padding: 18px; }
+      .card { padding: 18px; }
+    }
   </style>
 </head>
 <body>
@@ -86,7 +101,10 @@
 
   <main class="main-content">
     <div class="topbar">
-      <h1>📥 Import RPCP Workbook</h1>
+      <div>
+        <h1>📥 Import RPCP Workbook</h1>
+        <span class="sync-badge" id="syncBadge">Checking Firestore connection...</span>
+      </div>
     </div>
 
     <div class="card">
@@ -102,7 +120,7 @@
       <div class="sheet-selector">
         <label><i class="fas fa-layer-group"></i> Select Sheet:</label>
         <select id="sheet-select" onchange="loadSelectedSheet()"></select>
-        <button class="btn btn-primary" onclick="importAllSheets()" style="margin-left: auto;">
+        <button class="btn btn-primary" id="importAllBtn" onclick="importAllSheets()" style="margin-left: auto;">
           <i class="fas fa-cloud-upload-alt"></i> Import ALL Valid Sheets
         </button>
       </div>
@@ -132,9 +150,22 @@
 
   <script type="module">
     import { db } from "../../assets/js/firebase-config.js";
-    import { collection, doc, setDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+    import { collection, doc, getDocs, limit, query, writeBatch } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
-    const STORAGE_FALLBACK_KEY = "rpcp_records_v1";
+    const FS_COLLECTION = "rpcp_inventory";
+
+    async function checkFirestoreConnection() {
+      const badge = document.getElementById("syncBadge");
+      try {
+        await getDocs(query(collection(db, FS_COLLECTION), limit(1)));
+        badge.textContent = "Connected to Firestore (rpcp_inventory)";
+        badge.className = "sync-badge ok";
+      } catch (err) {
+        console.error("Firestore connection check failed:", err);
+        badge.textContent = "Firestore Error: " + err.message;
+        badge.className = "sync-badge err";
+      }
+    }
 
     const SHEET_CATEGORY_MAP = [
       { match: s => s === "land", category: "Land", layout: "land" },
@@ -156,7 +187,6 @@
           return { category: rule.category, layout: rule.layout };
         }
       }
-      // Fallback: inspect Type row (typically row 4)
       const typeRowText = (rawRows[4] || []).join(" ").toLowerCase();
       if (typeRowText.includes("land") && !typeRowText.includes("improvement")) {
         return { category: "Land", layout: "land" };
@@ -179,7 +209,6 @@
     function parseDateValue(val) {
       if (val === null || val === undefined || val === "") return "";
       if (typeof val === "number") {
-        // 4-digit year vs Excel serial number
         if (val >= 1900 && val <= 2100 && Number.isInteger(val)) return String(val);
         const dt = new Date(Math.round((val - 25569) * 86400 * 1000));
         if (!isNaN(dt.getTime())) return dt.toISOString().split("T")[0];
@@ -205,7 +234,6 @@
       }
       if (headerIdx === -1) return { headerIdx: -1, headers: [], dataStartIdx: -1 };
 
-      // Combine up to 2 rows below headerIdx (e.g. Row 13 sub-headers like "Adjusted Market Value", "Assessed Value", "Property Card", "Physical Count")
       const maxCols = Math.max(
         (rawRows[headerIdx] || []).length,
         (rawRows[headerIdx + 1] || []).length,
@@ -226,9 +254,7 @@
       let dataStartIdx = headerIdx + 1;
       for (let r = headerIdx + 1; r < Math.min(rawRows.length, headerIdx + 5); r++) {
         const row = rawRows[r] || [];
-        const c1 = String(row[1] || "").trim();
         const c2 = String(row[2] || "").trim();
-        // First row with a non-empty Description (col 2) that is not a header label
         if (c2 && !c2.toLowerCase().includes("description")) {
           dataStartIdx = r;
           break;
@@ -310,7 +336,8 @@
           mode: mapping.mode !== "" ? String(row[mapping.mode] || "").trim() : "",
           cost: mapping.cost !== "" ? parseNumber(row[mapping.cost]) : 0,
           marketValue: mapping.marketValue !== "" ? parseNumber(row[mapping.marketValue]) : 0,
-          assessedValue: mapping.assessedValue !== "" ? parseNumber(row[mapping.assessedValue]) : 0
+          assessedValue: mapping.assessedValue !== "" ? parseNumber(row[mapping.assessedValue]) : 0,
+          updatedAt: new Date().toISOString()
         };
       }
 
@@ -332,7 +359,8 @@
         qtyPerCount: qtyCount,
         totalCost: totalCost,
         sourceOfFund: mapping.sourceOfFund !== "" ? String(row[mapping.sourceOfFund] || "").trim() : "",
-        accountableOfficer: mapping.accountableOfficer !== "" ? String(row[mapping.accountableOfficer] || "").trim() : ""
+        accountableOfficer: mapping.accountableOfficer !== "" ? String(row[mapping.accountableOfficer] || "").trim() : "",
+        updatedAt: new Date().toISOString()
       };
     }
 
@@ -448,85 +476,105 @@
         return;
       }
 
-      const cols = Object.keys(parsed[0]);
+      const cols = Object.keys(parsed[0]).filter(c => c !== "updatedAt");
       thead.innerHTML = `<tr>${cols.map(c => `<th>${c}</th>`).join("")}</tr>`;
       tbody.innerHTML = parsed.slice(0, 8).map(row => `
         <tr>${cols.map(c => `<td>${row[c] ?? ""}</td>`).join("")}</tr>
       `).join("");
     };
 
+    function buildDocId(rec, index) {
+      const sig = `${rec.category}|${rec.article}|${rec.description}|${rec.propertyNumber || rec.tct || ""}|${rec.dateAcquired || ""}|${index}`;
+      let h = 0;
+      for (let i = 0; i < sig.length; i++) h = ((h << 5) - h + sig.charCodeAt(i)) | 0;
+      return `rpcp_${Math.abs(h)}_${sig.length}`;
+    }
+
     async function persistRecords(records) {
-      let saved = 0;
-      const existingFallback = JSON.parse(localStorage.getItem(STORAGE_FALLBACK_KEY)) || [];
-      const fallbackMap = new Map(existingFallback.map(item => [item.id, item]));
+      if (!records.length) return 0;
 
-      for (const rec of records) {
-        const sig = `${rec.category}|${rec.article}|${rec.description}|${rec.propertyNumber || rec.tct || ""}|${rec.dateAcquired || ""}`;
-        let h = 0;
-        for (let i = 0; i < sig.length; i++) h = ((h << 5) - h + sig.charCodeAt(i)) | 0;
-        const docId = `rpcp_${Math.abs(h)}_${sig.length}`;
-
-        try {
-          await setDoc(doc(db, "rpcp_inventory", docId), rec, { merge: true });
-        } catch (err) {
-          console.warn("Firestore write fallback:", err);
-        }
-        fallbackMap.set(docId, { id: docId, ...rec });
-        saved++;
+      for (let i = 0; i < records.length; i += 450) {
+        const chunk = records.slice(i, i + 450);
+        const batch = writeBatch(db);
+        chunk.forEach((rec, offset) => {
+          const docId = buildDocId(rec, i + offset);
+          batch.set(doc(db, FS_COLLECTION, docId), rec, { merge: true });
+        });
+        await batch.commit();
       }
-
-      localStorage.setItem(STORAGE_FALLBACK_KEY, JSON.stringify([...fallbackMap.values()]));
-      return saved;
+      return records.length;
     }
 
     window.saveCurrentSheet = async function() {
       if (!activeTarget) return;
-      const mapping = getCurrentMappingFromUI();
-      const sheetName = document.getElementById("sheet-select").value;
-      const rows = [];
-      for (let r = activeDataStartIdx; r < activeRawRows.length; r++) {
-        const rec = extractRowRecord(activeRawRows[r], mapping, activeTarget);
-        if (rec) rows.push(rec);
-      }
+      const btn = document.getElementById("importSheetBtn");
+      btn.disabled = true;
+      try {
+        const mapping = getCurrentMappingFromUI();
+        const sheetName = document.getElementById("sheet-select").value;
+        const rows = [];
+        for (let r = activeDataStartIdx; r < activeRawRows.length; r++) {
+          const rec = extractRowRecord(activeRawRows[r], mapping, activeTarget);
+          if (rec) rows.push(rec);
+        }
 
-      logClear();
-      logLine(`Importing "${sheetName}" into "${activeTarget.category}"...`, "log-info");
-      const count = await persistRecords(rows);
-      logLine(`✅ "${sheetName}" → ${count} record(s) saved.`, count > 0 ? "log-ok" : "log-skip");
+        logClear();
+        logLine(`Importing "${sheetName}" into Firestore (${FS_COLLECTION}) under "${activeTarget.category}"...`, "log-info");
+        const count = await persistRecords(rows);
+        logLine(`✅ "${sheetName}" → ${count} record(s) saved to Firestore.`, count > 0 ? "log-ok" : "log-skip");
+      } catch (err) {
+        console.error("RPCP sheet import error:", err);
+        logLine(`❌ Firestore write failed: ${err.message}`, "log-err");
+        alert("Firestore save failed: " + err.message);
+      } finally {
+        btn.disabled = false;
+      }
     };
 
     window.importAllSheets = async function() {
       if (!workbook) return;
+      const btn = document.getElementById("importAllBtn");
+      btn.disabled = true;
       logClear();
       logLine(`Scanning ${workbook.SheetNames.length} sheet(s) in workbook...`, "log-info");
 
       let totalImported = 0;
-      for (const name of workbook.SheetNames) {
-        const ws = workbook.Sheets[name];
-        const rawRows = XLSX.utils.sheet_to_json(ws, { header: 1, raw: true, defval: "" });
-        if (!rawRows.length) {
-          logLine(`⏭️ "${name}" → empty sheet, skipped.`, "log-skip");
-          continue;
+      try {
+        for (const name of workbook.SheetNames) {
+          const ws = workbook.Sheets[name];
+          const rawRows = XLSX.utils.sheet_to_json(ws, { header: 1, raw: true, defval: "" });
+          if (!rawRows.length) {
+            logLine(`⏭️ "${name}" → empty sheet, skipped.`, "log-skip");
+            continue;
+          }
+          const target = detectSheetTarget(name, rawRows);
+          const { headerIdx, headers, dataStartIdx } = findHeaderAndSubHeader(rawRows);
+          if (!target || headerIdx === -1) {
+            logLine(`⏭️ "${name}" → unrecognized structure, skipped.`, "log-skip");
+            continue;
+          }
+          const mapping = autoMapForLayout(headers, target.layout);
+          const records = [];
+          for (let r = dataStartIdx; r < rawRows.length; r++) {
+            const rec = extractRowRecord(rawRows[r], mapping, target);
+            if (rec) records.push(rec);
+          }
+          const count = await persistRecords(records);
+          totalImported += count;
+          logLine(`✅ "${name}" → ${count} record(s) saved to Firestore under "${target.category}".`, count > 0 ? "log-ok" : "log-skip");
         }
-        const target = detectSheetTarget(name, rawRows);
-        const { headerIdx, headers, dataStartIdx } = findHeaderAndSubHeader(rawRows);
-        if (!target || headerIdx === -1) {
-          logLine(`⏭️ "${name}" → unrecognized structure, skipped.`, "log-skip");
-          continue;
-        }
-        const mapping = autoMapForLayout(headers, target.layout);
-        const records = [];
-        for (let r = dataStartIdx; r < rawRows.length; r++) {
-          const rec = extractRowRecord(rawRows[r], mapping, target);
-          if (rec) records.push(rec);
-        }
-        const count = await persistRecords(records);
-        totalImported += count;
-        logLine(`✅ "${name}" → ${count} record(s) under "${target.category}".`, count > 0 ? "log-ok" : "log-skip");
-      }
 
-      logLine(`🏁 Done — ${totalImported} total RPCP record(s) imported.`, "log-info");
+        logLine(`🏁 Done — ${totalImported} total RPCP record(s) saved to Firestore.`, "log-info");
+      } catch (err) {
+        console.error("RPCP workbook import error:", err);
+        logLine(`❌ Firestore write failed: ${err.message}`, "log-err");
+        alert("Firestore save failed: " + err.message);
+      } finally {
+        btn.disabled = false;
+      }
     };
+
+    checkFirestoreConnection();
   </script>
 </body>
 </html>
