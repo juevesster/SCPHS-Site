@@ -356,6 +356,7 @@ body {
 .btn-success { background: var(--success); color: white; }
 .btn-warning { background: var(--warning); color: white; }
 .btn-danger { background: var(--danger); color: white; }
+.btn-danger-outline { background: #fef2f2; color: var(--danger); border: 1px solid #fecaca; }
 .btn-print { background: #475569; color: white; }
 .btn-outline { background: white; color: var(--text); border: 1px solid var(--border); }
 
@@ -472,6 +473,33 @@ th {
     border-radius: 8px;
     font-size: 0.82rem;
     background: #f8fafc;
+}
+
+.dupe-mode-box {
+    background: #f8fafc;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 10px 12px;
+    margin-bottom: 16px;
+}
+
+.dupe-mode-box label {
+    display: block;
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: var(--muted);
+    text-transform: uppercase;
+    margin-bottom: 5px;
+}
+
+.dupe-mode-box select {
+    width: 100%;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 8px 10px;
+    font-size: 0.86rem;
+    background: white;
+    color: var(--text);
 }
 
 /* PRINT */
@@ -681,9 +709,12 @@ th {
                     <i class="fas fa-wand-magic-sparkles"></i> <span id="normLabel">Group Similar Sheets: Off</span>
                 </button>
                 <input id="searchBox" placeholder="Search item, prop no., officer..." oninput="renderTable()"
-                    style="border:1px solid var(--border);border-radius:8px;padding:6px 10px;font-size:0.82rem;width:210px;">
-                <button class="btn btn-danger btn-sm" onclick="clearFilteredOrAll()">
-                    <i class="fas fa-trash"></i> Clear Shown
+                    style="border:1px solid var(--border);border-radius:8px;padding:6px 10px;font-size:0.82rem;width:200px;">
+                <button class="btn btn-danger-outline btn-sm" onclick="clearFilteredOrAll()" title="Delete only the records currently shown">
+                    <i class="fas fa-filter-circle-xmark"></i> Clear Shown
+                </button>
+                <button class="btn btn-danger btn-sm" onclick="deleteAllRecords()" title="Delete all records in the database">
+                    <i class="fas fa-trash-can"></i> Delete All
                 </button>
             </div>
         </div>
@@ -810,6 +841,15 @@ th {
             <button class="btn btn-outline btn-sm" onclick="toggleAllSheets(false)">Deselect All</button>
         </div>
         <div class="sheet-checklist" id="sheetChecklist"></div>
+
+        <div class="dupe-mode-box">
+            <label for="duplicateMode">If an imported record matches an existing record exactly:</label>
+            <select id="duplicateMode">
+                <option value="skip">Pass / Skip exact duplicate records</option>
+                <option value="overwrite">Overwrite exact matching records</option>
+            </select>
+        </div>
+
         <div class="action-btns">
             <button class="btn btn-success" onclick="confirmSheetImport()">
                 <i class="fas fa-check"></i> Import Selected Sheets
@@ -897,6 +937,32 @@ let records = [];
 let activeCategory = "__ALL__";
 let normalizeGroups = false;
 let pendingWorkbook = null;
+
+function normText(v) {
+    return String(v ?? "").trim().replace(/\s+/g, " ").toLowerCase();
+}
+
+function normNum(v) {
+    const n = Number(v || 0);
+    return isFinite(n) ? Number(n.toFixed(4)) : 0;
+}
+
+function getExactRecordSignature(item) {
+    return JSON.stringify([
+        normText(item.sheetGroup),
+        normText(item.article),
+        normText(item.description),
+        normText(item.dateAcquired),
+        normText(item.propertyNo),
+        normText(item.unitMeasure),
+        normNum(item.unitValue),
+        normNum(item.qtyCard),
+        normNum(item.qtyCount),
+        normNum(item.totalCost),
+        normText(item.fundSource),
+        normText(item.accountableOfficer)
+    ]);
+}
 
 function getDisplayGroup(rawGroup) {
     const clean = String(rawGroup || "High Value Items").trim();
@@ -999,24 +1065,77 @@ async function persistRecord(item) {
     }
 }
 
-async function bulkPersistRecords(newItems) {
-    if (!newItems.length) return;
+async function applyImportBatch(candidateItems, mode) {
+    if (!candidateItems.length) {
+        return { added: 0, overwritten: 0, skipped: 0 };
+    }
+
+    const sigToExistingIndex = new Map();
+    records.forEach((rec, idx) => {
+        const sig = getExactRecordSignature(rec);
+        if (!sigToExistingIndex.has(sig)) {
+            sigToExistingIndex.set(sig, idx);
+        }
+    });
+
+    const itemsToAdd = [];
+    const itemsToOverwrite = [];
+    let skipped = 0;
+
+    for (const cand of candidateItems) {
+        const sig = getExactRecordSignature(cand);
+        const existingIdx = sigToExistingIndex.get(sig);
+
+        if (existingIdx !== undefined) {
+            if (mode === "overwrite") {
+                const existingRec = records[existingIdx];
+                const updatedRec = {
+                    ...existingRec,
+                    ...cand,
+                    id: existingRec.id,
+                    updatedAt: new Date().toISOString()
+                };
+                records[existingIdx] = updatedRec;
+                itemsToOverwrite.push(updatedRec);
+            } else {
+                skipped += 1;
+            }
+        } else {
+            const newRec = {
+                ...cand,
+                updatedAt: new Date().toISOString()
+            };
+            itemsToAdd.push(newRec);
+            sigToExistingIndex.set(sig, records.length + itemsToAdd.length - 1);
+        }
+    }
+
     if (useFirestore) {
         const batch = db.batch();
-        newItems.forEach(item => {
+        itemsToAdd.forEach(item => {
             const docRef = db.collection(FS_COLLECTION).doc();
             item.id = docRef.id;
             batch.set(docRef, item);
         });
+        itemsToOverwrite.forEach(item => {
+            const { id, ...payload } = item;
+            batch.set(db.collection(FS_COLLECTION).doc(id), payload, { merge: true });
+        });
         await batch.commit();
-        records.push(...newItems);
+        records.push(...itemsToAdd);
     } else {
-        newItems.forEach((item, i) => {
+        itemsToAdd.forEach((item, i) => {
             item.id = "hv_" + Date.now() + "_" + i + "_" + Math.random().toString(36).slice(2, 6);
         });
-        records.push(...newItems);
+        records.push(...itemsToAdd);
         localStorage.setItem(LOCAL_RECORDS_KEY, JSON.stringify(records));
     }
+
+    return {
+        added: itemsToAdd.length,
+        overwritten: itemsToOverwrite.length,
+        skipped
+    };
 }
 
 async function removeRecordById(id) {
@@ -1041,6 +1160,26 @@ async function removeManyByIds(ids) {
     if (!useFirestore) {
         localStorage.setItem(LOCAL_RECORDS_KEY, JSON.stringify(records));
     }
+}
+
+async function deleteAllRecords() {
+    if (!records.length) {
+        alert("There are no records in the database to delete.");
+        return;
+    }
+    const ok = confirm(`Delete ALL ${records.length} records in the database? This cannot be undone.`);
+    if (!ok) return;
+
+    const allIds = records.map(r => r.id);
+    await removeManyByIds(allIds);
+    records = [];
+    if (!useFirestore) {
+        localStorage.setItem(LOCAL_RECORDS_KEY, JSON.stringify([]));
+    }
+    activeCategory = "__ALL__";
+    document.getElementById("activeFilterLabel").textContent = "All Sheets";
+    rebuildCategoryUI();
+    renderTable();
 }
 
 /* CRUD & FORM (SILENT SAVE) */
@@ -1448,6 +1587,7 @@ async function confirmSheetImport() {
     const selectedBoxes = [...document.querySelectorAll(".sheet-checkbox:checked")];
     if (!selectedBoxes.length) return;
 
+    const mode = document.getElementById("duplicateMode").value || "skip";
     const toAdd = [];
     selectedBoxes.forEach(cb => {
         const idx = parseInt(cb.getAttribute("data-sheet-idx"), 10);
@@ -1456,7 +1596,7 @@ async function confirmSheetImport() {
         toAdd.push(...rows);
     });
 
-    await bulkPersistRecords(toAdd);
+    await applyImportBatch(toAdd, mode);
     closeSheetModal();
     rebuildCategoryUI();
     renderTable();
