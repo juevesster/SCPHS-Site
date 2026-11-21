@@ -9,7 +9,6 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 <script src="https://cdn.sheetjs.com/xlsx-0.20.2/package/dist/xlsx.full.min.js"></script>
 
-<!-- Firebase SDK (compat for easy single-file setup) -->
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 
@@ -40,22 +39,26 @@ body {
     color: var(--text);
     display: flex;
     min-height: 100vh;
+    overflow-x: hidden;
 }
 
 /* SIDEBAR */
 .sidebar {
-    width: 260px;
+    width: 250px;
+    flex-shrink: 0;
     background: var(--sidebar-bg);
     color: white;
     position: fixed;
+    top: 0;
+    left: 0;
     height: 100vh;
     z-index: 10;
     overflow-y: auto;
 }
 
 .sidebar-brand {
-    padding: 24px;
-    font-size: 1.25rem;
+    padding: 22px 20px;
+    font-size: 1.15rem;
     font-weight: 800;
     border-bottom: 1px solid rgba(255, 255, 255, 0.08);
     display: flex;
@@ -64,15 +67,15 @@ body {
 }
 
 .sidebar-sub {
-    padding: 10px 24px 0;
-    font-size: 0.72rem;
+    padding: 12px 20px 2px;
+    font-size: 0.7rem;
     text-transform: uppercase;
     letter-spacing: 0.06em;
     color: #94a3b8;
 }
 
 .sidebar-menu {
-    padding: 12px 16px 24px;
+    padding: 10px 14px 24px;
 }
 
 .menu-item {
@@ -84,7 +87,7 @@ body {
     padding: 10px 12px;
     border-radius: 10px;
     margin-bottom: 6px;
-    font-size: 0.88rem;
+    font-size: 0.85rem;
     transition: background 0.2s;
     cursor: pointer;
     border: none;
@@ -106,9 +109,10 @@ body {
 
 /* MAIN */
 .main-content {
-    margin-left: 260px;
+    margin-left: 250px;
     flex: 1;
-    padding: 28px;
+    min-width: 0;
+    padding: 24px;
 }
 
 .topbar {
@@ -117,16 +121,25 @@ body {
     align-items: center;
     flex-wrap: wrap;
     gap: 12px;
-    margin-bottom: 18px;
+    margin-bottom: 16px;
 }
 
 .topbar h1 {
-    font-size: 1.65rem;
+    font-size: 1.5rem;
+    line-height: 1.25;
+}
+
+.sync-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 6px;
+    flex-wrap: wrap;
 }
 
 .sync-badge {
-    font-size: 0.78rem;
-    padding: 5px 10px;
+    font-size: 0.74rem;
+    padding: 4px 10px;
     border-radius: 999px;
     background: #e2e8f0;
     color: #334155;
@@ -147,12 +160,12 @@ body {
 /* KPI STRIP */
 .kpi-grid {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 14px;
-    margin-bottom: 18px;
+    margin-bottom: 16px;
 }
 
-@media (max-width: 800px) {
+@media (max-width: 820px) {
     .kpi-grid { grid-template-columns: 1fr; }
 }
 
@@ -160,31 +173,36 @@ body {
     background: white;
     border: 1px solid var(--border);
     border-radius: 14px;
-    padding: 16px 20px;
+    padding: 14px 18px;
+    min-width: 0;
 }
 
 .kpi-label {
-    font-size: 0.75rem;
+    font-size: 0.72rem;
     text-transform: uppercase;
     color: var(--muted);
     font-weight: 700;
 }
 
 .kpi-val {
-    font-size: 1.45rem;
+    font-size: 1.35rem;
     font-weight: 800;
     margin-top: 4px;
     color: var(--text);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 /* CARD */
 .card {
     background: white;
     border-radius: 16px;
-    padding: 22px;
+    padding: 20px;
     border: 1px solid var(--border);
-    margin-bottom: 18px;
+    margin-bottom: 16px;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+    min-width: 0;
 }
 
 .card-header {
@@ -196,24 +214,36 @@ body {
     margin-bottom: 14px;
 }
 
+.card-header h2 {
+    font-size: 1.1rem;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
 /* FORM */
 .form-grid {
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
+    grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 14px;
 }
 
-@media (max-width: 1100px) {
-    .form-grid { grid-template-columns: repeat(2, 1fr); }
+@media (max-width: 1024px) {
+    .form-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 
-@media (max-width: 600px) {
-    .form-grid { grid-template-columns: 1fr; }
+@media (max-width: 640px) {
+    .form-grid { grid-template-columns: minmax(0, 1fr); }
+    .sidebar { position: static; width: 100%; height: auto; }
+    body { flex-direction: column; }
+    .main-content { margin-left: 0; padding: 16px; }
 }
 
 .form-group {
     display: flex;
     flex-direction: column;
+    min-width: 0;
 }
 
 .form-group label {
@@ -226,6 +256,8 @@ body {
 
 .form-group input,
 .form-group select {
+    width: 100%;
+    min-width: 0;
     border: 1px solid var(--border);
     border-radius: 8px;
     padding: 9px 10px;
@@ -245,17 +277,18 @@ body {
     border: none;
     cursor: pointer;
     border-radius: 8px;
-    padding: 9px 16px;
+    padding: 8px 13px;
     font-weight: 700;
     display: inline-flex;
     align-items: center;
-    gap: 7px;
-    font-size: 0.86rem;
+    gap: 6px;
+    font-size: 0.82rem;
     transition: opacity 0.2s;
+    white-space: nowrap;
 }
 
 .btn:hover { opacity: 0.9; }
-.btn-sm { padding: 5px 9px; font-size: 0.78rem; }
+.btn-sm { padding: 5px 9px; font-size: 0.76rem; }
 .btn-primary { background: var(--primary); color: white; }
 .btn-success { background: var(--success); color: white; }
 .btn-warning { background: var(--warning); color: white; }
@@ -267,10 +300,12 @@ body {
     display: flex;
     gap: 6px;
     flex-wrap: wrap;
+    align-items: center;
 }
 
 /* TABLE */
 .table-wrap {
+    width: 100%;
     overflow-x: auto;
 }
 
@@ -280,22 +315,22 @@ table {
 }
 
 th, td {
-    padding: 10px 10px;
+    padding: 9px 10px;
     border-bottom: 1px solid var(--border);
     text-align: left;
-    font-size: 0.84rem;
+    font-size: 0.83rem;
     white-space: nowrap;
 }
 
 td.wrap-col {
     white-space: normal;
-    min-width: 180px;
+    min-width: 170px;
 }
 
 th {
     background: #f8fafc;
     color: var(--muted);
-    font-size: 0.72rem;
+    font-size: 0.7rem;
     text-transform: uppercase;
 }
 
@@ -310,7 +345,7 @@ th {
     border-radius: 6px;
     background: #f1f5f9;
     color: #334155;
-    font-size: 0.75rem;
+    font-size: 0.74rem;
     font-weight: 600;
 }
 
@@ -335,7 +370,7 @@ th {
     border-radius: 16px;
     padding: 24px;
     width: 100%;
-    max-width: 540px;
+    max-width: 560px;
     max-height: 90vh;
     overflow-y: auto;
     box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2);
@@ -345,7 +380,7 @@ th {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 16px;
+    margin-bottom: 14px;
     padding-bottom: 10px;
     border-bottom: 1px solid var(--border);
 }
@@ -356,9 +391,13 @@ th {
 
 .sheet-checklist {
     display: grid;
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 8px;
     margin: 12px 0 16px;
+}
+
+@media (max-width: 560px) {
+    .sheet-checklist { grid-template-columns: 1fr; }
 }
 
 .sheet-check-item {
@@ -368,7 +407,7 @@ th {
     padding: 8px 10px;
     border: 1px solid var(--border);
     border-radius: 8px;
-    font-size: 0.84rem;
+    font-size: 0.82rem;
     background: #f8fafc;
 }
 
@@ -386,6 +425,7 @@ th {
     body {
         display: block;
         background: white;
+        overflow: visible;
     }
 
     .sidebar,
@@ -447,7 +487,7 @@ th {
     <div class="sidebar-menu" id="sidebarCategories">
         <button class="menu-item active" data-filter="__ALL__" onclick="selectCategory('__ALL__', this)">
             <i class="fas fa-layer-group"></i>
-            <span>All Imported / Encoded</span>
+            <span>All Sheets (0)</span>
         </button>
     </div>
 </aside>
@@ -458,7 +498,9 @@ th {
     <div class="topbar">
         <div>
             <h1>📦 RPCSP — High Value Items (Annex A.8)</h1>
-            <span class="sync-badge" id="syncBadge">Local Storage Mode (Add Firebase Config to Sync)</span>
+            <div class="sync-row">
+                <span class="sync-badge" id="syncBadge">Local Storage Mode (Paste Firebase Config to Sync)</span>
+            </div>
         </div>
         <div class="topbar-actions">
             <button class="btn btn-outline" onclick="downloadTemplate()">
@@ -572,8 +614,11 @@ th {
                 <span class="sheet-pill" id="activeFilterLabel">All Sheets</span>
             </h2>
             <div class="action-btns">
+                <button class="btn btn-outline btn-sm" id="normBtn" onclick="toggleNormalizeGroups()" title="Group typo/numbered sheet names together in the filter">
+                    <i class="fas fa-wand-magic-sparkles"></i> <span id="normLabel">Group Similar Sheets: Off</span>
+                </button>
                 <input id="searchBox" placeholder="Search item, prop no., officer..." oninput="renderTable()"
-                    style="border:1px solid var(--border);border-radius:8px;padding:6px 10px;font-size:0.84rem;">
+                    style="border:1px solid var(--border);border-radius:8px;padding:6px 10px;font-size:0.82rem;width:210px;">
                 <button class="btn btn-danger btn-sm" onclick="clearFilteredOrAll()">
                     <i class="fas fa-trash"></i> Clear Shown
                 </button>
@@ -750,11 +795,6 @@ th {
 </div>
 
 <script>
-/* ============================================================================
-   FIREBASE FIRESTORE SETUP
-   Replace the placeholder values below with your Firebase project config.
-   If left as placeholders, the app automatically uses browser localStorage.
-   ============================================================================ */
 const firebaseConfig = {
     apiKey: "YOUR_API_KEY",
     authDomain: "YOUR_PROJECT.firebaseapp.com",
@@ -784,7 +824,45 @@ const FS_SETTINGS_DOC = "rpcp_high_value_settings/default";
 
 let records = [];
 let activeCategory = "__ALL__";
+let normalizeGroups = false;
 let pendingWorkbook = null;
+
+function getDisplayGroup(rawGroup) {
+    const clean = String(rawGroup || "High Value Items").trim();
+    if (!normalizeGroups) return clean;
+
+    const lower = clean.toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
+    if (lower.includes("priting") || lower.includes("printing")) {
+        return "Semi-Expendable Printing Equipment";
+    }
+    if (lower.includes("comm") && lower.includes("equipment")) {
+        return "Communication Equipment";
+    }
+    if (lower.includes("info") && lower.includes("comm")) {
+        return "Semi-Expendable Info. & Comm. Tech";
+    }
+    if (lower.includes("mach") || lower.includes("eq 1")) {
+        return "Other Machinery & Equipment";
+    }
+    if (lower.includes("tech") || lower.includes("sci")) {
+        return "Technical & Scientific Equipment";
+    }
+    if (lower.startsWith("it equipment dcp 2025")) {
+        return "IT-Equipment-DCP 2025 (All Parts)";
+    }
+    return clean;
+}
+
+function toggleNormalizeGroups() {
+    normalizeGroups = !normalizeGroups;
+    activeCategory = "__ALL__";
+    document.getElementById("activeFilterLabel").textContent = "All Sheets";
+    document.getElementById("normLabel").textContent = normalizeGroups
+        ? "Group Similar Sheets: On"
+        : "Group Similar Sheets: Off";
+    rebuildSidebarCategories();
+    renderTable();
+}
 
 function updateSyncBadge() {
     const badge = document.getElementById("syncBadge");
@@ -818,9 +896,7 @@ function autoCalcTotal() {
     }
 }
 
-/* ============================================================================
-   DATA PERSISTENCE (FIRESTORE + LOCAL STORAGE)
-   ============================================================================ */
+/* DATA PERSISTENCE */
 async function loadRecords() {
     if (useFirestore) {
         const snap = await db.collection(FS_COLLECTION).get();
@@ -896,9 +972,7 @@ async function removeManyByIds(ids) {
     }
 }
 
-/* ============================================================================
-   CRUD & FORM
-   ============================================================================ */
+/* CRUD & FORM */
 async function saveRecord() {
     const desc = document.getElementById("description").value.trim();
     const propNo = document.getElementById("propertyNo").value.trim();
@@ -937,9 +1011,7 @@ async function saveRecord() {
     if (existingId) {
         const idx = records.findIndex(r => r.id === existingId);
         if (idx >= 0) records[idx] = item;
-    } else if (!useFirestore) {
-        // already pushed in persistRecord
-    } else {
+    } else if (useFirestore) {
         records.push(item);
     }
 
@@ -998,19 +1070,17 @@ async function clearFilteredOrAll() {
         : `Delete all ${shown.length} records in "${activeCategory}"?`;
     if (!confirm(msg)) return;
     await removeManyByIds(shown.map(r => r.id));
-    if (activeCategory !== "__ALL__" && !records.some(r => r.sheetGroup === activeCategory)) {
+    if (activeCategory !== "__ALL__" && !records.some(r => getDisplayGroup(r.sheetGroup) === activeCategory)) {
         activeCategory = "__ALL__";
     }
     rebuildSidebarCategories();
     renderTable();
 }
 
-/* ============================================================================
-   SIDEBAR CATEGORIES & TABLE RENDERING
-   ============================================================================ */
+/* SIDEBAR CATEGORIES & TABLE RENDERING */
 function rebuildSidebarCategories() {
     const container = document.getElementById("sidebarCategories");
-    const groups = [...new Set(records.map(r => r.sheetGroup || "High Value Items"))];
+    const groups = [...new Set(records.map(r => getDisplayGroup(r.sheetGroup)))];
 
     let html = `
         <button class="menu-item ${activeCategory === "__ALL__" ? "active" : ""}" data-filter="__ALL__" onclick="selectCategory('__ALL__', this)">
@@ -1020,7 +1090,7 @@ function rebuildSidebarCategories() {
     `;
 
     groups.forEach(g => {
-        const cnt = records.filter(r => (r.sheetGroup || "High Value Items") === g).length;
+        const cnt = records.filter(r => getDisplayGroup(r.sheetGroup) === g).length;
         html += `
             <button class="menu-item ${activeCategory === g ? "active" : ""}" onclick="selectCategory(${JSON.stringify(g)}, this)">
                 <i class="fas fa-table"></i>
@@ -1045,7 +1115,7 @@ function selectCategory(cat, btnEl) {
 function getFilteredRecords() {
     const q = (document.getElementById("searchBox").value || "").toLowerCase().trim();
     return records.filter(r => {
-        const matchesCat = activeCategory === "__ALL__" || (r.sheetGroup || "High Value Items") === activeCategory;
+        const matchesCat = activeCategory === "__ALL__" || getDisplayGroup(r.sheetGroup) === activeCategory;
         if (!matchesCat) return false;
         if (!q) return true;
         return [r.sheetGroup, r.article, r.description, r.propertyNo, r.fundSource, r.accountableOfficer]
@@ -1078,7 +1148,7 @@ function renderTable() {
 
     body.innerHTML = shown.map(r => `
         <tr>
-            <td><span class="sheet-pill">${escapeHTML(r.sheetGroup || "High Value")}</span></td>
+            <td><span class="sheet-pill">${escapeHTML(String(r.sheetGroup || "High Value").trim())}</span></td>
             <td>${escapeHTML(r.article)}</td>
             <td class="wrap-col">${escapeHTML(r.description)}</td>
             <td>${escapeHTML(r.dateAcquired)}</td>
@@ -1124,9 +1194,7 @@ function renderPrint(shown, sumQty, sumCost) {
     document.getElementById("printTotalCost").textContent = formatMoney(sumCost);
 }
 
-/* ============================================================================
-   MULTI-SHEET EXCEL IMPORTER (ANNEX A.8 / RPCSP HIGH VALUE)
-   ============================================================================ */
+/* MULTI-SHEET EXCEL IMPORTER */
 function formatExcelDate(val) {
     if (!val && val !== 0) return "";
     if (val instanceof Date && !isNaN(val)) {
@@ -1154,7 +1222,6 @@ function extractRecordsFromSheet(sheetName, sheet) {
     const rawRows = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: "" });
     if (!rawRows || !rawRows.length) return [];
 
-    // Locate header row containing "article" and "description"
     let headerRowIndex = -1;
     for (let i = 0; i < Math.min(rawRows.length, 25); i++) {
         const rowLower = rawRows[i].map(c => String(c).toLowerCase().trim());
@@ -1165,7 +1232,6 @@ function extractRecordsFromSheet(sheetName, sheet) {
     }
     if (headerRowIndex === -1) return [];
 
-    // Look for sub-header row ("Property Card" / "Physical Count" / "Accountable Officer")
     let subHeaderOffset = 0;
     for (let off = 1; off <= 4; off++) {
         const checkStr = (rawRows[headerRowIndex + off] || []).map(c => String(c).toLowerCase()).join(" ");
@@ -1229,7 +1295,6 @@ function extractRecordsFromSheet(sheetName, sheet) {
         const qCount = parseMoney(row[colIdx.qtyCount]);
         const totCost = parseMoney(row[colIdx.totalCost]);
 
-        // Skip rows that only have a stray dot or empty item fields
         if (!desc && !propNo && !uVal && !totCost) continue;
 
         extracted.push({
@@ -1343,9 +1408,7 @@ function downloadTemplate() {
     XLSX.writeFile(wb, "RPCSP_High_Value_Template.xlsx");
 }
 
-/* ============================================================================
-   SETTINGS
-   ============================================================================ */
+/* SETTINGS */
 const DEFAULT_SETTINGS = {
     schoolName: "STA. CRUZ PINGKIAN HIGH SCHOOL",
     principalName: "Dolores C. Dodon, PhD",
@@ -1415,9 +1478,7 @@ async function applySettings() {
     document.getElementById("sigVerified").textContent = s.verifiedBy;
 }
 
-/* ============================================================================
-   INIT
-   ============================================================================ */
+/* INIT */
 (async function init() {
     updateSyncBadge();
     await applySettings();
