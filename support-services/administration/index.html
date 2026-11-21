@@ -90,29 +90,23 @@
     .staff-list span { color: var(--text-muted); font-weight: 500; text-align: right; word-break: break-word; }
 
     /* Chatbot Cleanup & Floating Trigger */
-    #scphs-chatbot-root > div > div:not(.chat-window),
-    #scphs-chatbot-root > div > button:not(#chat-toggle),
-    #scphs-chatbot-root > div > input {
-      display: none !important;
-    }
+#scphs-chatbot-root {
+  display: none;
+  position: fixed;
+  bottom: 92px;
+  right: 24px;
+  width: min(340px, calc(100vw - 48px));
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  padding: 16px;
+  box-shadow: 0 20px 25px -5px rgba(15, 23, 42, 0.15);
+  z-index: 99994;
+}
 
-    #scphs-chatbot-root {
-      position: fixed !important;
-      bottom: 24px !important;
-      right: 24px !important;
-      z-index: 99990 !important;
-      width: auto !important;
-      height: auto !important;
-    }
-
-    #scphs-chatbot-root > div {
-      background: transparent !important;
-      box-shadow: none !important;
-      border: none !important;
-      width: auto !important;
-      height: auto !important;
-      padding: 0 !important;
-    }
+#scphs-chatbot-root.open {
+  display: block;
+}
 
     .chat-fab {
       position: fixed;
@@ -423,15 +417,13 @@
     })();
 
     function toggleChatBot() {
-      const root = document.getElementById("scphs-chatbot-root");
-      const chatWindow = root?.querySelector(".chat-window") || root?.querySelector("div");
-      if (!chatWindow) {
-        alert("The chatbot is currently loading or unavailable. Please try again later.");
-        return;
-      }
-      const isHidden = window.getComputedStyle(chatWindow).display === "none";
-      chatWindow.style.display = isHidden ? "block" : "none";
-    }
+  const root = document.getElementById("scphs-chatbot-root");
+  if (!root || !root.innerHTML.trim()) {
+    alert("The chatbot is currently loading or unavailable. Please try again later.");
+    return;
+  }
+  root.classList.toggle("open");
+}
   </script>
 </body>
 </html>
