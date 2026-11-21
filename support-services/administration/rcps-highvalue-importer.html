@@ -1,0 +1,1429 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RPCSP High Value | Annex A.8</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<script src="https://cdn.sheetjs.com/xlsx-0.20.2/package/dist/xlsx.full.min.js"></script>
+
+<!-- Firebase SDK (compat for easy single-file setup) -->
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+
+<style>
+:root {
+    --sidebar-bg: #0f172a;
+    --sidebar-hover: #1e293b;
+    --primary: #0f766e;
+    --primary-light: #14b8a6;
+    --success: #16a34a;
+    --danger: #dc2626;
+    --warning: #d97706;
+    --bg: #f4f7f9;
+    --border: #e2e8f0;
+    --text: #1e293b;
+    --muted: #64748b;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Outfit', sans-serif;
+}
+
+body {
+    background: var(--bg);
+    color: var(--text);
+    display: flex;
+    min-height: 100vh;
+}
+
+/* SIDEBAR */
+.sidebar {
+    width: 260px;
+    background: var(--sidebar-bg);
+    color: white;
+    position: fixed;
+    height: 100vh;
+    z-index: 10;
+    overflow-y: auto;
+}
+
+.sidebar-brand {
+    padding: 24px;
+    font-size: 1.25rem;
+    font-weight: 800;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.sidebar-sub {
+    padding: 10px 24px 0;
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: #94a3b8;
+}
+
+.sidebar-menu {
+    padding: 12px 16px 24px;
+}
+
+.menu-item {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    text-decoration: none;
+    color: #cbd5e1;
+    padding: 10px 12px;
+    border-radius: 10px;
+    margin-bottom: 6px;
+    font-size: 0.88rem;
+    transition: background 0.2s;
+    cursor: pointer;
+    border: none;
+    background: transparent;
+    width: 100%;
+    text-align: left;
+}
+
+.menu-item:hover {
+    background: var(--sidebar-hover);
+    color: white;
+}
+
+.menu-item.active {
+    background: linear-gradient(90deg, var(--primary), var(--primary-light));
+    color: white;
+    font-weight: 600;
+}
+
+/* MAIN */
+.main-content {
+    margin-left: 260px;
+    flex: 1;
+    padding: 28px;
+}
+
+.topbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-bottom: 18px;
+}
+
+.topbar h1 {
+    font-size: 1.65rem;
+}
+
+.sync-badge {
+    font-size: 0.78rem;
+    padding: 5px 10px;
+    border-radius: 999px;
+    background: #e2e8f0;
+    color: #334155;
+    font-weight: 600;
+}
+
+.sync-badge.firestore {
+    background: #dcfce7;
+    color: #166534;
+}
+
+.topbar-actions {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+/* KPI STRIP */
+.kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 14px;
+    margin-bottom: 18px;
+}
+
+@media (max-width: 800px) {
+    .kpi-grid { grid-template-columns: 1fr; }
+}
+
+.kpi-card {
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 16px 20px;
+}
+
+.kpi-label {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    color: var(--muted);
+    font-weight: 700;
+}
+
+.kpi-val {
+    font-size: 1.45rem;
+    font-weight: 800;
+    margin-top: 4px;
+    color: var(--text);
+}
+
+/* CARD */
+.card {
+    background: white;
+    border-radius: 16px;
+    padding: 22px;
+    border: 1px solid var(--border);
+    margin-bottom: 18px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+}
+
+.card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 14px;
+}
+
+/* FORM */
+.form-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 14px;
+}
+
+@media (max-width: 1100px) {
+    .form-grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (max-width: 600px) {
+    .form-grid { grid-template-columns: 1fr; }
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+}
+
+.form-group label {
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: var(--muted);
+    margin-bottom: 5px;
+    text-transform: uppercase;
+}
+
+.form-group input,
+.form-group select {
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 9px 10px;
+    font-size: 0.9rem;
+    background: #f8fafc;
+}
+
+.form-group input:focus,
+.form-group select:focus {
+    outline: none;
+    border-color: var(--primary);
+    background: white;
+}
+
+/* BUTTONS */
+.btn {
+    border: none;
+    cursor: pointer;
+    border-radius: 8px;
+    padding: 9px 16px;
+    font-weight: 700;
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    font-size: 0.86rem;
+    transition: opacity 0.2s;
+}
+
+.btn:hover { opacity: 0.9; }
+.btn-sm { padding: 5px 9px; font-size: 0.78rem; }
+.btn-primary { background: var(--primary); color: white; }
+.btn-success { background: var(--success); color: white; }
+.btn-warning { background: var(--warning); color: white; }
+.btn-danger { background: var(--danger); color: white; }
+.btn-print { background: #475569; color: white; }
+.btn-outline { background: white; color: var(--text); border: 1px solid var(--border); }
+
+.action-btns {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+}
+
+/* TABLE */
+.table-wrap {
+    overflow-x: auto;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+th, td {
+    padding: 10px 10px;
+    border-bottom: 1px solid var(--border);
+    text-align: left;
+    font-size: 0.84rem;
+    white-space: nowrap;
+}
+
+td.wrap-col {
+    white-space: normal;
+    min-width: 180px;
+}
+
+th {
+    background: #f8fafc;
+    color: var(--muted);
+    font-size: 0.72rem;
+    text-transform: uppercase;
+}
+
+.num {
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+}
+
+.sheet-pill {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 6px;
+    background: #f1f5f9;
+    color: #334155;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+/* MODAL */
+.modal {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.6);
+    z-index: 1000;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+}
+
+.modal.open {
+    display: flex;
+}
+
+.modal-content {
+    background: white;
+    border-radius: 16px;
+    padding: 24px;
+    width: 100%;
+    max-width: 540px;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2);
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--border);
+}
+
+.modal-content .form-group {
+    margin-bottom: 11px;
+}
+
+.sheet-checklist {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+    margin: 12px 0 16px;
+}
+
+.sheet-check-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 10px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    font-size: 0.84rem;
+    background: #f8fafc;
+}
+
+/* PRINT */
+#print-area {
+    display: none;
+}
+
+@media print {
+    @page {
+        size: landscape;
+        margin: 10mm;
+    }
+
+    body {
+        display: block;
+        background: white;
+    }
+
+    .sidebar,
+    .main-content,
+    .modal {
+        display: none !important;
+    }
+
+    #print-area {
+        display: block !important;
+    }
+
+    #print-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    #print-table th,
+    #print-table td {
+        border: 1px solid black;
+        padding: 4px;
+        font-size: 9px;
+        color: black;
+    }
+
+    #print-table th {
+        background: #f1f5f9 !important;
+        text-align: center;
+    }
+
+    .sig-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 20px;
+        page-break-inside: avoid;
+    }
+
+    .sig-table td {
+        border: none !important;
+        padding: 4px 8px;
+        font-size: 10px;
+        vertical-align: top;
+        width: 33.33%;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+    <div class="sidebar-brand">
+        <i class="fas fa-boxes-stacked"></i>
+        <span>RPCSP HIGH VALUE</span>
+    </div>
+
+    <div class="sidebar-sub">Views & Categories</div>
+    <div class="sidebar-menu" id="sidebarCategories">
+        <button class="menu-item active" data-filter="__ALL__" onclick="selectCategory('__ALL__', this)">
+            <i class="fas fa-layer-group"></i>
+            <span>All Imported / Encoded</span>
+        </button>
+    </div>
+</aside>
+
+<!-- MAIN -->
+<main class="main-content">
+
+    <div class="topbar">
+        <div>
+            <h1>📦 RPCSP — High Value Items (Annex A.8)</h1>
+            <span class="sync-badge" id="syncBadge">Local Storage Mode (Add Firebase Config to Sync)</span>
+        </div>
+        <div class="topbar-actions">
+            <button class="btn btn-outline" onclick="downloadTemplate()">
+                <i class="fas fa-download"></i> Template
+            </button>
+            <input type="file" id="excelFile" accept=".xlsx,.xls,.csv" hidden>
+            <button class="btn btn-success" onclick="document.getElementById('excelFile').click()">
+                <i class="fas fa-file-import"></i> Import Multi-Sheet Excel
+            </button>
+            <button class="btn btn-print" onclick="window.print()">
+                <i class="fas fa-print"></i> Print Annex A.8
+            </button>
+        </div>
+    </div>
+
+    <!-- KPI CARDS -->
+    <div class="kpi-grid">
+        <div class="kpi-card">
+            <div class="kpi-label">Line Items Shown</div>
+            <div class="kpi-val" id="kpiItems">0</div>
+        </div>
+        <div class="kpi-card">
+            <div class="kpi-label">Total Physical Count Qty</div>
+            <div class="kpi-val" id="kpiQty">0</div>
+        </div>
+        <div class="kpi-card">
+            <div class="kpi-label">Total Cost (₱)</div>
+            <div class="kpi-val" id="kpiCost">₱0.00</div>
+        </div>
+    </div>
+
+    <!-- FORM -->
+    <div class="card">
+        <div class="card-header">
+            <h2 id="formTitle">High Value Item Entry</h2>
+            <button class="btn btn-outline btn-sm" onclick="openSettings()">
+                <i class="fas fa-cog"></i> Report Settings
+            </button>
+        </div>
+
+        <input type="hidden" id="editId" value="">
+
+        <div class="form-grid">
+            <div class="form-group">
+                <label>Sheet / Category Group</label>
+                <input id="sheetGroup" placeholder="e.g., IT-Equipment-DCP 2025">
+            </div>
+            <div class="form-group">
+                <label>Article</label>
+                <input id="article" placeholder="e.g., IT Equipment / Printer">
+            </div>
+            <div class="form-group">
+                <label>Description</label>
+                <input id="description" placeholder="e.g., Laptop-Lenovo Thinkpad E14 Gen 5">
+            </div>
+            <div class="form-group">
+                <label>Date Acquired</label>
+                <input id="dateAcquired" placeholder="e.g., 2024-07-16">
+            </div>
+            <div class="form-group">
+                <label>Property Number</label>
+                <input id="propertyNo" placeholder="e.g., 2024-07-70">
+            </div>
+            <div class="form-group">
+                <label>Unit of Measure</label>
+                <input id="unitMeasure" placeholder="e.g., unit, PC, set">
+            </div>
+            <div class="form-group">
+                <label>Unit Value (₱)</label>
+                <input type="number" step="0.01" id="unitValue" placeholder="0.00" oninput="autoCalcTotal()">
+            </div>
+            <div class="form-group">
+                <label>Qty per Property Card</label>
+                <input type="number" step="any" id="qtyCard" placeholder="1">
+            </div>
+            <div class="form-group">
+                <label>Qty per Physical Count</label>
+                <input type="number" step="any" id="qtyCount" placeholder="1" oninput="autoCalcTotal()">
+            </div>
+            <div class="form-group">
+                <label>Total Cost (₱)</label>
+                <input type="number" step="0.01" id="totalCostInput" placeholder="0.00">
+            </div>
+            <div class="form-group">
+                <label>Source of Fund</label>
+                <input id="fundSource" placeholder="e.g., MOOE / Central / Donation">
+            </div>
+            <div class="form-group">
+                <label>Accountable Officer / Remarks</label>
+                <input id="accountableOfficer" placeholder="e.g., Arman Puyao">
+            </div>
+        </div>
+
+        <br>
+
+        <div class="action-btns">
+            <button class="btn btn-primary" id="saveBtn" onclick="saveRecord()">
+                <i class="fas fa-save"></i> Save Record
+            </button>
+            <button class="btn btn-outline" id="cancelEditBtn" style="display:none;" onclick="resetForm()">
+                Cancel Edit
+            </button>
+        </div>
+    </div>
+
+    <!-- TABLE -->
+    <div class="card">
+        <div class="card-header">
+            <h2>
+                Inventory Records (<span id="recordCount">0</span>)
+                <span class="sheet-pill" id="activeFilterLabel">All Sheets</span>
+            </h2>
+            <div class="action-btns">
+                <input id="searchBox" placeholder="Search item, prop no., officer..." oninput="renderTable()"
+                    style="border:1px solid var(--border);border-radius:8px;padding:6px 10px;font-size:0.84rem;">
+                <button class="btn btn-danger btn-sm" onclick="clearFilteredOrAll()">
+                    <i class="fas fa-trash"></i> Clear Shown
+                </button>
+            </div>
+        </div>
+
+        <div class="table-wrap">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Sheet / Group</th>
+                        <th>Article</th>
+                        <th>Description</th>
+                        <th>Date Acq.</th>
+                        <th>Prop. No.</th>
+                        <th>Unit</th>
+                        <th class="num">Unit Value</th>
+                        <th class="num">Qty (Card)</th>
+                        <th class="num">Qty (Count)</th>
+                        <th class="num">Total Cost</th>
+                        <th>Fund Source</th>
+                        <th>Accountable Officer</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="items-body"></tbody>
+            </table>
+        </div>
+    </div>
+
+</main>
+
+<!-- PRINT AREA (ANNEX A.8) -->
+<div id="print-area">
+    <p style="text-align:right;font-style:italic;font-size:10.5px;">Annex A.8</p>
+    <div style="text-align:center;">
+        <h2 style="font-size:13px;">REPORT ON THE PHYSICAL COUNT OF ISSUED SEMI-EXPENDABLE PROPERTY — HIGH VALUED ITEMS</h2>
+        <p style="font-size:10px;">(Cost of each item or package is More than ₱5,000.00 but less than ₱50,000.00)</p>
+        <h3 style="font-size:12px;text-decoration:underline;margin-top:3px;" id="printCategoryTitle">SEMI-EXPENDABLE PROPERTY</h3>
+        <p style="font-size:10.5px;font-weight:bold;margin-top:3px;">
+            As at <span id="printAsOfDate">December 31, 2023</span>
+        </p>
+    </div>
+
+    <br>
+
+    <div style="font-size:10.5px;line-height:1.45;">
+        <p><b>SCHOOL:</b> <span id="printSchoolName">STA. CRUZ PINGKIAN HIGH SCHOOL</span></p>
+        <p>
+            For which <b id="printPrincipalName">Dolores C. Dodon, PhD</b>,
+            <span id="printPrincipalPosition">Principal III</span>, is accountable, having assumed such accountability on
+            <span id="printAccountabilityDate">August 2, 2021</span>.
+        </p>
+    </div>
+
+    <br>
+
+    <table id="print-table">
+        <thead>
+            <tr>
+                <th>Article</th>
+                <th>Description</th>
+                <th>Date Acquired</th>
+                <th>Property No.</th>
+                <th>Unit</th>
+                <th>Unit Value</th>
+                <th>Qty (Card)</th>
+                <th>Qty (Count)</th>
+                <th>Total Cost</th>
+                <th>Fund Source</th>
+                <th>Accountable Officer</th>
+            </tr>
+        </thead>
+        <tbody id="print-body"></tbody>
+        <tfoot>
+            <tr>
+                <td colspan="7"><b>TOTAL</b></td>
+                <td class="num" id="printTotalQty"></td>
+                <td class="num" id="printTotalCost"></td>
+                <td colspan="2"></td>
+            </tr>
+        </tfoot>
+    </table>
+
+    <table class="sig-table">
+        <tr>
+            <td>Certified Correct by:</td>
+            <td>Approved by:</td>
+            <td>Verified by:</td>
+        </tr>
+        <tr>
+            <td style="padding-top:34px;font-weight:bold;" id="sigCertified">
+                DARNA A. BUGNAY / NISAN K. BINWAG / DAISY ANN BALASYA / EFRENA TIAGO
+            </td>
+            <td style="padding-top:34px;font-weight:bold;">
+                <span id="sigPrincipalName">DOLORES C. DODON, PhD</span><br>
+                <span id="sigPrincipalPosition" style="font-weight:normal;">School Head</span>
+            </td>
+            <td style="padding-top:34px;font-weight:bold;" id="sigVerified">
+                ROBERT C. ROSAL JR.
+            </td>
+        </tr>
+    </table>
+</div>
+
+<!-- MULTI-SHEET SELECTOR MODAL -->
+<div class="modal" id="sheetModal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2>Select Workbook Sheets to Import</h2>
+            <button class="btn btn-outline btn-sm" onclick="closeSheetModal()">✕</button>
+        </div>
+        <p style="font-size:0.86rem;color:var(--muted);">
+            Choose which sheets from <b id="importFileName"></b> to import into your inventory:
+        </p>
+        <div class="action-btns" style="margin-top:10px;">
+            <button class="btn btn-outline btn-sm" onclick="toggleAllSheets(true)">Select All Non-Empty</button>
+            <button class="btn btn-outline btn-sm" onclick="toggleAllSheets(false)">Deselect All</button>
+        </div>
+        <div class="sheet-checklist" id="sheetChecklist"></div>
+        <div class="action-btns">
+            <button class="btn btn-success" onclick="confirmSheetImport()">
+                <i class="fas fa-check"></i> Import Selected Sheets
+            </button>
+            <button class="btn btn-outline" onclick="closeSheetModal()">Cancel</button>
+        </div>
+    </div>
+</div>
+
+<!-- SETTINGS MODAL -->
+<div class="modal" id="settingsModal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2>Annex A.8 Report Settings</h2>
+            <button class="btn btn-outline btn-sm" onclick="closeSettings()">✕</button>
+        </div>
+
+        <div class="form-group">
+            <label>School Name</label>
+            <input id="setSchoolName">
+        </div>
+        <div class="form-group">
+            <label>Accountable Officer / Principal Name</label>
+            <input id="setPrincipalName">
+        </div>
+        <div class="form-group">
+            <label>Designation / Position</label>
+            <input id="setPrincipalPosition">
+        </div>
+        <div class="form-group">
+            <label>As Of Date</label>
+            <input id="setAsOfDate">
+        </div>
+        <div class="form-group">
+            <label>Accountability Assumed Date</label>
+            <input id="setAccountabilityDate">
+        </div>
+        <div class="form-group">
+            <label>Certified Correct By</label>
+            <input id="setCertifiedBy">
+        </div>
+        <div class="form-group">
+            <label>Verified By</label>
+            <input id="setVerifiedBy">
+        </div>
+
+        <br>
+
+        <div class="action-btns">
+            <button class="btn btn-primary" onclick="saveSettings()">Save Settings</button>
+            <button class="btn btn-outline" onclick="closeSettings()">Cancel</button>
+        </div>
+    </div>
+</div>
+
+<script>
+/* ============================================================================
+   FIREBASE FIRESTORE SETUP
+   Replace the placeholder values below with your Firebase project config.
+   If left as placeholders, the app automatically uses browser localStorage.
+   ============================================================================ */
+const firebaseConfig = {
+    apiKey: "YOUR_API_KEY",
+    authDomain: "YOUR_PROJECT.firebaseapp.com",
+    projectId: "YOUR_PROJECT_ID",
+    storageBucket: "YOUR_PROJECT.appspot.com",
+    messagingSenderId: "YOUR_SENDER_ID",
+    appId: "YOUR_APP_ID"
+};
+
+let db = null;
+let useFirestore = false;
+
+try {
+    if (firebaseConfig.apiKey && !firebaseConfig.apiKey.startsWith("YOUR_")) {
+        firebase.initializeApp(firebaseConfig);
+        db = firebase.firestore();
+        useFirestore = true;
+    }
+} catch (e) {
+    console.warn("Firebase init fallback to localStorage:", e);
+}
+
+const LOCAL_RECORDS_KEY = "rpcsp_high_value_records_v1";
+const LOCAL_SETTINGS_KEY = "rpcsp_high_value_settings_v1";
+const FS_COLLECTION = "rpcp_high_value_records";
+const FS_SETTINGS_DOC = "rpcp_high_value_settings/default";
+
+let records = [];
+let activeCategory = "__ALL__";
+let pendingWorkbook = null;
+
+function updateSyncBadge() {
+    const badge = document.getElementById("syncBadge");
+    if (useFirestore) {
+        badge.textContent = "Connected to Firestore";
+        badge.classList.add("firestore");
+    } else {
+        badge.textContent = "Local Storage Mode (Paste Firebase Config to Sync)";
+        badge.classList.remove("firestore");
+    }
+}
+
+function formatMoney(val) {
+    return "₱" + Number(val || 0).toLocaleString("en-PH", {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+    });
+}
+
+function escapeHTML(str) {
+    return String(str || "").replace(/[&<>"']/g, m => ({
+        "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
+    }[m]));
+}
+
+function autoCalcTotal() {
+    const uVal = parseFloat(document.getElementById("unitValue").value) || 0;
+    const qCnt = parseFloat(document.getElementById("qtyCount").value) || 0;
+    if (uVal > 0 && qCnt > 0) {
+        document.getElementById("totalCostInput").value = (uVal * qCnt).toFixed(2);
+    }
+}
+
+/* ============================================================================
+   DATA PERSISTENCE (FIRESTORE + LOCAL STORAGE)
+   ============================================================================ */
+async function loadRecords() {
+    if (useFirestore) {
+        const snap = await db.collection(FS_COLLECTION).get();
+        records = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    } else {
+        records = JSON.parse(localStorage.getItem(LOCAL_RECORDS_KEY)) || [];
+    }
+    rebuildSidebarCategories();
+    renderTable();
+}
+
+async function persistRecord(item) {
+    if (useFirestore) {
+        if (item.id) {
+            const { id, ...payload } = item;
+            await db.collection(FS_COLLECTION).doc(id).set(payload, { merge: true });
+            return item.id;
+        } else {
+            const ref = await db.collection(FS_COLLECTION).add(item);
+            return ref.id;
+        }
+    } else {
+        if (!item.id) item.id = "hv_" + Date.now() + "_" + Math.random().toString(36).slice(2, 7);
+        const idx = records.findIndex(r => r.id === item.id);
+        if (idx >= 0) records[idx] = item;
+        else records.push(item);
+        localStorage.setItem(LOCAL_RECORDS_KEY, JSON.stringify(records));
+        return item.id;
+    }
+}
+
+async function bulkPersistRecords(newItems) {
+    if (!newItems.length) return;
+    if (useFirestore) {
+        const batch = db.batch();
+        newItems.forEach(item => {
+            const docRef = db.collection(FS_COLLECTION).doc();
+            item.id = docRef.id;
+            batch.set(docRef, item);
+        });
+        await batch.commit();
+        records.push(...newItems);
+    } else {
+        newItems.forEach((item, i) => {
+            item.id = "hv_" + Date.now() + "_" + i + "_" + Math.random().toString(36).slice(2, 6);
+        });
+        records.push(...newItems);
+        localStorage.setItem(LOCAL_RECORDS_KEY, JSON.stringify(records));
+    }
+}
+
+async function removeRecordById(id) {
+    if (useFirestore) {
+        await db.collection(FS_COLLECTION).doc(id).delete();
+    }
+    records = records.filter(r => r.id !== id);
+    if (!useFirestore) {
+        localStorage.setItem(LOCAL_RECORDS_KEY, JSON.stringify(records));
+    }
+}
+
+async function removeManyByIds(ids) {
+    if (!ids.length) return;
+    if (useFirestore) {
+        const batch = db.batch();
+        ids.forEach(id => batch.delete(db.collection(FS_COLLECTION).doc(id)));
+        await batch.commit();
+    }
+    const idSet = new Set(ids);
+    records = records.filter(r => !idSet.has(r.id));
+    if (!useFirestore) {
+        localStorage.setItem(LOCAL_RECORDS_KEY, JSON.stringify(records));
+    }
+}
+
+/* ============================================================================
+   CRUD & FORM
+   ============================================================================ */
+async function saveRecord() {
+    const desc = document.getElementById("description").value.trim();
+    const propNo = document.getElementById("propertyNo").value.trim();
+    if (!desc && !propNo) {
+        alert("Please enter a Description or Property Number.");
+        return;
+    }
+
+    const existingId = document.getElementById("editId").value.trim();
+    const uVal = Number(document.getElementById("unitValue").value || 0);
+    const qCard = Number(document.getElementById("qtyCard").value || 0);
+    const qCount = Number(document.getElementById("qtyCount").value || 0);
+    const rawTot = document.getElementById("totalCostInput").value;
+    const totCost = rawTot !== "" ? Number(rawTot) : (uVal * qCount);
+
+    const item = {
+        id: existingId || undefined,
+        sheetGroup: document.getElementById("sheetGroup").value.trim() || "High Value Items",
+        article: document.getElementById("article").value.trim() || "Semi-Expendable Property",
+        description: desc,
+        dateAcquired: document.getElementById("dateAcquired").value.trim(),
+        propertyNo: propNo,
+        unitMeasure: document.getElementById("unitMeasure").value.trim() || "unit",
+        unitValue: uVal,
+        qtyCard: qCard,
+        qtyCount: qCount,
+        totalCost: totCost,
+        fundSource: document.getElementById("fundSource").value.trim(),
+        accountableOfficer: document.getElementById("accountableOfficer").value.trim(),
+        updatedAt: new Date().toISOString()
+    };
+
+    const savedId = await persistRecord(item);
+    item.id = savedId;
+
+    if (existingId) {
+        const idx = records.findIndex(r => r.id === existingId);
+        if (idx >= 0) records[idx] = item;
+    } else if (!useFirestore) {
+        // already pushed in persistRecord
+    } else {
+        records.push(item);
+    }
+
+    resetForm();
+    rebuildSidebarCategories();
+    renderTable();
+}
+
+function editRecord(id) {
+    const r = records.find(x => x.id === id);
+    if (!r) return;
+
+    document.getElementById("editId").value = r.id;
+    document.getElementById("sheetGroup").value = r.sheetGroup || "";
+    document.getElementById("article").value = r.article || "";
+    document.getElementById("description").value = r.description || "";
+    document.getElementById("dateAcquired").value = r.dateAcquired || "";
+    document.getElementById("propertyNo").value = r.propertyNo || "";
+    document.getElementById("unitMeasure").value = r.unitMeasure || "";
+    document.getElementById("unitValue").value = r.unitValue ?? "";
+    document.getElementById("qtyCard").value = r.qtyCard ?? "";
+    document.getElementById("qtyCount").value = r.qtyCount ?? "";
+    document.getElementById("totalCostInput").value = r.totalCost ?? "";
+    document.getElementById("fundSource").value = r.fundSource || "";
+    document.getElementById("accountableOfficer").value = r.accountableOfficer || "";
+
+    document.getElementById("formTitle").textContent = "Edit High Value Item";
+    document.getElementById("saveBtn").innerHTML = '<i class="fas fa-check"></i> Update Record';
+    document.getElementById("cancelEditBtn").style.display = "inline-flex";
+    window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+function resetForm() {
+    document.getElementById("editId").value = "";
+    ["sheetGroup", "article", "description", "dateAcquired", "propertyNo", "unitMeasure",
+     "unitValue", "qtyCard", "qtyCount", "totalCostInput", "fundSource", "accountableOfficer"]
+        .forEach(id => document.getElementById(id).value = "");
+
+    document.getElementById("formTitle").textContent = "High Value Item Entry";
+    document.getElementById("saveBtn").innerHTML = '<i class="fas fa-save"></i> Save Record';
+    document.getElementById("cancelEditBtn").style.display = "none";
+}
+
+async function deleteRecord(id) {
+    if (!confirm("Delete this record?")) return;
+    await removeRecordById(id);
+    rebuildSidebarCategories();
+    renderTable();
+}
+
+async function clearFilteredOrAll() {
+    const shown = getFilteredRecords();
+    if (!shown.length) return;
+    const msg = activeCategory === "__ALL__"
+        ? `Delete ALL ${shown.length} records?`
+        : `Delete all ${shown.length} records in "${activeCategory}"?`;
+    if (!confirm(msg)) return;
+    await removeManyByIds(shown.map(r => r.id));
+    if (activeCategory !== "__ALL__" && !records.some(r => r.sheetGroup === activeCategory)) {
+        activeCategory = "__ALL__";
+    }
+    rebuildSidebarCategories();
+    renderTable();
+}
+
+/* ============================================================================
+   SIDEBAR CATEGORIES & TABLE RENDERING
+   ============================================================================ */
+function rebuildSidebarCategories() {
+    const container = document.getElementById("sidebarCategories");
+    const groups = [...new Set(records.map(r => r.sheetGroup || "High Value Items"))];
+
+    let html = `
+        <button class="menu-item ${activeCategory === "__ALL__" ? "active" : ""}" data-filter="__ALL__" onclick="selectCategory('__ALL__', this)">
+            <i class="fas fa-layer-group"></i>
+            <span>All Sheets (${records.length})</span>
+        </button>
+    `;
+
+    groups.forEach(g => {
+        const cnt = records.filter(r => (r.sheetGroup || "High Value Items") === g).length;
+        html += `
+            <button class="menu-item ${activeCategory === g ? "active" : ""}" onclick="selectCategory(${JSON.stringify(g)}, this)">
+                <i class="fas fa-table"></i>
+                <span style="overflow:hidden;text-overflow:ellipsis;">${escapeHTML(g)} (${cnt})</span>
+            </button>
+        `;
+    });
+
+    container.innerHTML = html;
+}
+
+function selectCategory(cat, btnEl) {
+    activeCategory = cat;
+    document.querySelectorAll("#sidebarCategories .menu-item").forEach(el => el.classList.remove("active"));
+    if (btnEl) btnEl.classList.add("active");
+    document.getElementById("activeFilterLabel").textContent = cat === "__ALL__" ? "All Sheets" : cat;
+    document.getElementById("printCategoryTitle").textContent =
+        cat === "__ALL__" ? "SEMI-EXPENDABLE PROPERTY — HIGH VALUED ITEMS" : cat.toUpperCase();
+    renderTable();
+}
+
+function getFilteredRecords() {
+    const q = (document.getElementById("searchBox").value || "").toLowerCase().trim();
+    return records.filter(r => {
+        const matchesCat = activeCategory === "__ALL__" || (r.sheetGroup || "High Value Items") === activeCategory;
+        if (!matchesCat) return false;
+        if (!q) return true;
+        return [r.sheetGroup, r.article, r.description, r.propertyNo, r.fundSource, r.accountableOfficer]
+            .some(v => String(v || "").toLowerCase().includes(q));
+    });
+}
+
+function renderTable() {
+    const shown = getFilteredRecords();
+    const body = document.getElementById("items-body");
+    document.getElementById("recordCount").textContent = shown.length;
+    document.getElementById("kpiItems").textContent = shown.length;
+
+    let sumQty = 0;
+    let sumCost = 0;
+
+    shown.forEach(r => {
+        sumQty += Number(r.qtyCount || 0);
+        sumCost += Number(r.totalCost || 0);
+    });
+
+    document.getElementById("kpiQty").textContent = sumQty.toLocaleString("en-PH");
+    document.getElementById("kpiCost").textContent = formatMoney(sumCost);
+
+    if (!shown.length) {
+        body.innerHTML = '<tr><td colspan="13" style="text-align:center;color:#64748b;padding:24px;">No matching High Value records. Import an Excel file or add an item above.</td></tr>';
+        renderPrint(shown, 0, 0);
+        return;
+    }
+
+    body.innerHTML = shown.map(r => `
+        <tr>
+            <td><span class="sheet-pill">${escapeHTML(r.sheetGroup || "High Value")}</span></td>
+            <td>${escapeHTML(r.article)}</td>
+            <td class="wrap-col">${escapeHTML(r.description)}</td>
+            <td>${escapeHTML(r.dateAcquired)}</td>
+            <td>${escapeHTML(r.propertyNo)}</td>
+            <td>${escapeHTML(r.unitMeasure)}</td>
+            <td class="num">${formatMoney(r.unitValue)}</td>
+            <td class="num">${Number(r.qtyCard || 0)}</td>
+            <td class="num">${Number(r.qtyCount || 0)}</td>
+            <td class="num">${formatMoney(r.totalCost)}</td>
+            <td>${escapeHTML(r.fundSource)}</td>
+            <td>${escapeHTML(r.accountableOfficer)}</td>
+            <td>
+                <div class="action-btns">
+                    <button onclick="editRecord('${escapeHTML(r.id)}')" class="btn btn-warning btn-sm">Edit</button>
+                    <button onclick="deleteRecord('${escapeHTML(r.id)}')" class="btn btn-danger btn-sm">Delete</button>
+                </div>
+            </td>
+        </tr>
+    `).join("");
+
+    renderPrint(shown, sumQty, sumCost);
+}
+
+function renderPrint(shown, sumQty, sumCost) {
+    const p = document.getElementById("print-body");
+    p.innerHTML = shown.map(r => `
+        <tr>
+            <td>${escapeHTML(r.article)}</td>
+            <td>${escapeHTML(r.description)}</td>
+            <td>${escapeHTML(r.dateAcquired)}</td>
+            <td>${escapeHTML(r.propertyNo)}</td>
+            <td>${escapeHTML(r.unitMeasure)}</td>
+            <td class="num">${formatMoney(r.unitValue)}</td>
+            <td class="num">${Number(r.qtyCard || 0)}</td>
+            <td class="num">${Number(r.qtyCount || 0)}</td>
+            <td class="num">${formatMoney(r.totalCost)}</td>
+            <td>${escapeHTML(r.fundSource)}</td>
+            <td>${escapeHTML(r.accountableOfficer)}</td>
+        </tr>
+    `).join("");
+
+    document.getElementById("printTotalQty").textContent = sumQty.toLocaleString("en-PH");
+    document.getElementById("printTotalCost").textContent = formatMoney(sumCost);
+}
+
+/* ============================================================================
+   MULTI-SHEET EXCEL IMPORTER (ANNEX A.8 / RPCSP HIGH VALUE)
+   ============================================================================ */
+function formatExcelDate(val) {
+    if (!val && val !== 0) return "";
+    if (val instanceof Date && !isNaN(val)) {
+        return val.toISOString().slice(0, 10);
+    }
+    if (typeof val === "number" && val > 20000 && val < 60000) {
+        const dt = XLSX.SSF.parse_date_code(val);
+        if (dt) {
+            const mm = String(dt.m).padStart(2, "0");
+            const dd = String(dt.d).padStart(2, "0");
+            return `${dt.y}-${mm}-${dd}`;
+        }
+    }
+    return String(val).trim();
+}
+
+function parseMoney(val) {
+    if (typeof val === "number") return isFinite(val) ? val : 0;
+    const cleaned = String(val || "").replace(/[^0-9.-]/g, "");
+    const n = parseFloat(cleaned);
+    return isFinite(n) ? n : 0;
+}
+
+function extractRecordsFromSheet(sheetName, sheet) {
+    const rawRows = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: "" });
+    if (!rawRows || !rawRows.length) return [];
+
+    // Locate header row containing "article" and "description"
+    let headerRowIndex = -1;
+    for (let i = 0; i < Math.min(rawRows.length, 25); i++) {
+        const rowLower = rawRows[i].map(c => String(c).toLowerCase().trim());
+        if (rowLower.includes("article") && rowLower.some(c => c.includes("description"))) {
+            headerRowIndex = i;
+            break;
+        }
+    }
+    if (headerRowIndex === -1) return [];
+
+    // Look for sub-header row ("Property Card" / "Physical Count" / "Accountable Officer")
+    let subHeaderOffset = 0;
+    for (let off = 1; off <= 4; off++) {
+        const checkStr = (rawRows[headerRowIndex + off] || []).map(c => String(c).toLowerCase()).join(" ");
+        if (checkStr.includes("property card") || checkStr.includes("physical count") || checkStr.includes("accountable officer")) {
+            subHeaderOffset = off;
+        }
+    }
+
+    const maxCols = Math.max(
+        rawRows[headerRowIndex].length,
+        (rawRows[headerRowIndex + subHeaderOffset] || []).length,
+        14
+    );
+
+    const mergedHeaders = [];
+    for (let c = 0; c < maxCols; c++) {
+        const parts = [];
+        for (let off = 0; off <= subHeaderOffset; off++) {
+            const v = (rawRows[headerRowIndex + off] || [])[c];
+            if (v !== undefined && String(v).trim() !== "") {
+                parts.push(String(v).toLowerCase().replace(/\s+/g, " ").trim());
+            }
+        }
+        mergedHeaders.push(parts.join(" "));
+    }
+
+    const findCol = (keywords) => mergedHeaders.findIndex(h => keywords.some(kw => h.includes(kw)));
+
+    const colIdx = {
+        article: findCol(["article"]) >= 0 ? findCol(["article"]) : 1,
+        description: findCol(["description"]) >= 0 ? findCol(["description"]) : 2,
+        dateAcquired: findCol(["date of acquisition", "date acquired", "date"]) >= 0 ? findCol(["date of acquisition", "date acquired", "date"]) : 3,
+        propertyNo: findCol(["property number", "property no"]) >= 0 ? findCol(["property number", "property no"]) : 4,
+        unitMeasure: findCol(["unit of measure", "unit"]) >= 0 ? findCol(["unit of measure", "unit"]) : 5,
+        unitValue: findCol(["unit value"]) >= 0 ? findCol(["unit value"]) : 6,
+        qtyCard: findCol(["property card"]) >= 0 ? findCol(["property card"]) : 7,
+        qtyCount: findCol(["physical count"]) >= 0 ? findCol(["physical count"]) : 8,
+        totalCost: findCol(["total cost"]) >= 0 ? findCol(["total cost"]) : 9,
+        fundSource: findCol(["source of fund", "fund"]) >= 0 ? findCol(["source of fund", "fund"]) : 10,
+        accountableOfficer: findCol(["accountable officer", "remarks"]) >= 0 ? findCol(["accountable officer", "remarks"]) : 13
+    };
+
+    const extracted = [];
+    for (let r = headerRowIndex + subHeaderOffset + 1; r < rawRows.length; r++) {
+        const row = rawRows[r];
+        if (!row) continue;
+
+        const rowStr = row.map(c => String(c).trim()).join(" ");
+        if (!rowStr || rowStr === ".") continue;
+
+        const upperRow = rowStr.toUpperCase();
+        if (upperRow.includes("TOTAL") || upperRow.includes("CERTIFIED CORRECT") || upperRow.includes("APPROVED BY") || upperRow.includes("VERIFIED BY")) {
+            continue;
+        }
+
+        const article = String(row[colIdx.article] ?? "").trim();
+        const desc = String(row[colIdx.description] ?? "").trim();
+        const propNo = String(row[colIdx.propertyNo] ?? "").trim();
+        const uVal = parseMoney(row[colIdx.unitValue]);
+        const qCard = parseMoney(row[colIdx.qtyCard]);
+        const qCount = parseMoney(row[colIdx.qtyCount]);
+        const totCost = parseMoney(row[colIdx.totalCost]);
+
+        // Skip rows that only have a stray dot or empty item fields
+        if (!desc && !propNo && !uVal && !totCost) continue;
+
+        extracted.push({
+            sheetGroup: sheetName.trim(),
+            article: article || "Semi-Expendable Property",
+            description: desc,
+            dateAcquired: formatExcelDate(row[colIdx.dateAcquired]),
+            propertyNo: propNo,
+            unitMeasure: String(row[colIdx.unitMeasure] ?? "unit").trim() || "unit",
+            unitValue: uVal,
+            qtyCard: qCard,
+            qtyCount: qCount,
+            totalCost: totCost || (uVal * qCount),
+            fundSource: String(row[colIdx.fundSource] ?? "").trim(),
+            accountableOfficer: String(row[colIdx.accountableOfficer] ?? "").trim()
+        });
+    }
+
+    return extracted;
+}
+
+document.getElementById("excelFile").addEventListener("change", function(evt) {
+    const file = evt.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        try {
+            const data = new Uint8Array(e.target.result);
+            const workbook = XLSX.read(data, { type: "array", cellDates: true });
+            pendingWorkbook = workbook;
+
+            document.getElementById("importFileName").textContent = file.name;
+            const listEl = document.getElementById("sheetChecklist");
+
+            listEl.innerHTML = workbook.SheetNames.map((name, idx) => {
+                const count = extractRecordsFromSheet(name, workbook.Sheets[name]).length;
+                const isEmpty = count === 0;
+                return `
+                    <label class="sheet-check-item" style="${isEmpty ? "opacity:0.55;" : ""}">
+                        <input type="checkbox" class="sheet-checkbox" data-sheet-idx="${idx}" ${isEmpty ? "" : "checked"}>
+                        <span><b>${escapeHTML(name)}</b> <small>(${count} items)</small></span>
+                    </label>
+                `;
+            }).join("");
+
+            document.getElementById("sheetModal").classList.add("open");
+        } catch (err) {
+            console.error(err);
+            alert("Could not parse Excel workbook. Please verify the file.");
+        } finally {
+            evt.target.value = "";
+        }
+    };
+    reader.readAsArrayBuffer(file);
+});
+
+function closeSheetModal() {
+    document.getElementById("sheetModal").classList.remove("open");
+    pendingWorkbook = null;
+}
+
+function toggleAllSheets(checked) {
+    document.querySelectorAll(".sheet-checkbox").forEach(cb => {
+        if (!checked || cb.parentElement.style.opacity !== "0.55") {
+            cb.checked = checked;
+        }
+    });
+}
+
+async function confirmSheetImport() {
+    if (!pendingWorkbook) return;
+    const selectedBoxes = [...document.querySelectorAll(".sheet-checkbox:checked")];
+    if (!selectedBoxes.length) {
+        alert("Please select at least one sheet.");
+        return;
+    }
+
+    const toAdd = [];
+    selectedBoxes.forEach(cb => {
+        const idx = parseInt(cb.getAttribute("data-sheet-idx"), 10);
+        const sName = pendingWorkbook.SheetNames[idx];
+        const rows = extractRecordsFromSheet(sName, pendingWorkbook.Sheets[sName]);
+        toAdd.push(...rows);
+    });
+
+    await bulkPersistRecords(toAdd);
+    closeSheetModal();
+    rebuildSidebarCategories();
+    renderTable();
+    alert(`Imported ${toAdd.length} High Value item(s) across ${selectedBoxes.length} sheet(s).`);
+}
+
+function downloadTemplate() {
+    const sample = [{
+        "Article": "IT Equipment",
+        "Description": "Laptop-Lenovo Thinkpad E14 Gen 5",
+        "Date of Acquisition": "2024-07-16",
+        "Property Number": "2024-07-70",
+        "Unit of Measure": "PC",
+        "Unit Value": 31221,
+        "Qty per Property Card": 1,
+        "Qty per Physical Count": 1,
+        "Total Cost": 31221,
+        "Source of Fund": "Central",
+        "Accountable Officer": "Arman Puyao"
+    }];
+    const ws = XLSX.utils.json_to_sheet(sample);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "IT-Equipment-DCP 2025");
+    XLSX.writeFile(wb, "RPCSP_High_Value_Template.xlsx");
+}
+
+/* ============================================================================
+   SETTINGS
+   ============================================================================ */
+const DEFAULT_SETTINGS = {
+    schoolName: "STA. CRUZ PINGKIAN HIGH SCHOOL",
+    principalName: "Dolores C. Dodon, PhD",
+    principalPosition: "Principal III",
+    asOfDate: "December 31, 2023",
+    accountabilityDate: "August 2, 2021",
+    certifiedBy: "DARNA A. BUGNAY / NISAN K. BINWAG / DAISY ANN BALASYA / EFRENA TIAGO",
+    verifiedBy: "ROBERT C. ROSAL JR."
+};
+
+async function loadSettings() {
+    if (useFirestore) {
+        const doc = await db.doc(FS_SETTINGS_DOC).get();
+        return { ...DEFAULT_SETTINGS, ...(doc.exists ? doc.data() : {}) };
+    }
+    return { ...DEFAULT_SETTINGS, ...(JSON.parse(localStorage.getItem(LOCAL_SETTINGS_KEY)) || {}) };
+}
+
+function openSettings() {
+    loadSettings().then(s => {
+        document.getElementById("setSchoolName").value = s.schoolName;
+        document.getElementById("setPrincipalName").value = s.principalName;
+        document.getElementById("setPrincipalPosition").value = s.principalPosition;
+        document.getElementById("setAsOfDate").value = s.asOfDate;
+        document.getElementById("setAccountabilityDate").value = s.accountabilityDate;
+        document.getElementById("setCertifiedBy").value = s.certifiedBy;
+        document.getElementById("setVerifiedBy").value = s.verifiedBy;
+        document.getElementById("settingsModal").classList.add("open");
+    });
+}
+
+function closeSettings() {
+    document.getElementById("settingsModal").classList.remove("open");
+}
+
+async function saveSettings() {
+    const data = {
+        schoolName: document.getElementById("setSchoolName").value.trim(),
+        principalName: document.getElementById("setPrincipalName").value.trim(),
+        principalPosition: document.getElementById("setPrincipalPosition").value.trim(),
+        asOfDate: document.getElementById("setAsOfDate").value.trim(),
+        accountabilityDate: document.getElementById("setAccountabilityDate").value.trim(),
+        certifiedBy: document.getElementById("setCertifiedBy").value.trim(),
+        verifiedBy: document.getElementById("setVerifiedBy").value.trim()
+    };
+
+    if (useFirestore) {
+        await db.doc(FS_SETTINGS_DOC).set(data, { merge: true });
+    } else {
+        localStorage.setItem(LOCAL_SETTINGS_KEY, JSON.stringify(data));
+    }
+
+    await applySettings();
+    closeSettings();
+    alert("Report settings saved.");
+}
+
+async function applySettings() {
+    const s = await loadSettings();
+    document.getElementById("printSchoolName").textContent = s.schoolName;
+    document.getElementById("printPrincipalName").textContent = s.principalName;
+    document.getElementById("sigPrincipalName").textContent = s.principalName;
+    document.getElementById("printPrincipalPosition").textContent = s.principalPosition;
+    document.getElementById("printAsOfDate").textContent = s.asOfDate;
+    document.getElementById("printAccountabilityDate").textContent = s.accountabilityDate;
+    document.getElementById("sigCertified").textContent = s.certifiedBy;
+    document.getElementById("sigVerified").textContent = s.verifiedBy;
+}
+
+/* ============================================================================
+   INIT
+   ============================================================================ */
+(async function init() {
+    updateSyncBadge();
+    await applySettings();
+    await loadRecords();
+})();
+</script>
+
+</body>
+</html>
