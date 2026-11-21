@@ -222,6 +222,69 @@ body {
     flex-wrap: wrap;
 }
 
+/* SWITCH TABS */
+.switch-tabs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 16px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--border);
+}
+
+.switch-tab {
+    background: white;
+    border: 1px solid var(--border);
+    color: var(--muted);
+    padding: 9px 16px;
+    border-radius: 12px;
+    font-size: 0.85rem;
+    font-weight: 700;
+    cursor: pointer;
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.18s ease;
+}
+
+.switch-tab:hover {
+    color: var(--text);
+    border-color: #cbd5e1;
+    background: #f8fafc;
+}
+
+.switch-tab.active {
+    color: var(--primary);
+    border-color: var(--primary);
+    background: #f0fdfa;
+}
+
+.switch-tab.active::after {
+    content: "";
+    position: absolute;
+    left: 14px;
+    right: 14px;
+    bottom: -13px;
+    height: 3px;
+    border-radius: 999px;
+    background: var(--primary);
+}
+
+.tab-count {
+    font-size: 0.72rem;
+    padding: 1px 7px;
+    border-radius: 999px;
+    background: #e2e8f0;
+    color: #334155;
+    font-weight: 700;
+}
+
+.switch-tab.active .tab-count {
+    background: var(--primary);
+    color: white;
+}
+
 /* FORM */
 .form-grid {
     display: grid;
@@ -485,7 +548,7 @@ th {
 
     <div class="sidebar-sub">Views & Categories</div>
     <div class="sidebar-menu" id="sidebarCategories">
-        <button class="menu-item active" data-filter="__ALL__" onclick="selectCategory('__ALL__', this)">
+        <button class="menu-item active" data-filter="__ALL__" onclick="selectCategory('__ALL__')">
             <i class="fas fa-layer-group"></i>
             <span>All Sheets (0)</span>
         </button>
@@ -606,7 +669,7 @@ th {
         </div>
     </div>
 
-    <!-- TABLE -->
+    <!-- TABLE + SWITCH TABS -->
     <div class="card">
         <div class="card-header">
             <h2>
@@ -623,6 +686,14 @@ th {
                     <i class="fas fa-trash"></i> Clear Shown
                 </button>
             </div>
+        </div>
+
+        <!-- SWITCH TABS -->
+        <div class="switch-tabs" id="categoryTabs">
+            <button class="switch-tab active" onclick="selectCategory('__ALL__')">
+                <span>All Sheets</span>
+                <span class="tab-count">0</span>
+            </button>
         </div>
 
         <div class="table-wrap">
@@ -860,7 +931,7 @@ function toggleNormalizeGroups() {
     document.getElementById("normLabel").textContent = normalizeGroups
         ? "Group Similar Sheets: On"
         : "Group Similar Sheets: Off";
-    rebuildSidebarCategories();
+    rebuildCategoryUI();
     renderTable();
 }
 
@@ -904,7 +975,7 @@ async function loadRecords() {
     } else {
         records = JSON.parse(localStorage.getItem(LOCAL_RECORDS_KEY)) || [];
     }
-    rebuildSidebarCategories();
+    rebuildCategoryUI();
     renderTable();
 }
 
@@ -972,13 +1043,12 @@ async function removeManyByIds(ids) {
     }
 }
 
-    /* CRUD & FORM */
+/* CRUD & FORM (SILENT SAVE) */
 async function saveRecord() {
     const desc = document.getElementById("description").value.trim();
     const propNo = document.getElementById("propertyNo").value.trim();
 
     const existingId = document.getElementById("editId").value.trim();
-
     const uVal = Number(document.getElementById("unitValue").value || 0);
     const qCard = Number(document.getElementById("qtyCard").value || 0);
     const qCount = Number(document.getElementById("qtyCount").value || 0);
@@ -1013,7 +1083,7 @@ async function saveRecord() {
     }
 
     resetForm();
-    rebuildSidebarCategories();
+    rebuildCategoryUI();
     renderTable();
 }
 
@@ -1053,59 +1123,71 @@ function resetForm() {
 }
 
 async function deleteRecord(id) {
-    if (!confirm("Delete this record?")) return;
     await removeRecordById(id);
-    rebuildSidebarCategories();
+    rebuildCategoryUI();
     renderTable();
 }
 
 async function clearFilteredOrAll() {
     const shown = getFilteredRecords();
     if (!shown.length) return;
-    const msg = activeCategory === "__ALL__"
-        ? `Delete ALL ${shown.length} records?`
-        : `Delete all ${shown.length} records in "${activeCategory}"?`;
-    if (!confirm(msg)) return;
     await removeManyByIds(shown.map(r => r.id));
     if (activeCategory !== "__ALL__" && !records.some(r => getDisplayGroup(r.sheetGroup) === activeCategory)) {
         activeCategory = "__ALL__";
     }
-    rebuildSidebarCategories();
+    rebuildCategoryUI();
     renderTable();
 }
 
-/* SIDEBAR CATEGORIES & TABLE RENDERING */
-function rebuildSidebarCategories() {
-    const container = document.getElementById("sidebarCategories");
+/* SIDEBAR + SWITCH TABS + TABLE RENDERING */
+function rebuildCategoryUI() {
+    const sidebarEl = document.getElementById("sidebarCategories");
+    const tabsEl = document.getElementById("categoryTabs");
     const groups = [...new Set(records.map(r => getDisplayGroup(r.sheetGroup)))];
 
-    let html = `
-        <button class="menu-item ${activeCategory === "__ALL__" ? "active" : ""}" data-filter="__ALL__" onclick="selectCategory('__ALL__', this)">
+    let sidebarHtml = `
+        <button class="menu-item ${activeCategory === "__ALL__" ? "active" : ""}" onclick="selectCategory('__ALL__')">
             <i class="fas fa-layer-group"></i>
             <span>All Sheets (${records.length})</span>
         </button>
     `;
 
+    let tabsHtml = `
+        <button type="button" class="switch-tab ${activeCategory === "__ALL__" ? "active" : ""}" onclick="selectCategory('__ALL__')">
+            <span>All Sheets</span>
+            <span class="tab-count">${records.length}</span>
+        </button>
+    `;
+
     groups.forEach(g => {
         const cnt = records.filter(r => getDisplayGroup(r.sheetGroup) === g).length;
-        html += `
-            <button class="menu-item ${activeCategory === g ? "active" : ""}" onclick="selectCategory(${JSON.stringify(g)}, this)">
+        const safeArg = JSON.stringify(g).replace(/"/g, "&quot;");
+
+        sidebarHtml += `
+            <button class="menu-item ${activeCategory === g ? "active" : ""}" onclick="selectCategory(${safeArg})">
                 <i class="fas fa-table"></i>
                 <span style="overflow:hidden;text-overflow:ellipsis;">${escapeHTML(g)} (${cnt})</span>
             </button>
         `;
+
+        tabsHtml += `
+            <button type="button" class="switch-tab ${activeCategory === g ? "active" : ""}" onclick="selectCategory(${safeArg})">
+                <span>${escapeHTML(g)}</span>
+                <span class="tab-count">${cnt}</span>
+            </button>
+        `;
     });
 
-    container.innerHTML = html;
+    sidebarEl.innerHTML = sidebarHtml;
+    tabsEl.innerHTML = tabsHtml;
 }
 
-function selectCategory(cat, btnEl) {
+function selectCategory(cat) {
     activeCategory = cat;
-    document.querySelectorAll("#sidebarCategories .menu-item").forEach(el => el.classList.remove("active"));
-    if (btnEl) btnEl.classList.add("active");
     document.getElementById("activeFilterLabel").textContent = cat === "__ALL__" ? "All Sheets" : cat;
     document.getElementById("printCategoryTitle").textContent =
         cat === "__ALL__" ? "SEMI-EXPENDABLE PROPERTY — HIGH VALUED ITEMS" : cat.toUpperCase();
+    rebuildCategoryUI();
     renderTable();
 }
 
@@ -1341,7 +1423,6 @@ document.getElementById("excelFile").addEventListener("change", function(evt) {
             document.getElementById("sheetModal").classList.add("open");
         } catch (err) {
             console.error(err);
-            alert("Could not parse Excel workbook. Please verify the file.");
         } finally {
             evt.target.value = "";
         }
@@ -1365,10 +1446,7 @@ function toggleAllSheets(checked) {
 async function confirmSheetImport() {
     if (!pendingWorkbook) return;
     const selectedBoxes = [...document.querySelectorAll(".sheet-checkbox:checked")];
-    if (!selectedBoxes.length) {
-        alert("Please select at least one sheet.");
-        return;
-    }
+    if (!selectedBoxes.length) return;
 
     const toAdd = [];
     selectedBoxes.forEach(cb => {
@@ -1380,9 +1458,8 @@ async function confirmSheetImport() {
 
     await bulkPersistRecords(toAdd);
     closeSheetModal();
-    rebuildSidebarCategories();
+    rebuildCategoryUI();
     renderTable();
-    alert(`Imported ${toAdd.length} High Value item(s) across ${selectedBoxes.length} sheet(s).`);
 }
 
 function downloadTemplate() {
@@ -1460,7 +1537,6 @@ async function saveSettings() {
 
     await applySettings();
     closeSettings();
-    alert("Report settings saved.");
 }
 
 async function applySettings() {
