@@ -1,966 +1,532 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>RPCP Land Inventory | Appendix 73</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Import RPCP Workbook – Admin Office</title>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <script src="https://cdn.sheetjs.com/xlsx-0.20.2/package/dist/xlsx.full.min.js"></script>
 
-<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-<script src="https://cdn.sheetjs.com/xlsx-0.20.2/package/dist/xlsx.full.min.js"></script>
-
-<style>
-:root {
-    --sidebar-bg: #0f172a;
-    --sidebar-hover: #1e293b;
-    --primary: #0f766e;
-    --primary-light: #14b8a6;
-    --success: #16a34a;
-    --danger: #dc2626;
-    --warning: #d97706;
-    --bg: #f4f7f9;
-    --border: #e2e8f0;
-    --text: #1e293b;
-    --muted: #64748b;
-}
-
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-    font-family: 'Outfit', sans-serif;
-}
-
-body {
-    background: var(--bg);
-    color: var(--text);
-    display: flex;
-    min-height: 100vh;
-}
-
-/* SIDEBAR */
-.sidebar {
-    width: 260px;
-    background: var(--sidebar-bg);
-    color: white;
-    position: fixed;
-    height: 100vh;
-    z-index: 10;
-}
-
-.sidebar-brand {
-    padding: 28px;
-    font-size: 1.3rem;
-    font-weight: 800;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-    display: flex;
-    align-items: center;
-    gap: 10px;
-}
-
-.sidebar-menu {
-    padding: 20px;
-}
-
-.menu-item {
-    display: flex;
-    gap: 12px;
-    align-items: center;
-    text-decoration: none;
-    color: #cbd5e1;
-    padding: 14px;
-    border-radius: 10px;
-    margin-bottom: 8px;
-    transition: background 0.2s;
-}
-
-.menu-item:hover {
-    background: var(--sidebar-hover);
-    color: white;
-}
-
-.menu-item.active {
-    background: linear-gradient(90deg, var(--primary), var(--primary-light));
-    color: white;
-    font-weight: 600;
-}
-
-/* MAIN */
-.main-content {
-    margin-left: 260px;
-    flex: 1;
-    padding: 30px;
-}
-
-.topbar {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: 12px;
-    margin-bottom: 20px;
-}
-
-.topbar h1 {
-    font-size: 1.8rem;
-}
-
-.topbar-actions {
-    display: flex;
-    gap: 10px;
-    flex-wrap: wrap;
-}
-
-/* CARD */
-.card {
-    background: white;
-    border-radius: 16px;
-    padding: 24px;
-    border: 1px solid var(--border);
-    margin-bottom: 20px;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
-}
-
-.card-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 16px;
-}
-
-/* FORM */
-.form-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 16px;
-}
-
-@media (max-width: 900px) {
-    .form-grid { grid-template-columns: repeat(2, 1fr); }
-}
-
-@media (max-width: 600px) {
-    .form-grid { grid-template-columns: 1fr; }
-}
-
-.form-group {
-    display: flex;
-    flex-direction: column;
-}
-
-.form-group label {
-    font-size: 0.75rem;
-    font-weight: 700;
-    color: var(--muted);
-    margin-bottom: 6px;
-    text-transform: uppercase;
-}
-
-.form-group input,
-.form-group select {
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 10px;
-    font-size: 0.95rem;
-    background: #f8fafc;
-}
-
-.form-group input:focus,
-.form-group select:focus {
-    outline: none;
-    border-color: var(--primary);
-    background: white;
-}
-
-/* BUTTONS */
-.btn {
-    border: none;
-    cursor: pointer;
-    border-radius: 8px;
-    padding: 10px 18px;
-    font-weight: 700;
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    font-size: 0.9rem;
-    transition: opacity 0.2s;
-}
-
-.btn:hover {
-    opacity: 0.9;
-}
-
-.btn-sm {
-    padding: 6px 10px;
-    font-size: 0.8rem;
-}
-
-.btn-primary { background: var(--primary); color: white; }
-.btn-success { background: var(--success); color: white; }
-.btn-warning { background: var(--warning); color: white; }
-.btn-danger { background: var(--danger); color: white; }
-.btn-print { background: #475569; color: white; }
-.btn-outline { background: white; color: var(--text); border: 1px solid var(--border); }
-
-.action-btns {
-    display: flex;
-    gap: 6px;
-}
-
-/* TABLE */
-.table-wrap {
-    overflow-x: auto;
-}
-
-table {
-    width: 100%;
-    border-collapse: collapse;
-}
-
-th, td {
-    padding: 12px;
-    border-bottom: 1px solid var(--border);
-    text-align: left;
-    font-size: 0.9rem;
-}
-
-th {
-    background: #f8fafc;
-    color: var(--muted);
-    font-size: 0.75rem;
-    text-transform: uppercase;
-}
-
-.num {
-    text-align: right;
-    font-variant-numeric: tabular-nums;
-}
-
-/* MODAL */
-.modal {
-    display: none;
-    position: fixed;
-    inset: 0;
-    background: rgba(15, 23, 42, 0.6);
-    z-index: 1000;
-    align-items: center;
-    justify-content: center;
-    padding: 20px;
-}
-
-.modal.open {
-    display: flex;
-}
-
-.modal-content {
-    background: white;
-    border-radius: 16px;
-    padding: 24px;
-    width: 100%;
-    max-width: 480px;
-    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2);
-}
-
-.modal-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 16px;
-    padding-bottom: 10px;
-    border-bottom: 1px solid var(--border);
-}
-
-.modal-content .form-group {
-    margin-bottom: 12px;
-}
-
-/* PRINT */
-#print-area {
-    display: none;
-}
-
-@media print {
-    @page {
-        size: landscape;
-        margin: 12mm;
+  <style>
+    :root {
+      --sidebar-bg: #0f172a;
+      --bg-color: #f4f7f9;
+      --primary: #0f766e;
+      --text-main: #1e293b;
+      --text-muted: #64748b;
+      --border: #e2e8f0;
+      --danger: #dc2626;
     }
 
-    body {
-        display: block;
-        background: white;
-    }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Outfit', sans-serif; }
+    body { background: var(--bg-color); color: var(--text-main); display: flex; min-height: 100vh; }
 
-    .sidebar,
-    .main-content,
-    .modal {
-        display: none !important;
-    }
+    .sidebar { width: 260px; background: var(--sidebar-bg); color: #fff; display: flex; flex-direction: column; position: fixed; height: 100vh; z-index: 100; }
+    .sidebar-brand { padding: 30px 24px; font-size: 1.4rem; font-weight: 800; display: flex; align-items: center; gap: 12px; border-bottom: 1px solid rgba(255,255,255,0.05); }
+    .sidebar-brand i { color: #14b8a6; }
+    .sidebar-menu { flex: 1; padding: 24px 16px; display: flex; flex-direction: column; gap: 8px; }
+    .menu-item { display: flex; align-items: center; gap: 14px; padding: 14px 18px; border-radius: 12px; color: #94a3b8; text-decoration: none; font-weight: 500; font-size: 0.95rem; transition: all 0.2s; }
+    .menu-item:hover { background: #1e293b; color: #fff; }
+    .menu-item.active { background: linear-gradient(90deg, #0f766e, #14b8a6); color: #fff; }
 
-    #print-area {
-        display: block !important;
-    }
+    .main-content { margin-left: 260px; flex: 1; padding: 32px; }
+    .topbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
+    .topbar h1 { font-size: 1.8rem; font-weight: 800; }
 
-    #print-table {
-        width: 100%;
-        border-collapse: collapse;
-    }
+    .card { background: #fff; border-radius: 16px; padding: 30px; box-shadow: 0 4px 6px rgba(0,0,0,0.02); border: 1px solid var(--border); margin-bottom: 20px; }
 
-    #print-table th,
-    #print-table td {
-        border: 1px solid black;
-        padding: 5px;
-        font-size: 10px;
-        color: black;
-    }
+    .upload-zone { border: 2px dashed var(--border); border-radius: 12px; padding: 40px; text-align: center; cursor: pointer; background: #f8fafc; transition: 0.2s; }
+    .upload-zone:hover { border-color: var(--primary); background: #eff6ff; }
+    .upload-zone i { font-size: 3rem; color: var(--primary); margin-bottom: 15px; }
 
-    #print-table th {
-        background: #f1f5f9 !important;
-        text-align: center;
-    }
+    .btn { padding: 10px 18px; border-radius: 8px; border: none; cursor: pointer; font-weight: 700; font-size: 0.85rem; display: inline-flex; align-items: center; gap: 8px; transition: 0.2s; }
+    .btn-primary { background: var(--primary); color: #fff; }
+    .btn-success { background: #10b981; color: #fff; }
+    .btn-danger { background: var(--danger); color: #fff; }
+    .btn-outline { background: transparent; border: 2px solid var(--border); color: var(--text-muted); }
+    .btn:disabled { opacity: 0.6; cursor: not-allowed; }
 
-    .sig-table {
-        width: 100%;
-        border-collapse: collapse;
-        margin-top: 24px;
-        page-break-inside: avoid;
-    }
+    .table-wrap { overflow-x: auto; max-height: 360px; border: 1px solid var(--border); border-radius: 8px; margin-top: 16px; }
+    table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+    th, td { padding: 10px 12px; border-bottom: 1px solid var(--border); text-align: left; }
+    th { background: #f8fafc; position: sticky; top: 0; }
 
-    .sig-table td {
-        border: none !important;
-        padding: 4px 8px;
-        font-size: 10.5px;
-        vertical-align: top;
-        width: 33.33%;
-    }
-}
-</style>
+    .mapping-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 15px; margin-bottom: 20px; background: #f8fafc; padding: 20px; border-radius: 12px; }
+    .form-group label { display: block; font-size: 0.75rem; font-weight: 700; color: var(--text-muted); margin-bottom: 5px; text-transform: uppercase; }
+    .form-group select { width: 100%; padding: 10px; border: 1px solid var(--border); border-radius: 8px; font-family: inherit; }
+
+    .sheet-selector { background: #e0f2fe; padding: 20px; border-radius: 12px; margin-bottom: 20px; display: flex; align-items: center; gap: 15px; border: 1px solid #bae6fd; flex-wrap: wrap; }
+    .sheet-selector label { font-weight: 700; color: #0369a1; }
+    .sheet-selector select { padding: 10px; border: 1px solid #7dd3fc; border-radius: 8px; font-size: 1rem; font-weight: 700; color: #0369a1; outline: none; min-width: 260px; }
+
+    .status-banner { display: none; margin-top: 12px; padding: 12px 16px; background: #d1fae5; border: 1px solid #6ee7b7; border-radius: 8px; color: #065f46; font-size: 0.85rem; }
+    .status-banner.show { display: block; }
+    .status-banner.warn { background: #fef3c7; border-color: #fcd34d; color: #92400e; }
+
+    .log-box { display: none; margin-top: 20px; background: #0f172a; color: #e2e8f0; padding: 16px 20px; border-radius: 12px; font-family: monospace; font-size: 0.85rem; max-height: 360px; overflow-y: auto; }
+    .log-box.show { display: block; }
+    .log-line { padding: 4px 0; border-bottom: 1px solid #1e293b; }
+    .log-ok { color: #4ade80; }
+    .log-skip { color: #fbbf24; }
+    .log-info { color: #93c5fd; }
+  </style>
 </head>
-
 <body>
 
-<!-- SIDEBAR -->
-<aside class="sidebar">
-    <div class="sidebar-brand">
-        <i class="fas fa-landmark"></i>
-        <span>RPCP</span>
-    </div>
-
+  <aside class="sidebar">
+    <div class="sidebar-brand"><i class="fas fa-landmark"></i> <span>Admin Office</span></div>
     <div class="sidebar-menu">
-        <a href="#land" class="menu-item active">
-            <i class="fas fa-globe"></i>
-            <span>Land</span>
-        </a>
-        <a href="#buildings" class="menu-item">
-            <i class="fas fa-building"></i>
-            <span>Buildings</span>
-        </a>
-        <a href="#structures" class="menu-item">
-            <i class="fas fa-road"></i>
-            <span>Structures</span>
-        </a>
+      <a href="index.html" class="menu-item"><i class="fas fa-home"></i> <span>Overview</span></a>
+      <a href="inventory.html" class="menu-item"><i class="fas fa-boxes"></i> <span>Semi-Expendable (Low Value)</span></a>
+      <a href="rpcp.html" class="menu-item"><i class="fas fa-layer-group"></i> <span>RPCP – Appendix 73</span></a>
+      <a href="rpcp-importer.html" class="menu-item active"><i class="fas fa-file-import"></i> <span>RPCP Excel Importer</span></a>
     </div>
-</aside>
+  </aside>
 
-<!-- MAIN -->
-<main class="main-content">
-
+  <main class="main-content">
     <div class="topbar">
-        <h1>🌎 RPCP - LAND</h1>
-        <div class="topbar-actions">
-            <button class="btn btn-outline" onclick="downloadTemplate()">
-                <i class="fas fa-download"></i> Template
-            </button>
-            <input type="file" id="excelFile" accept=".xlsx,.xls,.csv" hidden>
-            <button class="btn btn-success" onclick="document.getElementById('excelFile').click()">
-                <i class="fas fa-file-import"></i> Import Excel
-            </button>
-            <button class="btn btn-print" onclick="window.print()">
-                <i class="fas fa-print"></i> Print Appendix 73
-            </button>
-        </div>
+      <h1>📥 Import RPCP Workbook</h1>
     </div>
 
-    <!-- FORM -->
     <div class="card">
-        <div class="card-header">
-            <h2 id="formTitle">Land Record Entry</h2>
-            <button class="btn btn-outline btn-sm" onclick="openSettings()">
-                <i class="fas fa-cog"></i> Report Settings
-            </button>
-        </div>
-
-        <input type="hidden" id="editIndex" value="-1">
-
-        <div class="form-grid">
-            <div class="form-group">
-                <label>Article</label>
-                <input id="article" value="Land">
-            </div>
-            <div class="form-group">
-                <label>Description</label>
-                <input id="description" placeholder="e.g., Main Campus Site">
-            </div>
-            <div class="form-group">
-                <label>Lot Area</label>
-                <input id="lotArea" placeholder="e.g., 10,000 sq.m.">
-            </div>
-            <div class="form-group">
-                <label>Registered Owner</label>
-                <input id="registeredOwner" placeholder="e.g., Department of Education">
-            </div>
-            <div class="form-group">
-                <label>TCT Number</label>
-                <input id="tctNumber" placeholder="e.g., TCT-12345">
-            </div>
-            <div class="form-group">
-                <label>Mode of Acquisition</label>
-                <input id="mode" placeholder="e.g., Donation / Purchase">
-            </div>
-            <div class="form-group">
-                <label>Cost Of Acquisition (₱)</label>
-                <input type="number" step="0.01" id="cost" placeholder="0.00">
-            </div>
-            <div class="form-group">
-                <label>Adjusted Market Value (₱)</label>
-                <input type="number" step="0.01" id="market" placeholder="0.00">
-            </div>
-            <div class="form-group">
-                <label>Assessed Value (₱)</label>
-                <input type="number" step="0.01" id="assessed" placeholder="0.00">
-            </div>
-        </div>
-
-        <br>
-
-        <div class="action-btns">
-            <button class="btn btn-primary" id="saveBtn" onclick="saveRecord()">
-                <i class="fas fa-save"></i> Save Record
-            </button>
-            <button class="btn btn-outline" id="cancelEditBtn" style="display:none;" onclick="resetForm()">
-                Cancel Edit
-            </button>
-        </div>
+      <div class="upload-zone" onclick="document.getElementById('excel-file').click()">
+        <i class="fas fa-file-excel"></i>
+        <h3>Click to upload RPCP Workbook (e.g., 1. RPCP Sta. Cruz Pingkian HS.xlsx)</h3>
+        <p style="color: var(--text-muted); font-size: 0.9rem;">Automatically detects Land vs. PPE/Equipment sheets and skips empty sheets</p>
+        <input type="file" id="excel-file" accept=".xlsx, .xls, .csv" style="display: none;" onchange="handleFileUpload(this)">
+      </div>
     </div>
 
-    <!-- TABLE -->
-    <div class="card">
-        <div class="card-header">
-            <h2>Encoded Land Records (<span id="recordCount">0</span>)</h2>
-            <button class="btn btn-danger btn-sm" onclick="clearAllRecords()">
-                <i class="fas fa-trash"></i> Clear All
-            </button>
-        </div>
+    <div class="card" id="preview-area" style="display: none;">
+      <div class="sheet-selector">
+        <label><i class="fas fa-layer-group"></i> Select Sheet:</label>
+        <select id="sheet-select" onchange="loadSelectedSheet()"></select>
+        <button class="btn btn-primary" onclick="importAllSheets()" style="margin-left: auto;">
+          <i class="fas fa-cloud-upload-alt"></i> Import ALL Valid Sheets
+        </button>
+      </div>
 
-        <div class="table-wrap">
-            <table>
-                <thead>
-                    <tr>
-                        <th>Article</th>
-                        <th>Description</th>
-                        <th>Lot Area</th>
-                        <th>Owner</th>
-                        <th>TCT</th>
-                        <th>Mode</th>
-                        <th class="num">Cost</th>
-                        <th class="num">Market</th>
-                        <th class="num">Assessed</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody id="land-body"></tbody>
-            </table>
-        </div>
+      <div class="status-banner show" id="sheet-banner"></div>
+
+      <h3 style="margin-top: 18px;">🎯 Column Mapping</h3>
+      <div class="mapping-grid" id="mapping-container"></div>
+
+      <h3>👁️ Preview Parsed Rows</h3>
+      <div class="table-wrap">
+        <table>
+          <thead id="preview-head"></thead>
+          <tbody id="preview-body"></tbody>
+        </table>
+      </div>
+
+      <div style="margin-top: 20px; text-align: right;">
+        <button class="btn btn-success" id="importSheetBtn" onclick="saveCurrentSheet()">
+          <i class="fas fa-cloud-upload-alt"></i> Import THIS Sheet
+        </button>
+      </div>
+
+      <div class="log-box" id="log-box"></div>
     </div>
+  </main>
 
-</main>
+  <script type="module">
+    import { db } from "../../assets/js/firebase-config.js";
+    import { collection, doc, setDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
-<!-- PRINT AREA -->
-<div id="print-area">
-    <p style="text-align:right;font-style:italic;font-size:11px;">Appendix 73</p>
-    <div style="text-align:center;">
-        <h2 style="font-size:14px;">REPORT ON THE PHYSICAL COUNT OF PROPERTY, PLANT AND EQUIPMENT</h2>
-        <h3 style="font-size:13px;text-decoration:underline;margin-top:4px;">LAND</h3>
-        <p style="font-size:11px;">(Type of Property, Plant and Equipment)</p>
-        <p style="font-size:11px;font-weight:bold;margin-top:4px;">
-            As at <span id="printAsOfDate">December 31, 2023</span>
-        </p>
-    </div>
+    const STORAGE_FALLBACK_KEY = "rpcp_records_v1";
 
-    <br>
+    const SHEET_CATEGORY_MAP = [
+      { match: s => s === "land", category: "Land", layout: "land" },
+      { match: s => s.includes("building"), category: "School Building", layout: "ppe" },
+      { match: s => s.includes("structure"), category: "Other Structures", layout: "ppe" },
+      { match: s => s.includes("improvement"), category: "Land Improvements", layout: "ppe" },
+      { match: s => s.includes("it") || s.includes("software"), category: "IT Equipment and Software", layout: "ppe" },
+      { match: s => s.includes("furniture"), category: "Furniture and Fixtures", layout: "ppe" },
+      { match: s => s.includes("print"), category: "Printing Equipment", layout: "ppe" },
+      { match: s => s.includes("transport"), category: "Other Transportation Equipment", layout: "ppe" },
+      { match: s => s.includes("machinery") || s.includes("agri"), category: "Other Machinery and Equipment", layout: "ppe" },
+      { match: s => s.includes("rpcppe") || s.includes("technical") || s.includes("scientific"), category: "Technical and Scientific Equipment", layout: "ppe" }
+    ];
 
-    <div style="font-size:11px;line-height:1.5;">
-        <p><b>SCHOOL:</b> <span id="printSchoolName">Sta. Cruz Pingkian High School</span></p>
-        <p>
-            For which <b id="printPrincipalName">DOLORES C. DODON, PhD</b>,
-            <span id="printPrincipalPosition">School Principal</span>,
-            is accountable, having assumed such accountability on
-            <span id="printAccountabilityDate">December 31, 2023</span>.
-        </p>
-    </div>
-
-    <br>
-
-    <table id="print-table">
-        <thead>
-            <tr>
-                <th>Article</th>
-                <th>Description</th>
-                <th>Lot Area</th>
-                <th>Owner</th>
-                <th>TCT Number</th>
-                <th>Mode</th>
-                <th>Cost</th>
-                <th>Market</th>
-                <th>Assessed</th>
-            </tr>
-        </thead>
-        <tbody id="print-body"></tbody>
-        <tfoot>
-            <tr>
-                <td colspan="6"><b>TOTAL</b></td>
-                <td class="num" id="totalCost"></td>
-                <td class="num" id="totalMarket"></td>
-                <td class="num" id="totalAssessed"></td>
-            </tr>
-        </tfoot>
-    </table>
-
-    <table class="sig-table">
-        <tr>
-            <td>Certified Correct By:</td>
-            <td>Approved By:</td>
-            <td>Verified By:</td>
-        </tr>
-        <tr>
-            <td style="padding-top:40px;font-weight:bold;">
-                DARNA A. BUGNAY<br>
-                NISAN K. BINWAG<br>
-                DAISY ANN BALASYA<br>
-                EFRENA TIAGO
-            </td>
-            <td style="padding-top:40px;font-weight:bold;">
-                <span id="sigPrincipalName">DOLORES C. DODON, PhD</span><br>
-                <span id="sigPrincipalPosition" style="font-weight:normal;">School Principal</span>
-            </td>
-            <td style="padding-top:40px;font-weight:bold;">
-                ROBERT C. ROSAL JR.
-            </td>
-        </tr>
-    </table>
-</div>
-
-<!-- SETTINGS MODAL -->
-<div class="modal" id="settingsModal">
-    <div class="modal-content">
-        <div class="modal-header">
-            <h2>RPCP Report Settings</h2>
-            <button class="btn btn-outline btn-sm" onclick="closeSettings()">✕</button>
-        </div>
-
-        <div class="form-group">
-            <label>School Name</label>
-            <input id="setSchoolName">
-        </div>
-        <div class="form-group">
-            <label>Principal Name</label>
-            <input id="setPrincipalName">
-        </div>
-        <div class="form-group">
-            <label>Position</label>
-            <input id="setPrincipalPosition">
-        </div>
-        <div class="form-group">
-            <label>As Of Date</label>
-            <input id="setAsOfDate">
-        </div>
-        <div class="form-group">
-            <label>Accountability Date</label>
-            <input id="setAccountabilityDate">
-        </div>
-
-        <br>
-
-        <div class="action-btns">
-            <button class="btn btn-primary" onclick="saveSettings()">Save Settings</button>
-            <button class="btn btn-outline" onclick="closeSettings()">Cancel</button>
-        </div>
-    </div>
-</div>
-
-<script>
-const RECORDS_KEY = "rpcp_land_records";
-const SETTINGS_KEY = "rpcp_settings";
-
-let records = JSON.parse(localStorage.getItem(RECORDS_KEY)) || [];
-
-function formatMoney(val) {
-    return "₱" + Number(val || 0).toLocaleString("en-PH", {
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2
-    });
-}
-
-function escapeHTML(str) {
-    return String(str || "").replace(/[&<>"']/g, m => ({
-        "&": "&amp;",
-        "<": "&lt;",
-        ">": "&gt;",
-        '"': "&quot;",
-        "'": "&#39;"
-    }[m]));
-}
-
-function saveToStorage() {
-    localStorage.setItem(RECORDS_KEY, JSON.stringify(records));
-}
-
-function saveRecord() {
-    const desc = document.getElementById("description").value.trim();
-    if (!desc) {
-        alert("Please enter a Description for the land record.");
-        return;
-    }
-
-    const data = {
-        article: document.getElementById("article").value.trim() || "Land",
-        description: desc,
-        lotArea: document.getElementById("lotArea").value.trim(),
-        owner: document.getElementById("registeredOwner").value.trim(),
-        tct: document.getElementById("tctNumber").value.trim(),
-        mode: document.getElementById("mode").value.trim(),
-        cost: Number(document.getElementById("cost").value || 0),
-        market: Number(document.getElementById("market").value || 0),
-        assessed: Number(document.getElementById("assessed").value || 0)
-    };
-
-    const editIdx = parseInt(document.getElementById("editIndex").value, 10);
-    if (editIdx >= 0) {
-        records[editIdx] = data;
-    } else {
-        records.push(data);
-    }
-
-    saveToStorage();
-    resetForm();
-    renderTable();
-}
-
-function editRecord(index) {
-    const r = records[index];
-    document.getElementById("editIndex").value = index;
-    document.getElementById("article").value = r.article;
-    document.getElementById("description").value = r.description;
-    document.getElementById("lotArea").value = r.lotArea;
-    document.getElementById("registeredOwner").value = r.owner;
-    document.getElementById("tctNumber").value = r.tct;
-    document.getElementById("mode").value = r.mode;
-    document.getElementById("cost").value = r.cost;
-    document.getElementById("market").value = r.market;
-    document.getElementById("assessed").value = r.assessed;
-
-    document.getElementById("formTitle").textContent = "Edit Land Record";
-    document.getElementById("saveBtn").innerHTML = '<i class="fas fa-check"></i> Update Record';
-    document.getElementById("cancelEditBtn").style.display = "inline-flex";
-    window.scrollTo({ top: 0, behavior: "smooth" });
-}
-
-function resetForm() {
-    document.getElementById("editIndex").value = "-1";
-    document.getElementById("article").value = "Land";
-    ["description", "lotArea", "registeredOwner", "tctNumber", "mode", "cost", "market", "assessed"]
-        .forEach(id => document.getElementById(id).value = "");
-
-    document.getElementById("formTitle").textContent = "Land Record Entry";
-    document.getElementById("saveBtn").innerHTML = '<i class="fas fa-save"></i> Save Record';
-    document.getElementById("cancelEditBtn").style.display = "none";
-}
-
-function deleteRecord(index) {
-    if (!confirm("Delete this record?")) return;
-    records.splice(index, 1);
-    saveToStorage();
-    renderTable();
-}
-
-function clearAllRecords() {
-    if (!records.length) return;
-    if (!confirm("Are you sure you want to delete ALL records?")) return;
-    records = [];
-    saveToStorage();
-    renderTable();
-}
-
-function renderTable() {
-    const body = document.getElementById("land-body");
-    document.getElementById("recordCount").textContent = records.length;
-    body.innerHTML = "";
-
-    let totalCost = 0;
-    let totalMarket = 0;
-    let totalAssessed = 0;
-
-    if (records.length === 0) {
-        body.innerHTML = '<tr><td colspan="10" style="text-align:center;color:#64748b;padding:24px;">No records encoded yet.</td></tr>';
-        renderPrint(0, 0, 0);
-        return;
-    }
-
-    records.forEach((r, index) => {
-        totalCost += r.cost;
-        totalMarket += r.market;
-        totalAssessed += r.assessed;
-
-        body.innerHTML += `
-        <tr>
-            <td>${escapeHTML(r.article)}</td>
-            <td>${escapeHTML(r.description)}</td>
-            <td>${escapeHTML(r.lotArea)}</td>
-            <td>${escapeHTML(r.owner)}</td>
-            <td>${escapeHTML(r.tct)}</td>
-            <td>${escapeHTML(r.mode)}</td>
-            <td class="num">${formatMoney(r.cost)}</td>
-            <td class="num">${formatMoney(r.market)}</td>
-            <td class="num">${formatMoney(r.assessed)}</td>
-            <td>
-                <div class="action-btns">
-                    <button onclick="editRecord(${index})" class="btn btn-warning btn-sm">Edit</button>
-                    <button onclick="deleteRecord(${index})" class="btn btn-danger btn-sm">Delete</button>
-                </div>
-            </td>
-        </tr>`;
-    });
-
-    renderPrint(totalCost, totalMarket, totalAssessed);
-}
-
-function renderPrint(tc, tm, ta) {
-    const p = document.getElementById("print-body");
-    p.innerHTML = "";
-
-    records.forEach(r => {
-        p.innerHTML += `
-        <tr>
-            <td>${escapeHTML(r.article)}</td>
-            <td>${escapeHTML(r.description)}</td>
-            <td>${escapeHTML(r.lotArea)}</td>
-            <td>${escapeHTML(r.owner)}</td>
-            <td>${escapeHTML(r.tct)}</td>
-            <td>${escapeHTML(r.mode)}</td>
-            <td class="num">${formatMoney(r.cost)}</td>
-            <td class="num">${formatMoney(r.market)}</td>
-            <td class="num">${formatMoney(r.assessed)}</td>
-        </tr>`;
-    });
-
-    document.getElementById("totalCost").textContent = formatMoney(tc);
-    document.getElementById("totalMarket").textContent = formatMoney(tm);
-    document.getElementById("totalAssessed").textContent = formatMoney(ta);
-}
-
-/* SETTINGS */
-function openSettings() {
-    const settings = JSON.parse(localStorage.getItem(SETTINGS_KEY)) || {};
-    document.getElementById("setSchoolName").value = settings.schoolName || "Sta. Cruz Pingkian High School";
-    document.getElementById("setPrincipalName").value = settings.principalName || "DOLORES C. DODON, PhD";
-    document.getElementById("setPrincipalPosition").value = settings.principalPosition || "School Principal";
-    document.getElementById("setAsOfDate").value = settings.asOfDate || "December 31, 2023";
-    document.getElementById("setAccountabilityDate").value = settings.accountabilityDate || "December 31, 2023";
-
-    document.getElementById("settingsModal").classList.add("open");
-}
-
-function closeSettings() {
-    document.getElementById("settingsModal").classList.remove("open");
-}
-
-function saveSettings() {
-    const data = {
-        schoolName: document.getElementById("setSchoolName").value.trim(),
-        principalName: document.getElementById("setPrincipalName").value.trim(),
-        principalPosition: document.getElementById("setPrincipalPosition").value.trim(),
-        asOfDate: document.getElementById("setAsOfDate").value.trim(),
-        accountabilityDate: document.getElementById("setAccountabilityDate").value.trim()
-    };
-
-    localStorage.setItem(SETTINGS_KEY, JSON.stringify(data));
-    applySettings();
-    closeSettings();
-    alert("Settings saved.");
-}
-
-function applySettings() {
-    const settings = JSON.parse(localStorage.getItem(SETTINGS_KEY)) || {};
-
-    document.getElementById("printSchoolName").textContent =
-        settings.schoolName || "Sta. Cruz Pingkian High School";
-    document.getElementById("printPrincipalName").textContent =
-        settings.principalName || "DOLORES C. DODON, PhD";
-    document.getElementById("sigPrincipalName").textContent =
-        settings.principalName || "DOLORES C. DODON, PhD";
-    document.getElementById("printPrincipalPosition").textContent =
-        settings.principalPosition || "School Principal";
-    document.getElementById("sigPrincipalPosition").textContent =
-        settings.principalPosition || "School Principal";
-    document.getElementById("printAsOfDate").textContent =
-        settings.asOfDate || "December 31, 2023";
-    document.getElementById("printAccountabilityDate").textContent =
-        settings.accountabilityDate || "December 31, 2023";
-}
-
-/* SMART EXCEL IMPORT & TEMPLATE */
-document.getElementById("excelFile").addEventListener("change", function(evt) {
-    const file = evt.target.files[0];
-    if (!file) return;
-
-    const reader = new FileReader();
-    reader.onload = function(e) {
-        try {
-            const data = new Uint8Array(e.target.result);
-            const workbook = XLSX.read(data, { type: "array" });
-
-            // 1. Find the "Land" tab automatically (case-insensitive), or fall back to the first tab
-            const landSheetName = workbook.SheetNames.find(name =>
-                name.toLowerCase().includes("land")
-            ) || workbook.SheetNames[0];
-
-            const sheet = workbook.Sheets[landSheetName];
-
-            // 2. Read raw 2D array so we can locate the real header row (skipping DepEd report titles)
-            const rawRows = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: "" });
-
-            let headerRowIndex = -1;
-            for (let i = 0; i < Math.min(rawRows.length, 25); i++) {
-                const rowText = rawRows[i].map(cell => String(cell).toLowerCase().trim());
-                if (
-                    rowText.some(c => c.includes("description") || c.includes("tct") || c.includes("lot area")) &&
-                    rowText.filter(c => c !== "").length >= 3
-                ) {
-                    headerRowIndex = i;
-                    break;
-                }
-            }
-
-            if (headerRowIndex === -1) {
-                alert(`Could not find table headers (Article, Description, Lot Area, etc.) in sheet "${landSheetName}".`);
-                return;
-            }
-
-            // 3. Scan up to 4 rows below the main header row (handles blank spacer rows + merged headers)
-            let subHeaderOffset = 0;
-            for (let offset = 1; offset <= 4; offset++) {
-                const checkRow = rawRows[headerRowIndex + offset] || [];
-                const checkText = checkRow.map(c => String(c).toLowerCase()).join(" ");
-                if (checkText.includes("adjusted market") || checkText.includes("assessed value")) {
-                    subHeaderOffset = offset;
-                }
-            }
-
-            const maxCols = Math.max(
-                rawRows[headerRowIndex].length,
-                (rawRows[headerRowIndex + subHeaderOffset] || []).length,
-                9
-            );
-
-            const mergedHeaders = [];
-            for (let c = 0; c < maxCols; c++) {
-                const parts = [];
-                for (let offset = 0; offset <= subHeaderOffset; offset++) {
-                    const val = (rawRows[headerRowIndex + offset] || [])[c];
-                    if (val !== undefined && String(val).trim() !== "") {
-                        parts.push(String(val).toLowerCase().replace(/\s+/g, " ").trim());
-                    }
-                }
-                mergedHeaders.push(parts.join(" "));
-            }
-
-            const findCol = (keywords) =>
-                mergedHeaders.findIndex(h => keywords.some(kw => h.includes(kw)));
-
-            // Map by header name, with exact DepEd Appendix 73 column index fallbacks (0-8)
-            const artCol = findCol(["article"]);
-            const base = artCol >= 0 ? artCol : 0;
-
-            const colIdx = {
-                article: base,
-                description: findCol(["description", "desc"]) >= 0 ? findCol(["description", "desc"]) : base + 1,
-                lotArea: findCol(["lot area", "area"]) >= 0 ? findCol(["lot area", "area"]) : base + 2,
-                owner: findCol(["registered owner", "owner"]) >= 0 ? findCol(["registered owner", "owner"]) : base + 3,
-                tct: findCol(["tct"]) >= 0 ? findCol(["tct"]) : base + 4,
-                mode: findCol(["mode"]) >= 0 ? findCol(["mode"]) : base + 5,
-                cost: findCol(["cost"]) >= 0 ? findCol(["cost"]) : base + 6,
-                market: findCol(["adjusted market", "market"]) >= 0 ? findCol(["adjusted market", "market"]) : base + 7,
-                assessed: findCol(["assessed"]) >= 0 ? findCol(["assessed"]) : base + 8
-            };
-
-            const parseMoney = (val) => {
-                if (typeof val === "number") return val;
-                return parseFloat(String(val || 0).replace(/[^0-9.-]/g, "")) || 0;
-            };
-
-            // 4. Extract data rows below the header + sub-header rows
-            let count = 0;
-            for (let r = headerRowIndex + subHeaderOffset + 1; r < rawRows.length; r++) {
-                const row = rawRows[r];
-                if (!row || row.every(cell => String(cell).trim() === "")) continue;
-
-                const desc = colIdx.description >= 0 ? String(row[colIdx.description]).trim() : "";
-                const tct = colIdx.tct >= 0 ? String(row[colIdx.tct]).trim() : "";
-                const article = colIdx.article >= 0 ? String(row[colIdx.article]).trim() : "";
-
-                // Skip sub-header rows or "TOTAL" footer rows
-                const combinedCheck = row.map(c => String(c).toLowerCase().trim()).join(" ");
-                if (combinedCheck.includes("total") || (!desc && !tct)) continue;
-
-                records.push({
-                    article: article || "Land",
-                    description: desc,
-                    lotArea: colIdx.lotArea >= 0 ? String(row[colIdx.lotArea]).trim() : "",
-                    owner: colIdx.owner >= 0 ? String(row[colIdx.owner]).trim() : "",
-                    tct: tct,
-                    mode: colIdx.mode >= 0 ? String(row[colIdx.mode]).trim() : "",
-                    cost: colIdx.cost >= 0 ? parseMoney(row[colIdx.cost]) : 0,
-                    market: colIdx.market >= 0 ? parseMoney(row[colIdx.market]) : 0,
-                    assessed: colIdx.assessed >= 0 ? parseMoney(row[colIdx.assessed]) : 0
-                });
-                count++;
-            }
-
-            saveToStorage();
-            renderTable();
-            alert(`Successfully imported ${count} record(s) from sheet "${landSheetName}".`);
-        } catch (err) {
-            console.error(err);
-            alert("Failed to read Excel file. Please check the file format.");
-        } finally {
-            evt.target.value = "";
+    function detectSheetTarget(sheetName, rawRows) {
+      const cleanName = String(sheetName || "").toLowerCase().trim();
+      for (const rule of SHEET_CATEGORY_MAP) {
+        if (rule.match(cleanName)) {
+          return { category: rule.category, layout: rule.layout };
         }
+      }
+      // Fallback: inspect Type row (typically row 4)
+      const typeRowText = (rawRows[4] || []).join(" ").toLowerCase();
+      if (typeRowText.includes("land") && !typeRowText.includes("improvement")) {
+        return { category: "Land", layout: "land" };
+      }
+      for (const rule of SHEET_CATEGORY_MAP) {
+        if (rule.match(typeRowText)) {
+          return { category: rule.category, layout: rule.layout };
+        }
+      }
+      return null;
+    }
+
+    function parseNumber(val) {
+      if (val === null || val === undefined || val === "") return 0;
+      if (typeof val === "number") return isNaN(val) ? 0 : val;
+      const n = parseFloat(String(val).replace(/[₱,\s]/g, ""));
+      return isNaN(n) ? 0 : n;
+    }
+
+    function parseDateValue(val) {
+      if (val === null || val === undefined || val === "") return "";
+      if (typeof val === "number") {
+        // 4-digit year vs Excel serial number
+        if (val >= 1900 && val <= 2100 && Number.isInteger(val)) return String(val);
+        const dt = new Date(Math.round((val - 25569) * 86400 * 1000));
+        if (!isNaN(dt.getTime())) return dt.toISOString().split("T")[0];
+      }
+      const s = String(val).trim();
+      if (/^\d{4}$/.test(s)) return s;
+      const dt = new Date(s);
+      if (!isNaN(dt.getTime()) && dt.getFullYear() >= 1900 && dt.getFullYear() <= 2100) {
+        return dt.toISOString().split("T")[0];
+      }
+      return s;
+    }
+
+    function findHeaderAndSubHeader(rawRows) {
+      let headerIdx = -1;
+      for (let i = 0; i < Math.min(rawRows.length, 20); i++) {
+        const row = rawRows[i] || [];
+        const joined = row.map(c => String(c || "").toLowerCase().trim()).join(" ");
+        if (joined.includes("article") && joined.includes("description")) {
+          headerIdx = i;
+          break;
+        }
+      }
+      if (headerIdx === -1) return { headerIdx: -1, headers: [], dataStartIdx: -1 };
+
+      // Combine up to 2 rows below headerIdx (e.g. Row 13 sub-headers like "Adjusted Market Value", "Assessed Value", "Property Card", "Physical Count")
+      const maxCols = Math.max(
+        (rawRows[headerIdx] || []).length,
+        (rawRows[headerIdx + 1] || []).length,
+        (rawRows[headerIdx + 2] || []).length
+      );
+      const headers = [];
+      for (let c = 0; c < maxCols; c++) {
+        const parts = [];
+        for (let offset = 0; offset <= 2; offset++) {
+          const v = (rawRows[headerIdx + offset] || [])[c];
+          if (v !== undefined && v !== null && String(v).trim() !== "") {
+            parts.push(String(v).replace(/\s+/g, " ").trim());
+          }
+        }
+        headers.push(parts.join(" — ") || `Col ${c + 1}`);
+      }
+
+      let dataStartIdx = headerIdx + 1;
+      for (let r = headerIdx + 1; r < Math.min(rawRows.length, headerIdx + 5); r++) {
+        const row = rawRows[r] || [];
+        const c1 = String(row[1] || "").trim();
+        const c2 = String(row[2] || "").trim();
+        // First row with a non-empty Description (col 2) that is not a header label
+        if (c2 && !c2.toLowerCase().includes("description")) {
+          dataStartIdx = r;
+          break;
+        }
+      }
+      return { headerIdx, headers, dataStartIdx };
+    }
+
+    function autoMapForLayout(headers, layout) {
+      const lower = headers.map(h => h.toLowerCase());
+      const findBy = (pred) => {
+        const idx = lower.findIndex(pred);
+        return idx >= 0 ? idx : "";
+      };
+
+      if (layout === "land") {
+        return {
+          article: findBy(h => h.includes("article")),
+          description: findBy(h => h.includes("description")),
+          lotArea: findBy(h => h.includes("lot area")),
+          owner: findBy(h => h.includes("registered owner") || h.includes("owner")),
+          tct: findBy(h => h.includes("tct")),
+          mode: findBy(h => h.includes("mode")),
+          cost: findBy(h => h.includes("cost of acquisition")),
+          marketValue: findBy(h => h.includes("adjusted market") || h.includes("market")),
+          assessedValue: findBy(h => h.includes("assessed"))
+        };
+      }
+
+      const qtyIndices = lower
+        .map((h, i) => (h.includes("quantity") || h.includes("property card") || h.includes("physical count") ? i : -1))
+        .filter(i => i >= 0);
+
+      return {
+        article: findBy(h => h.includes("article")),
+        description: findBy(h => h.includes("description")),
+        dateAcquired: findBy(h => h.includes("date of acquisition") || h.includes("date")),
+        propertyNumber: findBy(h => h.includes("property number")),
+        unitOfMeasure: findBy(h => h.includes("unit of measure")),
+        unitValue: findBy(h => h.includes("unit value") || h.includes("acquisition cost")),
+        qtyPerCard: qtyIndices[0] ?? "",
+        qtyPerCount: qtyIndices[1] ?? qtyIndices[0] ?? "",
+        totalCost: findBy(h => h.includes("total cost")),
+        sourceOfFund: findBy(h => h.includes("source of fund")),
+        accountableOfficer: findBy(h => h.includes("accountable officer") || h.includes("remarks"))
+      };
+    }
+
+    function extractRowRecord(row, mapping, target) {
+      const nonEmpty = row.some(c => c !== null && c !== undefined && String(c).trim() !== "");
+      if (!nonEmpty) return null;
+
+      const joinedLower = row.map(c => String(c || "").toLowerCase().trim()).join(" ");
+      if (
+        joinedLower.startsWith("total") ||
+        row.some(c => String(c || "").trim().toUpperCase() === "TOTAL") ||
+        joinedLower.includes("certified correct") ||
+        joinedLower.includes("approved by") ||
+        joinedLower.includes("verified by") ||
+        joinedLower.includes("school head") ||
+        joinedLower.includes("state auditor")
+      ) {
+        return null;
+      }
+
+      const desc = mapping.description !== "" ? String(row[mapping.description] || "").trim() : "";
+      if (!desc) return null;
+
+      const articleVal = mapping.article !== "" ? String(row[mapping.article] || "").trim() : "";
+
+      if (target.layout === "land") {
+        return {
+          category: target.category,
+          article: articleVal || "Land",
+          description: desc,
+          lotArea: mapping.lotArea !== "" ? String(row[mapping.lotArea] || "").trim() : "",
+          owner: mapping.owner !== "" ? String(row[mapping.owner] || "").trim() : "",
+          tct: mapping.tct !== "" ? String(row[mapping.tct] || "").trim() : "",
+          mode: mapping.mode !== "" ? String(row[mapping.mode] || "").trim() : "",
+          cost: mapping.cost !== "" ? parseNumber(row[mapping.cost]) : 0,
+          marketValue: mapping.marketValue !== "" ? parseNumber(row[mapping.marketValue]) : 0,
+          assessedValue: mapping.assessedValue !== "" ? parseNumber(row[mapping.assessedValue]) : 0
+        };
+      }
+
+      const unitVal = mapping.unitValue !== "" ? parseNumber(row[mapping.unitValue]) : 0;
+      const qtyCard = mapping.qtyPerCard !== "" ? Math.round(parseNumber(row[mapping.qtyPerCard])) : 1;
+      const qtyCount = mapping.qtyPerCount !== "" ? Math.round(parseNumber(row[mapping.qtyPerCount])) : 1;
+      const rawTotal = mapping.totalCost !== "" ? parseNumber(row[mapping.totalCost]) : 0;
+      const totalCost = rawTotal > 0 ? rawTotal : +(unitVal * qtyCount).toFixed(2);
+
+      return {
+        category: target.category,
+        article: articleVal || target.category,
+        description: desc,
+        dateAcquired: mapping.dateAcquired !== "" ? parseDateValue(row[mapping.dateAcquired]) : "",
+        propertyNumber: mapping.propertyNumber !== "" ? String(row[mapping.propertyNumber] || "").trim() : "",
+        unitOfMeasure: mapping.unitOfMeasure !== "" ? String(row[mapping.unitOfMeasure] || "").trim() : "",
+        unitValue: unitVal,
+        qtyPerCard: qtyCard,
+        qtyPerCount: qtyCount,
+        totalCost: totalCost,
+        sourceOfFund: mapping.sourceOfFund !== "" ? String(row[mapping.sourceOfFund] || "").trim() : "",
+        accountableOfficer: mapping.accountableOfficer !== "" ? String(row[mapping.accountableOfficer] || "").trim() : ""
+      };
+    }
+
+    let workbook = null;
+    let activeRawRows = [];
+    let activeHeaders = [];
+    let activeDataStartIdx = 0;
+    let activeTarget = null;
+
+    function logClear() {
+      const box = document.getElementById("log-box");
+      box.innerHTML = "";
+      box.classList.add("show");
+    }
+
+    function logLine(text, cls = "log-info") {
+      const box = document.getElementById("log-box");
+      const div = document.createElement("div");
+      div.className = `log-line ${cls}`;
+      div.textContent = text;
+      box.appendChild(div);
+      box.scrollTop = box.scrollHeight;
+    }
+
+    window.handleFileUpload = function(input) {
+      const file = input.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        const bytes = new Uint8Array(e.target.result);
+        workbook = XLSX.read(bytes, { type: "array", cellDates: false });
+        const sel = document.getElementById("sheet-select");
+        sel.innerHTML = workbook.SheetNames.map(name => `<option value="${name}">${name}</option>`).join("");
+        document.getElementById("preview-area").style.display = "block";
+        loadSelectedSheet();
+      };
+      reader.readAsArrayBuffer(file);
     };
 
-    reader.readAsArrayBuffer(file);
-});
+    window.loadSelectedSheet = function() {
+      const sheetName = document.getElementById("sheet-select").value;
+      const ws = workbook.Sheets[sheetName];
+      activeRawRows = XLSX.utils.sheet_to_json(ws, { header: 1, raw: true, defval: "" });
 
-function downloadTemplate() {
-    const template = [{
-        "Article": "Land",
-        "Description": "Main School Site",
-        "Lot Area": "10,000 sq.m.",
-        "Registered Owner": "Department of Education",
-        "TCT Number": "TCT-001234",
-        "Mode of Acquisition": "Donation",
-        "Cost of Acquisition": 1200000,
-        "Adjusted Market Value": 2500000,
-        "Assessed Value": 1800000
-    }];
-    const ws = XLSX.utils.json_to_sheet(template);
-    const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, "Land_Template");
-    XLSX.writeFile(wb, "RPCP_Land_Template.xlsx");
-}
+      const banner = document.getElementById("sheet-banner");
+      const importBtn = document.getElementById("importSheetBtn");
 
-/* INIT */
-applySettings();
-renderTable();
-</script>
+      if (!activeRawRows.length) {
+        banner.textContent = `⚠️ Sheet "${sheetName}" is empty and will be skipped.`;
+        banner.className = "status-banner show warn";
+        importBtn.disabled = true;
+        document.getElementById("mapping-container").innerHTML = "";
+        document.getElementById("preview-head").innerHTML = "";
+        document.getElementById("preview-body").innerHTML = "";
+        return;
+      }
 
+      activeTarget = detectSheetTarget(sheetName, activeRawRows);
+      const { headerIdx, headers, dataStartIdx } = findHeaderAndSubHeader(activeRawRows);
+      activeHeaders = headers;
+      activeDataStartIdx = dataStartIdx;
+
+      if (!activeTarget || headerIdx === -1) {
+        banner.textContent = `⚠️ Sheet "${sheetName}" does not match a recognized RPCP Appendix 73 table.`;
+        banner.className = "status-banner show warn";
+        importBtn.disabled = true;
+        return;
+      }
+
+      importBtn.disabled = false;
+      banner.textContent = `✅ Sheet "${sheetName}" maps to tab "${activeTarget.category}" (${activeTarget.layout.toUpperCase()} layout).`;
+      banner.className = "status-banner show";
+
+      const autoMap = autoMapForLayout(activeHeaders, activeTarget.layout);
+      const fields = Object.keys(autoMap);
+      document.getElementById("mapping-container").innerHTML = fields.map(key => `
+        <div class="form-group">
+          <label>${key}</label>
+          <select id="map-${key}" onchange="renderPreview()">
+            <option value="">-- Ignored --</option>
+            ${activeHeaders.map((h, i) => `<option value="${i}" ${String(autoMap[key]) === String(i) ? "selected" : ""}>${h}</option>`).join("")}
+          </select>
+        </div>
+      `).join("");
+
+      renderPreview();
+    };
+
+    function getCurrentMappingFromUI() {
+      const map = {};
+      document.querySelectorAll('[id^="map-"]').forEach(el => {
+        const key = el.id.replace("map-", "");
+        map[key] = el.value;
+      });
+      return map;
+    }
+
+    window.renderPreview = function() {
+      if (!activeTarget) return;
+      const mapping = getCurrentMappingFromUI();
+      const parsed = [];
+      for (let r = activeDataStartIdx; r < activeRawRows.length; r++) {
+        const rec = extractRowRecord(activeRawRows[r], mapping, activeTarget);
+        if (rec) parsed.push(rec);
+      }
+
+      const thead = document.getElementById("preview-head");
+      const tbody = document.getElementById("preview-body");
+
+      if (!parsed.length) {
+        thead.innerHTML = "";
+        tbody.innerHTML = `<tr><td style="text-align:center;padding:20px;color:var(--text-muted);">No item rows detected in this sheet (e.g., 0-item sheet).</td></tr>`;
+        return;
+      }
+
+      const cols = Object.keys(parsed[0]);
+      thead.innerHTML = `<tr>${cols.map(c => `<th>${c}</th>`).join("")}</tr>`;
+      tbody.innerHTML = parsed.slice(0, 8).map(row => `
+        <tr>${cols.map(c => `<td>${row[c] ?? ""}</td>`).join("")}</tr>
+      `).join("");
+    };
+
+    async function persistRecords(records) {
+      let saved = 0;
+      const existingFallback = JSON.parse(localStorage.getItem(STORAGE_FALLBACK_KEY)) || [];
+      const fallbackMap = new Map(existingFallback.map(item => [item.id, item]));
+
+      for (const rec of records) {
+        const sig = `${rec.category}|${rec.article}|${rec.description}|${rec.propertyNumber || rec.tct || ""}|${rec.dateAcquired || ""}`;
+        let h = 0;
+        for (let i = 0; i < sig.length; i++) h = ((h << 5) - h + sig.charCodeAt(i)) | 0;
+        const docId = `rpcp_${Math.abs(h)}_${sig.length}`;
+
+        try {
+          await setDoc(doc(db, "rpcp_inventory", docId), rec, { merge: true });
+        } catch (err) {
+          console.warn("Firestore write fallback:", err);
+        }
+        fallbackMap.set(docId, { id: docId, ...rec });
+        saved++;
+      }
+
+      localStorage.setItem(STORAGE_FALLBACK_KEY, JSON.stringify([...fallbackMap.values()]));
+      return saved;
+    }
+
+    window.saveCurrentSheet = async function() {
+      if (!activeTarget) return;
+      const mapping = getCurrentMappingFromUI();
+      const sheetName = document.getElementById("sheet-select").value;
+      const rows = [];
+      for (let r = activeDataStartIdx; r < activeRawRows.length; r++) {
+        const rec = extractRowRecord(activeRawRows[r], mapping, activeTarget);
+        if (rec) rows.push(rec);
+      }
+
+      logClear();
+      logLine(`Importing "${sheetName}" into "${activeTarget.category}"...`, "log-info");
+      const count = await persistRecords(rows);
+      logLine(`✅ "${sheetName}" → ${count} record(s) saved.`, count > 0 ? "log-ok" : "log-skip");
+    };
+
+    window.importAllSheets = async function() {
+      if (!workbook) return;
+      logClear();
+      logLine(`Scanning ${workbook.SheetNames.length} sheet(s) in workbook...`, "log-info");
+
+      let totalImported = 0;
+      for (const name of workbook.SheetNames) {
+        const ws = workbook.Sheets[name];
+        const rawRows = XLSX.utils.sheet_to_json(ws, { header: 1, raw: true, defval: "" });
+        if (!rawRows.length) {
+          logLine(`⏭️ "${name}" → empty sheet, skipped.`, "log-skip");
+          continue;
+        }
+        const target = detectSheetTarget(name, rawRows);
+        const { headerIdx, headers, dataStartIdx } = findHeaderAndSubHeader(rawRows);
+        if (!target || headerIdx === -1) {
+          logLine(`⏭️ "${name}" → unrecognized structure, skipped.`, "log-skip");
+          continue;
+        }
+        const mapping = autoMapForLayout(headers, target.layout);
+        const records = [];
+        for (let r = dataStartIdx; r < rawRows.length; r++) {
+          const rec = extractRowRecord(rawRows[r], mapping, target);
+          if (rec) records.push(rec);
+        }
+        const count = await persistRecords(records);
+        totalImported += count;
+        logLine(`✅ "${name}" → ${count} record(s) under "${target.category}".`, count > 0 ? "log-ok" : "log-skip");
+      }
+
+      logLine(`🏁 Done — ${totalImported} total RPCP record(s) imported.`, "log-info");
+    };
+  </script>
 </body>
 </html>

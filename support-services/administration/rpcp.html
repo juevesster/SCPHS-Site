@@ -1,0 +1,823 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>RPCP Property Inventory – Appendix 73</title>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+  <style>
+    :root {
+      --sidebar-bg: #0f172a;
+      --bg-color: #f4f7f9;
+      --primary: #0f766e;
+      --primary-light: #14b8a6;
+      --text-main: #1e293b;
+      --text-muted: #64748b;
+      --border: #e2e8f0;
+      --danger: #dc2626;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Outfit', sans-serif; }
+    body { background: var(--bg-color); color: var(--text-main); display: flex; min-height: 100vh; }
+
+    /* Sidebar */
+    .sidebar { width: 260px; background: var(--sidebar-bg); color: #fff; display: flex; flex-direction: column; position: fixed; height: 100vh; z-index: 100; }
+    .sidebar-brand { padding: 30px 24px; font-size: 1.4rem; font-weight: 800; display: flex; align-items: center; gap: 12px; border-bottom: 1px solid rgba(255,255,255,0.05); }
+    .sidebar-brand i { color: var(--primary-light); }
+    .sidebar-menu { flex: 1; padding: 24px 16px; display: flex; flex-direction: column; gap: 8px; }
+    .menu-item { display: flex; align-items: center; gap: 14px; padding: 14px 18px; border-radius: 12px; color: #94a3b8; text-decoration: none; font-weight: 500; font-size: 0.95rem; transition: all 0.2s; }
+    .menu-item:hover { background: #1e293b; color: #fff; }
+    .menu-item.active { background: linear-gradient(90deg, var(--primary), var(--primary-light)); color: #fff; }
+
+    /* Main Content */
+    .main-content { margin-left: 260px; flex: 1; padding: 32px; display: flex; flex-direction: column; }
+    .topbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; gap: 12px; flex-wrap: wrap; }
+    .topbar h1 { font-size: 1.8rem; font-weight: 800; }
+
+    /* Buttons */
+    .btn { padding: 10px 18px; border-radius: 8px; border: none; cursor: pointer; font-weight: 700; font-size: 0.85rem; display: inline-flex; align-items: center; gap: 8px; transition: 0.2s; text-decoration: none; }
+    .btn-primary { background: var(--primary); color: #fff; }
+    .btn-primary:hover { background: #0d5e56; }
+    .btn-success { background: #10b981; color: #fff; }
+    .btn-danger { background: var(--danger); color: #fff; }
+    .btn-danger:hover { background: #b91c1c; }
+    .btn-sm { padding: 6px 12px; font-size: 0.75rem; }
+    .btn-outline { background: transparent; border: 2px solid var(--border); color: var(--text-muted); }
+    .btn-outline:hover { border-color: var(--primary); color: var(--primary); }
+
+    /* Book Tabs */
+    .book-tabs { display: flex; align-items: flex-end; gap: 6px; margin-bottom: -1px; padding-left: 20px; z-index: 10; position: relative; flex-wrap: wrap; }
+    .tab-btn { padding: 12px 18px; border: 1px solid var(--border); border-bottom: none; background: #e2e8f0; color: var(--text-muted); font-weight: 700; font-size: 0.85rem; cursor: pointer; border-radius: 12px 12px 0 0; transition: all 0.2s ease; position: relative; top: 4px; }
+    .tab-btn:hover { background: #cbd5e1; top: 2px; }
+    .tab-btn:focus { outline: none; }
+    .tab-btn.active { background: #fff; top: 0; padding-top: 14px; border-top: 4px solid var(--primary); color: var(--primary); z-index: 2; }
+
+    .tab-content-container { background: #fff; border-radius: 0 16px 16px 16px; border: 1px solid var(--border); box-shadow: 0 10px 25px -5px rgba(0,0,0,0.05); position: relative; z-index: 1; overflow: hidden; }
+
+    /* Table */
+    .table-responsive { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; font-size: 0.88rem; }
+    th, td { padding: 12px 14px; text-align: left; border-bottom: 1px solid var(--border); }
+    th { background: #f8fafc; font-weight: 700; color: var(--text-muted); text-transform: uppercase; font-size: 0.72rem; letter-spacing: 0.5px; border-top: 1px solid var(--border); }
+    td { color: var(--text-main); vertical-align: middle; }
+    tr:hover td { background: #f8fafc; }
+    .num { text-align: right; font-variant-numeric: tabular-nums; }
+    .action-btns { display: flex; gap: 6px; }
+
+    /* Modals */
+    .modal { position: fixed; inset: 0; background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(4px); display: none; justify-content: center; align-items: center; z-index: 1000; padding: 20px; }
+    .modal.show { display: flex; }
+    .modal-content { background: #fff; border-radius: 16px; width: 100%; max-width: 640px; box-shadow: 0 20px 40px rgba(0,0,0,0.2); overflow: hidden; }
+    .modal-header { padding: 20px 24px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
+    .modal-header h3 { font-size: 1.2rem; font-weight: 800; color: var(--primary); }
+    .modal-body { padding: 24px; max-height: 70vh; overflow-y: auto; display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    .form-group { display: flex; flex-direction: column; }
+    .form-group.full { grid-column: span 2; }
+    .form-group label { font-size: 0.75rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; margin-bottom: 6px; }
+    .form-group input, .form-group select { padding: 10px; border: 1px solid var(--border); border-radius: 8px; font-size: 0.9rem; font-family: inherit; outline: none; }
+    .form-group input:focus { border-color: var(--primary); }
+    .modal-footer { padding: 16px 24px; border-top: 1px solid var(--border); display: flex; justify-content: flex-end; gap: 10px; background: #f8fafc; }
+
+    /* Print Layout */
+    #print-area { display: none; }
+
+    @media print {
+      @page { size: landscape; margin: 0.3in; }
+      body { background: white; display: block; }
+      .sidebar, .main-content, .modal { display: none !important; }
+      #print-area { display: block !important; width: 100%; font-family: "Times New Roman", serif; color: #000; }
+      .print-header { text-align: center; margin-bottom: 12px; }
+      .print-header img { height: 45px; margin-bottom: 5px; }
+      .print-header h1 { font-size: 11pt; font-weight: bold; margin: 0; text-transform: uppercase; }
+      .print-header h2 { font-size: 11pt; font-weight: bold; text-decoration: underline; margin: 4px 0; }
+      .print-header h3 { font-size: 10pt; font-weight: normal; margin: 2px 0; }
+
+      .print-table { width: 100%; border-collapse: collapse; font-size: 7.5pt; margin-top: 12px; margin-bottom: 16px; }
+      .print-table thead { display: table-header-group; }
+      .print-table tr { break-inside: avoid; page-break-inside: avoid; }
+      .print-table th, .print-table td { border: 1px solid #000; padding: 3px 4px; text-align: center; vertical-align: middle; line-height: 1.2; }
+      .print-table th { background: #f0f0f0 !important; font-size: 7pt; }
+      .print-table td.left { text-align: left; }
+      .print-table td.num { text-align: right; }
+
+      .sig-table { width: 100%; border: none; margin-top: 20px; font-size: 9pt; page-break-inside: avoid; }
+      .sig-table td { border: none; vertical-align: top; width: 33.33%; }
+      .sig-name { font-weight: bold; padding-top: 32px; }
+      .sig-title { font-size: 8pt; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sidebar-brand"><i class="fas fa-landmark"></i> <span>Admin Office</span></div>
+    <div class="sidebar-menu">
+      <a href="index.html" class="menu-item"><i class="fas fa-home"></i> <span>Overview</span></a>
+      <a href="inventory.html" class="menu-item"><i class="fas fa-boxes"></i> <span>Semi-Expendable (Low Value)</span></a>
+      <a href="rpcp.html" class="menu-item active"><i class="fas fa-layer-group"></i> <span>RPCP – Appendix 73</span></a>
+      <a href="rpcp-importer.html" class="menu-item"><i class="fas fa-file-import"></i> <span>RPCP Excel Importer</span></a>
+    </div>
+  </aside>
+
+  <!-- MAIN CONTENT -->
+  <main class="main-content">
+    <div class="topbar">
+      <h1>🏛️ RPCP Inventory (Appendix 73)</h1>
+      <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+        <button class="btn btn-outline" onclick="openSignatoryModal()">
+          <i class="fas fa-users-cog"></i> Settings & Signatories
+        </button>
+        <a href="rpcp-importer.html" class="btn" style="background: #f59e0b; color: #fff;">
+          <i class="fas fa-file-import"></i> Import RPCP Excel
+        </a>
+        <button class="btn" style="background: #475569; color: #fff;" onclick="window.print()">
+          <i class="fas fa-print"></i> Print Appendix 73
+        </button>
+        <button class="btn btn-primary" onclick="openModal()">
+          <i class="fas fa-plus"></i> Add Record
+        </button>
+      </div>
+    </div>
+
+    <div class="book-tabs" id="category-tabs"></div>
+
+    <div class="tab-content-container">
+      <div class="table-responsive">
+        <table>
+          <thead id="table-head"></thead>
+          <tbody id="inventory-body">
+            <tr><td colspan="10" style="text-align: center; padding: 30px; color: var(--text-muted);">Loading RPCP records...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </main>
+
+  <!-- RECORD MODAL -->
+  <div class="modal" id="itemModal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 id="modalTitle">➕ Add RPCP Record</h3>
+        <button onclick="closeModal('itemModal')" style="background: none; border: none; font-size: 1.5rem; cursor: pointer;">&times;</button>
+      </div>
+      <div class="modal-body" id="modal-fields"></div>
+      <div class="modal-footer">
+        <button class="btn btn-outline" onclick="closeModal('itemModal')">Cancel</button>
+        <button class="btn btn-success" onclick="saveItem()">💾 Save Record</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- SETTINGS MODAL -->
+  <div class="modal" id="signatoryModal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>⚙️ RPCP Report Settings & Signatories</h3>
+        <button onclick="closeModal('signatoryModal')" style="background: none; border: none; font-size: 1.5rem; cursor: pointer;">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group full">
+          <label>School Name</label>
+          <input type="text" id="set-school-name">
+        </div>
+        <div class="form-group">
+          <label>Accountable Officer Name</label>
+          <input type="text" id="set-principal-name">
+        </div>
+        <div class="form-group">
+          <label>Accountable Officer Title</label>
+          <input type="text" id="set-principal-title">
+        </div>
+        <div class="form-group">
+          <label>Report Date ("As at")</label>
+          <input type="text" id="set-asof-date">
+        </div>
+        <div class="form-group">
+          <label>Accountability Date</label>
+          <input type="text" id="set-accountability-date">
+        </div>
+        <div class="form-group full">
+          <label>Certified Correct By (Names)</label>
+          <input type="text" id="sig-certified">
+        </div>
+        <div class="form-group full">
+          <label>Certified Correct By (Titles)</label>
+          <input type="text" id="sig-certified-title">
+        </div>
+        <div class="form-group">
+          <label>Approved By (Name)</label>
+          <input type="text" id="sig-approved">
+        </div>
+        <div class="form-group">
+          <label>Approved By (Title)</label>
+          <input type="text" id="sig-approved-title">
+        </div>
+        <div class="form-group">
+          <label>Verified By (Name)</label>
+          <input type="text" id="sig-verified">
+        </div>
+        <div class="form-group">
+          <label>Verified By (Title)</label>
+          <input type="text" id="sig-verified-title">
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-outline" onclick="closeModal('signatoryModal')">Cancel</button>
+        <button class="btn btn-primary" onclick="saveSignatories()">💾 Save Settings</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- PRINT AREA (APPENDIX 73) -->
+  <div id="print-area">
+    <p style="text-align:right;font-style:italic;font-size:9pt;">Appendix 73</p>
+    <div class="print-header">
+      <img src="../../assets/images/deped-logo.png" alt="DepEd Logo" onerror="this.style.display='none'">
+      <h1>REPORT ON THE PHYSICAL COUNT OF PROPERTY, PLANT AND EQUIPMENT</h1>
+      <h2 id="print-category-label">LAND</h2>
+      <h3>(Type of Property, Plant and Equipment)</h3>
+      <h3 style="font-weight:bold;">As at <span id="print-asof-date"></span></h3>
+    </div>
+
+    <div style="font-size:10pt;line-height:1.5;">
+      <strong>SCHOOL:</strong> <span id="print-school-name"></span><br>
+      For which <strong id="print-principal-name"></strong>, <span id="print-principal-title"></span>, accountable, having assumed such accountability on <span id="print-accountability-date"></span>.
+    </div>
+
+    <table class="print-table">
+      <thead id="print-thead"></thead>
+      <tbody id="print-tbody"></tbody>
+      <tfoot id="print-tfoot"></tfoot>
+    </table>
+
+    <table class="sig-table">
+      <tr>
+        <td><strong>Certified Correct by:</strong></td>
+        <td><strong>Approved by:</strong></td>
+        <td><strong>Verified by:</strong></td>
+      </tr>
+      <tr>
+        <td>
+          <div class="sig-name" id="print-sig-certified"></div>
+          <div class="sig-title" id="print-sig-certified-title"></div>
+        </td>
+        <td>
+          <div class="sig-name" id="print-sig-approved"></div>
+          <div class="sig-title" id="print-sig-approved-title"></div>
+        </td>
+        <td>
+          <div class="sig-name" id="print-sig-verified"></div>
+          <div class="sig-title" id="print-sig-verified-title"></div>
+        </td>
+      </tr>
+    </table>
+  </div>
+
+  <script type="module">
+    import { db } from "../../assets/js/firebase-config.js";
+    import { collection, getDocs, doc, setDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+    const STORAGE_FALLBACK_KEY = "rpcp_records_v1";
+    const SETTINGS_KEY = "rpcp_report_settings_v1";
+
+    const CATEGORIES = [
+      { key: "Land", label: "Land", type: "land" },
+      { key: "School Building", label: "School Buildings", type: "ppe" },
+      { key: "Other Structures", label: "Other Structures", type: "ppe" },
+      { key: "Land Improvements", label: "Land Improvements", type: "ppe" },
+      { key: "IT Equipment and Software", label: "IT & Software", type: "ppe" },
+      { key: "Furniture and Fixtures", label: "Furniture & Fixtures", type: "ppe" },
+      { key: "Printing Equipment", label: "Printing Equipment", type: "ppe" },
+      { key: "Other Transportation Equipment", label: "Transportation", type: "ppe" },
+      { key: "Other Machinery and Equipment", label: "Machinery & Equipment", type: "ppe" },
+      { key: "Technical and Scientific Equipment", label: "Technical & Scientific", type: "ppe" }
+    ];
+
+    const DEFAULT_SETTINGS = {
+      schoolName: "Sta. Cruz Pingkian High School",
+      principalName: "DOLORES C. DODON, PhD",
+      principalTitle: "Principal III",
+      asOfDate: "December 31, 2023",
+      accountabilityDate: "August 2, 2021",
+      certified: "DARNA A. BUGNAY / NISAN K. BINWAG / DAISY ANN BALASYA / EFRENA TIAGO",
+      certifiedTitle: "Administrative Officer II / Sch. Property Custodian / Inventory Committee Members",
+      approved: "DOLORES C. DODON, PhD",
+      approvedTitle: "School Head",
+      verified: "ROBERT C. ROSAL JR.",
+      verifiedTitle: "State Auditor IV"
+    };
+
+    let allItems = [];
+    let currentTab = "Land";
+    let firestoreAvailable = true;
+
+    function formatMoney(v) {
+      return "₱" + Number(v || 0).toLocaleString("en-PH", {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+      });
+    }
+
+    function escapeHTML(str) {
+      return String(str || "").replace(/[&<>"']/g, m => ({
+        "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
+      }[m]));
+    }
+
+    function renderTabs() {
+      const container = document.getElementById("category-tabs");
+      container.innerHTML = CATEGORIES.map(cat => `
+        <button class="tab-btn ${cat.key === currentTab ? "active" : ""}" onclick="switchTab('${cat.key}', this)">
+          ${escapeHTML(cat.label)}
+        </button>
+      `).join("");
+    }
+
+    window.switchTab = function(tabKey, btnEl) {
+      currentTab = tabKey;
+      document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
+      if (btnEl) btnEl.classList.add("active");
+      renderTable();
+    };
+
+    async function loadInventory() {
+      try {
+        const snap = await getDocs(collection(db, "rpcp_inventory"));
+        allItems = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+        localStorage.setItem(STORAGE_FALLBACK_KEY, JSON.stringify(allItems));
+      } catch (err) {
+        console.warn("Firestore read fallback to localStorage:", err);
+        firestoreAvailable = false;
+        allItems = JSON.parse(localStorage.getItem(STORAGE_FALLBACK_KEY)) || [];
+      }
+      renderTable();
+    }
+
+    function isLandTab() {
+      return currentTab === "Land";
+    }
+
+    function renderTable() {
+      const thead = document.getElementById("table-head");
+      const tbody = document.getElementById("inventory-body");
+      const filtered = allItems.filter(item => (item.category || item.article || "") === currentTab);
+
+      if (isLandTab()) {
+        thead.innerHTML = `
+          <tr>
+            <th>Article</th>
+            <th>Description</th>
+            <th>Lot Area</th>
+            <th>Registered Owner</th>
+            <th>TCT Number</th>
+            <th>Mode</th>
+            <th class="num">Cost of Acquisition</th>
+            <th class="num">Adjusted Market Value</th>
+            <th class="num">Assessed Value</th>
+            <th>Actions</th>
+          </tr>
+        `;
+      } else {
+        thead.innerHTML = `
+          <tr>
+            <th>Article</th>
+            <th>Description</th>
+            <th>Date Acquired</th>
+            <th>Property No.</th>
+            <th>Unit</th>
+            <th class="num">Unit / Acq. Cost</th>
+            <th class="num">Qty (Card)</th>
+            <th class="num">Qty (Count)</th>
+            <th class="num">Total Cost</th>
+            <th>Source of Fund</th>
+            <th>Accountable Officer</th>
+            <th>Actions</th>
+          </tr>
+        `;
+      }
+
+      if (filtered.length === 0) {
+        const cols = isLandTab() ? 10 : 12;
+        tbody.innerHTML = `<tr><td colspan="${cols}" style="text-align:center;padding:40px;color:var(--text-muted);">No records in <strong>${escapeHTML(currentTab)}</strong>. Import an Excel sheet or click "Add Record".</td></tr>`;
+        renderPrintArea([]);
+        return;
+      }
+
+      if (isLandTab()) {
+        tbody.innerHTML = filtered.map(item => `
+          <tr>
+            <td>${escapeHTML(item.article || "Land")}</td>
+            <td><strong>${escapeHTML(item.description || "-")}</strong></td>
+            <td>${escapeHTML(item.lotArea || "-")}</td>
+            <td>${escapeHTML(item.owner || "-")}</td>
+            <td style="font-family:monospace;">${escapeHTML(item.tct || "-")}</td>
+            <td>${escapeHTML(item.mode || "-")}</td>
+            <td class="num">${formatMoney(item.cost)}</td>
+            <td class="num">${formatMoney(item.marketValue)}</td>
+            <td class="num">${formatMoney(item.assessedValue)}</td>
+            <td>
+              <div class="action-btns">
+                <button class="btn btn-sm" style="background:#e0f2fe;color:#0369a1;" onclick="editItem('${item.id}')"><i class="fas fa-edit"></i></button>
+                <button class="btn btn-sm btn-danger" onclick="deleteItem('${item.id}', '${escapeHTML(item.description || "")}')"><i class="fas fa-trash"></i></button>
+              </div>
+            </td>
+          </tr>
+        `).join("");
+      } else {
+        tbody.innerHTML = filtered.map(item => {
+          const unitVal = Number(item.unitValue) || 0;
+          const qtyCount = Number(item.qtyPerCount) || 0;
+          const totalCost = item.totalCost !== undefined ? Number(item.totalCost) : +(unitVal * qtyCount).toFixed(2);
+          return `
+            <tr>
+              <td>${escapeHTML(item.article || "-")}</td>
+              <td><strong>${escapeHTML(item.description || "-")}</strong></td>
+              <td>${escapeHTML(item.dateAcquired || "-")}</td>
+              <td style="font-family:monospace;">${escapeHTML(item.propertyNumber || "-")}</td>
+              <td>${escapeHTML(item.unitOfMeasure || "-")}</td>
+              <td class="num">${formatMoney(unitVal)}</td>
+              <td class="num">${Number(item.qtyPerCard) || 0}</td>
+              <td class="num">${qtyCount}</td>
+              <td class="num">${formatMoney(totalCost)}</td>
+              <td>${escapeHTML(item.sourceOfFund || "-")}</td>
+              <td>${escapeHTML(item.accountableOfficer || "-")}</td>
+              <td>
+                <div class="action-btns">
+                  <button class="btn btn-sm" style="background:#e0f2fe;color:#0369a1;" onclick="editItem('${item.id}')"><i class="fas fa-edit"></i></button>
+                  <button class="btn btn-sm btn-danger" onclick="deleteItem('${item.id}', '${escapeHTML(item.description || "")}')"><i class="fas fa-trash"></i></button>
+                </div>
+              </td>
+            </tr>
+          `;
+        }).join("");
+      }
+
+      renderPrintArea(filtered);
+    }
+
+    function renderPrintArea(items) {
+      const pThead = document.getElementById("print-thead");
+      const pTbody = document.getElementById("print-tbody");
+      const pTfoot = document.getElementById("print-tfoot");
+      document.getElementById("print-category-label").textContent = currentTab.toUpperCase();
+
+      if (isLandTab()) {
+        pThead.innerHTML = `
+          <tr>
+            <th>Article</th>
+            <th>Description</th>
+            <th>Lot Area</th>
+            <th>Name of Registered Owner</th>
+            <th>TCT Numbers</th>
+            <th>Mode of Acquisition</th>
+            <th>Cost of Acquisition</th>
+            <th>Adjusted Market Value</th>
+            <th>Assessed Value</th>
+          </tr>
+        `;
+        let sumCost = 0, sumMarket = 0, sumAssessed = 0;
+        if (!items.length) {
+          pTbody.innerHTML = `<tr><td colspan="9" style="text-align:center;padding:12px;">No records.</td></tr>`;
+        } else {
+          pTbody.innerHTML = items.map(item => {
+            const c = Number(item.cost) || 0;
+            const m = Number(item.marketValue) || 0;
+            const a = Number(item.assessedValue) || 0;
+            sumCost += c; sumMarket += m; sumAssessed += a;
+            return `
+              <tr>
+                <td class="left">${escapeHTML(item.article || "Land")}</td>
+                <td class="left">${escapeHTML(item.description || "")}</td>
+                <td>${escapeHTML(item.lotArea || "")}</td>
+                <td class="left">${escapeHTML(item.owner || "")}</td>
+                <td>${escapeHTML(item.tct || "")}</td>
+                <td>${escapeHTML(item.mode || "")}</td>
+                <td class="num">${formatMoney(c)}</td>
+                <td class="num">${formatMoney(m)}</td>
+                <td class="num">${formatMoney(a)}</td>
+              </tr>
+            `;
+          }).join("");
+        }
+        pTfoot.innerHTML = `
+          <tr>
+            <td colspan="6" style="text-align:right;font-weight:bold;">TOTAL</td>
+            <td class="num" style="font-weight:bold;">${formatMoney(sumCost)}</td>
+            <td class="num" style="font-weight:bold;">${formatMoney(sumMarket)}</td>
+            <td class="num" style="font-weight:bold;">${formatMoney(sumAssessed)}</td>
+          </tr>
+        `;
+      } else {
+        pThead.innerHTML = `
+          <tr>
+            <th>Article</th>
+            <th>Description</th>
+            <th>Date Acquired</th>
+            <th>Property Number</th>
+            <th>Unit</th>
+            <th>Unit / Acq. Cost</th>
+            <th>Qty per Card</th>
+            <th>Qty per Count</th>
+            <th>Total Cost</th>
+            <th>Source of Fund</th>
+            <th>Shortage/Overage Qty</th>
+            <th>Shortage/Overage Value</th>
+            <th>Accountable Officer</th>
+          </tr>
+        `;
+        let sumTotal = 0;
+        if (!items.length) {
+          pTbody.innerHTML = `<tr><td colspan="13" style="text-align:center;padding:12px;">No records.</td></tr>`;
+        } else {
+          pTbody.innerHTML = items.map(item => {
+            const u = Number(item.unitValue) || 0;
+            const qc = Number(item.qtyPerCard) || 0;
+            const qn = Number(item.qtyPerCount) || 0;
+            const tc = item.totalCost !== undefined ? Number(item.totalCost) : +(u * qn).toFixed(2);
+            const vQty = qn - qc;
+            const vVal = Math.abs(vQty * u);
+            sumTotal += tc;
+            return `
+              <tr>
+                <td class="left">${escapeHTML(item.article || "")}</td>
+                <td class="left">${escapeHTML(item.description || "")}</td>
+                <td>${escapeHTML(item.dateAcquired || "")}</td>
+                <td>${escapeHTML(item.propertyNumber || "")}</td>
+                <td>${escapeHTML(item.unitOfMeasure || "")}</td>
+                <td class="num">${formatMoney(u)}</td>
+                <td>${qc}</td>
+                <td>${qn}</td>
+                <td class="num">${formatMoney(tc)}</td>
+                <td>${escapeHTML(item.sourceOfFund || "")}</td>
+                <td>${vQty > 0 ? "+" : ""}${vQty}</td>
+                <td class="num">${formatMoney(vVal)}</td>
+                <td class="left">${escapeHTML(item.accountableOfficer || "")}</td>
+              </tr>
+            `;
+          }).join("");
+        }
+        pTfoot.innerHTML = `
+          <tr>
+            <td colspan="8" style="text-align:right;font-weight:bold;">TOTAL</td>
+            <td class="num" style="font-weight:bold;">${formatMoney(sumTotal)}</td>
+            <td colspan="4"></td>
+          </tr>
+        `;
+      }
+    }
+
+    function buildModalFields(existing = {}) {
+      const container = document.getElementById("modal-fields");
+      const idVal = existing.id ? escapeHTML(existing.id) : "";
+      if (isLandTab()) {
+        container.innerHTML = `
+          <input type="hidden" id="f-id" value="${idVal}">
+          <div class="form-group full">
+            <label>Category Tab</label>
+            <input type="text" id="f-category" value="${escapeHTML(currentTab)}" readonly style="background:#f1f5f9;">
+          </div>
+          <div class="form-group">
+            <label>Article</label>
+            <input type="text" id="f-article" value="${escapeHTML(existing.article || "Land")}">
+          </div>
+          <div class="form-group">
+            <label>Description</label>
+            <input type="text" id="f-description" value="${escapeHTML(existing.description || "")}" placeholder="e.g., Pingkian, Kayapa, Nueva Vizcaya">
+          </div>
+          <div class="form-group">
+            <label>Lot Area</label>
+            <input type="text" id="f-lotArea" value="${escapeHTML(existing.lotArea || "")}" placeholder="e.g., 111,111 sq.m">
+          </div>
+          <div class="form-group">
+            <label>Registered Owner</label>
+            <input type="text" id="f-owner" value="${escapeHTML(existing.owner || "")}">
+          </div>
+          <div class="form-group">
+            <label>TCT Number</label>
+            <input type="text" id="f-tct" value="${escapeHTML(existing.tct || "")}">
+          </div>
+          <div class="form-group">
+            <label>Mode of Acquisition</label>
+            <input type="text" id="f-mode" value="${escapeHTML(existing.mode || "")}">
+          </div>
+          <div class="form-group">
+            <label>Cost of Acquisition (₱)</label>
+            <input type="number" step="0.01" id="f-cost" value="${existing.cost ?? 0}">
+          </div>
+          <div class="form-group">
+            <label>Adjusted Market Value (₱)</label>
+            <input type="number" step="0.01" id="f-marketValue" value="${existing.marketValue ?? 0}">
+          </div>
+          <div class="form-group full">
+            <label>Assessed Value (₱)</label>
+            <input type="number" step="0.01" id="f-assessedValue" value="${existing.assessedValue ?? 0}">
+          </div>
+        `;
+      } else {
+        container.innerHTML = `
+          <input type="hidden" id="f-id" value="${idVal}">
+          <div class="form-group full">
+            <label>Category Tab</label>
+            <input type="text" id="f-category" value="${escapeHTML(currentTab)}" readonly style="background:#f1f5f9;">
+          </div>
+          <div class="form-group">
+            <label>Article</label>
+            <input type="text" id="f-article" value="${escapeHTML(existing.article || currentTab)}">
+          </div>
+          <div class="form-group">
+            <label>Description</label>
+            <input type="text" id="f-description" value="${escapeHTML(existing.description || "")}">
+          </div>
+          <div class="form-group">
+            <label>Date Acquired (YYYY-MM-DD or Year)</label>
+            <input type="text" id="f-dateAcquired" value="${escapeHTML(existing.dateAcquired || "")}">
+          </div>
+          <div class="form-group">
+            <label>Property Number</label>
+            <input type="text" id="f-propertyNumber" value="${escapeHTML(existing.propertyNumber || "")}">
+          </div>
+          <div class="form-group">
+            <label>Unit of Measure</label>
+            <input type="text" id="f-unitOfMeasure" value="${escapeHTML(existing.unitOfMeasure || "")}" placeholder="e.g., unit, set, package">
+          </div>
+          <div class="form-group">
+            <label>Unit / Acquisition Cost (₱)</label>
+            <input type="number" step="0.01" id="f-unitValue" value="${existing.unitValue ?? 0}" oninput="calcPpeTotal()">
+          </div>
+          <div class="form-group">
+            <label>Qty (Property Card)</label>
+            <input type="number" id="f-qtyPerCard" value="${existing.qtyPerCard ?? 1}">
+          </div>
+          <div class="form-group">
+            <label>Qty (Physical Count)</label>
+            <input type="number" id="f-qtyPerCount" value="${existing.qtyPerCount ?? 1}" oninput="calcPpeTotal()">
+          </div>
+          <div class="form-group">
+            <label>Total Cost (₱)</label>
+            <input type="number" step="0.01" id="f-totalCost" value="${existing.totalCost ?? 0}">
+          </div>
+          <div class="form-group">
+            <label>Source of Fund</label>
+            <input type="text" id="f-sourceOfFund" value="${escapeHTML(existing.sourceOfFund || "")}">
+          </div>
+          <div class="form-group full">
+            <label>Accountable Officer</label>
+            <input type="text" id="f-accountableOfficer" value="${escapeHTML(existing.accountableOfficer || "")}">
+          </div>
+        `;
+      }
+    }
+
+    window.calcPpeTotal = function() {
+      const u = parseFloat(document.getElementById("f-unitValue")?.value) || 0;
+      const q = parseFloat(document.getElementById("f-qtyPerCount")?.value) || 0;
+      const totEl = document.getElementById("f-totalCost");
+      if (totEl) totEl.value = (u * q).toFixed(2);
+    };
+
+    window.openModal = function() {
+      document.getElementById("modalTitle").textContent = `➕ Add Record (${currentTab})`;
+      buildModalFields({});
+      document.getElementById("itemModal").classList.add("show");
+    };
+
+    window.closeModal = function(id) {
+      document.getElementById(id).classList.remove("show");
+    };
+
+    window.editItem = function(id) {
+      const item = allItems.find(i => i.id === id);
+      if (!item) return;
+      document.getElementById("modalTitle").textContent = `✏️ Edit Record (${currentTab})`;
+      buildModalFields(item);
+      document.getElementById("itemModal").classList.add("show");
+    };
+
+    window.saveItem = async function() {
+      const desc = document.getElementById("f-description").value.trim();
+      if (!desc) return alert("Description is required.");
+
+      const existingId = document.getElementById("f-id").value;
+      const docId = existingId || `rpcp_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`;
+
+      const record = isLandTab()
+        ? {
+            category: currentTab,
+            article: document.getElementById("f-article").value.trim() || "Land",
+            description: desc,
+            lotArea: document.getElementById("f-lotArea").value.trim(),
+            owner: document.getElementById("f-owner").value.trim(),
+            tct: document.getElementById("f-tct").value.trim(),
+            mode: document.getElementById("f-mode").value.trim(),
+            cost: parseFloat(document.getElementById("f-cost").value) || 0,
+            marketValue: parseFloat(document.getElementById("f-marketValue").value) || 0,
+            assessedValue: parseFloat(document.getElementById("f-assessedValue").value) || 0
+          }
+        : {
+            category: currentTab,
+            article: document.getElementById("f-article").value.trim() || currentTab,
+            description: desc,
+            dateAcquired: document.getElementById("f-dateAcquired").value.trim(),
+            propertyNumber: document.getElementById("f-propertyNumber").value.trim(),
+            unitOfMeasure: document.getElementById("f-unitOfMeasure").value.trim(),
+            unitValue: parseFloat(document.getElementById("f-unitValue").value) || 0,
+            qtyPerCard: parseInt(document.getElementById("f-qtyPerCard").value, 10) || 0,
+            qtyPerCount: parseInt(document.getElementById("f-qtyPerCount").value, 10) || 0,
+            totalCost: parseFloat(document.getElementById("f-totalCost").value) || 0,
+            sourceOfFund: document.getElementById("f-sourceOfFund").value.trim(),
+            accountableOfficer: document.getElementById("f-accountableOfficer").value.trim()
+          };
+
+      if (firestoreAvailable) {
+        try {
+          await setDoc(doc(db, "rpcp_inventory", docId), record, { merge: true });
+        } catch (err) {
+          console.error("Firestore save error:", err);
+        }
+      }
+
+      const idx = allItems.findIndex(i => i.id === docId);
+      const fullRecord = { id: docId, ...record };
+      if (idx >= 0) allItems[idx] = fullRecord;
+      else allItems.push(fullRecord);
+      localStorage.setItem(STORAGE_FALLBACK_KEY, JSON.stringify(allItems));
+
+      closeModal("itemModal");
+      renderTable();
+    };
+
+    window.deleteItem = async function(id, desc) {
+      if (!confirm(`Delete "${desc}"?`)) return;
+      if (firestoreAvailable) {
+        try {
+          await deleteDoc(doc(db, "rpcp_inventory", id));
+        } catch (err) {
+          console.error("Firestore delete error:", err);
+        }
+      }
+      allItems = allItems.filter(i => i.id !== id);
+      localStorage.setItem(STORAGE_FALLBACK_KEY, JSON.stringify(allItems));
+      renderTable();
+    };
+
+    function loadSettings() {
+      const saved = { ...DEFAULT_SETTINGS, ...(JSON.parse(localStorage.getItem(SETTINGS_KEY)) || {}) };
+      document.getElementById("print-school-name").textContent = saved.schoolName;
+      document.getElementById("print-principal-name").textContent = saved.principalName;
+      document.getElementById("print-principal-title").textContent = saved.principalTitle;
+      document.getElementById("print-asof-date").textContent = saved.asOfDate;
+      document.getElementById("print-accountability-date").textContent = saved.accountabilityDate;
+      document.getElementById("print-sig-certified").textContent = saved.certified;
+      document.getElementById("print-sig-certified-title").textContent = saved.certifiedTitle;
+      document.getElementById("print-sig-approved").textContent = saved.approved;
+      document.getElementById("print-sig-approved-title").textContent = saved.approvedTitle;
+      document.getElementById("print-sig-verified").textContent = saved.verified;
+      document.getElementById("print-sig-verified-title").textContent = saved.verifiedTitle;
+    }
+
+    window.openSignatoryModal = function() {
+      const saved = { ...DEFAULT_SETTINGS, ...(JSON.parse(localStorage.getItem(SETTINGS_KEY)) || {}) };
+      document.getElementById("set-school-name").value = saved.schoolName;
+      document.getElementById("set-principal-name").value = saved.principalName;
+      document.getElementById("set-principal-title").value = saved.principalTitle;
+      document.getElementById("set-asof-date").value = saved.asOfDate;
+      document.getElementById("set-accountability-date").value = saved.accountabilityDate;
+      document.getElementById("sig-certified").value = saved.certified;
+      document.getElementById("sig-certified-title").value = saved.certifiedTitle;
+      document.getElementById("sig-approved").value = saved.approved;
+      document.getElementById("sig-approved-title").value = saved.approvedTitle;
+      document.getElementById("sig-verified").value = saved.verified;
+      document.getElementById("sig-verified-title").value = saved.verifiedTitle;
+      document.getElementById("signatoryModal").classList.add("show");
+    };
+
+    window.saveSignatories = function() {
+      const settings = {
+        schoolName: document.getElementById("set-school-name").value.trim(),
+        principalName: document.getElementById("set-principal-name").value.trim(),
+        principalTitle: document.getElementById("set-principal-title").value.trim(),
+        asOfDate: document.getElementById("set-asof-date").value.trim(),
+        accountabilityDate: document.getElementById("set-accountability-date").value.trim(),
+        certified: document.getElementById("sig-certified").value.trim(),
+        certifiedTitle: document.getElementById("sig-certified-title").value.trim(),
+        approved: document.getElementById("sig-approved").value.trim(),
+        approvedTitle: document.getElementById("sig-approved-title").value.trim(),
+        verified: document.getElementById("sig-verified").value.trim(),
+        verifiedTitle: document.getElementById("sig-verified-title").value.trim()
+      };
+      localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
+      loadSettings();
+      closeModal("signatoryModal");
+    };
+
+    document.addEventListener("DOMContentLoaded", () => {
+      renderTabs();
+      loadSettings();
+      loadInventory();
+    });
+  </script>
+</body>
+</html>
