@@ -1,0 +1,654 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ICT Equipment & Computer Lab Inventory – SCPHS</title>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <script src="https://cdn.sheetjs.com/xlsx-0.20.2/package/dist/xlsx.full.min.js"></script>
+
+  <style>
+    :root {
+      --sidebar-bg: #0f172a;
+      --sidebar-hover: #1e293b;
+      --primary: #0f766e;
+      --primary-light: #14b8a6;
+      --success: #16a34a;
+      --danger: #dc2626;
+      --warning: #d97706;
+      --info: #2563eb;
+      --bg: #f4f7f9;
+      --border: #e2e8f0;
+      --text: #1e293b;
+      --muted: #64748b;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Outfit', sans-serif; }
+    body { background: var(--bg); color: var(--text); display: flex; min-height: 100vh; overflow-x: hidden; }
+
+    /* Sidebar */
+    .sidebar { width: 260px; flex-shrink: 0; background: var(--sidebar-bg); color: #fff; position: fixed; top: 0; left: 0; height: 100vh; z-index: 1000; display: flex; flex-direction: column; transition: transform 0.3s ease; }
+    .sidebar-brand { padding: 26px 22px; font-size: 1.3rem; font-weight: 800; border-bottom: 1px solid rgba(255,255,255,0.06); display: flex; align-items: center; gap: 12px; }
+    .sidebar-brand i { color: var(--primary-light); }
+    .sidebar-menu { flex: 1; padding: 18px 14px; display: flex; flex-direction: column; gap: 6px; overflow-y: auto; }
+    .menu-item { display: flex; align-items: center; gap: 12px; padding: 12px 16px; border-radius: 12px; color: #94a3b8; text-decoration: none; font-weight: 500; font-size: 0.92rem; transition: all 0.2s; }
+    .menu-item:hover { background: var(--sidebar-hover); color: #fff; }
+    .menu-item.active { background: linear-gradient(90deg, var(--primary), var(--primary-light)); color: #fff; font-weight: 600; }
+    .menu-item .icon { width: 22px; text-align: center; }
+
+    .sidebar-backdrop { display: none; position: fixed; inset: 0; background: rgba(15, 23, 42, 0.5); z-index: 990; }
+    .sidebar-backdrop.show { display: block; }
+    .mobile-menu-btn { display: none; width: 40px; height: 40px; border-radius: 10px; border: 1px solid var(--border); background: #fff; color: var(--text); align-items: center; justify-content: center; font-size: 1.1rem; cursor: pointer; }
+
+    /* Main Content */
+    .main-content { margin-left: 260px; flex: 1; min-width: 0; padding: 26px 30px; }
+    .topbar { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; margin-bottom: 20px; }
+    .topbar-left { display: flex; align-items: center; gap: 12px; }
+    .topbar h1 { font-size: 1.55rem; font-weight: 800; line-height: 1.2; }
+    .sync-badge { display: inline-block; margin-top: 5px; font-size: 0.74rem; padding: 4px 10px; border-radius: 999px; background: #fef3c7; color: #92400e; font-weight: 700; }
+    .sync-badge.ok { background: #dcfce7; color: #166534; }
+    .sync-badge.err { background: #fee2e2; color: #991b1b; }
+
+    .topbar-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+
+    /* KPI Strip */
+    .kpi-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; margin-bottom: 18px; }
+    .kpi-card { background: #fff; border: 1px solid var(--border); border-radius: 16px; padding: 16px 18px; }
+    .kpi-label { font-size: 0.72rem; text-transform: uppercase; color: var(--muted); font-weight: 700; letter-spacing: 0.4px; }
+    .kpi-val { font-size: 1.55rem; font-weight: 800; margin-top: 4px; color: var(--text); }
+
+    /* Card */
+    .card { background: #fff; border-radius: 18px; padding: 22px; border: 1px solid var(--border); margin-bottom: 18px; box-shadow: 0 1px 3px rgba(0,0,0,0.04); min-width: 0; }
+    .card-header { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; margin-bottom: 16px; }
+    .card-header h2 { font-size: 1.1rem; font-weight: 800; display: flex; align-items: center; gap: 8px; }
+
+    /* Form */
+    .form-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; }
+    .form-group { display: flex; flex-direction: column; min-width: 0; }
+    .form-group.span-2 { grid-column: span 2; }
+    .form-group label { font-size: 0.72rem; font-weight: 700; color: var(--muted); margin-bottom: 5px; text-transform: uppercase; }
+    .form-group input, .form-group select {
+      width: 100%; border: 1px solid var(--border); border-radius: 9px; padding: 9px 11px; font-size: 0.88rem; background: #f8fafc; color: var(--text); outline: none;
+    }
+    .form-group input:focus, .form-group select:focus { border-color: var(--primary); background: #fff; }
+
+    /* Buttons */
+    .btn { border: none; cursor: pointer; border-radius: 9px; padding: 9px 14px; font-weight: 700; display: inline-flex; align-items: center; gap: 7px; font-size: 0.82rem; transition: opacity 0.2s; white-space: nowrap; text-decoration: none; }
+    .btn:hover { opacity: 0.9; }
+    .btn-sm { padding: 5px 9px; font-size: 0.75rem; }
+    .btn-primary { background: var(--primary); color: #fff; }
+    .btn-success { background: var(--success); color: #fff; }
+    .btn-warning { background: var(--warning); color: #fff; }
+    .btn-danger { background: var(--danger); color: #fff; }
+    .btn-outline { background: #fff; color: var(--text); border: 1px solid var(--border); }
+    .btn-print { background: #475569; color: #fff; }
+
+    /* Filter Tabs */
+    .switch-tabs { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 14px; padding-bottom: 12px; border-bottom: 1px solid var(--border); }
+    .switch-tab { background: #fff; border: 1px solid var(--border); color: var(--muted); padding: 8px 14px; border-radius: 10px; font-size: 0.82rem; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 7px; }
+    .switch-tab.active { color: var(--primary); border-color: var(--primary); background: #f0fdfa; }
+    .tab-count { font-size: 0.7rem; padding: 1px 7px; border-radius: 999px; background: #e2e8f0; color: #334155; }
+    .switch-tab.active .tab-count { background: var(--primary); color: #fff; }
+
+    /* Table */
+    .table-wrap { width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+    table { width: 100%; border-collapse: collapse; }
+    th, td { padding: 10px 11px; border-bottom: 1px solid var(--border); text-align: left; font-size: 0.84rem; white-space: nowrap; }
+    th { background: #f8fafc; color: var(--muted); font-size: 0.71rem; text-transform: uppercase; letter-spacing: 0.4px; }
+    td.wrap-col { white-space: normal; min-width: 180px; }
+
+    .badge { display: inline-block; padding: 3px 9px; border-radius: 999px; font-size: 0.72rem; font-weight: 700; }
+    .st-available { background: #dcfce7; color: #166534; }
+    .st-in-lab { background: #dbeafe; color: #1e40af; }
+    .st-borrowed { background: #fef3c7; color: #92400e; }
+    .st-repair { background: #fee2e2; color: #991b1b; }
+
+    /* Print Area */
+    #print-area { display: none; }
+    @media print {
+      @page { size: landscape; margin: 10mm; }
+      body { display: block; background: #fff; }
+      .sidebar, .main-content { display: none !important; }
+      #print-area { display: block !important; }
+      #print-table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+      #print-table th, #print-table td { border: 1px solid #000; padding: 5px 6px; font-size: 9.5px; color: #000; }
+      #print-table th { background: #f1f5f9 !important; }
+    }
+
+    /* Responsive */
+    @media (max-width: 1080px) {
+      .kpi-grid { grid-template-columns: repeat(2, 1fr); }
+      .form-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+    @media (max-width: 768px) {
+      .mobile-menu-btn { display: inline-flex; }
+      .sidebar { transform: translateX(-100%); }
+      .sidebar.open { transform: translateX(0); }
+      .main-content { margin-left: 0; padding: 16px; }
+      .kpi-grid, .form-grid { grid-template-columns: 1fr; }
+      .form-group.span-2 { grid-column: span 1; }
+      .switch-tabs { flex-wrap: nowrap; overflow-x: auto; }
+      .switch-tab { flex-shrink: 0; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="sidebar-backdrop" id="sidebarBackdrop" onclick="toggleSidebar(false)"></div>
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-brand">
+      <i class="fas fa-laptop-code"></i> <span>ICT Office</span>
+    </div>
+    <div class="sidebar-menu">
+      <a href="index.html" class="menu-item">
+        <i class="fas fa-microchip icon"></i> <span>ICT Helpdesk &amp; Overview</span>
+      </a>
+      <a href="inventory.html" class="menu-item active">
+        <i class="fas fa-desktop icon"></i> <span>Computer Lab &amp; ICT Assets</span>
+      </a>
+      <a href="../../index.html" class="menu-item">
+        <i class="fas fa-globe icon"></i> <span>Main Portal</span>
+      </a>
+      <a href="../administration/index.html" class="menu-item">
+        <i class="fas fa-building icon"></i> <span>Administration Office</span>
+      </a>
+    </div>
+  </aside>
+
+  <!-- MAIN CONTENT -->
+  <main class="main-content">
+    <div class="topbar">
+      <div class="topbar-left">
+        <button type="button" class="mobile-menu-btn" onclick="toggleSidebar()" aria-label="Toggle menu">
+          <i class="fas fa-bars"></i>
+        </button>
+        <div>
+          <h1>🖥️ Computer Lab &amp; ICT Equipment Inventory</h1>
+          <span class="sync-badge" id="syncBadge">Connecting to Firestore...</span>
+        </div>
+      </div>
+      <div class="topbar-actions">
+        <button class="btn btn-outline" onclick="downloadTemplate()">
+          <i class="fas fa-download"></i> Template
+        </button>
+        <input type="file" id="excelFile" accept=".xlsx,.xls,.csv" hidden onchange="importExcel(event)">
+        <button class="btn btn-success" onclick="document.getElementById('excelFile').click()">
+          <i class="fas fa-file-import"></i> Import Excel
+        </button>
+        <button class="btn btn-print" onclick="window.print()">
+          <i class="fas fa-print"></i> Print Inventory
+        </button>
+      </div>
+    </div>
+
+    <!-- KPI CARDS -->
+    <div class="kpi-grid">
+      <div class="kpi-card">
+        <div class="kpi-label">Total ICT Units</div>
+        <div class="kpi-val" id="kpiTotal">0</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Computer Lab Stations</div>
+        <div class="kpi-val" id="kpiLab">0</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Available for Borrowing</div>
+        <div class="kpi-val" id="kpiAvail">0</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Borrowed / Under Repair</div>
+        <div class="kpi-val" id="kpiUnavailable">0</div>
+      </div>
+    </div>
+
+    <!-- ENTRY FORM -->
+    <div class="card">
+      <div class="card-header">
+        <h2 id="formTitle"><i class="fas fa-plus-circle" style="color:var(--primary);"></i> Add ICT Asset / Lab Computer</h2>
+      </div>
+      <input type="hidden" id="editId" value="">
+
+      <div class="form-grid">
+        <div class="form-group">
+          <label>Asset / Property Tag *</label>
+          <input id="assetTag" placeholder="e.g., ICT-LAB1-01 or 2024-07-70">
+        </div>
+        <div class="form-group">
+          <label>Location / Assignment *</label>
+          <select id="locationGroup">
+            <option value="Computer Lab 1">Computer Lab 1</option>
+            <option value="Computer Lab 2">Computer Lab 2</option>
+            <option value="ICT Loanable Pool">ICT Loanable Pool (Borrowable)</option>
+            <option value="Faculty / Admin Office">Faculty / Admin Office</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Equipment Type</label>
+          <select id="deviceType">
+            <option value="Desktop PC">Desktop PC</option>
+            <option value="Laptop">Laptop</option>
+            <option value="Projector / Smart TV">Projector / Smart TV</option>
+            <option value="Printer / Scanner">Printer / Scanner</option>
+            <option value="Network / Router / Switch">Network / Router / Switch</option>
+            <option value="Peripheral / Accessory">Peripheral / Accessory</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Status</label>
+          <select id="status">
+            <option value="In Lab">In Lab (Stationed)</option>
+            <option value="Available">Available (Can be Borrowed)</option>
+            <option value="Borrowed">Borrowed</option>
+            <option value="Under Repair">Under Repair / Defective</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Brand &amp; Model *</label>
+          <input id="brandModel" placeholder="e.g., Lenovo ThinkPad E14 / Dell OptiPlex">
+        </div>
+        <div class="form-group">
+          <label>Serial Number</label>
+          <input id="serialNumber" placeholder="e.g., PF4X912A">
+        </div>
+        <div class="form-group span-2">
+          <label>Hardware Specs &amp; Remarks</label>
+          <input id="specs" placeholder="e.g., Intel i5, 8GB RAM, 512GB SSD, Windows 11 Pro, Working">
+        </div>
+      </div>
+
+      <div style="margin-top: 16px; display: flex; gap: 8px; flex-wrap: wrap;">
+        <button class="btn btn-primary" id="saveBtn" onclick="saveAsset()">
+          <i class="fas fa-save"></i> Save Equipment
+        </button>
+        <button class="btn btn-outline" id="cancelEditBtn" style="display:none;" onclick="resetForm()">
+          Cancel Edit
+        </button>
+      </div>
+    </div>
+
+    <!-- TABLE & FILTERS -->
+    <div class="card">
+      <div class="card-header">
+        <h2>ICT Equipment List (<span id="recordCount">0</span>)</h2>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
+          <select id="statusFilter" onchange="renderTable()" style="border:1px solid var(--border);border-radius:9px;padding:7px 10px;font-size:0.82rem;background:#fff;">
+            <option value="ALL">All Statuses</option>
+            <option value="In Lab">In Lab</option>
+            <option value="Available">Available</option>
+            <option value="Borrowed">Borrowed</option>
+            <option value="Under Repair">Under Repair</option>
+          </select>
+          <input id="searchBox" oninput="renderTable()" placeholder="Search tag, model, serial, specs..."
+            style="border:1px solid var(--border);border-radius:9px;padding:7px 11px;font-size:0.82rem;width:230px;max-width:100%;">
+        </div>
+      </div>
+
+      <div class="switch-tabs" id="locationTabs"></div>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Asset Tag</th>
+              <th>Location / Group</th>
+              <th>Type</th>
+              <th>Brand &amp; Model</th>
+              <th>Serial No.</th>
+              <th>Specs &amp; Remarks</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="items-body">
+            <tr><td colspan="8" style="text-align:center;padding:24px;color:var(--muted);">Loading ICT inventory...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </main>
+
+  <!-- PRINT AREA -->
+  <div id="print-area">
+    <div style="text-align:center;">
+      <h2 style="font-size:14px;">STA. CRUZ PINGKIAN HIGH SCHOOL — ICT OFFICE</h2>
+      <h3 style="font-size:12px;margin-top:2px;">COMPUTER LABORATORY &amp; ICT EQUIPMENT INVENTORY</h3>
+      <p style="font-size:10px;margin-top:2px;" id="printSub">All Locations</p>
+    </div>
+    <table id="print-table">
+      <thead>
+        <tr>
+          <th>Asset Tag</th>
+          <th>Location</th>
+          <th>Type</th>
+          <th>Brand &amp; Model</th>
+          <th>Serial Number</th>
+          <th>Specs &amp; Remarks</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody id="print-body"></tbody>
+    </table>
+  </div>
+
+  <script type="module">
+    import { db } from "../../assets/js/firebase-config.js";
+    import {
+      collection,
+      getDocs,
+      doc,
+      setDoc,
+      addDoc,
+      deleteDoc,
+      writeBatch
+    } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+    const FS_COL = "ict_inventory";
+    const LOCATIONS = ["__ALL__", "Computer Lab 1", "Computer Lab 2", "ICT Loanable Pool", "Faculty / Admin Office"];
+
+    let assets = [];
+    let activeLocation = "__ALL__";
+
+    function escapeHTML(str) {
+      return String(str ?? "").replace(/[&<>"']/g, m => ({
+        "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
+      }[m]));
+    }
+
+    function escapeJS(str) {
+      return String(str ?? "").replace(/\\/g, "\\\\").replace(/'/g, "\\'");
+    }
+
+    function setBadge(ok, msg) {
+      const b = document.getElementById("syncBadge");
+      b.textContent = msg;
+      b.className = "sync-badge " + (ok ? "ok" : "err");
+    }
+
+    async function loadAssets() {
+      try {
+        const snap = await getDocs(collection(db, FS_COL));
+        assets = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+        assets.sort((a, b) => String(a.assetTag || "").localeCompare(String(b.assetTag || ""), undefined, { numeric: true }));
+        setBadge(true, "Connected to Firestore (ict_inventory)");
+        updateKPIs();
+        renderLocationTabs();
+        renderTable();
+      } catch (err) {
+        console.error("ICT inventory load error:", err);
+        setBadge(false, "Firestore Error: " + err.message);
+      }
+    }
+
+    function updateKPIs() {
+      document.getElementById("kpiTotal").textContent = assets.length;
+      document.getElementById("kpiLab").textContent = assets.filter(a => String(a.locationGroup || "").startsWith("Computer Lab")).length;
+      document.getElementById("kpiAvail").textContent = assets.filter(a => a.status === "Available").length;
+      document.getElementById("kpiUnavailable").textContent = assets.filter(a => a.status === "Borrowed" || a.status === "Under Repair").length;
+    }
+
+    function renderLocationTabs() {
+      const container = document.getElementById("locationTabs");
+      container.innerHTML = LOCATIONS.map(loc => {
+        const label = loc === "__ALL__" ? "All Equipment" : loc;
+        const count = loc === "__ALL__"
+          ? assets.length
+          : assets.filter(a => (a.locationGroup || "") === loc).length;
+        return `
+          <button type="button" class="switch-tab ${activeLocation === loc ? "active" : ""}" onclick="selectLocation('${escapeJS(loc)}')">
+            <span>${escapeHTML(label)}</span>
+            <span class="tab-count">${count}</span>
+          </button>
+        `;
+      }).join("");
+    }
+
+    window.selectLocation = function(loc) {
+      activeLocation = loc;
+      document.getElementById("printSub").textContent = loc === "__ALL__" ? "All Locations" : loc;
+      renderLocationTabs();
+      renderTable();
+    };
+
+    function getFilteredAssets() {
+      const q = (document.getElementById("searchBox").value || "").toLowerCase().trim();
+      const stFilter = document.getElementById("statusFilter").value;
+      return assets.filter(a => {
+        if (activeLocation !== "__ALL__" && (a.locationGroup || "") !== activeLocation) return false;
+        if (stFilter !== "ALL" && (a.status || "") !== stFilter) return false;
+        if (!q) return true;
+        return [a.assetTag, a.locationGroup, a.deviceType, a.brandModel, a.serialNumber, a.specs, a.status]
+          .some(v => String(v || "").toLowerCase().includes(q));
+      });
+    }
+
+    function statusClass(status) {
+      if (status === "Available") return "st-available";
+      if (status === "Borrowed") return "st-borrowed";
+      if (status === "Under Repair") return "st-repair";
+      return "st-in-lab";
+    }
+
+    window.renderTable = function() {
+      const shown = getFilteredAssets();
+      document.getElementById("recordCount").textContent = shown.length;
+      const body = document.getElementById("items-body");
+      const printBody = document.getElementById("print-body");
+
+      if (!shown.length) {
+        body.innerHTML = `<tr><td colspan="8" style="text-align:center;padding:24px;color:var(--muted);">No ICT equipment found. Add an item above or import an Excel sheet.</td></tr>`;
+        printBody.innerHTML = "";
+        return;
+      }
+
+      body.innerHTML = shown.map(a => `
+        <tr>
+          <td style="font-family:monospace;font-weight:700;">${escapeHTML(a.assetTag)}</td>
+          <td>${escapeHTML(a.locationGroup)}</td>
+          <td>${escapeHTML(a.deviceType)}</td>
+          <td><strong>${escapeHTML(a.brandModel)}</strong></td>
+          <td style="font-family:monospace;">${escapeHTML(a.serialNumber || "-")}</td>
+          <td class="wrap-col">${escapeHTML(a.specs || "-")}</td>
+          <td><span class="badge ${statusClass(a.status)}">${escapeHTML(a.status || "In Lab")}</span></td>
+          <td>
+            <div style="display:flex;gap:6px;">
+              <button class="btn btn-warning btn-sm" onclick="editAsset('${escapeJS(a.id)}')">Edit</button>
+              <button class="btn btn-danger btn-sm" onclick="deleteAsset('${escapeJS(a.id)}')">Delete</button>
+            </div>
+          </td>
+        </tr>
+      `).join("");
+
+      printBody.innerHTML = shown.map(a => `
+        <tr>
+          <td>${escapeHTML(a.assetTag)}</td>
+          <td>${escapeHTML(a.locationGroup)}</td>
+          <td>${escapeHTML(a.deviceType)}</td>
+          <td>${escapeHTML(a.brandModel)}</td>
+          <td>${escapeHTML(a.serialNumber || "-")}</td>
+          <td>${escapeHTML(a.specs || "-")}</td>
+          <td>${escapeHTML(a.status || "In Lab")}</td>
+        </tr>
+      `).join("");
+    };
+
+    window.saveAsset = async function() {
+      const assetTag = document.getElementById("assetTag").value.trim();
+      const brandModel = document.getElementById("brandModel").value.trim();
+      if (!assetTag || !brandModel) {
+        alert("Please enter both Asset / Property Tag and Brand & Model.");
+        return;
+      }
+
+      const editId = document.getElementById("editId").value.trim();
+      const payload = {
+        assetTag,
+        locationGroup: document.getElementById("locationGroup").value,
+        deviceType: document.getElementById("deviceType").value,
+        status: document.getElementById("status").value,
+        brandModel,
+        serialNumber: document.getElementById("serialNumber").value.trim(),
+        specs: document.getElementById("specs").value.trim(),
+        updatedAt: new Date().toISOString()
+      };
+
+      try {
+        if (editId) {
+          await setDoc(doc(db, FS_COL, editId), payload, { merge: true });
+          const idx = assets.findIndex(a => a.id === editId);
+          if (idx >= 0) assets[idx] = { id: editId, ...assets[idx], ...payload };
+        } else {
+          const ref = await addDoc(collection(db, FS_COL), payload);
+          assets.push({ id: ref.id, ...payload });
+        }
+
+        window.resetForm();
+        updateKPIs();
+        renderLocationTabs();
+        renderTable();
+      } catch (err) {
+        console.error("Save error:", err);
+        alert("Firestore save error: " + err.message);
+      }
+    };
+
+    window.editAsset = function(id) {
+      const a = assets.find(x => x.id === id);
+      if (!a) return;
+      document.getElementById("editId").value = a.id;
+      document.getElementById("assetTag").value = a.assetTag || "";
+      document.getElementById("locationGroup").value = a.locationGroup || "Computer Lab 1";
+      document.getElementById("deviceType").value = a.deviceType || "Desktop PC";
+      document.getElementById("status").value = a.status || "In Lab";
+      document.getElementById("brandModel").value = a.brandModel || "";
+      document.getElementById("serialNumber").value = a.serialNumber || "";
+      document.getElementById("specs").value = a.specs || "";
+
+      document.getElementById("formTitle").innerHTML = '<i class="fas fa-edit" style="color:var(--warning);"></i> Edit ICT Asset';
+      document.getElementById("saveBtn").innerHTML = '<i class="fas fa-check"></i> Update Equipment';
+      document.getElementById("cancelEditBtn").style.display = "inline-flex";
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    };
+
+    window.resetForm = function() {
+      document.getElementById("editId").value = "";
+      ["assetTag", "brandModel", "serialNumber", "specs"].forEach(id => document.getElementById(id).value = "");
+      document.getElementById("formTitle").innerHTML = '<i class="fas fa-plus-circle" style="color:var(--primary);"></i> Add ICT Asset / Lab Computer';
+      document.getElementById("saveBtn").innerHTML = '<i class="fas fa-save"></i> Save Equipment';
+      document.getElementById("cancelEditBtn").style.display = "none";
+    };
+
+    window.deleteAsset = async function(id) {
+      if (!confirm("Delete this ICT equipment record?")) return;
+      try {
+        await deleteDoc(doc(db, FS_COL, id));
+        assets = assets.filter(a => a.id !== id);
+        updateKPIs();
+        renderLocationTabs();
+        renderTable();
+      } catch (err) {
+        alert("Delete error: " + err.message);
+      }
+    };
+
+    window.downloadTemplate = function() {
+      const sample = [
+        {
+          "Asset Tag": "ICT-LAB1-01",
+          "Location": "Computer Lab 1",
+          "Device Type": "Desktop PC",
+          "Brand & Model": "Dell OptiPlex 3090",
+          "Serial Number": "SN123456",
+          "Specs & Remarks": "Intel i5, 8GB RAM, 256GB SSD, Windows 11",
+          "Status": "In Lab"
+        },
+        {
+          "Asset Tag": "ICT-LAP-01",
+          "Location": "ICT Loanable Pool",
+          "Device Type": "Laptop",
+          "Brand & Model": "Lenovo ThinkPad E14",
+          "Serial Number": "PF998877",
+          "Specs & Remarks": "Intel i5, 16GB RAM, 512GB SSD, Bag + Charger",
+          "Status": "Available"
+        }
+      ];
+      const ws = XLSX.utils.json_to_sheet(sample);
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, "ICT_Inventory");
+      XLSX.writeFile(wb, "SCPHS_ICT_Inventory_Template.xlsx");
+    };
+
+    window.importExcel = function(evt) {
+      const file = evt.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = async function(e) {
+        try {
+          const wb = XLSX.read(new Uint8Array(e.target.result), { type: "array" });
+          const rows = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], { defval: "" });
+          const existingTags = new Set(assets.map(a => String(a.assetTag || "").toLowerCase().trim()));
+          const toAdd = [];
+
+          rows.forEach(r => {
+            const tag = String(r["Asset Tag"] || r["Property Number"] || "").trim();
+            const model = String(r["Brand & Model"] || r["Description"] || "").trim();
+            if (!tag || !model || existingTags.has(tag.toLowerCase())) return;
+            existingTags.add(tag.toLowerCase());
+            toAdd.push({
+              assetTag: tag,
+              locationGroup: String(r["Location"] || "Computer Lab 1").trim(),
+              deviceType: String(r["Device Type"] || "Desktop PC").trim(),
+              brandModel: model,
+              serialNumber: String(r["Serial Number"] || "").trim(),
+              specs: String(r["Specs & Remarks"] || "").trim(),
+              status: String(r["Status"] || "In Lab").trim(),
+              updatedAt: new Date().toISOString()
+            });
+          });
+
+          if (!toAdd.length) {
+            alert("No new unique Asset Tags found to import.");
+            return;
+          }
+
+          for (let i = 0; i < toAdd.length; i += 450) {
+            const batch = writeBatch(db);
+            toAdd.slice(i, i + 450).forEach(item => {
+              const ref = doc(collection(db, FS_COL));
+              item.id = ref.id;
+              batch.set(ref, item);
+            });
+            await batch.commit();
+          }
+
+          assets.push(...toAdd);
+          updateKPIs();
+          renderLocationTabs();
+          renderTable();
+          alert(`Imported ${toAdd.length} ICT equipment record(s)!`);
+        } catch (err) {
+          console.error("Import error:", err);
+          alert("Import error: " + err.message);
+        } finally {
+          evt.target.value = "";
+        }
+      };
+      reader.readAsArrayBuffer(file);
+    };
+
+    loadAssets();
+  </script>
+
+  <script>
+    function toggleSidebar(forceState) {
+      const sidebar = document.getElementById("sidebar");
+      const backdrop = document.getElementById("sidebarBackdrop");
+      const shouldOpen = typeof forceState === "boolean" ? forceState : !sidebar.classList.contains("open");
+      sidebar.classList.toggle("open", shouldOpen);
+      backdrop.classList.toggle("show", shouldOpen);
+    }
+  </script>
+</body>
+</html>
