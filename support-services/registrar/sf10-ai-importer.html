@@ -38,9 +38,8 @@
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body { font-family: 'Inter', sans-serif; background: var(--gray-50); min-height: 100vh; color: var(--gray-900); }
 
-    /* Layout */
     .wrap { max-width: 1000px; margin: 0 auto; padding: 20px 16px; }
-    .header { background: #fff; padding: 20px; border-radius: var(--radius); box-shadow: var(--shadow-sm); margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; border: 1px solid var(--gray-200); }
+    .header { background: #fff; padding: 20px; border-radius: var(--radius); box-shadow: var(--shadow-sm); margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; border: 1px solid var(--gray-200); flex-wrap: wrap; gap: 12px; }
     .header h1 { margin: 0; color: var(--accent); font-size: 1.5rem; font-weight: 800; display: flex; align-items: center; gap: 10px; }
 
     .card { background: #fff; border-radius: var(--radius-lg); box-shadow: var(--shadow-sm); padding: 30px; margin-bottom: 20px; border: 1px solid var(--gray-200); }
@@ -57,23 +56,22 @@
     .btn-danger-ghost { background: transparent; color: var(--gray-400); padding: 6px; border-radius: 6px; cursor: pointer; transition: var(--transition); border: none; }
     .btn-danger-ghost:hover { color: var(--danger); background: #fee2e2; transform: scale(1.1); }
 
-    /* Forms */
     .form-group { margin-bottom: 15px; }
-    .form-group label { display: block; font-size: 0.8rem; font-weight: 700; color: #333; margin-bottom: 5px; text-transform: uppercase; }
-    .form-group select { width: 100%; padding: 12px; border: 2px solid var(--gray-200); border-radius: 8px; font-family: inherit; font-size: 0.95rem; outline: none; }
+    .form-group label { display: block; font-size: 0.75rem; font-weight: 700; color: #333; margin-bottom: 5px; text-transform: uppercase; }
+    .form-group select, .form-group input { width: 100%; padding: 11px 12px; border: 2px solid var(--gray-200); border-radius: 8px; font-family: inherit; font-size: 0.92rem; outline: none; transition: var(--transition); }
+    .form-group input:focus, .form-group select:focus { border-color: var(--accent); }
+    .meta-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; background: var(--gray-50); padding: 18px; border-radius: var(--radius); border: 1px solid var(--gray-200); margin-bottom: 24px; }
 
-    /* Upload Zone */
     .upload-zone { border: 2px dashed var(--gray-300); border-radius: var(--radius); padding: 50px 20px; text-align: center; cursor: pointer; transition: var(--transition); background: #fafafa; margin-bottom: 20px; }
-    .upload-zone:hover { border-color: var(--accent); background: var(--accent-light); }
+    .upload-zone:hover, .upload-zone.drag-over { border-color: var(--accent); background: var(--accent-light); }
     .upload-zone.has-files { border-color: var(--success); background: #f0fdf4; }
     .upload-zone .upload-icon { font-size: 42px; color: var(--gray-400); margin-bottom: 12px; }
     .upload-zone.has-files .upload-icon { color: var(--success); }
     .upload-zone p { color: var(--gray-700); font-size: 15px; font-weight: 700; margin-bottom: 4px; }
     .upload-zone .upload-hint { font-size: 12px; color: var(--gray-500); }
 
-    /* Result Sections */
     .result-section { margin-bottom: 30px; border: 1px solid var(--gray-200); border-radius: var(--radius); overflow: hidden; }
-    .result-section-header { background: var(--gray-100); padding: 12px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--gray-200); }
+    .result-section-header { background: var(--gray-100); padding: 12px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--gray-200); flex-wrap: wrap; gap: 10px; }
     .result-section-header h4 { font-size: 14px; font-weight: 700; color: var(--gray-800); margin: 0; }
     
     .result-table { width: 100%; border-collapse: collapse; }
@@ -84,21 +82,27 @@
     .result-table input:focus { border-color: var(--accent); outline: none; background: var(--accent-light); }
     .result-table td:first-child { width: 35%; text-align: left; }
     .result-table input.sub-name { text-align: left; color: var(--accent); white-space: normal; word-wrap: break-word; }
+    tr.math-warning { background: #fef3c7 !important; }
     
-    /* Alerts */
+    .engine-badge { display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border-radius: 99px; font-size: 11px; font-weight: 700; background: #e0e7ff; color: #3730a3; }
     .alert { padding: 15px; border-radius: 8px; margin-bottom: 20px; display: none; font-weight: 600; text-align: center; }
     .alert-success { background: #dcfce7; color: #166534; }
     .alert-error { background: #fee2e2; color: #991b1b; }
-    .alert-info { background: #e0f2fe; color: #1e40af; }
+    .alert-warning { background: #fef3c7; color: #92400e; text-align: left; font-size: 13px; }
 
-    /* Modal */
+    .toast-container { position: fixed; top: 20px; right: 20px; z-index: 10000; display: flex; flex-direction: column; gap: 10px; }
+    .toast { background: #1e293b; color: #fff; padding: 12px 18px; border-radius: 10px; font-size: 13px; font-weight: 600; display: flex; align-items: center; gap: 10px; box-shadow: var(--shadow-lg); transition: opacity 0.3s ease; }
+    .toast.success { border-left: 4px solid var(--success); }
+    .toast.error { border-left: 4px solid var(--danger); }
+    .toast.warning { border-left: 4px solid var(--warning); }
+
     .modal { display: none; position: fixed; inset: 0; background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(4px); z-index: 9999; justify-content: center; align-items: center; }
     .modal.show { display: flex; }
     .modal-content { background: #fff; padding: 30px; border-radius: var(--radius-lg); width: 90%; max-width: 500px; box-shadow: var(--shadow-lg); }
   </style>
   
   <script type="module">
-    import { GoogleGenerativeAI } from "https://esm.run/@google/generative-ai";
+    import { GoogleGenerativeAI, SchemaType } from "https://esm.run/@google/generative-ai";
     import { auth, db } from "../../assets/js/firebase-config.js";
     import { doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
@@ -106,14 +110,38 @@
     let selectedFile = null;
     let currentExtractedData = null;
 
+    // High-capacity Tier 1 workhorse first, followed by flagship & lite fallbacks
+    const GEMINI_MODEL_CASCADE = [
+      "gemini-3.8-flash",
+      "gemini-4-hydrogen",
+      "gemini-3.5-flash-lite"
+    ];
+
     document.addEventListener('DOMContentLoaded', () => {
+      document.getElementById('settings-btn').style.display = 'inline-flex';
       if (!GEMINI_API_KEY) {
-        document.getElementById('settings-btn').style.display = 'inline-flex';
         document.getElementById('alert-error').style.display = 'block';
-        document.getElementById('alert-error').innerHTML = '⚠️ Gemini API Key not configured. Please click "Setup API Key".';
+        document.getElementById('alert-error').innerHTML = '⚠️ Gemini API Key not configured. Please click "API Key" at the top right.';
       }
       document.getElementById('file-info').style.display = 'none';
+      setupDragAndDrop();
     });
+
+    function setupDragAndDrop() {
+      const zone = document.getElementById('upload-zone');
+      ['dragenter', 'dragover'].forEach(evt => {
+        zone.addEventListener(evt, e => { e.preventDefault(); zone.classList.add('drag-over'); });
+      });
+      ['dragleave', 'drop'].forEach(evt => {
+        zone.addEventListener(evt, e => { e.preventDefault(); zone.classList.remove('drag-over'); });
+      });
+      zone.addEventListener('drop', e => {
+        if (e.dataTransfer.files.length > 0) {
+          document.getElementById('excel-file').files = e.dataTransfer.files;
+          handleFileSelect(document.getElementById('excel-file'));
+        }
+      });
+    }
 
     window.openSettings = function() {
       document.getElementById('api-key-input').value = GEMINI_API_KEY;
@@ -125,7 +153,6 @@
       localStorage.setItem('scphs_gemini_api_key', key);
       GEMINI_API_KEY = key;
       document.getElementById('settings-modal').classList.remove('show');
-      document.getElementById('settings-btn').style.display = 'none';
       document.getElementById('alert-error').style.display = 'none';
       showToast("✅ Gemini API Key saved!", "success");
     };
@@ -133,7 +160,8 @@
     window.handleFileSelect = function(input) {
       if (input.files.length > 0) {
         selectedFile = input.files[0];
-        document.getElementById('file-name').textContent = selectedFile.name;
+        const sizeMB = (selectedFile.size / (1024 * 1024)).toFixed(2);
+        document.getElementById('file-name').textContent = `${selectedFile.name} (${sizeMB} MB)`;
         document.getElementById('file-info').style.display = 'block'; 
         
         const zone = document.getElementById('upload-zone');
@@ -143,152 +171,261 @@
       }
     };
 
+    async function optimizeFileForGemini(file) {
+      if (file.type === "application/pdf") {
+        return new Promise((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload = e => resolve({ base64: e.target.result.split(',')[1], mimeType: "application/pdf" });
+          reader.onerror = reject;
+          reader.readAsDataURL(file);
+        });
+      }
+
+      return new Promise((resolve, reject) => {
+        const img = new Image();
+        img.onload = () => {
+          const maxDim = 2048;
+          let { width, height } = img;
+          if (width > maxDim || height > maxDim) {
+            if (width > height) {
+              height = Math.round((height * maxDim) / width);
+              width = maxDim;
+            } else {
+              width = Math.round((width * maxDim) / height);
+              height = maxDim;
+            }
+          }
+
+          const canvas = document.createElement('canvas');
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext('2d');
+          
+          ctx.filter = 'contrast(1.18) brightness(1.02)';
+          ctx.drawImage(img, 0, 0, width, height);
+
+          const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.88);
+          URL.revokeObjectURL(img.src);
+          resolve({
+            base64: compressedDataUrl.split(',')[1],
+            mimeType: 'image/jpeg'
+          });
+        };
+        img.onerror = reject;
+        img.src = URL.createObjectURL(file);
+      });
+    }
+
+    function getSF10ResponseSchema(isSHS) {
+      const subjectProperties = isSHS ? {
+        subject: { type: SchemaType.STRING },
+        type: { type: SchemaType.STRING, description: "CORE, APPLIED, or SPECIALIZED" },
+        q1: { type: SchemaType.NUMBER, nullable: true },
+        q2: { type: SchemaType.NUMBER, nullable: true },
+        final: { type: SchemaType.NUMBER, nullable: true }
+      } : {
+        subject: { type: SchemaType.STRING },
+        q1: { type: SchemaType.NUMBER, nullable: true },
+        q2: { type: SchemaType.NUMBER, nullable: true },
+        q3: { type: SchemaType.NUMBER, nullable: true },
+        q4: { type: SchemaType.NUMBER, nullable: true },
+        final: { type: SchemaType.NUMBER, nullable: true }
+      };
+
+      const sectionProperties = {
+        gradeLevel: { type: SchemaType.STRING, description: "e.g., Grade 7, Grade 11" },
+        schoolYear: { type: SchemaType.STRING, description: "e.g., 2019-2020" },
+        adviser: { type: SchemaType.STRING, nullable: true },
+        sectionName: { type: SchemaType.STRING, nullable: true },
+        subjects: {
+          type: SchemaType.ARRAY,
+          items: {
+            type: SchemaType.OBJECT,
+            properties: subjectProperties,
+            required: ["subject"]
+          }
+        }
+      };
+
+      if (isSHS) {
+        sectionProperties.semester = { type: SchemaType.STRING, description: "FIRST SEMESTER or SECOND SEMESTER" };
+        sectionProperties.trackStrand = { type: SchemaType.STRING, description: "e.g., STEM, HUMSS, ABM, TVL" };
+      }
+
+      return {
+        type: SchemaType.OBJECT,
+        properties: {
+          learner: {
+            type: SchemaType.OBJECT,
+            properties: {
+              lrn: { type: SchemaType.STRING, nullable: true, description: "12-digit Learner Reference Number if visible" },
+              lastName: { type: SchemaType.STRING, nullable: true },
+              firstName: { type: SchemaType.STRING, nullable: true }
+            }
+          },
+          sections: {
+            type: SchemaType.ARRAY,
+            items: {
+              type: SchemaType.OBJECT,
+              properties: sectionProperties,
+              required: ["gradeLevel", "schoolYear", "subjects"]
+            }
+          },
+          warnings: {
+            type: SchemaType.ARRAY,
+            items: { type: SchemaType.STRING },
+            description: "List any smudged, cut-off, or uncertain handwritten grades"
+          }
+        },
+        required: ["sections"]
+      };
+    }
+
     window.processImage = async function() {
       if (!selectedFile) return;
       if (!GEMINI_API_KEY) return openSettings();
 
       const btn = document.getElementById('btn-process');
       const originalText = btn.innerHTML;
-      btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Gemini is Scanning...';
       btn.disabled = true;
       document.getElementById('results-area').style.display = 'none';
+      document.getElementById('audit-box').style.display = 'none';
 
       const curriculumType = document.getElementById('imp-curriculum').value;
       const isSHS = curriculumType === 'SHS';
 
-      const reader = new FileReader();
-      reader.onload = async function(e) {
-        const base64Image = e.target.result.split(',')[1];
-        
-        let attempt = 0;
-        const maxRetries = 2; // Reduced to 2 to prevent long waits
-        let success = false;
+      try {
+        btn.innerHTML = '<i class="fas fa-compress-arrows-alt fa-spin"></i> Enhancing Scan Quality...';
+        const { base64, mimeType } = await optimizeFileForGemini(selectedFile);
+        const imageParts = [{ inlineData: { data: base64, mimeType } }];
 
-        while (attempt < maxRetries && !success) {
-          try {
-            const genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
-            // CORRECT MODEL NAME
-            const model = genAI.getGenerativeModel({ model: "gemini-3.8-flash" });
+        const systemInstruction = `You are a senior Philippine DepEd School Registrar digitizing archival SF10 (Form 137) Permanent Records.
+- Decipher both handwritten cursive/ballpoint entries and typewritten text accurately.
+- Use DepEd subject naming context (Mother Tongue, Filipino, English, Mathematics, Science, Araling Panlipunan, Edukasyon sa Pagpapakatao, MAPEH, EPP/TLE, Oral Communication, General Mathematics, etc.) to resolve ambiguous cursive letters.
+- Cross-check quarterly grades against the Final Rating to verify unclear handwritten numbers (e.g., distinguishing 83 vs 88 or 75 vs 78).
+- NEVER guess or fabricate grades. If a cell is blank or completely illegible, return null and note it in warnings.`;
 
-            let prompt = "";
-            
-            if (isSHS) {
-              prompt = `
-                You are an expert AI data entry assistant for a school registrar. 
-                I am uploading an image of a DepEd Senior High School SF10 (Form 137) report card.
-                This document may contain multiple grade levels or multiple semesters on the same page.
+        const prompt = isSHS
+          ? `Extract the learner info (LRN, Last Name, First Name) if visible on the header, and ALL Senior High School grade blocks (Grade 11/12, School Year, Semester, Track/Strand, Adviser, Section). For 2nd Semester blocks that list Q3 and Q4 on the paper, map them into q1 and q2 respectively alongside the SEM FINAL GRADE (final).`
+          : `Extract the learner info (LRN, Last Name, First Name) if visible on the header, and ALL Junior High School grade blocks (Grade 7-10, School Year, Adviser, Section) along with Q1, Q2, Q3, Q4, and Final Rating for every subject.`;
 
-                CRITICAL INSTRUCTIONS FOR SHS:
-                1. Identify the Grade Level (11 or 12), School Year, Semester (e.g., "FIRST SEMESTER"), and Track/Strand for EACH block.
-                2. The SHS form has Q1 and Q2 for 1st Semester, and Q3 and Q4 for 2nd Semester. Extract these 2 quarters AND the "SEM FINAL GRADE".
-                3. Extract whether the subject is "CORE", "APPLIED", or "SPECIALIZED".
-                4. Read carefully. Some grades are handwritten. DO NOT GUESS. If a number is illegible, return null.
-                5. Keep exact subject names.
-                
-                Return ONLY a valid JSON object in this exact format:
-                {
-                  "sections": [
-                    {
-                      "gradeLevel": "Grade 11",
-                      "schoolYear": "2023-2024",
-                      "semester": "FIRST SEMESTER",
-                      "trackStrand": "STEM",
-                      "subjects": [
-                        {"subject": "General Mathematics", "type": "CORE", "q1": 85, "q2": 86, "final": 86}
-                      ]
-                    }
-                  ]
+        const genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
+        let parsedData = null;
+        let usedModel = "";
+
+        modelLoop:
+        for (const modelName of GEMINI_MODEL_CASCADE) {
+          const maxRetries = 2;
+          for (let attempt = 1; attempt <= maxRetries; attempt++) {
+            btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Scanning with ${modelName} (${attempt}/${maxRetries})...`;
+            try {
+              const model = genAI.getGenerativeModel({
+                model: modelName,
+                systemInstruction,
+                generationConfig: {
+                  temperature: 0.0,
+                  responseMimeType: "application/json",
+                  responseSchema: getSF10ResponseSchema(isSHS)
                 }
-              `;
-            } else {
-              prompt = `
-                You are an expert AI data entry assistant for a school registrar. 
-                I am uploading an image of a DepEd Junior High School SF10 (Form 137) report card.
-                This document may contain multiple grade levels (e.g., Grade 7 and Grade 8) on the same page.
+              });
 
-                CRITICAL INSTRUCTIONS:
-                1. Identify the grade level and school year for EACH block of subjects.
-                2. Extract the FINAL RATING for each subject.
-                3. Read carefully. Some grades are handwritten. DO NOT GUESS. If a number is illegible, return null.
-                4. Keep exact subject names (e.g., "Edukasyon sa Pagpapakatao (EsP)").
-                
-                Return ONLY a valid JSON object in this exact format:
-                {
-                  "sections": [
-                    {
-                      "gradeLevel": "Grade 7",
-                      "schoolYear": "2022-2023",
-                      "subjects": [
-                        {"subject": "Filipino", "q1": 79, "q2": 79, "q3": 79, "q4": 79, "final": 79}
-                      ]
-                    }
-                  ]
-                }
-              `;
-            }
+              const timeoutPromise = new Promise((_, reject) =>
+                setTimeout(() => reject(new Error("Request timed out (60s).")), 60000)
+              );
 
-            const imageParts = [{ inlineData: { data: base64Image, mimeType: selectedFile.type } }];
-            
-            // --- TIMEOUT LOGIC (45 Seconds) ---
-            const timeoutPromise = new Promise((_, reject) => 
-              setTimeout(() => reject(new Error("Gemini request timed out. The image might be too large or the server is unresponsive.")), 45000)
-            );
+              const result = await Promise.race([
+                model.generateContent([prompt, ...imageParts]),
+                timeoutPromise
+              ]);
 
-            // Race the AI against the timer
-            const result = await Promise.race([
-              model.generateContent([prompt, ...imageParts]),
-              timeoutPromise
-            ]);
-            
-            let text = result.response.text();
-            text = text.replace(/```json/g, '').replace(/```/g, '').trim();
-            const parsedData = JSON.parse(text);
-            
-            if (!parsedData.sections || parsedData.sections.length === 0) throw new Error("No sections found.");
-            
-            currentExtractedData = parsedData;
-            currentExtractedData.isSHS = isSHS;
-            success = true;
+              parsedData = JSON.parse(result.response.text());
+              if (!parsedData.sections || parsedData.sections.length === 0) {
+                throw new Error("No grade tables detected on this page.");
+              }
+              usedModel = modelName;
+              break modelLoop;
 
-          } catch (error) {
-            console.warn(`Attempt ${attempt + 1} failed:`, error.message);
-            attempt++;
-            if (attempt < maxRetries) {
-              showToast(`⏳ Gemini is busy. Retrying (${attempt}/${maxRetries})...`, 'warning');
-              await new Promise(r => setTimeout(r, 2000));
-            } else {
-              showToast("❌ Gemini Error: " + error.message, 'error');
+            } catch (err) {
+              console.warn(`[${modelName} Attempt ${attempt}]`, err.message);
+              const isInvalidKey = err.message?.includes("API_KEY_INVALID") || err.message?.includes("400");
+              if (isInvalidKey) throw new Error("Invalid Gemini API Key. Please check API Key settings.");
+
+              if (attempt < maxRetries) {
+                const backoff = Math.pow(2, attempt) * 1000 + Math.floor(Math.random() * 600);
+                showToast(`⏳ ${modelName} busy. Retrying in ${(backoff / 1000).toFixed(1)}s...`, 'warning');
+                await new Promise(r => setTimeout(r, backoff));
+              } else {
+                showToast(`🔄 Switching to next Gemini model...`, 'warning');
+              }
             }
           }
         }
 
-        if (success && currentExtractedData) {
-          showToast('✅ Extraction complete! Please review.', 'success');
-          renderExtractionUI();
+        if (!parsedData) {
+          throw new Error("All Gemini models are currently congested. Please try again in a few seconds.");
         }
 
+        currentExtractedData = parsedData;
+        currentExtractedData.isSHS = isSHS;
+        currentExtractedData.usedModel = usedModel;
+
+        document.getElementById('meta-lrn').value = (parsedData.learner?.lrn || '').replace(/\D/g, '').slice(0, 12);
+        document.getElementById('meta-lastname').value = parsedData.learner?.lastName || '';
+        document.getElementById('meta-firstname').value = parsedData.learner?.firstName || '';
+        document.getElementById('used-model-badge').innerHTML = `<i class="fas fa-microchip"></i> Extracted via ${usedModel}`;
+
+        showToast(`✅ Extraction complete using ${usedModel}!`, 'success');
+        renderExtractionUI();
+
+      } catch (error) {
+        console.error(error);
+        showToast("❌ " + error.message, 'error');
+      } finally {
         btn.innerHTML = originalText;
         btn.disabled = false;
-      };
-      reader.readAsDataURL(selectedFile);
+      }
     };
 
     function renderExtractionUI() {
       const container = document.getElementById('results-container');
       container.innerHTML = '';
       const isSHS = currentExtractedData.isSHS;
+      const auditWarnings = [...(currentExtractedData.warnings || [])];
 
       currentExtractedData.sections.forEach((section, secIndex) => {
         let rowsHtml = '';
         
         section.subjects.forEach((sub, subIndex) => {
+          let hasMathMismatch = false;
+          if (isSHS) {
+            const qs = [sub.q1, sub.q2].filter(n => typeof n === 'number' && n > 0);
+            if (qs.length === 2 && typeof sub.final === 'number') {
+              const avg = Math.round((qs[0] + qs[1]) / 2);
+              if (Math.abs(avg - sub.final) > 1) {
+                hasMathMismatch = true;
+                auditWarnings.push(`${section.gradeLevel} (${sub.subject}): Q1(${qs[0]}) + Q2(${qs[1]}) averages to ${avg}, but Final was read as ${sub.final}.`);
+              }
+            }
+          } else {
+            const qs = [sub.q1, sub.q2, sub.q3, sub.q4].filter(n => typeof n === 'number' && n > 0);
+            if (qs.length === 4 && typeof sub.final === 'number') {
+              const avg = Math.round(qs.reduce((a, b) => a + b, 0) / 4);
+              if (Math.abs(avg - sub.final) > 1) {
+                hasMathMismatch = true;
+                auditWarnings.push(`${section.gradeLevel} (${sub.subject}): Quarters (${qs.join(', ')}) average to ${avg}, but Final was read as ${sub.final}.`);
+              }
+            }
+          }
+
+          const rowClass = hasMathMismatch ? 'class="math-warning"' : '';
+
           if (isSHS) {
             rowsHtml += `
-              <tr id="row-${secIndex}-${subIndex}">
-                <td><input type="text" value="${sub.type || 'CORE'}" data-sec="${secIndex}" data-sub="${subIndex}" data-field="type" style="width: 60px; font-size: 10px; text-align: center;"></td>
+              <tr id="row-${secIndex}-${subIndex}" ${rowClass}>
+                <td><input type="text" value="${sub.type || 'CORE'}" data-sec="${secIndex}" data-sub="${subIndex}" data-field="type" style="width: 75px; font-size: 10px; text-align: center;"></td>
                 <td><input type="text" class="sub-name" value="${sub.subject || ''}" data-sec="${secIndex}" data-sub="${subIndex}" data-field="subject"></td>
-                <td><input type="number" value="${sub.q1 || sub.q3 || ''}" data-sec="${secIndex}" data-sub="${subIndex}" data-field="q1"></td>
-                <td><input type="number" value="${sub.q2 || sub.q4 || ''}" data-sec="${secIndex}" data-sub="${subIndex}" data-field="q2"></td>
+                <td><input type="number" value="${sub.q1 ?? ''}" data-sec="${secIndex}" data-sub="${subIndex}" data-field="q1"></td>
+                <td><input type="number" value="${sub.q2 ?? ''}" data-sec="${secIndex}" data-sub="${subIndex}" data-field="q2"></td>
                 <td><input type="number" value="${sub.final ?? ''}" data-sec="${secIndex}" data-sub="${subIndex}" data-field="final"></td>
                 <td style="width: 40px;">
                   <button class="btn-danger-ghost" onclick="clearRow(${secIndex}, ${subIndex})" title="Clear row">
@@ -299,7 +436,7 @@
             `;
           } else {
             rowsHtml += `
-              <tr id="row-${secIndex}-${subIndex}">
+              <tr id="row-${secIndex}-${subIndex}" ${rowClass}>
                 <td><input type="text" class="sub-name" value="${sub.subject || ''}" data-sec="${secIndex}" data-sub="${subIndex}" data-field="subject"></td>
                 <td><input type="number" value="${sub.q1 ?? ''}" data-sec="${secIndex}" data-sub="${subIndex}" data-field="q1"></td>
                 <td><input type="number" value="${sub.q2 ?? ''}" data-sec="${secIndex}" data-sub="${subIndex}" data-field="q2"></td>
@@ -316,31 +453,9 @@
           }
         });
 
-        let theadHtml = "";
-        if (isSHS) {
-          theadHtml = `
-            <tr>
-              <th style="width: 60px;">Type</th>
-              <th>Subject</th>
-              <th>Q1</th>
-              <th>Q2</th>
-              <th>Final</th>
-              <th>Clear</th>
-            </tr>
-          `;
-        } else {
-          theadHtml = `
-            <tr>
-              <th>Subject</th>
-              <th>Q1</th>
-              <th>Q2</th>
-              <th>Q3</th>
-              <th>Q4</th>
-              <th>Final</th>
-              <th>Clear</th>
-            </tr>
-          `;
-        }
+        const theadHtml = isSHS
+          ? `<tr><th style="width: 75px;">Type</th><th>Subject</th><th>Q1 / Q3</th><th>Q2 / Q4</th><th>Final</th><th>Clear</th></tr>`
+          : `<tr><th>Subject</th><th>Q1</th><th>Q2</th><th>Q3</th><th>Q4</th><th>Final</th><th>Clear</th></tr>`;
 
         let sectionTitle = `${section.gradeLevel || 'Unknown Grade'} (SY: ${section.schoolYear || 'Unknown'})`;
         if (isSHS) {
@@ -363,22 +478,32 @@
         `;
       });
 
+      const auditBox = document.getElementById('audit-box');
+      if (auditWarnings.length > 0) {
+        auditBox.innerHTML = `<strong><i class="fas fa-exclamation-triangle"></i> Registrar Verification Notes:</strong><ul style="margin: 6px 0 0 18px;">${auditWarnings.map(w => `<li>${w}</li>`).join('')}</ul>`;
+        auditBox.style.display = 'block';
+      } else {
+        auditBox.style.display = 'none';
+      }
+
       document.getElementById('results-area').style.display = 'block';
     }
 
     window.clearRow = function(secIndex, subIndex) {
       const row = document.getElementById(`row-${secIndex}-${subIndex}`);
       const inputs = row.querySelectorAll('input');
-      for (let i = 1; i < inputs.length; i++) {
-        inputs[i].value = '';
-        const field = inputs[i].dataset.field;
-        if (field) currentExtractedData.sections[secIndex].subjects[subIndex][field] = null;
-      }
-      showToast('Row cleared.', 'warning');
+      inputs.forEach(inp => {
+        if (inp.dataset.field !== 'subject' && inp.dataset.field !== 'type') {
+          inp.value = '';
+          currentExtractedData.sections[secIndex].subjects[subIndex][inp.dataset.field] = null;
+        }
+      });
+      row.classList.remove('math-warning');
+      showToast('Row grades cleared.', 'warning');
     };
 
     window.clearTable = function(secIndex) {
-      if(!confirm("Are you sure you want to clear all grades for this table?")) return;
+      if (!confirm("Are you sure you want to clear all grades for this table?")) return;
       const section = currentExtractedData.sections[secIndex];
       section.subjects.forEach((sub) => {
         sub.q1 = null; sub.q2 = null; sub.q3 = null; sub.q4 = null; sub.final = null;
@@ -387,17 +512,19 @@
       showToast('Table cleared.', 'warning');
     };
 
-    document.getElementById('results-container').addEventListener('input', function(e) {
-      if (e.target.tagName === 'INPUT') {
-        const sec = e.target.dataset.sec;
-        const sub = e.target.dataset.sub;
-        const field = e.target.dataset.field;
-        
-        if (currentExtractedData && currentExtractedData.sections[sec] && currentExtractedData.sections[sec].subjects[sub]) {
-          const val = e.target.value;
-          currentExtractedData.sections[sec].subjects[sub][field] = (field === 'subject' || field === 'type') ? val : (val === '' ? null : Number(val));
+    document.addEventListener('DOMContentLoaded', () => {
+      document.getElementById('results-container').addEventListener('input', function(e) {
+        if (e.target.tagName === 'INPUT') {
+          const sec = e.target.dataset.sec;
+          const sub = e.target.dataset.sub;
+          const field = e.target.dataset.field;
+          
+          if (currentExtractedData && currentExtractedData.sections[sec] && currentExtractedData.sections[sec].subjects[sub]) {
+            const val = e.target.value;
+            currentExtractedData.sections[sec].subjects[sub][field] = (field === 'subject' || field === 'type') ? val : (val === '' ? null : Number(val));
+          }
         }
-      }
+      });
     });
 
     window.saveToDatabase = async function() {
@@ -410,37 +537,34 @@
 
       try {
         const isSHS = currentExtractedData.isSHS;
-        const lrn = prompt("Please enter the 12-digit LRN for this student:");
-        if (!lrn || lrn.length !== 12) throw new Error("Invalid LRN. Must be 12 digits.");
-        
-        const lastName = prompt("Enter Student Last Name:");
-        const firstName = prompt("Enter Student First Name:");
-        if(!lastName || !firstName) throw new Error("Name is required.");
+        const lrn = document.getElementById('meta-lrn').value.trim();
+        const lastName = document.getElementById('meta-lastname').value.trim();
+        const firstName = document.getElementById('meta-firstname').value.trim();
+
+        if (!/^\d{12}$/.test(lrn)) throw new Error("Invalid LRN. Please verify it is exactly 12 digits.");
+        if (!lastName || !firstName) throw new Error("Student Last Name and First Name are required.");
 
         let savedCount = 0;
 
         for (const section of currentExtractedData.sections) {
           const gradeLevel = section.gradeLevel;
           const schoolYear = section.schoolYear;
-          
           if (!gradeLevel || !schoolYear) continue; 
 
           const validSubjects = section.subjects.filter(s => s.subject && (s.q1 || s.q2 || s.q3 || s.q4 || s.final));
-          if(validSubjects.length === 0) continue; 
+          if (validSubjects.length === 0) continue; 
 
           let docId = `${lrn}_${schoolYear}_${gradeLevel.replace(/\s+/g, '')}`;
-          
           if (isSHS) {
             const sem = section.semester ? section.semester.replace(/\s+/g, '') : 'SEM';
             docId += `_${sem}`;
           }
 
           const sf10Ref = doc(db, "sf10_archives", docId);
-          
           const snap = await getDoc(sf10Ref);
           if (snap.exists()) {
-             showToast(`⚠️ Record for ${gradeLevel} (${schoolYear}) already exists. Skipped.`, 'warning');
-             continue; 
+            showToast(`⚠️ Record for ${gradeLevel} (${schoolYear}) already exists. Skipped.`, 'warning');
+            continue; 
           }
 
           const saveData = {
@@ -450,10 +574,10 @@
             gradeLevel: gradeLevel,
             schoolYear: schoolYear,
             grades: validSubjects.map(s => ({ ...s, subject: s.subject, sub: s.subject })),
-            adviser: "",
-            section: "",
+            adviser: section.adviser || "",
+            section: section.sectionName || "",
             createdAt: Date.now(),
-            importedVia: "Gemini Vision"
+            importedVia: `Gemini Vision (${currentExtractedData.usedModel || 'gemini'})`
           };
 
           if (isSHS) {
@@ -468,15 +592,15 @@
           savedCount++;
         }
 
-        if(savedCount > 0) {
-            showToast(`✅ Successfully saved ${savedCount} record(s) to Database!`, 'success');
-            document.getElementById('results-area').style.display = 'none';
-            document.getElementById('upload-zone').classList.remove('has-files');
-            document.getElementById('upload-zone').querySelector('p').textContent = "Click to select or drag & drop SF10 Image/PDF";
-            document.getElementById('file-info').style.display = 'none';
-            document.getElementById('excel-file').value = ''; 
-            selectedFile = null;
-            currentExtractedData = null;
+        if (savedCount > 0) {
+          showToast(`✅ Successfully saved ${savedCount} record(s) to Database!`, 'success');
+          document.getElementById('results-area').style.display = 'none';
+          document.getElementById('upload-zone').classList.remove('has-files');
+          document.getElementById('upload-zone').querySelector('p').textContent = "Click to select or drag & drop SF10 Image/PDF";
+          document.getElementById('file-info').style.display = 'none';
+          document.getElementById('excel-file').value = ''; 
+          selectedFile = null;
+          currentExtractedData = null;
         }
 
       } catch (error) {
@@ -498,7 +622,7 @@
         <span>${message}</span>
       `;
       container.appendChild(toast);
-      setTimeout(() => { toast.style.opacity = '0'; setTimeout(() => toast.remove(), 300); }, 4000);
+      setTimeout(() => { toast.style.opacity = '0'; setTimeout(() => toast.remove(), 300); }, 4500);
     };
   </script>
 </head>
@@ -510,8 +634,8 @@
     <div class="header">
       <h1><i class="fas fa-robot"></i> SF10 AI Importer (Gemini)</h1>
       <div>
-        <button onclick="openSettings()" id="settings-btn" class="btn btn-ghost" style="display: none; margin-right: 10px;">
-          <i class="fas fa-key"></i> Setup API Key
+        <button onclick="openSettings()" id="settings-btn" class="btn btn-ghost" style="margin-right: 10px;">
+          <i class="fas fa-key"></i> API Key
         </button>
         <a href="index.html" style="color: var(--accent); text-decoration: none; font-weight: 600;">← Back to Registrar</a>
       </div>
@@ -519,11 +643,8 @@
 
     <div class="alert alert-success" id="alert-success"></div>
     <div class="alert alert-error" id="alert-error"></div>
-    <div class="alert alert-info" id="alert-info"></div>
 
     <div class="card">
-      
-      <!-- NEW: Curriculum Dropdown -->
       <div class="form-group" style="background: #eff6ff; padding: 15px; border-radius: 8px; border: 1px solid #bfdbfe; margin-bottom: 20px;">
         <label style="color: #1e3a8a;"><i class="fas fa-graduation-cap"></i> Select Curriculum Type</label>
         <select id="imp-curriculum" style="border-color: #93c5fd;">
@@ -537,7 +658,7 @@
       <div class="upload-zone" id="upload-zone" onclick="document.getElementById('excel-file').click()">
         <div class="upload-icon"><i class="fas fa-cloud-upload-alt"></i></div>
         <p>Click to select or drag & drop SF10 Image/PDF</p>
-        <div class="upload-hint">Supports JPG, PNG, PDF</div>
+        <div class="upload-hint">Supports JPG, PNG, PDF (Auto-enhances faded handwriting)</div>
         <input type="file" id="excel-file" accept="image/*, .pdf" style="display: none;" onchange="handleFileSelect(this)">
       </div>
 
@@ -547,13 +668,33 @@
 
       <div style="margin-top: 24px; text-align: right;">
         <button class="btn btn-accent btn-lg" id="btn-process" onclick="processImage()" disabled>
-          <i class="fas fa-magic"></i> Scan with Gemini AI
+          <i class="fas fa-magic"></i> Scan with Flagship Gemini AI
         </button>
       </div>
 
       <div id="results-area" style="margin-top: 30px; display: none; border-top: 1px solid var(--gray-200); padding-top: 24px;">
-        <h3 style="font-size: 18px; color: var(--accent); margin-bottom: 5px;"><i class="fas fa-check-square"></i> Extraction Results</h3>
-        <p style="font-size: 13px; color: var(--gray-500); margin-bottom: 20px;">Review the data below. Use the <i class="fas fa-eraser" style="color: var(--danger);"></i> button to quickly clear rows that are blank on the physical paper.</p>
+        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; margin-bottom: 8px;">
+          <h3 style="font-size: 18px; color: var(--accent); margin: 0;"><i class="fas fa-check-square"></i> Extraction Results</h3>
+          <span class="engine-badge" id="used-model-badge"></span>
+        </div>
+        <p style="font-size: 13px; color: var(--gray-500); margin-bottom: 16px;">Verify learner details and extracted grades below. Highlighted yellow rows indicate a quarterly-to-final math discrepancy.</p>
+
+        <div class="meta-grid">
+          <div class="form-group" style="margin-bottom: 0;">
+            <label>12-Digit LRN *</label>
+            <input type="text" id="meta-lrn" maxlength="12" placeholder="e.g., 107891120045">
+          </div>
+          <div class="form-group" style="margin-bottom: 0;">
+            <label>Last Name *</label>
+            <input type="text" id="meta-lastname" placeholder="DELA CRUZ">
+          </div>
+          <div class="form-group" style="margin-bottom: 0;">
+            <label>First Name *</label>
+            <input type="text" id="meta-firstname" placeholder="JUAN">
+          </div>
+        </div>
+
+        <div class="alert alert-warning" id="audit-box"></div>
         
         <div id="results-container"></div>
         
