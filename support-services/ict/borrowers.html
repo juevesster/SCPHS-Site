@@ -1,0 +1,856 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ICT Equipment Borrowers Log – SCPHS</title>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+  <style>
+    :root {
+      --sidebar-bg: #0f172a;
+      --sidebar-hover: #1e293b;
+      --primary: #0f766e;
+      --primary-light: #14b8a6;
+      --success: #16a34a;
+      --danger: #dc2626;
+      --warning: #d97706;
+      --info: #2563eb;
+      --bg: #f4f7f9;
+      --border: #e2e8f0;
+      --text: #1e293b;
+      --muted: #64748b;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Outfit', sans-serif; }
+    body { background: var(--bg); color: var(--text); display: flex; min-height: 100vh; overflow-x: hidden; }
+
+    /* Sidebar */
+    .sidebar { width: 260px; flex-shrink: 0; background: var(--sidebar-bg); color: #fff; position: fixed; top: 0; left: 0; height: 100vh; z-index: 1000; display: flex; flex-direction: column; transition: transform 0.3s ease; }
+    .sidebar-brand { padding: 26px 22px; font-size: 1.3rem; font-weight: 800; border-bottom: 1px solid rgba(255,255,255,0.06); display: flex; align-items: center; gap: 12px; }
+    .sidebar-brand i { color: var(--primary-light); }
+    .sidebar-menu { flex: 1; padding: 18px 14px; display: flex; flex-direction: column; gap: 6px; overflow-y: auto; }
+    .menu-item { display: flex; align-items: center; gap: 12px; padding: 12px 16px; border-radius: 12px; color: #94a3b8; text-decoration: none; font-weight: 500; font-size: 0.92rem; transition: all 0.2s; }
+    .menu-item:hover { background: var(--sidebar-hover); color: #fff; }
+    .menu-item.active { background: linear-gradient(90deg, var(--primary), var(--primary-light)); color: #fff; font-weight: 600; }
+    .menu-item .icon { width: 22px; text-align: center; }
+
+    .sidebar-backdrop { display: none; position: fixed; inset: 0; background: rgba(15, 23, 42, 0.5); z-index: 990; }
+    .sidebar-backdrop.show { display: block; }
+    .mobile-menu-btn { display: none; width: 40px; height: 40px; border-radius: 10px; border: 1px solid var(--border); background: #fff; color: var(--text); align-items: center; justify-content: center; font-size: 1.1rem; cursor: pointer; }
+
+    /* Main Content */
+    .main-content { margin-left: 260px; flex: 1; min-width: 0; padding: 26px 30px; }
+    .topbar { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; margin-bottom: 20px; }
+    .topbar-left { display: flex; align-items: center; gap: 12px; }
+    .topbar h1 { font-size: 1.55rem; font-weight: 800; line-height: 1.2; }
+    .sync-badge { display: inline-block; margin-top: 5px; font-size: 0.74rem; padding: 4px 10px; border-radius: 999px; background: #fef3c7; color: #92400e; font-weight: 700; }
+    .sync-badge.ok { background: #dcfce7; color: #166534; }
+    .sync-badge.err { background: #fee2e2; color: #991b1b; }
+
+    /* KPI Strip */
+    .kpi-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; margin-bottom: 18px; }
+    .kpi-card { background: #fff; border: 1px solid var(--border); border-radius: 16px; padding: 16px 18px; }
+    .kpi-label { font-size: 0.72rem; text-transform: uppercase; color: var(--muted); font-weight: 700; letter-spacing: 0.4px; }
+    .kpi-val { font-size: 1.55rem; font-weight: 800; margin-top: 4px; color: var(--text); }
+
+    /* Card */
+    .card { background: #fff; border-radius: 18px; padding: 22px; border: 1px solid var(--border); margin-bottom: 18px; box-shadow: 0 1px 3px rgba(0,0,0,0.04); min-width: 0; }
+    .card-header { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; margin-bottom: 16px; }
+    .card-header h2 { font-size: 1.1rem; font-weight: 800; display: flex; align-items: center; gap: 8px; }
+
+    /* Borrower Type Switch */
+    .type-toggle { display: inline-flex; background: #f1f5f9; padding: 4px; border-radius: 12px; gap: 4px; margin-bottom: 16px; }
+    .type-btn { border: none; background: transparent; padding: 8px 16px; border-radius: 9px; font-weight: 700; font-size: 0.85rem; color: var(--muted); cursor: pointer; display: inline-flex; align-items: center; gap: 8px; transition: all 0.2s; }
+    .type-btn.active { background: #fff; color: var(--primary); box-shadow: 0 2px 6px rgba(0,0,0,0.06); }
+
+    /* Form */
+    .form-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; }
+    .form-group { display: flex; flex-direction: column; min-width: 0; }
+    .form-group.span-2 { grid-column: span 2; }
+    .form-group label { font-size: 0.72rem; font-weight: 700; color: var(--muted); margin-bottom: 5px; text-transform: uppercase; }
+    .form-group input, .form-group select {
+      width: 100%; border: 1px solid var(--border); border-radius: 9px; padding: 9px 11px; font-size: 0.88rem; background: #f8fafc; color: var(--text); outline: none;
+    }
+    .form-group input:focus, .form-group select:focus { border-color: var(--primary); background: #fff; }
+    .hint-text { font-size: 0.73rem; color: var(--muted); margin-top: 4px; }
+
+    /* Profile Preview Pill */
+    .profile-banner {
+      background: #f0fdfa; border: 1px solid #99f6e4; border-radius: 12px; padding: 12px 16px;
+      margin-bottom: 16px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;
+    }
+    .profile-banner strong { color: #0f766e; font-size: 0.95rem; }
+    .profile-banner span { font-size: 0.82rem; color: #334155; }
+
+    /* Buttons */
+    .btn { border: none; cursor: pointer; border-radius: 9px; padding: 9px 14px; font-weight: 700; display: inline-flex; align-items: center; gap: 7px; font-size: 0.82rem; transition: opacity 0.2s; white-space: nowrap; text-decoration: none; }
+    .btn:hover { opacity: 0.9; }
+    .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+    .btn-sm { padding: 5px 10px; font-size: 0.75rem; }
+    .btn-primary { background: var(--primary); color: #fff; }
+    .btn-success { background: var(--success); color: #fff; }
+    .btn-danger { background: var(--danger); color: #fff; }
+    .btn-outline { background: #fff; color: var(--text); border: 1px solid var(--border); }
+    .btn-print { background: #475569; color: #fff; }
+
+    /* Filter Tabs */
+    .switch-tabs { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 14px; padding-bottom: 12px; border-bottom: 1px solid var(--border); }
+    .switch-tab { background: #fff; border: 1px solid var(--border); color: var(--muted); padding: 8px 14px; border-radius: 10px; font-size: 0.82rem; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 7px; }
+    .switch-tab.active { color: var(--primary); border-color: var(--primary); background: #f0fdfa; }
+
+    /* Table */
+    .table-wrap { width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+    table { width: 100%; border-collapse: collapse; }
+    th, td { padding: 10px 11px; border-bottom: 1px solid var(--border); text-align: left; font-size: 0.84rem; white-space: nowrap; }
+    th { background: #f8fafc; color: var(--muted); font-size: 0.71rem; text-transform: uppercase; letter-spacing: 0.4px; }
+    td.wrap-col { white-space: normal; min-width: 160px; }
+
+    .badge { display: inline-block; padding: 3px 9px; border-radius: 999px; font-size: 0.72rem; font-weight: 700; }
+    .st-borrowed { background: #fef3c7; color: #92400e; }
+    .st-overdue { background: #fee2e2; color: #991b1b; }
+    .st-returned { background: #dcfce7; color: #166534; }
+    .role-chip { display: inline-block; padding: 2px 8px; border-radius: 6px; font-size: 0.7rem; font-weight: 700; background: #eff6ff; color: #1d4ed8; }
+    .role-chip.student { background: #f3e8ff; color: #6d28d9; }
+
+    /* Print Area */
+    #print-area { display: none; }
+    @media print {
+      @page { size: landscape; margin: 10mm; }
+      body { display: block; background: #fff; }
+      .sidebar, .main-content { display: none !important; }
+      #print-area { display: block !important; }
+      #print-table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+      #print-table th, #print-table td { border: 1px solid #000; padding: 5px 6px; font-size: 9.5px; color: #000; }
+      #print-table th { background: #f1f5f9 !important; }
+    }
+
+    @media (max-width: 1080px) {
+      .kpi-grid { grid-template-columns: repeat(2, 1fr); }
+      .form-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+    @media (max-width: 768px) {
+      .mobile-menu-btn { display: inline-flex; }
+      .sidebar { transform: translateX(-100%); }
+      .sidebar.open { transform: translateX(0); }
+      .main-content { margin-left: 0; padding: 16px; }
+      .kpi-grid, .form-grid { grid-template-columns: 1fr; }
+      .form-group.span-2 { grid-column: span 1; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="sidebar-backdrop" id="sidebarBackdrop" onclick="toggleSidebar(false)"></div>
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-brand">
+      <i class="fas fa-laptop-code"></i> <span>ICT Office</span>
+    </div>
+    <div class="sidebar-menu">
+      <a href="index.html" class="menu-item">
+        <i class="fas fa-microchip icon"></i> <span>ICT Helpdesk &amp; Overview</span>
+      </a>
+      <a href="inventory.html" class="menu-item">
+        <i class="fas fa-desktop icon"></i> <span>Computer Lab &amp; ICT Assets</span>
+      </a>
+      <a href="borrowers.html" class="menu-item active">
+        <i class="fas fa-hand-holding-laptop icon"></i> <span>Equipment Borrowers</span>
+      </a>
+      <a href="../../index.html" class="menu-item">
+        <i class="fas fa-globe icon"></i> <span>Main Portal</span>
+      </a>
+      <a href="../administration/index.html" class="menu-item">
+        <i class="fas fa-building icon"></i> <span>Administration Office</span>
+      </a>
+    </div>
+  </aside>
+
+  <!-- MAIN CONTENT -->
+  <main class="main-content">
+    <div class="topbar">
+      <div class="topbar-left">
+        <button type="button" class="mobile-menu-btn" onclick="toggleSidebar()" aria-label="Toggle menu">
+          <i class="fas fa-bars"></i>
+        </button>
+        <div>
+          <h1>💻 ICT Equipment Borrowers Log</h1>
+          <span class="sync-badge" id="syncBadge">Syncing Inventory, Users &amp; SF1...</span>
+        </div>
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;">
+        <button class="btn btn-print" onclick="window.print()">
+          <i class="fas fa-print"></i> Print Borrower Log
+        </button>
+      </div>
+    </div>
+
+    <!-- KPI CARDS -->
+    <div class="kpi-grid">
+      <div class="kpi-card">
+        <div class="kpi-label">Active Borrowed Units</div>
+        <div class="kpi-val" id="kpiActive">0</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Available ICT Units</div>
+        <div class="kpi-val" id="kpiAvailable">0</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Overdue Returns</div>
+        <div class="kpi-val" id="kpiOverdue" style="color:var(--danger);">0</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Total Returned Logs</div>
+        <div class="kpi-val" id="kpiReturned">0</div>
+      </div>
+    </div>
+
+    <!-- CHECKOUT FORM -->
+    <div class="card">
+      <div class="card-header">
+        <h2><i class="fas fa-clipboard-check" style="color:var(--primary);"></i> Issue / Borrow ICT Equipment</h2>
+      </div>
+
+      <!-- Borrower Type Switch -->
+      <div class="type-toggle">
+        <button type="button" class="type-btn active" id="btnTypeStaff" onclick="setBorrowerMode('staff')">
+          <i class="fas fa-chalkboard-teacher"></i> Faculty / Admin / Staff
+        </button>
+        <button type="button" class="type-btn" id="btnTypeStudent" onclick="setBorrowerMode('student')">
+          <i class="fas fa-user-graduate"></i> Student (SF1 / LRN)
+        </button>
+      </div>
+
+      <!-- STAFF / FACULTY LOOKUP -->
+      <div id="staffLookupSection" class="form-grid" style="margin-bottom:14px;">
+        <div class="form-group span-2">
+          <label>Select Personnel (from Portal Users) *</label>
+          <select id="staffSelect" onchange="onSelectStaff()">
+            <option value="">— Loading Faculty &amp; Staff... —</option>
+          </select>
+          <span class="hint-text">Automatically pulled from approved SCPHS Users.</span>
+        </div>
+        <div class="form-group">
+          <label>DepEd Employee ID / ID No.</label>
+          <input id="staffEmployeeId" placeholder="e.g., 4512890">
+          <span class="hint-text">Saved to user profile if updated.</span>
+        </div>
+        <div class="form-group">
+          <label>Designation / Role</label>
+          <input id="staffDesignation" placeholder="e.g., Teacher III / ADAS II">
+        </div>
+      </div>
+
+      <!-- STUDENT (SF1) LOOKUP -->
+      <div id="studentLookupSection" class="form-grid" style="display:none; margin-bottom:14px;">
+        <div class="form-group">
+          <label>Filter by SF1 Class / Section</label>
+          <select id="sf1ClassSelect" onchange="onSelectSf1Class()">
+            <option value="__ALL__">All SF1 Classes</option>
+          </select>
+        </div>
+        <div class="form-group span-2">
+          <label>Select Student (SF1 Roster) *</label>
+          <select id="sf1StudentSelect" onchange="onSelectSf1Student()">
+            <option value="">— Loading SF1 Students... —</option>
+          </select>
+          <span class="hint-text">Auto-fills LRN and Grade &amp; Section from SF1.</span>
+        </div>
+        <div class="form-group">
+          <label>Learner Reference Number (LRN)</label>
+          <input id="studentLrn" readonly placeholder="12-digit LRN">
+        </div>
+      </div>
+
+      <!-- SELECTED BORROWER SUMMARY BANNER -->
+      <div class="profile-banner" id="borrowerBanner" style="display:none;">
+        <div>
+          <strong id="bannerName">—</strong>
+          <div id="bannerMeta" style="font-size:0.8rem;color:#475569;margin-top:2px;"></div>
+        </div>
+        <span class="badge" style="background:#ccfbf1;color:#0f766e;" id="bannerIdChip">ID: —</span>
+      </div>
+
+      <!-- EQUIPMENT & SCHEDULE FIELDS -->
+      <div class="form-grid">
+        <div class="form-group span-2">
+          <label>Available ICT Equipment (from Inventory) *</label>
+          <select id="assetSelect">
+            <option value="">— Loading Available Equipment... —</option>
+          </select>
+          <span class="hint-text">Only devices marked "Available" in ICT Inventory appear here.</span>
+        </div>
+        <div class="form-group">
+          <label>Date Borrowed *</label>
+          <input type="date" id="dateBorrowed">
+        </div>
+        <div class="form-group">
+          <label>Expected Return Date *</label>
+          <input type="date" id="dateDue">
+        </div>
+        <div class="form-group span-2">
+          <label>Purpose / Room / Activity *</label>
+          <input id="purpose" placeholder="e.g., Classroom Presentation – Grade 9 Narra / LIS Encoding">
+        </div>
+        <div class="form-group span-2">
+          <label>Accessories Included &amp; Condition</label>
+          <input id="accessories" placeholder="e.g., Charger, Laptop Bag, Wireless Mouse – Good Condition">
+        </div>
+      </div>
+
+      <div style="margin-top:16px; display:flex; gap:10px; flex-wrap:wrap;">
+        <button type="button" class="btn btn-primary" id="issueBtn" onclick="issueEquipment()">
+          <i class="fas fa-check-circle"></i> Record Equipment Checkout
+        </button>
+      </div>
+    </div>
+
+    <!-- BORROWERS LOG TABLE -->
+    <div class="card">
+      <div class="card-header">
+        <h2>Borrower Records (<span id="logCount">0</span>)</h2>
+        <input id="searchBox" oninput="renderLogs()" placeholder="Search borrower, LRN, Employee ID, asset tag..."
+          style="border:1px solid var(--border);border-radius:9px;padding:7px 11px;font-size:0.82rem;width:270px;max-width:100%;">
+      </div>
+
+      <div class="switch-tabs">
+        <button type="button" class="switch-tab active" onclick="setLogFilter('Borrowed', this)">Active Loans</button>
+        <button type="button" class="switch-tab" onclick="setLogFilter('Overdue', this)">Overdue</button>
+        <button type="button" class="switch-tab" onclick="setLogFilter('Returned', this)">Returned</button>
+        <button type="button" class="switch-tab" onclick="setLogFilter('ALL', this)">All History</button>
+      </div>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Borrower</th>
+              <th>Type / ID (LRN or Emp ID)</th>
+              <th>Equipment &amp; Asset Tag</th>
+              <th>Purpose &amp; Accessories</th>
+              <th>Borrowed</th>
+              <th>Due Date</th>
+              <th>Returned</th>
+              <th>Status</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody id="logs-body">
+            <tr><td colspan="9" style="text-align:center;padding:24px;color:var(--muted);">Loading borrower logs...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </main>
+
+  <!-- PRINT AREA -->
+  <div id="print-area">
+    <div style="text-align:center;">
+      <h2 style="font-size:14px;">STA. CRUZ PINGKIAN HIGH SCHOOL — ICT OFFICE</h2>
+      <h3 style="font-size:12px;margin-top:2px;">ICT EQUIPMENT BORROWERS &amp; ACCOUNTABILITY LOG</h3>
+      <p style="font-size:10px;margin-top:2px;" id="printSub">Active Loans</p>
+    </div>
+    <table id="print-table">
+      <thead>
+        <tr>
+          <th>Borrower Name</th>
+          <th>Role / Grade &amp; Section</th>
+          <th>LRN / Employee ID</th>
+          <th>Asset Tag &amp; Equipment</th>
+          <th>Purpose &amp; Accessories</th>
+          <th>Date Borrowed</th>
+          <th>Due Date</th>
+          <th>Date Returned</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody id="print-body"></tbody>
+    </table>
+  </div>
+
+  <script type="module">
+    import { auth, db } from "../../assets/js/firebase-config.js";
+    import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+    import {
+      collection,
+      getDocs,
+      addDoc,
+      doc,
+      updateDoc,
+      deleteDoc,
+      serverTimestamp
+    } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+    import "../../assets/js/sf1-store.js";
+
+    const BORROW_COL = "ict_borrowers";
+    const INV_COL = "ict_inventory";
+
+    let borrowerMode = "staff"; // "staff" | "student"
+    let staffUsers = [];
+    let sf1Classes = [];
+    let sf1Students = [];
+    let inventoryAssets = [];
+    let borrowLogs = [];
+    let activeLogFilter = "Borrowed";
+
+    const todayStr = new Date().toISOString().split("T")[0];
+    document.getElementById("dateBorrowed").value = todayStr;
+    document.getElementById("dateDue").value = todayStr;
+
+    function escapeHTML(str) {
+      return String(str ?? "").replace(/[&<>"']/g, m => ({
+        "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
+      }[m]));
+    }
+
+    function escapeJS(str) {
+      return String(str ?? "").replace(/\\/g, "\\\\").replace(/'/g, "\\'");
+    }
+
+    function setBadge(ok, msg) {
+      const b = document.getElementById("syncBadge");
+      b.textContent = msg;
+      b.className = "sync-badge " + (ok ? "ok" : "err");
+    }
+
+    onAuthStateChanged(auth, async (user) => {
+      if (!user) {
+        location.replace("../../login.html?next=" + encodeURIComponent(location.pathname));
+        return;
+      }
+      await Promise.all([loadStaffUsers(), loadSf1Roster(), loadInventory(), loadLogs()]);
+      setBadge(true, `Synced: ${staffUsers.length} Staff • ${sf1Students.length} SF1 Students • ${inventoryAssets.length} Assets`);
+    });
+
+    // 1. Load Faculty / Admin from `users`
+    async function loadStaffUsers() {
+      try {
+        const snap = await getDocs(collection(db, "users"));
+        staffUsers = snap.docs
+          .map(d => ({ uid: d.id, ...d.data() }))
+          .filter(u => {
+            const r = String(u.primaryRole || u.role || "").toLowerCase();
+            return ["admin", "teacher", "superadmin", "staff"].includes(r);
+          })
+          .sort((a, b) => (a.name || "").localeCompare(b.name || ""));
+
+        const sel = document.getElementById("staffSelect");
+        sel.innerHTML = `<option value="">— Select Faculty / Admin / Staff (${staffUsers.length}) —</option>` +
+          staffUsers.map(u => {
+            const sec = Array.isArray(u.secondaryRoles) && u.secondaryRoles.length ? ` • ${u.secondaryRoles.join(", ")}` : "";
+            const emp = u.employeeId ? ` [ID: ${u.employeeId}]` : "";
+            return `<option value="${escapeHTML(u.uid)}">${escapeHTML(u.name || u.email)}${escapeHTML(sec)}${escapeHTML(emp)}</option>`;
+          }).join("");
+      } catch (err) {
+        console.error("Staff load error:", err);
+      }
+    }
+
+    // 2. Load Students from `window.SF1`
+    async function loadSf1Roster() {
+      try {
+        if (!window.SF1) return;
+        sf1Classes = await window.SF1.listClasses();
+        const classSel = document.getElementById("sf1ClassSelect");
+        classSel.innerHTML = `<option value="__ALL__">All SF1 Classes (${sf1Classes.length})</option>` +
+          sf1Classes.map(c => `<option value="${escapeHTML(c.id)}">${escapeHTML(c.classLabel)} (${escapeHTML(c.schoolYear || "")})</option>`).join("");
+
+        const all = [];
+        for (const cls of sf1Classes) {
+          const list = await window.SF1.listStudents(cls.id);
+          list.forEach(s => {
+            all.push({
+              ...s,
+              classId: cls.id,
+              classLabel: cls.classLabel || `${cls.gradeLevel || ""} - ${cls.section || ""}`
+            });
+          });
+        }
+        all.sort((a, b) => (a.fullName || "").localeCompare(b.fullName || ""));
+        sf1Students = all;
+        populateSf1StudentDropdown("__ALL__");
+      } catch (err) {
+        console.error("SF1 load error:", err);
+      }
+    }
+
+    function populateSf1StudentDropdown(classId) {
+      const filtered = classId === "__ALL__"
+        ? sf1Students
+        : sf1Students.filter(s => s.classId === classId);
+
+      const sel = document.getElementById("sf1StudentSelect");
+      sel.innerHTML = `<option value="">— Select Student (${filtered.length}) —</option>` +
+        filtered.map(s => {
+          const lrnTag = s.lrn ? `LRN: ${s.lrn}` : "No LRN";
+          return `<option value="${escapeHTML(s.id)}">${escapeHTML(s.fullName)} — ${escapeHTML(s.classLabel)} (${escapeHTML(lrnTag)})</option>`;
+        }).join("");
+    }
+
+    // 3. Load Available ICT Assets from `ict_inventory`
+    async function loadInventory() {
+      try {
+        const snap = await getDocs(collection(db, INV_COL));
+        inventoryAssets = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+        renderAssetDropdown();
+        updateKPIs();
+      } catch (err) {
+        console.error("Inventory load error:", err);
+      }
+    }
+
+    function renderAssetDropdown() {
+      const avail = inventoryAssets
+        .filter(a => a.status === "Available")
+        .sort((a, b) => String(a.assetTag || "").localeCompare(String(b.assetTag || ""), undefined, { numeric: true }));
+
+      const sel = document.getElementById("assetSelect");
+      if (!avail.length) {
+        sel.innerHTML = `<option value="">— No "Available" devices in ICT Inventory (mark items Available in inventory.html) —</option>`;
+        return;
+      }
+      sel.innerHTML = `<option value="">— Select Available Equipment (${avail.length}) —</option>` +
+        avail.map(a => `<option value="${escapeHTML(a.id)}">[${escapeHTML(a.assetTag)}] ${escapeHTML(a.deviceType)} — ${escapeHTML(a.brandModel)}</option>`).join("");
+    }
+
+    // 4. Load Borrow Logs from `ict_borrowers`
+    async function loadLogs() {
+      try {
+        const snap = await getDocs(collection(db, BORROW_COL));
+        borrowLogs = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+        borrowLogs.sort((a, b) => (b.createdAtMs || 0) - (a.createdAtMs || 0));
+        updateKPIs();
+        renderLogs();
+      } catch (err) {
+        console.error("Logs load error:", err);
+        setBadge(false, "Error loading logs: " + err.message);
+      }
+    }
+
+    function isOverdue(log) {
+      if (log.status === "Returned") return false;
+      return Boolean(log.dateDue && log.dateDue < todayStr);
+    }
+
+    function updateKPIs() {
+      const active = borrowLogs.filter(l => l.status !== "Returned");
+      const overdue = active.filter(isOverdue);
+      const returned = borrowLogs.filter(l => l.status === "Returned");
+      const avail = inventoryAssets.filter(a => a.status === "Available");
+
+      document.getElementById("kpiActive").textContent = active.length;
+      document.getElementById("kpiAvailable").textContent = avail.length;
+      document.getElementById("kpiOverdue").textContent = overdue.length;
+      document.getElementById("kpiReturned").textContent = returned.length;
+    }
+
+    // Borrower Mode Handlers
+    window.setBorrowerMode = function(mode) {
+      borrowerMode = mode;
+      document.getElementById("btnTypeStaff").classList.toggle("active", mode === "staff");
+      document.getElementById("btnTypeStudent").classList.toggle("active", mode === "student");
+      document.getElementById("staffLookupSection").style.display = mode === "staff" ? "grid" : "none";
+      document.getElementById("studentLookupSection").style.display = mode === "student" ? "grid" : "none";
+      document.getElementById("borrowerBanner").style.display = "none";
+    };
+
+    window.onSelectStaff = function() {
+      const uid = document.getElementById("staffSelect").value;
+      const u = staffUsers.find(x => x.uid === uid);
+      const banner = document.getElementById("borrowerBanner");
+      if (!u) {
+        banner.style.display = "none";
+        return;
+      }
+      const roleText = Array.isArray(u.secondaryRoles) && u.secondaryRoles.length
+        ? u.secondaryRoles.join(", ")
+        : (u.primaryRole || "Personnel").toUpperCase();
+
+      document.getElementById("staffEmployeeId").value = u.employeeId || "";
+      document.getElementById("staffDesignation").value = roleText;
+
+      document.getElementById("bannerName").textContent = u.name || u.email;
+      document.getElementById("bannerMeta").textContent = `${roleText} • ${u.email || ""}`;
+      document.getElementById("bannerIdChip").textContent = u.employeeId ? `Emp ID: ${u.employeeId}` : "No Employee ID yet";
+      banner.style.display = "flex";
+    };
+
+    window.onSelectSf1Class = function() {
+      const cid = document.getElementById("sf1ClassSelect").value;
+      populateSf1StudentDropdown(cid);
+      document.getElementById("studentLrn").value = "";
+      document.getElementById("borrowerBanner").style.display = "none";
+    };
+
+    window.onSelectSf1Student = function() {
+      const sid = document.getElementById("sf1StudentSelect").value;
+      const s = sf1Students.find(x => x.id === sid);
+      const banner = document.getElementById("borrowerBanner");
+      if (!s) {
+        document.getElementById("studentLrn").value = "";
+        banner.style.display = "none";
+        return;
+      }
+      document.getElementById("studentLrn").value = s.lrn || "NO LRN";
+      document.getElementById("bannerName").textContent = s.fullName;
+      document.getElementById("bannerMeta").textContent = `Student • ${s.classLabel}`;
+      document.getElementById("bannerIdChip").textContent = s.lrn ? `LRN: ${s.lrn}` : "LRN: Not Encoded";
+      banner.style.display = "flex";
+    };
+
+    // Issue Equipment
+    window.issueEquipment = async function() {
+      const assetId = document.getElementById("assetSelect").value;
+      const asset = inventoryAssets.find(a => a.id === assetId);
+      const dateBorrowed = document.getElementById("dateBorrowed").value;
+      const dateDue = document.getElementById("dateDue").value;
+      const purpose = document.getElementById("purpose").value.trim();
+      const accessories = document.getElementById("accessories").value.trim();
+
+      if (!asset) {
+        alert("Please select an available ICT equipment item.");
+        return;
+      }
+      if (!purpose) {
+        alert("Please enter the purpose or activity.");
+        return;
+      }
+
+      let borrowerRecord = null;
+
+      if (borrowerMode === "staff") {
+        const uid = document.getElementById("staffSelect").value;
+        const u = staffUsers.find(x => x.uid === uid);
+        if (!u) {
+          alert("Please select a Faculty / Admin / Staff borrower.");
+          return;
+        }
+        const empId = document.getElementById("staffEmployeeId").value.trim();
+        const designation = document.getElementById("staffDesignation").value.trim();
+
+        // Save updated Employee ID back to user's profile if entered/changed
+        if (empId && empId !== (u.employeeId || "")) {
+          try {
+            await updateDoc(doc(db, "users", u.uid), { employeeId: empId });
+            u.employeeId = empId;
+          } catch (e) {
+            console.warn("Could not save employeeId to user doc:", e);
+          }
+        }
+
+        borrowerRecord = {
+          borrowerType: "Personnel",
+          borrowerUid: u.uid,
+          borrowerName: u.name || u.email,
+          borrowerRoleOrSection: designation || "Personnel",
+          identifierLabel: empId ? `Emp ID: ${empId}` : "Emp ID: —",
+          employeeId: empId,
+          lrn: ""
+        };
+      } else {
+        const sid = document.getElementById("sf1StudentSelect").value;
+        const s = sf1Students.find(x => x.id === sid);
+        if (!s) {
+          alert("Please select a Student from the SF1 roster.");
+          return;
+        }
+        borrowerRecord = {
+          borrowerType: "Student",
+          borrowerStudentId: s.id,
+          borrowerClassId: s.classId,
+          borrowerName: s.fullName,
+          borrowerRoleOrSection: s.classLabel,
+          identifierLabel: s.lrn ? `LRN: ${s.lrn}` : "LRN: —",
+          lrn: s.lrn || "",
+          employeeId: ""
+        };
+      }
+
+      const btn = document.getElementById("issueBtn");
+      btn.disabled = true;
+
+      const payload = {
+        ...borrowerRecord,
+        assetId: asset.id,
+        assetTag: asset.assetTag,
+        deviceType: asset.deviceType,
+        brandModel: asset.brandModel,
+        purpose,
+        accessories: accessories || "Standard Unit",
+        dateBorrowed,
+        dateDue,
+        dateReturned: "",
+        status: "Borrowed",
+        createdAtMs: Date.now(),
+        createdAt: serverTimestamp()
+      };
+
+      try {
+        const ref = await addDoc(collection(db, BORROW_COL), payload);
+        await updateDoc(doc(db, INV_COL, asset.id), {
+          status: "Borrowed",
+          currentBorrower: payload.borrowerName,
+          updatedAt: new Date().toISOString()
+        });
+
+        asset.status = "Borrowed";
+        borrowLogs.unshift({ id: ref.id, ...payload });
+
+        document.getElementById("purpose").value = "";
+        document.getElementById("accessories").value = "";
+        renderAssetDropdown();
+        updateKPIs();
+        renderLogs();
+        alert(`Checked out [${asset.assetTag}] ${asset.brandModel} to ${payload.borrowerName}.`);
+      } catch (err) {
+        console.error("Checkout error:", err);
+        alert("Failed to record checkout: " + err.message);
+      } finally {
+        btn.disabled = false;
+      }
+    };
+
+    // Return Equipment
+    window.markReturned = async function(logId) {
+      const log = borrowLogs.find(l => l.id === logId);
+      if (!log) return;
+      if (!confirm(`Confirm return of [${log.assetTag}] ${log.brandModel} from ${log.borrowerName}?`)) return;
+
+      try {
+        await updateDoc(doc(db, BORROW_COL, log.id), {
+          status: "Returned",
+          dateReturned: todayStr
+        });
+
+        if (log.assetId) {
+          await updateDoc(doc(db, INV_COL, log.assetId), {
+            status: "Available",
+            currentBorrower: "",
+            updatedAt: new Date().toISOString()
+          });
+          const asset = inventoryAssets.find(a => a.id === log.assetId);
+          if (asset) asset.status = "Available";
+        }
+
+        log.status = "Returned";
+        log.dateReturned = todayStr;
+        renderAssetDropdown();
+        updateKPIs();
+        renderLogs();
+      } catch (err) {
+        alert("Return update failed: " + err.message);
+      }
+    };
+
+    window.deleteLog = async function(logId) {
+      if (!confirm("Delete this borrower log entry?")) return;
+      try {
+        await deleteDoc(doc(db, BORROW_COL, logId));
+        borrowLogs = borrowLogs.filter(l => l.id !== logId);
+        updateKPIs();
+        renderLogs();
+      } catch (err) {
+        alert("Delete failed: " + err.message);
+      }
+    };
+
+    window.setLogFilter = function(filter, btn) {
+      activeLogFilter = filter;
+      document.querySelectorAll(".switch-tab").forEach(b => b.classList.remove("active"));
+      if (btn) btn.classList.add("active");
+      document.getElementById("printSub").textContent =
+        filter === "ALL" ? "All Borrower Logs" : `${filter} Equipment Logs`;
+      renderLogs();
+    };
+
+    window.renderLogs = function() {
+      const q = (document.getElementById("searchBox").value || "").toLowerCase().trim();
+      const shown = borrowLogs.filter(l => {
+        const overdue = isOverdue(l);
+        if (activeLogFilter === "Borrowed" && l.status === "Returned") return false;
+        if (activeLogFilter === "Overdue" && !overdue) return false;
+        if (activeLogFilter === "Returned" && l.status !== "Returned") return false;
+        if (!q) return true;
+        return [l.borrowerName, l.borrowerRoleOrSection, l.identifierLabel, l.assetTag, l.brandModel, l.purpose]
+          .some(v => String(v || "").toLowerCase().includes(q));
+      });
+
+      document.getElementById("logCount").textContent = shown.length;
+      const body = document.getElementById("logs-body");
+      const printBody = document.getElementById("print-body");
+
+      if (!shown.length) {
+        body.innerHTML = `<tr><td colspan="9" style="text-align:center;padding:24px;color:var(--muted);">No borrower records match this filter.</td></tr>`;
+        printBody.innerHTML = "";
+        return;
+      }
+
+      body.innerHTML = shown.map(l => {
+        const overdue = isOverdue(l);
+        const stLabel = l.status === "Returned" ? "Returned" : (overdue ? "Overdue" : "Borrowed");
+        const stClass = l.status === "Returned" ? "st-returned" : (overdue ? "st-overdue" : "st-borrowed");
+        const isStudent = l.borrowerType === "Student";
+
+        return `
+          <tr>
+            <td>
+              <strong>${escapeHTML(l.borrowerName)}</strong>
+              <div style="font-size:0.75rem;color:var(--muted);">${escapeHTML(l.borrowerRoleOrSection || "")}</div>
+            </td>
+            <td>
+              <span class="role-chip ${isStudent ? "student" : ""}">${escapeHTML(l.borrowerType || "Personnel")}</span>
+              <div style="font-family:monospace;font-size:0.78rem;margin-top:3px;">${escapeHTML(l.identifierLabel || "—")}</div>
+            </td>
+            <td>
+              <span style="font-family:monospace;font-weight:700;">[${escapeHTML(l.assetTag)}]</span>
+              <div>${escapeHTML(l.brandModel)}</div>
+            </td>
+            <td class="wrap-col">
+              <div>${escapeHTML(l.purpose)}</div>
+              <div style="font-size:0.74rem;color:var(--muted);">${escapeHTML(l.accessories || "")}</div>
+            </td>
+            <td>${escapeHTML(l.dateBorrowed || "—")}</td>
+            <td>${escapeHTML(l.dateDue || "—")}</td>
+            <td>${escapeHTML(l.dateReturned || "—")}</td>
+            <td><span class="badge ${stClass}">${stLabel}</span></td>
+            <td>
+              <div style="display:flex;gap:6px;">
+                ${l.status !== "Returned"
+                  ? `<button class="btn btn-success btn-sm" onclick="markReturned('${escapeJS(l.id)}')">Return</button>`
+                  : ""}
+                <button class="btn btn-danger btn-sm" onclick="deleteLog('${escapeJS(l.id)}')">Delete</button>
+              </div>
+            </td>
+          </tr>
+        `;
+      }).join("");
+
+      printBody.innerHTML = shown.map(l => `
+        <tr>
+          <td>${escapeHTML(l.borrowerName)}</td>
+          <td>${escapeHTML(l.borrowerRoleOrSection || "—")}</td>
+          <td>${escapeHTML(l.identifierLabel || "—")}</td>
+          <td>[${escapeHTML(l.assetTag)}] ${escapeHTML(l.brandModel)}</td>
+          <td>${escapeHTML(l.purpose)} (${escapeHTML(l.accessories || "")})</td>
+          <td>${escapeHTML(l.dateBorrowed || "—")}</td>
+          <td>${escapeHTML(l.dateDue || "—")}</td>
+          <td>${escapeHTML(l.dateReturned || "—")}</td>
+          <td>${escapeHTML(l.status)}</td>
+        </tr>
+      `).join("");
+    };
+  </script>
+
+  <script>
+    function toggleSidebar(forceState) {
+      const sidebar = document.getElementById("sidebar");
+      const backdrop = document.getElementById("sidebarBackdrop");
+      const shouldOpen = typeof forceState === "boolean" ? forceState : !sidebar.classList.contains("open");
+      sidebar.classList.toggle("open", shouldOpen);
+      backdrop.classList.toggle("show", shouldOpen);
+    }
+  </script>
+</body>
+</html>
