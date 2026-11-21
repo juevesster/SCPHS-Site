@@ -20,10 +20,10 @@
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Outfit', sans-serif; }
-    body { background: var(--bg-color); color: var(--text-main); display: flex; min-height: 100vh; }
+    body { background: var(--bg-color); color: var(--text-main); display: flex; min-height: 100vh; overflow-x: hidden; }
 
     /* Sidebar */
-    .sidebar { width: 260px; background: var(--sidebar-bg); color: #fff; display: flex; flex-direction: column; position: fixed; height: 100vh; z-index: 100; }
+    .sidebar { width: 260px; flex-shrink: 0; background: var(--sidebar-bg); color: #fff; display: flex; flex-direction: column; position: fixed; top: 0; left: 0; height: 100vh; z-index: 100; overflow-y: auto; }
     .sidebar-brand { padding: 30px 24px; font-size: 1.4rem; font-weight: 800; display: flex; align-items: center; gap: 12px; border-bottom: 1px solid rgba(255,255,255,0.05); }
     .sidebar-brand i { color: var(--primary-light); }
     .sidebar-menu { flex: 1; padding: 24px 16px; display: flex; flex-direction: column; gap: 8px; }
@@ -32,19 +32,23 @@
     .menu-item.active { background: linear-gradient(90deg, var(--primary), var(--primary-light)); color: #fff; }
 
     /* Main Content */
-    .main-content { margin-left: 260px; flex: 1; padding: 32px; display: flex; flex-direction: column; }
+    .main-content { margin-left: 260px; flex: 1; min-width: 0; padding: 32px; display: flex; flex-direction: column; }
     .topbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; gap: 12px; flex-wrap: wrap; }
     .topbar h1 { font-size: 1.8rem; font-weight: 800; }
 
+    .sync-badge { display: inline-block; margin-top: 6px; font-size: 0.75rem; padding: 4px 10px; border-radius: 999px; background: #fef3c7; color: #92400e; font-weight: 700; }
+    .sync-badge.ok { background: #dcfce7; color: #166534; }
+    .sync-badge.err { background: #fee2e2; color: #991b1b; }
+
     /* Buttons */
-    .btn { padding: 10px 18px; border-radius: 8px; border: none; cursor: pointer; font-weight: 700; font-size: 0.85rem; display: inline-flex; align-items: center; gap: 8px; transition: 0.2s; text-decoration: none; }
+    .btn { padding: 10px 18px; border-radius: 8px; border: none; cursor: pointer; font-weight: 700; font-size: 0.85rem; display: inline-flex; align-items: center; gap: 8px; transition: 0.2s; text-decoration: none; white-space: nowrap; }
     .btn-primary { background: var(--primary); color: #fff; }
     .btn-primary:hover { background: #0d5e56; }
     .btn-success { background: #10b981; color: #fff; }
     .btn-danger { background: var(--danger); color: #fff; }
     .btn-danger:hover { background: #b91c1c; }
     .btn-sm { padding: 6px 12px; font-size: 0.75rem; }
-    .btn-outline { background: transparent; border: 2px solid var(--border); color: var(--text-muted); }
+    .btn-outline { background: #fff; border: 2px solid var(--border); color: var(--text-muted); }
     .btn-outline:hover { border-color: var(--primary); color: var(--primary); }
 
     /* Book Tabs */
@@ -57,9 +61,9 @@
     .tab-content-container { background: #fff; border-radius: 0 16px 16px 16px; border: 1px solid var(--border); box-shadow: 0 10px 25px -5px rgba(0,0,0,0.05); position: relative; z-index: 1; overflow: hidden; }
 
     /* Table */
-    .table-responsive { overflow-x: auto; }
+    .table-responsive { overflow-x: auto; -webkit-overflow-scrolling: touch; }
     table { width: 100%; border-collapse: collapse; font-size: 0.88rem; }
-    th, td { padding: 12px 14px; text-align: left; border-bottom: 1px solid var(--border); }
+    th, td { padding: 12px 14px; text-align: left; border-bottom: 1px solid var(--border); white-space: nowrap; }
     th { background: #f8fafc; font-weight: 700; color: var(--text-muted); text-transform: uppercase; font-size: 0.72rem; letter-spacing: 0.5px; border-top: 1px solid var(--border); }
     td { color: var(--text-main); vertical-align: middle; }
     tr:hover td { background: #f8fafc; }
@@ -73,12 +77,29 @@
     .modal-header { padding: 20px 24px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
     .modal-header h3 { font-size: 1.2rem; font-weight: 800; color: var(--primary); }
     .modal-body { padding: 24px; max-height: 70vh; overflow-y: auto; display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-    .form-group { display: flex; flex-direction: column; }
+    .form-group { display: flex; flex-direction: column; min-width: 0; }
     .form-group.full { grid-column: span 2; }
     .form-group label { font-size: 0.75rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; margin-bottom: 6px; }
-    .form-group input, .form-group select { padding: 10px; border: 1px solid var(--border); border-radius: 8px; font-size: 0.9rem; font-family: inherit; outline: none; }
+    .form-group input, .form-group select { padding: 10px; border: 1px solid var(--border); border-radius: 8px; font-size: 0.9rem; font-family: inherit; outline: none; width: 100%; }
     .form-group input:focus { border-color: var(--primary); }
     .modal-footer { padding: 16px 24px; border-top: 1px solid var(--border); display: flex; justify-content: flex-end; gap: 10px; background: #f8fafc; }
+
+    /* Mobile Responsiveness */
+    @media (max-width: 820px) {
+      body { flex-direction: column; }
+      .sidebar { position: static; width: 100%; height: auto; }
+      .sidebar-brand { padding: 18px 20px; }
+      .sidebar-menu { padding: 12px; gap: 6px; }
+      .menu-item { padding: 10px 14px; font-size: 0.88rem; }
+      .main-content { margin-left: 0; padding: 18px; }
+      .topbar h1 { font-size: 1.45rem; }
+      .book-tabs { padding-left: 0; flex-wrap: nowrap; overflow-x: auto; -webkit-overflow-scrolling: touch; gap: 6px; margin-bottom: 10px; }
+      .tab-btn { top: 0; flex-shrink: 0; border-radius: 10px; border-bottom: 1px solid var(--border); padding: 9px 14px; font-size: 0.82rem; }
+      .tab-btn.active { padding-top: 9px; border-top: 1px solid var(--border); border-color: var(--primary); background: #f0fdfa; color: var(--primary); }
+      .tab-content-container { border-radius: 14px; }
+      .modal-body { grid-template-columns: 1fr; }
+      .form-group.full { grid-column: span 1; }
+    }
 
     /* Print Layout */
     #print-area { display: none; }
@@ -97,7 +118,7 @@
       .print-table { width: 100%; border-collapse: collapse; font-size: 7.5pt; margin-top: 12px; margin-bottom: 16px; }
       .print-table thead { display: table-header-group; }
       .print-table tr { break-inside: avoid; page-break-inside: avoid; }
-      .print-table th, .print-table td { border: 1px solid #000; padding: 3px 4px; text-align: center; vertical-align: middle; line-height: 1.2; }
+      .print-table th, .print-table td { border: 1px solid #000; padding: 3px 4px; text-align: center; vertical-align: middle; line-height: 1.2; white-space: normal; overflow-wrap: anywhere; }
       .print-table th { background: #f0f0f0 !important; font-size: 7pt; }
       .print-table td.left { text-align: left; }
       .print-table td.num { text-align: right; }
@@ -125,7 +146,10 @@
   <!-- MAIN CONTENT -->
   <main class="main-content">
     <div class="topbar">
-      <h1>🏛️ RPCP Inventory (Appendix 73)</h1>
+      <div>
+        <h1>🏛️ RPCP Inventory (Appendix 73)</h1>
+        <span class="sync-badge" id="syncBadge">Connecting to Firestore...</span>
+      </div>
       <div style="display: flex; gap: 10px; flex-wrap: wrap;">
         <button class="btn btn-outline" onclick="openSignatoryModal()">
           <i class="fas fa-users-cog"></i> Settings & Signatories
@@ -278,10 +302,10 @@
 
   <script type="module">
     import { db } from "../../assets/js/firebase-config.js";
-    import { collection, getDocs, doc, setDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+    import { collection, getDocs, doc, getDoc, setDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
-    const STORAGE_FALLBACK_KEY = "rpcp_records_v1";
-    const SETTINGS_KEY = "rpcp_report_settings_v1";
+    const FS_COLLECTION = "rpcp_inventory";
+    const FS_SETTINGS_DOC = doc(db, "rpcp_report_settings", "default");
 
     const CATEGORIES = [
       { key: "Land", label: "Land", type: "land" },
@@ -312,7 +336,12 @@
 
     let allItems = [];
     let currentTab = "Land";
-    let firestoreAvailable = true;
+
+    function updateSyncBadge(ok, text) {
+      const badge = document.getElementById("syncBadge");
+      badge.textContent = text;
+      badge.className = "sync-badge " + (ok ? "ok" : "err");
+    }
 
     function formatMoney(v) {
       return "₱" + Number(v || 0).toLocaleString("en-PH", {
@@ -322,15 +351,19 @@
     }
 
     function escapeHTML(str) {
-      return String(str || "").replace(/[&<>"']/g, m => ({
+      return String(str ?? "").replace(/[&<>"']/g, m => ({
         "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
       }[m]));
+    }
+
+    function escapeJS(str) {
+      return String(str ?? "").replace(/\\/g, "\\\\").replace(/'/g, "\\'");
     }
 
     function renderTabs() {
       const container = document.getElementById("category-tabs");
       container.innerHTML = CATEGORIES.map(cat => `
-        <button class="tab-btn ${cat.key === currentTab ? "active" : ""}" onclick="switchTab('${cat.key}', this)">
+        <button type="button" class="tab-btn ${cat.key === currentTab ? "active" : ""}" onclick="switchTab('${escapeJS(cat.key)}', this)">
           ${escapeHTML(cat.label)}
         </button>
       `).join("");
@@ -345,13 +378,14 @@
 
     async function loadInventory() {
       try {
-        const snap = await getDocs(collection(db, "rpcp_inventory"));
+        const snap = await getDocs(collection(db, FS_COLLECTION));
         allItems = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-        localStorage.setItem(STORAGE_FALLBACK_KEY, JSON.stringify(allItems));
+        updateSyncBadge(true, `Connected to Firestore (${allItems.length} total records)`);
       } catch (err) {
-        console.warn("Firestore read fallback to localStorage:", err);
-        firestoreAvailable = false;
-        allItems = JSON.parse(localStorage.getItem(STORAGE_FALLBACK_KEY)) || [];
+        console.error("Firestore read error:", err);
+        updateSyncBadge(false, "Firestore Error: " + err.message);
+        document.getElementById("inventory-body").innerHTML = `<tr><td colspan="12" style="text-align:center;padding:30px;color:#dc2626;">Failed to load Firestore records: ${escapeHTML(err.message)}</td></tr>`;
+        return;
       }
       renderTable();
     }
@@ -420,8 +454,8 @@
             <td class="num">${formatMoney(item.assessedValue)}</td>
             <td>
               <div class="action-btns">
-                <button class="btn btn-sm" style="background:#e0f2fe;color:#0369a1;" onclick="editItem('${item.id}')"><i class="fas fa-edit"></i></button>
-                <button class="btn btn-sm btn-danger" onclick="deleteItem('${item.id}', '${escapeHTML(item.description || "")}')"><i class="fas fa-trash"></i></button>
+                <button type="button" class="btn btn-sm" style="background:#e0f2fe;color:#0369a1;" onclick="editItem('${escapeJS(item.id)}')"><i class="fas fa-edit"></i></button>
+                <button type="button" class="btn btn-sm btn-danger" onclick="deleteItem('${escapeJS(item.id)}', '${escapeJS(item.description || "")}')"><i class="fas fa-trash"></i></button>
               </div>
             </td>
           </tr>
@@ -446,8 +480,8 @@
               <td>${escapeHTML(item.accountableOfficer || "-")}</td>
               <td>
                 <div class="action-btns">
-                  <button class="btn btn-sm" style="background:#e0f2fe;color:#0369a1;" onclick="editItem('${item.id}')"><i class="fas fa-edit"></i></button>
-                  <button class="btn btn-sm btn-danger" onclick="deleteItem('${item.id}', '${escapeHTML(item.description || "")}')"><i class="fas fa-trash"></i></button>
+                  <button type="button" class="btn btn-sm" style="background:#e0f2fe;color:#0369a1;" onclick="editItem('${escapeJS(item.id)}')"><i class="fas fa-edit"></i></button>
+                  <button type="button" class="btn btn-sm btn-danger" onclick="deleteItem('${escapeJS(item.id)}', '${escapeJS(item.description || "")}')"><i class="fas fa-trash"></i></button>
                 </div>
               </td>
             </tr>
@@ -714,7 +748,8 @@
             mode: document.getElementById("f-mode").value.trim(),
             cost: parseFloat(document.getElementById("f-cost").value) || 0,
             marketValue: parseFloat(document.getElementById("f-marketValue").value) || 0,
-            assessedValue: parseFloat(document.getElementById("f-assessedValue").value) || 0
+            assessedValue: parseFloat(document.getElementById("f-assessedValue").value) || 0,
+            updatedAt: new Date().toISOString()
           }
         : {
             category: currentTab,
@@ -728,43 +763,52 @@
             qtyPerCount: parseInt(document.getElementById("f-qtyPerCount").value, 10) || 0,
             totalCost: parseFloat(document.getElementById("f-totalCost").value) || 0,
             sourceOfFund: document.getElementById("f-sourceOfFund").value.trim(),
-            accountableOfficer: document.getElementById("f-accountableOfficer").value.trim()
+            accountableOfficer: document.getElementById("f-accountableOfficer").value.trim(),
+            updatedAt: new Date().toISOString()
           };
 
-      if (firestoreAvailable) {
-        try {
-          await setDoc(doc(db, "rpcp_inventory", docId), record, { merge: true });
-        } catch (err) {
-          console.error("Firestore save error:", err);
-        }
+      try {
+        await setDoc(doc(db, FS_COLLECTION, docId), record, { merge: true });
+        const idx = allItems.findIndex(i => i.id === docId);
+        const fullRecord = { id: docId, ...record };
+        if (idx >= 0) allItems[idx] = fullRecord;
+        else allItems.push(fullRecord);
+
+        updateSyncBadge(true, `Connected to Firestore (${allItems.length} total records)`);
+        closeModal("itemModal");
+        renderTable();
+      } catch (err) {
+        console.error("Firestore save error:", err);
+        alert("Failed to save to Firestore: " + err.message);
       }
-
-      const idx = allItems.findIndex(i => i.id === docId);
-      const fullRecord = { id: docId, ...record };
-      if (idx >= 0) allItems[idx] = fullRecord;
-      else allItems.push(fullRecord);
-      localStorage.setItem(STORAGE_FALLBACK_KEY, JSON.stringify(allItems));
-
-      closeModal("itemModal");
-      renderTable();
     };
 
     window.deleteItem = async function(id, desc) {
       if (!confirm(`Delete "${desc}"?`)) return;
-      if (firestoreAvailable) {
-        try {
-          await deleteDoc(doc(db, "rpcp_inventory", id));
-        } catch (err) {
-          console.error("Firestore delete error:", err);
-        }
+      try {
+        await deleteDoc(doc(db, FS_COLLECTION, id));
+        allItems = allItems.filter(i => i.id !== id);
+        updateSyncBadge(true, `Connected to Firestore (${allItems.length} total records)`);
+        renderTable();
+      } catch (err) {
+        console.error("Firestore delete error:", err);
+        alert("Failed to delete from Firestore: " + err.message);
       }
-      allItems = allItems.filter(i => i.id !== id);
-      localStorage.setItem(STORAGE_FALLBACK_KEY, JSON.stringify(allItems));
-      renderTable();
     };
 
-    function loadSettings() {
-      const saved = { ...DEFAULT_SETTINGS, ...(JSON.parse(localStorage.getItem(SETTINGS_KEY)) || {}) };
+    async function loadSettings() {
+      try {
+        const snap = await getDoc(FS_SETTINGS_DOC);
+        const saved = { ...DEFAULT_SETTINGS, ...(snap.exists() ? snap.data() : {}) };
+        applySettingsToDOM(saved);
+        return saved;
+      } catch {
+        applySettingsToDOM(DEFAULT_SETTINGS);
+        return DEFAULT_SETTINGS;
+      }
+    }
+
+    function applySettingsToDOM(saved) {
       document.getElementById("print-school-name").textContent = saved.schoolName;
       document.getElementById("print-principal-name").textContent = saved.principalName;
       document.getElementById("print-principal-title").textContent = saved.principalTitle;
@@ -778,8 +822,8 @@
       document.getElementById("print-sig-verified-title").textContent = saved.verifiedTitle;
     }
 
-    window.openSignatoryModal = function() {
-      const saved = { ...DEFAULT_SETTINGS, ...(JSON.parse(localStorage.getItem(SETTINGS_KEY)) || {}) };
+    window.openSignatoryModal = async function() {
+      const saved = await loadSettings();
       document.getElementById("set-school-name").value = saved.schoolName;
       document.getElementById("set-principal-name").value = saved.principalName;
       document.getElementById("set-principal-title").value = saved.principalTitle;
@@ -794,7 +838,7 @@
       document.getElementById("signatoryModal").classList.add("show");
     };
 
-    window.saveSignatories = function() {
+    window.saveSignatories = async function() {
       const settings = {
         schoolName: document.getElementById("set-school-name").value.trim(),
         principalName: document.getElementById("set-principal-name").value.trim(),
@@ -808,15 +852,20 @@
         verified: document.getElementById("sig-verified").value.trim(),
         verifiedTitle: document.getElementById("sig-verified-title").value.trim()
       };
-      localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
-      loadSettings();
-      closeModal("signatoryModal");
+      try {
+        await setDoc(FS_SETTINGS_DOC, settings, { merge: true });
+        applySettingsToDOM(settings);
+        closeModal("signatoryModal");
+      } catch (err) {
+        console.error("Save settings error:", err);
+        alert("Failed to save settings to Firestore: " + err.message);
+      }
     };
 
-    document.addEventListener("DOMContentLoaded", () => {
+    document.addEventListener("DOMContentLoaded", async () => {
       renderTabs();
-      loadSettings();
-      loadInventory();
+      await loadSettings();
+      await loadInventory();
     });
   </script>
 </body>
