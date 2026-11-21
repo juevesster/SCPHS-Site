@@ -1040,12 +1040,12 @@ async function loadRecords() {
 }
 
 async function persistRecord(item) {
-    if (item.id) {
-        const { id, ...payload } = item;
+    const { id, ...payload } = item;
+    if (id) {
         await setDoc(doc(db, FS_COLLECTION, id), payload, { merge: true });
-        return item.id;
+        return id;
     } else {
-        const ref = await addDoc(collection(db, FS_COLLECTION), item);
+        const ref = await addDoc(collection(db, FS_COLLECTION), payload);
         return ref.id;
     }
 }
@@ -1068,7 +1068,8 @@ async function applyImportBatch(candidateItems, mode) {
     let skipped = 0;
 
     for (const cand of candidateItems) {
-        const sig = getExactRecordSignature(cand);
+        const { id: _ignoreId, ...cleanCand } = cand;
+        const sig = getExactRecordSignature(cleanCand);
         const existingIdx = sigToExistingIndex.get(sig);
 
         if (existingIdx !== undefined) {
@@ -1076,7 +1077,7 @@ async function applyImportBatch(candidateItems, mode) {
                 const existingRec = records[existingIdx];
                 const updatedRec = {
                     ...existingRec,
-                    ...cand,
+                    ...cleanCand,
                     id: existingRec.id,
                     updatedAt: new Date().toISOString()
                 };
@@ -1087,7 +1088,7 @@ async function applyImportBatch(candidateItems, mode) {
             }
         } else {
             const newRec = {
-                ...cand,
+                ...cleanCand,
                 updatedAt: new Date().toISOString()
             };
             itemsToAdd.push(newRec);
@@ -1106,8 +1107,9 @@ async function applyImportBatch(candidateItems, mode) {
         chunk.forEach(op => {
             if (op.type === "add") {
                 const docRef = doc(collection(db, FS_COLLECTION));
+                const { id: _unused, ...payload } = op.item;
                 op.item.id = docRef.id;
-                batch.set(docRef, op.item);
+                batch.set(docRef, payload);
             } else {
                 const { id, ...payload } = op.item;
                 batch.set(doc(db, FS_COLLECTION, id), payload, { merge: true });
@@ -1155,6 +1157,53 @@ window.deleteAllRecords = async function() {
     } catch (err) {
         console.error("Delete all error:", err);
         alert("Firestore delete error: " + err.message);
+    }
+};
+
+window.saveRecord = async function() {
+    const desc = document.getElementById("description").value.trim();
+    const propNo = document.getElementById("propertyNo").value.trim();
+    const existingId = document.getElementById("editId").value.trim();
+    const uVal = Number(document.getElementById("unitValue").value || 0);
+    const qCard = Number(document.getElementById("qtyCard").value || 0);
+    const qCount = Number(document.getElementById("qtyCount").value || 0);
+    const rawTot = document.getElementById("totalCostInput").value;
+    const totCost = rawTot !== "" ? Number(rawTot) : (uVal * qCount);
+
+    const payload = {
+        sheetGroup: document.getElementById("sheetGroup").value.trim() || "High Value Items",
+        article: document.getElementById("article").value.trim() || "Semi-Expendable Property",
+        description: desc,
+        dateAcquired: document.getElementById("dateAcquired").value.trim(),
+        propertyNo: propNo,
+        unitMeasure: document.getElementById("unitMeasure").value.trim() || "unit",
+        unitValue: uVal,
+        qtyCard: qCard,
+        qtyCount: qCount,
+        totalCost: totCost,
+        fundSource: document.getElementById("fundSource").value.trim(),
+        accountableOfficer: document.getElementById("accountableOfficer").value.trim(),
+        updatedAt: new Date().toISOString()
+    };
+
+    try {
+        const recordToSave = existingId ? { id: existingId, ...payload } : payload;
+        const savedId = await persistRecord(recordToSave);
+        const savedRecord = { id: savedId, ...payload };
+
+        if (existingId) {
+            const idx = records.findIndex(r => r.id === existingId);
+            if (idx >= 0) records[idx] = savedRecord;
+        } else {
+            records.push(savedRecord);
+        }
+
+        window.resetForm();
+        rebuildCategoryUI();
+        renderTable();
+    } catch (err) {
+        console.error("Save error:", err);
+        alert("Firestore save error: " + err.message);
     }
 };
 
