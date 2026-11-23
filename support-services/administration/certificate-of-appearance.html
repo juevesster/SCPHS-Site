@@ -100,6 +100,18 @@
     }
     .form-group input:focus, .form-group select:focus, .form-group textarea:focus { border-color: var(--primary); background: #fff; }
 
+    /* Signatory Box */
+    .signatory-panel {
+      grid-column: span 2;
+      background: #f8fafc;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 14px;
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 12px;
+    }
+
     /* Clickable School Offices Chips */
     .office-chips { display: grid; grid-template-columns: repeat(auto-fill, minmax(195px, 1fr)); gap: 9px; margin-top: 4px; }
     .office-chip {
@@ -219,6 +231,7 @@
     @media (max-width: 1080px) {
       .kpi-grid { grid-template-columns: repeat(2, 1fr); }
       .cc-row { grid-template-columns: 1fr; }
+      .signatory-panel { grid-template-columns: 1fr; }
     }
     @media (max-width: 768px) {
       .mobile-menu-btn { display: inline-flex; }
@@ -226,7 +239,7 @@
       .sidebar.open { transform: translateX(0); }
       .main-content { margin-left: 0; padding: 16px; }
       .kpi-grid, .form-grid, .stepper { grid-template-columns: 1fr; }
-      .form-group.full { grid-column: span 1; }
+      .form-group.full, .signatory-panel { grid-column: span 1; }
       .ca-details-grid { grid-template-columns: 105px 1fr; }
       .ca-footer-grid { grid-template-columns: 1fr; text-align: center; }
       .ca-verify-box { text-align: center; }
@@ -338,17 +351,30 @@
             <label>Date of Visit *</label>
             <input type="date" id="caDate" required>
           </div>
-          <div class="form-group">
+          <div class="form-group full">
             <label>Purpose of Appearance / Visit *</label>
             <input id="caPurpose" required placeholder="e.g., TO GET SERVICE RECORD / MONITORING & TA">
           </div>
-          <div class="form-group">
-            <label>Signatory / Approving Officer</label>
-            <select id="caSignatory">
-              <option value="DOLORES C. DODON, PhD|Principal III / School Head">DOLORES C. DODON, PhD — Principal III / School Head</option>
-              <option value="MARITESS E. VIDAD|Administrative Officer V">MARITESS E. VIDAD — Administrative Officer V</option>
-              <option value="DARNA A. BUGNAY|Administrative Aide / Admin Staff">DARNA A. BUGNAY — Administrative Aide / Admin Staff</option>
-            </select>
+
+          <!-- EDITABLE SIGNATORY PANEL -->
+          <div class="signatory-panel">
+            <div class="form-group">
+              <label>Quick-Fill Signatory Preset</label>
+              <select id="caSignatoryPreset" onchange="applySignatoryPreset()">
+                <option value="DOLORES C. DODON, PhD|Principal III / School Head">School Head (Principal III)</option>
+                <option value="MARITESS E. VIDAD|Administrative Officer V">Administrative Officer V</option>
+                <option value="DARNA A. BUGNAY|Administrative Aide / Admin Staff">Admin Office Staff</option>
+                <option value="CUSTOM">Custom / Edit Manually</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Signatory Full Name (Editable) *</label>
+              <input id="caSigName" required value="DOLORES C. DODON, PhD" placeholder="Enter signatory name">
+            </div>
+            <div class="form-group">
+              <label>Signatory Designation / Position (Editable) *</label>
+              <input id="caSigTitle" required value="Principal III / School Head" placeholder="Enter designation / title">
+            </div>
           </div>
 
           <!-- Clickable School Offices / Units Visited -->
@@ -363,6 +389,7 @@
               <button type="button" class="office-chip" data-office="JHS Department"><i class="fas fa-school"></i> JHS Department</button>
               <button type="button" class="office-chip" data-office="SHS Department"><i class="fas fa-graduation-cap"></i> SHS Department</button>
               <button type="button" class="office-chip" data-office="Class Advisers"><i class="fas fa-chalkboard-teacher"></i> Class Advisers</button>
+              <button type="button" class="office-chip" data-office="PTA Office"><i class="fas fa-hands-helping"></i> PTA Office</button>
               <button type="button" class="office-chip" data-office="MDRRM"><i class="fas fa-shield-alt"></i> MDRRM</button>
               <button type="button" class="office-chip" data-office="SSLG"><i class="fas fa-users"></i> SSLG</button>
             </div>
@@ -417,7 +444,7 @@
         <div class="form-grid" style="margin-top:14px;">
           <div class="form-group">
             <label>Personnel / Staff Commended (Optional)</label>
-            <input id="fbCommended" placeholder="e.g., Admin Staff / ICT Coordinator / Adviser">
+            <input id="fbCommended" placeholder="e.g., Admin Staff / ICT Coordinator / Adviser / PTA">
           </div>
           <div class="form-group">
             <label>Suggestions / Comments for Improvement (Optional)</label>
@@ -583,6 +610,24 @@
       b.className = "sync-badge " + (ok ? "ok" : "");
     }
 
+    window.applySignatoryPreset = function() {
+      const val = document.getElementById("caSignatoryPreset").value;
+      if (val === "CUSTOM") {
+        document.getElementById("caSigName").focus();
+        return;
+      }
+      const [name, title] = val.split("|");
+      document.getElementById("caSigName").value = name || "";
+      document.getElementById("caSigTitle").value = title || "";
+    };
+
+    // Switch preset dropdown to "Custom" if user manually edits signatory fields
+    ["caSigName", "caSigTitle"].forEach(id => {
+      document.getElementById(id).addEventListener("input", () => {
+        document.getElementById("caSignatoryPreset").value = "CUSTOM";
+      });
+    });
+
     // Build SQD Matrix
     function renderSqdMatrix() {
       const host = document.getElementById("sqdList");
@@ -709,7 +754,9 @@
       const mm = String(now.getMonth() + 1).padStart(2, "0");
       const rand6 = String(Math.floor(100000 + Math.random() * 900000));
       const caNo = `${yy}-${mm}-${rand6}`;
-      const [sigName, sigTitle] = document.getElementById("caSignatory").value.split("|");
+
+      const sigName = document.getElementById("caSigName").value.trim().toUpperCase();
+      const sigTitle = document.getElementById("caSigTitle").value.trim();
 
       const vals = Object.values(sqdScores);
       const avg = Number((vals.reduce((a, b) => a + b, 0) / vals.length).toFixed(2));
