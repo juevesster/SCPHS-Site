@@ -1,198 +1,908 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="utf-8" />
+  <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Library – SCPHS</title>
-   <meta name="description" content="SCPHS Library – resources, borrowing guidelines, catalog links, and contact details." />
-  <link rel="stylesheet" href="../../assets/css/styles.css" />
+  <title>Learning Resource Center & Library – SCPHS</title>
+  <meta name="description" content="SCPHS Learning Resource Center & Library – live book catalog, borrowing & return tracker, DepEd LRMDS resources, and LRC staff." />
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+  <style>
+    :root {
+      --sidebar-bg: #0f172a;
+      --sidebar-hover: #1e293b;
+      --bg-color: #f4f7f9;
+      --primary: #0f766e;
+      --primary-light: #14b8a6;
+      --accent-indigo: #4338ca;
+      --text-main: #1e293b;
+      --text-muted: #64748b;
+      --border: #e2e8f0;
+      --success: #16a34a;
+      --warning: #d97706;
+      --danger: #dc2626;
+      --card-bg: rgba(255, 255, 255, 0.9);
+      --glass-border: rgba(255, 255, 255, 0.7);
+      --shadow-sm: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+      --shadow-lg: 0 20px 25px -5px rgba(0, 0, 0, 0.08);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Outfit', sans-serif; }
+    body { background: var(--bg-color); color: var(--text-main); display: flex; min-height: 100vh; overflow-x: hidden; }
+
+    /* Sidebar */
+    .sidebar { width: 260px; flex-shrink: 0; background: var(--sidebar-bg); color: #fff; display: flex; flex-direction: column; z-index: 1000; position: fixed; top: 0; left: 0; height: 100vh; transition: transform 0.3s ease; }
+    .sidebar-brand { padding: 26px 22px; font-size: 1.35rem; font-weight: 800; display: flex; align-items: center; gap: 12px; border-bottom: 1px solid rgba(255,255,255,0.06); }
+    .sidebar-brand i { color: var(--primary-light); }
+    .sidebar-menu { flex: 1; padding: 18px 14px; display: flex; flex-direction: column; gap: 6px; overflow-y: auto; }
+    .menu-item { display: flex; align-items: center; gap: 13px; padding: 12px 16px; border-radius: 12px; color: #94a3b8; text-decoration: none; font-weight: 500; font-size: 0.93rem; transition: all 0.2s ease; cursor: pointer; border: none; background: transparent; width: 100%; text-align: left; }
+    .menu-item:hover { background: var(--sidebar-hover); color: #fff; transform: translateX(3px); }
+    .menu-item.active { background: linear-gradient(90deg, var(--primary), var(--primary-light)); color: #fff; font-weight: 600; box-shadow: 0 4px 15px rgba(15, 118, 110, 0.3); }
+    .menu-item .icon { font-size: 1.1rem; width: 22px; text-align: center; flex-shrink: 0; }
+    .sidebar-footer { padding: 16px 14px; border-top: 1px solid rgba(255,255,255,0.06); }
+
+    .sidebar-backdrop { display: none; position: fixed; inset: 0; background: rgba(15, 23, 42, 0.5); z-index: 990; }
+    .sidebar-backdrop.show { display: block; }
+    .mobile-menu-btn { display: none; width: 40px; height: 40px; border-radius: 10px; border: 1px solid var(--border); background: #fff; color: var(--text-main); align-items: center; justify-content: center; font-size: 1.1rem; cursor: pointer; }
+
+    /* Main Content */
+    .main-content { margin-left: 260px; flex: 1; min-width: 0; display: flex; flex-direction: column; position: relative; }
+    .orb { position: absolute; border-radius: 50%; filter: blur(110px); z-index: 0; opacity: 0.35; pointer-events: none; }
+    .orb-1 { width: 480px; height: 480px; background: #99f6e4; top: -140px; right: -80px; }
+    .orb-2 { width: 380px; height: 380px; background: #c7d2fe; bottom: 5%; left: 15%; }
+
+    .topbar { min-height: 78px; padding: 14px 30px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; background: rgba(255, 255, 255, 0.78); backdrop-filter: blur(20px); border-bottom: 1px solid var(--glass-border); z-index: 10; }
+    .page-title { font-size: 1.45rem; font-weight: 800; color: var(--text-main); display: flex; align-items: center; gap: 12px; }
+    .topbar-right { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+    .sync-badge { font-size: 0.74rem; padding: 5px 12px; border-radius: 999px; background: #fef3c7; color: #92400e; font-weight: 700; }
+    .sync-badge.ok { background: #dcfce7; color: #166534; }
+    .hours-pill { font-size: 0.82rem; font-weight: 700; color: var(--text-muted); background: #fff; padding: 7px 14px; border-radius: 999px; border: 1px solid var(--border); white-space: nowrap; }
+
+    .dashboard-scroll { flex: 1; padding: 24px 30px 90px; z-index: 1; }
+
+    /* Bento Grid */
+    .bento-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 18px; margin-bottom: 20px; }
+    .bento-card { background: var(--card-bg); backdrop-filter: blur(16px); border: 1px solid var(--glass-border); border-radius: 22px; padding: 22px; box-shadow: var(--shadow-sm); position: relative; min-width: 0; }
+    .span-2 { grid-column: span 2; }
+    .span-4 { grid-column: span 4; }
+
+    .stat-card { display: flex; flex-direction: column; justify-content: space-between; transition: transform 0.2s ease, box-shadow 0.2s ease; }
+    .stat-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-lg); }
+    .stat-icon { width: 46px; height: 46px; border-radius: 13px; display: flex; align-items: center; justify-content: center; font-size: 1.3rem; margin-bottom: 14px; }
+    .stat-icon.teal { background: #ccfbf1; color: #0f766e; }
+    .stat-icon.green { background: #dcfce7; color: #16a34a; }
+    .stat-icon.blue { background: #e0e7ff; color: #4338ca; }
+    .stat-icon.red { background: #fee2e2; color: #dc2626; }
+    .stat-value { font-size: 2.15rem; font-weight: 800; line-height: 1.05; color: var(--text-main); margin-bottom: 4px; }
+    .stat-label { font-size: 0.78rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
+
+    .card-header { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; margin-bottom: 16px; }
+    .card-title { font-size: 1.12rem; font-weight: 800; color: var(--text-main); display: flex; align-items: center; gap: 9px; }
+
+    /* Resource Link Cards */
+    .menu-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
+    .menu-card { background: #fff; border: 1px solid var(--border); border-radius: 15px; padding: 13px 15px; text-decoration: none; color: inherit; display: flex; align-items: center; gap: 13px; transition: all 0.2s ease; min-width: 0; }
+    .menu-card:hover { transform: translateY(-2px); box-shadow: 0 8px 16px rgba(0,0,0,0.05); border-color: var(--primary-light); }
+    .menu-icon { width: 40px; height: 40px; border-radius: 11px; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; color: #fff; flex-shrink: 0; }
+    .menu-info h4 { font-size: 0.92rem; font-weight: 700; color: var(--text-main); margin-bottom: 2px; }
+    .menu-info p { font-size: 0.76rem; color: var(--text-muted); }
+
+    /* Guidelines & Staff */
+    .guideline-list { list-style: none; display: grid; gap: 10px; }
+    .guideline-list li { display: flex; align-items: flex-start; gap: 10px; font-size: 0.88rem; color: var(--text-main); background: #fff; padding: 10px 13px; border-radius: 12px; border: 1px solid var(--border); }
+    .guideline-list li i { color: var(--primary); margin-top: 3px; }
+
+    .staff-list { list-style: none; }
+    .staff-list li { padding: 10px 0; border-bottom: 1px solid #f1f5f9; display: flex; justify-content: space-between; gap: 12px; font-size: 0.88rem; align-items: center; }
+    .staff-list li:last-child { border-bottom: none; }
+    .staff-list strong { color: var(--text-main); font-weight: 700; }
+    .staff-list span { color: var(--text-muted); font-weight: 600; text-align: right; }
+
+    /* Forms & Controls */
+    .form-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
+    .form-group { display: flex; flex-direction: column; min-width: 0; }
+    .form-group.span-2 { grid-column: span 2; }
+    .form-group label { font-size: 0.71rem; font-weight: 700; color: var(--text-muted); margin-bottom: 5px; text-transform: uppercase; }
+    .form-group input, .form-group select {
+      width: 100%; border: 1px solid var(--border); border-radius: 10px; padding: 9px 12px; font-size: 0.88rem; background: #fff; color: var(--text-main); outline: none;
+    }
+    .form-group input:focus, .form-group select:focus { border-color: var(--primary); }
+
+    .btn { border: none; cursor: pointer; border-radius: 10px; padding: 10px 16px; font-weight: 700; display: inline-flex; align-items: center; gap: 7px; font-size: 0.84rem; transition: opacity 0.2s; white-space: nowrap; text-decoration: none; }
+    .btn:hover { opacity: 0.92; }
+    .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+    .btn-sm { padding: 5px 10px; font-size: 0.75rem; border-radius: 8px; }
+    .btn-primary { background: var(--primary); color: #fff; }
+    .btn-indigo { background: var(--accent-indigo); color: #fff; }
+    .btn-success { background: var(--success); color: #fff; }
+    .btn-danger { background: var(--danger); color: #fff; }
+    .btn-outline { background: #fff; color: var(--text-main); border: 1px solid var(--border); }
+
+    /* Filter Toolbar */
+    .toolbar { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+    .toolbar input, .toolbar select { border: 1px solid var(--border); border-radius: 10px; padding: 8px 12px; font-size: 0.84rem; background: #fff; color: var(--text-main); outline: none; }
+
+    /* Table */
+    .table-wrap { width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+    table { width: 100%; border-collapse: collapse; }
+    th, td { padding: 11px 12px; border-bottom: 1px solid var(--border); text-align: left; font-size: 0.85rem; white-space: nowrap; }
+    th { background: #f8fafc; color: var(--text-muted); font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.4px; }
+    td.wrap-col { white-space: normal; min-width: 190px; }
+
+    .badge { display: inline-block; padding: 3px 10px; border-radius: 999px; font-size: 0.72rem; font-weight: 700; }
+    .badge.avail { background: #dcfce7; color: #166534; }
+    .badge.out { background: #fef3c7; color: #92400e; }
+    .badge.overdue { background: #fee2e2; color: #b91c1c; }
+    .badge.cat { background: #e0e7ff; color: #3730a3; }
+
+    /* Collapsible Drawer Form */
+    .collapse-box { display: none; background: #f8fafc; border: 1px solid var(--border); border-radius: 16px; padding: 16px; margin-bottom: 16px; }
+    .collapse-box.open { display: block; }
+
+    /* Footer */
+    .portal-footer { margin-top: 24px; padding: 18px 22px; background: #fff; border: 1px solid var(--border); border-radius: 18px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; font-size: 0.8rem; color: var(--text-muted); }
+    .portal-footer a { color: var(--primary); text-decoration: none; font-weight: 600; }
+
+    /* Chatbot FAB */
+    #scphs-chatbot-root { display: none; position: fixed; bottom: 92px; right: 24px; width: min(340px, calc(100vw - 48px)); background: #fff; border: 1px solid var(--border); border-radius: 16px; padding: 16px; box-shadow: 0 20px 25px -5px rgba(15, 23, 42, 0.15); z-index: 99994; }
+    #scphs-chatbot-root.open { display: block; }
+    .chat-fab { position: fixed; bottom: 24px; right: 24px; width: 56px; height: 56px; border-radius: 50%; background: var(--primary); color: #fff; border: none; cursor: pointer; box-shadow: 0 8px 20px rgba(15, 118, 110, 0.35); z-index: 99995; font-size: 1.4rem; display: flex; align-items: center; justify-content: center; transition: transform 0.2s ease; }
+    .chat-fab:hover { transform: scale(1.06); }
+
+    @media (max-width: 1100px) {
+      .bento-grid { grid-template-columns: repeat(2, 1fr); }
+      .span-4 { grid-column: span 2; }
+      .form-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+    @media (max-width: 768px) {
+      .mobile-menu-btn { display: inline-flex; }
+      .sidebar { transform: translateX(-100%); }
+      .sidebar.open { transform: translateX(0); }
+      .main-content { margin-left: 0; }
+      .topbar { padding: 14px 18px; }
+      .dashboard-scroll { padding: 18px 18px 90px; }
+      .bento-grid, .menu-grid, .form-grid { grid-template-columns: 1fr; }
+      .span-2, .span-4, .form-group.span-2 { grid-column: span 1; }
+    }
+  </style>
 </head>
 <body>
 
-   <!-- PAGE HERO -->
-  <div class="page-hero">
-    <div class="wrap">
-      <span class="badge">Learning Resource</span>
-      <h1>Library Center</h1>
-      <p class="meta">Sta. Cruz Pingkian High School • Place to gain knowledge - Wisdom and knowledge is power.</p>
+  <div class="sidebar-backdrop" id="sidebarBackdrop" onclick="toggleSidebar(false)"></div>
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-brand">
+      <i class="fas fa-book-reader"></i> <span>Library &amp; LRC</span>
     </div>
-  </div>
-
-      <!-- Mini-header / Breadcrumb -->
-  <header class="mini-header">
-    <div class="wrap" style="display:flex; align-items:center; gap:12px; padding:10px 0">
-      <!-- LOCAL/OFFLINE: ../../index.html  |  ONLINE (optional): /index.html -->
-      <a href="../../index.html" class="brand">SCPHS</a>
-
-      <nav aria-label="Breadcrumb" class="crumbs">
-        <!-- LOCAL/OFFLINE: ../../index.html  |  ONLINE: /index.html -->
-        <a href="../../index.html">Home</a>
-        /
-        <!-- If you add a landing page at /support-services/index.html use:
-             LOCAL: ../index.html  |  ONLINE: /support-services/index.html -->
-        <a href="../../index.html">Support Services</a>
-        /
-        <strong>Library</strong>
-      </nav>
+    <div class="sidebar-menu">
+      <a href="#overview-section" class="menu-item active" onclick="setActiveMenu(this)">
+        <i class="fas fa-compass icon"></i> <span>LRC Overview</span>
+      </a>
+      <a href="#catalog-section" class="menu-item" onclick="setActiveMenu(this)">
+        <i class="fas fa-book icon"></i> <span>Online Book Catalog</span>
+      </a>
+      <a href="#circulation-section" class="menu-item" onclick="setActiveMenu(this)">
+        <i class="fas fa-exchange-alt icon"></i> <span>Borrowing &amp; Returns</span>
+      </a>
+      <a href="https://lrmds.deped.gov.ph/" target="_blank" rel="noopener noreferrer" class="menu-item">
+        <i class="fas fa-cloud-download-alt icon"></i> <span>DepEd LRMDS Portal</span>
+      </a>
+      <a href="../ict/index.html" class="menu-item">
+        <i class="fas fa-laptop-code icon"></i> <span>ICT Office</span>
+      </a>
+      <a href="../administration/index.html" class="menu-item">
+        <i class="fas fa-building icon"></i> <span>Administration Office</span>
+      </a>
+      <a href="../../index.html" class="menu-item">
+        <i class="fas fa-globe icon"></i> <span>Main Portal</span>
+      </a>
     </div>
-  </header>
- 
-  <main class="wrap" style="margin-top:16px">
-    <article class="card">
-      <header style="padding:16px; border-bottom:1px solid var(--line)">
-        <h1 style="margin:0">Library</h1>
-        <p class="meta">Information and learning resource center.</p>
-      </header>
+    <div class="sidebar-footer">
+      <a href="mailto:300648@deped.gov.ph" class="menu-item" style="color: #5eead4; background: rgba(20,184,166,0.12);">
+        <i class="fas fa-envelope icon"></i> <span>300648@deped.gov.ph</span>
+      </a>
+    </div>
+  </aside>
 
-      <section style="padding:16px; display:grid; gap:18px">
-        <div class="info-grid" style="display:grid; grid-template-columns: 1fr 1fr; gap:16px">
-          <div class="card soft">
-            <h3>Library Information</h3>
-            <ul class="list">
-              <li>Location: Learning Resource Center</li>
-              <li>Email: <a href="mailto:300648@deped.gov.ph">300648@deped.gov.ph</a></li>
-              <li>Phone: +63 967‑8848989</li>
+  <!-- MAIN CONTENT -->
+  <main class="main-content">
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+
+    <header class="topbar">
+      <div class="page-title">
+        <button type="button" class="mobile-menu-btn" onclick="toggleSidebar()" aria-label="Toggle navigation menu">
+          <i class="fas fa-bars"></i>
+        </button>
+        <div>
+          <span>Learning Resource Center &amp; Library</span>
+          <div style="font-size:0.78rem;font-weight:500;color:var(--text-muted);">Sta. Cruz Pingkian High School • <em>"Wisdom and knowledge is power"</em></div>
+        </div>
+      </div>
+      <div class="topbar-right">
+        <span class="sync-badge" id="syncBadge">Connecting to Firestore...</span>
+        <div class="hours-pill"><i class="fas fa-clock" style="color:var(--primary);"></i> Mon–Fri: 8:00 AM – 5:00 PM</div>
+      </div>
+    </header>
+
+    <div class="dashboard-scroll">
+      <!-- KPI STRIP -->
+      <div class="bento-grid" id="overview-section">
+        <div class="bento-card stat-card">
+          <div class="stat-icon teal"><i class="fas fa-books"></i></div>
+          <div>
+            <div class="stat-value" id="statTitles">0</div>
+            <div class="stat-label">Catalog Titles</div>
+          </div>
+        </div>
+        <div class="bento-card stat-card">
+          <div class="stat-icon green"><i class="fas fa-book-open"></i></div>
+          <div>
+            <div class="stat-value" id="statAvailable">0</div>
+            <div class="stat-label">Available Copies</div>
+          </div>
+        </div>
+        <div class="bento-card stat-card">
+          <div class="stat-icon blue"><i class="fas fa-hand-holding-heart"></i></div>
+          <div>
+            <div class="stat-value" id="statBorrowed">0</div>
+            <div class="stat-label">Currently Borrowed</div>
+          </div>
+        </div>
+        <div class="bento-card stat-card">
+          <div class="stat-icon red"><i class="fas fa-exclamation-circle"></i></div>
+          <div>
+            <div class="stat-value" id="statOverdue">0</div>
+            <div class="stat-label">Overdue Returns</div>
+          </div>
+        </div>
+
+        <!-- DIGITAL RESOURCES & GUIDELINES -->
+        <div class="bento-card span-2">
+          <div class="card-header">
+            <div class="card-title"><i class="fas fa-compass" style="color:var(--primary);"></i> Digital Resources &amp; Portals</div>
+          </div>
+          <div class="menu-grid">
+            <a href="#catalog-section" class="menu-card">
+              <div class="menu-icon" style="background: linear-gradient(135deg, #0f766e, #14b8a6);"><i class="fas fa-search"></i></div>
+              <div class="menu-info"><h4>SCPHS OPAC Catalog</h4><p>Search books &amp; modules</p></div>
+            </a>
+            <a href="https://lrmds.deped.gov.ph/" target="_blank" rel="noopener noreferrer" class="menu-card">
+              <div class="menu-icon" style="background: linear-gradient(135deg, #1d4ed8, #60a5fa);"><i class="fas fa-graduation-cap"></i></div>
+              <div class="menu-info"><h4>DepEd LRMDS</h4><p>Official learning modules</p></div>
+            </a>
+            <a href="https://commons.deped.gov.ph/" target="_blank" rel="noopener noreferrer" class="menu-card">
+              <div class="menu-icon" style="background: linear-gradient(135deg, #7c3aed, #a78bfa);"><i class="fas fa-laptop"></i></div>
+              <div class="menu-info"><h4>DepEd Commons</h4><p>Interactive OER materials</p></div>
+            </a>
+            <a href="https://www.deped.gov.ph/resources/" target="_blank" rel="noopener noreferrer" class="menu-card">
+              <div class="menu-icon" style="background: linear-gradient(135deg, #d97706, #fbbf24);"><i class="fas fa-folder-open"></i></div>
+              <div class="menu-info"><h4>DepEd Resources</h4><p>Policies &amp; references</p></div>
+            </a>
+          </div>
+
+          <div class="card-header" style="margin-top:18px;margin-bottom:10px;">
+            <div class="card-title" style="font-size:1rem;"><i class="fas fa-clipboard-check" style="color:#16a34a;"></i> Borrowing Guidelines</div>
+          </div>
+          <ul class="guideline-list">
+            <li><i class="fas fa-id-card"></i> <span>Present valid <strong>School ID</strong> or Faculty/Staff ID when borrowing books.</span></li>
+            <li><i class="fas fa-calendar-alt"></i> <span>Standard loan period is <strong>7 days</strong> (renewable once if no reservation exists).</span></li>
+            <li><i class="fas fa-undo-alt"></i> <span>Return books and learning modules on or before the due date to keep them available for others.</span></li>
+          </ul>
+        </div>
+
+        <!-- LRC INFORMATION & STAFF DIRECTORY -->
+        <div class="bento-card span-2" style="display:flex;flex-direction:column;justify-content:space-between;gap:16px;">
+          <div>
+            <div class="card-header">
+              <div class="card-title"><i class="fas fa-user-tie" style="color:var(--accent-indigo);"></i> Library &amp; LRC Personnel</div>
+            </div>
+            <ul class="staff-list" id="lrc-staff-list">
+              <li><strong>School Librarian / LRC Coordinator</strong><span>Loading directory...</span></li>
             </ul>
           </div>
 
-          <div class="card soft">
-            <h3>Hours</h3>
-            <table class="table">
-              <tbody>
-                <tr><td>Monday–Friday</td><td>8:00 AM – 5:00 PM</td></tr>
-                <tr><td>Saturday–Sunday</td><td>Closed</td></tr>
-              </tbody>
-            </table>
+          <div style="background:#fff;border:1px solid var(--border);border-radius:16px;padding:15px;">
+            <div style="font-size:0.85rem;font-weight:800;color:var(--text-main);margin-bottom:8px;">
+              <i class="fas fa-map-marker-alt" style="color:var(--primary);"></i> Location &amp; Contact Desk
+            </div>
+            <div style="font-size:0.84rem;color:var(--text-muted);line-height:1.6;">
+              <div><strong>Location:</strong> Learning Resource Center (LRC), Sta. Cruz Pingkian High School</div>
+              <div><strong>Email:</strong> <a href="mailto:300648@deped.gov.ph" style="color:var(--primary);font-weight:700;">300648@deped.gov.ph</a></div>
+              <div><strong>Phone:</strong> +63 967-884-8989 &nbsp;•&nbsp; <strong>Weekend:</strong> Closed</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ONLINE BOOK CATALOG SECTION -->
+      <div class="bento-card" id="catalog-section" style="margin-bottom:20px;">
+        <div class="card-header">
+          <div class="card-title"><i class="fas fa-book" style="color:var(--primary);"></i> Live Online Book &amp; Resource Catalog (<span id="catalogCount">0</span>)</div>
+          <div class="toolbar">
+            <input id="bookSearch" oninput="renderCatalog()" placeholder="Search title, author, call no., ISBN...">
+            <select id="bookCatFilter" onchange="renderCatalog()">
+              <option value="">All Categories</option>
+              <option value="DepEd Textbooks / Modules">DepEd Textbooks / Modules</option>
+              <option value="General Reference">General Reference</option>
+              <option value="Literature / Fiction">Literature / Fiction</option>
+              <option value="Filipiniana">Filipiniana</option>
+              <option value="Science & Mathematics">Science &amp; Mathematics</option>
+              <option value="Araling Panlipunan">Araling Panlipunan</option>
+              <option value="TLE / ICT">TLE / ICT</option>
+            </select>
+            <button type="button" class="btn btn-primary btn-sm" onclick="toggleBox('addBookBox')">
+              <i class="fas fa-plus"></i> Add Book / Resource
+            </button>
           </div>
         </div>
 
-        <div class="card soft">
-          <h3>Borrowing Guidelines</h3>
-          <ul class="list">
-            <li>Present school ID when borrowing books.</li>
-            <li>Loan period: 7 days (renewable if no reservation).</li>
-            <li>Return items on time to avoid penalties.</li>
-          </ul>
+        <!-- ADD BOOK COLLAPSIBLE FORM -->
+        <div class="collapse-box" id="addBookBox">
+          <form onsubmit="addBook(event)">
+            <div class="form-grid">
+              <div class="form-group">
+                <label>Call No. / Accession No. *</label>
+                <input id="bkCallNo" required placeholder="e.g., FIL-808.8-2026">
+              </div>
+              <div class="form-group span-2">
+                <label>Book / Module Title *</label>
+                <input id="bkTitle" required placeholder="e.g., Noli Me Tangere / Grade 10 Science Learner's Module">
+              </div>
+              <div class="form-group">
+                <label>Author / Publisher *</label>
+                <input id="bkAuthor" required placeholder="e.g., Jose Rizal / DepEd BLR">
+              </div>
+              <div class="form-group">
+                <label>Category *</label>
+                <select id="bkCategory">
+                  <option value="DepEd Textbooks / Modules">DepEd Textbooks / Modules</option>
+                  <option value="General Reference">General Reference</option>
+                  <option value="Literature / Fiction">Literature / Fiction</option>
+                  <option value="Filipiniana">Filipiniana</option>
+                  <option value="Science & Mathematics">Science &amp; Mathematics</option>
+                  <option value="Araling Panlipunan">Araling Panlipunan</option>
+                  <option value="TLE / ICT">TLE / ICT</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label>Total Copies *</label>
+                <input type="number" id="bkCopies" min="1" value="1" required>
+              </div>
+              <div class="form-group">
+                <label>Shelf / Section</label>
+                <input id="bkShelf" placeholder="e.g., Shelf A2 – JHS Section">
+              </div>
+              <div class="form-group" style="justify-content:flex-end;">
+                <button type="submit" class="btn btn-primary" id="saveBookBtn"><i class="fas fa-save"></i> Save to Catalog</button>
+              </div>
+            </div>
+          </form>
         </div>
 
-        <div class="card soft">
-          <h3>Resources</h3>
-          <ul class="list">
-            <li><a href="#" target="_blank" rel="noopener">Online Catalog (coming soon)</a></li>
-            <li><a href="https://lrmds.deped.gov.ph/" target="_blank" rel="noopener">DepEd LRMDs</a></li>
-            <li><a href="https://www.deped.gov.ph/resources/" target="_blank" rel="noopener">DepEd Resources</a></li>
-          </ul>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Call / Acc. No.</th>
+                <th>Title &amp; Author</th>
+                <th>Category</th>
+                <th>Shelf</th>
+                <th>Copies (Avail / Total)</th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="catalog-body">
+              <tr><td colspan="7" style="text-align:center;padding:24px;color:var(--text-muted);">Loading library catalog...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- BOOK BORROWING & RETURN TRACKER -->
+      <div class="bento-card" id="circulation-section">
+        <div class="card-header">
+          <div class="card-title"><i class="fas fa-exchange-alt" style="color:var(--accent-indigo);"></i> Book Borrowing &amp; Return Tracker (<span id="loanCount">0</span>)</div>
+          <div class="toolbar">
+            <select id="loanStatusFilter" onchange="renderLoans()">
+              <option value="all">All Transactions</option>
+              <option value="Borrowed" selected>Active / Borrowed</option>
+              <option value="Returned">Returned</option>
+            </select>
+            <button type="button" class="btn btn-indigo btn-sm" onclick="toggleBox('checkoutBox')">
+              <i class="fas fa-book-reader"></i> Record Book Checkout
+            </button>
+          </div>
         </div>
 
-        <div class="card soft">
-          <h3>Staff</h3>
-          <ul class="list">
-            <li><strong>Librarian</strong> – Name here</li>
-            <li><strong>Library Aide</strong> – Name here</li>
-          </ul>
+        <!-- CHECKOUT COLLAPSIBLE FORM -->
+        <div class="collapse-box" id="checkoutBox">
+          <form onsubmit="checkoutBook(event)">
+            <div class="form-grid">
+              <div class="form-group span-2">
+                <label>Select Available Book / Resource *</label>
+                <select id="loanBookId" required>
+                  <option value="">— Select Available Book —</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label>Borrower Full Name *</label>
+                <input id="loanBorrowerName" required placeholder="Student or Teacher Name">
+              </div>
+              <div class="form-group">
+                <label>Borrower Type &amp; Grade / ID *</label>
+                <input id="loanBorrowerMeta" required placeholder="e.g., Grade 10 Narra / Teacher III">
+              </div>
+              <div class="form-group">
+                <label>Date Borrowed *</label>
+                <input type="date" id="loanDate" required>
+              </div>
+              <div class="form-group">
+                <label>Due Date (7-Day Default) *</label>
+                <input type="date" id="loanDueDate" required>
+              </div>
+              <div class="form-group span-2" style="justify-content:flex-end;">
+                <button type="submit" class="btn btn-indigo" id="saveLoanBtn"><i class="fas fa-check-circle"></i> Issue Book &amp; Record Loan</button>
+              </div>
+            </div>
+          </form>
         </div>
-      </section>
-    </article>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Book Title</th>
+                <th>Borrower</th>
+                <th>Role / Grade</th>
+                <th>Date Borrowed</th>
+                <th>Due Date</th>
+                <th>Status</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody id="loans-body">
+              <tr><td colspan="7" style="text-align:center;padding:24px;color:var(--text-muted);">Loading circulation logs...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- FOOTER -->
+      <footer class="portal-footer">
+        <div>
+          <strong>Sta. Cruz Pingkian High School – Learning Resource Center</strong> • Brgy. Sta. Cruz, Pingkian, Kayapa, Nueva Vizcaya
+        </div>
+        <div>
+          <a href="../../index.html">Main Portal</a> •
+          <a href="https://lrmds.deped.gov.ph/" target="_blank" rel="noopener noreferrer">DepEd LRMDS</a> •
+          <a href="https://www.gov.ph/" target="_blank" rel="noopener noreferrer">GOV.PH</a> •
+          © <span id="yearNow"></span> SCPHS
+        </div>
+      </footer>
+    </div>
   </main>
 
-  <footer class="govph-footer" role="contentinfo" style="margin-top:24px">
-    <div class="govph-footer__bar">
-      <div class="wrap"><small>© <span id="yearNow"></span> SCPHS</small></div>
-    </div>
-  </footer>
-  <script>document.getElementById('yearNow').textContent = new Date().getFullYear();</script>
+  <!-- Chatbot Mount & FAB -->
+  <div id="scphs-chatbot-root"></div>
+  <button type="button" class="chat-fab" onclick="toggleChatBot()" aria-label="Open assistant chat">
+    <i class="fas fa-comment-dots"></i>
+  </button>
+
+  <!-- FIREBASE & DYNAMIC LRC LOGIC -->
+  <script type="module">
+    import { db } from "../../assets/js/firebase-config.js";
+    import {
+      collection,
+      getDocs,
+      addDoc,
+      updateDoc,
+      deleteDoc,
+      doc,
+      serverTimestamp
+    } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+    const BOOKS_COL = "library_books";
+    const LOANS_COL = "library_borrowers";
+
+    let books = [];
+    let loans = [];
+
+    const today = new Date();
+    const todayISO = today.toISOString().split("T")[0];
+    const nextWeek = new Date(today.getTime() + 7 * 86400000).toISOString().split("T")[0];
+    document.getElementById("loanDate").value = todayISO;
+    document.getElementById("loanDueDate").value = nextWeek;
+    document.getElementById("yearNow").textContent = today.getFullYear();
+
+    function esc(str) {
+      return String(str ?? "").replace(/[&<>"']/g, m => ({
+        "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
+      }[m]));
+    }
+
+    function escJS(str) {
+      return String(str ?? "").replace(/\\/g, "\\\\").replace(/'/g, "\\'");
+    }
+
+    function setBadge(ok, msg) {
+      const b = document.getElementById("syncBadge");
+      b.textContent = msg;
+      b.className = "sync-badge " + (ok ? "ok" : "");
+    }
+
+    window.toggleBox = function(id) {
+      document.getElementById(id)?.classList.toggle("open");
+    };
+
+    // Load Library / LRC Staff from Firestore users (with clean fallback)
+    async function loadLibraryStaff() {
+      const listEl = document.getElementById("lrc-staff-list");
+      try {
+        const snap = await getDocs(collection(db, "users"));
+        const lrcStaff = [];
+        snap.forEach(d => {
+          const u = d.data();
+          const roleText = `${u.primaryRole || ""} ${u.role || ""} ${u.designation || ""}`.toLowerCase();
+          if (roleText.includes("librar") || roleText.includes("lrc") || roleText.includes("learning resource")) {
+            const name = u.name || `${u.firstName || ""} ${u.lastName || ""}`.trim();
+            if (name) {
+              lrcStaff.push({
+                role: u.designation || "School Librarian / LRC Coordinator",
+                name
+              });
+            }
+          }
+        });
+
+        if (lrcStaff.length) {
+          listEl.innerHTML = lrcStaff.map(s => `
+            <li><strong>${esc(s.role)}</strong><span>${esc(s.name)}</span></li>
+          `).join("");
+        } else {
+          listEl.innerHTML = `
+            <li><strong>School Librarian / LRC Coordinator</strong><span>Assigned Faculty Coordinator</span></li>
+            <li><strong>Library Aide / Support</strong><span>Learning Resource Center Desk</span></li>
+          `;
+        }
+      } catch (err) {
+        listEl.innerHTML = `
+          <li><strong>School Librarian / LRC Coordinator</strong><span>Learning Resource Center</span></li>
+          <li><strong>Library Aide</strong><span>Student &amp; Faculty Circulation Desk</span></li>
+        `;
+      }
+    }
+
+    async function loadLibraryData() {
+      try {
+        const [bookSnap, loanSnap] = await Promise.all([
+          getDocs(collection(db, BOOKS_COL)),
+          getDocs(collection(db, LOANS_COL))
+        ]);
+
+        books = bookSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+        books.sort((a, b) => String(a.title || "").localeCompare(String(b.title || "")));
+
+        loans = loanSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+        loans.sort((a, b) => (b.createdAtMs || 0) - (a.createdAtMs || 0));
+
+        setBadge(true, "Connected to Firestore");
+        updateKPIs();
+        populateAvailableBookDropdown();
+        renderCatalog();
+        renderLoans();
+      } catch (err) {
+        console.error("Library load error:", err);
+        setBadge(false, "Offline / Rules Pending");
+      }
+    }
+
+    function updateKPIs() {
+      const totalTitles = books.length;
+      const availCopies = books.reduce((sum, b) => sum + Number(b.availableCopies ?? b.totalCopies ?? 0), 0);
+      const activeLoans = loans.filter(l => l.status !== "Returned");
+      const overdueCount = activeLoans.filter(l => l.dueDate && l.dueDate < todayISO).length;
+
+      document.getElementById("statTitles").textContent = totalTitles;
+      document.getElementById("statAvailable").textContent = availCopies;
+      document.getElementById("statBorrowed").textContent = activeLoans.length;
+      document.getElementById("statOverdue").textContent = overdueCount;
+    }
+
+    function populateAvailableBookDropdown() {
+      const sel = document.getElementById("loanBookId");
+      const availBooks = books.filter(b => Number(b.availableCopies ?? b.totalCopies ?? 0) > 0);
+      if (!availBooks.length) {
+        sel.innerHTML = `<option value="">— No available books in catalog (add books first) —</option>`;
+        return;
+      }
+      sel.innerHTML = `<option value="">— Select Available Book (${availBooks.length}) —</option>` +
+        availBooks.map(b => {
+          const avail = Number(b.availableCopies ?? b.totalCopies ?? 0);
+          return `<option value="${esc(b.id)}">${esc(b.title)} (${esc(b.callNo || "No Call#")}) — ${avail} avail.</option>`;
+        }).join("");
+    }
+
+    window.renderCatalog = function() {
+      const q = (document.getElementById("bookSearch").value || "").toLowerCase().trim();
+      const cat = document.getElementById("bookCatFilter").value;
+
+      const filtered = books.filter(b => {
+        if (cat && b.category !== cat) return false;
+        if (!q) return true;
+        return [b.callNo, b.title, b.author, b.category, b.shelf]
+          .some(v => String(v || "").toLowerCase().includes(q));
+      });
+
+      document.getElementById("catalogCount").textContent = filtered.length;
+      const body = document.getElementById("catalog-body");
+
+      if (!filtered.length) {
+        body.innerHTML = `<tr><td colspan="7" style="text-align:center;padding:24px;color:var(--text-muted);">No books or learning resources found. Click <strong>+ Add Book / Resource</strong> to populate the catalog.</td></tr>`;
+        return;
+      }
+
+      body.innerHTML = filtered.map(b => {
+        const total = Number(b.totalCopies || 1);
+        const avail = Number(b.availableCopies ?? total);
+        return `
+          <tr>
+            <td style="font-family:monospace;font-weight:700;">${esc(b.callNo || "—")}</td>
+            <td class="wrap-col">
+              <strong>${esc(b.title)}</strong>
+              <div style="font-size:0.75rem;color:var(--text-muted);">${esc(b.author || "Unknown Author")}</div>
+            </td>
+            <td><span class="badge cat">${esc(b.category || "General Reference")}</span></td>
+            <td>${esc(b.shelf || "—")}</td>
+            <td><strong>${avail}</strong> / ${total}</td>
+            <td>
+              ${avail > 0
+                ? `<span class="badge avail">Available</span>`
+                : `<span class="badge out">All Checked Out</span>`}
+            </td>
+            <td>
+              <div style="display:flex;gap:6px;">
+                ${avail > 0 ? `<button class="btn btn-indigo btn-sm" onclick="quickBorrow('${escJS(b.id)}')">Borrow</button>` : ""}
+                <button class="btn btn-danger btn-sm" onclick="deleteBook('${escJS(b.id)}')">Delete</button>
+              </div>
+            </td>
+          </tr>
+        `;
+      }).join("");
+    };
+
+    window.addBook = async function(evt) {
+      evt.preventDefault();
+      const btn = document.getElementById("saveBookBtn");
+      btn.disabled = true;
+
+      const totalCopies = Math.max(1, Number(document.getElementById("bkCopies").value || 1));
+      const payload = {
+        callNo: document.getElementById("bkCallNo").value.trim().toUpperCase(),
+        title: document.getElementById("bkTitle").value.trim(),
+        author: document.getElementById("bkAuthor").value.trim(),
+        category: document.getElementById("bkCategory").value,
+        totalCopies,
+        availableCopies: totalCopies,
+        shelf: document.getElementById("bkShelf").value.trim(),
+        createdAtMs: Date.now(),
+        createdAt: serverTimestamp()
+      };
+
+      try {
+        const ref = await addDoc(collection(db, BOOKS_COL), payload);
+        books.unshift({ id: ref.id, ...payload });
+        evt.target.reset();
+        document.getElementById("bkCopies").value = 1;
+        document.getElementById("addBookBox").classList.remove("open");
+        updateKPIs();
+        populateAvailableBookDropdown();
+        renderCatalog();
+      } catch (err) {
+        alert("Unable to add book: " + err.message);
+      } finally {
+        btn.disabled = false;
+      }
+    };
+
+    window.deleteBook = async function(id) {
+      if (!confirm("Remove this book/resource from the catalog?")) return;
+      try {
+        await deleteDoc(doc(db, BOOKS_COL, id));
+        books = books.filter(b => b.id !== id);
+        updateKPIs();
+        populateAvailableBookDropdown();
+        renderCatalog();
+      } catch (err) {
+        alert("Delete failed: " + err.message);
+      }
+    };
+
+    window.quickBorrow = function(bookId) {
+      const box = document.getElementById("checkoutBox");
+      box.classList.add("open");
+      document.getElementById("loanBookId").value = bookId;
+      box.scrollIntoView({ behavior: "smooth" });
+      document.getElementById("loanBorrowerName").focus();
+    };
+
+    window.checkoutBook = async function(evt) {
+      evt.preventDefault();
+      const bookId = document.getElementById("loanBookId").value;
+      const book = books.find(b => b.id === bookId);
+      if (!book) {
+        alert("Please select an available book.");
+        return;
+      }
+
+      const currentAvail = Number(book.availableCopies ?? book.totalCopies ?? 0);
+      if (currentAvail <= 0) {
+        alert("No available copies left for this title.");
+        return;
+      }
+
+      const btn = document.getElementById("saveLoanBtn");
+      btn.disabled = true;
+
+      const loanPayload = {
+        bookId: book.id,
+        bookTitle: book.title,
+        callNo: book.callNo || "",
+        borrowerName: document.getElementById("loanBorrowerName").value.trim(),
+        borrowerMeta: document.getElementById("loanBorrowerMeta").value.trim(),
+        dateBorrowed: document.getElementById("loanDate").value,
+        dueDate: document.getElementById("loanDueDate").value,
+        status: "Borrowed",
+        createdAtMs: Date.now(),
+        createdAt: serverTimestamp()
+      };
+
+      try {
+        const ref = await addDoc(collection(db, LOANS_COL), loanPayload);
+        const newAvail = Math.max(0, currentAvail - 1);
+        await updateDoc(doc(db, BOOKS_COL, book.id), { availableCopies: newAvail });
+
+        book.availableCopies = newAvail;
+        loans.unshift({ id: ref.id, ...loanPayload });
+
+        evt.target.reset();
+        document.getElementById("loanDate").value = todayISO;
+        document.getElementById("loanDueDate").value = nextWeek;
+        document.getElementById("checkoutBox").classList.remove("open");
+
+        updateKPIs();
+        populateAvailableBookDropdown();
+        renderCatalog();
+        renderLoans();
+      } catch (err) {
+        alert("Checkout failed: " + err.message);
+      } finally {
+        btn.disabled = false;
+      }
+    };
+
+    window.returnBook = async function(loanId) {
+      const loan = loans.find(l => l.id === loanId);
+      if (!loan || loan.status === "Returned") return;
+      if (!confirm(`Mark "${loan.bookTitle}" as returned by ${loan.borrowerName}?`)) return;
+
+      try {
+        await updateDoc(doc(db, LOANS_COL, loan.id), {
+          status: "Returned",
+          returnedDate: todayISO
+        });
+        loan.status = "Returned";
+        loan.returnedDate = todayISO;
+
+        const book = books.find(b => b.id === loan.bookId);
+        if (book) {
+          const maxCopies = Number(book.totalCopies || 1);
+          const restored = Math.min(maxCopies, Number(book.availableCopies || 0) + 1);
+          await updateDoc(doc(db, BOOKS_COL, book.id), { availableCopies: restored });
+          book.availableCopies = restored;
+        }
+
+        updateKPIs();
+        populateAvailableBookDropdown();
+        renderCatalog();
+        renderLoans();
+      } catch (err) {
+        alert("Return update failed: " + err.message);
+      }
+    };
+
+    window.renderLoans = function() {
+      const filter = document.getElementById("loanStatusFilter").value;
+      const shown = loans.filter(l => filter === "all" ? true : l.status === filter);
+      document.getElementById("loanCount").textContent = shown.length;
+
+      const body = document.getElementById("loans-body");
+      if (!shown.length) {
+        body.innerHTML = `<tr><td colspan="7" style="text-align:center;padding:24px;color:var(--text-muted);">No circulation records match this filter.</td></tr>`;
+        return;
+      }
+
+      body.innerHTML = shown.map(l => {
+        const isOverdue = l.status !== "Returned" && l.dueDate && l.dueDate < todayISO;
+        return `
+          <tr>
+            <td class="wrap-col"><strong>${esc(l.bookTitle)}</strong></td>
+            <td><strong>${esc(l.borrowerName)}</strong></td>
+            <td>${esc(l.borrowerMeta || "—")}</td>
+            <td>${esc(l.dateBorrowed || "—")}</td>
+            <td>${esc(l.dueDate || "—")}</td>
+            <td>
+              ${l.status === "Returned"
+                ? `<span class="badge avail">Returned (${esc(l.returnedDate || "")})</span>`
+                : isOverdue
+                  ? `<span class="badge overdue">Overdue</span>`
+                  : `<span class="badge out">Borrowed</span>`}
+            </td>
+            <td>
+              ${l.status !== "Returned"
+                ? `<button class="btn btn-success btn-sm" onclick="returnBook('${escJS(l.id)}')">Mark Returned</button>`
+                : `<span style="color:var(--text-muted);font-size:0.78rem;">Completed</span>`}
+            </td>
+          </tr>
+        `;
+      }).join("");
+    };
+
+    loadLibraryStaff();
+    loadLibraryData();
+  </script>
+
+  <!-- SIDEBAR & CHATBOT LOADER -->
+  <script>
+    function toggleSidebar(forceState) {
+      const sidebar = document.getElementById("sidebar");
+      const backdrop = document.getElementById("sidebarBackdrop");
+      const shouldOpen = typeof forceState === "boolean" ? forceState : !sidebar.classList.contains("open");
+      sidebar.classList.toggle("open", shouldOpen);
+      backdrop.classList.toggle("show", shouldOpen);
+    }
+
+    function setActiveMenu(el) {
+      document.querySelectorAll(".sidebar-menu .menu-item").forEach(m => m.classList.remove("active"));
+      el.classList.add("active");
+      toggleSidebar(false);
+    }
+
+    (function loadChatbotScript() {
+      const rootId = "scphs-chatbot-root";
+      if (!document.getElementById(rootId)) {
+        const mount = document.createElement("div");
+        mount.id = rootId;
+        document.body.appendChild(mount);
+      }
+      const candidates = [
+        "/assets/js/chatbot.js",
+        "assets/js/chatbot.js",
+        "../assets/js/chatbot.js",
+        "../../assets/js/chatbot.js"
+      ];
+      function tryNext(i) {
+        if (i >= candidates.length) return;
+        const s = document.createElement("script");
+        s.src = candidates[i];
+        s.defer = true;
+        s.onerror = () => { s.remove(); tryNext(i + 1); };
+        document.body.appendChild(s);
+      }
+      tryNext(0);
+    })();
+
+    function toggleChatBot() {
+      const root = document.getElementById("scphs-chatbot-root");
+      if (!root || !root.innerHTML.trim()) {
+        alert("The chatbot is currently loading or unavailable. Please try again later.");
+        return;
+      }
+      root.classList.toggle("open");
+    }
+  </script>
 </body>
 </html>
-
-<!-- ======================= END ABOUT SECTION ======================= -->
-
-  <!-- School Footer (SCPHS) -->
-  <footer>
-    <div class="wrap">
-      <div class="foot-grid">
-        <div>
-          <strong>Sta. Cruz Pingkian High School</strong><br/>
-          Brgy. Sta. Cruz, Pingkian • Nueva Vizcaya • Philippines<br/>
-          Email: 300648@deped.gov.ph • Phone: +63 967-8848989
-        </div>
-        <div>
-          <a href="#privacy">Privacy Notice</a> •
-          <a href="#foi">FOI</a> •
-          <a href="#sitemap">Sitemap</a> •
-          <a href="https://www.facebook.com/p/Santa-Cruz-Pingkian-High-School-Official-61554495084090/" target="_blank" rel="noopener">Facebook</a>
-        </div>
-      </div>
-      <div class="copy">© 2026 SCPHS. All rights reserved.</div>
-    </div>
-  </footer>
-
-  <!-- ================== GOVPH FOOTER (final, official) ================== -->
-  <footer class="govph-footer" role="contentinfo">
-    <div class="wrap govph-footer__grid">
-      <div class="govph-footer__col">
-        <h4>Republic of the Philippines</h4>
-        <p>All content is in the public domain unless otherwise stated.</p>
-      </div>
-      <div class="govph-footer__col">
-        <h4>About GOVPH</h4>
-        <ul class="govph-footer__links">
-          <li><a href="https://www.gov.ph/" target="_blank" rel="noopener">GOV.PH</a></li>
-          <li><a href="https://data.gov.ph/" target="_blank" rel="noopener">Open Data Portal</a></li>
-          <li><a href="https://www.officialgazette.gov.ph/" target="_blank" rel="noopener">Official Gazette</a></li>
-        </ul>
-      </div>
-      <div class="govph-footer__col">
-        <h4>Government Links</h4>
-        <ul class="govph-footer__links">
-          <li><a href="https://op-proper.gov.ph/" target="_blank" rel="noopener">Office of the President</a></li>
-          <li><a href="https://ovp.gov.ph/" target="_blank" rel="noopener">Office of the Vice President</a></li>
-          <li><a href="https://www.senate.gov.ph/" target="_blank" rel="noopener">Senate of the Philippines</a></li>
-          <li><a href="https://www.congress.gov.ph/" target="_blank" rel="noopener">House of Representatives</a></li>
-          <li><a href="https://sc.judiciary.gov.ph/" target="_blank" rel="noopener">Supreme Court</a></li>
-        </ul>
-      </div>
-    </div>
-
-    <div class="govph-footer__bar">
-      <div class="wrap">
-        <small>© <span id="yearNow"></span> Sta. Cruz Pingkian High School • A Philippine Government Website</small>
-      </div>
-    </div>
-  </footer>
-
-           <!-- Chatbot mount -->
-<div id="scphs-chatbot-root"></div>
-
-<!-- Chatbot auto-loader: tries absolute path, then ../, then ../../ -->
-<script>
-(function(){
-  const rootId = 'scphs-chatbot-root';
-  if (!document.getElementById(rootId)) {
-    const m = document.createElement('div');
-    m.id = rootId;
-    document.body.appendChild(m);
-  }
-
-  const tried = {};
-  function load(src, onOk, onFail){
-    if (tried[src]) return onFail && onFail();
-    tried[src] = true;
-    const s = document.createElement('script');
-    s.src = src; s.defer = true;
-    s.onload = onOk;
-    s.onerror = onFail;
-    document.body.appendChild(s);
-  }
-
-  // Try absolute (works when hosted), then step-wise relatives (works offline)
-  load('/assets/js/chatbot.js', null, () =>
-    load('assets/js/chatbot.js', null, () =>
-      load('../assets/js/chatbot.js', null, () =>
-        load('../../assets/js/chatbot.js', null, () =>
-          console.warn('SCPHS chatbot: unable to load script from any known path.')
-        )
-      )
-    )
-  );
-})();
-</script>
