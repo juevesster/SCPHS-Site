@@ -221,10 +221,35 @@
     .ca-printed-meta { margin-top: 24px; font-size: 11px; color: #475569; }
 
     @media print {
-      @page { size: portrait; margin: 12mm; }
-      body { display: block; background: #fff; }
-      .sidebar, .main-content, .no-print { display: none !important; }
-      #ca-print-sheet { display: block !important; border: none !important; border-radius: 0 !important; padding: 0 !important; margin: 0 !important; max-width: 100% !important; }
+      @page { size: portrait; margin: 10mm; }
+      html, body {
+        width: 100%;
+        height: auto;
+        margin: 0 !important;
+        padding: 0 !important;
+        background: #fff !important;
+        display: block !important;
+      }
+      .sidebar, .sidebar-backdrop, .main-content, .no-print, #previewWrapper {
+        display: none !important;
+      }
+      #ca-print-sheet,
+      #ca-print-sheet * {
+        visibility: visible !important;
+      }
+      #ca-print-sheet {
+        display: block !important;
+        position: static !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        margin: 0 !important;
+        padding: 8px 14px !important;
+        border: none !important;
+        border-radius: 0 !important;
+        box-shadow: none !important;
+        background: #fff !important;
+        color: #000 !important;
+      }
       .ca-label-cell { background: #fff !important; }
     }
 
@@ -718,6 +743,51 @@
       document.getElementById("p-sig-title").textContent = rec.signatoryTitle || "Principal III / School Head";
       document.getElementById("p-verify").textContent = `*${sixDigit}*`;
       document.getElementById("p-printed").textContent = formatPrintedDateTime();
+
+      const qrHost = document.getElementById("p-qr");
+      qrHost.innerHTML = "";
+      if (typeof QRCode !== "undefined") {
+        new QRCode(qrHost, {
+          text: `SCPHS-CA:${rec.caNo}|NAME:${rec.visitorName}|VERIFY:${sixDigit}`,
+          width: 68,
+          height: 68
+        });
+      }
+
+      // Render a non-conflicting preview copy inside the card while keeping #ca-print-sheet directly under <body>
+      const sheet = document.getElementById("ca-print-sheet");
+      const screenHost = document.getElementById("screen-preview-host");
+      const previewCopy = sheet.cloneNode(true);
+      previewCopy.id = "ca-screen-preview-copy";
+      previewCopy.style.display = "block";
+      previewCopy.style.margin = "0 auto";
+
+      // Copy rendered QR canvas/image onto the clone
+      const srcCanvas = sheet.querySelector("canvas");
+      const dstQr = previewCopy.querySelector("#p-qr");
+      if (dstQr) {
+        dstQr.id = "";
+        dstQr.innerHTML = "";
+        if (srcCanvas) {
+          const img = document.createElement("img");
+          img.src = srcCanvas.toDataURL("image/png");
+          img.alt = "QR Code";
+          img.style.width = "68px";
+          img.style.height = "68px";
+          dstQr.appendChild(img);
+        }
+      }
+
+      screenHost.innerHTML = "";
+      screenHost.appendChild(previewCopy);
+      document.getElementById("previewWrapper").style.display = "block";
+      document.getElementById("printCurrentBtn").disabled = false;
+      document.getElementById("step3Pill").classList.add("active", "done");
+    }
+
+    window.addEventListener("beforeprint", () => {
+      document.getElementById("p-printed").textContent = formatPrintedDateTime();
+    });
 
       const qrHost = document.getElementById("p-qr");
       qrHost.innerHTML = "";
