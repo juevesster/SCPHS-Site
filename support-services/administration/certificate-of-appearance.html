@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Certificate of Appearance & Visitor Feedback – SCPHS</title>
+  <title>Certificate of Appearance & Client Feedback (CSM) – SCPHS</title>
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
@@ -14,6 +14,8 @@
       --sidebar-hover: #1e293b;
       --primary: #0f766e;
       --primary-light: #14b8a6;
+      --sdo-navy: #1e3a8a;
+      --sdo-blue: #1d4ed8;
       --bg: #f4f7f9;
       --border: #e2e8f0;
       --text: #1e293b;
@@ -54,46 +56,101 @@
     .kpi-label { font-size: 0.72rem; text-transform: uppercase; color: var(--muted); font-weight: 700; letter-spacing: 0.4px; }
     .kpi-val { font-size: 1.55rem; font-weight: 800; margin-top: 4px; color: var(--text); }
 
+    /* SDO Banner Header inside Form Card */
+    .sdo-survey-banner {
+      background: linear-gradient(135deg, #1e3a8a, #0f766e);
+      color: #fff;
+      border-radius: 16px;
+      padding: 18px 22px;
+      margin-bottom: 18px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+    .sdo-survey-banner h2 { font-size: 1.15rem; font-weight: 800; margin-bottom: 3px; }
+    .sdo-survey-banner p { font-size: 0.82rem; opacity: 0.9; }
+    .sdo-pill { background: rgba(255,255,255,0.16); padding: 6px 12px; border-radius: 999px; font-size: 0.76rem; font-weight: 700; border: 1px solid rgba(255,255,255,0.28); }
+
+    /* Stepper Indicator */
+    .stepper { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 20px; }
+    .step-item {
+      background: #f8fafc; border: 1.5px solid var(--border); border-radius: 12px; padding: 10px 14px;
+      display: flex; align-items: center; gap: 10px; font-size: 0.84rem; font-weight: 700; color: var(--muted);
+    }
+    .step-item.active { background: #f0fdfa; border-color: var(--primary); color: var(--primary); }
+    .step-item.done { background: #eff6ff; border-color: #93c5fd; color: var(--sdo-navy); }
+    .step-num { width: 26px; height: 26px; border-radius: 50%; background: #e2e8f0; color: #334155; display: inline-flex; align-items: center; justify-content: center; font-size: 0.78rem; font-weight: 800; flex-shrink: 0; }
+    .step-item.active .step-num { background: var(--primary); color: #fff; }
+    .step-item.done .step-num { background: var(--sdo-blue); color: #fff; }
+
     /* Cards & Form */
     .card { background: #fff; border-radius: 18px; padding: 22px; border: 1px solid var(--border); margin-bottom: 18px; box-shadow: 0 1px 3px rgba(0,0,0,0.04); min-width: 0; }
     .card-header { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; margin-bottom: 14px; }
     .card-header h2 { font-size: 1.1rem; font-weight: 800; display: flex; align-items: center; gap: 8px; }
-    .card-sub { font-size: 0.84rem; color: var(--muted); margin-bottom: 16px; }
+    .section-divider { font-size: 0.85rem; font-weight: 800; color: var(--sdo-navy); text-transform: uppercase; letter-spacing: 0.4px; margin: 18px 0 10px; padding-bottom: 6px; border-bottom: 2px solid #e2e8f0; display: flex; align-items: center; gap: 8px; }
 
     .form-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
     .form-group { display: flex; flex-direction: column; min-width: 0; }
     .form-group.full { grid-column: span 2; }
-    .form-group label { font-size: 0.72rem; font-weight: 700; color: var(--muted); margin-bottom: 5px; text-transform: uppercase; }
+    .form-group label { font-size: 0.73rem; font-weight: 700; color: var(--muted); margin-bottom: 5px; text-transform: uppercase; }
     .form-group input, .form-group select, .form-group textarea {
       width: 100%; border: 1px solid var(--border); border-radius: 9px; padding: 9px 12px; font-size: 0.9rem; background: #f8fafc; color: var(--text); outline: none;
     }
     .form-group input:focus, .form-group select:focus, .form-group textarea:focus { border-color: var(--primary); background: #fff; }
 
     /* Clickable School Offices Chips */
-    .office-chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 4px; }
+    .office-chips { display: grid; grid-template-columns: repeat(auto-fill, minmax(195px, 1fr)); gap: 9px; margin-top: 4px; }
     .office-chip {
-      display: inline-flex; align-items: center; gap: 7px;
-      padding: 8px 14px; border-radius: 999px;
+      display: flex; align-items: center; gap: 9px;
+      padding: 10px 13px; border-radius: 12px;
       border: 1.5px solid var(--border); background: #f8fafc; color: var(--text);
-      font-size: 0.83rem; font-weight: 700; cursor: pointer; transition: all 0.15s ease; user-select: none;
+      font-size: 0.83rem; font-weight: 700; cursor: pointer; transition: all 0.15s ease; user-select: none; text-align: left;
     }
     .office-chip:hover { border-color: var(--primary-light); background: #f0fdfa; }
     .office-chip.selected { background: var(--primary); color: #fff; border-color: var(--primary); box-shadow: 0 4px 10px rgba(15, 118, 110, 0.22); }
+    .office-chip i { width: 18px; text-align: center; }
 
-    /* Rating Pills */
-    .rating-row { display: flex; flex-wrap: wrap; gap: 8px; }
-    .rating-btn {
-      padding: 8px 14px; border-radius: 10px; border: 1.5px solid var(--border);
-      background: #fff; color: var(--text); font-size: 0.83rem; font-weight: 700; cursor: pointer; transition: all 0.15s;
+    /* ARTA Citizen's Charter Box */
+    .cc-box { background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 14px; padding: 16px; display: grid; gap: 12px; }
+    .cc-row { display: grid; grid-template-columns: 1.2fr 1fr; gap: 12px; align-items: center; }
+    .cc-q { font-size: 0.84rem; font-weight: 600; color: #1e3a8a; }
+
+    /* SQD Matrix (5-Point Emoji Scale like SDO CSM) */
+    .sqd-list { display: flex; flex-direction: column; gap: 10px; }
+    .sqd-item {
+      background: #f8fafc; border: 1px solid var(--border); border-radius: 12px; padding: 12px 14px;
+      display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;
     }
-    .rating-btn.active { background: #0f172a; color: #fff; border-color: #0f172a; }
+    .sqd-text { flex: 1; min-width: 240px; }
+    .sqd-code { font-size: 0.7rem; font-weight: 800; color: var(--primary); text-transform: uppercase; }
+    .sqd-label { font-size: 0.86rem; font-weight: 600; color: var(--text); }
+    .sqd-scale { display: flex; gap: 6px; flex-wrap: wrap; }
+    .scale-btn {
+      border: 1.5px solid var(--border); background: #fff; border-radius: 10px; padding: 6px 10px;
+      font-size: 0.78rem; font-weight: 700; cursor: pointer; display: inline-flex; flex-direction: column; align-items: center; min-width: 58px; transition: all 0.15s;
+    }
+    .scale-btn span.emo { font-size: 1.1rem; line-height: 1.2; }
+    .scale-btn.active[data-val="5"] { background: #16a34a; color: #fff; border-color: #16a34a; }
+    .scale-btn.active[data-val="4"] { background: #0d9488; color: #fff; border-color: #0d9488; }
+    .scale-btn.active[data-val="3"] { background: #eab308; color: #fff; border-color: #eab308; }
+    .scale-btn.active[data-val="2"] { background: #f97316; color: #fff; border-color: #f97316; }
+    .scale-btn.active[data-val="1"] { background: #dc2626; color: #fff; border-color: #dc2626; }
+
+    /* Live Score Summary Strip */
+    .live-csm-bar {
+      background: #f0fdfa; border: 1px solid #99f6e4; border-radius: 12px; padding: 12px 16px;
+      display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; margin-top: 12px;
+    }
 
     /* Buttons */
-    .btn { border: none; cursor: pointer; border-radius: 9px; padding: 10px 16px; font-weight: 700; display: inline-flex; align-items: center; gap: 7px; font-size: 0.84rem; transition: opacity 0.2s; white-space: nowrap; text-decoration: none; }
+    .btn { border: none; cursor: pointer; border-radius: 10px; padding: 11px 18px; font-weight: 700; display: inline-flex; align-items: center; gap: 8px; font-size: 0.85rem; transition: opacity 0.2s; white-space: nowrap; text-decoration: none; }
     .btn:hover { opacity: 0.92; }
     .btn:disabled { opacity: 0.5; cursor: not-allowed; }
     .btn-sm { padding: 5px 10px; font-size: 0.75rem; }
     .btn-primary { background: var(--primary); color: #fff; }
+    .btn-sdo { background: var(--sdo-navy); color: #fff; }
     .btn-success { background: var(--success); color: #fff; }
     .btn-danger { background: var(--danger); color: #fff; }
     .btn-outline { background: #fff; color: var(--text); border: 1px solid var(--border); }
@@ -104,7 +161,7 @@
     th, td { padding: 10px 11px; border-bottom: 1px solid var(--border); text-align: left; font-size: 0.84rem; white-space: nowrap; }
     th { background: #f8fafc; color: var(--muted); font-size: 0.71rem; text-transform: uppercase; letter-spacing: 0.4px; }
     td.wrap-col { white-space: normal; min-width: 180px; }
-    .badge { display: inline-block; padding: 3px 9px; border-radius: 999px; font-size: 0.72rem; font-weight: 700; background: #e0f2fe; color: #0369a1; }
+    .badge { display: inline-block; padding: 3px 9px; border-radius: 999px; font-size: 0.72rem; font-weight: 700; background: #e0f2fe; color: #0369a1; margin: 1px; }
     .badge.good { background: #dcfce7; color: #166534; }
 
     /* ================= SDO / DEPED CERTIFICATE OF APPEARANCE PRINT SHEET ================= */
@@ -119,148 +176,56 @@
       margin: 0 auto 20px;
     }
 
-    .ca-top-bar {
-      display: flex;
-      justify-content: space-between;
-      align-items: flex-start;
-      gap: 16px;
-      margin-bottom: 8px;
-    }
-    .ca-no-box {
-      font-size: 12px;
-      color: #475569;
-      font-family: monospace;
-      padding-top: 8px;
-    }
-    .ca-qr-box {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 2px;
-    }
+    .ca-top-bar { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; margin-bottom: 8px; }
+    .ca-no-box { font-size: 12px; color: #475569; font-family: monospace; padding-top: 8px; }
+    .ca-qr-box { display: flex; flex-direction: column; align-items: center; gap: 2px; }
     .ca-qr-box small { font-size: 9px; color: #475569; }
 
-    .ca-header-center {
-      text-align: center;
-      line-height: 1.25;
-      margin-top: -28px;
-      margin-bottom: 18px;
-    }
+    .ca-header-center { text-align: center; line-height: 1.25; margin-top: -28px; margin-bottom: 18px; }
     .ca-logo { height: 56px; object-fit: contain; margin-bottom: 4px; }
     .ca-rop { font-family: "Times New Roman", Georgia, serif; font-style: italic; font-size: 12px; }
     .ca-deped { font-family: "Old English Text MT", "Times New Roman", serif; font-size: 20px; font-weight: bold; }
     .ca-region { font-size: 11px; font-weight: 700; letter-spacing: 0.4px; }
     .ca-division { font-size: 12px; font-weight: 700; }
-    .ca-title {
-      font-family: "Times New Roman", Georgia, serif;
-      font-style: italic;
-      font-weight: bold;
-      font-size: 24px;
-      margin-top: 10px;
-    }
+    .ca-school { font-size: 12px; font-weight: 800; margin-top: 2px; }
+    .ca-title { font-family: "Times New Roman", Georgia, serif; font-style: italic; font-weight: bold; font-size: 24px; margin-top: 8px; }
 
-    .ca-intro {
-      font-size: 13px;
-      color: #111827;
-      margin-bottom: 12px;
-    }
+    .ca-intro { font-size: 13px; color: #111827; margin-bottom: 12px; }
 
-    .ca-details-grid {
-      display: grid;
-      grid-template-columns: 130px 1fr;
-      border: 1.5px solid #111827;
-    }
-    .ca-label-cell {
-      padding: 10px 12px;
-      font-size: 13px;
-      color: #111827;
-      border-bottom: 1px solid #111827;
-      background: #fafafa;
-      font-weight: 500;
-    }
-    .ca-val-cell {
-      padding: 10px 14px;
-      font-size: 13px;
-      font-weight: 700;
-      text-transform: uppercase;
-      color: #000;
-      border-bottom: 1px solid #111827;
-      border-left: 1px solid #111827;
-    }
-    .ca-purpose-cell {
-      min-height: 76px;
-      text-transform: uppercase;
-      white-space: pre-line;
-    }
+    .ca-details-grid { display: grid; grid-template-columns: 130px 1fr; border: 1.5px solid #111827; }
+    .ca-label-cell { padding: 10px 12px; font-size: 13px; color: #111827; border-bottom: 1px solid #111827; background: #fafafa; font-weight: 500; }
+    .ca-val-cell { padding: 10px 14px; font-size: 13px; font-weight: 700; text-transform: uppercase; color: #000; border-bottom: 1px solid #111827; border-left: 1px solid #111827; }
+    .ca-purpose-cell { min-height: 76px; text-transform: uppercase; white-space: pre-line; }
     .ca-details-grid > div:nth-last-child(-n+2) { border-bottom: none; }
 
-    .ca-offices-line {
-      margin-top: 10px;
-      font-size: 11.5px;
-      color: #334155;
-    }
+    .ca-offices-line { margin-top: 10px; font-size: 11.5px; color: #334155; }
 
-    .ca-footer-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      align-items: end;
-      margin-top: 38px;
-      gap: 20px;
-    }
-    .ca-signatory {
-      text-align: center;
-    }
-    .ca-sig-name {
-      font-weight: 800;
-      font-size: 13.5px;
-      text-transform: uppercase;
-      color: #000;
-    }
-    .ca-sig-title {
-      font-size: 12px;
-      color: #111827;
-    }
-    .ca-verify-box {
-      text-align: right;
-      font-size: 12px;
-      color: #111827;
-    }
-    .ca-verify-code {
-      font-weight: 800;
-      font-size: 15px;
-      letter-spacing: 1px;
-      margin-top: 2px;
-    }
-    .ca-printed-meta {
-      margin-top: 24px;
-      font-size: 11px;
-      color: #475569;
-    }
+    .ca-footer-grid { display: grid; grid-template-columns: 1fr 1fr; align-items: end; margin-top: 38px; gap: 20px; }
+    .ca-signatory { text-align: center; }
+    .ca-sig-name { font-weight: 800; font-size: 13.5px; text-transform: uppercase; color: #000; }
+    .ca-sig-title { font-size: 12px; color: #111827; }
+    .ca-verify-box { text-align: right; font-size: 12px; color: #111827; }
+    .ca-verify-code { font-weight: 800; font-size: 15px; letter-spacing: 1px; margin-top: 2px; }
+    .ca-printed-meta { margin-top: 24px; font-size: 11px; color: #475569; }
 
     @media print {
       @page { size: portrait; margin: 12mm; }
       body { display: block; background: #fff; }
       .sidebar, .main-content, .no-print { display: none !important; }
-      #ca-print-sheet {
-        display: block !important;
-        border: none !important;
-        border-radius: 0 !important;
-        padding: 0 !important;
-        margin: 0 !important;
-        max-width: 100% !important;
-      }
+      #ca-print-sheet { display: block !important; border: none !important; border-radius: 0 !important; padding: 0 !important; margin: 0 !important; max-width: 100% !important; }
       .ca-label-cell { background: #fff !important; }
     }
 
     @media (max-width: 1080px) {
       .kpi-grid { grid-template-columns: repeat(2, 1fr); }
+      .cc-row { grid-template-columns: 1fr; }
     }
     @media (max-width: 768px) {
       .mobile-menu-btn { display: inline-flex; }
       .sidebar { transform: translateX(-100%); }
       .sidebar.open { transform: translateX(0); }
       .main-content { margin-left: 0; padding: 16px; }
-      .kpi-grid, .form-grid { grid-template-columns: 1fr; }
+      .kpi-grid, .form-grid, .stepper { grid-template-columns: 1fr; }
       .form-group.full { grid-column: span 1; }
       .ca-details-grid { grid-template-columns: 105px 1fr; }
       .ca-footer-grid { grid-template-columns: 1fr; text-align: center; }
@@ -282,7 +247,7 @@
         <i class="fas fa-home icon"></i> <span>Overview</span>
       </a>
       <a href="certificate-of-appearance.html" class="menu-item active">
-        <i class="fas fa-award icon"></i> <span>Cert. of Appearance &amp; Feedback</span>
+        <i class="fas fa-award icon"></i> <span>Cert. of Appearance &amp; CSM</span>
       </a>
       <a href="inventory.html" class="menu-item">
         <i class="fas fa-boxes icon"></i> <span>Semi-Expendable Inventory</span>
@@ -304,7 +269,7 @@
           <i class="fas fa-bars"></i>
         </button>
         <div>
-          <h1>📄 Certificate of Appearance &amp; Visitor Feedback</h1>
+          <h1>📄 Certificate of Appearance &amp; Client Feedback</h1>
           <span class="sync-badge" id="syncBadge">Connecting to Firestore...</span>
         </div>
       </div>
@@ -321,23 +286,34 @@
         <div class="kpi-val" id="kpiToday">0</div>
       </div>
       <div class="kpi-card">
-        <div class="kpi-label">Feedback Submitted</div>
-        <div class="kpi-val" id="kpiFeedback">0</div>
+        <div class="kpi-label">Overall CSM Rating</div>
+        <div class="kpi-val" id="kpiRating" style="color:var(--primary);">—</div>
       </div>
       <div class="kpi-card">
-        <div class="kpi-label">Avg. Satisfaction</div>
-        <div class="kpi-val" id="kpiRating">—</div>
+        <div class="kpi-label">Most Visited Office</div>
+        <div class="kpi-val" id="kpiTopOffice" style="font-size:1.1rem;line-height:1.25;">—</div>
       </div>
     </div>
 
-    <!-- ENTRY FORM: APPEARANCE + OFFICES VISITED + FEEDBACK -->
+    <!-- SDO-STYLE CLIENT SATISFACTION & CA GENERATOR -->
     <div class="card">
-      <div class="card-header">
-        <h2><i class="fas fa-file-signature" style="color:var(--primary);"></i> Request Certificate of Appearance &amp; Post-Visit Feedback</h2>
+      <div class="sdo-survey-banner">
+        <div>
+          <h2><i class="fas fa-landmark"></i> SCPHS Visitor Check-Out &amp; Client Satisfaction Measurement (CSM)</h2>
+          <p>Aligned with DepEd &amp; SDO Nueva Vizcaya ARTA Client Feedback Standards — Complete steps 1 &amp; 2 to generate your Certificate of Appearance.</p>
+        </div>
+        <span class="sdo-pill">ARTA-CSM &amp; CA Portal</span>
       </div>
-      <p class="card-sub">For DepEd leaders, teachers, LGU officials, parents, and guests. Select all school offices/units visited and share feedback before generating or printing your Certificate of Appearance.</p>
+
+      <div class="stepper">
+        <div class="step-item active" id="step1Pill"><span class="step-num">1</span> Visitor Details &amp; Offices Visited</div>
+        <div class="step-item" id="step2Pill"><span class="step-num">2</span> Citizen's Charter &amp; SQD Feedback</div>
+        <div class="step-item" id="step3Pill"><span class="step-num">3</span> Print Certificate of Appearance</div>
+      </div>
 
       <form id="caForm" onsubmit="saveAndPreviewCertificate(event)">
+        <!-- PART 1: VISITOR DETAILS -->
+        <div class="section-divider"><i class="fas fa-id-card"></i> Part I. Visitor &amp; Appearance Details</div>
         <div class="form-grid">
           <div class="form-group">
             <label>Visitor / Official Full Name *</label>
@@ -345,11 +321,26 @@
           </div>
           <div class="form-group">
             <label>Agency / Office / School *</label>
-            <input id="caAgency" required placeholder="e.g., SDO Nueva Vizcaya / LGU Pingkian / Sta. Cruz Pingkian High School">
+            <input id="caAgency" required placeholder="e.g., SDO Nueva Vizcaya / LGU Kayapa / SCPHS">
+          </div>
+          <div class="form-group">
+            <label>Client Type *</label>
+            <select id="caClientType">
+              <option value="DepEd Personnel / Teacher">DepEd Personnel / Teacher</option>
+              <option value="SDO / Regional Official">SDO / Regional Official</option>
+              <option value="LGU / External Partner">LGU / External Partner</option>
+              <option value="Parent / Guardian">Parent / Guardian</option>
+              <option value="Student">Student</option>
+              <option value="Citizen / General Public">Citizen / General Public</option>
+            </select>
           </div>
           <div class="form-group">
             <label>Date of Visit *</label>
             <input type="date" id="caDate" required>
+          </div>
+          <div class="form-group">
+            <label>Purpose of Appearance / Visit *</label>
+            <input id="caPurpose" required placeholder="e.g., TO GET SERVICE RECORD / MONITORING & TA">
           </div>
           <div class="form-group">
             <label>Signatory / Approving Officer</label>
@@ -359,14 +350,10 @@
               <option value="DARNA A. BUGNAY|Administrative Aide / Admin Staff">DARNA A. BUGNAY — Administrative Aide / Admin Staff</option>
             </select>
           </div>
-          <div class="form-group full">
-            <label>Purpose of Appearance / Visit *</label>
-            <textarea id="caPurpose" rows="2" required placeholder="e.g., TO GET SERVICE RECORD / MONITORING & TECHNICAL ASSISTANCE / LGU COORDINATION"></textarea>
-          </div>
 
           <!-- Clickable School Offices / Units Visited -->
           <div class="form-group full">
-            <label>Click the School Offices / Units You Visited *</label>
+            <label>Click All School Offices / Units You Visited *</label>
             <div class="office-chips" id="officeChips">
               <button type="button" class="office-chip" data-office="Administration Office"><i class="fas fa-building"></i> Administration Office</button>
               <button type="button" class="office-chip" data-office="Guidance Center"><i class="fas fa-heart"></i> Guidance Center</button>
@@ -380,45 +367,70 @@
               <button type="button" class="office-chip" data-office="SSLG"><i class="fas fa-users"></i> SSLG</button>
             </div>
           </div>
+        </div>
 
-          <!-- Post-Visit Client / Visitor Feedback (SDO Style) -->
-          <div class="form-group full" style="background:#f8fafc;border:1px solid var(--border);border-radius:14px;padding:16px;">
-            <label style="color:var(--primary);font-size:0.78rem;margin-bottom:10px;">
-              <i class="fas fa-comment-dots"></i> Post-Visit Feedback (Client Satisfactory Survey)
-            </label>
-            <div class="form-grid" style="margin-bottom:12px;">
-              <div class="form-group">
-                <label>Overall Service Rating *</label>
-                <div class="rating-row" id="ratingRow">
-                  <button type="button" class="rating-btn active" data-score="5" data-label="5 - Outstanding">⭐⭐⭐⭐⭐ Outstanding</button>
-                  <button type="button" class="rating-btn" data-score="4" data-label="4 - Very Satisfactory">⭐⭐⭐⭐ Very Satisfactory</button>
-                  <button type="button" class="rating-btn" data-score="3" data-label="3 - Satisfactory">⭐⭐⭐ Satisfactory</button>
-                  <button type="button" class="rating-btn" data-score="2" data-label="2 - Fair">⭐⭐ Fair</button>
-                </div>
-              </div>
-              <div class="form-group">
-                <label>Staff Courtesy &amp; Timeliness</label>
-                <select id="fbTimeliness">
-                  <option value="Prompt & Courteous">Prompt &amp; Courteous</option>
-                  <option value="Helpful & Accommodating">Helpful &amp; Accommodating</option>
-                  <option value="Acceptable">Acceptable</option>
-                  <option value="Needs Improvement">Needs Improvement</option>
-                </select>
-              </div>
-            </div>
-            <div class="form-group">
-              <label>Comments / Suggestions for Improvement</label>
-              <input id="fbComments" placeholder="Optional feedback or notes for the school/offices visited...">
-            </div>
+        <!-- PART 2: ARTA CITIZEN'S CHARTER -->
+        <div class="section-divider"><i class="fas fa-scroll"></i> Part II. Citizen's Charter (CC) Awareness</div>
+        <div class="cc-box">
+          <div class="cc-row">
+            <div class="cc-q">CC1. Which best describes your awareness of the School Citizen's Charter?</div>
+            <select id="cc1">
+              <option value="1 - Knows CC and saw it posted">1. I know what a CC is and I saw this office's CC</option>
+              <option value="2 - Knows CC but did not see it">2. I know what a CC is but I did NOT see this office's CC</option>
+              <option value="3 - Learned CC only when posted here">3. I learned of the CC only when I saw this office's CC</option>
+              <option value="4 - Do not know what a CC is">4. I do not know what a CC is</option>
+            </select>
+          </div>
+          <div class="cc-row">
+            <div class="cc-q">CC2. If aware of CC, would you say the CC of this office was easy to see?</div>
+            <select id="cc2">
+              <option value="1 - Easy to see">1. Easy to see</option>
+              <option value="2 - Somewhat easy to see">2. Somewhat easy to see</option>
+              <option value="3 - Difficult to see">3. Difficult to see</option>
+              <option value="4 - Not visible at all">4. Not visible at all</option>
+              <option value="5 - N/A">5. Not Applicable</option>
+            </select>
+          </div>
+          <div class="cc-row">
+            <div class="cc-q">CC3. How much did the Citizen's Charter help you in your transaction?</div>
+            <select id="cc3">
+              <option value="1 - Helped very much">1. Helped very much</option>
+              <option value="2 - Somewhat helped">2. Somewhat helped</option>
+              <option value="3 - Did not help">3. Did not help</option>
+              <option value="4 - N/A">4. Not Applicable</option>
+            </select>
           </div>
         </div>
 
-        <div style="margin-top:16px; display:flex; gap:10px; flex-wrap:wrap;">
+        <!-- PART 3: SERVICE QUALITY DIMENSIONS (SQD0 - SQD4) -->
+        <div class="section-divider"><i class="fas fa-star"></i> Part III. Service Quality Dimensions (SQD)</div>
+        <div class="sqd-list" id="sqdList"></div>
+
+        <div class="live-csm-bar">
+          <div>
+            <strong style="color:var(--primary);">Computed CSM Score: <span id="liveScoreText">5.00 / 5.00 (Outstanding)</span></strong>
+            <div style="font-size:0.78rem;color:var(--muted);">Automatically recorded with your Certificate of Appearance</div>
+          </div>
+          <span class="badge good" id="liveAdjectiveBadge">OUTSTANDING</span>
+        </div>
+
+        <div class="form-grid" style="margin-top:14px;">
+          <div class="form-group">
+            <label>Personnel / Staff Commended (Optional)</label>
+            <input id="fbCommended" placeholder="e.g., Admin Staff / ICT Coordinator / Adviser">
+          </div>
+          <div class="form-group">
+            <label>Suggestions / Comments for Improvement (Optional)</label>
+            <input id="fbComments" placeholder="Share suggestions to help us serve better...">
+          </div>
+        </div>
+
+        <div style="margin-top:18px; display:flex; gap:10px; flex-wrap:wrap;">
           <button type="submit" class="btn btn-primary" id="saveCaBtn">
-            <i class="fas fa-certificate"></i> Save &amp; Generate Certificate
+            <i class="fas fa-certificate"></i> Submit Feedback &amp; Generate Certificate
           </button>
-          <button type="button" class="btn btn-success" id="printCurrentBtn" onclick="window.print()" disabled>
-            <i class="fas fa-print"></i> Print Certificate
+          <button type="button" class="btn btn-sdo" id="printCurrentBtn" onclick="window.print()" disabled>
+            <i class="fas fa-print"></i> Print Certificate of Appearance
           </button>
         </div>
       </form>
@@ -427,7 +439,7 @@
     <!-- LIVE CERTIFICATE PREVIEW CARD ON SCREEN -->
     <div class="card" id="previewWrapper" style="display:none;">
       <div class="card-header">
-        <h2><i class="fas fa-eye" style="color:var(--primary);"></i> Generated Certificate Preview</h2>
+        <h2><i class="fas fa-eye" style="color:var(--primary);"></i> Generated SDO-Format Certificate of Appearance</h2>
         <button type="button" class="btn btn-success btn-sm" onclick="window.print()">
           <i class="fas fa-print"></i> Print This Certificate
         </button>
@@ -438,7 +450,7 @@
     <!-- ISSUED CERTIFICATES & FEEDBACK LOG -->
     <div class="card">
       <div class="card-header">
-        <h2>Issued Certificates &amp; Feedback Log (<span id="logCount">0</span>)</h2>
+        <h2>Issued Certificates &amp; CSM Feedback Log (<span id="logCount">0</span>)</h2>
         <input id="searchBox" oninput="renderLogs()" placeholder="Search CA No., name, agency, office..."
           style="border:1px solid var(--border);border-radius:9px;padding:7px 11px;font-size:0.82rem;width:250px;max-width:100%;">
       </div>
@@ -448,11 +460,11 @@
             <tr>
               <th>CA No.</th>
               <th>Date</th>
-              <th>Visitor Name</th>
+              <th>Visitor &amp; Client Type</th>
               <th>Agency / Office</th>
               <th>Offices Visited</th>
               <th>Purpose</th>
-              <th>Feedback</th>
+              <th>CSM Score &amp; Feedback</th>
               <th>Actions</th>
             </tr>
           </thead>
@@ -480,6 +492,7 @@
       <div class="ca-deped">Department of Education</div>
       <div class="ca-region">REGION II – CAGAYAN VALLEY</div>
       <div class="ca-division">SCHOOLS DIVISION OF NUEVA VIZCAYA</div>
+      <div class="ca-school">STA. CRUZ PINGKIAN HIGH SCHOOL</div>
       <div class="ca-title">Certificate of Appearance</div>
     </div>
 
@@ -501,7 +514,7 @@
 
     <div class="ca-offices-line">
       <strong>Offices / Units Visited:</strong> <span id="p-offices">—</span> &nbsp;|&nbsp;
-      <strong>Feedback Rating:</strong> <span id="p-rating">—</span>
+      <strong>CSM Feedback:</strong> <span id="p-rating">5.00 / 5.00 (Outstanding)</span>
     </div>
 
     <div class="ca-footer-grid">
@@ -532,10 +545,24 @@
     } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
     const CA_COL = "certificate_appearances";
+    const SQD_QUESTIONS = [
+      { code: "SQD0", text: "I am satisfied with the overall service that I availed." },
+      { code: "SQD1", text: "I spent a reasonable amount of time for my transaction." },
+      { code: "SQD2", text: "The office followed the transaction's requirements and steps clearly." },
+      { code: "SQD3", text: "The staff/personnel were courteous, respectful, and helpful." },
+      { code: "SQD4", text: "The school facilities and office environment were clean and orderly." }
+    ];
+    const SCALE_OPTIONS = [
+      { val: 5, emo: "😄", label: "5" },
+      { val: 4, emo: "🙂", label: "4" },
+      { val: 3, emo: "😐", label: "3" },
+      { val: 2, emo: "🙁", label: "2" },
+      { val: 1, emo: "😞", label: "1" }
+    ];
+
     let records = [];
     let selectedOffices = new Set();
-    let selectedScore = 5;
-    let selectedRatingLabel = "5 - Outstanding";
+    let sqdScores = { SQD0: 5, SQD1: 5, SQD2: 5, SQD3: 5, SQD4: 5 };
 
     const todayISO = new Date().toISOString().split("T")[0];
     document.getElementById("caDate").value = todayISO;
@@ -556,6 +583,50 @@
       b.className = "sync-badge " + (ok ? "ok" : "");
     }
 
+    // Build SQD Matrix
+    function renderSqdMatrix() {
+      const host = document.getElementById("sqdList");
+      host.innerHTML = SQD_QUESTIONS.map(q => `
+        <div class="sqd-item">
+          <div class="sqd-text">
+            <div class="sqd-code">${q.code}</div>
+            <div class="sqd-label">${q.text}</div>
+          </div>
+          <div class="sqd-scale">
+            ${SCALE_OPTIONS.map(opt => `
+              <button type="button"
+                class="scale-btn ${sqdScores[q.code] === opt.val ? "active" : ""}"
+                data-sqd="${q.code}"
+                data-val="${opt.val}"
+                onclick="setSqdScore('${q.code}', ${opt.val})">
+                <span class="emo">${opt.emo}</span>
+                <span>${opt.label}</span>
+              </button>
+            `).join("")}
+          </div>
+        </div>
+      `).join("");
+    }
+
+    function getAdjective(avg) {
+      if (avg >= 4.5) return "Outstanding";
+      if (avg >= 3.5) return "Very Satisfactory";
+      if (avg >= 2.5) return "Satisfactory";
+      if (avg >= 1.5) return "Fair";
+      return "Needs Improvement";
+    }
+
+    window.setSqdScore = function(code, val) {
+      sqdScores[code] = val;
+      renderSqdMatrix();
+      const vals = Object.values(sqdScores);
+      const avg = vals.reduce((a, b) => a + b, 0) / vals.length;
+      const adj = getAdjective(avg);
+      document.getElementById("liveScoreText").textContent = `${avg.toFixed(2)} / 5.00 (${adj})`;
+      document.getElementById("liveAdjectiveBadge").textContent = adj.toUpperCase();
+      document.getElementById("step2Pill").classList.add("done");
+    };
+
     // Office chip toggle
     document.querySelectorAll(".office-chip").forEach(chip => {
       chip.addEventListener("click", () => {
@@ -567,16 +638,8 @@
           selectedOffices.add(office);
           chip.classList.add("selected");
         }
-      });
-    });
-
-    // Rating button toggle
-    document.querySelectorAll(".rating-btn").forEach(btn => {
-      btn.addEventListener("click", () => {
-        document.querySelectorAll(".rating-btn").forEach(b => b.classList.remove("active"));
-        btn.classList.add("active");
-        selectedScore = Number(btn.dataset.score);
-        selectedRatingLabel = btn.dataset.label;
+        document.getElementById("step1Pill").classList.toggle("done", selectedOffices.size > 0);
+        document.getElementById("step2Pill").classList.toggle("active", selectedOffices.size > 0);
       });
     });
 
@@ -605,7 +668,7 @@
       document.getElementById("p-date").textContent = formatLongDate(rec.visitDate);
       document.getElementById("p-purpose").textContent = rec.purpose || "";
       document.getElementById("p-offices").textContent = (rec.officesVisited || []).join(", ") || "Administration Office";
-      document.getElementById("p-rating").textContent = rec.ratingLabel || "5 - Outstanding";
+      document.getElementById("p-rating").textContent = rec.ratingLabel || "5.00 / 5.00 (Outstanding)";
       document.getElementById("p-sig-name").textContent = rec.signatoryName || "DOLORES C. DODON, PhD";
       document.getElementById("p-sig-title").textContent = rec.signatoryTitle || "Principal III / School Head";
       document.getElementById("p-verify").textContent = `*${sixDigit}*`;
@@ -621,7 +684,6 @@
         });
       }
 
-      // Mirror preview into on-screen preview box
       const sheet = document.getElementById("ca-print-sheet");
       const screenHost = document.getElementById("screen-preview-host");
       sheet.style.display = "block";
@@ -629,6 +691,7 @@
       screenHost.appendChild(sheet);
       document.getElementById("previewWrapper").style.display = "block";
       document.getElementById("printCurrentBtn").disabled = false;
+      document.getElementById("step3Pill").classList.add("active", "done");
     }
 
     window.saveAndPreviewCertificate = async function(evt) {
@@ -648,17 +711,26 @@
       const caNo = `${yy}-${mm}-${rand6}`;
       const [sigName, sigTitle] = document.getElementById("caSignatory").value.split("|");
 
+      const vals = Object.values(sqdScores);
+      const avg = Number((vals.reduce((a, b) => a + b, 0) / vals.length).toFixed(2));
+      const adj = getAdjective(avg);
+
       const payload = {
         caNo,
         verifyCode: rand6,
         visitorName: document.getElementById("caName").value.trim().toUpperCase(),
         agencyOffice: document.getElementById("caAgency").value.trim().toUpperCase(),
+        clientType: document.getElementById("caClientType").value,
         visitDate: document.getElementById("caDate").value,
         purpose: document.getElementById("caPurpose").value.trim().toUpperCase(),
         officesVisited: Array.from(selectedOffices),
-        ratingScore: selectedScore,
-        ratingLabel: selectedRatingLabel,
-        timeliness: document.getElementById("fbTimeliness").value,
+        cc1: document.getElementById("cc1").value,
+        cc2: document.getElementById("cc2").value,
+        cc3: document.getElementById("cc3").value,
+        sqdScores: { ...sqdScores },
+        ratingScore: avg,
+        ratingLabel: `${avg.toFixed(2)} / 5.00 (${adj})`,
+        commendedStaff: document.getElementById("fbCommended").value.trim(),
         comments: document.getElementById("fbComments").value.trim(),
         signatoryName: sigName,
         signatoryTitle: sigTitle,
@@ -673,7 +745,7 @@
         updateKPIs();
         renderLogs();
         populateCertificateSheet(saved);
-        alert(`Certificate ${caNo} generated and saved! You can now click Print Certificate.`);
+        document.getElementById("previewWrapper").scrollIntoView({ behavior: "smooth" });
       } catch (err) {
         console.error("CA save error:", err);
         alert("Unable to save Certificate of Appearance: " + err.message);
@@ -718,22 +790,28 @@
     function updateKPIs() {
       document.getElementById("kpiTotal").textContent = records.length;
       document.getElementById("kpiToday").textContent = records.filter(r => r.visitDate === todayISO).length;
-      document.getElementById("kpiFeedback").textContent = records.length;
 
       const rated = records.filter(r => typeof r.ratingScore === "number");
       if (rated.length) {
-        const avg = (rated.reduce((s, r) => s + r.ratingScore, 0) / rated.length).toFixed(1);
-        document.getElementById("kpiRating").textContent = `${avg} / 5`;
+        const avg = (rated.reduce((s, r) => s + r.ratingScore, 0) / rated.length).toFixed(2);
+        document.getElementById("kpiRating").textContent = `${avg} / 5.00`;
       } else {
         document.getElementById("kpiRating").textContent = "—";
       }
+
+      const officeCounts = {};
+      records.forEach(r => (r.officesVisited || []).forEach(o => {
+        officeCounts[o] = (officeCounts[o] || 0) + 1;
+      }));
+      const top = Object.entries(officeCounts).sort((a, b) => b[1] - a[1])[0];
+      document.getElementById("kpiTopOffice").textContent = top ? `${top[0]} (${top[1]})` : "—";
     }
 
     window.renderLogs = function() {
       const q = (document.getElementById("searchBox").value || "").toLowerCase().trim();
       const shown = records.filter(r => {
         if (!q) return true;
-        return [r.caNo, r.visitorName, r.agencyOffice, r.purpose, ...(r.officesVisited || [])]
+        return [r.caNo, r.visitorName, r.agencyOffice, r.clientType, r.purpose, ...(r.officesVisited || [])]
           .some(v => String(v || "").toLowerCase().includes(q));
       });
 
@@ -748,13 +826,17 @@
         <tr>
           <td style="font-family:monospace;font-weight:700;">${esc(r.caNo)}</td>
           <td>${esc(r.visitDate || "—")}</td>
-          <td><strong>${esc(r.visitorName)}</strong></td>
+          <td>
+            <strong>${esc(r.visitorName)}</strong>
+            <div style="font-size:0.74rem;color:var(--muted);">${esc(r.clientType || "")}</div>
+          </td>
           <td class="wrap-col">${esc(r.agencyOffice)}</td>
           <td class="wrap-col">${(r.officesVisited || []).map(o => `<span class="badge">${esc(o)}</span>`).join(" ")}</td>
           <td class="wrap-col">${esc(r.purpose)}</td>
-          <td>
-            <span class="badge good">${esc(r.ratingLabel || "5 - Outstanding")}</span>
-            ${r.comments ? `<div style="font-size:0.74rem;color:var(--muted);margin-top:2px;">"${esc(r.comments)}"</div>` : ""}
+          <td class="wrap-col">
+            <span class="badge good">${esc(r.ratingLabel || "5.00 / 5.00 (Outstanding)")}</span>
+            ${r.commendedStaff ? `<div style="font-size:0.73rem;color:#0f766e;margin-top:2px;">👍 ${esc(r.commendedStaff)}</div>` : ""}
+            ${r.comments ? `<div style="font-size:0.73rem;color:var(--muted);margin-top:2px;">"${esc(r.comments)}"</div>` : ""}
           </td>
           <td>
             <div style="display:flex;gap:6px;">
@@ -766,6 +848,7 @@
       `).join("");
     };
 
+    renderSqdMatrix();
     loadRecords();
   </script>
 
