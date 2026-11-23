@@ -646,14 +646,12 @@
       document.getElementById("caSigTitle").value = title || "";
     };
 
-    // Switch preset dropdown to "Custom" if user manually edits signatory fields
     ["caSigName", "caSigTitle"].forEach(id => {
       document.getElementById(id).addEventListener("input", () => {
         document.getElementById("caSignatoryPreset").value = "CUSTOM";
       });
     });
 
-    // Build SQD Matrix
     function renderSqdMatrix() {
       const host = document.getElementById("sqdList");
       host.innerHTML = SQD_QUESTIONS.map(q => `
@@ -697,7 +695,6 @@
       document.getElementById("step2Pill").classList.add("done");
     };
 
-    // Office chip toggle
     document.querySelectorAll(".office-chip").forEach(chip => {
       chip.addEventListener("click", () => {
         const office = chip.dataset.office;
@@ -754,7 +751,6 @@
         });
       }
 
-      // Render a non-conflicting preview copy inside the card while keeping #ca-print-sheet directly under <body>
       const sheet = document.getElementById("ca-print-sheet");
       const screenHost = document.getElementById("screen-preview-host");
       const previewCopy = sheet.cloneNode(true);
@@ -762,7 +758,6 @@
       previewCopy.style.display = "block";
       previewCopy.style.margin = "0 auto";
 
-      // Copy rendered QR canvas/image onto the clone
       const srcCanvas = sheet.querySelector("canvas");
       const dstQr = previewCopy.querySelector("#p-qr");
       if (dstQr) {
@@ -788,26 +783,6 @@
     window.addEventListener("beforeprint", () => {
       document.getElementById("p-printed").textContent = formatPrintedDateTime();
     });
-
-      const qrHost = document.getElementById("p-qr");
-      qrHost.innerHTML = "";
-      if (typeof QRCode !== "undefined") {
-        new QRCode(qrHost, {
-          text: `SCPHS-CA:${rec.caNo}|NAME:${rec.visitorName}|VERIFY:${sixDigit}`,
-          width: 68,
-          height: 68
-        });
-      }
-
-      const sheet = document.getElementById("ca-print-sheet");
-      const screenHost = document.getElementById("screen-preview-host");
-      sheet.style.display = "block";
-      screenHost.innerHTML = "";
-      screenHost.appendChild(sheet);
-      document.getElementById("previewWrapper").style.display = "block";
-      document.getElementById("printCurrentBtn").disabled = false;
-      document.getElementById("step3Pill").classList.add("active", "done");
-    }
 
     window.saveAndPreviewCertificate = async function(evt) {
       evt.preventDefault();
