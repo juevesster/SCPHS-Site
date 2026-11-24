@@ -725,6 +725,139 @@
       `).join("");
     }
 
+    let pendingExcelRows = [];
+
+function normalizeRemarksClient(val) {
+  if (!val) return "Old";
+  const s = String(val).trim().toLowerCase().replace(/\s*,\s*/g, ", ");
+  if (s.includes("damage") && s.includes("old")) return "Old, Damaged";
+  if (s.includes("damage")) return "Damaged";
+  if (s.includes("new")) return "New";
+  if (s.includes("lost")) return "Lost";
+  if (s.includes("weed")) return "Weeded Out";
+  if (s.includes("old")) return "Old";
+  return String(val).trim();
+}
+
+function normalizeSourceClient(val) {
+  if (!val) return "Donated";
+  const s = String(val).trim().toLowerCase();
+  if (s.includes("donat")) return "Donated";
+  if (s.includes("bough") || s.includes("purchas")) return "Bought";
+  return String(val).trim();
+}
+
+window.handleExcelFileSelect = function(evt) {
+  const file = evt.target.files?.[0];
+  if (!file) return;
+  if (typeof XLSX === "undefined") {
+    alert("Excel parser library (SheetJS) failed to load. Check your internet connection.");
+    return;
+  }
+
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    try {
+      const data = new Uint8Array(e.target.result);
+      const wb = XLSX.read(data, { type: "array" });
+      const sheetName = wb.SheetNames.includes("Sheet1") ? "Sheet1" : wb.SheetNames[0];
+      const ws = wb.Sheets[sheetName];
+      const rawRows = XLSX.utils.sheet_to_json(ws, { header: 1, defval: "" });
+
+      // Skip row 0 ("ACCESSION FILES") and row 1 (column headers)
+      const dataRows = rawRows.slice(2).filter(r => r.some(cell => String(cell ?? "").trim() !== ""));
+      const startIndex = books.length;
+
+      pendingExcelRows = dataRows.map((r, idx) => {
+        const author = String(r[0] ?? "").trim() || "Unknown Author";
+        const title = String(r[1] ?? "").trim() || `Untitled Entry #${idx + 1}`;
+        const publisher = String(r[2] ?? "").trim();
+        const edition = String(r[3] ?? "").trim();
+        const volume = String(r[4] ?? "").trim();
+        const pages = String(r[5] ?? "").trim();
+        const copyrightDate = String(r[6] ?? "").trim();
+        const source = normalizeSourceClient(r[7]);
+        const location = String(r[8] ?? "").trim() || "LRC Shelf";
+        const remarks = normalizeRemarksClient(r[9]);
+        const unavailable = ["lost", "weeded out"].includes(remarks.toLowerCase());
+
+        return {
+          callNo: `ACC-${String(startIndex + idx + 1).padStart(4, "0")}`,
+          title,
+          author,
+          publisher,
+          edition,
+          volume,
+          pages,
+          copyrightDate,
+          source,
+          location,
+          remarks,
+          totalCopies: 1,
+          availableCopies: unavailable ? 0 : 1
+        };
+      });
+
+      document.getElementById("excelPreviewCount").textContent = pendingExcelRows.length;
+      document.getElementById("excelImportStatus").textContent = "";
+      document.getElementById("excel-preview-body").innerHTML = pendingExcelRows.slice(0, 50).map(item => `
+        <tr>
+          <td style="font-family:monospace;font-weight:700;">${esc(item.callNo)}</td>
+          <td class="wrap-col"><strong>${esc(item.title)}</strong><div style="font-size:0.74rem;color:var(--text-muted);">${esc(item.author)}</div></td>
+          <td>${esc(item.publisher || "—")}</td>
+          <td>${esc([item.volume && `Vol ${item.volume}`, item.pages && `${item.pages}p`, item.copyrightDate].filter(Boolean).join(" • ") || "—")}</td>
+          <td>${esc(item.source)} • ${esc(item.location)}</td>
+          <td><span class="badge rem">${esc(item.remarks)}</span></td>
+        </tr>
+      `).join("") + (pendingExcelRows.length > 50
+        ? `<tr><td colspan="6" style="text-align:center;color:var(--text-muted);font-size:0.78rem;">Showing first 50 of ${pendingExcelRows.length} rows — all ${pendingExcelRows.length} rows will be imported.</td></tr>`
+        : "");
+
+      document.getElementById("excelImportModal").classList.add("open");
+    } catch (err) {
+      alert("Could not parse Excel file: " + err.message);
+    } finally {
+      evt.target.value = "";
+    }
+  };
+  reader.readAsArrayBuffer(file);
+};
+
+window.closeExcelImportModal = function() {
+  document.getElementById("excelImportModal").classList.remove("open");
+};
+
+window.confirmExcelImport = async function() {
+  if (!pendingExcelRows.length) return;
+  const btn = document.getElementById("confirmExcelImportBtn");
+  const statusEl = document.getElementById("excelImportStatus");
+  btn.disabled = true;
+  let imported = 0;
+
+  try {
+    for (const item of pendingExcelRows) {
+      const payload = {
+        ...item,
+        createdAtMs: Date.now() + imported,
+        createdAt: serverTimestamp()
+      };
+      const ref = await addDoc(collection(db, BOOKS_COL), payload);
+      books.unshift({ id: ref.id, ...payload });
+      imported++;
+      statusEl.textContent = `Importing ${imported} of ${pendingExcelRows.length}...`;
+    }
+    updateKPIs();
+    populateAvailableBookDropdown();
+    renderCatalog();
+    alert(`Successfully imported ${imported} book(s) from Excel!`);
+    closeExcelImportModal();
+  } catch (err) {
+    statusEl.textContent = `Stopped at ${imported}/${pendingExcelRows.length}: ${err.message}`;
+  } finally {
+    btn.disabled = false;
+  }
+};
+
     async function loadLibraryProfile() {
       try {
         const snap = await getDoc(PROFILE_DOC);
@@ -1228,138 +1361,6 @@
       root.classList.toggle("open");
     }
 
-    let pendingExcelRows = [];
-
-function normalizeRemarksClient(val) {
-  if (!val) return "Old";
-  const s = String(val).trim().toLowerCase().replace(/\s*,\s*/g, ", ");
-  if (s.includes("damage") && s.includes("old")) return "Old, Damaged";
-  if (s.includes("damage")) return "Damaged";
-  if (s.includes("new")) return "New";
-  if (s.includes("lost")) return "Lost";
-  if (s.includes("weed")) return "Weeded Out";
-  if (s.includes("old")) return "Old";
-  return String(val).trim();
-}
-
-function normalizeSourceClient(val) {
-  if (!val) return "Donated";
-  const s = String(val).trim().toLowerCase();
-  if (s.includes("donat")) return "Donated";
-  if (s.includes("bough") || s.includes("purchas")) return "Bought";
-  return String(val).trim();
-}
-
-window.handleExcelFileSelect = function(evt) {
-  const file = evt.target.files?.[0];
-  if (!file) return;
-  if (typeof XLSX === "undefined") {
-    alert("Excel parser library (SheetJS) failed to load. Check your internet connection.");
-    return;
-  }
-
-  const reader = new FileReader();
-  reader.onload = function(e) {
-    try {
-      const data = new Uint8Array(e.target.result);
-      const wb = XLSX.read(data, { type: "array" });
-      const sheetName = wb.SheetNames.includes("Sheet1") ? "Sheet1" : wb.SheetNames[0];
-      const ws = wb.Sheets[sheetName];
-      const rawRows = XLSX.utils.sheet_to_json(ws, { header: 1, defval: "" });
-
-      // Skip row 0 ("ACCESSION FILES") and row 1 (column headers)
-      const dataRows = rawRows.slice(2).filter(r => r.some(cell => String(cell ?? "").trim() !== ""));
-      const startIndex = books.length;
-
-      pendingExcelRows = dataRows.map((r, idx) => {
-        const author = String(r[0] ?? "").trim() || "Unknown Author";
-        const title = String(r[1] ?? "").trim() || `Untitled Entry #${idx + 1}`;
-        const publisher = String(r[2] ?? "").trim();
-        const edition = String(r[3] ?? "").trim();
-        const volume = String(r[4] ?? "").trim();
-        const pages = String(r[5] ?? "").trim();
-        const copyrightDate = String(r[6] ?? "").trim();
-        const source = normalizeSourceClient(r[7]);
-        const location = String(r[8] ?? "").trim() || "LRC Shelf";
-        const remarks = normalizeRemarksClient(r[9]);
-        const unavailable = ["lost", "weeded out"].includes(remarks.toLowerCase());
-
-        return {
-          callNo: `ACC-${String(startIndex + idx + 1).padStart(4, "0")}`,
-          title,
-          author,
-          publisher,
-          edition,
-          volume,
-          pages,
-          copyrightDate,
-          source,
-          location,
-          remarks,
-          totalCopies: 1,
-          availableCopies: unavailable ? 0 : 1
-        };
-      });
-
-      document.getElementById("excelPreviewCount").textContent = pendingExcelRows.length;
-      document.getElementById("excelImportStatus").textContent = "";
-      document.getElementById("excel-preview-body").innerHTML = pendingExcelRows.slice(0, 50).map(item => `
-        <tr>
-          <td style="font-family:monospace;font-weight:700;">${esc(item.callNo)}</td>
-          <td class="wrap-col"><strong>${esc(item.title)}</strong><div style="font-size:0.74rem;color:var(--text-muted);">${esc(item.author)}</div></td>
-          <td>${esc(item.publisher || "—")}</td>
-          <td>${esc([item.volume && `Vol ${item.volume}`, item.pages && `${item.pages}p`, item.copyrightDate].filter(Boolean).join(" • ") || "—")}</td>
-          <td>${esc(item.source)} • ${esc(item.location)}</td>
-          <td><span class="badge rem">${esc(item.remarks)}</span></td>
-        </tr>
-      `).join("") + (pendingExcelRows.length > 50
-        ? `<tr><td colspan="6" style="text-align:center;color:var(--text-muted);font-size:0.78rem;">Showing first 50 of ${pendingExcelRows.length} rows — all ${pendingExcelRows.length} rows will be imported.</td></tr>`
-        : "");
-
-      document.getElementById("excelImportModal").classList.add("open");
-    } catch (err) {
-      alert("Could not parse Excel file: " + err.message);
-    } finally {
-      evt.target.value = "";
-    }
-  };
-  reader.readAsArrayBuffer(file);
-};
-
-window.closeExcelImportModal = function() {
-  document.getElementById("excelImportModal").classList.remove("open");
-};
-
-window.confirmExcelImport = async function() {
-  if (!pendingExcelRows.length) return;
-  const btn = document.getElementById("confirmExcelImportBtn");
-  const statusEl = document.getElementById("excelImportStatus");
-  btn.disabled = true;
-  let imported = 0;
-
-  try {
-    for (const item of pendingExcelRows) {
-      const payload = {
-        ...item,
-        createdAtMs: Date.now() + imported,
-        createdAt: serverTimestamp()
-      };
-      const ref = await addDoc(collection(db, BOOKS_COL), payload);
-      books.unshift({ id: ref.id, ...payload });
-      imported++;
-      statusEl.textContent = `Importing ${imported} of ${pendingExcelRows.length}...`;
-    }
-    updateKPIs();
-    populateAvailableBookDropdown();
-    renderCatalog();
-    alert(`Successfully imported ${imported} book(s) from Excel!`);
-    closeExcelImportModal();
-  } catch (err) {
-    statusEl.textContent = `Stopped at ${imported}/${pendingExcelRows.length}: ${err.message}`;
-  } finally {
-    btn.disabled = false;
-  }
-};
   </script>
   <!-- EXCEL ACCESSION IMPORT MODAL -->
 <div class="modal-backdrop" id="excelImportModal">
