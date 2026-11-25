@@ -334,12 +334,15 @@
       }
       .cprint-header {
         display: flex;
-        justify-content: space-between;
+        flex-direction: column;
         align-items: center;
+        position: relative;
+        gap: 4px;
         margin-bottom: 10px;
       }
-      .cprint-header img { height: 60px; object-fit: contain; }
-      .cprint-center { flex: 1; text-align: center; line-height: 1.25; padding: 0 12px; }
+      .cprint-header .logo-deped { height: 56px; margin: 0 auto; object-fit: contain; }
+      .cprint-header .logo-school { height: 56px; position: absolute; right: 0; top: 4px; object-fit: contain; }
+      .cprint-center { text-align: center; line-height: 1.25; }
       .cprint-title {
         text-align: center;
         font-size: 12pt;
@@ -353,9 +356,16 @@
         display: flex;
         justify-content: space-between;
         font-size: 9.5pt;
-        margin-bottom: 10px;
+        margin-bottom: 8px;
         flex-wrap: wrap;
         gap: 8px;
+      }
+      .cprint-summary-box {
+        border: 1px solid #000;
+        padding: 6px 10px;
+        font-size: 8.8pt;
+        margin-bottom: 10px;
+        background: #f8fafc !important;
       }
       .cprint-table {
         width: 100%;
@@ -461,6 +471,47 @@
         <div>
           <div class="kpi-val" id="kpiReferralCount">0</div>
           <div class="kpi-lbl">Emergencies &amp; Referrals</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- EDITABLE REPORT HEADER & SIGNATORIES -->
+    <section class="c-card" style="margin-bottom:18px;">
+      <h2 class="c-card-title" style="margin-bottom:10px;">
+        <span><i class="fas fa-pen-to-square" style="color:var(--clinic-teal);"></i> Editable Report Header &amp; Signatories (For Printing)</span>
+        <button type="button" class="btn-c btn-c-primary" style="padding:7px 14px; font-size:0.8rem;" onclick="saveClinicPrintConfig()">
+          <i class="fas fa-cloud-arrow-up"></i> Save Signatories &amp; Header
+        </button>
+      </h2>
+      <div class="form-row" style="grid-template-columns: repeat(3, 1fr); margin-bottom:8px;">
+        <div class="form-field" style="margin-bottom:0;">
+          <label>Division / Region Line</label>
+          <input type="text" id="cfgDivision" oninput="syncPrintPreviewFields()" value="Region II – Cagayan Valley • Schools Division of Nueva Vizcaya">
+        </div>
+        <div class="form-field" style="margin-bottom:0;">
+          <label>School &amp; School ID</label>
+          <input type="text" id="cfgSchool" oninput="syncPrintPreviewFields()" value="STA. CRUZ PINGKIAN HIGH SCHOOL (School ID: 300648)">
+        </div>
+        <div class="form-field" style="margin-bottom:0;">
+          <label>School Address</label>
+          <input type="text" id="cfgAddress" oninput="syncPrintPreviewFields()" value="Brgy. Sta. Cruz, Pingkian, Nueva Vizcaya">
+        </div>
+      </div>
+      <div class="form-row" style="grid-template-columns: repeat(3, 1fr); margin-bottom:0;">
+        <div class="form-field" style="margin-bottom:0;">
+          <label>Prepared By (Visiting Nurse / Coordinator)</label>
+          <input type="text" id="cfgSig1Name" oninput="syncPrintPreviewFields()" placeholder="e.g., Nurse Maria Santos, RN">
+          <input type="text" id="cfgSig1Title" oninput="syncPrintPreviewFields()" style="margin-top:6px;" value="Visiting School Nurse / Clinic Coordinator">
+        </div>
+        <div class="form-field" style="margin-bottom:0;">
+          <label>Noted By (RHU / Health Officer)</label>
+          <input type="text" id="cfgSig2Name" oninput="syncPrintPreviewFields()" placeholder="e.g., Dr. Juan Dela Cruz, MD, MPH">
+          <input type="text" id="cfgSig2Title" oninput="syncPrintPreviewFields()" style="margin-top:6px;" value="Municipal Health Officer / RHU">
+        </div>
+        <div class="form-field" style="margin-bottom:0;">
+          <label>Approved By (School Head)</label>
+          <input type="text" id="cfgSig3Name" oninput="syncPrintPreviewFields()" placeholder="Enter School Head Name">
+          <input type="text" id="cfgSig3Title" oninput="syncPrintPreviewFields()" style="margin-top:6px;" value="School Head / Principal">
         </div>
       </div>
     </section>
@@ -644,7 +695,18 @@
         </div>
 
         <div class="c-card">
-          <h2 class="c-card-title"><span><i class="fas fa-history" style="color:var(--clinic-amber);"></i> Sickness &amp; Emergency Report Log</span></h2>
+          <h2 class="c-card-title">
+            <span><i class="fas fa-history" style="color:var(--clinic-amber);"></i> Sickness &amp; Emergency Report Log</span>
+            <div style="display:flex; gap:8px; flex-wrap:wrap;">
+              <select id="visitSeverityFilter" onchange="renderVisitTable()" style="padding:7px 10px; border:1.5px solid var(--clinic-line); border-radius:9px; font-size:0.8rem;">
+                <option value="all">All Severities</option>
+                <option value="Emergency">Emergency</option>
+                <option value="Urgent / Sickness">Urgent / Sickness</option>
+                <option value="Routine Visit">Routine Visit</option>
+              </select>
+              <input type="text" id="visitSearch" oninput="renderVisitTable()" placeholder="Search patient or illness..." style="max-width:180px; padding:7px 11px; border:1.5px solid var(--clinic-line); border-radius:9px; font-size:0.8rem;">
+            </div>
+          </h2>
           <div class="table-wrap">
             <table class="c-table">
               <thead>
@@ -752,29 +814,27 @@
   <!-- PRINTABLE DEPED CLINIC REPORT -->
   <div id="clinic-print-area">
     <div class="cprint-header">
-      <div style="width:85px; text-align:left;">
-        <img src="../../assets/images/deped-logo.png" alt="DepEd Logo" onerror="this.style.display='none'">
-      </div>
+      <img src="../../assets/images/deped-logo.png" alt="DepEd Logo" class="logo-deped" onerror="this.style.display='none'">
+      <img src="../../assets/images/scphslogo.png" alt="SCPHS Logo" class="logo-school" onerror="this.style.display='none'">
       <div class="cprint-center">
         <div>Republic of the Philippines</div>
-        <div style="font-weight:bold; font-size:11pt;">DEPARTMENT OF EDUCATION</div>
-        <div>Region II – Cagayan Valley • Schools Division of Nueva Vizcaya</div>
-        <div style="font-weight:bold; font-size:11pt;">STA. CRUZ PINGKIAN HIGH SCHOOL (School ID: 300648)</div>
-        <div>Brgy. Sta. Cruz, Pingkian, Nueva Vizcaya</div>
-      </div>
-      <div style="width:85px; text-align:right;">
-        <img src="../../assets/images/scphslogo.png" alt="SCPHS Logo" onerror="this.style.display='none'">
+        <div style="font-weight:bold; font-size:11pt;" id="pOut-dept">DEPARTMENT OF EDUCATION</div>
+        <div id="pOut-division">Region II – Cagayan Valley • Schools Division of Nueva Vizcaya</div>
+        <div style="font-weight:bold; font-size:11pt;" id="pOut-school">STA. CRUZ PINGKIAN HIGH SCHOOL (School ID: 300648)</div>
+        <div id="pOut-address">Brgy. Sta. Cruz, Pingkian, Nueva Vizcaya</div>
       </div>
     </div>
 
-    <div class="cprint-title" id="cprintTitle">SCHOOL HEALTH &amp; BMI ASSESSMENT REPORT</div>
+    <div class="cprint-title" id="cprintTitle">SF1 LEARNER BODY MASS INDEX (BMI) &amp; NUTRITIONAL STATUS REPORT</div>
     <div class="cprint-sub" id="cprintSubtitle">Pursuant to PD 856, RA 11223, and DepEd School Health &amp; Nutrition Program Guidelines</div>
 
     <div class="cprint-meta">
-      <div><strong>School:</strong> Sta. Cruz Pingkian High School</div>
+      <div><strong>School:</strong> <span id="pOut-schoolShort">Sta. Cruz Pingkian High School</span></div>
       <div><strong>Date Generated:</strong> <span id="cprintDate"></span></div>
       <div id="cprintSummary"></div>
     </div>
+
+    <div class="cprint-summary-box" id="cprintSummaryBox"></div>
 
     <table class="cprint-table">
       <thead id="cprintThead"></thead>
@@ -785,20 +845,20 @@
       <div class="cprint-sig-col">
         <div style="text-align:left; font-weight:bold;">Prepared / Submitted by:</div>
         <div class="cprint-sig-line"></div>
-        <div><strong>School Clinic / Health Coordinator</strong></div>
-        <div style="font-size:8pt;">Clinic &amp; Health Services</div>
+        <div style="font-weight:bold; text-transform:uppercase;" id="pOut-sig1Name">VISITING SCHOOL NURSE / CLINIC COORDINATOR</div>
+        <div style="font-size:8pt;" id="pOut-sig1Title">School Health &amp; Nutrition Services</div>
       </div>
       <div class="cprint-sig-col">
         <div style="text-align:left; font-weight:bold;">Noted / Coordinated with:</div>
         <div class="cprint-sig-line"></div>
-        <div><strong>Municipal RHU / Health Officer</strong></div>
-        <div style="font-size:8pt;">Local Health Referral Link</div>
+        <div style="font-weight:bold; text-transform:uppercase;" id="pOut-sig2Name">MUNICIPAL HEALTH OFFICER / RHU</div>
+        <div style="font-size:8pt;" id="pOut-sig2Title">Local Health Referral Link</div>
       </div>
       <div class="cprint-sig-col">
         <div style="text-align:left; font-weight:bold;">Approved by:</div>
         <div class="cprint-sig-line"></div>
-        <div><strong>School Head / Principal</strong></div>
-        <div style="font-size:8pt;">Sta. Cruz Pingkian High School</div>
+        <div style="font-weight:bold; text-transform:uppercase;" id="pOut-sig3Name">SCHOOL HEAD / PRINCIPAL</div>
+        <div style="font-size:8pt;" id="pOut-sig3Title">Sta. Cruz Pingkian High School</div>
       </div>
     </div>
   </div>
@@ -819,7 +879,7 @@
           <a href="https://www.facebook.com/p/Santa-Cruz-Pingkian-High-School-Official-61554495084090/" target="_blank" rel="noopener">Facebook</a>
         </div>
       </div>
-      <div class="copy">© <span id="yearNow"></span> SCPHS. All rights reserved.</div>
+      <div class="copy">© <span class="js-year"></span> SCPHS. All rights reserved.</div>
     </div>
   </footer>
 
@@ -852,7 +912,7 @@
 
     <div class="govph-footer__bar">
       <div class="wrap">
-        <small>© <span id="yearNowGov"></span> Sta. Cruz Pingkian High School • A Philippine Government Website</small>
+        <small>© <span class="js-year"></span> Sta. Cruz Pingkian High School • A Philippine Government Website</small>
       </div>
     </div>
   </footer>
@@ -864,12 +924,13 @@
     import { auth, db } from "../../assets/js/firebase-config.js";
     import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
     import {
-      collection, getDocs, doc, setDoc, deleteDoc
+      collection, getDocs, getDoc, doc, setDoc, deleteDoc
     } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
     import "../../assets/js/sf1-store.js";
 
     const BMI_COLLECTION = "clinic_bmi_records";
     const VISIT_COLLECTION = "clinic_visits";
+    const PRINT_CFG_DOC = doc(db, "config", "clinic_print_settings");
 
     let sf1Classes = [];
     let currentStudents = [];
@@ -903,6 +964,75 @@
       if (btnEl) btnEl.classList.add("active");
       document.getElementById(`panel-${tabKey}`)?.classList.add("active");
     };
+
+    /* ================= HEADER & SIGNATORIES ================= */
+    window.syncPrintPreviewFields = function() {
+      const divVal = document.getElementById("cfgDivision")?.value.trim() || "Region II – Cagayan Valley • Schools Division of Nueva Vizcaya";
+      const schVal = document.getElementById("cfgSchool")?.value.trim() || "STA. CRUZ PINGKIAN HIGH SCHOOL (School ID: 300648)";
+      const addrVal = document.getElementById("cfgAddress")?.value.trim() || "Brgy. Sta. Cruz, Pingkian, Nueva Vizcaya";
+
+      const s1Name = document.getElementById("cfgSig1Name")?.value.trim() || "VISITING SCHOOL NURSE / CLINIC COORDINATOR";
+      const s1Title = document.getElementById("cfgSig1Title")?.value.trim() || "School Health & Nutrition Services";
+      const s2Name = document.getElementById("cfgSig2Name")?.value.trim() || "MUNICIPAL HEALTH OFFICER / RHU";
+      const s2Title = document.getElementById("cfgSig2Title")?.value.trim() || "Local Health Referral Link";
+      const s3Name = document.getElementById("cfgSig3Name")?.value.trim() || "SCHOOL HEAD / PRINCIPAL";
+      const s3Title = document.getElementById("cfgSig3Title")?.value.trim() || "Sta. Cruz Pingkian High School";
+
+      document.getElementById("pOut-division").textContent = divVal;
+      document.getElementById("pOut-school").textContent = schVal;
+      document.getElementById("pOut-address").textContent = addrVal;
+      document.getElementById("pOut-schoolShort").textContent = schVal.replace(/\s*\(School ID:.*?\)/i, "");
+
+      document.getElementById("pOut-sig1Name").textContent = s1Name;
+      document.getElementById("pOut-sig1Title").textContent = s1Title;
+      document.getElementById("pOut-sig2Name").textContent = s2Name;
+      document.getElementById("pOut-sig2Title").textContent = s2Title;
+      document.getElementById("pOut-sig3Name").textContent = s3Name;
+      document.getElementById("pOut-sig3Title").textContent = s3Title;
+    };
+
+    window.saveClinicPrintConfig = async function() {
+      const payload = {
+        division: document.getElementById("cfgDivision").value.trim(),
+        school: document.getElementById("cfgSchool").value.trim(),
+        address: document.getElementById("cfgAddress").value.trim(),
+        sig1Name: document.getElementById("cfgSig1Name").value.trim(),
+        sig1Title: document.getElementById("cfgSig1Title").value.trim(),
+        sig2Name: document.getElementById("cfgSig2Name").value.trim(),
+        sig2Title: document.getElementById("cfgSig2Title").value.trim(),
+        sig3Name: document.getElementById("cfgSig3Name").value.trim(),
+        sig3Title: document.getElementById("cfgSig3Title").value.trim(),
+        updatedAt: new Date().toISOString()
+      };
+      try {
+        await setDoc(PRINT_CFG_DOC, payload, { merge: true });
+        syncPrintPreviewFields();
+        alert("Saved report header and signatories.");
+      } catch (err) {
+        alert("Could not save report settings: " + err.message);
+      }
+    };
+
+    async function loadClinicPrintConfig() {
+      try {
+        const snap = await getDoc(PRINT_CFG_DOC);
+        if (snap.exists()) {
+          const d = snap.data();
+          if (d.division) document.getElementById("cfgDivision").value = d.division;
+          if (d.school) document.getElementById("cfgSchool").value = d.school;
+          if (d.address) document.getElementById("cfgAddress").value = d.address;
+          if (d.sig1Name != null) document.getElementById("cfgSig1Name").value = d.sig1Name;
+          if (d.sig1Title) document.getElementById("cfgSig1Title").value = d.sig1Title;
+          if (d.sig2Name != null) document.getElementById("cfgSig2Name").value = d.sig2Name;
+          if (d.sig2Title) document.getElementById("cfgSig2Title").value = d.sig2Title;
+          if (d.sig3Name != null) document.getElementById("cfgSig3Name").value = d.sig3Name;
+          if (d.sig3Title) document.getElementById("cfgSig3Title").value = d.sig3Title;
+        }
+      } catch (err) {
+        console.warn("Print config load note:", err);
+      }
+      syncPrintPreviewFields();
+    }
 
     /* ================= SF1 INTEGRATION ================= */
     async function loadSf1Classes() {
@@ -1157,14 +1287,29 @@
       return "sev-routine";
     }
 
+    function getFilteredVisits() {
+      const sevFilter = document.getElementById("visitSeverityFilter")?.value || "all";
+      const q = (document.getElementById("visitSearch")?.value || "").trim().toLowerCase();
+      return visitRecords.filter(v => {
+        const matchesSev = sevFilter === "all" || (v.severity || "Routine Visit") === sevFilter;
+        const matchesQ = !q ||
+          (v.patientName || "").toLowerCase().includes(q) ||
+          (v.groupLabel || "").toLowerCase().includes(q) ||
+          (v.complaint || "").toLowerCase().includes(q) ||
+          (v.disposition || "").toLowerCase().includes(q);
+        return matchesSev && matchesQ;
+      });
+    }
+
     function renderVisitTable() {
       const tbody = document.getElementById("visitTableBody");
-      if (!visitRecords.length) {
-        tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; padding:24px; color:var(--clinic-muted);">No sickness or clinic visits recorded yet.</td></tr>`;
+      const list = getFilteredVisits();
+      if (!list.length) {
+        tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; padding:24px; color:var(--clinic-muted);">No matching sickness or clinic visits recorded.</td></tr>`;
         return;
       }
 
-      tbody.innerHTML = visitRecords.map(v => {
+      tbody.innerHTML = list.map(v => {
         const dt = v.visitedAt ? new Date(v.visitedAt).toLocaleDateString("en-PH", { month: "short", day: "numeric", year: "numeric" }) : "-";
         const sev = v.severity || "Routine Visit";
         return `
@@ -1188,17 +1333,24 @@
 
     /* ================= PRINTABLE REPORTS ================= */
     window.printClinicReport = function(mode) {
+      syncPrintPreviewFields();
       const thead = document.getElementById("cprintThead");
       const tbody = document.getElementById("cprintTbody");
       const titleEl = document.getElementById("cprintTitle");
       const summaryEl = document.getElementById("cprintSummary");
+      const summaryBox = document.getElementById("cprintSummaryBox");
       document.getElementById("cprintDate").textContent = new Date().toLocaleDateString("en-PH", { year: "numeric", month: "long", day: "numeric" });
 
       if (mode === "visits") {
+        const list = getFilteredVisits();
         titleEl.textContent = "SCHOOL CLINIC SICKNESS, FIRST AID & EMERGENCY REPORT";
-        const emergencies = visitRecords.filter(v => /emergency/i.test(v.severity || "")).length;
-        const referrals = visitRecords.filter(v => /refer/i.test(v.disposition || "")).length;
-        summaryEl.innerHTML = `<strong>Total Cases:</strong> ${visitRecords.length} • <strong>Emergencies:</strong> ${emergencies} • <strong>Referrals:</strong> ${referrals}`;
+        const emergencies = list.filter(v => /emergency/i.test(v.severity || "")).length;
+        const urgent = list.filter(v => /urgent|sick/i.test(v.severity || "")).length;
+        const routine = list.filter(v => !/emergency|urgent|sick/i.test(v.severity || "")).length;
+        const referrals = list.filter(v => /refer/i.test(v.disposition || "")).length;
+
+        summaryEl.innerHTML = `<strong>Total Cases:</strong> ${list.length} • <strong>Referrals:</strong> ${referrals}`;
+        summaryBox.innerHTML = `<strong>Case Breakdown:</strong> Emergency: <strong>${emergencies}</strong> &nbsp;|&nbsp; Urgent / Sickness: <strong>${urgent}</strong> &nbsp;|&nbsp; Routine Visit: <strong>${routine}</strong> &nbsp;|&nbsp; Referred to RHU / Hospital: <strong>${referrals}</strong>`;
 
         thead.innerHTML = `
           <tr>
@@ -1213,8 +1365,8 @@
           </tr>
         `;
 
-        tbody.innerHTML = visitRecords.length
-          ? visitRecords.map((v, idx) => `
+        tbody.innerHTML = list.length
+          ? list.map((v, idx) => `
               <tr>
                 <td>${idx + 1}</td>
                 <td>${esc(v.visitedAt ? new Date(v.visitedAt).toLocaleDateString("en-PH") : "-")}</td>
@@ -1231,8 +1383,11 @@
         titleEl.textContent = "SF1 LEARNER BODY MASS INDEX (BMI) & NUTRITIONAL STATUS REPORT";
         const normalCnt = bmiRecords.filter(r => r.status === "Normal").length;
         const underCnt = bmiRecords.filter(r => r.status === "Underweight").length;
-        const overObeseCnt = bmiRecords.filter(r => r.status === "Overweight" || r.status === "Obese").length;
-        summaryEl.innerHTML = `<strong>Assessed:</strong> ${bmiRecords.length} • <strong>Normal:</strong> ${normalCnt} • <strong>Underweight:</strong> ${underCnt} • <strong>Overweight/Obese:</strong> ${overObeseCnt}`;
+        const overCnt = bmiRecords.filter(r => r.status === "Overweight").length;
+        const obeseCnt = bmiRecords.filter(r => r.status === "Obese").length;
+
+        summaryEl.innerHTML = `<strong>Total Assessed:</strong> ${bmiRecords.length}`;
+        summaryBox.innerHTML = `<strong>Nutritional Status Summary:</strong> Normal: <strong>${normalCnt}</strong> &nbsp;|&nbsp; Underweight: <strong>${underCnt}</strong> &nbsp;|&nbsp; Overweight: <strong>${overCnt}</strong> &nbsp;|&nbsp; Obese: <strong>${obeseCnt}</strong>`;
 
         thead.innerHTML = `
           <tr>
@@ -1290,8 +1445,7 @@
 
     document.addEventListener("DOMContentLoaded", () => {
       const yr = new Date().getFullYear();
-      document.getElementById("yearNow").textContent = yr;
-      document.getElementById("yearNowGov").textContent = yr;
+      document.querySelectorAll(".js-year").forEach(el => { el.textContent = yr; });
 
       onAuthStateChanged(auth, async (user) => {
         if (!user) {
@@ -1299,7 +1453,7 @@
           setSyncStatus("warn", "Sign in required to load SF1 classes", loginUrl);
           return;
         }
-        await Promise.all([loadSf1Classes(), loadClinicLogs()]);
+        await Promise.all([loadSf1Classes(), loadClinicLogs(), loadClinicPrintConfig()]);
       });
     });
   </script>
