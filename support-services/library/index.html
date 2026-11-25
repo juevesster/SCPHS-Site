@@ -652,6 +652,9 @@
             <button type="button" class="btn btn-indigo btn-sm" id="seedSampleBtn" onclick="seedSampleLibraryData()">
               <i class="fas fa-vial"></i> Seed Sample Data
             </button>
+            <button type="button" class="btn btn-danger btn-sm" id="clearSampleBtn" onclick="clearSampleLibraryData()">
+            <i class="fas fa-trash-alt"></i> Clear Sample Data
+            </button>
             <button type="button" class="btn btn-outline btn-sm" onclick="printMonthlyReport()">
               <i class="fas fa-print"></i> Print Report
             </button>
@@ -2375,6 +2378,46 @@
     restoreSessionLocal();
     loadLibraryProfile();
     loadLibraryData();
+
+    window.clearSampleLibraryData = async function() {
+  const btn = document.getElementById("clearSampleBtn");
+  if (!confirm("Delete all seeded sample log-in, borrowing, and action plan records?")) return;
+  btn.disabled = true;
+
+  try {
+    const sampleLogs = libraryLogs.filter(l => l.isSeedSample);
+    const sampleLoans = loans.filter(l => l.isSeedSample);
+    const samplePlans = actionPlans.filter(p => p.isSeedSample);
+
+    for (const l of sampleLogs) {
+      await deleteDoc(doc(db, LOGS_COL, l.id));
+    }
+    for (const ln of sampleLoans) {
+      await deleteDoc(doc(db, LOANS_COL, ln.id));
+    }
+    for (const p of samplePlans) {
+      await deleteDoc(doc(db, ACTION_PLAN_COL, p.id));
+    }
+
+    libraryLogs = libraryLogs.filter(l => !l.isSeedSample);
+    loans = loans.filter(l => !l.isSeedSample);
+    actionPlans = actionPlans.filter(p => !p.isSeedSample);
+
+    if (activePatronSession && sampleLogs.some(l => l.id === activePatronSession.logId)) {
+      saveSessionLocal(null);
+    }
+
+    updateKPIs();
+    renderLibraryLogs();
+    renderLoans();
+    renderReportsAndPlan();
+    alert("Seeded sample data removed.");
+  } catch (err) {
+    alert("Could not clear sample data: " + err.message);
+  } finally {
+    btn.disabled = false;
+  }
+};
   </script>
 
   <!-- SIDEBAR & CHATBOT LOADER -->
