@@ -230,6 +230,9 @@
       <a href="#circulation-section" class="menu-item" onclick="setActiveMenu(this)">
         <i class="fas fa-exchange-alt icon"></i> <span>Borrowing &amp; Returns</span>
       </a>
+        <a href="#reports-plan-section" class="menu-item" onclick="setActiveMenu(this)">
+        <i class="fas fa-chart-line icon"></i> <span>Reports &amp; Action Plan</span>
+      </a>
       <a href="https://www.starbooks.ph/" target="_blank" rel="noopener noreferrer" class="menu-item">
         <i class="fas fa-rocket icon"></i> <span>DOST STARBOOKS</span>
       </a>
@@ -609,6 +612,214 @@
             </thead>
             <tbody id="loans-body">
               <tr><td colspan="7" style="text-align:center;padding:24px;color:var(--text-muted);">Loading circulation logs...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- LIBRARY REPORTS, AVERAGES & ACTION PLAN SECTION -->
+      <div class="bento-card" id="reports-plan-section" style="margin-bottom:20px;">
+        <div class="card-header">
+          <div class="card-title">
+            <i class="fas fa-chart-line" style="color:var(--primary);"></i>
+            Library Monthly Report, Averages &amp; Action Plan
+          </div>
+          <div class="toolbar">
+            <select id="repSchoolYear" onchange="renderReportsAndPlan()">
+              <option value="2026-2027" selected>SY 2026–2027</option>
+              <option value="2025-2026">SY 2025–2026</option>
+              <option value="2024-2025">SY 2024–2025</option>
+              <option value="all">All School Years</option>
+            </select>
+            <select id="repTerm" onchange="renderReportsAndPlan()">
+              <option value="all" selected>Full School Year (Jun–Mar)</option>
+              <option value="jun-dec">June – December</option>
+              <option value="jan-mar">January – March</option>
+            </select>
+            <select id="repMonth" onchange="renderReportsAndPlan()">
+              <option value="all" selected>All Months in Period</option>
+              <option value="06">June</option>
+              <option value="07">July</option>
+              <option value="08">August</option>
+              <option value="09">September</option>
+              <option value="10">October</option>
+              <option value="11">November</option>
+              <option value="12">December</option>
+              <option value="01">January</option>
+              <option value="02">February</option>
+              <option value="03">March</option>
+            </select>
+            <button type="button" class="btn btn-outline btn-sm" onclick="printMonthlyReport()">
+              <i class="fas fa-print"></i> Print Report
+            </button>
+            <button type="button" class="btn btn-primary btn-sm" onclick="toggleBox('addActionPlanBox')">
+              <i class="fas fa-plus"></i> Add Action Plan Item
+            </button>
+          </div>
+        </div>
+
+        <!-- SUMMARY CARDS: LOG-IN/OUT & BORROWING (STUDENTS + AVERAGES) -->
+        <div class="bento-grid" style="margin-bottom:18px;">
+          <div class="bento-card stat-card" style="background:#fff;border:1px solid var(--border);">
+            <div class="stat-icon teal"><i class="fas fa-door-open"></i></div>
+            <div>
+              <div class="stat-value" id="repLogTotal">0</div>
+              <div class="stat-label">Log-In / Out Entries</div>
+              <div style="font-size:0.78rem;color:var(--text-muted);margin-top:6px;">
+                Students: <strong id="repLogStudents">0</strong> &nbsp;•&nbsp;
+                Avg/Mo: <strong id="repLogAvgMonth">0.0</strong> &nbsp;•&nbsp;
+                Avg/Day: <strong id="repLogAvgDay">0.0</strong>
+              </div>
+            </div>
+          </div>
+
+          <div class="bento-card stat-card" style="background:#fff;border:1px solid var(--border);">
+            <div class="stat-icon blue"><i class="fas fa-book-reader"></i></div>
+            <div>
+              <div class="stat-value" id="repLoanTotal">0</div>
+              <div class="stat-label">Borrowing Transactions</div>
+              <div style="font-size:0.78rem;color:var(--text-muted);margin-top:6px;">
+                Students: <strong id="repLoanStudents">0</strong> &nbsp;•&nbsp;
+                Avg/Mo: <strong id="repLoanAvgMonth">0.0</strong> &nbsp;•&nbsp;
+                Avg/Day: <strong id="repLoanAvgDay">0.0</strong>
+              </div>
+            </div>
+          </div>
+
+          <div class="bento-card stat-card" style="background:#fff;border:1px solid var(--border);">
+            <div class="stat-icon green"><i class="fas fa-user-graduate"></i></div>
+            <div>
+              <div class="stat-value" id="repUniqueStudents">0</div>
+              <div class="stat-label">Unique Student Patrons</div>
+              <div style="font-size:0.78rem;color:var(--text-muted);margin-top:6px;">
+                Across selected SY &amp; term window
+              </div>
+            </div>
+          </div>
+
+          <div class="bento-card stat-card" style="background:#fff;border:1px solid var(--border);">
+            <div class="stat-icon teal"><i class="fas fa-layer-group"></i></div>
+            <div>
+              <div class="stat-value" id="repBookTitlesCount">0</div>
+              <div class="stat-label">List of Books (Titles)</div>
+              <div style="font-size:0.78rem;color:var(--text-muted);margin-top:6px;">
+                Total Copies: <strong id="repBookCopiesCount">0</strong>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ADD ACTION PLAN FORM -->
+        <div class="collapse-box" id="addActionPlanBox">
+          <form onsubmit="addActionPlanItem(event)">
+            <div class="form-grid">
+              <div class="form-group span-2">
+                <label>Objective / Priority Area *</label>
+                <input id="apObjective" required placeholder="e.g., Increase student reading & LRMDS utilization">
+              </div>
+              <div class="form-group span-2">
+                <label>Activity / Strategy *</label>
+                <input id="apActivity" required placeholder="e.g., Conduct weekly book talks & accession audit">
+              </div>
+              <div class="form-group">
+                <label>Target Month / Period *</label>
+                <input id="apTarget" required placeholder="e.g., June–December / Monthly">
+              </div>
+              <div class="form-group">
+                <label>Person / Office In-Charge *</label>
+                <input id="apOwner" required placeholder="e.g., LRC Coordinator & Class Advisers">
+              </div>
+              <div class="form-group">
+                <label>Status</label>
+                <select id="apStatus">
+                  <option value="Planned">Planned</option>
+                  <option value="In Progress">In Progress</option>
+                  <option value="Completed">Completed</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label>Remarks / MOV</label>
+                <input id="apRemarks" placeholder="e.g., Logbook & borrowing tracker">
+              </div>
+              <div class="form-group full" style="align-items:flex-end;">
+                <button type="submit" class="btn btn-primary" id="saveActionPlanBtn">
+                  <i class="fas fa-save"></i> Save Action Plan Item
+                </button>
+              </div>
+            </div>
+          </form>
+        </div>
+
+        <!-- MONTHLY REPORT TABLE -->
+        <div class="card-header" style="margin-top:8px;margin-bottom:10px;">
+          <div class="card-title" style="font-size:1rem;">
+            <i class="fas fa-calendar-week" style="color:var(--accent-indigo);"></i> Monthly Report Breakdown
+          </div>
+        </div>
+        <div class="table-wrap" style="margin-bottom:22px;">
+          <table>
+            <thead>
+              <tr>
+                <th>Month</th>
+                <th>Log-Ins / Outs</th>
+                <th>Log-In Students</th>
+                <th>Avg Log-In / Active Day</th>
+                <th>Borrowings</th>
+                <th>Borrowing Students</th>
+                <th>Avg Borrow / Active Day</th>
+              </tr>
+            </thead>
+            <tbody id="monthly-report-body">
+              <tr><td colspan="7" style="text-align:center;padding:20px;color:var(--text-muted);">Calculating monthly report...</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- LIST OF BOOKS QUICK SUMMARY TABLE -->
+        <div class="card-header" style="margin-bottom:10px;">
+          <div class="card-title" style="font-size:1rem;">
+            <i class="fas fa-list-ul" style="color:var(--primary);"></i> List of Books (Accession Summary)
+          </div>
+        </div>
+        <div class="table-wrap" style="margin-bottom:22px;max-height:260px;overflow-y:auto;border:1px solid var(--border);border-radius:12px;">
+          <table>
+            <thead>
+              <tr>
+                <th>Acc. No.</th>
+                <th>Title</th>
+                <th>Author</th>
+                <th>Copyright</th>
+                <th>Avail. / Total</th>
+                <th>Remarks</th>
+              </tr>
+            </thead>
+            <tbody id="report-books-body">
+              <tr><td colspan="6" style="text-align:center;padding:18px;color:var(--text-muted);">No books loaded yet.</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- ACTION PLAN TABLE -->
+        <div class="card-header" style="margin-bottom:10px;">
+          <div class="card-title" style="font-size:1rem;">
+            <i class="fas fa-tasks" style="color:var(--success);"></i> Library Action Plan (<span id="actionPlanCount">0</span>)
+          </div>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Objective</th>
+                <th>Activity / Strategy</th>
+                <th>Target Period</th>
+                <th>In-Charge</th>
+                <th>Status</th>
+                <th>Remarks</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody id="action-plan-body">
+              <tr><td colspan="7" style="text-align:center;padding:20px;color:var(--text-muted);">Loading action plan items...</td></tr>
             </tbody>
           </table>
         </div>
@@ -1823,6 +2034,225 @@
     restoreSessionLocal();
     loadLibraryProfile();
     loadLibraryData();
+
+    const ACTION_PLAN_COL = "library_action_plan";
+    let actionPlans = [];
+
+    const SY_MONTHS = [
+      { mm: "06", label: "June", term: "jun-dec" },
+      { mm: "07", label: "July", term: "jun-dec" },
+      { mm: "08", label: "August", term: "jun-dec" },
+      { mm: "09", label: "September", term: "jun-dec" },
+      { mm: "10", label: "October", term: "jun-dec" },
+      { mm: "11", label: "November", term: "jun-dec" },
+      { mm: "12", label: "December", term: "jun-dec" },
+      { mm: "01", label: "January", term: "jan-mar" },
+      { mm: "02", label: "February", term: "jan-mar" },
+      { mm: "03", label: "March", term: "jan-mar" }
+    ];
+
+    function getSchoolYearFromDateStr(dateStr) {
+      if (!dateStr || !/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) return "2026-2027";
+      const [yStr, mStr] = dateStr.split("-");
+      const year = Number(yStr);
+      const month = Number(mStr);
+      // School year starts in June (month >= 6)
+      return month >= 6 ? `${year}-${year + 1}` : `${year - 1}-${year}`;
+    }
+
+    function matchesReportFilters(dateStr) {
+      const sy = document.getElementById("repSchoolYear")?.value || "all";
+      const term = document.getElementById("repTerm")?.value || "all";
+      const month = document.getElementById("repMonth")?.value || "all";
+
+      const cleanDate = dateStr && /^\d{4}-\d{2}-\d{2}$/.test(dateStr) ? dateStr : todayISO;
+      const [, mm] = cleanDate.split("-");
+      const itemSY = getSchoolYearFromDateStr(cleanDate);
+
+      if (sy !== "all" && itemSY !== sy) return false;
+      if (term === "jun-dec" && !["06", "07", "08", "09", "10", "11", "12"].includes(mm)) return false;
+      if (term === "jan-mar" && !["01", "02", "03"].includes(mm)) return false;
+      if (month !== "all" && mm !== month) return false;
+      return true;
+    }
+
+    function isStudentEntry(roleOrMeta, borrowerName = "") {
+      const text = `${roleOrMeta || ""} ${borrowerName || ""}`.toLowerCase();
+      return text.includes("student") || text.includes("grade");
+    }
+
+    window.renderReportsAndPlan = function() {
+      const term = document.getElementById("repTerm")?.value || "all";
+      const monthFilter = document.getElementById("repMonth")?.value || "all";
+
+      const filteredLogs = libraryLogs.filter(l => matchesReportFilters(l.dateLog || todayISO));
+      const filteredLoans = loans.filter(l => matchesReportFilters(l.dateBorrowed || todayISO));
+
+      const logStudents = filteredLogs.filter(l => String(l.role || "").toLowerCase() === "student");
+      const loanStudents = filteredLoans.filter(l => isStudentEntry(l.borrowerMeta, l.borrowerName));
+
+      const uniqueStudentNames = new Set([
+        ...logStudents.map(l => String(l.name || "").trim().toLowerCase()).filter(Boolean),
+        ...loanStudents.map(l => String(l.borrowerName || "").trim().toLowerCase()).filter(Boolean)
+      ]);
+
+      const activeMonthsList = SY_MONTHS.filter(m => {
+        if (monthFilter !== "all") return m.mm === monthFilter;
+        if (term === "jun-dec") return m.term === "jun-dec";
+        if (term === "jan-mar") return m.term === "jan-mar";
+        return true;
+      });
+
+      const monthDivisor = Math.max(1, activeMonthsList.length);
+      const logActiveDays = new Set(filteredLogs.map(l => l.dateLog).filter(Boolean)).size || 1;
+      const loanActiveDays = new Set(filteredLoans.map(l => l.dateBorrowed).filter(Boolean)).size || 1;
+
+      document.getElementById("repLogTotal").textContent = filteredLogs.length;
+      document.getElementById("repLogStudents").textContent = logStudents.length;
+      document.getElementById("repLogAvgMonth").textContent = (filteredLogs.length / monthDivisor).toFixed(1);
+      document.getElementById("repLogAvgDay").textContent = (filteredLogs.length / logActiveDays).toFixed(1);
+
+      document.getElementById("repLoanTotal").textContent = filteredLoans.length;
+      document.getElementById("repLoanStudents").textContent = loanStudents.length;
+      document.getElementById("repLoanAvgMonth").textContent = (filteredLoans.length / monthDivisor).toFixed(1);
+      document.getElementById("repLoanAvgDay").textContent = (filteredLoans.length / loanActiveDays).toFixed(1);
+
+      document.getElementById("repUniqueStudents").textContent = uniqueStudentNames.size;
+
+      const totalCopies = books.reduce((sum, b) => sum + Number(b.totalCopies || 1), 0);
+      document.getElementById("repBookTitlesCount").textContent = books.length;
+      document.getElementById("repBookCopiesCount").textContent = totalCopies;
+
+      // Monthly Report Rows
+      const repBody = document.getElementById("monthly-report-body");
+      repBody.innerHTML = activeMonthsList.map(m => {
+        const mLogs = filteredLogs.filter(l => (l.dateLog || todayISO).split("-")[1] === m.mm);
+        const mLoans = filteredLoans.filter(l => (l.dateBorrowed || todayISO).split("-")[1] === m.mm);
+        const mLogStu = mLogs.filter(l => String(l.role || "").toLowerCase() === "student").length;
+        const mLoanStu = mLoans.filter(l => isStudentEntry(l.borrowerMeta, l.borrowerName)).length;
+
+        const mLogDays = new Set(mLogs.map(l => l.dateLog).filter(Boolean)).size || 1;
+        const mLoanDays = new Set(mLoans.map(l => l.dateBorrowed).filter(Boolean)).size || 1;
+
+        return `
+          <tr>
+            <td><strong>${esc(m.label)}</strong></td>
+            <td>${mLogs.length}</td>
+            <td>${mLogStu}</td>
+            <td>${mLogs.length ? (mLogs.length / mLogDays).toFixed(1) : "0.0"}</td>
+            <td>${mLoans.length}</td>
+            <td>${mLoanStu}</td>
+            <td>${mLoans.length ? (mLoans.length / mLoanDays).toFixed(1) : "0.0"}</td>
+          </tr>
+        `;
+      }).join("");
+
+      // List of Books Summary
+      const booksBody = document.getElementById("report-books-body");
+      if (!books.length) {
+        booksBody.innerHTML = `<tr><td colspan="6" style="text-align:center;padding:18px;color:var(--text-muted);">No books in catalog.</td></tr>`;
+      } else {
+        booksBody.innerHTML = books.map(b => {
+          const total = Number(b.totalCopies || 1);
+          const avail = Number(b.availableCopies ?? total);
+          return `
+            <tr>
+              <td style="font-family:monospace;font-weight:700;">${esc(b.callNo || "—")}</td>
+              <td class="wrap-col"><strong>${esc(b.title)}</strong></td>
+              <td class="wrap-col">${esc(b.author || "—")}</td>
+              <td>${esc(b.copyrightDate || "—")}</td>
+              <td><strong>${avail}</strong> / ${total}</td>
+              <td><span class="badge rem">${esc(b.remarks || "—")}</span></td>
+            </tr>
+          `;
+        }).join("");
+      }
+
+      // Action Plan Rows
+      document.getElementById("actionPlanCount").textContent = actionPlans.length;
+      const apBody = document.getElementById("action-plan-body");
+      if (!actionPlans.length) {
+        apBody.innerHTML = `<tr><td colspan="7" style="text-align:center;padding:20px;color:var(--text-muted);">No action plan items yet. Click "Add Action Plan Item" to create one.</td></tr>`;
+      } else {
+        apBody.innerHTML = actionPlans.map(item => {
+          const badgeCls = item.status === "Completed" ? "avail" : item.status === "In Progress" ? "out" : "cat";
+          return `
+            <tr>
+              <td class="wrap-col"><strong>${esc(item.objective)}</strong></td>
+              <td class="wrap-col">${esc(item.activity)}</td>
+              <td>${esc(item.targetPeriod || "—")}</td>
+              <td>${esc(item.inCharge || "—")}</td>
+              <td><span class="badge ${badgeCls}">${esc(item.status || "Planned")}</span></td>
+              <td class="wrap-col">${esc(item.remarks || "—")}</td>
+              <td>
+                <div style="display:flex;gap:6px;">
+                  <button type="button" class="btn btn-outline btn-sm" onclick="cycleActionStatus('${escJS(item.id)}')">Status</button>
+                  <button type="button" class="btn btn-danger btn-sm" onclick="deleteActionPlanItem('${escJS(item.id)}')">Delete</button>
+                </div>
+              </td>
+            </tr>
+          `;
+        }).join("");
+      }
+    };
+
+    window.addActionPlanItem = async function(evt) {
+      evt.preventDefault();
+      const btn = document.getElementById("saveActionPlanBtn");
+      btn.disabled = true;
+
+      const payload = {
+        objective: document.getElementById("apObjective").value.trim(),
+        activity: document.getElementById("apActivity").value.trim(),
+        targetPeriod: document.getElementById("apTarget").value.trim(),
+        inCharge: document.getElementById("apOwner").value.trim(),
+        status: document.getElementById("apStatus").value,
+        remarks: document.getElementById("apRemarks").value.trim(),
+        createdAtMs: Date.now(),
+        createdAt: serverTimestamp()
+      };
+
+      try {
+        const ref = await addDoc(collection(db, ACTION_PLAN_COL), payload);
+        actionPlans.unshift({ id: ref.id, ...payload });
+        evt.target.reset();
+        document.getElementById("addActionPlanBox").classList.remove("open");
+        renderReportsAndPlan();
+      } catch (err) {
+        alert("Unable to save action plan item: " + err.message);
+      } finally {
+        btn.disabled = false;
+      }
+    };
+
+    window.cycleActionStatus = async function(id) {
+      const item = actionPlans.find(a => a.id === id);
+      if (!item) return;
+      const order = ["Planned", "In Progress", "Completed"];
+      const nextStatus = order[(order.indexOf(item.status) + 1) % order.length];
+      try {
+        await updateDoc(doc(db, ACTION_PLAN_COL, id), { status: nextStatus });
+        item.status = nextStatus;
+        renderReportsAndPlan();
+      } catch (err) {
+        alert("Status update failed: " + err.message);
+      }
+    };
+
+    window.deleteActionPlanItem = async function(id) {
+      if (!confirm("Delete this action plan item?")) return;
+      try {
+        await deleteDoc(doc(db, ACTION_PLAN_COL, id));
+        actionPlans = actionPlans.filter(a => a.id !== id);
+        renderReportsAndPlan();
+      } catch (err) {
+        alert("Delete failed: " + err.message);
+      }
+    };
+
+    window.printMonthlyReport = function() {
+      window.print();
+    };
   </script>
 
   <!-- SIDEBAR & CHATBOT LOADER -->
