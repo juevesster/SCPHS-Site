@@ -204,7 +204,13 @@
       .bento-card { box-shadow: none !important; border: 1px solid #cbd5e1 !important; page-break-inside: avoid; margin-bottom: 12px !important; }
       .print-hide-col th:last-child, .print-hide-col td:last-child { display: none !important; }
       .four-h-grid { grid-template-columns: repeat(4, 1fr) !important; gap: 8px !important; }
-
+      #overview-section.bento-grid {
+      grid-template-columns: repeat(4, 1fr) !important;
+      gap: 8px !important;
+      }
+      .stat-icon {
+      display: none !important;
+      }
       .deped-print-header {
         display: block !important; text-align: center; margin-bottom: 14px;
         padding-bottom: 10px; border-bottom: 2px solid #000;
@@ -266,6 +272,12 @@
       </a>
       <a href="#weather-pagasa-section" class="menu-item" onclick="setActiveMenu(this)">
         <i class="fas fa-satellite-dish icon"></i> <span>PAGASA &amp; PHIVOLCS</span>
+      </a>
+      <a href="#checkin-section" class="menu-item" onclick="setActiveMenu(this)">
+      <i class="fas fa-user-check icon"></i> <span>12-Hr Learner Check-In</span>
+      </a>
+      <a href="#radar-section" class="menu-item" onclick="setActiveMenu(this)">
+      <i class="fas fa-clipboard-check icon"></i> <span>DepEd RADaR Report</span>
       </a>
       <a href="#drills-section" class="menu-item" onclick="setActiveMenu(this)">
         <i class="fas fa-running icon"></i> <span>NSED Quake Drills</span>
@@ -709,6 +721,179 @@
             </thead>
             <tbody id="incidents-body">
               <tr><td colspan="7" style="text-align:center;padding:20px;color:var(--text-muted);">Loading hazard &amp; incident reports...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- 12-HOUR LEARNER & STAFF SAFETY CHECK-IN TRACKER (DO 014, s. 2026) -->
+      <div class="bento-card" id="checkin-section" style="margin-bottom:20px;">
+        <div class="card-header">
+          <div class="card-title">
+            <i class="fas fa-user-check" style="color:var(--accent-indigo);"></i>
+            12-Hour Learner &amp; Staff Check-In Tracker (<span id="checkinCount">0</span> Sections)
+          </div>
+          <div class="toolbar">
+            <span class="badge info" id="checkinSummaryPill">Accounted: 0 / 0 (0%)</span>
+            <button type="button" class="btn btn-indigo btn-sm staff-only" style="display:none;" onclick="toggleBox('addCheckinBox')">
+              <i class="fas fa-plus"></i> Log Section Check-In
+            </button>
+          </div>
+        </div>
+
+        <p style="font-size:0.83rem;color:var(--text-muted);margin-bottom:12px;">
+          Pursuant to <strong>DepEd Order No. 014, s. 2026</strong>, class advisers conduct a rapid safety and well-being check within <strong>12 hours</strong> of a calamity or suspension (*Hinay / Hinga / Hinto*) and flag learners needing MHPSS or relief support.
+        </p>
+
+        <div class="collapse-box" id="addCheckinBox">
+          <form onsubmit="addCheckin(event)">
+            <div class="form-grid">
+              <div class="form-group">
+                <label>Grade &amp; Section *</label>
+                <input id="chkSection" required placeholder="e.g., Grade 10 – Narra">
+              </div>
+              <div class="form-group">
+                <label>Class Adviser *</label>
+                <input id="chkAdviser" required placeholder="Adviser Full Name">
+              </div>
+              <div class="form-group">
+                <label>Total Enrolled *</label>
+                <input type="number" id="chkTotal" min="1" required placeholder="e.g., 42">
+              </div>
+              <div class="form-group">
+                <label>Safe / Accounted For *</label>
+                <input type="number" id="chkSafe" min="0" required placeholder="e.g., 40">
+              </div>
+              <div class="form-group">
+                <label>Affected / Needs Aid</label>
+                <input type="number" id="chkAffected" min="0" value="0">
+              </div>
+              <div class="form-group">
+                <label>Unreached / No Contact</label>
+                <input type="number" id="chkUnreached" min="0" value="0">
+              </div>
+              <div class="form-group">
+                <label>MHPSS / Psychosocial Status</label>
+                <select id="chkMhpss">
+                  <option value="All Stable">All Stable</option>
+                  <option value="For Psychological First Aid (PFA)">For Psychological First Aid (PFA)</option>
+                  <option value="Referred to Guidance / RHU">Referred to Guidance / RHU</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label>Remarks / Notes</label>
+                <input id="chkRemarks" placeholder="e.g., 2 families in barangay evacuation center">
+              </div>
+              <div class="form-group full" style="align-items:flex-end;">
+                <button type="submit" class="btn btn-indigo" id="saveCheckinBtn"><i class="fas fa-save"></i> Save 12-Hr Check-In</button>
+              </div>
+            </div>
+          </form>
+        </div>
+
+        <div class="table-wrap print-hide-col">
+          <table>
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Grade &amp; Section</th>
+                <th>Adviser</th>
+                <th>Safe / Enrolled</th>
+                <th>Affected / Unreached</th>
+                <th>MHPSS Status</th>
+                <th>Remarks</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody id="checkin-body">
+              <tr><td colspan="8" style="text-align:center;padding:20px;color:var(--text-muted);">No 12-hour learner check-in logs recorded yet.</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- DEPED RADaR (RAPID ASSESSMENT OF DAMAGES REPORT) -->
+      <div class="bento-card" id="radar-section" style="margin-bottom:20px;">
+        <div class="card-header">
+          <div class="card-title">
+            <i class="fas fa-clipboard-check" style="color:var(--primary);"></i>
+            DepEd RADaR (Rapid Assessment of Damages Report) (<span id="radarCount">0</span>)
+          </div>
+          <div class="toolbar">
+            <button type="button" class="btn btn-primary btn-sm staff-only" style="display:none;" onclick="toggleBox('addRadarBox')">
+              <i class="fas fa-plus"></i> Log RADaR Assessment
+            </button>
+          </div>
+        </div>
+
+        <p style="font-size:0.83rem;color:var(--text-muted);margin-bottom:12px;">
+          Records post-calamity school damages for SDO Nueva Vizcaya &amp; DepEd Central Office submission: <strong>RADaR 1</strong> (Classrooms, WASH, Personnel Casualties) and <strong>RADaR 2</strong> (School Furniture, Textbooks/SLMs, ICT &amp; Laboratory Equipment).
+        </p>
+
+        <div class="collapse-box" id="addRadarBox">
+          <form onsubmit="addRadar(event)">
+            <div class="form-grid">
+              <div class="form-group">
+                <label>Calamity / Incident Name *</label>
+                <input id="rdrEvent" required placeholder="e.g., Typhoon Pepito / M5.4 Earthquake">
+              </div>
+              <div class="form-group">
+                <label>RADaR Type *</label>
+                <select id="rdrType">
+                  <option value="RADaR 1 (Infrastructure & Personnel)">RADaR 1 (Infrastructure &amp; Personnel)</option>
+                  <option value="RADaR 2 (Furniture, Books & ICT)">RADaR 2 (Furniture, Books &amp; ICT)</option>
+                  <option value="Combined RADaR 1 & 2">Combined RADaR 1 &amp; 2</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label>Date Assessed *</label>
+                <input type="date" id="rdrDate" required>
+              </div>
+              <div class="form-group">
+                <label>Submission Status</label>
+                <select id="rdrStatus">
+                  <option value="Draft / Validating">Draft / Validating</option>
+                  <option value="Submitted to SDO">Submitted to SDO</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label>Damaged Classrooms (Minor / Major / Totally)</label>
+                <input id="rdrClassrooms" placeholder="e.g., 2 Minor, 0 Major, 0 Totally">
+              </div>
+              <div class="form-group">
+                <label>Temporary Learning Spaces (TLS) Needed</label>
+                <input type="number" id="rdrTls" min="0" value="0">
+              </div>
+              <div class="form-group">
+                <label>Damaged Furniture / Books / ICT Summary</label>
+                <input id="rdrNonInfra" placeholder="e.g., 15 armchairs, 40 SLMs, 2 desktop PCs">
+              </div>
+              <div class="form-group">
+                <label>Personnel / Learner Casualties or Evacuees</label>
+                <input id="rdrCasualties" placeholder="e.g., 0 casualties; 12 learners displaced">
+              </div>
+              <div class="form-group full" style="align-items:flex-end;">
+                <button type="submit" class="btn btn-primary" id="saveRadarBtn"><i class="fas fa-save"></i> Save RADaR Entry</button>
+              </div>
+            </div>
+          </form>
+        </div>
+
+        <div class="table-wrap print-hide-col">
+          <table>
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Calamity / Event</th>
+                <th>Type</th>
+                <th>RADaR 1 (Classrooms / TLS / Casualties)</th>
+                <th>RADaR 2 (Furniture / Books / ICT)</th>
+                <th>Status</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody id="radar-body">
+              <tr><td colspan="7" style="text-align:center;padding:20px;color:var(--text-muted);">No RADaR damage assessments recorded yet.</td></tr>
             </tbody>
           </table>
         </div>
@@ -1300,6 +1485,148 @@
     }
 
     initDrrm();
+
+    const CHECKIN_COL = "drrm_checkins";
+const RADAR_COL = "drrm_radar";
+let checkins = [];
+let radarReports = [];
+document.getElementById("rdrDate").value = todayISO;
+
+/* 12-HOUR LEARNER CHECK-IN */
+window.addCheckin = async (evt) => {
+  evt.preventDefault();
+  const btn = document.getElementById("saveCheckinBtn");
+  btn.disabled = true;
+  const payload = {
+    section: document.getElementById("chkSection").value.trim(),
+    adviser: document.getElementById("chkAdviser").value.trim(),
+    totalEnrolled: Number(document.getElementById("chkTotal").value || 0),
+    safeCount: Number(document.getElementById("chkSafe").value || 0),
+    affectedCount: Number(document.getElementById("chkAffected").value || 0),
+    unreachedCount: Number(document.getElementById("chkUnreached").value || 0),
+    mhpssStatus: document.getElementById("chkMhpss").value,
+    remarks: document.getElementById("chkRemarks").value.trim(),
+    dateChecked: todayISO,
+    createdAtMs: Date.now(),
+    createdAt: serverTimestamp()
+  };
+  try {
+    const ref = await addDoc(collection(db, CHECKIN_COL), payload);
+    checkins.unshift({ id: ref.id, ...payload });
+    evt.target.reset();
+    document.getElementById("addCheckinBox").classList.remove("open");
+    renderCheckins();
+  } catch (err) {
+    alert("Failed to save check-in: " + err.message);
+  } finally {
+    btn.disabled = false;
+  }
+};
+
+window.deleteCheckin = async (id) => {
+  if (!confirm("Delete this 12-hour check-in entry?")) return;
+  try {
+    await deleteDoc(doc(db, CHECKIN_COL, id));
+    checkins = checkins.filter(c => c.id !== id);
+    renderCheckins();
+  } catch (err) {
+    alert("Delete failed: " + err.message);
+  }
+};
+
+function renderCheckins() {
+  document.getElementById("checkinCount").textContent = checkins.length;
+  const totalEnrolled = checkins.reduce((s, c) => s + Number(c.totalEnrolled || 0), 0);
+  const totalSafe = checkins.reduce((s, c) => s + Number(c.safeCount || 0), 0);
+  const pct = totalEnrolled ? Math.round((totalSafe / totalEnrolled) * 100) : 0;
+  document.getElementById("checkinSummaryPill").textContent = `Accounted: ${totalSafe} / ${totalEnrolled} (${pct}%)`;
+
+  const body = document.getElementById("checkin-body");
+  if (!checkins.length) {
+    body.innerHTML = `<tr><td colspan="8" style="text-align:center;padding:20px;color:var(--text-muted);">No 12-hour learner check-in logs recorded yet.</td></tr>`;
+    return;
+  }
+  body.innerHTML = checkins.map(c => {
+    const cls = c.mhpssStatus === "All Stable" ? "ok" : "warn";
+    return `
+      <tr>
+        <td>${esc(c.dateChecked)}</td>
+        <td><strong>${esc(c.section)}</strong></td>
+        <td>${esc(c.adviser)}</td>
+        <td><strong>${esc(c.safeCount)}</strong> / ${esc(c.totalEnrolled)}</td>
+        <td>Affected: ${esc(c.affectedCount || 0)} • Unreached: ${esc(c.unreachedCount || 0)}</td>
+        <td><span class="badge ${cls}">${esc(c.mhpssStatus)}</span></td>
+        <td class="wrap-col">${esc(c.remarks || "—")}</td>
+        <td>${canManageDrrm ? `<button class="btn btn-danger btn-sm" onclick="deleteCheckin('${escJS(c.id)}')">Delete</button>` : "—"}</td>
+      </tr>
+    `;
+  }).join("");
+}
+
+/* DEPED RADaR REPORT */
+window.addRadar = async (evt) => {
+  evt.preventDefault();
+  const btn = document.getElementById("saveRadarBtn");
+  btn.disabled = true;
+  const payload = {
+    eventName: document.getElementById("rdrEvent").value.trim(),
+    radarType: document.getElementById("rdrType").value,
+    dateAssessed: document.getElementById("rdrDate").value,
+    status: document.getElementById("rdrStatus").value,
+    classrooms: document.getElementById("rdrClassrooms").value.trim(),
+    tlsNeeded: Number(document.getElementById("rdrTls").value || 0),
+    nonInfra: document.getElementById("rdrNonInfra").value.trim(),
+    casualties: document.getElementById("rdrCasualties").value.trim(),
+    createdAtMs: Date.now(),
+    createdAt: serverTimestamp()
+  };
+  try {
+    const ref = await addDoc(collection(db, RADAR_COL), payload);
+    radarReports.unshift({ id: ref.id, ...payload });
+    evt.target.reset();
+    document.getElementById("rdrDate").value = todayISO;
+    document.getElementById("addRadarBox").classList.remove("open");
+    renderRadar();
+  } catch (err) {
+    alert("Failed to save RADaR entry: " + err.message);
+  } finally {
+    btn.disabled = false;
+  }
+};
+
+window.deleteRadar = async (id) => {
+  if (!confirm("Delete this RADaR report entry?")) return;
+  try {
+    await deleteDoc(doc(db, RADAR_COL, id));
+    radarReports = radarReports.filter(r => r.id !== id);
+    renderRadar();
+  } catch (err) {
+    alert("Delete failed: " + err.message);
+  }
+};
+
+function renderRadar() {
+  document.getElementById("radarCount").textContent = radarReports.length;
+  const body = document.getElementById("radar-body");
+  if (!radarReports.length) {
+    body.innerHTML = `<tr><td colspan="7" style="text-align:center;padding:20px;color:var(--text-muted);">No RADaR damage assessments recorded yet.</td></tr>`;
+    return;
+  }
+  body.innerHTML = radarReports.map(r => {
+    const cls = r.status === "Submitted to SDO" ? "ok" : "warn";
+    return `
+      <tr>
+        <td>${esc(r.dateAssessed)}</td>
+        <td class="wrap-col"><strong>${esc(r.eventName)}</strong></td>
+        <td><span class="badge info">${esc(r.radarType)}</span></td>
+        <td class="wrap-col">Classrooms: ${esc(r.classrooms || "None")}<br>TLS Needed: <strong>${esc(r.tlsNeeded || 0)}</strong> • ${esc(r.casualties || "0 casualties")}</td>
+        <td class="wrap-col">${esc(r.nonInfra || "None")}</td>
+        <td><span class="badge ${cls}">${esc(r.status)}</span></td>
+        <td>${canManageDrrm ? `<button class="btn btn-danger btn-sm" onclick="deleteRadar('${escJS(r.id)}')">Delete</button>` : "—"}</td>
+      </tr>
+    `;
+  }).join("");
+}
   </script>
 
   <!-- SIDEBAR & CHATBOT LOADER -->
