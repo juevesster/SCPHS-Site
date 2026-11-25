@@ -93,6 +93,50 @@
     .menu-info h4 { font-size: 0.95rem; font-weight: 700; color: var(--text-main); margin-bottom: 2px; }
     .menu-info p { font-size: 0.76rem; color: var(--text-muted); }
 
+    /* Staff Search Bar */
+    .staff-search-wrap {
+      position: relative;
+      margin-bottom: 14px;
+    }
+    .staff-search-wrap i {
+      position: absolute;
+      left: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--text-muted);
+      font-size: 0.9rem;
+      pointer-events: none;
+    }
+    .staff-search-input {
+      width: 100%;
+      padding: 10px 36px 10px 38px;
+      border: 1.5px solid var(--border);
+      border-radius: 12px;
+      font-size: 0.9rem;
+      background: #fff;
+      color: var(--text-main);
+      outline: none;
+      transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+    .staff-search-input:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(15, 118, 110, 0.12);
+    }
+    .staff-search-clear {
+      position: absolute;
+      right: 10px;
+      top: 50%;
+      transform: translateY(-50%);
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      cursor: pointer;
+      font-size: 0.95rem;
+      display: none;
+      padding: 4px;
+    }
+    .staff-search-clear.show { display: inline-flex; }
+
     /* Staff Directory */
     .staff-list { list-style: none; display: flex; flex-direction: column; gap: 8px; }
     .staff-item {
@@ -323,6 +367,21 @@
           <p style="font-size:0.8rem; color:var(--text-muted); margin-bottom:12px;">
             Click any staff name or row to view ID photo, edit details, or remove record.
           </p>
+
+          <div class="staff-search-wrap">
+            <i class="fas fa-search"></i>
+            <input
+              type="text"
+              id="staffSearchInput"
+              class="staff-search-input"
+              placeholder="Search staff by name, role, department, or email..."
+              oninput="filterStaffDirectory()"
+            >
+            <button type="button" id="staffSearchClear" class="staff-search-clear" onclick="clearStaffSearch()" title="Clear search">
+              <i class="fas fa-times-circle"></i>
+            </button>
+          </div>
+
           <ul class="staff-list" id="staff-directory-list">
             <li style="justify-content: center; color: var(--text-muted); padding: 20px;">
               <i class="fas fa-spinner fa-spin" style="margin-right: 10px;"></i> Loading staff directory...
@@ -560,17 +619,46 @@
       }
     };
 
+    window.filterStaffDirectory = function() {
+      const input = document.getElementById("staffSearchInput");
+      const clearBtn = document.getElementById("staffSearchClear");
+      if (clearBtn) clearBtn.classList.toggle("show", Boolean(input?.value.trim()));
+      renderStaffDirectory();
+    };
+
+    window.clearStaffSearch = function() {
+      const input = document.getElementById("staffSearchInput");
+      if (input) input.value = "";
+      filterStaffDirectory();
+      input?.focus();
+    };
+
     function renderStaffDirectory() {
       const listContainer = document.getElementById("staff-directory-list");
       const statStaff = document.getElementById("stat-total-staff");
       if (statStaff) statStaff.textContent = staffList.length;
+
+      const query = (document.getElementById("staffSearchInput")?.value || "").trim().toLowerCase();
+      const filtered = query
+        ? staffList.filter(p =>
+            p.name.toLowerCase().includes(query) ||
+            p.roleLabel.toLowerCase().includes(query) ||
+            (p.department && p.department.toLowerCase().includes(query)) ||
+            (p.email && p.email.toLowerCase().includes(query))
+          )
+        : staffList;
 
       if (!staffList.length) {
         listContainer.innerHTML = `<li style="justify-content: center; color: var(--text-muted); padding: 20px;">No staff found in the database.</li>`;
         return;
       }
 
-      listContainer.innerHTML = staffList.map(person => {
+      if (!filtered.length) {
+        listContainer.innerHTML = `<li style="justify-content: center; color: var(--text-muted); padding: 20px;">No staff matching "<strong>${escapeHTML(query)}</strong>".</li>`;
+        return;
+      }
+
+      listContainer.innerHTML = filtered.map(person => {
         const avatarHtml = person.photoUrl
           ? `<img src="${escapeHTML(person.photoUrl)}" alt="${escapeHTML(person.name)}" class="staff-id-photo">`
           : `<div class="staff-id-fallback">${escapeHTML(getInitials(person.name))}</div>`;
