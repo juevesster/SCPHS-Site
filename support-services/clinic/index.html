@@ -1,103 +1,635 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="utf-8" />
+  <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Clinic / Health Services – SCPHS</title>
-   <meta name="description" content="SCPHS Clinic – health services, first aid, referrals, and health advisories." />
+  <title>School Clinic &amp; Health Services – SCPHS</title>
+  <meta name="description" content="SCPHS School Clinic – health services, first aid, BMI monitoring from SF1, referrals, and DepEd/DOH health mandates." />
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css">
   <link rel="stylesheet" href="../../assets/css/styles.css" />
+
+  <style>
+    :root {
+      --clinic-bg: #f3f8f7;
+      --clinic-surface: #ffffff;
+      --clinic-ink: #0f172a;
+      --clinic-muted: #475569;
+      --clinic-teal: #0f766e;
+      --clinic-teal-dark: #115e59;
+      --clinic-teal-soft: #ccfbf1;
+      --clinic-blue: #1d4ed8;
+      --clinic-blue-soft: #dbeafe;
+      --clinic-amber: #b45309;
+      --clinic-amber-soft: #fef3c7;
+      --clinic-rose: #be123c;
+      --clinic-rose-soft: #ffe4e6;
+      --clinic-line: #e2e8f0;
+      --clinic-radius: 18px;
+      --clinic-shadow: 0 10px 28px -8px rgba(15, 23, 42, 0.08);
+    }
+
+    *, *::before, *::after { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: 'Outfit', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: var(--clinic-bg);
+      color: var(--clinic-ink);
+      line-height: 1.5;
+    }
+
+    .clinic-shell {
+      max-width: 1240px;
+      margin: 0 auto;
+      padding: 24px 20px 64px;
+    }
+
+    /* Hero Banner */
+    .clinic-hero {
+      background: linear-gradient(135deg, #0f172a 0%, #0f766e 58%, #0d9488 100%);
+      color: #fff;
+      border-radius: 24px;
+      padding: 28px 32px;
+      box-shadow: 0 20px 35px -12px rgba(15, 118, 110, 0.35);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 20px;
+      margin-bottom: 20px;
+    }
+
+    .clinic-hero .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(255, 255, 255, 0.16);
+      border: 1px solid rgba(255, 255, 255, 0.25);
+      padding: 5px 12px;
+      border-radius: 999px;
+      font-size: 0.78rem;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      margin-bottom: 10px;
+    }
+
+    .clinic-hero h1 {
+      margin: 0 0 6px;
+      font-size: clamp(1.65rem, 3vw, 2.3rem);
+      font-weight: 800;
+      letter-spacing: -0.02em;
+    }
+
+    .clinic-hero p {
+      margin: 0;
+      color: rgba(255, 255, 255, 0.9);
+      font-size: 0.95rem;
+      max-width: 720px;
+    }
+
+    .hero-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .sync-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 14px;
+      border-radius: 999px;
+      font-size: 0.8rem;
+      font-weight: 700;
+      background: #fef3c7;
+      color: #92400e;
+    }
+    .sync-pill.ready { background: #dcfce7; color: #166534; }
+    .sync-pill.warn { background: #fee2e2; color: #991b1b; }
+
+    /* KPI Strip */
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+      margin-bottom: 22px;
+    }
+
+    .kpi-card {
+      background: var(--clinic-surface);
+      border: 1px solid var(--clinic-line);
+      border-radius: var(--clinic-radius);
+      padding: 18px 20px;
+      box-shadow: var(--clinic-shadow);
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .kpi-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.25rem;
+      flex-shrink: 0;
+    }
+
+    .kpi-val { font-size: 1.65rem; font-weight: 800; line-height: 1.1; }
+    .kpi-lbl { font-size: 0.78rem; font-weight: 700; color: var(--clinic-muted); text-transform: uppercase; letter-spacing: 0.04em; }
+
+    /* Workspace Tabs */
+    .clinic-tabs {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-bottom: 18px;
+    }
+
+    .c-tab {
+      padding: 10px 18px;
+      border-radius: 12px;
+      border: 1px solid var(--clinic-line);
+      background: #fff;
+      color: var(--clinic-muted);
+      font-weight: 700;
+      font-size: 0.88rem;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.18s ease;
+    }
+
+    .c-tab:hover { border-color: var(--clinic-teal); color: var(--clinic-teal); }
+    .c-tab.active {
+      background: var(--clinic-teal);
+      border-color: var(--clinic-teal);
+      color: #fff;
+      box-shadow: 0 8px 18px -6px rgba(15, 118, 110, 0.45);
+    }
+
+    .tab-panel { display: none; }
+    .tab-panel.active { display: block; }
+
+    .panel-grid-2 {
+      display: grid;
+      grid-template-columns: 1.05fr 1.25fr;
+      gap: 20px;
+      align-items: start;
+    }
+
+    .c-card {
+      background: var(--clinic-surface);
+      border: 1px solid var(--clinic-line);
+      border-radius: var(--clinic-radius);
+      padding: 22px;
+      box-shadow: var(--clinic-shadow);
+    }
+
+    .c-card-title {
+      margin: 0 0 14px;
+      font-size: 1.12rem;
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+
+    /* Form Controls */
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px; }
+    .form-field { display: flex; flex-direction: column; gap: 5px; margin-bottom: 12px; }
+    .form-field label { font-size: 0.75rem; font-weight: 700; text-transform: uppercase; color: var(--clinic-muted); letter-spacing: 0.04em; }
+    .form-field input, .form-field select, .form-field textarea {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1.5px solid var(--clinic-line);
+      border-radius: 10px;
+      font-family: inherit;
+      font-size: 0.9rem;
+      color: var(--clinic-ink);
+      background: #fff;
+      outline: none;
+    }
+    .form-field input:focus, .form-field select:focus, .form-field textarea:focus {
+      border-color: var(--clinic-teal);
+      box-shadow: 0 0 0 3px rgba(15, 118, 110, 0.12);
+    }
+
+    .btn-c {
+      padding: 10px 16px;
+      border-radius: 10px;
+      border: none;
+      font-family: inherit;
+      font-weight: 700;
+      font-size: 0.86rem;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      text-decoration: none;
+      transition: 0.18s ease;
+    }
+    .btn-c-primary { background: var(--clinic-teal); color: #fff; }
+    .btn-c-primary:hover { background: var(--clinic-teal-dark); }
+    .btn-c-outline { background: #fff; border: 1.5px solid var(--clinic-line); color: var(--clinic-ink); }
+    .btn-c-outline:hover { border-color: var(--clinic-teal); color: var(--clinic-teal); }
+    .btn-c-danger { background: #fee2e2; color: #991b1b; padding: 6px 10px; font-size: 0.78rem; }
+
+    /* BMI Readout Banner */
+    .bmi-preview {
+      background: #f0fdfa;
+      border: 1px solid #99f6e4;
+      border-radius: 14px;
+      padding: 14px 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 14px;
+    }
+
+    .bmi-badge {
+      padding: 5px 12px;
+      border-radius: 999px;
+      font-size: 0.78rem;
+      font-weight: 800;
+      text-transform: uppercase;
+    }
+    .bmi-normal { background: #dcfce7; color: #166534; }
+    .bmi-under { background: #dbeafe; color: #1e40af; }
+    .bmi-over { background: #fef3c7; color: #92400e; }
+    .bmi-obese { background: #ffe4e6; color: #9f1239; }
+
+    /* Tables */
+    .table-wrap { overflow-x: auto; }
+    table.c-table { width: 100%; border-collapse: collapse; font-size: 0.86rem; }
+    table.c-table th, table.c-table td {
+      padding: 10px 12px;
+      border-bottom: 1px solid var(--clinic-line);
+      text-align: left;
+      vertical-align: middle;
+    }
+    table.c-table th {
+      background: #f8fafc;
+      font-size: 0.72rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      color: var(--clinic-muted);
+      letter-spacing: 0.04em;
+    }
+
+    /* Legal & Gov Health Cards */
+    .law-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 16px;
+    }
+
+    .law-card {
+      background: #fff;
+      border: 1px solid var(--clinic-line);
+      border-left: 4px solid var(--clinic-teal);
+      border-radius: 14px;
+      padding: 18px;
+    }
+    .law-card h4 { margin: 0 0 6px; font-size: 1rem; font-weight: 800; color: var(--clinic-ink); }
+    .law-card .law-code { font-size: 0.75rem; font-weight: 800; color: var(--clinic-teal); text-transform: uppercase; margin-bottom: 6px; display: block; }
+    .law-card p { margin: 0; font-size: 0.88rem; color: var(--clinic-muted); }
+
+    @media (max-width: 960px) {
+      .kpi-grid { grid-template-columns: repeat(2, 1fr); }
+      .panel-grid-2, .law-grid { grid-template-columns: 1fr; }
+    }
+
+    @media (max-width: 600px) {
+      .kpi-grid, .form-row { grid-template-columns: 1fr; }
+      .clinic-hero { padding: 22px 18px; }
+    }
+  </style>
 </head>
 <body>
 
-   <!-- PAGE HERO -->
-  <div class="page-hero">
-    <div class="wrap">
-      <span class="badge">Health Services</span>
-      <h1>School Clinic</h1>
-      <p class="meta">Sta. Cruz Pingkian High School • Emergency health issues, first-aid and mental health & Awareness</p>
-    </div>
-  </div>
-
-    <!-- Mini-header / Breadcrumb -->
+  <!-- Mini-header / Breadcrumb -->
   <header class="mini-header">
     <div class="wrap" style="display:flex; align-items:center; gap:12px; padding:10px 0">
-      <!-- LOCAL/OFFLINE: ../../index.html  |  ONLINE (optional): /index.html -->
       <a href="../../index.html" class="brand">SCPHS</a>
-
       <nav aria-label="Breadcrumb" class="crumbs">
-        <!-- LOCAL/OFFLINE: ../../index.html  |  ONLINE: /index.html -->
         <a href="../../index.html">Home</a>
         /
-        <!-- If you add a landing page at /support-services/index.html use:
-             LOCAL: ../index.html  |  ONLINE: /support-services/index.html -->
-        <a href="../../index.html">Support Services</a>
+        <a href="../administration/admin.html">Support Services</a>
         /
-        <strong>Clinic Office</strong>
+        <strong>School Clinic</strong>
       </nav>
     </div>
   </header>
 
-  
-  <main class="wrap" style="margin-top:16px">
-    <article class="card">
-      <header style="padding:16px; border-bottom:1px solid var(--line)">
-        <h1 style="margin:0">About Clinic / Health Services</h1>
-        <p class="meta">First aid, health monitoring, and wellness programs.</p>
-      </header>
+  <main class="clinic-shell">
+    <!-- HERO -->
+    <section class="clinic-hero">
+      <div>
+        <div class="pill"><i class="fas fa-heartbeat"></i> DepEd School Health &amp; Nutrition • DOH / RHU Link</div>
+        <h1>School Health Clinic</h1>
+        <p>Sta. Cruz Pingkian High School • First aid, SF1 learner health &amp; BMI tracking, medical referrals, wellness advisories, and statutory health compliance.</p>
+      </div>
+      <div class="hero-actions">
+        <span class="sync-pill" id="clinicSyncStatus"><i class="fas fa-circle-notch fa-spin"></i> Syncing SF1 &amp; Firestore...</span>
+        <a href="../../sf1.html" class="btn-c btn-c-outline"><i class="fas fa-book-open"></i> Open SF1 Register</a>
+      </div>
+    </section>
 
-      <section style="padding:16px; display:grid; gap:18px">
-        <div class="info-grid" style="display:grid; grid-template-columns: 1fr 1fr; gap:16px">
-          <div class="card soft">
-            <h3>Clinic Information</h3>
-            <ul class="list">
-              <li>Location: Clinic Room</li>
-              <li>Email: <a href="mailto:300648@deped.gov.ph">300648@deped.gov.ph</a></li>
-              <li>Phone: +63 967‑8848989</li>
-            </ul>
-          </div>
+    <!-- KPI SUMMARY -->
+    <section class="kpi-grid">
+      <div class="kpi-card">
+        <div class="kpi-icon" style="background:var(--clinic-teal-soft); color:var(--clinic-teal);"><i class="fas fa-user-graduate"></i></div>
+        <div>
+          <div class="kpi-val" id="kpiSf1Students">0</div>
+          <div class="kpi-lbl">SF1 Learners Loaded</div>
+        </div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-icon" style="background:var(--clinic-blue-soft); color:var(--clinic-blue);"><i class="fas fa-weight-scale"></i></div>
+        <div>
+          <div class="kpi-val" id="kpiBmiCount">0</div>
+          <div class="kpi-lbl">BMI Assessments</div>
+        </div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-icon" style="background:var(--clinic-amber-soft); color:var(--clinic-amber);"><i class="fas fa-notes-medical"></i></div>
+        <div>
+          <div class="kpi-val" id="kpiVisitCount">0</div>
+          <div class="kpi-lbl">Clinic Visits Logged</div>
+        </div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-icon" style="background:var(--clinic-rose-soft); color:var(--clinic-rose);"><i class="fas fa-ambulance"></i></div>
+        <div>
+          <div class="kpi-val" id="kpiReferralCount">0</div>
+          <div class="kpi-lbl">RHU / DOH Referrals</div>
+        </div>
+      </div>
+    </section>
 
-          <div class="card soft">
-            <h3>Hours</h3>
-            <table class="table">
-              <tbody>
-                <tr><td>Monday–Friday</td><td>8:00 AM – 5:00 PM</td></tr>
-                <tr><td>On Emergencies</td><td>As needed</td></tr>
+    <!-- NAVIGATION TABS -->
+    <div class="clinic-tabs" role="tablist">
+      <button type="button" class="c-tab active" data-tab="bmi" onclick="switchClinicTab('bmi', this)">
+        <i class="fas fa-weight-scale"></i> SF1 Roster &amp; BMI Tracker
+      </button>
+      <button type="button" class="c-tab" data-tab="visits" onclick="switchClinicTab('visits', this)">
+        <i class="fas fa-stethoscope"></i> Clinic Visits &amp; Referrals
+      </button>
+      <button type="button" class="c-tab" data-tab="overview" onclick="switchClinicTab('overview', this)">
+        <i class="fas fa-clinic-medical"></i> Clinic Info &amp; Forms
+      </button>
+      <button type="button" class="c-tab" data-tab="legal" onclick="switchClinicTab('legal', this)">
+        <i class="fas fa-scale-balanced"></i> Legal Basis &amp; DOH Links
+      </button>
+    </div>
+
+    <!-- TAB 1: SF1 ROSTER & BMI TRACKER -->
+    <section class="tab-panel active" id="panel-bmi">
+      <div class="panel-grid-2">
+        <div class="c-card">
+          <h2 class="c-card-title"><span><i class="fas fa-calculator" style="color:var(--clinic-teal);"></i> Record Learner BMI from SF1</span></h2>
+
+          <form onsubmit="saveBmiAssessment(event)">
+            <div class="form-row">
+              <div class="form-field">
+                <label>1. Select SF1 Class</label>
+                <select id="sf1ClassSelect" onchange="handleSf1ClassChange()">
+                  <option value="">-- Choose Class --</option>
+                </select>
+              </div>
+              <div class="form-field">
+                <label>2. Select Student (from SF1)</label>
+                <select id="sf1StudentSelect" onchange="handleSf1StudentChange()">
+                  <option value="">-- Choose Student --</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-field">
+                <label>Learner Name</label>
+                <input type="text" id="bmiStudentName" required placeholder="Auto-filled from SF1 or enter name">
+              </div>
+              <div class="form-field">
+                <label>LRN / Sex</label>
+                <input type="text" id="bmiStudentMeta" placeholder="e.g., 123456789012 • M/F">
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-field">
+                <label>Height (cm) *</label>
+                <input type="number" step="0.1" min="40" max="250" id="bmiHeightCm" required oninput="calculateBmiLive()" placeholder="e.g., 158">
+              </div>
+              <div class="form-field">
+                <label>Weight (kg) *</label>
+                <input type="number" step="0.1" min="5" max="250" id="bmiWeightKg" required oninput="calculateBmiLive()" placeholder="e.g., 48.5">
+              </div>
+            </div>
+
+            <div class="bmi-preview">
+              <div>
+                <div style="font-size:0.75rem; font-weight:700; color:var(--clinic-muted); text-transform:uppercase;">Computed Body Mass Index</div>
+                <div style="font-size:1.35rem; font-weight:800;" id="bmiValueDisplay">— kg/m²</div>
+              </div>
+              <span class="bmi-badge bmi-normal" id="bmiStatusBadge">Awaiting Input</span>
+            </div>
+
+            <div class="form-field">
+              <label>Nutritional / Health Notes or Action Plan</label>
+              <input type="text" id="bmiNotes" placeholder="e.g., SBFP / dietary counseling / RHU checkup">
+            </div>
+
+            <button type="submit" class="btn-c btn-c-primary" id="saveBmiBtn">
+              <i class="fas fa-save"></i> Save BMI Assessment
+            </button>
+          </form>
+        </div>
+
+        <div class="c-card">
+          <h2 class="c-card-title">
+            <span><i class="fas fa-clipboard-list" style="color:var(--clinic-blue);"></i> Recorded BMI Assessments</span>
+            <input type="text" id="bmiSearch" oninput="renderBmiTable()" placeholder="Filter by learner or class..." style="max-width:220px; padding:7px 11px; border:1.5px solid var(--clinic-line); border-radius:9px; font-size:0.82rem;">
+          </h2>
+          <div class="table-wrap">
+            <table class="c-table">
+              <thead>
+                <tr>
+                  <th>Learner</th>
+                  <th>Class</th>
+                  <th>Ht / Wt</th>
+                  <th>BMI</th>
+                  <th>Status</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody id="bmiTableBody">
+                <tr><td colspan="6" style="text-align:center; padding:24px; color:var(--clinic-muted);">No BMI records yet.</td></tr>
               </tbody>
             </table>
           </div>
         </div>
+      </div>
+    </section>
 
-        <div class="card soft">
-          <h3>Services</h3>
-          <ul class="list">
-            <li>First aid and basic care</li>
-            <li>Health assessment and referrals</li>
-            <li>Health education and advisories</li>
-            <li>Coordination with parents/guardians</li>
+    <!-- TAB 2: CLINIC VISITS & REFERRALS -->
+    <section class="tab-panel" id="panel-visits">
+      <div class="panel-grid-2">
+        <div class="c-card">
+          <h2 class="c-card-title"><span><i class="fas fa-plus-circle" style="color:var(--clinic-teal);"></i> Log Clinic Visit / Referral</span></h2>
+          <form onsubmit="saveClinicVisit(event)">
+            <div class="form-row">
+              <div class="form-field">
+                <label>Patient / Learner Name *</label>
+                <input type="text" id="visitPatientName" required placeholder="Full name">
+              </div>
+              <div class="form-field">
+                <label>Grade / Section or Role</label>
+                <input type="text" id="visitGroup" placeholder="e.g., Grade 10 - Narra or Faculty">
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-field">
+                <label>Chief Complaint / Symptoms *</label>
+                <input type="text" id="visitComplaint" required placeholder="e.g., Fever, headache, minor sprain">
+              </div>
+              <div class="form-field">
+                <label>Disposition / Referral Status</label>
+                <select id="visitDisposition">
+                  <option value="Treated & Returned to Class">Treated &amp; Returned to Class</option>
+                  <option value="Sent Home / Parent Notified">Sent Home / Parent Notified</option>
+                  <option value="Referred to RHU / Rural Health Unit">Referred to RHU / Rural Health Unit</option>
+                  <option value="Referred to Municipal / Provincial Hospital">Referred to Municipal / Provincial Hospital</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="form-field">
+              <label>First Aid / Intervention &amp; Vitals</label>
+              <textarea id="visitNotes" rows="2" placeholder="Temperature, BP, first aid given, medicines or advice..."></textarea>
+            </div>
+
+            <button type="submit" class="btn-c btn-c-primary" id="saveVisitBtn">
+              <i class="fas fa-check"></i> Save Clinic Log
+            </button>
+          </form>
+        </div>
+
+        <div class="c-card">
+          <h2 class="c-card-title"><span><i class="fas fa-history" style="color:var(--clinic-amber);"></i> Clinic Consultation &amp; Referral Log</span></h2>
+          <div class="table-wrap">
+            <table class="c-table">
+              <thead>
+                <tr>
+                  <th>Date</th>
+                  <th>Patient</th>
+                  <th>Complaint</th>
+                  <th>Disposition</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody id="visitTableBody">
+                <tr><td colspan="5" style="text-align:center; padding:24px; color:var(--clinic-muted);">No clinic visits recorded yet.</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 3: CLINIC INFO & FORMS -->
+    <section class="tab-panel" id="panel-overview">
+      <div class="law-grid">
+        <div class="c-card">
+          <h2 class="c-card-title"><span><i class="fas fa-map-marker-alt" style="color:var(--clinic-teal);"></i> Clinic Information &amp; Hours</span></h2>
+          <ul style="list-style:none; padding:0; margin:0 0 14px; display:grid; gap:8px; font-size:0.92rem;">
+            <li><strong>Location:</strong> School Clinic Room, Sta. Cruz Pingkian High School, Brgy. Sta. Cruz, Pingkian, Nueva Vizcaya</li>
+            <li><strong>Email:</strong> <a href="mailto:300648@deped.gov.ph">300648@deped.gov.ph</a></li>
+            <li><strong>Phone / Emergency Line:</strong> <a href="tel:+639678848989">+63 967-8848989</a></li>
+            <li><strong>Regular Hours:</strong> Monday–Friday, 8:00 AM – 5:00 PM (Emergencies: As needed)</li>
+          </ul>
+          <h3 style="margin:12px 0 8px; font-size:0.95rem;">Core School Health Services</h3>
+          <ul style="margin:0; padding-left:18px; color:var(--clinic-muted); font-size:0.9rem; display:grid; gap:4px;">
+            <li>Immediate first aid, injury response, and emergency stabilization</li>
+            <li>Nutritional status &amp; BMI screening synchronized with SF1 class rolls</li>
+            <li>Mental health first aid, wellness counseling, and health advisories</li>
+            <li>Parent/guardian notification and coordination with Municipal RHU &amp; DOH</li>
           </ul>
         </div>
 
-        <div class="card soft">
-          <h3>Downloads</h3>
-          <ul class="list">
-            <li><a href="/assets/docs/medical-consent-form.pdf" target="_blank" rel="noopener">Medical Consent Form (PDF)</a></li>
-            <li><a href="/assets/docs/health-advisory.pdf" target="_blank" rel="noopener">Health Advisory (PDF)</a></li>
-          </ul>
+        <div class="c-card">
+          <h2 class="c-card-title"><span><i class="fas fa-file-medical" style="color:var(--clinic-blue);"></i> Standard Clinic Forms &amp; Advisories</span></h2>
+          <p style="color:var(--clinic-muted); font-size:0.9rem; margin-top:0;">
+            Download parent consent forms and health advisories for learners, faculty, and school activities:
+          </p>
+          <div style="display:grid; gap:10px; margin-top:12px;">
+            <a href="../../assets/docs/medical-consent-form.pdf" target="_blank" rel="noopener" class="btn-c btn-c-outline" style="justify-content:space-between;">
+              <span><i class="fas fa-file-pdf" style="color:#dc2626;"></i> Medical Consent Form (PDF)</span>
+              <i class="fas fa-external-link-alt"></i>
+            </a>
+            <a href="../../assets/docs/health-advisory.pdf" target="_blank" rel="noopener" class="btn-c btn-c-outline" style="justify-content:space-between;">
+              <span><i class="fas fa-file-pdf" style="color:#0f766e;"></i> Health Advisory &amp; Wellness Guide (PDF)</span>
+              <i class="fas fa-external-link-alt"></i>
+            </a>
+          </div>
         </div>
-      </section>
-    </article>
+      </div>
+    </section>
+
+    <!-- TAB 4: LEGAL BASIS & GOV HEALTH LINKS -->
+    <section class="tab-panel" id="panel-legal">
+      <div class="c-card" style="margin-bottom:18px;">
+        <h2 class="c-card-title"><span><i class="fas fa-landmark" style="color:var(--clinic-teal);"></i> Legal &amp; Policy Basis for School Health Services</span></h2>
+        <div class="law-grid">
+          <div class="law-card">
+            <span class="law-code">Presidential Decree No. 856 (Chapter VI)</span>
+            <h4>Code on Sanitation of the Philippines</h4>
+            <p>Mandates school sanitation and health services, including adequate health facilities, periodic health checks, first aid, and coordination with local health authorities.</p>
+          </div>
+          <div class="law-card">
+            <span class="law-code">Republic Act No. 11223</span>
+            <h4>Universal Health Care (UHC) Act</h4>
+            <p>Integrates population-based and individual-based health services through Primary Care Provider Networks (such as Rural Health Units / DOH facilities) with school-based health promotion and referral pathways.</p>
+          </div>
+          <div class="law-card">
+            <span class="law-code">DepEd Order No. 13, s. 2017 &amp; BLSS-SHD</span>
+            <h4>School Health, Nutrition &amp; Healthy Food Policy</h4>
+            <p>Guides learner nutritional assessment, physical wellness, healthy food and beverage standards in schools, and standardized clinic procedures under the DepEd Bureau of Learner Support Services – School Health Division.</p>
+          </div>
+          <div class="law-card">
+            <span class="law-code">RA 10152 • RA 10627 • RA 11036</span>
+            <h4>Immunization, Child Protection &amp; Mental Health</h4>
+            <p>Supports public health coordination with DOH/RHU immunization and health programs, safe/anti-bullying school environments, and campus mental health awareness and referral protocols.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="c-card">
+        <h3 style="margin:0 0 12px; font-size:1rem; font-weight:800;">Government Health Reference Portals</h3>
+        <div style="display:flex; flex-wrap:wrap; gap:10px;">
+          <a href="https://doh.gov.ph/" target="_blank" rel="noopener" class="btn-c btn-c-outline">
+            <i class="fas fa-hospital" style="color:var(--clinic-teal);"></i> Department of Health (DOH)
+          </a>
+          <a href="https://www.deped.gov.ph/" target="_blank" rel="noopener" class="btn-c btn-c-outline">
+            <i class="fas fa-school" style="color:var(--clinic-blue);"></i> Department of Education (DepEd)
+          </a>
+          <a href="https://www.officialgazette.gov.ph/" target="_blank" rel="noopener" class="btn-c btn-c-outline">
+            <i class="fas fa-gavel"></i> Official Gazette (Philippine Laws)
+          </a>
+        </div>
+      </div>
+    </section>
   </main>
-
-  <footer class="govph-footer" role="contentinfo" style="margin-top:24px">
-    <div class="govph-footer__bar">
-      <div class="wrap"><small>© <span id="yearNow"></span> SCPHS</small></div>
-    </div>
-  </footer>
-  <script>document.getElementById('yearNow').textContent = new Date().getFullYear();</script>
-</body>
-</html>
-
-<!-- ======================= END ABOUT SECTION ======================= -->
 
   <!-- School Footer (SCPHS) -->
   <footer>
@@ -115,11 +647,11 @@
           <a href="https://www.facebook.com/p/Santa-Cruz-Pingkian-High-School-Official-61554495084090/" target="_blank" rel="noopener">Facebook</a>
         </div>
       </div>
-      <div class="copy">© 2026 SCPHS. All rights reserved.</div>
+      <div class="copy">© <span id="yearNow"></span> SCPHS. All rights reserved.</div>
     </div>
   </footer>
 
-  <!-- ================== GOVPH FOOTER (final, official) ================== -->
+  <!-- GOVPH FOOTER -->
   <footer class="govph-footer" role="contentinfo">
     <div class="wrap govph-footer__grid">
       <div class="govph-footer__col">
@@ -148,44 +680,372 @@
 
     <div class="govph-footer__bar">
       <div class="wrap">
-        <small>© <span id="yearNow"></span> Sta. Cruz Pingkian High School • A Philippine Government Website</small>
+        <small>© <span id="yearNowGov"></span> Sta. Cruz Pingkian High School • A Philippine Government Website</small>
       </div>
     </div>
   </footer>
 
-           <!-- Chatbot mount -->
-<div id="scphs-chatbot-root"></div>
+  <!-- Chatbot mount -->
+  <div id="scphs-chatbot-root"></div>
 
-<!-- Chatbot auto-loader: tries absolute path, then ../, then ../../ -->
-<script>
-(function(){
-  const rootId = 'scphs-chatbot-root';
-  if (!document.getElementById(rootId)) {
-    const m = document.createElement('div');
-    m.id = rootId;
-    document.body.appendChild(m);
-  }
+  <script type="module">
+    import { db } from "../../assets/js/firebase-config.js";
+    import {
+      collection, getDocs, doc, setDoc, deleteDoc
+    } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
-  const tried = {};
-  function load(src, onOk, onFail){
-    if (tried[src]) return onFail && onFail();
-    tried[src] = true;
-    const s = document.createElement('script');
-    s.src = src; s.defer = true;
-    s.onload = onOk;
-    s.onerror = onFail;
-    document.body.appendChild(s);
-  }
+    // Optional SF1 store helper if available at ../../assets/js/sf1-store.js
+    try {
+      await import("../../assets/js/sf1-store.js");
+    } catch (_) {
+      // Fallback to direct Firestore collection query below
+    }
 
-  // Try absolute (works when hosted), then step-wise relatives (works offline)
-  load('/assets/js/chatbot.js', null, () =>
-    load('assets/js/chatbot.js', null, () =>
-      load('../assets/js/chatbot.js', null, () =>
-        load('../../assets/js/chatbot.js', null, () =>
-          console.warn('SCPHS chatbot: unable to load script from any known path.')
+    const BMI_COLLECTION = "clinic_bmi_records";
+    const VISIT_COLLECTION = "clinic_visits";
+
+    let sf1Classes = [];
+    let currentStudents = [];
+    let bmiRecords = [];
+    let visitRecords = [];
+
+    function esc(s) {
+      return String(s ?? "").replace(/[&<>"']/g, m => ({
+        "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
+      }[m]));
+    }
+
+    function escJS(s) {
+      return String(s ?? "").replace(/\\/g, "\\\\").replace(/'/g, "\\'");
+    }
+
+    function setSyncStatus(mode, label) {
+      const el = document.getElementById("clinicSyncStatus");
+      if (!el) return;
+      el.className = `sync-pill ${mode}`;
+      el.innerHTML = `<i class="fas ${mode === "ready" ? "fa-check-circle" : "fa-exclamation-circle"}"></i> ${esc(label)}`;
+    }
+
+    window.switchClinicTab = function(tabKey, btnEl) {
+      document.querySelectorAll(".c-tab").forEach(b => b.classList.remove("active"));
+      document.querySelectorAll(".tab-panel").forEach(p => p.classList.remove("active"));
+      if (btnEl) btnEl.classList.add("active");
+      document.getElementById(`panel-${tabKey}`)?.classList.add("active");
+    };
+
+    /* ================= SF1 INTEGRATION ================= */
+    async function loadSf1Classes() {
+      const select = document.getElementById("sf1ClassSelect");
+      try {
+        if (window.SF1 && typeof window.SF1.listClasses === "function") {
+          sf1Classes = await window.SF1.listClasses();
+        } else {
+          const snap = await getDocs(collection(db, "classes"));
+          sf1Classes = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+        }
+
+        select.innerHTML = `<option value="">-- Choose Class (${sf1Classes.length}) --</option>` +
+          sf1Classes.map(c => {
+            const label = c.classLabel || c.sectionName || c.name || c.id;
+            const sy = c.schoolYear ? ` (${c.schoolYear})` : "";
+            return `<option value="${esc(c.id)}">${esc(label + sy)}</option>`;
+          }).join("");
+
+        let totalStudents = 0;
+        for (const cls of sf1Classes) {
+          const stList = await fetchStudentsForClass(cls.id);
+          totalStudents += stList.length;
+        }
+        document.getElementById("kpiSf1Students").textContent = totalStudents;
+        setSyncStatus("ready", `SF1 & Firestore Connected (${sf1Classes.length} classes)`);
+      } catch (err) {
+        console.warn("SF1 load note:", err);
+        setSyncStatus("warn", "SF1 limited — manual entry available");
+      }
+    }
+
+    async function fetchStudentsForClass(classId) {
+      if (!classId) return [];
+      if (window.SF1 && typeof window.SF1.listStudents === "function") {
+        return await window.SF1.listStudents(classId);
+      }
+      const snap = await getDocs(collection(db, `classes/${classId}/students`));
+      return snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    }
+
+    window.handleSf1ClassChange = async function() {
+      const classId = document.getElementById("sf1ClassSelect").value;
+      const studentSelect = document.getElementById("sf1StudentSelect");
+      studentSelect.innerHTML = `<option value="">Loading students...</option>`;
+      currentStudents = await fetchStudentsForClass(classId);
+
+      studentSelect.innerHTML = `<option value="">-- Choose Student (${currentStudents.length}) --</option>` +
+        currentStudents.map((s, idx) => {
+          const name = s.fullName || s.name || [s.lastName, s.firstName].filter(Boolean).join(", ") || `Student ${idx + 1}`;
+          return `<option value="${idx}">${esc(name)}</option>`;
+        }).join("");
+    };
+
+    window.handleSf1StudentChange = function() {
+      const idx = document.getElementById("sf1StudentSelect").value;
+      if (idx === "" || !currentStudents[Number(idx)]) return;
+      const s = currentStudents[Number(idx)];
+      const name = s.fullName || s.name || [s.firstName, s.middleName, s.lastName].filter(Boolean).join(" ") || "";
+      const metaParts = [];
+      if (s.lrn) metaParts.push(`LRN: ${s.lrn}`);
+      if (s.sex || s.gender) metaParts.push(`Sex: ${s.sex || s.gender}`);
+      if (s.age) metaParts.push(`Age: ${s.age}`);
+
+      document.getElementById("bmiStudentName").value = name;
+      document.getElementById("bmiStudentMeta").value = metaParts.join(" • ");
+    };
+
+    /* ================= BMI CALCULATION & FIRESTORE ================= */
+    function classifyBmi(bmi) {
+      if (bmi < 18.5) return { label: "Underweight", cls: "bmi-under" };
+      if (bmi < 25) return { label: "Normal", cls: "bmi-normal" };
+      if (bmi < 30) return { label: "Overweight", cls: "bmi-over" };
+      return { label: "Obese", cls: "bmi-obese" };
+    }
+
+    window.calculateBmiLive = function() {
+      const hCm = parseFloat(document.getElementById("bmiHeightCm").value);
+      const wKg = parseFloat(document.getElementById("bmiWeightKg").value);
+      const valEl = document.getElementById("bmiValueDisplay");
+      const badgeEl = document.getElementById("bmiStatusBadge");
+
+      if (!hCm || !wKg || hCm <= 0 || wKg <= 0) {
+        valEl.textContent = "— kg/m²";
+        badgeEl.textContent = "Awaiting Input";
+        badgeEl.className = "bmi-badge bmi-normal";
+        return null;
+      }
+
+      const hM = hCm / 100;
+      const bmi = +(wKg / (hM * hM)).toFixed(1);
+      const info = classifyBmi(bmi);
+
+      valEl.textContent = `${bmi.toFixed(1)} kg/m²`;
+      badgeEl.textContent = info.label;
+      badgeEl.className = `bmi-badge ${info.cls}`;
+      return { bmi, status: info.label, badgeCls: info.cls };
+    };
+
+    window.saveBmiAssessment = async function(evt) {
+      evt.preventDefault();
+      const calc = calculateBmiLive();
+      const studentName = document.getElementById("bmiStudentName").value.trim();
+      const heightCm = parseFloat(document.getElementById("bmiHeightCm").value);
+      const weightKg = parseFloat(document.getElementById("bmiWeightKg").value);
+
+      if (!studentName || !calc) {
+        alert("Please enter learner name, valid height, and valid weight.");
+        return;
+      }
+
+      const clsSelect = document.getElementById("sf1ClassSelect");
+      const classLabel = clsSelect.options[clsSelect.selectedIndex]?.text || "Unassigned Class";
+      const docId = `bmi_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`;
+
+      const record = {
+        studentName,
+        studentMeta: document.getElementById("bmiStudentMeta").value.trim(),
+        classId: clsSelect.value || "",
+        classLabel,
+        heightCm,
+        weightKg,
+        bmi: calc.bmi,
+        status: calc.status,
+        notes: document.getElementById("bmiNotes").value.trim(),
+        recordedAt: new Date().toISOString()
+      };
+
+      const btn = document.getElementById("saveBmiBtn");
+      btn.disabled = true;
+      try {
+        await setDoc(doc(db, BMI_COLLECTION, docId), record);
+        bmiRecords.unshift({ id: docId, ...record });
+        updateClinicKpis();
+        renderBmiTable();
+        evt.target.reset();
+        calculateBmiLive();
+      } catch (err) {
+        console.error("Save BMI error:", err);
+        alert("Failed to save BMI record: " + err.message);
+      } finally {
+        btn.disabled = false;
+      }
+    };
+
+    window.deleteBmiRecord = async function(id) {
+      if (!confirm("Delete this BMI record?")) return;
+      try {
+        await deleteDoc(doc(db, BMI_COLLECTION, id));
+        bmiRecords = bmiRecords.filter(r => r.id !== id);
+        updateClinicKpis();
+        renderBmiTable();
+      } catch (err) {
+        alert("Failed to delete BMI record: " + err.message);
+      }
+    };
+
+    function renderBmiTable() {
+      const tbody = document.getElementById("bmiTableBody");
+      const q = (document.getElementById("bmiSearch")?.value || "").trim().toLowerCase();
+      const filtered = q
+        ? bmiRecords.filter(r =>
+            (r.studentName || "").toLowerCase().includes(q) ||
+            (r.classLabel || "").toLowerCase().includes(q) ||
+            (r.status || "").toLowerCase().includes(q)
+          )
+        : bmiRecords;
+
+      if (!filtered.length) {
+        tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; padding:24px; color:var(--clinic-muted);">No matching BMI records.</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = filtered.map(r => {
+        const info = classifyBmi(Number(r.bmi) || 0);
+        return `
+          <tr>
+            <td><strong>${esc(r.studentName)}</strong>${r.studentMeta ? `<div style="font-size:0.74rem;color:var(--clinic-muted);">${esc(r.studentMeta)}</div>` : ""}</td>
+            <td>${esc(r.classLabel || "-")}</td>
+            <td>${esc(r.heightCm)} cm / ${esc(r.weightKg)} kg</td>
+            <td><strong>${Number(r.bmi).toFixed(1)}</strong></td>
+            <td><span class="bmi-badge ${info.cls}">${esc(r.status || info.label)}</span></td>
+            <td><button type="button" class="btn-c btn-c-danger" onclick="deleteBmiRecord('${escJS(r.id)}')"><i class="fas fa-trash"></i></button></td>
+          </tr>
+        `;
+      }).join("");
+    }
+
+    /* ================= CLINIC VISITS & REFERRALS ================= */
+    window.saveClinicVisit = async function(evt) {
+      evt.preventDefault();
+      const patientName = document.getElementById("visitPatientName").value.trim();
+      const complaint = document.getElementById("visitComplaint").value.trim();
+      if (!patientName || !complaint) return;
+
+      const docId = `visit_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`;
+      const record = {
+        patientName,
+        groupLabel: document.getElementById("visitGroup").value.trim(),
+        complaint,
+        disposition: document.getElementById("visitDisposition").value,
+        notes: document.getElementById("visitNotes").value.trim(),
+        visitedAt: new Date().toISOString()
+      };
+
+      const btn = document.getElementById("saveVisitBtn");
+      btn.disabled = true;
+      try {
+        await setDoc(doc(db, VISIT_COLLECTION, docId), record);
+        visitRecords.unshift({ id: docId, ...record });
+        updateClinicKpis();
+        renderVisitTable();
+        evt.target.reset();
+      } catch (err) {
+        alert("Failed to save clinic visit: " + err.message);
+      } finally {
+        btn.disabled = false;
+      }
+    };
+
+    window.deleteVisitRecord = async function(id) {
+      if (!confirm("Delete this clinic visit log?")) return;
+      try {
+        await deleteDoc(doc(db, VISIT_COLLECTION, id));
+        visitRecords = visitRecords.filter(v => v.id !== id);
+        updateClinicKpis();
+        renderVisitTable();
+      } catch (err) {
+        alert("Failed to delete visit log: " + err.message);
+      }
+    };
+
+    function renderVisitTable() {
+      const tbody = document.getElementById("visitTableBody");
+      if (!visitRecords.length) {
+        tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; padding:24px; color:var(--clinic-muted);">No clinic visits recorded yet.</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = visitRecords.map(v => {
+        const dt = v.visitedAt ? new Date(v.visitedAt).toLocaleDateString("en-PH", { month: "short", day: "numeric", year: "numeric" }) : "-";
+        return `
+          <tr>
+            <td>${esc(dt)}</td>
+            <td><strong>${esc(v.patientName)}</strong>${v.groupLabel ? `<div style="font-size:0.74rem;color:var(--clinic-muted);">${esc(v.groupLabel)}</div>` : ""}</td>
+            <td>${esc(v.complaint)}</td>
+            <td>${esc(v.disposition)}</td>
+            <td><button type="button" class="btn-c btn-c-danger" onclick="deleteVisitRecord('${escJS(v.id)}')"><i class="fas fa-trash"></i></button></td>
+          </tr>
+        `;
+      }).join("");
+    }
+
+    function updateClinicKpis() {
+      document.getElementById("kpiBmiCount").textContent = bmiRecords.length;
+      document.getElementById("kpiVisitCount").textContent = visitRecords.length;
+      const referrals = visitRecords.filter(v => /refer/i.test(v.disposition || "")).length;
+      document.getElementById("kpiReferralCount").textContent = referrals;
+    }
+
+    async function loadClinicLogs() {
+      try {
+        const [bmiSnap, visitSnap] = await Promise.all([
+          getDocs(collection(db, BMI_COLLECTION)),
+          getDocs(collection(db, VISIT_COLLECTION))
+        ]);
+        bmiRecords = bmiSnap.docs.map(d => ({ id: d.id, ...d.data() }))
+          .sort((a, b) => String(b.recordedAt || "").localeCompare(String(a.recordedAt || "")));
+        visitRecords = visitSnap.docs.map(d => ({ id: d.id, ...d.data() }))
+          .sort((a, b) => String(b.visitedAt || "").localeCompare(String(a.visitedAt || "")));
+        updateClinicKpis();
+        renderBmiTable();
+        renderVisitTable();
+      } catch (err) {
+        console.warn("Clinic logs read error:", err);
+      }
+    }
+
+    document.addEventListener("DOMContentLoaded", async () => {
+      const yr = new Date().getFullYear();
+      document.getElementById("yearNow").textContent = yr;
+      document.getElementById("yearNowGov").textContent = yr;
+      await Promise.all([loadSf1Classes(), loadClinicLogs()]);
+    });
+  </script>
+
+  <!-- Chatbot auto-loader -->
+  <script>
+    (function(){
+      const rootId = 'scphs-chatbot-root';
+      if (!document.getElementById(rootId)) {
+        const m = document.createElement('div');
+        m.id = rootId;
+        document.body.appendChild(m);
+      }
+      const tried = {};
+      function load(src, onOk, onFail){
+        if (tried[src]) return onFail && onFail();
+        tried[src] = true;
+        const s = document.createElement('script');
+        s.src = src; s.defer = true;
+        s.onload = onOk; s.onerror = onFail;
+        document.body.appendChild(s);
+      }
+      load('/assets/js/chatbot.js', null, () =>
+        load('assets/js/chatbot.js', null, () =>
+          load('../assets/js/chatbot.js', null, () =>
+            load('../../assets/js/chatbot.js', null, () =>
+              console.warn('SCPHS chatbot: unable to load script from any known path.')
+            )
+          )
         )
-      )
-    )
-  );
-})();
-</script>
+      );
+    })();
+  </script>
+</body>
+</html>
