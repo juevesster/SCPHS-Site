@@ -60,6 +60,13 @@
     .sync-badge.ok { background: #dcfce7; color: #166534; }
     .hours-pill { font-size: 0.82rem; font-weight: 700; color: var(--text-muted); background: #fff; padding: 7px 14px; border-radius: 999px; border: 1px solid var(--border); white-space: nowrap; }
 
+    /* Active Patron Session Banner */
+    .session-pill {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: #ecfdf5; border: 1px solid #a7f3d0; color: #065f46;
+      padding: 6px 12px; border-radius: 999px; font-size: 0.78rem; font-weight: 700;
+    }
+
     .dashboard-scroll { flex: 1; padding: 24px 30px 90px; z-index: 1; }
 
     /* Bento Grid */
@@ -80,6 +87,22 @@
 
     .card-header { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; margin-bottom: 16px; }
     .card-title { font-size: 1.12rem; font-weight: 800; color: var(--text-main); display: flex; align-items: center; gap: 9px; }
+
+    /* Role Selector Pills */
+    .role-selector { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 18px; }
+    .role-btn {
+      display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px;
+      padding: 14px 10px; border-radius: 14px; border: 2px solid var(--border);
+      background: #f8fafc; color: var(--text-main); font-weight: 700; font-size: 0.88rem;
+      cursor: pointer; transition: all 0.2s ease;
+    }
+    .role-btn i { font-size: 1.25rem; color: var(--text-muted); transition: color 0.2s ease; }
+    .role-btn:hover { border-color: var(--primary-light); background: #fff; }
+    .role-btn.active {
+      border-color: var(--primary); background: #f0fdfa; color: var(--primary);
+      box-shadow: 0 6px 16px rgba(15, 118, 110, 0.12);
+    }
+    .role-btn.active i { color: var(--primary); }
 
     /* Resource Link Cards */
     .menu-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
@@ -102,6 +125,7 @@
 
     /* Forms & Controls */
     .form-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
+    .form-grid-2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
     .form-group { display: flex; flex-direction: column; min-width: 0; }
     .form-group.span-2 { grid-column: span 2; }
     .form-group.full { grid-column: 1 / -1; }
@@ -138,6 +162,9 @@
     .badge.overdue { background: #fee2e2; color: #b91c1c; }
     .badge.cat { background: #e0e7ff; color: #3730a3; }
     .badge.rem { background: #f1f5f9; color: #334155; }
+    .badge.role-student { background: #dbeafe; color: #1e40af; }
+    .badge.role-teacher { background: #f3e8ff; color: #6b21a8; }
+    .badge.role-visitor { background: #ffedd5; color: #9a3412; }
 
     /* Collapsible Drawer Form */
     .collapse-box { display: none; background: #f8fafc; border: 1px solid var(--border); border-radius: 16px; padding: 16px; margin-bottom: 16px; }
@@ -176,7 +203,7 @@
       .main-content { margin-left: 0; }
       .topbar { padding: 14px 18px; }
       .dashboard-scroll { padding: 18px 18px 90px; }
-      .bento-grid, .menu-grid, .form-grid { grid-template-columns: 1fr; }
+      .bento-grid, .menu-grid, .form-grid, .form-grid-2, .role-selector { grid-template-columns: 1fr; }
       .span-2, .span-4, .form-group.span-2 { grid-column: span 1; }
     }
   </style>
@@ -193,6 +220,9 @@
     <div class="sidebar-menu">
       <a href="#overview-section" class="menu-item active" onclick="setActiveMenu(this)">
         <i class="fas fa-compass icon"></i> <span>LRC Overview</span>
+      </a>
+      <a href="#attendance-section" class="menu-item" onclick="setActiveMenu(this)">
+        <i class="fas fa-user-check icon"></i> <span>Logbook &amp; Sessions</span>
       </a>
       <a href="#catalog-section" class="menu-item" onclick="setActiveMenu(this)">
         <i class="fas fa-book icon"></i> <span>Accession Catalog</span>
@@ -239,6 +269,20 @@
         </div>
       </div>
       <div class="topbar-right">
+        <!-- Active Patron Session Indicator / Log-In & Log-Out Controls -->
+        <div id="activeSessionBar" style="display:none;align-items:center;gap:8px;">
+          <span class="session-pill" id="sessionPillText">
+            <i class="fas fa-id-badge"></i> <span id="sessionUserSummary">Logged In</span>
+          </span>
+          <button type="button" class="btn btn-danger btn-sm" id="logoutSessionBtn" onclick="logoutCurrentPatron()">
+            <i class="fas fa-sign-out-alt"></i> Log Out
+          </button>
+        </div>
+
+        <button type="button" class="btn btn-primary btn-sm" id="openLoginModalBtn" onclick="openPatronLoginModal()">
+          <i class="fas fa-sign-in-alt"></i> Library Log In
+        </button>
+
         <button type="button" class="btn btn-outline btn-sm" id="editLrcBtn" onclick="openEditLrcModal()" style="display:none;">
           <i class="fas fa-edit"></i> Edit LRC Info &amp; Staff
         </button>
@@ -265,10 +309,10 @@
           </div>
         </div>
         <div class="bento-card stat-card">
-          <div class="stat-icon blue"><i class="fas fa-hand-holding-heart"></i></div>
+          <div class="stat-icon blue"><i class="fas fa-users"></i></div>
           <div>
-            <div class="stat-value" id="statBorrowed">0</div>
-            <div class="stat-label">Currently Borrowed</div>
+            <div class="stat-value" id="statActivePatrons">0</div>
+            <div class="stat-label">Active Library Log-Ins</div>
           </div>
         </div>
         <div class="bento-card stat-card">
@@ -338,6 +382,49 @@
         </div>
       </div>
 
+      <!-- LIBRARY LOG-IN / LOG-OUT ATTENDANCE & SESSIONS SECTION -->
+      <div class="bento-card" id="attendance-section" style="margin-bottom:20px;">
+        <div class="card-header">
+          <div class="card-title"><i class="fas fa-user-check" style="color:var(--primary);"></i> Library Log-In / Log-Out Logbook (<span id="logbookCount">0</span>)</div>
+          <div class="toolbar">
+            <input id="logSearch" oninput="renderLibraryLogs()" placeholder="Search name, role, grade/dept/agency, purpose...">
+            <select id="logRoleFilter" onchange="renderLibraryLogs()">
+              <option value="">All Roles</option>
+              <option value="Student">Student</option>
+              <option value="Teacher">Teacher</option>
+              <option value="Visitor">Visitor</option>
+            </select>
+            <select id="logStatusFilter" onchange="renderLibraryLogs()">
+              <option value="all">All Sessions</option>
+              <option value="active">Active (Logged In)</option>
+              <option value="logged_out">Logged Out</option>
+            </select>
+            <button type="button" class="btn btn-primary btn-sm" onclick="openPatronLoginModal()">
+              <i class="fas fa-sign-in-alt"></i> Log In Patron
+            </button>
+          </div>
+        </div>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Role</th>
+                <th>Name</th>
+                <th>Grade / Dept / Agency</th>
+                <th>Contact (Phone / Email)</th>
+                <th>Purpose</th>
+                <th>Time In / Out</th>
+                <th>Status &amp; Action</th>
+              </tr>
+            </thead>
+            <tbody id="logbook-body">
+              <tr><td colspan="7" style="text-align:center;padding:24px;color:var(--text-muted);">Loading library logbook entries...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
       <!-- ACCESSION CATALOG SECTION -->
       <div class="bento-card" id="catalog-section" style="margin-bottom:20px;">
         <div class="card-header">
@@ -358,11 +445,11 @@
               <i class="fas fa-file-import"></i> Bulk Import JSON
             </button>
             <button type="button" class="btn btn-primary btn-sm" onclick="toggleBox('addBookBox')">
-            <i class="fas fa-plus"></i> Add Accession Entry
+              <i class="fas fa-plus"></i> Add Accession Entry
             </button>
             <label class="btn btn-success btn-sm" style="margin:0;cursor:pointer;">
-            <i class="fas fa-file-excel"></i> Import Excel (.xlsx)
-            <input type="file" id="excelFileInput" accept=".xlsx,.xls,.csv" style="display:none;" onchange="handleExcelFileSelect(event)">
+              <i class="fas fa-file-excel"></i> Import Excel (.xlsx)
+              <input type="file" id="excelFileInput" accept=".xlsx,.xls,.csv" style="display:none;" onchange="handleExcelFileSelect(event)">
             </label>
           </div>
         </div>
@@ -542,6 +629,127 @@
     </div>
   </main>
 
+  <!-- PATRON LOG-IN MODAL (STUDENT / TEACHER / VISITOR) -->
+  <div class="modal-backdrop" id="patronLoginModal">
+    <div class="modal-box">
+      <div class="card-header">
+        <div class="card-title"><i class="fas fa-id-card" style="color:var(--primary);"></i> Library Log-In Registration</div>
+        <button type="button" class="btn btn-outline btn-sm" onclick="closePatronLoginModal()"><i class="fas fa-times"></i> Close</button>
+      </div>
+
+      <p style="font-size:0.84rem;color:var(--text-muted);margin-bottom:14px;">
+        Select your category below and fill out your details to log into the SCPHS Learning Resource Center.
+      </p>
+
+      <!-- Clickable Role Selector -->
+      <div class="role-selector" role="tablist" aria-label="Patron Role">
+        <button type="button" class="role-btn active" id="roleBtnStudent" onclick="selectPatronRole('Student')">
+          <i class="fas fa-user-graduate"></i>
+          <span>Student</span>
+        </button>
+        <button type="button" class="role-btn" id="roleBtnTeacher" onclick="selectPatronRole('Teacher')">
+          <i class="fas fa-chalkboard-teacher"></i>
+          <span>Teacher</span>
+        </button>
+        <button type="button" class="role-btn" id="roleBtnVisitor" onclick="selectPatronRole('Visitor')">
+          <i class="fas fa-user-tie"></i>
+          <span>Visitor</span>
+        </button>
+      </div>
+
+      <form id="patronLoginForm" onsubmit="submitPatronLogin(event)">
+        <input type="hidden" id="patronRole" value="Student">
+
+        <!-- Shared Name Field -->
+        <div class="form-grid-2">
+          <div class="form-group span-2">
+            <label>Full Name *</label>
+            <input id="patronName" required placeholder="Enter full name">
+          </div>
+        </div>
+
+        <!-- STUDENT FIELDS: Name, Grade/Level, Section, Phone, Email, Purpose -->
+        <div id="fieldsStudent" class="form-grid-2" style="margin-top:12px;">
+          <div class="form-group">
+            <label>Grade / Level *</label>
+            <input id="stuGrade" required placeholder="e.g., Grade 10 or Grade 11">
+          </div>
+          <div class="form-group">
+            <label>Section *</label>
+            <input id="stuSection" required placeholder="e.g., Narra / ICT-A">
+          </div>
+          <div class="form-group">
+            <label>Phone Number *</label>
+            <input type="tel" id="stuPhone" required placeholder="e.g., 09XX-XXX-XXXX">
+          </div>
+          <div class="form-group">
+            <label>Email Address *</label>
+            <input type="email" id="stuEmail" required placeholder="student@example.com">
+          </div>
+          <div class="form-group full">
+            <label>Purpose of Visit / Log-In *</label>
+            <textarea id="stuPurpose" rows="2" required placeholder="e.g., Research, borrowing books, DepEd LRMDS / STARBOOKS access"></textarea>
+          </div>
+        </div>
+
+        <!-- TEACHER FIELDS: Name, Position, Department, Phone, Email, Purpose -->
+        <div id="fieldsTeacher" class="form-grid-2" style="margin-top:12px;display:none;">
+          <div class="form-group">
+            <label>Position *</label>
+            <input id="tchPosition" placeholder="e.g., Teacher I / Teacher III / Master Teacher">
+          </div>
+          <div class="form-group">
+            <label>Department *</label>
+            <input id="tchDepartment" placeholder="e.g., TLE / Science / Mathematics / English">
+          </div>
+          <div class="form-group">
+            <label>Phone Number *</label>
+            <input type="tel" id="tchPhone" placeholder="e.g., 09XX-XXX-XXXX">
+          </div>
+          <div class="form-group">
+            <label>Email Address *</label>
+            <input type="email" id="tchEmail" placeholder="teacher@deped.gov.ph">
+          </div>
+          <div class="form-group full">
+            <label>Purpose of Visit / Log-In *</label>
+            <textarea id="tchPurpose" rows="2" placeholder="e.g., Lesson planning, instructional materials, borrowing reference books"></textarea>
+          </div>
+        </div>
+
+        <!-- VISITOR FIELDS: Name, Agency, Position, Phone, Email, Purpose -->
+        <div id="fieldsVisitor" class="form-grid-2" style="margin-top:12px;display:none;">
+          <div class="form-group">
+            <label>Agency / Organization *</label>
+            <input id="visAgency" placeholder="e.g., DepEd Division / LGU / Partner School">
+          </div>
+          <div class="form-group">
+            <label>Position / Designation *</label>
+            <input id="visPosition" placeholder="e.g., Supervisor / Coordinator / Guest">
+          </div>
+          <div class="form-group">
+            <label>Phone Number *</label>
+            <input type="tel" id="visPhone" placeholder="e.g., 09XX-XXX-XXXX">
+          </div>
+          <div class="form-group">
+            <label>Email Address *</label>
+            <input type="email" id="visEmail" placeholder="visitor@organization.org">
+          </div>
+          <div class="form-group full">
+            <label>Purpose of Visit / Log-In *</label>
+            <textarea id="visPurpose" rows="2" placeholder="e.g., Monitoring, consultation, official library visit"></textarea>
+          </div>
+        </div>
+
+        <div style="margin-top:18px;display:flex;justify-content:flex-end;gap:10px;">
+          <button type="button" class="btn btn-outline" onclick="closePatronLoginModal()">Cancel</button>
+          <button type="submit" class="btn btn-primary" id="submitPatronLoginBtn">
+            <i class="fas fa-check-circle"></i> Log In to Library
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
   <!-- EDIT LRC INFO & STAFF MODAL -->
   <div class="modal-backdrop" id="editLrcModal">
     <div class="modal-box">
@@ -622,6 +830,41 @@
     </div>
   </div>
 
+  <!-- EXCEL ACCESSION IMPORT MODAL -->
+  <div class="modal-backdrop" id="excelImportModal">
+    <div class="modal-box" style="max-width:820px;">
+      <div class="card-header">
+        <div class="card-title"><i class="fas fa-file-excel" style="color:var(--success);"></i> Preview Excel Accession Import (<span id="excelPreviewCount">0</span> rows)</div>
+        <button type="button" class="btn btn-outline btn-sm" onclick="closeExcelImportModal()"><i class="fas fa-times"></i> Close</button>
+      </div>
+      <p style="font-size:0.83rem;color:var(--text-muted);margin-bottom:12px;">
+        Parsed from <code>Sheet1</code> using your librarian's accession format. Review the rows below and click <strong>Confirm Import to Firestore</strong>.
+      </p>
+      <div class="table-wrap" style="max-height:300px;overflow-y:auto;border:1px solid var(--border);border-radius:12px;">
+        <table>
+          <thead>
+            <tr>
+              <th>Acc. No.</th>
+              <th>Title &amp; Author</th>
+              <th>Publisher</th>
+              <th>Vol / Pages / Yr</th>
+              <th>Source &amp; Location</th>
+              <th>Remarks</th>
+            </tr>
+          </thead>
+          <tbody id="excel-preview-body"></tbody>
+        </table>
+      </div>
+      <div id="excelImportStatus" style="margin-top:10px;font-size:0.83rem;font-weight:700;color:var(--primary);"></div>
+      <div style="margin-top:14px;display:flex;justify-content:flex-end;gap:10px;">
+        <button type="button" class="btn btn-outline" onclick="closeExcelImportModal()">Cancel</button>
+        <button type="button" class="btn btn-success" id="confirmExcelImportBtn" onclick="confirmExcelImport()">
+          <i class="fas fa-check"></i> Confirm Import to Firestore
+        </button>
+      </div>
+    </div>
+  </div>
+
   <!-- Chatbot Mount & FAB -->
   <div id="scphs-chatbot-root"></div>
   <button type="button" class="chat-fab" onclick="toggleChatBot()" aria-label="Open assistant chat">
@@ -646,6 +889,8 @@
 
     const BOOKS_COL = "library_books";
     const LOANS_COL = "library_borrowers";
+    const LOGS_COL = "library_logs";
+    const SESSION_STORAGE_KEY = "scphs_lrc_active_session_v1";
     const PROFILE_DOC = doc(db, "library_profile", "main");
 
     const DEFAULT_PROFILE = {
@@ -668,6 +913,8 @@
     let currentProfile = { ...DEFAULT_PROFILE };
     let books = [];
     let loans = [];
+    let libraryLogs = [];
+    let activePatronSession = null;
 
     const today = new Date();
     const todayISO = today.toISOString().split("T")[0];
@@ -686,6 +933,10 @@
       return String(str ?? "").replace(/\\/g, "\\\\").replace(/'/g, "\\'");
     }
 
+    function formatTimeNow(d = new Date()) {
+      return d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+    }
+
     function setBadge(ok, msg) {
       const b = document.getElementById("syncBadge");
       b.textContent = msg;
@@ -696,6 +947,252 @@
       document.getElementById(id)?.classList.toggle("open");
     };
 
+    /* ================= PATRON LOG-IN / LOG-OUT SYSTEM ================= */
+    window.openPatronLoginModal = function(presetRole = "Student") {
+      selectPatronRole(presetRole);
+      document.getElementById("patronLoginModal").classList.add("open");
+      setTimeout(() => document.getElementById("patronName")?.focus(), 50);
+    };
+
+    window.closePatronLoginModal = function() {
+      document.getElementById("patronLoginModal").classList.remove("open");
+    };
+
+    window.selectPatronRole = function(role) {
+      const validRole = ["Student", "Teacher", "Visitor"].includes(role) ? role : "Student";
+      document.getElementById("patronRole").value = validRole;
+
+      ["Student", "Teacher", "Visitor"].forEach(r => {
+        const btn = document.getElementById("roleBtn" + r);
+        const panel = document.getElementById("fields" + r);
+        if (btn) btn.classList.toggle("active", r === validRole);
+        if (panel) panel.style.display = r === validRole ? "grid" : "none";
+
+        // Toggle required attributes only on active role fields so form submits cleanly
+        panel?.querySelectorAll("input, textarea").forEach(inp => {
+          inp.required = (r === validRole);
+        });
+      });
+    };
+
+    function renderActiveSessionUI() {
+      const bar = document.getElementById("activeSessionBar");
+      const loginBtn = document.getElementById("openLoginModalBtn");
+      const summaryEl = document.getElementById("sessionUserSummary");
+
+      if (activePatronSession && activePatronSession.logId) {
+        bar.style.display = "inline-flex";
+        loginBtn.style.display = "none";
+        summaryEl.textContent = `${activePatronSession.name} (${activePatronSession.role}) • In ${activePatronSession.timeIn}`;
+
+        // Auto-fill borrower fields in checkout form if empty
+        const nameInp = document.getElementById("loanBorrowerName");
+        const metaInp = document.getElementById("loanBorrowerMeta");
+        if (nameInp && !nameInp.value.trim()) nameInp.value = activePatronSession.name;
+        if (metaInp && !metaInp.value.trim()) {
+          metaInp.value = `${activePatronSession.role} — ${activePatronSession.affiliationLabel}`;
+        }
+      } else {
+        bar.style.display = "none";
+        loginBtn.style.display = "inline-flex";
+      }
+    }
+
+    function saveSessionLocal(sess) {
+      activePatronSession = sess;
+      try {
+        if (sess) sessionStorage.setItem(SESSION_STORAGE_KEY, JSON.stringify(sess));
+        else sessionStorage.removeItem(SESSION_STORAGE_KEY);
+      } catch (_) {}
+      renderActiveSessionUI();
+    }
+
+    function restoreSessionLocal() {
+      try {
+        const raw = sessionStorage.getItem(SESSION_STORAGE_KEY);
+        if (raw) activePatronSession = JSON.parse(raw);
+      } catch (_) {}
+      renderActiveSessionUI();
+    }
+
+    window.submitPatronLogin = async function(evt) {
+      evt.preventDefault();
+      const btn = document.getElementById("submitPatronLoginBtn");
+      const role = document.getElementById("patronRole").value;
+      const name = document.getElementById("patronName").value.trim();
+
+      if (!name) return;
+
+      let details = {};
+      let affiliationLabel = "";
+      let phone = "";
+      let email = "";
+      let purpose = "";
+
+      if (role === "Student") {
+        const gradeLevel = document.getElementById("stuGrade").value.trim();
+        const section = document.getElementById("stuSection").value.trim();
+        phone = document.getElementById("stuPhone").value.trim();
+        email = document.getElementById("stuEmail").value.trim();
+        purpose = document.getElementById("stuPurpose").value.trim();
+        affiliationLabel = `${gradeLevel} • ${section}`;
+        details = { gradeLevel, section };
+      } else if (role === "Teacher") {
+        const position = document.getElementById("tchPosition").value.trim();
+        const department = document.getElementById("tchDepartment").value.trim();
+        phone = document.getElementById("tchPhone").value.trim();
+        email = document.getElementById("tchEmail").value.trim();
+        purpose = document.getElementById("tchPurpose").value.trim();
+        affiliationLabel = `${position} • ${department}`;
+        details = { position, department };
+      } else {
+        const agency = document.getElementById("visAgency").value.trim();
+        const position = document.getElementById("visPosition").value.trim();
+        phone = document.getElementById("visPhone").value.trim();
+        email = document.getElementById("visEmail").value.trim();
+        purpose = document.getElementById("visPurpose").value.trim();
+        affiliationLabel = `${agency} • ${position}`;
+        details = { agency, position };
+      }
+
+      const now = new Date();
+      const timeIn = formatTimeNow(now);
+      const logPayload = {
+        role,
+        name,
+        affiliationLabel,
+        ...details,
+        phone,
+        email,
+        purpose,
+        dateLog: todayISO,
+        timeIn,
+        timeOut: "",
+        status: "active",
+        createdAtMs: Date.now(),
+        createdAt: serverTimestamp()
+      };
+
+      btn.disabled = true;
+      try {
+        const ref = await addDoc(collection(db, LOGS_COL), logPayload);
+        const createdEntry = { id: ref.id, ...logPayload };
+        libraryLogs.unshift(createdEntry);
+
+        saveSessionLocal({
+          logId: ref.id,
+          role,
+          name,
+          affiliationLabel,
+          timeIn
+        });
+
+        document.getElementById("patronLoginForm").reset();
+        closePatronLoginModal();
+        updateKPIs();
+        renderLibraryLogs();
+      } catch (err) {
+        alert("Unable to record library log-in: " + err.message);
+      } finally {
+        btn.disabled = false;
+      }
+    };
+
+    window.logoutPatronById = async function(logId) {
+      const entry = libraryLogs.find(l => l.id === logId);
+      if (!entry || entry.status === "logged_out") return;
+
+      const timeOut = formatTimeNow(new Date());
+      try {
+        await updateDoc(doc(db, LOGS_COL, logId), {
+          status: "logged_out",
+          timeOut,
+          loggedOutAt: serverTimestamp()
+        });
+
+        entry.status = "logged_out";
+        entry.timeOut = timeOut;
+
+        if (activePatronSession && activePatronSession.logId === logId) {
+          saveSessionLocal(null);
+        }
+
+        updateKPIs();
+        renderLibraryLogs();
+      } catch (err) {
+        alert("Unable to log out: " + err.message);
+      }
+    };
+
+    window.logoutCurrentPatron = async function() {
+      if (!activePatronSession?.logId) return;
+      await logoutPatronById(activePatronSession.logId);
+    };
+
+    window.renderLibraryLogs = function() {
+      const q = (document.getElementById("logSearch")?.value || "").toLowerCase().trim();
+      const roleFilter = document.getElementById("logRoleFilter")?.value || "";
+      const statusFilter = document.getElementById("logStatusFilter")?.value || "all";
+
+      const filtered = libraryLogs.filter(item => {
+        if (roleFilter && item.role !== roleFilter) return false;
+        if (statusFilter !== "all" && item.status !== statusFilter) return false;
+        if (!q) return true;
+        return [
+          item.role, item.name, item.affiliationLabel, item.gradeLevel,
+          item.section, item.position, item.department, item.agency,
+          item.phone, item.email, item.purpose, item.dateLog
+        ].some(v => String(v || "").toLowerCase().includes(q));
+      });
+
+      document.getElementById("logbookCount").textContent = filtered.length;
+      const body = document.getElementById("logbook-body");
+
+      if (!filtered.length) {
+        body.innerHTML = `<tr><td colspan="7" style="text-align:center;padding:24px;color:var(--text-muted);">No logbook entries match your filter.</td></tr>`;
+        return;
+      }
+
+      body.innerHTML = filtered.map(item => {
+        const roleClass = item.role === "Teacher"
+          ? "role-teacher"
+          : item.role === "Visitor"
+            ? "role-visitor"
+            : "role-student";
+
+        const isActive = item.status !== "logged_out";
+
+        return `
+          <tr>
+            <td><span class="badge ${roleClass}">${esc(item.role || "Student")}</span></td>
+            <td>
+              <strong>${esc(item.name)}</strong>
+              <div style="font-size:0.74rem;color:var(--text-muted);">${esc(item.dateLog || "")}</div>
+            </td>
+            <td class="wrap-col">${esc(item.affiliationLabel || "—")}</td>
+            <td class="wrap-col">
+              <div>${esc(item.phone || "—")}</div>
+              <div style="font-size:0.74rem;color:var(--text-muted);">${esc(item.email || "—")}</div>
+            </td>
+            <td class="wrap-col">${esc(item.purpose || "—")}</td>
+            <td>
+              <div><strong>In:</strong> ${esc(item.timeIn || "—")}</div>
+              <div style="font-size:0.75rem;color:var(--text-muted);"><strong>Out:</strong> ${esc(item.timeOut || "—")}</div>
+            </td>
+            <td>
+              ${isActive
+                ? `<span class="badge out" style="margin-bottom:4px;display:inline-block;">Logged In</span><br>
+                   <button type="button" class="btn btn-danger btn-sm" onclick="logoutPatronById('${escJS(item.id)}')">
+                     <i class="fas fa-sign-out-alt"></i> Log Out
+                   </button>`
+                : `<span class="badge avail">Logged Out</span>`}
+            </td>
+          </tr>
+        `;
+      }).join("");
+    };
+
+    /* ================= PROFILE & EXCEL / JSON IMPORTS ================= */
     function applyProfileToUI(p) {
       currentProfile = { ...DEFAULT_PROFILE, ...p };
       document.getElementById("lrcHeadingTitle").textContent = currentProfile.title;
@@ -727,136 +1224,135 @@
 
     let pendingExcelRows = [];
 
-function normalizeRemarksClient(val) {
-  if (!val) return "Old";
-  const s = String(val).trim().toLowerCase().replace(/\s*,\s*/g, ", ");
-  if (s.includes("damage") && s.includes("old")) return "Old, Damaged";
-  if (s.includes("damage")) return "Damaged";
-  if (s.includes("new")) return "New";
-  if (s.includes("lost")) return "Lost";
-  if (s.includes("weed")) return "Weeded Out";
-  if (s.includes("old")) return "Old";
-  return String(val).trim();
-}
-
-function normalizeSourceClient(val) {
-  if (!val) return "Donated";
-  const s = String(val).trim().toLowerCase();
-  if (s.includes("donat")) return "Donated";
-  if (s.includes("bough") || s.includes("purchas")) return "Bought";
-  return String(val).trim();
-}
-
-window.handleExcelFileSelect = function(evt) {
-  const file = evt.target.files?.[0];
-  if (!file) return;
-  if (typeof XLSX === "undefined") {
-    alert("Excel parser library (SheetJS) failed to load. Check your internet connection.");
-    return;
-  }
-
-  const reader = new FileReader();
-  reader.onload = function(e) {
-    try {
-      const data = new Uint8Array(e.target.result);
-      const wb = XLSX.read(data, { type: "array" });
-      const sheetName = wb.SheetNames.includes("Sheet1") ? "Sheet1" : wb.SheetNames[0];
-      const ws = wb.Sheets[sheetName];
-      const rawRows = XLSX.utils.sheet_to_json(ws, { header: 1, defval: "" });
-
-      // Skip row 0 ("ACCESSION FILES") and row 1 (column headers)
-      const dataRows = rawRows.slice(2).filter(r => r.some(cell => String(cell ?? "").trim() !== ""));
-      const startIndex = books.length;
-
-      pendingExcelRows = dataRows.map((r, idx) => {
-        const author = String(r[0] ?? "").trim() || "Unknown Author";
-        const title = String(r[1] ?? "").trim() || `Untitled Entry #${idx + 1}`;
-        const publisher = String(r[2] ?? "").trim();
-        const edition = String(r[3] ?? "").trim();
-        const volume = String(r[4] ?? "").trim();
-        const pages = String(r[5] ?? "").trim();
-        const copyrightDate = String(r[6] ?? "").trim();
-        const source = normalizeSourceClient(r[7]);
-        const location = String(r[8] ?? "").trim() || "LRC Shelf";
-        const remarks = normalizeRemarksClient(r[9]);
-        const unavailable = ["lost", "weeded out"].includes(remarks.toLowerCase());
-
-        return {
-          callNo: `ACC-${String(startIndex + idx + 1).padStart(4, "0")}`,
-          title,
-          author,
-          publisher,
-          edition,
-          volume,
-          pages,
-          copyrightDate,
-          source,
-          location,
-          remarks,
-          totalCopies: 1,
-          availableCopies: unavailable ? 0 : 1
-        };
-      });
-
-      document.getElementById("excelPreviewCount").textContent = pendingExcelRows.length;
-      document.getElementById("excelImportStatus").textContent = "";
-      document.getElementById("excel-preview-body").innerHTML = pendingExcelRows.slice(0, 50).map(item => `
-        <tr>
-          <td style="font-family:monospace;font-weight:700;">${esc(item.callNo)}</td>
-          <td class="wrap-col"><strong>${esc(item.title)}</strong><div style="font-size:0.74rem;color:var(--text-muted);">${esc(item.author)}</div></td>
-          <td>${esc(item.publisher || "—")}</td>
-          <td>${esc([item.volume && `Vol ${item.volume}`, item.pages && `${item.pages}p`, item.copyrightDate].filter(Boolean).join(" • ") || "—")}</td>
-          <td>${esc(item.source)} • ${esc(item.location)}</td>
-          <td><span class="badge rem">${esc(item.remarks)}</span></td>
-        </tr>
-      `).join("") + (pendingExcelRows.length > 50
-        ? `<tr><td colspan="6" style="text-align:center;color:var(--text-muted);font-size:0.78rem;">Showing first 50 of ${pendingExcelRows.length} rows — all ${pendingExcelRows.length} rows will be imported.</td></tr>`
-        : "");
-
-      document.getElementById("excelImportModal").classList.add("open");
-    } catch (err) {
-      alert("Could not parse Excel file: " + err.message);
-    } finally {
-      evt.target.value = "";
+    function normalizeRemarksClient(val) {
+      if (!val) return "Old";
+      const s = String(val).trim().toLowerCase().replace(/\s*,\s*/g, ", ");
+      if (s.includes("damage") && s.includes("old")) return "Old, Damaged";
+      if (s.includes("damage")) return "Damaged";
+      if (s.includes("new")) return "New";
+      if (s.includes("lost")) return "Lost";
+      if (s.includes("weed")) return "Weeded Out";
+      if (s.includes("old")) return "Old";
+      return String(val).trim();
     }
-  };
-  reader.readAsArrayBuffer(file);
-};
 
-window.closeExcelImportModal = function() {
-  document.getElementById("excelImportModal").classList.remove("open");
-};
+    function normalizeSourceClient(val) {
+      if (!val) return "Donated";
+      const s = String(val).trim().toLowerCase();
+      if (s.includes("donat")) return "Donated";
+      if (s.includes("bough") || s.includes("purchas")) return "Bought";
+      return String(val).trim();
+    }
 
-window.confirmExcelImport = async function() {
-  if (!pendingExcelRows.length) return;
-  const btn = document.getElementById("confirmExcelImportBtn");
-  const statusEl = document.getElementById("excelImportStatus");
-  btn.disabled = true;
-  let imported = 0;
+    window.handleExcelFileSelect = function(evt) {
+      const file = evt.target.files?.[0];
+      if (!file) return;
+      if (typeof XLSX === "undefined") {
+        alert("Excel parser library (SheetJS) failed to load. Check your internet connection.");
+        return;
+      }
 
-  try {
-    for (const item of pendingExcelRows) {
-      const payload = {
-        ...item,
-        createdAtMs: Date.now() + imported,
-        createdAt: serverTimestamp()
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        try {
+          const data = new Uint8Array(e.target.result);
+          const wb = XLSX.read(data, { type: "array" });
+          const sheetName = wb.SheetNames.includes("Sheet1") ? "Sheet1" : wb.SheetNames[0];
+          const ws = wb.Sheets[sheetName];
+          const rawRows = XLSX.utils.sheet_to_json(ws, { header: 1, defval: "" });
+
+          const dataRows = rawRows.slice(2).filter(r => r.some(cell => String(cell ?? "").trim() !== ""));
+          const startIndex = books.length;
+
+          pendingExcelRows = dataRows.map((r, idx) => {
+            const author = String(r[0] ?? "").trim() || "Unknown Author";
+            const title = String(r[1] ?? "").trim() || `Untitled Entry #${idx + 1}`;
+            const publisher = String(r[2] ?? "").trim();
+            const edition = String(r[3] ?? "").trim();
+            const volume = String(r[4] ?? "").trim();
+            const pages = String(r[5] ?? "").trim();
+            const copyrightDate = String(r[6] ?? "").trim();
+            const source = normalizeSourceClient(r[7]);
+            const location = String(r[8] ?? "").trim() || "LRC Shelf";
+            const remarks = normalizeRemarksClient(r[9]);
+            const unavailable = ["lost", "weeded out"].includes(remarks.toLowerCase());
+
+            return {
+              callNo: `ACC-${String(startIndex + idx + 1).padStart(4, "0")}`,
+              title,
+              author,
+              publisher,
+              edition,
+              volume,
+              pages,
+              copyrightDate,
+              source,
+              location,
+              remarks,
+              totalCopies: 1,
+              availableCopies: unavailable ? 0 : 1
+            };
+          });
+
+          document.getElementById("excelPreviewCount").textContent = pendingExcelRows.length;
+          document.getElementById("excelImportStatus").textContent = "";
+          document.getElementById("excel-preview-body").innerHTML = pendingExcelRows.slice(0, 50).map(item => `
+            <tr>
+              <td style="font-family:monospace;font-weight:700;">${esc(item.callNo)}</td>
+              <td class="wrap-col"><strong>${esc(item.title)}</strong><div style="font-size:0.74rem;color:var(--text-muted);">${esc(item.author)}</div></td>
+              <td>${esc(item.publisher || "—")}</td>
+              <td>${esc([item.volume && `Vol ${item.volume}`, item.pages && `${item.pages}p`, item.copyrightDate].filter(Boolean).join(" • ") || "—")}</td>
+              <td>${esc(item.source)} • ${esc(item.location)}</td>
+              <td><span class="badge rem">${esc(item.remarks)}</span></td>
+            </tr>
+          `).join("") + (pendingExcelRows.length > 50
+            ? `<tr><td colspan="6" style="text-align:center;color:var(--text-muted);font-size:0.78rem;">Showing first 50 of ${pendingExcelRows.length} rows — all ${pendingExcelRows.length} rows will be imported.</td></tr>`
+            : "");
+
+          document.getElementById("excelImportModal").classList.add("open");
+        } catch (err) {
+          alert("Could not parse Excel file: " + err.message);
+        } finally {
+          evt.target.value = "";
+        }
       };
-      const ref = await addDoc(collection(db, BOOKS_COL), payload);
-      books.unshift({ id: ref.id, ...payload });
-      imported++;
-      statusEl.textContent = `Importing ${imported} of ${pendingExcelRows.length}...`;
-    }
-    updateKPIs();
-    populateAvailableBookDropdown();
-    renderCatalog();
-    alert(`Successfully imported ${imported} book(s) from Excel!`);
-    closeExcelImportModal();
-  } catch (err) {
-    statusEl.textContent = `Stopped at ${imported}/${pendingExcelRows.length}: ${err.message}`;
-  } finally {
-    btn.disabled = false;
-  }
-};
+      reader.readAsArrayBuffer(file);
+    };
+
+    window.closeExcelImportModal = function() {
+      document.getElementById("excelImportModal").classList.remove("open");
+    };
+
+    window.confirmExcelImport = async function() {
+      if (!pendingExcelRows.length) return;
+      const btn = document.getElementById("confirmExcelImportBtn");
+      const statusEl = document.getElementById("excelImportStatus");
+      btn.disabled = true;
+      let imported = 0;
+
+      try {
+        for (const item of pendingExcelRows) {
+          const payload = {
+            ...item,
+            createdAtMs: Date.now() + imported,
+            createdAt: serverTimestamp()
+          };
+          const ref = await addDoc(collection(db, BOOKS_COL), payload);
+          books.unshift({ id: ref.id, ...payload });
+          imported++;
+          statusEl.textContent = `Importing ${imported} of ${pendingExcelRows.length}...`;
+        }
+        updateKPIs();
+        populateAvailableBookDropdown();
+        renderCatalog();
+        alert(`Successfully imported ${imported} book(s) from Excel!`);
+        closeExcelImportModal();
+      } catch (err) {
+        statusEl.textContent = `Stopped at ${imported}/${pendingExcelRows.length}: ${err.message}`;
+      } finally {
+        btn.disabled = false;
+      }
+    };
 
     async function loadLibraryProfile() {
       try {
@@ -1016,9 +1512,10 @@ window.confirmExcelImport = async function() {
 
     async function loadLibraryData() {
       try {
-        const [bookSnap, loanSnap] = await Promise.all([
+        const [bookSnap, loanSnap, logSnap] = await Promise.all([
           getDocs(collection(db, BOOKS_COL)),
-          getDocs(collection(db, LOANS_COL))
+          getDocs(collection(db, LOANS_COL)),
+          getDocs(collection(db, LOGS_COL))
         ]);
 
         books = bookSnap.docs.map(d => ({ id: d.id, ...d.data() }));
@@ -1027,11 +1524,21 @@ window.confirmExcelImport = async function() {
         loans = loanSnap.docs.map(d => ({ id: d.id, ...d.data() }));
         loans.sort((a, b) => (b.createdAtMs || 0) - (a.createdAtMs || 0));
 
+        libraryLogs = logSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+        libraryLogs.sort((a, b) => (b.createdAtMs || 0) - (a.createdAtMs || 0));
+
+        // Ensure stored session still matches an active log entry
+        if (activePatronSession?.logId) {
+          const matched = libraryLogs.find(l => l.id === activePatronSession.logId && l.status !== "logged_out");
+          if (!matched) saveSessionLocal(null);
+        }
+
         setBadge(true, "Connected to Firestore");
         updateKPIs();
         populateAvailableBookDropdown();
         renderCatalog();
         renderLoans();
+        renderLibraryLogs();
       } catch (err) {
         console.error("Library load error:", err);
         setBadge(false, "Offline / Rules Pending");
@@ -1043,10 +1550,11 @@ window.confirmExcelImport = async function() {
       const availCopies = books.reduce((sum, b) => sum + Number(b.availableCopies ?? b.totalCopies ?? 0), 0);
       const activeLoans = loans.filter(l => l.status !== "Returned");
       const overdueCount = activeLoans.filter(l => l.dueDate && l.dueDate < todayISO).length;
+      const activePatronsCount = libraryLogs.filter(l => l.status !== "logged_out").length;
 
       document.getElementById("statTitles").textContent = totalTitles;
       document.getElementById("statAvailable").textContent = availCopies;
-      document.getElementById("statBorrowed").textContent = activeLoans.length;
+      document.getElementById("statActivePatrons").textContent = activePatronsCount;
       document.getElementById("statOverdue").textContent = overdueCount;
     }
 
@@ -1182,6 +1690,10 @@ window.confirmExcelImport = async function() {
       const box = document.getElementById("checkoutBox");
       box.classList.add("open");
       document.getElementById("loanBookId").value = bookId;
+      if (activePatronSession) {
+        document.getElementById("loanBorrowerName").value = activePatronSession.name;
+        document.getElementById("loanBorrowerMeta").value = `${activePatronSession.role} — ${activePatronSession.affiliationLabel}`;
+      }
       box.scrollIntoView({ behavior: "smooth" });
       document.getElementById("loanBorrowerName").focus();
     };
@@ -1308,6 +1820,7 @@ window.confirmExcelImport = async function() {
       }).join("");
     };
 
+    restoreSessionLocal();
     loadLibraryProfile();
     loadLibraryData();
   </script>
@@ -1360,41 +1873,6 @@ window.confirmExcelImport = async function() {
       }
       root.classList.toggle("open");
     }
-
   </script>
-  <!-- EXCEL ACCESSION IMPORT MODAL -->
-<div class="modal-backdrop" id="excelImportModal">
-  <div class="modal-box" style="max-width:820px;">
-    <div class="card-header">
-      <div class="card-title"><i class="fas fa-file-excel" style="color:var(--success);"></i> Preview Excel Accession Import (<span id="excelPreviewCount">0</span> rows)</div>
-      <button type="button" class="btn btn-outline btn-sm" onclick="closeExcelImportModal()"><i class="fas fa-times"></i> Close</button>
-    </div>
-    <p style="font-size:0.83rem;color:var(--text-muted);margin-bottom:12px;">
-      Parsed from <code>Sheet1</code> using your librarian's accession format. Review the rows below and click <strong>Confirm Import to Firestore</strong>.
-    </p>
-    <div class="table-wrap" style="max-height:300px;overflow-y:auto;border:1px solid var(--border);border-radius:12px;">
-      <table>
-        <thead>
-          <tr>
-            <th>Acc. No.</th>
-            <th>Title &amp; Author</th>
-            <th>Publisher</th>
-            <th>Vol / Pages / Yr</th>
-            <th>Source &amp; Location</th>
-            <th>Remarks</th>
-          </tr>
-        </thead>
-        <tbody id="excel-preview-body"></tbody>
-      </table>
-    </div>
-    <div id="excelImportStatus" style="margin-top:10px;font-size:0.83rem;font-weight:700;color:var(--primary);"></div>
-    <div style="margin-top:14px;display:flex;justify-content:flex-end;gap:10px;">
-      <button type="button" class="btn btn-outline" onclick="closeExcelImportModal()">Cancel</button>
-      <button type="button" class="btn btn-success" id="confirmExcelImportBtn" onclick="confirmExcelImport()">
-        <i class="fas fa-check"></i> Confirm Import to Firestore
-      </button>
-    </div>
-  </div>
-</div>
 </body>
 </html>
