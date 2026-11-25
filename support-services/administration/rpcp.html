@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>RPCP Property Inventory – Appendix 73</title>
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css">
 
   <style>
     :root {
@@ -19,7 +19,7 @@
       --danger: #dc2626;
     }
 
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Outfit', sans-serif; }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Outfit', sans-serif; }
     body { background: var(--bg-color); color: var(--text-main); display: flex; min-height: 100vh; overflow-x: hidden; }
 
     /* Sidebar */
@@ -66,9 +66,20 @@
     th, td { padding: 12px 14px; text-align: left; border-bottom: 1px solid var(--border); white-space: nowrap; }
     th { background: #f8fafc; font-weight: 700; color: var(--text-muted); text-transform: uppercase; font-size: 0.72rem; letter-spacing: 0.5px; border-top: 1px solid var(--border); }
     td { color: var(--text-main); vertical-align: middle; }
-    tr:hover td { background: #f8fafc; }
+    tr.item-row { cursor: pointer; transition: background 0.15s ease; }
+    tr.item-row:hover td { background: #f0fdfa; }
     .num { text-align: right; font-variant-numeric: tabular-nums; }
     .action-btns { display: flex; gap: 6px; }
+
+    .item-thumb {
+      width: 44px; height: 44px; border-radius: 8px; object-fit: cover;
+      border: 1px solid var(--border); background: #f8fafc; display: block;
+    }
+    .item-thumb-placeholder {
+      width: 44px; height: 44px; border-radius: 8px; border: 1px dashed #cbd5e1;
+      background: #f8fafc; color: var(--text-muted); display: flex; align-items: center;
+      justify-content: center; font-size: 0.95rem;
+    }
 
     /* Modals */
     .modal { position: fixed; inset: 0; background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(4px); display: none; justify-content: center; align-items: center; z-index: 1000; padding: 20px; }
@@ -76,13 +87,38 @@
     .modal-content { background: #fff; border-radius: 16px; width: 100%; max-width: 640px; box-shadow: 0 20px 40px rgba(0,0,0,0.2); overflow: hidden; }
     .modal-header { padding: 20px 24px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
     .modal-header h3 { font-size: 1.2rem; font-weight: 800; color: var(--primary); }
-    .modal-body { padding: 24px; max-height: 70vh; overflow-y: auto; display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    .modal-body { padding: 24px; max-height: 74vh; overflow-y: auto; display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
     .form-group { display: flex; flex-direction: column; min-width: 0; }
     .form-group.full { grid-column: span 2; }
     .form-group label { font-size: 0.75rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; margin-bottom: 6px; }
-    .form-group input, .form-group select { padding: 10px; border: 1px solid var(--border); border-radius: 8px; font-size: 0.9rem; font-family: inherit; outline: none; width: 100%; }
-    .form-group input:focus { border-color: var(--primary); }
+    .form-group input, .form-group select, .form-group textarea { padding: 10px; border: 1px solid var(--border); border-radius: 8px; font-size: 0.9rem; font-family: inherit; outline: none; width: 100%; }
+    .form-group input:focus, .form-group textarea:focus { border-color: var(--primary); }
     .modal-footer { padding: 16px 24px; border-top: 1px solid var(--border); display: flex; justify-content: flex-end; gap: 10px; background: #f8fafc; }
+
+    /* Image Upload Box */
+    .image-upload-box {
+      border: 1px solid var(--border); background: #f8fafc; border-radius: 12px;
+      padding: 14px; display: flex; align-items: center; gap: 16px; flex-wrap: wrap;
+    }
+    .image-preview-frame {
+      width: 110px; height: 110px; border-radius: 10px; border: 1px solid var(--border);
+      background: #fff; overflow: hidden; display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0; color: var(--text-muted); font-size: 1.8rem;
+    }
+    .image-preview-frame img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .image-controls { flex: 1; min-width: 210px; display: flex; flex-direction: column; gap: 8px; }
+
+    /* Detail Viewer Modal */
+    .detail-hero {
+      background: #f8fafc; border: 1px solid var(--border); border-radius: 14px;
+      padding: 16px; display: flex; justify-content: center; align-items: center;
+      min-height: 220px; max-height: 300px; overflow: hidden;
+    }
+    .detail-hero img { max-width: 100%; max-height: 268px; border-radius: 10px; object-fit: contain; }
+    .detail-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
+    .detail-cell { background: #f8fafc; border: 1px solid var(--border); border-radius: 10px; padding: 10px 12px; }
+    .detail-cell .lbl { font-size: 0.72rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; }
+    .detail-cell .val { font-size: 0.94rem; font-weight: 700; color: var(--text-main); margin-top: 2px; word-break: break-word; }
 
     /* Mobile Responsiveness */
     @media (max-width: 820px) {
@@ -97,7 +133,7 @@
       .tab-btn { top: 0; flex-shrink: 0; border-radius: 10px; border-bottom: 1px solid var(--border); padding: 9px 14px; font-size: 0.82rem; }
       .tab-btn.active { padding-top: 9px; border-top: 1px solid var(--border); border-color: var(--primary); background: #f0fdfa; color: var(--primary); }
       .tab-content-container { border-radius: 14px; }
-      .modal-body { grid-template-columns: 1fr; }
+      .modal-body, .detail-grid { grid-template-columns: 1fr; }
       .form-group.full { grid-column: span 1; }
     }
 
@@ -152,7 +188,7 @@
       </div>
       <div style="display: flex; gap: 10px; flex-wrap: wrap;">
         <button class="btn btn-outline" onclick="openSignatoryModal()">
-          <i class="fas fa-users-cog"></i> Settings & Signatories
+          <i class="fas fa-users-cog"></i> Settings &amp; Signatories
         </button>
         <a href="rpcp-importer.html" class="btn" style="background: #f59e0b; color: #fff;">
           <i class="fas fa-file-import"></i> Import RPCP Excel
@@ -173,24 +209,48 @@
         <table>
           <thead id="table-head"></thead>
           <tbody id="inventory-body">
-            <tr><td colspan="10" style="text-align: center; padding: 30px; color: var(--text-muted);">Loading RPCP records...</td></tr>
+            <tr><td colspan="13" style="text-align: center; padding: 30px; color: var(--text-muted);">Loading RPCP records...</td></tr>
           </tbody>
         </table>
       </div>
     </div>
   </main>
 
-  <!-- RECORD MODAL -->
+  <!-- ADD / EDIT RECORD MODAL -->
   <div class="modal" id="itemModal">
     <div class="modal-content">
       <div class="modal-header">
         <h3 id="modalTitle">➕ Add RPCP Record</h3>
-        <button onclick="closeModal('itemModal')" style="background: none; border: none; font-size: 1.5rem; cursor: pointer;">&times;</button>
+        <button type="button" onclick="closeModal('itemModal')" style="background: none; border: none; font-size: 1.5rem; cursor: pointer;">&times;</button>
       </div>
       <div class="modal-body" id="modal-fields"></div>
       <div class="modal-footer">
-        <button class="btn btn-outline" onclick="closeModal('itemModal')">Cancel</button>
-        <button class="btn btn-success" onclick="saveItem()">💾 Save Record</button>
+        <button type="button" class="btn btn-outline" onclick="closeModal('itemModal')">Cancel</button>
+        <button type="button" class="btn btn-success" id="saveItemBtn" onclick="saveItem()">💾 Save Record</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- RECORD DETAILS & PHOTO VIEWER MODAL -->
+  <div class="modal" id="itemDetailModal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 id="detailTitle">RPCP Property Details</h3>
+        <button type="button" onclick="closeModal('itemDetailModal')" style="background: none; border: none; font-size: 1.5rem; cursor: pointer;">&times;</button>
+      </div>
+      <div class="modal-body" style="display:flex; flex-direction:column; gap:16px;">
+        <div class="detail-hero" id="detailImageBox"></div>
+
+        <div>
+          <div style="font-size:0.75rem; font-weight:700; color:var(--text-muted); text-transform:uppercase; margin-bottom:4px;">Description</div>
+          <div id="detailDescription" style="font-size:1rem; font-weight:700; color:var(--text-main); line-height:1.45;"></div>
+        </div>
+
+        <div class="detail-grid" id="detailGrid"></div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-outline" onclick="closeModal('itemDetailModal')">Close</button>
+        <button type="button" class="btn btn-primary" id="detailEditBtn"><i class="fas fa-edit"></i> Edit Record &amp; Photo</button>
       </div>
     </div>
   </div>
@@ -199,8 +259,8 @@
   <div class="modal" id="signatoryModal">
     <div class="modal-content">
       <div class="modal-header">
-        <h3>⚙️ RPCP Report Settings & Signatories</h3>
-        <button onclick="closeModal('signatoryModal')" style="background: none; border: none; font-size: 1.5rem; cursor: pointer;">&times;</button>
+        <h3>⚙️ RPCP Report Settings &amp; Signatories</h3>
+        <button type="button" onclick="closeModal('signatoryModal')" style="background: none; border: none; font-size: 1.5rem; cursor: pointer;">&times;</button>
       </div>
       <div class="modal-body">
         <div class="form-group full">
@@ -249,8 +309,8 @@
         </div>
       </div>
       <div class="modal-footer">
-        <button class="btn btn-outline" onclick="closeModal('signatoryModal')">Cancel</button>
-        <button class="btn btn-primary" onclick="saveSignatories()">💾 Save Settings</button>
+        <button type="button" class="btn btn-outline" onclick="closeModal('signatoryModal')">Cancel</button>
+        <button type="button" class="btn btn-primary" onclick="saveSignatories()">💾 Save Settings</button>
       </div>
     </div>
   </div>
@@ -360,6 +420,104 @@
       return String(str ?? "").replace(/\\/g, "\\\\").replace(/'/g, "\\'");
     }
 
+    /* IMAGE HELPERS */
+    function renderModalImagePreview(src) {
+      const frame = document.getElementById("modalImagePreview");
+      if (!frame) return;
+      const clean = (src || "").trim();
+      if (!clean) {
+        frame.innerHTML = `<i class="fas fa-image"></i>`;
+        return;
+      }
+      frame.innerHTML = `<img src="${escapeHTML(clean)}" alt="Preview" onerror="this.parentElement.innerHTML='<i class=\\'fas fa-image\\'></i>'">`;
+    }
+
+    window.handleImageUrlInput = function(val) {
+      const clean = (val || "").trim();
+      const hidden = document.getElementById("f-imageUrl");
+      if (hidden) hidden.value = clean;
+      renderModalImagePreview(clean);
+    };
+
+    window.clearItemImage = function() {
+      const hidden = document.getElementById("f-imageUrl");
+      const urlIn = document.getElementById("f-imageUrlInput");
+      const fileIn = document.getElementById("f-imageFile");
+      if (hidden) hidden.value = "";
+      if (urlIn) urlIn.value = "";
+      if (fileIn) fileIn.value = "";
+      renderModalImagePreview("");
+    };
+
+    function compressImageFile(file, maxWidth = 800, quality = 0.72) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => {
+          const img = new Image();
+          img.onload = () => {
+            const scale = Math.min(1, maxWidth / img.width);
+            const canvas = document.createElement("canvas");
+            canvas.width = Math.round(img.width * scale);
+            canvas.height = Math.round(img.height * scale);
+            const ctx = canvas.getContext("2d");
+            ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+            resolve(canvas.toDataURL("image/jpeg", quality));
+          };
+          img.onerror = reject;
+          img.src = reader.result;
+        };
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+      });
+    }
+
+    window.handleImageFileChange = async function(evt) {
+      const file = evt.target.files?.[0];
+      if (!file) return;
+      if (!file.type.startsWith("image/")) {
+        alert("Please select a valid image file.");
+        return;
+      }
+      try {
+        const compressed = await compressImageFile(file);
+        document.getElementById("f-imageUrl").value = compressed;
+        document.getElementById("f-imageUrlInput").value = file.name;
+        renderModalImagePreview(compressed);
+      } catch (err) {
+        console.error("Image processing error:", err);
+        alert("Could not process image file.");
+      }
+    };
+
+    function imageUploadBlockHTML(existingImageUrl = "") {
+      const displayUrl = existingImageUrl.startsWith("data:") ? "(Uploaded Photo)" : existingImageUrl;
+      return `
+        <input type="hidden" id="f-imageUrl" value="${escapeHTML(existingImageUrl)}">
+        <div class="form-group full">
+          <label>Property Photo (Upload or Change Image)</label>
+          <div class="image-upload-box">
+            <div class="image-preview-frame" id="modalImagePreview">
+              ${existingImageUrl
+                ? `<img src="${escapeHTML(existingImageUrl)}" alt="Preview">`
+                : `<i class="fas fa-image"></i>`}
+            </div>
+            <div class="image-controls">
+              <input type="file" id="f-imageFile" accept="image/*" onchange="handleImageFileChange(event)">
+              <input type="text" id="f-imageUrlInput" value="${escapeHTML(displayUrl)}" placeholder="Or paste image URL (https://...)" oninput="handleImageUrlInput(this.value)">
+              <div style="display:flex; gap:8px; flex-wrap:wrap;">
+                <button type="button" class="btn btn-outline btn-sm" onclick="document.getElementById('f-imageFile').click()">
+                  <i class="fas fa-camera"></i> Change / Choose Photo
+                </button>
+                <button type="button" class="btn btn-outline btn-sm" style="color:var(--danger); border-color:#fecaca;" onclick="clearItemImage()">
+                  <i class="fas fa-times"></i> Remove Photo
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
     function renderTabs() {
       const container = document.getElementById("category-tabs");
       container.innerHTML = CATEGORIES.map(cat => `
@@ -384,7 +542,7 @@
       } catch (err) {
         console.error("Firestore read error:", err);
         updateSyncBadge(false, "Firestore Error: " + err.message);
-        document.getElementById("inventory-body").innerHTML = `<tr><td colspan="12" style="text-align:center;padding:30px;color:#dc2626;">Failed to load Firestore records: ${escapeHTML(err.message)}</td></tr>`;
+        document.getElementById("inventory-body").innerHTML = `<tr><td colspan="13" style="text-align:center;padding:30px;color:#dc2626;">Failed to load Firestore records: ${escapeHTML(err.message)}</td></tr>`;
         return;
       }
       renderTable();
@@ -402,6 +560,7 @@
       if (isLandTab()) {
         thead.innerHTML = `
           <tr>
+            <th>Photo</th>
             <th>Article</th>
             <th>Description</th>
             <th>Lot Area</th>
@@ -417,6 +576,7 @@
       } else {
         thead.innerHTML = `
           <tr>
+            <th>Photo</th>
             <th>Article</th>
             <th>Description</th>
             <th>Date Acquired</th>
@@ -434,41 +594,52 @@
       }
 
       if (filtered.length === 0) {
-        const cols = isLandTab() ? 10 : 12;
+        const cols = isLandTab() ? 11 : 13;
         tbody.innerHTML = `<tr><td colspan="${cols}" style="text-align:center;padding:40px;color:var(--text-muted);">No records in <strong>${escapeHTML(currentTab)}</strong>. Import an Excel sheet or click "Add Record".</td></tr>`;
         renderPrintArea([]);
         return;
       }
 
       if (isLandTab()) {
-        tbody.innerHTML = filtered.map(item => `
-          <tr>
-            <td>${escapeHTML(item.article || "Land")}</td>
-            <td><strong>${escapeHTML(item.description || "-")}</strong></td>
-            <td>${escapeHTML(item.lotArea || "-")}</td>
-            <td>${escapeHTML(item.owner || "-")}</td>
-            <td style="font-family:monospace;">${escapeHTML(item.tct || "-")}</td>
-            <td>${escapeHTML(item.mode || "-")}</td>
-            <td class="num">${formatMoney(item.cost)}</td>
-            <td class="num">${formatMoney(item.marketValue)}</td>
-            <td class="num">${formatMoney(item.assessedValue)}</td>
-            <td>
-              <div class="action-btns">
-                <button type="button" class="btn btn-sm" style="background:#e0f2fe;color:#0369a1;" onclick="editItem('${escapeJS(item.id)}')"><i class="fas fa-edit"></i></button>
-                <button type="button" class="btn btn-sm btn-danger" onclick="deleteItem('${escapeJS(item.id)}', '${escapeJS(item.description || "")}')"><i class="fas fa-trash"></i></button>
-              </div>
-            </td>
-          </tr>
-        `).join("");
+        tbody.innerHTML = filtered.map(item => {
+          const thumbHtml = item.imageUrl
+            ? `<img src="${escapeHTML(item.imageUrl)}" alt="${escapeHTML(item.description || "Land")}" class="item-thumb">`
+            : `<div class="item-thumb-placeholder"><i class="fas fa-image"></i></div>`;
+          return `
+            <tr class="item-row" onclick="openItemDetail('${escapeJS(item.id)}')" title="Click to view full details & photo">
+              <td>${thumbHtml}</td>
+              <td>${escapeHTML(item.article || "Land")}</td>
+              <td><strong style="color:var(--primary); text-decoration:underline; text-underline-offset:3px;">${escapeHTML(item.description || "-")}</strong></td>
+              <td>${escapeHTML(item.lotArea || "-")}</td>
+              <td>${escapeHTML(item.owner || "-")}</td>
+              <td style="font-family:monospace;">${escapeHTML(item.tct || "-")}</td>
+              <td>${escapeHTML(item.mode || "-")}</td>
+              <td class="num">${formatMoney(item.cost)}</td>
+              <td class="num">${formatMoney(item.marketValue)}</td>
+              <td class="num">${formatMoney(item.assessedValue)}</td>
+              <td onclick="event.stopPropagation()">
+                <div class="action-btns">
+                  <button type="button" class="btn btn-sm" style="background:#e0f2fe;color:#0369a1;" title="Edit record & photo" onclick="editItem('${escapeJS(item.id)}')"><i class="fas fa-edit"></i></button>
+                  <button type="button" class="btn btn-sm btn-danger" title="Delete record" onclick="deleteItem('${escapeJS(item.id)}', '${escapeJS(item.description || "")}')"><i class="fas fa-trash"></i></button>
+                </div>
+              </td>
+            </tr>
+          `;
+        }).join("");
       } else {
         tbody.innerHTML = filtered.map(item => {
           const unitVal = Number(item.unitValue) || 0;
           const qtyCount = Number(item.qtyPerCount) || 0;
           const totalCost = item.totalCost !== undefined ? Number(item.totalCost) : +(unitVal * qtyCount).toFixed(2);
+          const thumbHtml = item.imageUrl
+            ? `<img src="${escapeHTML(item.imageUrl)}" alt="${escapeHTML(item.description || "Item")}" class="item-thumb">`
+            : `<div class="item-thumb-placeholder"><i class="fas fa-image"></i></div>`;
+
           return `
-            <tr>
+            <tr class="item-row" onclick="openItemDetail('${escapeJS(item.id)}')" title="Click to view full details & photo">
+              <td>${thumbHtml}</td>
               <td>${escapeHTML(item.article || "-")}</td>
-              <td><strong>${escapeHTML(item.description || "-")}</strong></td>
+              <td><strong style="color:var(--primary); text-decoration:underline; text-underline-offset:3px;">${escapeHTML(item.description || "-")}</strong></td>
               <td>${escapeHTML(item.dateAcquired || "-")}</td>
               <td style="font-family:monospace;">${escapeHTML(item.propertyNumber || "-")}</td>
               <td>${escapeHTML(item.unitOfMeasure || "-")}</td>
@@ -478,10 +649,10 @@
               <td class="num">${formatMoney(totalCost)}</td>
               <td>${escapeHTML(item.sourceOfFund || "-")}</td>
               <td>${escapeHTML(item.accountableOfficer || "-")}</td>
-              <td>
+              <td onclick="event.stopPropagation()">
                 <div class="action-btns">
-                  <button type="button" class="btn btn-sm" style="background:#e0f2fe;color:#0369a1;" onclick="editItem('${escapeJS(item.id)}')"><i class="fas fa-edit"></i></button>
-                  <button type="button" class="btn btn-sm btn-danger" onclick="deleteItem('${escapeJS(item.id)}', '${escapeJS(item.description || "")}')"><i class="fas fa-trash"></i></button>
+                  <button type="button" class="btn btn-sm" style="background:#e0f2fe;color:#0369a1;" title="Edit record & photo" onclick="editItem('${escapeJS(item.id)}')"><i class="fas fa-edit"></i></button>
+                  <button type="button" class="btn btn-sm btn-danger" title="Delete record" onclick="deleteItem('${escapeJS(item.id)}', '${escapeJS(item.description || "")}')"><i class="fas fa-trash"></i></button>
                 </div>
               </td>
             </tr>
@@ -491,6 +662,58 @@
 
       renderPrintArea(filtered);
     }
+
+    window.openItemDetail = function(id) {
+      const item = allItems.find(i => i.id === id);
+      if (!item) return;
+
+      const isLand = (item.category || item.article || "") === "Land";
+      document.getElementById("detailTitle").textContent = item.description || "RPCP Property Details";
+      document.getElementById("detailDescription").textContent = item.description || "-";
+
+      const imgBox = document.getElementById("detailImageBox");
+      if (item.imageUrl) {
+        imgBox.innerHTML = `<img src="${escapeHTML(item.imageUrl)}" alt="${escapeHTML(item.description || "Property photo")}">`;
+      } else {
+        imgBox.innerHTML = `<div style="text-align:center; color:var(--text-muted); padding:24px;"><i class="fas fa-image" style="font-size:2.4rem; margin-bottom:8px; display:block;"></i>No photo attached yet. Click <strong>Edit Record &amp; Photo</strong> below to add one.</div>`;
+      }
+
+      const grid = document.getElementById("detailGrid");
+      if (isLand) {
+        grid.innerHTML = `
+          <div class="detail-cell"><div class="lbl">Article</div><div class="val">${escapeHTML(item.article || "Land")}</div></div>
+          <div class="detail-cell"><div class="lbl">Lot Area</div><div class="val">${escapeHTML(item.lotArea || "-")}</div></div>
+          <div class="detail-cell"><div class="lbl">Registered Owner</div><div class="val">${escapeHTML(item.owner || "-")}</div></div>
+          <div class="detail-cell"><div class="lbl">TCT Number</div><div class="val" style="font-family:monospace;">${escapeHTML(item.tct || "-")}</div></div>
+          <div class="detail-cell"><div class="lbl">Mode of Acquisition</div><div class="val">${escapeHTML(item.mode || "-")}</div></div>
+          <div class="detail-cell"><div class="lbl">Cost of Acquisition</div><div class="val" style="color:var(--primary);">${formatMoney(item.cost)}</div></div>
+          <div class="detail-cell"><div class="lbl">Adjusted Market Value</div><div class="val">${formatMoney(item.marketValue)}</div></div>
+          <div class="detail-cell"><div class="lbl">Assessed Value</div><div class="val">${formatMoney(item.assessedValue)}</div></div>
+        `;
+      } else {
+        const unitVal = Number(item.unitValue) || 0;
+        const qtyCard = Number(item.qtyPerCard) || 0;
+        const qtyCount = Number(item.qtyPerCount) || 0;
+        const totalCost = item.totalCost !== undefined ? Number(item.totalCost) : +(unitVal * qtyCount).toFixed(2);
+        grid.innerHTML = `
+          <div class="detail-cell"><div class="lbl">Category / Article</div><div class="val">${escapeHTML(item.article || item.category || "-")}</div></div>
+          <div class="detail-cell"><div class="lbl">Property Number</div><div class="val" style="font-family:monospace;">${escapeHTML(item.propertyNumber || "-")}</div></div>
+          <div class="detail-cell"><div class="lbl">Date Acquired</div><div class="val">${escapeHTML(item.dateAcquired || "-")}</div></div>
+          <div class="detail-cell"><div class="lbl">Source of Fund</div><div class="val">${escapeHTML(item.sourceOfFund || "-")}</div></div>
+          <div class="detail-cell"><div class="lbl">Unit / Acquisition Cost</div><div class="val">${formatMoney(unitVal)} / ${escapeHTML(item.unitOfMeasure || "unit")}</div></div>
+          <div class="detail-cell"><div class="lbl">Total Cost</div><div class="val" style="color:var(--primary);">${formatMoney(totalCost)}</div></div>
+          <div class="detail-cell"><div class="lbl">Qty (Card / Physical Count)</div><div class="val">Card: ${qtyCard} • Count: ${qtyCount}</div></div>
+          <div class="detail-cell"><div class="lbl">Accountable Officer</div><div class="val">${escapeHTML(item.accountableOfficer || "-")}</div></div>
+        `;
+      }
+
+      document.getElementById("detailEditBtn").onclick = () => {
+        closeModal("itemDetailModal");
+        editItem(item.id);
+      };
+
+      document.getElementById("itemDetailModal").classList.add("show");
+    };
 
     function renderPrintArea(items) {
       const pThead = document.getElementById("print-thead");
@@ -606,9 +829,12 @@
     function buildModalFields(existing = {}) {
       const container = document.getElementById("modal-fields");
       const idVal = existing.id ? escapeHTML(existing.id) : "";
+      const imgBlock = imageUploadBlockHTML(existing.imageUrl || "");
+
       if (isLandTab()) {
         container.innerHTML = `
           <input type="hidden" id="f-id" value="${idVal}">
+          ${imgBlock}
           <div class="form-group full">
             <label>Category Tab</label>
             <input type="text" id="f-category" value="${escapeHTML(currentTab)}" readonly style="background:#f1f5f9;">
@@ -618,12 +844,12 @@
             <input type="text" id="f-article" value="${escapeHTML(existing.article || "Land")}">
           </div>
           <div class="form-group">
-            <label>Description</label>
-            <input type="text" id="f-description" value="${escapeHTML(existing.description || "")}" placeholder="e.g., Pingkian, Kayapa, Nueva Vizcaya">
-          </div>
-          <div class="form-group">
             <label>Lot Area</label>
             <input type="text" id="f-lotArea" value="${escapeHTML(existing.lotArea || "")}" placeholder="e.g., 111,111 sq.m">
+          </div>
+          <div class="form-group full">
+            <label>Description</label>
+            <textarea id="f-description" rows="2" placeholder="e.g., Pingkian, Kayapa, Nueva Vizcaya">${escapeHTML(existing.description || "")}</textarea>
           </div>
           <div class="form-group">
             <label>Registered Owner</label>
@@ -645,7 +871,7 @@
             <label>Adjusted Market Value (₱)</label>
             <input type="number" step="0.01" id="f-marketValue" value="${existing.marketValue ?? 0}">
           </div>
-          <div class="form-group full">
+          <div class="form-group">
             <label>Assessed Value (₱)</label>
             <input type="number" step="0.01" id="f-assessedValue" value="${existing.assessedValue ?? 0}">
           </div>
@@ -653,6 +879,7 @@
       } else {
         container.innerHTML = `
           <input type="hidden" id="f-id" value="${idVal}">
+          ${imgBlock}
           <div class="form-group full">
             <label>Category Tab</label>
             <input type="text" id="f-category" value="${escapeHTML(currentTab)}" readonly style="background:#f1f5f9;">
@@ -662,16 +889,16 @@
             <input type="text" id="f-article" value="${escapeHTML(existing.article || currentTab)}">
           </div>
           <div class="form-group">
+            <label>Property Number</label>
+            <input type="text" id="f-propertyNumber" value="${escapeHTML(existing.propertyNumber || "")}">
+          </div>
+          <div class="form-group full">
             <label>Description</label>
-            <input type="text" id="f-description" value="${escapeHTML(existing.description || "")}">
+            <textarea id="f-description" rows="2" placeholder="Item description, model, serial no., or condition">${escapeHTML(existing.description || "")}</textarea>
           </div>
           <div class="form-group">
             <label>Date Acquired (YYYY-MM-DD or Year)</label>
             <input type="text" id="f-dateAcquired" value="${escapeHTML(existing.dateAcquired || "")}">
-          </div>
-          <div class="form-group">
-            <label>Property Number</label>
-            <input type="text" id="f-propertyNumber" value="${escapeHTML(existing.propertyNumber || "")}">
           </div>
           <div class="form-group">
             <label>Unit of Measure</label>
@@ -697,7 +924,7 @@
             <label>Source of Fund</label>
             <input type="text" id="f-sourceOfFund" value="${escapeHTML(existing.sourceOfFund || "")}">
           </div>
-          <div class="form-group full">
+          <div class="form-group">
             <label>Accountable Officer</label>
             <input type="text" id="f-accountableOfficer" value="${escapeHTML(existing.accountableOfficer || "")}">
           </div>
@@ -725,17 +952,19 @@
     window.editItem = function(id) {
       const item = allItems.find(i => i.id === id);
       if (!item) return;
-      document.getElementById("modalTitle").textContent = `✏️ Edit Record (${currentTab})`;
+      document.getElementById("modalTitle").textContent = `✏️ Edit Record & Photo (${currentTab})`;
       buildModalFields(item);
       document.getElementById("itemModal").classList.add("show");
     };
 
     window.saveItem = async function() {
+      const btn = document.getElementById("saveItemBtn");
       const desc = document.getElementById("f-description").value.trim();
       if (!desc) return alert("Description is required.");
 
       const existingId = document.getElementById("f-id").value;
       const docId = existingId || `rpcp_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`;
+      const imageUrl = (document.getElementById("f-imageUrl")?.value || "").trim();
 
       const record = isLandTab()
         ? {
@@ -749,6 +978,7 @@
             cost: parseFloat(document.getElementById("f-cost").value) || 0,
             marketValue: parseFloat(document.getElementById("f-marketValue").value) || 0,
             assessedValue: parseFloat(document.getElementById("f-assessedValue").value) || 0,
+            imageUrl,
             updatedAt: new Date().toISOString()
           }
         : {
@@ -764,9 +994,11 @@
             totalCost: parseFloat(document.getElementById("f-totalCost").value) || 0,
             sourceOfFund: document.getElementById("f-sourceOfFund").value.trim(),
             accountableOfficer: document.getElementById("f-accountableOfficer").value.trim(),
+            imageUrl,
             updatedAt: new Date().toISOString()
           };
 
+      btn.disabled = true;
       try {
         await setDoc(doc(db, FS_COLLECTION, docId), record, { merge: true });
         const idx = allItems.findIndex(i => i.id === docId);
@@ -780,6 +1012,8 @@
       } catch (err) {
         console.error("Firestore save error:", err);
         alert("Failed to save to Firestore: " + err.message);
+      } finally {
+        btn.disabled = false;
       }
     };
 
