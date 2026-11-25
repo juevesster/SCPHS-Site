@@ -689,17 +689,12 @@
   <div id="scphs-chatbot-root"></div>
 
   <script type="module">
-    import { db } from "../../assets/js/firebase-config.js";
+    import { auth, db } from "../../assets/js/firebase-config.js";
+    import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
     import {
       collection, getDocs, doc, setDoc, deleteDoc
     } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
-
-    // Optional SF1 store helper if available at ../../assets/js/sf1-store.js
-    try {
-      await import("../../assets/js/sf1-store.js");
-    } catch (_) {
-      // Fallback to direct Firestore collection query below
-    }
+    import "../../assets/js/sf1-store.js";
 
     const BMI_COLLECTION = "clinic_bmi_records";
     const VISIT_COLLECTION = "clinic_visits";
@@ -710,7 +705,7 @@
     let visitRecords = [];
 
     function esc(s) {
-      return String(s ?? "").replace(/[&<>"']/g, m => ({
+      return String(s == null ? "" : s).replace(/[&<>"']/g, m => ({
         "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
       }[m]));
     }
@@ -719,11 +714,15 @@
       return String(s ?? "").replace(/\\/g, "\\\\").replace(/'/g, "\\'");
     }
 
-    function setSyncStatus(mode, label) {
+    function setSyncStatus(mode, label, loginUrl = "") {
       const el = document.getElementById("clinicSyncStatus");
       if (!el) return;
       el.className = `sync-pill ${mode}`;
-      el.innerHTML = `<i class="fas ${mode === "ready" ? "fa-check-circle" : "fa-exclamation-circle"}"></i> ${esc(label)}`;
+      if (loginUrl) {
+        el.innerHTML = `<i class="fas fa-lock"></i> <a href="${esc(loginUrl)}" style="color:inherit;text-decoration:underline;">${esc(label)}</a>`;
+      } else {
+        el.innerHTML = `<i class="fas ${mode === "ready" ? "fa-check-circle" : "fa-exclamation-circle"}"></i> ${esc(label)}`;
+      }
     }
 
     window.switchClinicTab = function(tabKey, btnEl) {
@@ -754,18 +753,22 @@
         let totalStudents = 0;
         for (const cls of sf1Classes) {
           const stList = await fetchStudentsForClass(cls.id);
+          cls._cachedStudents = stList;
           totalStudents += stList.length;
         }
         document.getElementById("kpiSf1Students").textContent = totalStudents;
-        setSyncStatus("ready", `SF1 & Firestore Connected (${sf1Classes.length} classes)`);
+        setSyncStatus("ready", `SF1 Connected (${sf1Classes.length} classes • ${totalStudents} learners)`);
       } catch (err) {
-        console.warn("SF1 load note:", err);
-        setSyncStatus("warn", "SF1 limited — manual entry available");
+        console.error("SF1 load error:", err);
+        setSyncStatus("warn", `SF1 Error: ${err.message}`);
       }
     }
 
     async function fetchStudentsForClass(classId) {
       if (!classId) return [];
+      const cached = sf1Classes.find(c => c.id === classId)?._cachedStudents;
+      if (cached) return cached;
+
       if (window.SF1 && typeof window.SF1.listStudents === "function") {
         return await window.SF1.listStudents(classId);
       }
@@ -776,12 +779,18 @@
     window.handleSf1ClassChange = async function() {
       const classId = document.getElementById("sf1ClassSelect").value;
       const studentSelect = document.getElementById("sf1StudentSelect");
+      if (!classId) {
+        currentStudents = [];
+        studentSelect.innerHTML = `<option value="">-- Choose Student --</option>`;
+        return;
+      }
+
       studentSelect.innerHTML = `<option value="">Loading students...</option>`;
       currentStudents = await fetchStudentsForClass(classId);
 
       studentSelect.innerHTML = `<option value="">-- Choose Student (${currentStudents.length}) --</option>` +
         currentStudents.map((s, idx) => {
-          const name = s.fullName || s.name || [s.lastName, s.firstName].filter(Boolean).join(", ") || `Student ${idx + 1}`;
+          const name = s.fullName || [s.lastName, s.firstName, s.middleName].filter(Boolean).join(", ") || `Student ${idx + 1}`;
           return `<option value="${idx}">${esc(name)}</option>`;
         }).join("");
     };
@@ -790,11 +799,11 @@
       const idx = document.getElementById("sf1StudentSelect").value;
       if (idx === "" || !currentStudents[Number(idx)]) return;
       const s = currentStudents[Number(idx)];
-      const name = s.fullName || s.name || [s.firstName, s.middleName, s.lastName].filter(Boolean).join(" ") || "";
+      const name = s.fullName || `${s.lastName || ""}, ${s.firstName || ""}${s.middleName ? ", " + s.middleName : ""}`.trim();
       const metaParts = [];
       if (s.lrn) metaParts.push(`LRN: ${s.lrn}`);
-      if (s.sex || s.gender) metaParts.push(`Sex: ${s.sex || s.gender}`);
-      if (s.age) metaParts.push(`Age: ${s.age}`);
+      if (s.sex) metaParts.push(`Sex: ${s.sex}`);
+      if (s.age != null && s.age !== "") metaParts.push(`Age: ${s.age}`);
 
       document.getElementById("bmiStudentName").value = name;
       document.getElementById("bmiStudentMeta").value = metaParts.join(" • ");
@@ -844,7 +853,9 @@
       }
 
       const clsSelect = document.getElementById("sf1ClassSelect");
-      const classLabel = clsSelect.options[clsSelect.selectedIndex]?.text || "Unassigned Class";
+      const classLabel = clsSelect.value
+        ? (clsSelect.options[clsSelect.selectedIndex]?.text || "Assigned Class")
+        : "Walk-in / Unassigned";
       const docId = `bmi_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`;
 
       const record = {
@@ -1010,11 +1021,19 @@
       }
     }
 
-    document.addEventListener("DOMContentLoaded", async () => {
+    document.addEventListener("DOMContentLoaded", () => {
       const yr = new Date().getFullYear();
       document.getElementById("yearNow").textContent = yr;
       document.getElementById("yearNowGov").textContent = yr;
-      await Promise.all([loadSf1Classes(), loadClinicLogs()]);
+
+      onAuthStateChanged(auth, async (user) => {
+        if (!user) {
+          const loginUrl = "../../login.html?next=" + encodeURIComponent(location.pathname);
+          setSyncStatus("warn", "Sign in required to load SF1 classes", loginUrl);
+          return;
+        }
+        await Promise.all([loadSf1Classes(), loadClinicLogs()]);
+      });
     });
   </script>
 
