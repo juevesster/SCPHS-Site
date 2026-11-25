@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Administration Office – SCPHS</title>
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css">
 
   <style>
     :root {
@@ -16,6 +16,7 @@
       --primary-light: #14b8a6;
       --text-main: #1e293b;
       --text-muted: #64748b;
+      --border: #e2e8f0;
       --danger: #dc2626;
       --card-bg: rgba(255, 255, 255, 0.88);
       --glass-border: rgba(255, 255, 255, 0.65);
@@ -23,7 +24,7 @@
       --shadow-lg: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
     }
 
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Outfit', sans-serif; }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Outfit', sans-serif; }
     body { background: var(--bg-color); color: var(--text-main); display: flex; min-height: 100vh; overflow-x: hidden; }
 
     /* Sidebar */
@@ -70,8 +71,18 @@
     .stat-value { font-size: 2.35rem; font-weight: 800; line-height: 1.05; color: var(--text-main); margin-bottom: 4px; }
     .stat-label { font-size: 0.82rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
 
-    .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px; }
+    .card-header { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; margin-bottom: 18px; }
     .card-title { font-size: 1.15rem; font-weight: 800; color: var(--text-main); display: flex; align-items: center; gap: 10px; }
+
+    /* Buttons */
+    .btn { padding: 8px 14px; border-radius: 10px; border: none; cursor: pointer; font-weight: 700; font-size: 0.82rem; display: inline-flex; align-items: center; gap: 7px; transition: 0.2s; white-space: nowrap; }
+    .btn-primary { background: var(--primary); color: #fff; }
+    .btn-primary:hover { background: #0d5e56; }
+    .btn-success { background: #10b981; color: #fff; }
+    .btn-danger { background: var(--danger); color: #fff; }
+    .btn-danger:hover { background: #b91c1c; }
+    .btn-outline { background: #fff; border: 1.5px solid var(--border); color: var(--text-main); }
+    .btn-outline:hover { border-color: var(--primary); color: var(--primary); }
 
     .menu-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
     .menu-grid.single-col { grid-template-columns: 1fr; }
@@ -83,30 +94,93 @@
     .menu-info p { font-size: 0.76rem; color: var(--text-muted); }
 
     /* Staff Directory */
-    .staff-list { list-style: none; }
-    .staff-list li { padding: 11px 0; border-bottom: 1px solid #f1f5f9; display: flex; justify-content: space-between; gap: 12px; font-size: 0.9rem; align-items: center; }
-    .staff-list li:last-child { border-bottom: none; }
-    .staff-list strong { color: var(--text-main); font-weight: 700; flex-shrink: 0; }
-    .staff-list span { color: var(--text-muted); font-weight: 500; text-align: right; word-break: break-word; }
+    .staff-list { list-style: none; display: flex; flex-direction: column; gap: 8px; }
+    .staff-item {
+      padding: 10px 12px; border-radius: 14px; border: 1px solid #f1f5f9; background: #fff;
+      display: flex; justify-content: space-between; align-items: center; gap: 12px;
+      cursor: pointer; transition: all 0.18s ease;
+    }
+    .staff-item:hover { background: #f0fdfa; border-color: #99f6e4; transform: translateX(2px); }
+    .staff-left { display: flex; align-items: center; gap: 12px; min-width: 0; }
+    .staff-id-photo {
+      width: 46px; height: 46px; border-radius: 12px; object-fit: cover;
+      border: 1.5px solid var(--border); background: #f8fafc; flex-shrink: 0; display: block;
+    }
+    .staff-id-fallback {
+      width: 46px; height: 46px; border-radius: 12px; background: #ccfbf1; color: var(--primary);
+      font-weight: 800; font-size: 0.95rem; display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0; border: 1px solid #99f6e4;
+    }
+    .staff-meta { min-width: 0; }
+    .staff-name-btn {
+      background: none; border: none; padding: 0; font-size: 0.94rem; font-weight: 700;
+      color: var(--primary); text-decoration: underline; text-underline-offset: 3px;
+      cursor: pointer; text-align: left; display: block;
+    }
+    .staff-role-tag { font-size: 0.72rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.4px; margin-top: 2px; }
+    .staff-right-hint { font-size: 0.76rem; color: var(--text-muted); font-weight: 600; flex-shrink: 0; }
+
+    /* Modal Dialog */
+    .modal-backdrop {
+      position: fixed; inset: 0; background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(4px);
+      display: none; justify-content: center; align-items: center; z-index: 2000; padding: 20px;
+    }
+    .modal-backdrop.open { display: flex; }
+    .modal-box {
+      background: #fff; border-radius: 20px; width: 100%; max-width: 540px;
+      box-shadow: var(--shadow-lg); border: 1px solid var(--border); overflow: hidden;
+    }
+    .modal-header {
+      padding: 18px 22px; border-bottom: 1px solid var(--border);
+      display: flex; justify-content: space-between; align-items: center;
+    }
+    .modal-header h3 { font-size: 1.15rem; font-weight: 800; color: var(--text-main); display: flex; align-items: center; gap: 8px; }
+    .modal-body { padding: 20px 22px; max-height: 74vh; overflow-y: auto; display: flex; flex-direction: column; gap: 14px; }
+    .modal-footer {
+      padding: 14px 22px; border-top: 1px solid var(--border); background: #f8fafc;
+      display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;
+    }
+
+    .photo-dialog-box {
+      display: flex; align-items: center; gap: 16px; flex-wrap: wrap;
+      background: #f8fafc; border: 1px solid var(--border); border-radius: 14px; padding: 12px;
+    }
+    .photo-dialog-preview {
+      width: 92px; height: 92px; border-radius: 14px; border: 1.5px solid var(--border);
+      background: #fff; overflow: hidden; display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0; color: var(--text-muted); font-size: 1.6rem;
+    }
+    .photo-dialog-preview img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .photo-dialog-controls { flex: 1; min-width: 200px; display: flex; flex-direction: column; gap: 8px; }
+
+    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .form-group { display: flex; flex-direction: column; min-width: 0; }
+    .form-group.full { grid-column: span 2; }
+    .form-group label { font-size: 0.72rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; margin-bottom: 5px; }
+    .form-group input, .form-group select {
+      padding: 9px 12px; border: 1px solid var(--border); border-radius: 10px;
+      font-size: 0.9rem; background: #fff; color: var(--text-main); outline: none; width: 100%;
+    }
+    .form-group input:focus, .form-group select:focus { border-color: var(--primary); }
 
     /* Chatbot Cleanup & Floating Trigger */
-#scphs-chatbot-root {
-  display: none;
-  position: fixed;
-  bottom: 92px;
-  right: 24px;
-  width: min(340px, calc(100vw - 48px));
-  background: #ffffff;
-  border: 1px solid #e2e8f0;
-  border-radius: 16px;
-  padding: 16px;
-  box-shadow: 0 20px 25px -5px rgba(15, 23, 42, 0.15);
-  z-index: 99994;
-}
+    #scphs-chatbot-root {
+      display: none;
+      position: fixed;
+      bottom: 92px;
+      right: 24px;
+      width: min(340px, calc(100vw - 48px));
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-radius: 16px;
+      padding: 16px;
+      box-shadow: 0 20px 25px -5px rgba(15, 23, 42, 0.15);
+      z-index: 99994;
+    }
 
-#scphs-chatbot-root.open {
-  display: block;
-}
+    #scphs-chatbot-root.open {
+      display: block;
+    }
 
     .chat-fab {
       position: fixed;
@@ -145,7 +219,8 @@
       .bento-grid { grid-template-columns: 1fr; gap: 14px; }
       .span-2 { grid-column: span 1; }
       .bento-card { padding: 20px; border-radius: 20px; }
-      .menu-grid { grid-template-columns: 1fr; }
+      .menu-grid, .form-grid { grid-template-columns: 1fr; }
+      .form-group.full { grid-column: span 1; }
     }
   </style>
 </head>
@@ -178,7 +253,7 @@
         <i class="fas fa-layer-group icon"></i> <span>RPCP – Appendix 73</span>
       </a>
       <a href="certificate-of-appearance.html" class="menu-item">
-      <i class="fas fa-award icon"></i> <span>Cert. of Appearance &amp; Feedback</span>
+        <i class="fas fa-award icon"></i> <span>Cert. of Appearance &amp; Feedback</span>
       </a>
     </div>
     <div class="sidebar-footer">
@@ -211,7 +286,7 @@
         <div class="bento-card stat-card">
           <div class="stat-icon teal"><i class="fas fa-users"></i></div>
           <div>
-            <div class="stat-value" id="stat-total-staff">11</div>
+            <div class="stat-value" id="stat-total-staff">0</div>
             <div class="stat-label">Total Staff</div>
           </div>
         </div>
@@ -241,7 +316,13 @@
         <div class="bento-card span-2">
           <div class="card-header">
             <div class="card-title"><i class="fas fa-address-book" style="color: var(--primary);"></i> Staff Directory</div>
+            <button type="button" class="btn btn-primary" onclick="openStaffDialog(null)">
+              <i class="fas fa-user-plus"></i> Add Staff
+            </button>
           </div>
+          <p style="font-size:0.8rem; color:var(--text-muted); margin-bottom:12px;">
+            Click any staff name or row to view ID photo, edit details, or remove record.
+          </p>
           <ul class="staff-list" id="staff-directory-list">
             <li style="justify-content: center; color: var(--text-muted); padding: 20px;">
               <i class="fas fa-spinner fa-spin" style="margin-right: 10px;"></i> Loading staff directory...
@@ -302,13 +383,89 @@
     </div>
   </main>
 
+  <!-- STAFF EDIT / REMOVE DIALOG -->
+  <div class="modal-backdrop" id="staffDialog">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h3 id="staffDialogTitle"><i class="fas fa-id-card" style="color:var(--primary);"></i> Staff Profile</h3>
+        <button type="button" onclick="closeStaffDialog()" style="background:none;border:none;font-size:1.5rem;cursor:pointer;color:var(--text-muted);">&times;</button>
+      </div>
+      <form onsubmit="saveStaffDialog(event)">
+        <div class="modal-body">
+          <input type="hidden" id="stf-id">
+          <input type="hidden" id="stf-photoUrl">
+
+          <div class="photo-dialog-box">
+            <div class="photo-dialog-preview" id="stf-photoPreview">
+              <i class="fas fa-user"></i>
+            </div>
+            <div class="photo-dialog-controls">
+              <label style="font-size:0.72rem;font-weight:700;color:var(--text-muted);text-transform:uppercase;">ID Picture</label>
+              <input type="file" id="stf-photoFile" accept="image/*" onchange="handleStaffPhotoFile(event)">
+              <input type="text" id="stf-photoInput" placeholder="Or paste ID image URL (https://...)" oninput="handleStaffPhotoUrl(this.value)">
+              <div style="display:flex;gap:8px;flex-wrap:wrap;">
+                <button type="button" class="btn btn-outline" style="padding:5px 10px;font-size:0.75rem;" onclick="document.getElementById('stf-photoFile').click()">
+                  <i class="fas fa-camera"></i> Change Photo
+                </button>
+                <button type="button" class="btn btn-outline" style="padding:5px 10px;font-size:0.75rem;color:var(--danger);border-color:#fecaca;" onclick="clearStaffPhoto()">
+                  <i class="fas fa-trash-alt"></i> Remove Photo
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-grid">
+            <div class="form-group full">
+              <label>Full Name *</label>
+              <input type="text" id="stf-name" required placeholder="e.g., Juan Dela Cruz">
+            </div>
+            <div class="form-group">
+              <label>Role / Designation *</label>
+              <select id="stf-role">
+                <option value="superadmin">SUPERADMIN</option>
+                <option value="admin">ADMIN</option>
+                <option value="head_teacher">HEAD TEACHER</option>
+                <option value="master_teacher">MASTER TEACHER</option>
+                <option value="teacher">TEACHER</option>
+                <option value="adas">ADAS</option>
+                <option value="property_custodian">PROPERTY CUSTODIAN</option>
+                <option value="staff">STAFF</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Department / Office</label>
+              <input type="text" id="stf-department" placeholder="e.g., Administration / ICT">
+            </div>
+            <div class="form-group full">
+              <label>Email Address</label>
+              <input type="email" id="stf-email" placeholder="name@deped.gov.ph">
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <div>
+            <button type="button" class="btn btn-danger" id="removeStaffBtn" onclick="removeStaffRecord()" style="display:none;">
+              <i class="fas fa-user-times"></i> Remove Staff
+            </button>
+          </div>
+          <div style="display:flex;gap:8px;">
+            <button type="button" class="btn btn-outline" onclick="closeStaffDialog()">Cancel</button>
+            <button type="submit" class="btn btn-success" id="saveStaffBtn">
+              <i class="fas fa-save"></i> Save Changes
+            </button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+
   <!-- Chatbot Mount -->
   <div id="scphs-chatbot-root"></div>
 
   <!-- FIREBASE & STAFF DIRECTORY LOGIC -->
   <script type="module">
     import { db } from "../../assets/js/firebase-config.js";
-    import { collection, getDocs } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+    import { collection, getDocs, doc, setDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
     const ROLE_ORDER = {
       superadmin: 1,
@@ -322,11 +479,117 @@
     };
 
     const STAFF_ROLES = new Set(Object.keys(ROLE_ORDER));
+    let staffList = [];
 
     function escapeHTML(str) {
       return String(str ?? "").replace(/[&<>"']/g, m => ({
         "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
       }[m]));
+    }
+
+    function escapeJS(str) {
+      return String(str ?? "").replace(/\\/g, "\\\\").replace(/'/g, "\\'");
+    }
+
+    function getInitials(name) {
+      const parts = String(name || "").trim().split(/\s+/).filter(Boolean);
+      if (!parts.length) return "ST";
+      return parts.slice(0, 2).map(p => p[0].toUpperCase()).join("");
+    }
+
+    function renderStaffPhotoPreview(src, name = "") {
+      const box = document.getElementById("stf-photoPreview");
+      const clean = (src || "").trim();
+      if (!clean) {
+        box.innerHTML = `<span style="font-weight:800;color:var(--primary);font-size:1.25rem;">${escapeHTML(getInitials(name))}</span>`;
+        return;
+      }
+      box.innerHTML = `<img src="${escapeHTML(clean)}" alt="${escapeHTML(name || "Staff ID photo")}" onerror="this.parentElement.innerHTML='<i class=\\'fas fa-user\\'></i>'">`;
+    }
+
+    window.handleStaffPhotoUrl = function(val) {
+      const clean = (val || "").trim();
+      document.getElementById("stf-photoUrl").value = clean;
+      renderStaffPhotoPreview(clean, document.getElementById("stf-name").value);
+    };
+
+    window.clearStaffPhoto = function() {
+      document.getElementById("stf-photoUrl").value = "";
+      document.getElementById("stf-photoInput").value = "";
+      document.getElementById("stf-photoFile").value = "";
+      renderStaffPhotoPreview("", document.getElementById("stf-name").value);
+    };
+
+    function compressPhoto(file, maxSize = 480, quality = 0.72) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => {
+          const img = new Image();
+          img.onload = () => {
+            const scale = Math.min(1, maxSize / Math.max(img.width, img.height));
+            const canvas = document.createElement("canvas");
+            canvas.width = Math.max(1, Math.round(img.width * scale));
+            canvas.height = Math.max(1, Math.round(img.height * scale));
+            const ctx = canvas.getContext("2d");
+            ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+            resolve(canvas.toDataURL("image/jpeg", quality));
+          };
+          img.onerror = reject;
+          img.src = reader.result;
+        };
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+      });
+    }
+
+    window.handleStaffPhotoFile = async function(evt) {
+      const file = evt.target.files?.[0];
+      if (!file) return;
+      if (!file.type.startsWith("image/")) {
+        alert("Please select a valid image file.");
+        return;
+      }
+      try {
+        const compressed = await compressPhoto(file);
+        document.getElementById("stf-photoUrl").value = compressed;
+        document.getElementById("stf-photoInput").value = file.name;
+        renderStaffPhotoPreview(compressed, document.getElementById("stf-name").value);
+      } catch (err) {
+        console.error("Photo error:", err);
+        alert("Could not process ID photo.");
+      }
+    };
+
+    function renderStaffDirectory() {
+      const listContainer = document.getElementById("staff-directory-list");
+      const statStaff = document.getElementById("stat-total-staff");
+      if (statStaff) statStaff.textContent = staffList.length;
+
+      if (!staffList.length) {
+        listContainer.innerHTML = `<li style="justify-content: center; color: var(--text-muted); padding: 20px;">No staff found in the database.</li>`;
+        return;
+      }
+
+      listContainer.innerHTML = staffList.map(person => {
+        const avatarHtml = person.photoUrl
+          ? `<img src="${escapeHTML(person.photoUrl)}" alt="${escapeHTML(person.name)}" class="staff-id-photo">`
+          : `<div class="staff-id-fallback">${escapeHTML(getInitials(person.name))}</div>`;
+
+        return `
+          <li class="staff-item" onclick="openStaffDialog('${escapeJS(person.id)}')" title="Click to view ID photo, edit, or remove">
+            <div class="staff-left">
+              ${avatarHtml}
+              <div class="staff-meta">
+                <button type="button" class="staff-name-btn" onclick="event.stopPropagation(); openStaffDialog('${escapeJS(person.id)}')">
+                  ${escapeHTML(person.name)}
+                </button>
+                <div class="staff-role-tag">${escapeHTML(person.roleLabel)}${person.department ? ` • ${escapeHTML(person.department)}` : ""}</div>
+              </div>
+            </div>
+            <span class="staff-right-hint"><i class="fas fa-pen"></i> Edit / Remove</span>
+          </li>
+        `;
+      }).join("");
     }
 
     async function loadStaffDirectory() {
@@ -335,44 +598,115 @@
 
       try {
         const snap = await getDocs(collection(db, "users"));
-        const staff = [];
+        const loaded = [];
 
-        snap.forEach(doc => {
-          const data = doc.data();
-          const role = data.primaryRole || data.role || "user";
+        snap.forEach(d => {
+          const data = d.data();
+          const rawRole = String(data.primaryRole || data.role || "user").toLowerCase();
 
-          if (STAFF_ROLES.has(role)) {
+          if (STAFF_ROLES.has(rawRole)) {
             const fullName = data.name || `${data.firstName || ""} ${data.lastName || ""}`.trim() || "Unnamed Staff";
-            staff.push({
-              id: doc.id,
+            const photoUrl = data.photoUrl || data.avatarUrl || data.imageUrl || "";
+            loaded.push({
+              id: d.id,
               name: fullName,
-              role: role.replace(/_/g, " ").toUpperCase(),
-              order: ROLE_ORDER[role] ?? 99
+              rawRole,
+              roleLabel: rawRole.replace(/_/g, " ").toUpperCase(),
+              department: data.department || "",
+              email: data.email || "",
+              photoUrl,
+              order: ROLE_ORDER[rawRole] ?? 99
             });
           }
         });
 
-        staff.sort((a, b) => a.order - b.order);
-
-        if (staff.length === 0) {
-          listContainer.innerHTML = `<li style="justify-content: center; color: var(--text-muted); padding: 20px;">No staff found in the database.</li>`;
-          return;
-        }
-
-        const statStaff = document.getElementById("stat-total-staff");
-        if (statStaff) statStaff.textContent = staff.length;
-
-        listContainer.innerHTML = staff.map(person => `
-          <li>
-            <strong>${escapeHTML(person.role)}</strong>
-            <span>${escapeHTML(person.name)}</span>
-          </li>
-        `).join("");
+        loaded.sort((a, b) => a.order - b.order || a.name.localeCompare(b.name));
+        staffList = loaded;
+        renderStaffDirectory();
       } catch (error) {
         console.error("Error loading staff:", error);
         listContainer.innerHTML = `<li style="justify-content: center; color: var(--danger); padding: 20px;">Failed to load staff directory.</li>`;
       }
     }
+
+    window.openStaffDialog = function(id) {
+      const person = id ? staffList.find(s => s.id === id) : null;
+      document.getElementById("staffDialogTitle").innerHTML = person
+        ? `<i class="fas fa-id-card" style="color:var(--primary);"></i> Edit or Remove Staff`
+        : `<i class="fas fa-user-plus" style="color:var(--primary);"></i> Add Staff Member`;
+
+      document.getElementById("stf-id").value = person ? person.id : "";
+      document.getElementById("stf-name").value = person ? person.name : "";
+      document.getElementById("stf-role").value = person ? person.rawRole : "staff";
+      document.getElementById("stf-department").value = person ? person.department : "";
+      document.getElementById("stf-email").value = person ? person.email : "";
+      document.getElementById("stf-photoFile").value = "";
+
+      const photoVal = person ? person.photoUrl : "";
+      document.getElementById("stf-photoUrl").value = photoVal;
+      document.getElementById("stf-photoInput").value = photoVal.startsWith("data:") ? "(Uploaded ID Photo)" : photoVal;
+      renderStaffPhotoPreview(photoVal, person ? person.name : "");
+
+      document.getElementById("removeStaffBtn").style.display = person ? "inline-flex" : "none";
+      document.getElementById("staffDialog").classList.add("open");
+    };
+
+    window.closeStaffDialog = function() {
+      document.getElementById("staffDialog").classList.remove("open");
+    };
+
+    window.saveStaffDialog = async function(evt) {
+      evt.preventDefault();
+      const btn = document.getElementById("saveStaffBtn");
+      const name = document.getElementById("stf-name").value.trim();
+      if (!name) return alert("Staff name is required.");
+
+      const existingId = document.getElementById("stf-id").value;
+      const docId = existingId || `staff_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`;
+      const rawRole = document.getElementById("stf-role").value;
+      const photoUrl = document.getElementById("stf-photoUrl").value.trim();
+      const department = document.getElementById("stf-department").value.trim();
+      const email = document.getElementById("stf-email").value.trim();
+
+      const payload = {
+        name,
+        primaryRole: rawRole,
+        role: rawRole,
+        department,
+        email,
+        photoUrl,
+        updatedAt: new Date().toISOString()
+      };
+
+      btn.disabled = true;
+      try {
+        await setDoc(doc(db, "users", docId), payload, { merge: true });
+        await loadStaffDirectory();
+        closeStaffDialog();
+      } catch (err) {
+        console.error("Save staff error:", err);
+        alert("Failed to save staff record: " + err.message);
+      } finally {
+        btn.disabled = false;
+      }
+    };
+
+    window.removeStaffRecord = async function() {
+      const id = document.getElementById("stf-id").value;
+      const name = document.getElementById("stf-name").value.trim() || "this staff member";
+      if (!id) return;
+      if (!confirm(`Remove "${name}" from the staff directory?`)) return;
+
+      try {
+        await deleteDoc(doc(db, "users", id));
+        staffList = staffList.filter(s => s.id !== id);
+        renderStaffDirectory();
+        closeStaffDialog();
+      } catch (err) {
+        console.error("Remove staff error:", err);
+        alert("Failed to remove staff record: " + err.message);
+      }
+    };
 
     document.addEventListener("DOMContentLoaded", loadStaffDirectory);
   </script>
@@ -427,13 +761,13 @@
     })();
 
     function toggleChatBot() {
-  const root = document.getElementById("scphs-chatbot-root");
-  if (!root || !root.innerHTML.trim()) {
-    alert("The chatbot is currently loading or unavailable. Please try again later.");
-    return;
-  }
-  root.classList.toggle("open");
-}
+      const root = document.getElementById("scphs-chatbot-root");
+      if (!root || !root.innerHTML.trim()) {
+        alert("The chatbot is currently loading or unavailable. Please try again later.");
+        return;
+      }
+      root.classList.toggle("open");
+    }
   </script>
 </body>
 </html>
