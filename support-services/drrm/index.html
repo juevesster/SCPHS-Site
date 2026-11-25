@@ -1,190 +1,1355 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="utf-8" />
+  <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>School DRRM – SCPHS</title>
-  <meta name="description" content="SCPHS School Disaster Risk Reduction & Management – safety guidelines, protocols, and advisories." />
-  <link rel="stylesheet" href="../../assets/css/styles.css" />
+  <title>School DRRM (SDRRM) – SCPHS</title>
+  <meta name="description" content="SCPHS School Disaster Risk Reduction & Management – DepEd Order No. 014 s. 2026 (4H Learning Continuity), DO 022 s. 2024 Class Suspensions, PAGASA Weather, NSED Quake Drills & Preparedness." />
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.5.2/css/all.min.css">
+
+  <style>
+    :root {
+      --sidebar-bg: #0f172a;
+      --sidebar-hover: #1e293b;
+      --bg-color: #f4f7f9;
+      --primary: #b91c1c;
+      --primary-light: #ef4444;
+      --accent-amber: #d97706;
+      --accent-teal: #0f766e;
+      --accent-indigo: #4338ca;
+      --text-main: #1e293b;
+      --text-muted: #64748b;
+      --border: #e2e8f0;
+      --success: #16a34a;
+      --warning: #d97706;
+      --danger: #dc2626;
+      --card-bg: rgba(255, 255, 255, 0.92);
+      --glass-border: rgba(255, 255, 255, 0.75);
+      --shadow-sm: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+      --shadow-lg: 0 20px 25px -5px rgba(0, 0, 0, 0.08);
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Outfit', sans-serif; }
+    body { background: var(--bg-color); color: var(--text-main); display: flex; min-height: 100vh; overflow-x: hidden; }
+
+    /* Sidebar */
+    .sidebar { width: 265px; flex-shrink: 0; background: var(--sidebar-bg); color: #fff; display: flex; flex-direction: column; z-index: 1000; position: fixed; top: 0; left: 0; height: 100vh; transition: transform 0.3s ease; }
+    .sidebar-brand { padding: 24px 20px; font-size: 1.3rem; font-weight: 800; display: flex; align-items: center; gap: 12px; border-bottom: 1px solid rgba(255,255,255,0.06); }
+    .sidebar-brand i { color: #f87171; }
+    .sidebar-menu { flex: 1; padding: 16px 12px; display: flex; flex-direction: column; gap: 5px; overflow-y: auto; }
+    .menu-item { display: flex; align-items: center; gap: 12px; padding: 11px 14px; border-radius: 12px; color: #94a3b8; text-decoration: none; font-weight: 500; font-size: 0.9rem; transition: all 0.2s ease; cursor: pointer; border: none; background: transparent; width: 100%; text-align: left; }
+    .menu-item:hover { background: var(--sidebar-hover); color: #fff; transform: translateX(3px); }
+    .menu-item.active { background: linear-gradient(90deg, var(--primary), var(--primary-light)); color: #fff; font-weight: 600; box-shadow: 0 4px 15px rgba(185, 28, 28, 0.3); }
+    .menu-item .icon { font-size: 1.05rem; width: 20px; text-align: center; flex-shrink: 0; }
+    .sidebar-footer { padding: 14px 12px; border-top: 1px solid rgba(255,255,255,0.06); }
+
+    .sidebar-backdrop { display: none; position: fixed; inset: 0; background: rgba(15, 23, 42, 0.5); z-index: 990; }
+    .sidebar-backdrop.show { display: block; }
+    .mobile-menu-btn { display: none; width: 40px; height: 40px; border-radius: 10px; border: 1px solid var(--border); background: #fff; color: var(--text-main); align-items: center; justify-content: center; font-size: 1.1rem; cursor: pointer; }
+
+    /* Main Content */
+    .main-content { margin-left: 265px; flex: 1; min-width: 0; display: flex; flex-direction: column; position: relative; }
+    .orb { position: absolute; border-radius: 50%; filter: blur(110px); z-index: 0; opacity: 0.3; pointer-events: none; }
+    .orb-1 { width: 480px; height: 480px; background: #fecaca; top: -140px; right: -80px; }
+    .orb-2 { width: 380px; height: 380px; background: #fde68a; bottom: 5%; left: 15%; }
+
+    .topbar { min-height: 78px; padding: 14px 28px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; background: rgba(255, 255, 255, 0.82); backdrop-filter: blur(20px); border-bottom: 1px solid var(--glass-border); z-index: 10; }
+    .page-title { font-size: 1.4rem; font-weight: 800; color: var(--text-main); display: flex; align-items: center; gap: 12px; }
+    .topbar-right { display: flex; align-items: center; gap: 9px; flex-wrap: wrap; }
+    .sync-badge { font-size: 0.74rem; padding: 5px 12px; border-radius: 999px; background: #fef3c7; color: #92400e; font-weight: 700; }
+    .sync-badge.ok { background: #dcfce7; color: #166534; }
+    .hours-pill { font-size: 0.8rem; font-weight: 700; color: var(--text-muted); background: #fff; padding: 7px 13px; border-radius: 999px; border: 1px solid var(--border); white-space: nowrap; }
+
+    .dashboard-scroll { flex: 1; padding: 22px 28px 90px; z-index: 1; }
+
+    /* 4H Status Banner (DO 014, s. 2026) */
+    .four-h-banner {
+      display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 14px;
+      padding: 18px 22px; border-radius: 20px; margin-bottom: 20px;
+      background: #ecfdf5; border: 2px solid #6ee7b7; color: #065f46;
+      box-shadow: var(--shadow-sm);
+    }
+    .four-h-banner.level-hinay { background: #fefce8; border-color: #fde047; color: #854d0e; }
+    .four-h-banner.level-hinga { background: #fff7ed; border-color: #fdba74; color: #9a3412; }
+    .four-h-banner.level-hinto { background: #fef2f2; border-color: #fca5a5; color: #7f1d1d; }
+
+    /* 4H Matrix Cards */
+    .four-h-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; margin-top: 12px; }
+    .four-h-card {
+      border-radius: 16px; padding: 15px; border: 2px solid var(--border); background: #fff;
+      display: flex; flex-direction: column; justify-content: space-between; gap: 8px;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    .four-h-card.active-tier { transform: translateY(-3px); box-shadow: var(--shadow-lg); }
+    .four-h-card.hayo { border-color: #86efac; background: #f0fdf4; }
+    .four-h-card.hinay { border-color: #fde047; background: #fefce8; }
+    .four-h-card.hinga { border-color: #fdba74; background: #fff7ed; }
+    .four-h-card.hinto { border-color: #fca5a5; background: #fef2f2; }
+
+    /* Bento Grid */
+    .bento-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 18px; margin-bottom: 20px; }
+    .bento-card { background: var(--card-bg); backdrop-filter: blur(16px); border: 1px solid var(--glass-border); border-radius: 22px; padding: 22px; box-shadow: var(--shadow-sm); position: relative; min-width: 0; }
+    .span-2 { grid-column: span 2; }
+    .span-4 { grid-column: span 4; }
+
+    .stat-card { display: flex; flex-direction: column; justify-content: space-between; transition: transform 0.2s ease, box-shadow 0.2s ease; }
+    .stat-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-lg); }
+    .stat-icon { width: 46px; height: 46px; border-radius: 13px; display: flex; align-items: center; justify-content: center; font-size: 1.3rem; margin-bottom: 14px; }
+    .stat-icon.red { background: #fee2e2; color: #dc2626; }
+    .stat-icon.amber { background: #fef3c7; color: #d97706; }
+    .stat-icon.teal { background: #ccfbf1; color: #0f766e; }
+    .stat-icon.green { background: #dcfce7; color: #16a34a; }
+    .stat-value { font-size: 2.1rem; font-weight: 800; line-height: 1.05; color: var(--text-main); margin-bottom: 4px; }
+    .stat-label { font-size: 0.77rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
+
+    .card-header { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; margin-bottom: 16px; }
+    .card-title { font-size: 1.1rem; font-weight: 800; color: var(--text-main); display: flex; align-items: center; gap: 9px; }
+
+    /* Weather & Hazard Links */
+    .menu-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
+    .menu-card { background: #fff; border: 1px solid var(--border); border-radius: 15px; padding: 13px 15px; text-decoration: none; color: inherit; display: flex; align-items: center; gap: 13px; transition: all 0.2s ease; min-width: 0; }
+    .menu-card:hover { transform: translateY(-2px); box-shadow: 0 8px 16px rgba(0,0,0,0.05); border-color: #fca5a5; }
+    .menu-icon { width: 40px; height: 40px; border-radius: 11px; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; color: #fff; flex-shrink: 0; }
+    .menu-info h4 { font-size: 0.91rem; font-weight: 700; color: var(--text-main); margin-bottom: 2px; }
+    .menu-info p { font-size: 0.75rem; color: var(--text-muted); }
+
+    .guideline-list { list-style: none; display: grid; gap: 10px; }
+    .guideline-list li { display: flex; align-items: flex-start; gap: 10px; font-size: 0.87rem; color: var(--text-main); background: #fff; padding: 10px 13px; border-radius: 12px; border: 1px solid var(--border); }
+    .guideline-list li i { color: var(--primary); margin-top: 3px; }
+
+    .hotline-list { list-style: none; }
+    .hotline-list li { padding: 9px 0; border-bottom: 1px solid #f1f5f9; display: flex; justify-content: space-between; gap: 12px; font-size: 0.87rem; align-items: center; }
+    .hotline-list li:last-child { border-bottom: none; }
+    .hotline-list strong { color: var(--text-main); font-weight: 700; }
+    .hotline-list span { color: var(--primary); font-weight: 700; text-align: right; }
+
+    /* Forms & Controls */
+    .form-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
+    .form-group { display: flex; flex-direction: column; min-width: 0; }
+    .form-group.span-2 { grid-column: span 2; }
+    .form-group.full { grid-column: 1 / -1; }
+    .form-group label { font-size: 0.71rem; font-weight: 700; color: var(--text-muted); margin-bottom: 5px; text-transform: uppercase; }
+    .form-group input, .form-group select, .form-group textarea {
+      width: 100%; border: 1px solid var(--border); border-radius: 10px; padding: 9px 12px; font-size: 0.88rem; background: #fff; color: var(--text-main); outline: none;
+    }
+    .form-group input:focus, .form-group select:focus, .form-group textarea:focus { border-color: var(--primary); }
+
+    .btn { border: none; cursor: pointer; border-radius: 10px; padding: 9px 15px; font-weight: 700; display: inline-flex; align-items: center; gap: 7px; font-size: 0.83rem; transition: opacity 0.2s; white-space: nowrap; text-decoration: none; }
+    .btn:hover { opacity: 0.92; }
+    .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+    .btn-sm { padding: 5px 10px; font-size: 0.75rem; border-radius: 8px; }
+    .btn-primary { background: var(--primary); color: #fff; }
+    .btn-amber { background: var(--accent-amber); color: #fff; }
+    .btn-teal { background: var(--accent-teal); color: #fff; }
+    .btn-indigo { background: var(--accent-indigo); color: #fff; }
+    .btn-success { background: var(--success); color: #fff; }
+    .btn-danger { background: var(--danger); color: #fff; }
+    .btn-outline { background: #fff; color: var(--text-main); border: 1px solid var(--border); }
+
+    .toolbar { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+    .toolbar input, .toolbar select { border: 1px solid var(--border); border-radius: 10px; padding: 8px 12px; font-size: 0.83rem; background: #fff; color: var(--text-main); outline: none; }
+
+    /* Table */
+    .table-wrap { width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+    table { width: 100%; border-collapse: collapse; }
+    th, td { padding: 10px 12px; border-bottom: 1px solid var(--border); text-align: left; font-size: 0.83rem; white-space: nowrap; }
+    th { background: #f8fafc; color: var(--text-muted); font-size: 0.71rem; text-transform: uppercase; letter-spacing: 0.4px; }
+    td.wrap-col { white-space: normal; min-width: 200px; }
+
+    .badge { display: inline-block; padding: 3px 10px; border-radius: 999px; font-size: 0.71rem; font-weight: 700; margin: 1px; }
+    .badge.ok { background: #dcfce7; color: #166534; }
+    .badge.warn { background: #fef3c7; color: #92400e; }
+    .badge.orange { background: #ffedd5; color: #9a3412; }
+    .badge.crit { background: #fee2e2; color: #b91c1c; }
+    .badge.info { background: #e0e7ff; color: #3730a3; }
+
+    .collapse-box { display: none; background: #f8fafc; border: 1px solid var(--border); border-radius: 16px; padding: 16px; margin-bottom: 16px; }
+    .collapse-box.open { display: block; }
+
+    /* Checklist Box */
+    .checklist-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+    .check-item {
+      display: flex; align-items: center; justify-content: space-between; gap: 10px;
+      background: #fff; border: 1px solid var(--border); border-radius: 12px; padding: 11px 14px;
+      font-size: 0.85rem;
+    }
+
+    /* Modals */
+    .modal-backdrop { display: none; position: fixed; inset: 0; background: rgba(15, 23, 42, 0.65); z-index: 2000; align-items: center; justify-content: center; padding: 20px; }
+    .modal-backdrop.open { display: flex; }
+    .modal-box { background: #fff; border-radius: 20px; max-width: 720px; width: 100%; max-height: 90vh; overflow-y: auto; padding: 24px; box-shadow: var(--shadow-lg); border: 1px solid var(--border); }
+
+    /* Footer */
+    .portal-footer { margin-top: 24px; padding: 18px 22px; background: #fff; border: 1px solid var(--border); border-radius: 18px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; font-size: 0.8rem; color: var(--text-muted); }
+    .portal-footer a { color: var(--primary); text-decoration: none; font-weight: 600; }
+
+    /* Chatbot FAB */
+    #scphs-chatbot-root { display: none; position: fixed; bottom: 92px; right: 24px; width: min(340px, calc(100vw - 48px)); background: #fff; border: 1px solid var(--border); border-radius: 16px; padding: 16px; box-shadow: 0 20px 25px -5px rgba(15, 23, 42, 0.15); z-index: 99994; }
+    #scphs-chatbot-root.open { display: block; }
+    .chat-fab { position: fixed; bottom: 24px; right: 24px; width: 56px; height: 56px; border-radius: 50%; background: var(--primary); color: #fff; border: none; cursor: pointer; box-shadow: 0 8px 20px rgba(185, 28, 28, 0.35); z-index: 99995; font-size: 1.4rem; display: flex; align-items: center; justify-content: center; transition: transform 0.2s ease; }
+    .chat-fab:hover { transform: scale(1.06); }
+
+    /* Print Header & Signatories */
+    .deped-print-header,
+    .deped-print-signatories { display: none; }
+
+    @media print {
+      @page { size: landscape; margin: 12mm 14mm; }
+      body { background: #fff !important; color: #000 !important; display: block !important; }
+      .sidebar, .sidebar-backdrop, .topbar, .orb, .chat-fab, #scphs-chatbot-root,
+      .toolbar, .collapse-box, .portal-footer, .modal-backdrop, .no-print { display: none !important; }
+      .main-content { margin-left: 0 !important; width: 100% !important; }
+      .dashboard-scroll { padding: 0 !important; }
+      .bento-card { box-shadow: none !important; border: 1px solid #cbd5e1 !important; page-break-inside: avoid; margin-bottom: 12px !important; }
+      .print-hide-col th:last-child, .print-hide-col td:last-child { display: none !important; }
+      .four-h-grid { grid-template-columns: repeat(4, 1fr) !important; gap: 8px !important; }
+
+      .deped-print-header {
+        display: block !important; text-align: center; margin-bottom: 14px;
+        padding-bottom: 10px; border-bottom: 2px solid #000;
+        font-family: 'Bookman Old Style', Georgia, 'Times New Roman', serif;
+      }
+      .deped-print-header img { width: 64px; height: 64px; object-fit: contain; margin: 0 auto 4px; display: block; }
+      .deped-print-header .rep-ph { font-size: 11pt; }
+      .deped-print-header .dept-ed { font-size: 14pt; font-weight: 700; }
+      .deped-print-header .reg-div { font-size: 9.5pt; text-transform: uppercase; }
+      .deped-print-header .school-name { font-size: 10.5pt; font-weight: 700; text-transform: uppercase; }
+      .deped-print-header .report-main-title { margin-top: 8px; font-family: 'Outfit', sans-serif; font-size: 12pt; font-weight: 800; text-transform: uppercase; }
+      .deped-print-header .report-sub-meta { font-family: 'Outfit', sans-serif; font-size: 9pt; color: #333; }
+
+      th, td { border: 1px solid #64748b !important; padding: 5px 7px !important; color: #000 !important; white-space: normal !important; font-size: 8.3pt !important; }
+      th { background: #e2e8f0 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+
+      .deped-print-signatories {
+        display: grid !important; grid-template-columns: repeat(2, 1fr); gap: 40px;
+        margin-top: 26px; page-break-inside: avoid; font-size: 9.5pt;
+      }
+      .sig-line { margin-top: 32px; border-top: 1px solid #000; padding-top: 4px; font-weight: 700; text-transform: uppercase; }
+    }
+
+    @media (max-width: 1150px) {
+      .bento-grid, .four-h-grid { grid-template-columns: repeat(2, 1fr); }
+      .span-4 { grid-column: span 2; }
+      .form-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+    @media (max-width: 768px) {
+      .mobile-menu-btn { display: inline-flex; }
+      .sidebar { transform: translateX(-100%); }
+      .sidebar.open { transform: translateX(0); }
+      .main-content { margin-left: 0; }
+      .topbar { padding: 14px 18px; }
+      .dashboard-scroll { padding: 18px 18px 90px; }
+      .bento-grid, .four-h-grid, .menu-grid, .form-grid, .checklist-grid { grid-template-columns: 1fr; }
+      .span-2, .span-4, .form-group.span-2 { grid-column: span 1; }
+    }
+  </style>
 </head>
 <body>
 
-   <!-- PAGE HERO -->
-  <div class="page-hero">
-    <div class="wrap">
-      <span class="badge">School Risk Reduction Management</span>
-      <h1>DRRM</h1>
-      <p class="meta">Sta. Cruz Pingkian High School • Emergency Response for School, Trainings.</p>
+  <div class="sidebar-backdrop" id="sidebarBackdrop" onclick="toggleSidebar(false)"></div>
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-brand">
+      <i class="fas fa-shield-alt"></i> <span>School DRRM</span>
     </div>
-  </div>
-
-      <!-- Mini-header / Breadcrumb -->
-  <header class="mini-header">
-    <div class="wrap" style="display:flex; align-items:center; gap:12px; padding:10px 0">
-      <!-- LOCAL/OFFLINE: ../../index.html  |  ONLINE (optional): /index.html -->
-      <a href="../../index.html" class="brand">SCPHS</a>
-
-      <nav aria-label="Breadcrumb" class="crumbs">
-        <!-- LOCAL/OFFLINE: ../../index.html  |  ONLINE: /index.html -->
-        <a href="../../index.html">Home</a>
-        /
-        <!-- If you add a landing page at /support-services/index.html use:
-             LOCAL: ../index.html  |  ONLINE: /support-services/index.html -->
-        <a href="../../index.html">Support Services</a>
-        /
-        <strong>SDRRM</strong>
-      </nav>
+    <div class="sidebar-menu">
+      <a href="#overview-section" class="menu-item active" onclick="setActiveMenu(this)">
+        <i class="fas fa-compass icon"></i> <span>SDRRM Overview</span>
+      </a>
+      <a href="#learning-continuity-section" class="menu-item" onclick="setActiveMenu(this)">
+        <i class="fas fa-graduation-cap icon"></i> <span>DO 014 (4H Framework)</span>
+      </a>
+      <a href="#suspension-matrix-section" class="menu-item" onclick="setActiveMenu(this)">
+        <i class="fas fa-cloud-sun-rain icon"></i> <span>Class Suspension Rules</span>
+      </a>
+      <a href="#weather-pagasa-section" class="menu-item" onclick="setActiveMenu(this)">
+        <i class="fas fa-satellite-dish icon"></i> <span>PAGASA &amp; PHIVOLCS</span>
+      </a>
+      <a href="#drills-section" class="menu-item" onclick="setActiveMenu(this)">
+        <i class="fas fa-running icon"></i> <span>NSED Quake Drills</span>
+      </a>
+      <a href="#incidents-section" class="menu-item" onclick="setActiveMenu(this)">
+        <i class="fas fa-exclamation-triangle icon"></i> <span>Hazard &amp; Incident Log</span>
+      </a>
+      <a href="#equipment-section" class="menu-item" onclick="setActiveMenu(this)">
+        <i class="fas fa-first-aid icon"></i> <span>Preparedness &amp; Kits</span>
+      </a>
+      <a href="../clinic/index.html" class="menu-item">
+        <i class="fas fa-heartbeat icon"></i> <span>School Clinic</span>
+      </a>
+      <a href="../administration/index.html" class="menu-item">
+        <i class="fas fa-building icon"></i> <span>Administration Office</span>
+      </a>
+      <a href="../../index.html" class="menu-item">
+        <i class="fas fa-globe icon"></i> <span>Main Portal</span>
+      </a>
     </div>
-  </header>
- 
-  <main class="wrap" style="margin-top:16px">
-    <article class="card">
-      <header style="padding:16px; border-bottom:1px solid var(--line)">
-        <h1 style="margin:0">About School DRRM</h1>
-        <p class="meta">Preparedness, response, and safety in the school community.</p>
-      </header>
+    <div class="sidebar-footer">
+      <a href="mailto:300648@deped.gov.ph" id="sidebarEmailLink" class="menu-item" style="color: #fca5a5; background: rgba(239,68,68,0.12);">
+        <i class="fas fa-envelope icon"></i> <span id="sidebarEmailText">300648@deped.gov.ph</span>
+      </a>
+    </div>
+  </aside>
 
-      <section style="padding:16px; display:grid; gap:18px">
-        <div class="info-grid" style="display:grid; grid-template-columns: 1fr 1fr; gap:16px">
-          <div class="card soft">
-            <h3>Office Information</h3>
-            <ul class="list">
-              <li>Location: Admin Annex</li>
-              <li>Email: <a href="mailto:300648@deped.gov.ph">300648@deped.gov.ph</a></li>
-              <li>Phone: +63 967‑8848989</li>
+  <!-- MAIN CONTENT -->
+  <main class="main-content">
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+
+    <header class="topbar">
+      <div class="page-title">
+        <button type="button" class="mobile-menu-btn" onclick="toggleSidebar()" aria-label="Toggle navigation menu">
+          <i class="fas fa-bars"></i>
+        </button>
+        <div>
+          <span>School Disaster Risk Reduction &amp; Management</span>
+          <div style="font-size:0.78rem;font-weight:500;color:var(--text-muted);">Sta. Cruz Pingkian High School • DepEd Order No. 014, s. 2026 &amp; DO No. 022, s. 2024 Compliant</div>
+        </div>
+      </div>
+      <div class="topbar-right">
+        <button type="button" class="btn btn-primary btn-sm" onclick="toggleBox('reportIncidentBox'); document.getElementById('incidents-section').scrollIntoView({behavior:'smooth'});">
+          <i class="fas fa-exclamation-circle"></i> Report Hazard / Incident
+        </button>
+        <button type="button" class="btn btn-outline btn-sm" onclick="printDrrmReport()">
+          <i class="fas fa-print"></i> Print SDRRM Report
+        </button>
+        <button type="button" class="btn btn-outline btn-sm" id="editDrrmBtn" onclick="openEditDrrmModal()" style="display:none;">
+          <i class="fas fa-edit"></i> Edit SDRRM &amp; 4H Status
+        </button>
+        <span class="sync-badge" id="syncBadge">Connecting to Firestore...</span>
+        <div class="hours-pill"><i class="fas fa-clock" style="color:var(--primary);"></i> Mon–Fri: 8:00 AM – 5:00 PM • 24/7 On-Call</div>
+      </div>
+    </header>
+
+    <div class="dashboard-scroll">
+      <!-- DEPED PRINT HEADER -->
+      <div class="deped-print-header">
+        <img src="../../assets/images/deped-logo.png" alt="Department of Education Seal" onerror="this.src='https://upload.wikimedia.org/wikipedia/commons/thumb/8/8c/Department_of_Education_%28DepEd%29.svg/240px-Department_of_Education_%28DepEd%29.svg.png'">
+        <div class="rep-ph">Republic of the Philippines</div>
+        <div class="dept-ed">Department of Education</div>
+        <div class="reg-div">Region II – Cagayan Valley • Schools Division of Nueva Vizcaya</div>
+        <div class="school-name">STA. CRUZ PINGKIAN HIGH SCHOOL</div>
+        <div style="font-size:8.5pt;">Brgy. Sta. Cruz, Pingkian, Kayapa, Nueva Vizcaya • School ID: 300648</div>
+        <div class="report-main-title">School DRRM Preparedness, Learning Continuity (4H) &amp; NSED Compliance Report</div>
+        <div class="report-sub-meta" id="printDrrmMeta">Generated: —</div>
+      </div>
+
+      <!-- LIVE 4H LEARNING CONTINUITY & SAFETY BANNER (DO 014, s. 2026) -->
+      <div class="four-h-banner" id="fourHBanner">
+        <div style="display:flex;align-items:center;gap:14px;">
+          <i class="fas fa-check-circle" id="fourHIcon" style="font-size:1.65rem;"></i>
+          <div>
+            <div style="font-size:0.74rem;font-weight:800;text-transform:uppercase;letter-spacing:0.5px;">DepEd Order No. 014, s. 2026 • Active Learning Continuity Level</div>
+            <div style="font-weight:800;font-size:1.05rem;" id="fourHTitle">HAYO (Continue) — Regular In-Person Classes &amp; Full Curriculum Delivery</div>
+            <div style="font-size:0.83rem;opacity:0.92;margin-top:2px;" id="fourHDesc">Conditions are safe. Full face-to-face lessons, remediation programs, and standard school operations proceed normally.</div>
+          </div>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+          <span class="badge ok" id="fourHBadge" style="font-size:0.78rem;padding:5px 12px;">LEVEL 1: HAYO</span>
+          <button type="button" class="btn btn-outline btn-sm staff-only no-print" style="display:none;" onclick="openEditDrrmModal()">
+            <i class="fas fa-sliders-h"></i> Change 4H Level
+          </button>
+        </div>
+      </div>
+
+      <!-- KPI STRIP -->
+      <div class="bento-grid" id="overview-section">
+        <div class="bento-card stat-card">
+          <div class="stat-icon teal"><i class="fas fa-layer-group"></i></div>
+          <div>
+            <div class="stat-value" id="statCurrent4H">HAYO</div>
+            <div class="stat-label">Current DO 014 Level</div>
+          </div>
+        </div>
+        <div class="bento-card stat-card">
+          <div class="stat-icon red"><i class="fas fa-running"></i></div>
+          <div>
+            <div class="stat-value" id="statDrills">0</div>
+            <div class="stat-label">NSED &amp; Safety Drills</div>
+          </div>
+        </div>
+        <div class="bento-card stat-card">
+          <div class="stat-icon amber"><i class="fas fa-exclamation-triangle"></i></div>
+          <div>
+            <div class="stat-value" id="statOpenIncidents">0</div>
+            <div class="stat-label">Open Hazards / Incidents</div>
+          </div>
+        </div>
+        <div class="bento-card stat-card">
+          <div class="stat-icon green"><i class="fas fa-first-aid"></i></div>
+          <div>
+            <div class="stat-value" id="statReadyGear">0</div>
+            <div class="stat-label">Operational Kits &amp; Gear</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- DEPED ORDER NO. 014, S. 2026: 4H LEARNING CONTINUITY IN EMERGENCIES -->
+      <div class="bento-card" id="learning-continuity-section" style="margin-bottom:20px;">
+        <div class="card-header">
+          <div class="card-title">
+            <i class="fas fa-graduation-cap" style="color:var(--accent-indigo);"></i>
+            DepEd Order No. 014, s. 2026 — 4H Learning Continuity in Emergencies Framework
+          </div>
+          <span class="badge info">School Learning &amp; Service Continuity Plan (LSCP)</span>
+        </div>
+        <p style="font-size:0.84rem;color:var(--text-muted);margin-bottom:12px;">
+          Pursuant to <strong>DepEd Order No. 014, s. 2026</strong> (<em>Guidelines on Learning Continuity in Emergencies</em>) and <strong>Executive Order No. 130, s. 2026</strong>, the School Head determines the active continuity level (reported within 12 hours of disruption) so learner safety comes first while preventing learning loss:
+        </p>
+
+        <div class="four-h-grid">
+          <div class="four-h-card hayo" id="card4HHayo">
+            <div>
+              <span class="badge ok">LEVEL 1 • HAYO (Continue)</span>
+              <h4 style="margin-top:8px;font-size:0.96rem;">Full Curriculum Delivery</h4>
+              <p style="font-size:0.8rem;color:var(--text-muted);margin-top:4px;">Safe conditions; no TCWS or suspension. Regular face-to-face classes, full lesson guides, and standard assessments continue.</p>
+            </div>
+            <div style="font-size:0.74rem;font-weight:700;color:#166534;">Trigger: Normal / Yellow Rainfall (unless LGU/School suspends)</div>
+          </div>
+
+          <div class="four-h-card hinay" id="card4HHinay">
+            <div>
+              <span class="badge warn">LEVEL 2 • HINAY (Ease-In)</span>
+              <h4 style="margin-top:8px;font-size:0.96rem;">Flexible &amp; Paced Learning</h4>
+              <p style="font-size:0.8rem;color:var(--text-muted);margin-top:4px;">Minor/moderate disruption. Narrow goals to essential competencies, reduce daily subjects/workload, send 1-week printed packets/modules home, and defer non-essential exams.</p>
+            </div>
+            <div style="font-size:0.74rem;font-weight:700;color:#854d0e;">Trigger: TCWS #1–2 (grade-level suspension) or Localized Disruption</div>
+          </div>
+
+          <div class="four-h-card hinga" id="card4HHinga">
+            <div>
+              <span class="badge orange">LEVEL 3 • HINGA (Check-In)</span>
+              <h4 style="margin-top:8px;font-size:0.96rem;">Psychosocial &amp; Low-Stakes Check-In</h4>
+              <p style="font-size:0.8rem;color:var(--text-muted);margin-top:4px;">High stress or ongoing recovery. Prioritize learner/staff safety &amp; MHPSS well-being checks within 12 hours, family kits, and optional/descriptive feedback (no mandatory synchronous classes).</p>
+            </div>
+            <div style="font-size:0.74rem;font-weight:700;color:#9a3412;">Trigger: TCWS #3 or Orange/Red Rainfall (In-person suspended)</div>
+          </div>
+
+          <div class="four-h-card hinto" id="card4HHinto">
+            <div>
+              <span class="badge crit">LEVEL 4 • HINTO (Stop)</span>
+              <h4 style="margin-top:8px;font-size:0.96rem;">Total Academic Freeze</h4>
+              <p style="font-size:0.8rem;color:var(--text-muted);margin-top:4px;">Severe danger to life and basic needs. Total suspension of in-person, online, and modular tasks. Focus strictly on rescue, relief, evacuation, and basic needs.</p>
+            </div>
+            <div style="font-size:0.74rem;font-weight:700;color:#991b1b;">Trigger: TCWS #4–5, Major Quake (Intensity VI+), or Severe Calamity</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- AUTOMATIC & LOCALIZED CLASS SUSPENSION MATRIX (DO 022, s. 2024 & EO 130, s. 2026) -->
+      <div class="bento-card" id="suspension-matrix-section" style="margin-bottom:20px;">
+        <div class="card-header">
+          <div class="card-title">
+            <i class="fas fa-ban" style="color:var(--primary);"></i>
+            DepEd Class &amp; Work Suspension Guidelines (DO No. 022, s. 2024 &amp; EO No. 130, s. 2026)
+          </div>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Hazard / Warning Agency</th>
+                <th>Official Warning Level</th>
+                <th>Class &amp; Work Suspension Rule</th>
+                <th>Learning Continuity / School Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>Typhoon / Tropical Cyclone</strong><br><span style="font-size:0.74rem;color:var(--text-muted);">DOST-PAGASA TCWS</span></td>
+                <td><span class="badge warn">TCWS Signal No. 1</span></td>
+                <td><strong>Automatic Suspension:</strong> Kindergarten only</td>
+                <td class="wrap-col">Elementary to SHS continue unless localized suspension is declared; prepare printed learning packets.</td>
+              </tr>
+              <tr>
+                <td><strong>Typhoon / Tropical Cyclone</strong><br><span style="font-size:0.74rem;color:var(--text-muted);">DOST-PAGASA TCWS</span></td>
+                <td><span class="badge orange">TCWS Signal No. 2</span></td>
+                <td><strong>Automatic Suspension:</strong> Kindergarten to Grade 10</td>
+                <td class="wrap-col">Grade 11–12 SHS &amp; school work continue if safe; shift suspended levels to <strong>Hinay</strong> printed/modular learning.</td>
+              </tr>
+              <tr>
+                <td><strong>Typhoon / Tropical Cyclone</strong><br><span style="font-size:0.74rem;color:var(--text-muted);">DOST-PAGASA TCWS</span></td>
+                <td><span class="badge crit">TCWS Signal No. 3, 4, or 5</span></td>
+                <td><strong>Automatic Suspension:</strong> All Levels (K–12, ALS) &amp; Work</td>
+                <td class="wrap-col">Signal #3 activates <strong>Hinga</strong>; Signal #4–5 triggers <strong>Hinto</strong> (total academic freeze). Keep stranded learners safe until travel is safe.</td>
+              </tr>
+              <tr>
+                <td><strong>Heavy Rainfall &amp; Flood</strong><br><span style="font-size:0.74rem;color:var(--text-muted);">DOST-PAGASA Rainfall Advisory</span></td>
+                <td><span class="badge warn">Yellow</span> vs. <span class="badge crit">Orange / Red</span></td>
+                <td><strong>Yellow:</strong> LGU / School Head decides<br><strong>Orange / Red:</strong> Automatic All Levels</td>
+                <td class="wrap-col">Parents retain ultimate discretion on child's travel safety during bad weather even without an official suspension.</td>
+              </tr>
+              <tr>
+                <td><strong>Earthquake</strong><br><span style="font-size:0.74rem;color:var(--text-muted);">DOST-PHIVOLCS Intensity</span></td>
+                <td><span class="badge warn">Intensity V &amp; below</span> vs. <span class="badge crit">Intensity VI+</span></td>
+                <td><strong>Intensity V &amp; below:</strong> LGU / School Head assesses<br><strong>Intensity VI &amp; above:</strong> Automatic All Levels</td>
+                <td class="wrap-col">Conduct immediate evacuation, headcount, and rapid structural inspection before re-entering buildings.</td>
+              </tr>
+              <tr>
+                <td><strong>Extreme Heat / Vog / Other Hazards</strong><br><span style="font-size:0.74rem;color:var(--text-muted);">PAGASA Heat Index / DENR-EMB</span></td>
+                <td><span class="badge orange">Localized / PM 2.5 Acutely Unhealthy</span></td>
+                <td><strong>No automatic national suspension</strong> (except DENR PM 2.5 &ge; 55.1); LGU / School Head decides</td>
+                <td class="wrap-col">School Head may shift to <strong>Hinay</strong> (modular/asynchronous) if classrooms become unsafe or extreme heat threatens health.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- PAGASA WEATHER FORECASTING, PHIVOLCS & EMERGENCY HOTLINES -->
+      <div class="bento-grid" id="weather-pagasa-section">
+        <div class="bento-card span-2">
+          <div class="card-header">
+            <div class="card-title"><i class="fas fa-satellite-dish" style="color:#1d4ed8;"></i> DOST-PAGASA Weather &amp; PHIVOLCS Monitoring</div>
+          </div>
+          <div class="menu-grid">
+            <a href="https://bagong.pagasa.dost.gov.ph/weather" target="_blank" rel="noopener noreferrer" class="menu-card">
+              <div class="menu-icon" style="background: linear-gradient(135deg, #1d4ed8, #3b82f6);"><i class="fas fa-cloud-sun-rain"></i></div>
+              <div class="menu-info"><h4>PAGASA Public Weather</h4><p>24-hour regional &amp; Cagayan Valley forecast</p></div>
+            </a>
+            <a href="https://bagong.pagasa.dost.gov.ph/tropical-cyclone/severe-weather-bulletin" target="_blank" rel="noopener noreferrer" class="menu-card">
+              <div class="menu-icon" style="background: linear-gradient(135deg, #b91c1c, #ef4444);"><i class="fas fa-wind"></i></div>
+              <div class="menu-info"><h4>Tropical Cyclone Bulletin</h4><p>Active TCWS signals &amp; typhoon track</p></div>
+            </a>
+            <a href="https://bagong.pagasa.dost.gov.ph/weather/weather-advisory" target="_blank" rel="noopener noreferrer" class="menu-card">
+              <div class="menu-icon" style="background: linear-gradient(135deg, #d97706, #f59e0b);"><i class="fas fa-cloud-showers-heavy"></i></div>
+              <div class="menu-info"><h4>Heavy Rainfall &amp; Flood</h4><p>Yellow, Orange &amp; Red rainfall warnings</p></div>
+            </a>
+            <a href="https://earthquake.phivolcs.dost.gov.ph/" target="_blank" rel="noopener noreferrer" class="menu-card">
+              <div class="menu-icon" style="background: linear-gradient(135deg, #0f766e, #14b8a6);"><i class="fas fa-wave-square"></i></div>
+              <div class="menu-info"><h4>PHIVOLCS Quake Info</h4><p>Latest earthquake intensity bulletins</p></div>
+            </a>
+            <a href="../../assets/docs/drrm-evacuation-map.pdf" target="_blank" rel="noopener noreferrer" class="menu-card">
+              <div class="menu-icon" style="background: linear-gradient(135deg, #4338ca, #6366f1);"><i class="fas fa-map-marked-alt"></i></div>
+              <div class="menu-info"><h4>Campus Evacuation Map</h4><p>Assembly area &amp; safe exit routes (PDF)</p></div>
+            </a>
+            <a href="../../assets/docs/drrm-safety-guide.pdf" target="_blank" rel="noopener noreferrer" class="menu-card">
+              <div class="menu-icon" style="background: linear-gradient(135deg, #16a34a, #22c55e);"><i class="fas fa-book-medical"></i></div>
+              <div class="menu-info"><h4>School LSCP &amp; Safety Guide</h4><p>Emergency call tree &amp; response protocols</p></div>
+            </a>
+          </div>
+        </div>
+
+        <!-- HOTLINES & COMMAND POST -->
+        <div class="bento-card span-2" style="display:flex;flex-direction:column;justify-content:space-between;gap:14px;">
+          <div>
+            <div class="card-header">
+              <div class="card-title"><i class="fas fa-phone-volume" style="color:var(--primary);"></i> Emergency Hotlines &amp; SDRRM Command</div>
+            </div>
+            <ul class="hotline-list">
+              <li><strong>School DRRM Coordinator</strong><span id="staffDrrmCoord">Assigned SDRRM Coordinator</span></li>
+              <li><strong>MDRRMO Kayapa Emergency</strong><span id="hotlineMdrrmo">0917-000-0000</span></li>
+              <li><strong>BFP Kayapa Fire Station</strong><span id="hotlineBfp">0917-000-0000</span></li>
+              <li><strong>PNP Kayapa Municipal Station</strong><span id="hotlinePnp">0917-000-0000</span></li>
+              <li><strong>Rural Health Unit (RHU) / Clinic</strong><span id="hotlineRhu">+63 967-884-8989</span></li>
             </ul>
           </div>
 
-          <div class="card soft">
-            <h3>Office Hours</h3>
-            <table class="table">
-              <tbody>
-                <tr><td>Monday–Friday</td><td>8:00 AM – 5:00 PM</td></tr>
-                <tr><td>On Emergencies</td><td>As needed</td></tr>
-              </tbody>
-            </table>
+          <div style="background:#fff;border:1px solid var(--border);border-radius:16px;padding:14px;">
+            <div style="font-size:0.84rem;font-weight:800;color:var(--text-main);margin-bottom:6px;">
+              <i class="fas fa-map-marker-alt" style="color:var(--primary);"></i> SDRRM Command Post &amp; Reporting
+            </div>
+            <div style="font-size:0.82rem;color:var(--text-muted);line-height:1.55;">
+              <div><strong>Location:</strong> <span id="infoLocation">Admin Annex, Sta. Cruz Pingkian High School</span></div>
+              <div><strong>Email:</strong> <a id="infoEmailLink" href="mailto:300648@deped.gov.ph" style="color:var(--primary);font-weight:700;">300648@deped.gov.ph</a> • <strong>Phone:</strong> <span id="infoPhone">+63 967-884-8989</span></div>
+              <div><strong>DepEd Reporting Rule:</strong> NSED reports due to SDO within <strong>7 working days</strong>; 4H disruption level reported within <strong>12 hours</strong>.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- QUARTERLY NSED QUAKE DRILLS & PREPAREDNESS SECTION -->
+      <div class="bento-card" id="drills-section" style="margin-bottom:20px;">
+        <div class="card-header">
+          <div class="card-title">
+            <i class="fas fa-running" style="color:var(--accent-teal);"></i>
+            Quarterly NSED Earthquake Drills &amp; Safety Trainings (<span id="drillCount">0</span>)
+          </div>
+          <div class="toolbar">
+            <button type="button" class="btn btn-teal btn-sm staff-only" style="display:none;" onclick="toggleBox('addDrillBox')">
+              <i class="fas fa-plus"></i> Log NSED / Safety Drill
+            </button>
           </div>
         </div>
 
-        <div class="card soft">
-          <h3>Safety & Preparedness</h3>
-          <ul class="list">
-            <li>Earthquake and fire drill schedules</li>
-            <li>Emergency evacuation plans and maps</li>
-            <li>Safety briefings and advisories</li>
-            <li>Incident reporting and coordination</li>
-          </ul>
+        <!-- Earthquake Duck-Cover-Hold & NSED Quick Guide -->
+        <ul class="guideline-list" style="margin-bottom:16px;">
+          <li><i class="fas fa-hand-paper"></i> <span><strong>During Shaking (Duck, Cover, and Hold):</strong> Drop under a sturdy desk, cover head and neck with arms, and hold on until shaking completely stops. Stay away from glass windows and tall cabinets.</span></li>
+          <li><i class="fas fa-walking"></i> <span><strong>Evacuation &amp; Headcount:</strong> Evacuate calmly in single file along designated routes to the open assembly area. Class advisers conduct immediate learner headcount and report missing/injured persons to the Incident Commander.</span></li>
+          <li><i class="fas fa-file-signature"></i> <span><strong>Post-NSED Documentation (NDRRMC Memo No. 15, s. 2026):</strong> Conduct post-drill evaluation and submit the signed NSED report with photo/video documentation to SDO Nueva Vizcaya DRRM within <strong>7 working days</strong>.</span></li>
+        </ul>
+
+        <div class="collapse-box" id="addDrillBox">
+          <form onsubmit="addDrill(event)">
+            <div class="form-grid">
+              <div class="form-group">
+                <label>Quarter / Drill Type *</label>
+                <select id="drlType">
+                  <option value="Q1 Nationwide Simultaneous Earthquake Drill (NSED)">Q1 NSED (Earthquake Drill)</option>
+                  <option value="Q2 Nationwide Simultaneous Earthquake Drill (NSED)">Q2 NSED (Earthquake Drill)</option>
+                  <option value="Q3 Nationwide Simultaneous Earthquake Drill (NSED)">Q3 NSED (Earthquake Drill)</option>
+                  <option value="Q4 Nationwide Simultaneous Earthquake Drill (NSED)">Q4 NSED (Earthquake Drill)</option>
+                  <option value="Fire Safety & Evacuation Drill">Fire Safety &amp; Evacuation Drill</option>
+                  <option value="First Aid & Basic Life Support Training">First Aid &amp; BLS Training</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label>Date Conducted *</label>
+                <input type="date" id="drlDate" required>
+              </div>
+              <div class="form-group">
+                <label>Evacuation Time / Duration</label>
+                <input id="drlTime" placeholder="e.g., 1 min 42 secs">
+              </div>
+              <div class="form-group">
+                <label>Participants (Students &amp; Staff)</label>
+                <input type="number" id="drlParticipants" min="0" value="0">
+              </div>
+              <div class="form-group span-2">
+                <label>Post-Drill Evaluation &amp; Observations</label>
+                <input id="drlRemarks" placeholder="e.g., All sections accounted for; first aid & SAR teams deployed">
+              </div>
+              <div class="form-group">
+                <label>SDO Report Status (7-Day Rule)</label>
+                <select id="drlStatus">
+                  <option value="Scheduled">Scheduled</option>
+                  <option value="Conducted – Pending SDO Report">Conducted – Pending SDO Report</option>
+                  <option value="Submitted to SDO">Submitted to SDO</option>
+                </select>
+              </div>
+              <div class="form-group" style="justify-content:flex-end;">
+                <button type="submit" class="btn btn-teal" id="saveDrillBtn"><i class="fas fa-save"></i> Save NSED Record</button>
+              </div>
+            </div>
+          </form>
         </div>
 
-        <div class="card soft">
-          <h3>Downloads</h3>
-          <ul class="list">
-            <li><a href="/assets/docs/drrm-evacuation-map.pdf" target="_blank" rel="noopener">Evacuation Map (PDF)</a></li>
-            <li><a href="/assets/docs/drrm-safety-guide.pdf" target="_blank" rel="noopener">Safety Guide (PDF)</a></li>
-          </ul>
+        <div class="table-wrap print-hide-col">
+          <table>
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Drill / NSED Quarter</th>
+                <th>Evac. Time</th>
+                <th>Participants</th>
+                <th>Evaluation &amp; Remarks</th>
+                <th>SDO Compliance</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody id="drills-body">
+              <tr><td colspan="7" style="text-align:center;padding:20px;color:var(--text-muted);">Loading NSED &amp; drill records...</td></tr>
+            </tbody>
+          </table>
         </div>
-      </section>
-    </article>
+      </div>
+
+      <!-- CAMPUS HAZARD & INCIDENT REPORTING -->
+      <div class="bento-card" id="incidents-section" style="margin-bottom:20px;">
+        <div class="card-header">
+          <div class="card-title"><i class="fas fa-exclamation-triangle" style="color:var(--accent-amber);"></i> Campus Hazard &amp; Incident Reports (<span id="incidentCount">0</span>)</div>
+          <div class="toolbar">
+            <select id="incidentStatusFilter" onchange="renderIncidents()">
+              <option value="all">All Reports</option>
+              <option value="Open" selected>Open / Unresolved</option>
+              <option value="Resolved">Resolved</option>
+            </select>
+            <button type="button" class="btn btn-amber btn-sm" onclick="toggleBox('reportIncidentBox')">
+              <i class="fas fa-plus"></i> Submit Hazard / Incident
+            </button>
+          </div>
+        </div>
+
+        <div class="collapse-box" id="reportIncidentBox">
+          <form onsubmit="submitIncident(event)">
+            <div class="form-grid">
+              <div class="form-group">
+                <label>Reporter Name *</label>
+                <input id="incReporter" required placeholder="Student, Teacher, or Visitor Name">
+              </div>
+              <div class="form-group">
+                <label>Hazard / Incident Category *</label>
+                <select id="incCategory">
+                  <option value="Structural / Building Hazard">Structural / Building Hazard</option>
+                  <option value="Electrical / Fire Hazard">Electrical / Fire Hazard</option>
+                  <option value="Slippery / Flooded / Landslide Risk">Slippery / Flooded / Landslide Risk</option>
+                  <option value="Medical / First Aid Incident">Medical / First Aid Incident</option>
+                  <option value="Other Safety Concern">Other Safety Concern</option>
+                </select>
+              </div>
+              <div class="form-group span-2">
+                <label>Exact Campus Location *</label>
+                <input id="incLocation" required placeholder="e.g., Grade 10 Building Stairs / Covered Court">
+              </div>
+              <div class="form-group full">
+                <label>Description of Hazard or Incident *</label>
+                <textarea id="incDetails" rows="2" required placeholder="Describe the hazard or incident so SDRRM can respond..."></textarea>
+              </div>
+              <div class="form-group full" style="align-items:flex-end;">
+                <button type="submit" class="btn btn-amber" id="saveIncidentBtn"><i class="fas fa-paper-plane"></i> Submit Report</button>
+              </div>
+            </div>
+          </form>
+        </div>
+
+        <div class="table-wrap print-hide-col">
+          <table>
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Category</th>
+                <th>Location</th>
+                <th>Description</th>
+                <th>Reported By</th>
+                <th>Status</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody id="incidents-body">
+              <tr><td colspan="7" style="text-align:center;padding:20px;color:var(--text-muted);">Loading hazard &amp; incident reports...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- SCHOOL PREPAREDNESS CHECKLIST & EMERGENCY GEAR -->
+      <div class="bento-card" id="equipment-section">
+        <div class="card-header">
+          <div class="card-title"><i class="fas fa-first-aid" style="color:var(--success);"></i> School Preparedness &amp; Emergency Kits (<span id="gearCount">0</span>)</div>
+          <div class="toolbar">
+            <button type="button" class="btn btn-success btn-sm staff-only" style="display:none;" onclick="toggleBox('addGearBox')">
+              <i class="fas fa-plus"></i> Add Emergency Kit / Gear
+            </button>
+          </div>
+        </div>
+
+        <!-- DepEd SDRRM Preparedness Standards Checklist -->
+        <div class="checklist-grid" style="margin-bottom:16px;">
+          <div class="check-item">
+            <span><i class="fas fa-check-circle" style="color:var(--success);"></i> <strong>Annual School LSCP (DO 014, s. 2026)</strong><br><small style="color:var(--text-muted);">Updated every term with emergency call tree &amp; 1-week learning packets</small></span>
+            <span class="badge ok">Compliant</span>
+          </div>
+          <div class="check-item">
+            <span><i class="fas fa-check-circle" style="color:var(--success);"></i> <strong>Evacuation Routes &amp; Open Assembly Area</strong><br><small style="color:var(--text-muted);">Posted in classrooms &amp; unobstructed exit pathways</small></span>
+            <span class="badge ok">Active</span>
+          </div>
+          <div class="check-item">
+            <span><i class="fas fa-check-circle" style="color:var(--success);"></i> <strong>Early Warning System (Bell / Megaphone)</strong><br><small style="color:var(--text-muted);">Distinct signals for earthquake, fire, and all-clear</small></span>
+            <span class="badge ok">Ready</span>
+          </div>
+          <div class="check-item">
+            <span><i class="fas fa-check-circle" style="color:var(--success);"></i> <strong>RADaR &amp; Learner Safety Check Protocol</strong><br><small style="color:var(--text-muted);">12-hour post-disruption learner headcount &amp; damage reporting</small></span>
+            <span class="badge ok">Ready</span>
+          </div>
+        </div>
+
+        <div class="collapse-box" id="addGearBox">
+          <form onsubmit="addGear(event)">
+            <div class="form-grid">
+              <div class="form-group span-2">
+                <label>Equipment / Kit Name *</label>
+                <input id="grName" required placeholder="e.g., Fire Extinguisher (ABC 10lbs) / First Aid Go-Bag / Megaphone">
+              </div>
+              <div class="form-group">
+                <label>Quantity *</label>
+                <input type="number" id="grQty" min="1" value="1" required>
+              </div>
+              <div class="form-group">
+                <label>Condition *</label>
+                <select id="grStatus">
+                  <option value="Ready">Ready / Operational</option>
+                  <option value="Needs Refill / Check">Needs Refill / Check</option>
+                  <option value="Damaged">Damaged</option>
+                </select>
+              </div>
+              <div class="form-group span-2">
+                <label>Assigned Location *</label>
+                <input id="grLocation" required placeholder="e.g., Admin Annex / Science Lab / Guardhouse">
+              </div>
+              <div class="form-group span-2" style="justify-content:flex-end;">
+                <button type="submit" class="btn btn-success" id="saveGearBtn"><i class="fas fa-save"></i> Save Equipment</button>
+              </div>
+            </div>
+          </form>
+        </div>
+
+        <div class="table-wrap print-hide-col">
+          <table>
+            <thead>
+              <tr>
+                <th>Equipment / Emergency Kit</th>
+                <th>Quantity</th>
+                <th>Assigned Location</th>
+                <th>Condition</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody id="gear-body">
+              <tr><td colspan="5" style="text-align:center;padding:20px;color:var(--text-muted);">Loading emergency equipment...</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- SIGNATORIES AT BOTTOM OF PRINTED REPORT -->
+        <div class="deped-print-signatories">
+          <div>
+            <div>Prepared by:</div>
+            <div class="sig-line" id="printPreparedBy">School DRRM Coordinator</div>
+            <div>School DRRM Coordinator</div>
+          </div>
+          <div>
+            <div>Noted by:</div>
+            <div class="sig-line">School Head / Principal</div>
+            <div>Sta. Cruz Pingkian High School</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- FOOTER -->
+      <footer class="portal-footer">
+        <div>
+          <strong>Sta. Cruz Pingkian High School – School DRRM</strong> • Brgy. Sta. Cruz, Pingkian, Kayapa, Nueva Vizcaya
+        </div>
+        <div>
+          <a href="../../index.html">Main Portal</a> •
+          <a href="https://bagong.pagasa.dost.gov.ph/" target="_blank" rel="noopener noreferrer">DOST-PAGASA</a> •
+          <a href="https://www.phivolcs.dost.gov.ph/" target="_blank" rel="noopener noreferrer">DOST-PHIVOLCS</a> •
+          © <span id="yearNow"></span> SCPHS
+        </div>
+      </footer>
+    </div>
   </main>
 
-  <footer class="govph-footer" role="contentinfo" style="margin-top:24px">
-    <div class="govph-footer__bar">
-      <div class="wrap"><small>© <span id="yearNow"></span> SCPHS</small></div>
+  <!-- EDIT SDRRM PROFILE & 4H STATUS MODAL -->
+  <div class="modal-backdrop" id="editDrrmModal">
+    <div class="modal-box">
+      <div class="card-header">
+        <div class="card-title"><i class="fas fa-edit" style="color:var(--primary);"></i> Update Active 4H Level (DO 014, s. 2026) &amp; SDRRM Profile</div>
+        <button type="button" class="btn btn-outline btn-sm" onclick="closeEditDrrmModal()"><i class="fas fa-times"></i> Close</button>
+      </div>
+      <form onsubmit="saveDrrmProfile(event)">
+        <div class="form-grid" style="grid-template-columns: repeat(2, minmax(0, 1fr));">
+          <div class="form-group span-2">
+            <label>Active DepEd Order No. 014, s. 2026 Continuity Level *</label>
+            <select id="edit4HLevel">
+              <option value="HAYO">LEVEL 1: HAYO (Continue — Regular In-Person Classes)</option>
+              <option value="HINAY">LEVEL 2: HINAY (Ease-In — Reduced Workload / Printed Packets)</option>
+              <option value="HINGA">LEVEL 3: HINGA (Check-In — In-Person Suspended / MHPSS &amp; Check-In)</option>
+              <option value="HINTO">LEVEL 4: HINTO (Stop — Total Academic Freeze / Emergency Response)</option>
+            </select>
+          </div>
+          <div class="form-group span-2">
+            <label>Custom School Advisory / Reason (Optional)</label>
+            <input id="edit4HNote" placeholder="e.g., Signal No. 2 in Nueva Vizcaya — Kindergarten to Grade 10 shifted to Hinay">
+          </div>
+          <div class="form-group span-2">
+            <label>SDRRM Coordinator Name</label>
+            <input id="editCoord" required>
+          </div>
+          <div class="form-group">
+            <label>MDRRMO Kayapa Hotline</label>
+            <input id="editMdrrmo" required>
+          </div>
+          <div class="form-group">
+            <label>BFP Kayapa Hotline</label>
+            <input id="editBfp" required>
+          </div>
+          <div class="form-group">
+            <label>PNP Kayapa Hotline</label>
+            <input id="editPnp" required>
+          </div>
+          <div class="form-group">
+            <label>RHU / School Clinic Phone</label>
+            <input id="editRhu" required>
+          </div>
+          <div class="form-group">
+            <label>Command Post Location</label>
+            <input id="editLoc" required>
+          </div>
+          <div class="form-group">
+            <label>Contact Email</label>
+            <input type="email" id="editMail" required>
+          </div>
+        </div>
+        <div style="margin-top:16px;display:flex;justify-content:flex-end;gap:10px;">
+          <button type="button" class="btn btn-outline" onclick="closeEditDrrmModal()">Cancel</button>
+          <button type="submit" class="btn btn-primary" id="saveDrrmProfileBtn"><i class="fas fa-save"></i> Save &amp; Publish Status</button>
+        </div>
+      </form>
     </div>
-  </footer>
-  <script>document.getElementById('yearNow').textContent = new Date().getFullYear();</script>
+  </div>
+
+  <!-- Chatbot Mount & FAB -->
+  <div id="scphs-chatbot-root"></div>
+  <button type="button" class="chat-fab" onclick="toggleChatBot()" aria-label="Open assistant chat">
+    <i class="fas fa-comment-dots"></i>
+  </button>
+
+  <script type="module">
+    import { auth, db } from "../../assets/js/firebase-config.js";
+    import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+    import {
+      collection, getDocs, getDoc, setDoc, addDoc, updateDoc, deleteDoc, doc, serverTimestamp
+    } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+    const DRILLS_COL = "drrm_drills";
+    const INC_COL = "drrm_incidents";
+    const GEAR_COL = "drrm_resources";
+    const PROFILE_DOC = doc(db, "drrm_profile", "main");
+
+    const FOUR_H_CONFIG = {
+      HAYO: {
+        cls: "",
+        badgeCls: "ok",
+        icon: "fa-check-circle",
+        badgeText: "LEVEL 1: HAYO",
+        title: "HAYO (Continue) — Regular In-Person Classes & Full Curriculum Delivery",
+        desc: "Conditions are safe. Full face-to-face lessons, remediation programs, and standard school operations proceed normally."
+      },
+      HINAY: {
+        cls: "level-hinay",
+        badgeCls: "warn",
+        icon: "fa-sliders-h",
+        badgeText: "LEVEL 2: HINAY",
+        title: "HINAY (Ease-In) — Flexible Pacing & Priority Competencies",
+        desc: "Minor/moderate disruption. Narrow learning goals to essentials, distribute 1-week printed packets, and defer non-essential exams."
+      },
+      HINGA: {
+        cls: "level-hinga",
+        badgeCls: "orange",
+        icon: "fa-heart",
+        badgeText: "LEVEL 3: HINGA",
+        title: "HINGA (Check-In) — In-Person Classes Suspended; Psychosocial & Home Check-In",
+        desc: "High stress or localized suspension. Prioritize learner/staff safety & well-being check-ins within 12 hours; no mandatory synchronous online classes."
+      },
+      HINTO: {
+        cls: "level-hinto",
+        badgeCls: "crit",
+        icon: "fa-exclamation-triangle",
+        badgeText: "LEVEL 4: HINTO",
+        title: "HINTO (Stop) — Total Academic Freeze & Emergency Safety Priority",
+        desc: "Severe calamity or threat to life. All in-person, online, and modular tasks are suspended. Prioritize rescue, relief, and basic needs."
+      }
+    };
+
+    const DEFAULT_PROFILE = {
+      fourHLevel: "HAYO",
+      fourHNote: "",
+      coordinator: "Assigned SDRRM Coordinator",
+      mdrrmo: "0917-000-0000",
+      bfp: "0917-000-0000",
+      pnp: "0917-000-0000",
+      rhu: "+63 967-884-8989",
+      location: "Admin Annex, Sta. Cruz Pingkian High School",
+      email: "300648@deped.gov.ph"
+    };
+
+    let currentProfile = { ...DEFAULT_PROFILE };
+    let drills = [];
+    let incidents = [];
+    let gearList = [];
+    let canManageDrrm = false;
+
+    const todayISO = new Date().toISOString().split("T")[0];
+    document.getElementById("drlDate").value = todayISO;
+    document.getElementById("yearNow").textContent = new Date().getFullYear();
+
+    function esc(str) {
+      return String(str ?? "").replace(/[&<>"']/g, m => ({
+        "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
+      }[m]));
+    }
+    function escJS(str) {
+      return String(str ?? "").replace(/\\/g, "\\\\").replace(/'/g, "\\'");
+    }
+    function setBadge(ok, msg) {
+      const b = document.getElementById("syncBadge");
+      b.textContent = msg;
+      b.className = "sync-badge " + (ok ? "ok" : "");
+    }
+    window.toggleBox = id => document.getElementById(id)?.classList.toggle("open");
+
+    function applyProfile(p) {
+      currentProfile = { ...DEFAULT_PROFILE, ...p };
+      const lvl = FOUR_H_CONFIG[currentProfile.fourHLevel] ? currentProfile.fourHLevel : "HAYO";
+      const cfg = FOUR_H_CONFIG[lvl];
+
+      const banner = document.getElementById("fourHBanner");
+      banner.className = "four-h-banner " + cfg.cls;
+      document.getElementById("fourHIcon").className = "fas " + cfg.icon;
+      document.getElementById("fourHTitle").textContent = cfg.title;
+      document.getElementById("fourHDesc").textContent = currentProfile.fourHNote
+        ? `${currentProfile.fourHNote} — ${cfg.desc}`
+        : cfg.desc;
+
+      const bdg = document.getElementById("fourHBadge");
+      bdg.textContent = cfg.badgeText;
+      bdg.className = "badge " + cfg.badgeCls;
+      document.getElementById("statCurrent4H").textContent = lvl;
+
+      ["Hayo", "Hinay", "Hinga", "Hinto"].forEach(k => {
+        document.getElementById("card4H" + k)?.classList.toggle("active-tier", k.toUpperCase() === lvl);
+      });
+
+      document.getElementById("staffDrrmCoord").textContent = currentProfile.coordinator;
+      document.getElementById("hotlineMdrrmo").textContent = currentProfile.mdrrmo;
+      document.getElementById("hotlineBfp").textContent = currentProfile.bfp;
+      document.getElementById("hotlinePnp").textContent = currentProfile.pnp;
+      document.getElementById("hotlineRhu").textContent = currentProfile.rhu;
+      document.getElementById("infoLocation").textContent = currentProfile.location;
+
+      const mailEl = document.getElementById("infoEmailLink");
+      mailEl.textContent = currentProfile.email;
+      mailEl.href = `mailto:${currentProfile.email}`;
+    }
+
+    onAuthStateChanged(auth, async (user) => {
+      canManageDrrm = false;
+      if (user) {
+        try {
+          const uSnap = await getDoc(doc(db, "users", user.uid));
+          const d = uSnap.exists() ? uSnap.data() : {};
+          const role = String(d.primaryRole || d.role || "").toLowerCase();
+          const email = String(user.email || "").toLowerCase();
+          if (["admin", "superadmin", "teacher"].includes(role) || d.permissions?.canManageDRRM || email.endsWith("@deped.gov.ph")) {
+            canManageDrrm = true;
+          }
+        } catch (_) {}
+      }
+      document.getElementById("editDrrmBtn").style.display = canManageDrrm ? "inline-flex" : "none";
+      document.querySelectorAll(".staff-only").forEach(el => el.style.display = canManageDrrm ? "inline-flex" : "none");
+      renderDrills();
+      renderIncidents();
+      renderGear();
+    });
+
+    window.openEditDrrmModal = () => {
+      document.getElementById("edit4HLevel").value = currentProfile.fourHLevel || "HAYO";
+      document.getElementById("edit4HNote").value = currentProfile.fourHNote || "";
+      document.getElementById("editCoord").value = currentProfile.coordinator;
+      document.getElementById("editMdrrmo").value = currentProfile.mdrrmo;
+      document.getElementById("editBfp").value = currentProfile.bfp;
+      document.getElementById("editPnp").value = currentProfile.pnp;
+      document.getElementById("editRhu").value = currentProfile.rhu;
+      document.getElementById("editLoc").value = currentProfile.location;
+      document.getElementById("editMail").value = currentProfile.email;
+      document.getElementById("editDrrmModal").classList.add("open");
+    };
+    window.closeEditDrrmModal = () => document.getElementById("editDrrmModal").classList.remove("open");
+
+    window.saveDrrmProfile = async (evt) => {
+      evt.preventDefault();
+      const btn = document.getElementById("saveDrrmProfileBtn");
+      btn.disabled = true;
+      const updated = {
+        fourHLevel: document.getElementById("edit4HLevel").value,
+        fourHNote: document.getElementById("edit4HNote").value.trim(),
+        coordinator: document.getElementById("editCoord").value.trim(),
+        mdrrmo: document.getElementById("editMdrrmo").value.trim(),
+        bfp: document.getElementById("editBfp").value.trim(),
+        pnp: document.getElementById("editPnp").value.trim(),
+        rhu: document.getElementById("editRhu").value.trim(),
+        location: document.getElementById("editLoc").value.trim(),
+        email: document.getElementById("editMail").value.trim(),
+        updatedAt: serverTimestamp()
+      };
+      try {
+        await setDoc(PROFILE_DOC, updated, { merge: true });
+        applyProfile(updated);
+        closeEditDrrmModal();
+      } catch (err) {
+        alert("Could not save SDRRM profile: " + err.message);
+      } finally {
+        btn.disabled = false;
+      }
+    };
+
+    function updateKPIs() {
+      const openInc = incidents.filter(i => i.status !== "Resolved");
+      const readyGear = gearList.filter(g => g.status === "Ready").reduce((s, g) => s + Number(g.quantity || 1), 0);
+      document.getElementById("statDrills").textContent = drills.length;
+      document.getElementById("statOpenIncidents").textContent = openInc.length;
+      document.getElementById("statReadyGear").textContent = readyGear;
+    }
+
+    /* NSED & DRILLS */
+    window.addDrill = async (evt) => {
+      evt.preventDefault();
+      const btn = document.getElementById("saveDrillBtn");
+      btn.disabled = true;
+      const payload = {
+        type: document.getElementById("drlType").value,
+        dateDrill: document.getElementById("drlDate").value,
+        evacTime: document.getElementById("drlTime").value.trim(),
+        participants: Number(document.getElementById("drlParticipants").value || 0),
+        remarks: document.getElementById("drlRemarks").value.trim(),
+        status: document.getElementById("drlStatus").value,
+        createdAtMs: Date.now(),
+        createdAt: serverTimestamp()
+      };
+      try {
+        const ref = await addDoc(collection(db, DRILLS_COL), payload);
+        drills.unshift({ id: ref.id, ...payload });
+        evt.target.reset();
+        document.getElementById("drlDate").value = todayISO;
+        document.getElementById("addDrillBox").classList.remove("open");
+        updateKPIs();
+        renderDrills();
+      } catch (err) {
+        alert("Failed to save drill: " + err.message);
+      } finally {
+        btn.disabled = false;
+      }
+    };
+
+    window.deleteDrill = async (id) => {
+      if (!confirm("Delete this NSED / drill record?")) return;
+      try {
+        await deleteDoc(doc(db, DRILLS_COL, id));
+        drills = drills.filter(d => d.id !== id);
+        updateKPIs();
+        renderDrills();
+      } catch (err) {
+        alert("Delete failed: " + err.message);
+      }
+    };
+
+    function renderDrills() {
+      document.getElementById("drillCount").textContent = drills.length;
+      const body = document.getElementById("drills-body");
+      if (!drills.length) {
+        body.innerHTML = `<tr><td colspan="7" style="text-align:center;padding:20px;color:var(--text-muted);">No NSED or safety drills logged yet.</td></tr>`;
+        return;
+      }
+      body.innerHTML = drills.map(d => {
+        const cls = d.status === "Submitted to SDO" ? "ok" : d.status.includes("Conducted") ? "info" : "warn";
+        return `
+          <tr>
+            <td>${esc(d.dateDrill)}</td>
+            <td class="wrap-col"><strong>${esc(d.type)}</strong></td>
+            <td>${esc(d.evacTime || "—")}</td>
+            <td>${esc(d.participants || 0)}</td>
+            <td class="wrap-col">${esc(d.remarks || "—")}</td>
+            <td><span class="badge ${cls}">${esc(d.status)}</span></td>
+            <td>${canManageDrrm ? `<button class="btn btn-danger btn-sm" onclick="deleteDrill('${escJS(d.id)}')">Delete</button>` : "—"}</td>
+          </tr>
+        `;
+      }).join("");
+    }
+
+    /* INCIDENTS */
+    window.submitIncident = async (evt) => {
+      evt.preventDefault();
+      const btn = document.getElementById("saveIncidentBtn");
+      btn.disabled = true;
+      const payload = {
+        reporterName: document.getElementById("incReporter").value.trim(),
+        category: document.getElementById("incCategory").value,
+        location: document.getElementById("incLocation").value.trim(),
+        details: document.getElementById("incDetails").value.trim(),
+        dateReported: todayISO,
+        status: "Open",
+        createdAtMs: Date.now(),
+        createdAt: serverTimestamp()
+      };
+      try {
+        const ref = await addDoc(collection(db, INC_COL), payload);
+        incidents.unshift({ id: ref.id, ...payload });
+        evt.target.reset();
+        document.getElementById("reportIncidentBox").classList.remove("open");
+        updateKPIs();
+        renderIncidents();
+        alert("Hazard/incident report submitted to School DRRM.");
+      } catch (err) {
+        alert("Could not submit report: " + err.message);
+      } finally {
+        btn.disabled = false;
+      }
+    };
+
+    window.resolveIncident = async (id) => {
+      try {
+        await updateDoc(doc(db, INC_COL, id), { status: "Resolved", resolvedDate: todayISO });
+        const item = incidents.find(i => i.id === id);
+        if (item) item.status = "Resolved";
+        updateKPIs();
+        renderIncidents();
+      } catch (err) {
+        alert("Update failed: " + err.message);
+      }
+    };
+
+    window.renderIncidents = () => {
+      const filter = document.getElementById("incidentStatusFilter").value;
+      const shown = incidents.filter(i => filter === "all" ? true : i.status === filter);
+      document.getElementById("incidentCount").textContent = shown.length;
+      const body = document.getElementById("incidents-body");
+      if (!shown.length) {
+        body.innerHTML = `<tr><td colspan="7" style="text-align:center;padding:20px;color:var(--text-muted);">No hazard or incident reports match this filter.</td></tr>`;
+        return;
+      }
+      body.innerHTML = shown.map(i => `
+        <tr>
+          <td>${esc(i.dateReported || "—")}</td>
+          <td><span class="badge warn">${esc(i.category)}</span></td>
+          <td><strong>${esc(i.location)}</strong></td>
+          <td class="wrap-col">${esc(i.details)}</td>
+          <td>${esc(i.reporterName)}</td>
+          <td><span class="badge ${i.status === "Resolved" ? "ok" : "crit"}">${esc(i.status)}</span></td>
+          <td>${canManageDrrm && i.status !== "Resolved"
+            ? `<button class="btn btn-success btn-sm" onclick="resolveIncident('${escJS(i.id)}')">Mark Resolved</button>`
+            : "—"}</td>
+        </tr>
+      `).join("");
+    };
+
+    /* EMERGENCY GEAR */
+    window.addGear = async (evt) => {
+      evt.preventDefault();
+      const btn = document.getElementById("saveGearBtn");
+      btn.disabled = true;
+      const payload = {
+        name: document.getElementById("grName").value.trim(),
+        quantity: Number(document.getElementById("grQty").value || 1),
+        status: document.getElementById("grStatus").value,
+        location: document.getElementById("grLocation").value.trim(),
+        createdAtMs: Date.now(),
+        createdAt: serverTimestamp()
+      };
+      try {
+        const ref = await addDoc(collection(db, GEAR_COL), payload);
+        gearList.unshift({ id: ref.id, ...payload });
+        evt.target.reset();
+        document.getElementById("grQty").value = 1;
+        document.getElementById("addGearBox").classList.remove("open");
+        updateKPIs();
+        renderGear();
+      } catch (err) {
+        alert("Failed to save equipment: " + err.message);
+      } finally {
+        btn.disabled = false;
+      }
+    };
+
+    window.deleteGear = async (id) => {
+      if (!confirm("Remove this equipment record?")) return;
+      try {
+        await deleteDoc(doc(db, GEAR_COL, id));
+        gearList = gearList.filter(g => g.id !== id);
+        updateKPIs();
+        renderGear();
+      } catch (err) {
+        alert("Delete failed: " + err.message);
+      }
+    };
+
+    function renderGear() {
+      document.getElementById("gearCount").textContent = gearList.length;
+      const body = document.getElementById("gear-body");
+      if (!gearList.length) {
+        body.innerHTML = `<tr><td colspan="5" style="text-align:center;padding:20px;color:var(--text-muted);">No emergency kits or gear recorded yet.</td></tr>`;
+        return;
+      }
+      body.innerHTML = gearList.map(g => {
+        const cls = g.status === "Ready" ? "ok" : g.status === "Damaged" ? "crit" : "warn";
+        return `
+          <tr>
+            <td><strong>${esc(g.name)}</strong></td>
+            <td>${esc(g.quantity)}</td>
+            <td>${esc(g.location)}</td>
+            <td><span class="badge ${cls}">${esc(g.status)}</span></td>
+            <td>${canManageDrrm ? `<button class="btn btn-danger btn-sm" onclick="deleteGear('${escJS(g.id)}')">Delete</button>` : "—"}</td>
+          </tr>
+        `;
+      }).join("");
+    }
+
+    window.printDrrmReport = () => {
+      document.getElementById("printDrrmMeta").textContent = `Active DO 014 Level: ${currentProfile.fourHLevel || "HAYO"} • Generated: ${todayISO}`;
+      document.getElementById("printPreparedBy").textContent = currentProfile.coordinator || "School DRRM Coordinator";
+      window.print();
+    };
+
+    async function initDrrm() {
+      try {
+        const pSnap = await getDoc(PROFILE_DOC);
+        if (pSnap.exists()) applyProfile(pSnap.data());
+        else applyProfile(DEFAULT_PROFILE);
+
+        const [drlSnap, incSnap, gearSnap] = await Promise.all([
+          getDocs(collection(db, DRILLS_COL)),
+          getDocs(collection(db, INC_COL)),
+          getDocs(collection(db, GEAR_COL))
+        ]);
+
+        drills = drlSnap.docs.map(d => ({ id: d.id, ...d.data() })).sort((a, b) => (b.createdAtMs || 0) - (a.createdAtMs || 0));
+        incidents = incSnap.docs.map(d => ({ id: d.id, ...d.data() })).sort((a, b) => (b.createdAtMs || 0) - (a.createdAtMs || 0));
+        gearList = gearSnap.docs.map(d => ({ id: d.id, ...d.data() })).sort((a, b) => (b.createdAtMs || 0) - (a.createdAtMs || 0));
+
+        setBadge(true, "Connected to Firestore");
+        updateKPIs();
+        renderDrills();
+        renderIncidents();
+        renderGear();
+      } catch (err) {
+        console.error("SDRRM load error:", err);
+        setBadge(false, "Offline / Rules Pending");
+      }
+    }
+
+    initDrrm();
+  </script>
+
+  <!-- SIDEBAR & CHATBOT LOADER -->
+  <script>
+    function toggleSidebar(forceState) {
+      const sidebar = document.getElementById("sidebar");
+      const backdrop = document.getElementById("sidebarBackdrop");
+      const shouldOpen = typeof forceState === "boolean" ? forceState : !sidebar.classList.contains("open");
+      sidebar.classList.toggle("open", shouldOpen);
+      backdrop.classList.toggle("show", shouldOpen);
+    }
+
+    function setActiveMenu(el) {
+      document.querySelectorAll(".sidebar-menu .menu-item").forEach(m => m.classList.remove("active"));
+      el.classList.add("active");
+      toggleSidebar(false);
+    }
+
+    (function loadChatbotScript() {
+      const rootId = "scphs-chatbot-root";
+      if (!document.getElementById(rootId)) {
+        const mount = document.createElement("div");
+        mount.id = rootId;
+        document.body.appendChild(mount);
+      }
+      const candidates = [
+        "/assets/js/chatbot.js",
+        "assets/js/chatbot.js",
+        "../assets/js/chatbot.js",
+        "../../assets/js/chatbot.js"
+      ];
+      function tryNext(i) {
+        if (i >= candidates.length) return;
+        const s = document.createElement("script");
+        s.src = candidates[i];
+        s.defer = true;
+        s.onerror = () => { s.remove(); tryNext(i + 1); };
+        document.body.appendChild(s);
+      }
+      tryNext(0);
+    })();
+
+    function toggleChatBot() {
+      const root = document.getElementById("scphs-chatbot-root");
+      if (!root || !root.innerHTML.trim()) {
+        alert("The chatbot is currently loading or unavailable. Please try again later.");
+        return;
+      }
+      root.classList.toggle("open");
+    }
+  </script>
 </body>
 </html>
-
-<!-- ======================= END ABOUT SECTION ======================= -->
-
-  <!-- School Footer (SCPHS) -->
-  <footer>
-    <div class="wrap">
-      <div class="foot-grid">
-        <div>
-          <strong>Sta. Cruz Pingkian High School</strong><br/>
-          Brgy. Sta. Cruz, Pingkian • Nueva Vizcaya • Philippines<br/>
-          Email: 300648@deped.gov.ph • Phone: +63 967-8848989
-        </div>
-        <div>
-          <a href="#privacy">Privacy Notice</a> •
-          <a href="#foi">FOI</a> •
-          <a href="#sitemap">Sitemap</a> •
-          <a href="https://www.facebook.com/p/Santa-Cruz-Pingkian-High-School-Official-61554495084090/" target="_blank" rel="noopener">Facebook</a>
-        </div>
-      </div>
-      <div class="copy">© 2026 SCPHS. All rights reserved.</div>
-    </div>
-  </footer>
-
-  <!-- ================== GOVPH FOOTER (final, official) ================== -->
-  <footer class="govph-footer" role="contentinfo">
-    <div class="wrap govph-footer__grid">
-      <div class="govph-footer__col">
-        <h4>Republic of the Philippines</h4>
-        <p>All content is in the public domain unless otherwise stated.</p>
-      </div>
-      <div class="govph-footer__col">
-        <h4>About GOVPH</h4>
-        <ul class="govph-footer__links">
-          <li><a href="https://www.gov.ph/" target="_blank" rel="noopener">GOV.PH</a></li>
-          <li><a href="https://data.gov.ph/" target="_blank" rel="noopener">Open Data Portal</a></li>
-          <li><a href="https://www.officialgazette.gov.ph/" target="_blank" rel="noopener">Official Gazette</a></li>
-        </ul>
-      </div>
-      <div class="govph-footer__col">
-        <h4>Government Links</h4>
-        <ul class="govph-footer__links">
-          <li><a href="https://op-proper.gov.ph/" target="_blank" rel="noopener">Office of the President</a></li>
-          <li><a href="https://ovp.gov.ph/" target="_blank" rel="noopener">Office of the Vice President</a></li>
-          <li><a href="https://www.senate.gov.ph/" target="_blank" rel="noopener">Senate of the Philippines</a></li>
-          <li><a href="https://www.congress.gov.ph/" target="_blank" rel="noopener">House of Representatives</a></li>
-          <li><a href="https://sc.judiciary.gov.ph/" target="_blank" rel="noopener">Supreme Court</a></li>
-        </ul>
-      </div>
-    </div>
-
-    <div class="govph-footer__bar">
-      <div class="wrap">
-        <small>© <span id="yearNow"></span> Sta. Cruz Pingkian High School • A Philippine Government Website</small>
-      </div>
-    </div>
-  </footer>
-
-           <!-- Chatbot mount -->
-<div id="scphs-chatbot-root"></div>
-
-<!-- Chatbot auto-loader: tries absolute path, then ../, then ../../ -->
-<script>
-(function(){
-  const rootId = 'scphs-chatbot-root';
-  if (!document.getElementById(rootId)) {
-    const m = document.createElement('div');
-    m.id = rootId;
-    document.body.appendChild(m);
-  }
-
-  const tried = {};
-  function load(src, onOk, onFail){
-    if (tried[src]) return onFail && onFail();
-    tried[src] = true;
-    const s = document.createElement('script');
-    s.src = src; s.defer = true;
-    s.onload = onOk;
-    s.onerror = onFail;
-    document.body.appendChild(s);
-  }
-
-  // Try absolute (works when hosted), then step-wise relatives (works offline)
-  load('/assets/js/chatbot.js', null, () =>
-    load('assets/js/chatbot.js', null, () =>
-      load('../assets/js/chatbot.js', null, () =>
-        load('../../assets/js/chatbot.js', null, () =>
-          console.warn('SCPHS chatbot: unable to load script from any known path.')
-        )
-      )
-    )
-  );
-})();
-</script>
