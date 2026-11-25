@@ -19,7 +19,7 @@
       --danger: #dc2626;
     }
 
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Outfit', sans-serif; }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Outfit', sans-serif; }
     body { background: var(--bg-color); color: var(--text-main); display: flex; min-height: 100vh; overflow-x: hidden; }
 
     /* Sidebar */
@@ -38,7 +38,7 @@
     .topbar-actions { display: flex; gap: 10px; flex-wrap: wrap; }
 
     /* Buttons */
-    .btn { padding: 10px 16px; border-radius: 8px; border: none; cursor: pointer; font-weight: 700; font-size: 0.85rem; display: inline-flex; align-items: center; gap: 8px; transition: 0.2s; white-space: nowrap; }
+    .btn { padding: 10px 16px; border-radius: 8px; border: none; cursor: pointer; font-weight: 700; font-size: 0.85rem; display: inline-flex; align-items: center; gap: 8px; transition: 0.2s; white-space: nowrap; text-decoration: none; }
     .btn-primary { background: var(--primary); color: #fff; }
     .btn-primary:hover { background: #0d5e56; }
     .btn-success { background: #10b981; color: #fff; }
@@ -70,11 +70,22 @@
     /* Table */
     .table-responsive { overflow-x: auto; -webkit-overflow-scrolling: touch; }
     table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
-    th, td { padding: 13px 14px; text-align: left; border-bottom: 1px solid var(--border); white-space: nowrap; }
+    th, td { padding: 12px 14px; text-align: left; border-bottom: 1px solid var(--border); white-space: nowrap; }
     th { background: #f8fafc; font-weight: 700; color: var(--text-muted); text-transform: uppercase; font-size: 0.75rem; letter-spacing: 0.5px; border-top: 1px solid var(--border); }
     td { color: var(--text-main); vertical-align: middle; }
-    tr:hover td { background: #f8fafc; }
+    tr.item-row { cursor: pointer; transition: background 0.15s ease; }
+    tr.item-row:hover td { background: #f0fdfa; }
     .action-btns { display: flex; gap: 6px; }
+
+    .item-thumb {
+      width: 44px; height: 44px; border-radius: 8px; object-fit: cover;
+      border: 1px solid var(--border); background: #f8fafc; display: block;
+    }
+    .item-thumb-placeholder {
+      width: 44px; height: 44px; border-radius: 8px; border: 1px dashed #cbd5e1;
+      background: #f8fafc; color: var(--text-muted); display: flex; align-items: center;
+      justify-content: center; font-size: 0.95rem;
+    }
 
     /* Orphan warning */
     .orphan-warning { display: none; margin: 12px 0 0 0; padding: 10px 14px; background: #fef3c7; border: 1px solid #fcd34d; border-radius: 8px; color: #92400e; font-size: 0.85rem; }
@@ -83,16 +94,41 @@
     /* Modals */
     .modal { position: fixed; inset: 0; background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(4px); display: none; justify-content: center; align-items: center; z-index: 1000; padding: 20px; }
     .modal.show { display: flex; }
-    .modal-content { background: #fff; border-radius: 16px; width: 100%; max-width: 600px; box-shadow: 0 20px 40px rgba(0,0,0,0.2); overflow: hidden; }
+    .modal-content { background: #fff; border-radius: 16px; width: 100%; max-width: 640px; box-shadow: 0 20px 40px rgba(0,0,0,0.2); overflow: hidden; }
     .modal-header { padding: 20px 24px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
     .modal-header h3 { font-size: 1.2rem; font-weight: 800; color: var(--primary); }
-    .modal-body { padding: 24px; max-height: 70vh; overflow-y: auto; display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    .modal-body { padding: 24px; max-height: 74vh; overflow-y: auto; display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
     .form-group { display: flex; flex-direction: column; min-width: 0; }
     .form-group.full { grid-column: span 2; }
     .form-group label { font-size: 0.75rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; margin-bottom: 6px; }
-    .form-group input, .form-group select { padding: 10px; border: 1px solid var(--border); border-radius: 8px; font-size: 0.9rem; font-family: inherit; outline: none; width: 100%; }
-    .form-group input:focus { border-color: var(--primary); }
+    .form-group input, .form-group select, .form-group textarea { padding: 10px; border: 1px solid var(--border); border-radius: 8px; font-size: 0.9rem; font-family: inherit; outline: none; width: 100%; }
+    .form-group input:focus, .form-group textarea:focus { border-color: var(--primary); }
     .modal-footer { padding: 16px 24px; border-top: 1px solid var(--border); display: flex; justify-content: flex-end; gap: 10px; background: #f8fafc; }
+
+    /* Image Upload Box */
+    .image-upload-box {
+      border: 1px solid var(--border); background: #f8fafc; border-radius: 12px;
+      padding: 14px; display: flex; align-items: center; gap: 16px; flex-wrap: wrap;
+    }
+    .image-preview-frame {
+      width: 110px; height: 110px; border-radius: 10px; border: 1px solid var(--border);
+      background: #fff; overflow: hidden; display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0; color: var(--text-muted); font-size: 1.8rem;
+    }
+    .image-preview-frame img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .image-controls { flex: 1; min-width: 210px; display: flex; flex-direction: column; gap: 8px; }
+
+    /* Item Detail Modal */
+    .detail-hero {
+      background: #f8fafc; border: 1px solid var(--border); border-radius: 14px;
+      padding: 16px; display: flex; justify-content: center; align-items: center;
+      min-height: 220px; max-height: 300px; overflow: hidden;
+    }
+    .detail-hero img { max-width: 100%; max-height: 268px; border-radius: 10px; object-fit: contain; }
+    .detail-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
+    .detail-cell { background: #f8fafc; border: 1px solid var(--border); border-radius: 10px; padding: 10px 12px; }
+    .detail-cell .lbl { font-size: 0.72rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; }
+    .detail-cell .val { font-size: 0.94rem; font-weight: 700; color: var(--text-main); margin-top: 2px; word-break: break-word; }
 
     /* Mobile Responsiveness */
     @media (max-width: 820px) {
@@ -107,7 +143,7 @@
       .tab-btn { top: 0; flex-shrink: 0; border-radius: 10px; border-bottom: 1px solid var(--border); padding: 9px 14px; font-size: 0.82rem; }
       .tab-btn.active { padding-top: 9px; border-top: 1px solid var(--border); border-color: var(--primary); background: #f0fdfa; color: var(--primary); }
       .tab-content-container { border-radius: 14px; }
-      .modal-body { grid-template-columns: 1fr; }
+      .modal-body, .detail-grid { grid-template-columns: 1fr; }
       .form-group.full { grid-column: span 1; }
     }
 
@@ -243,11 +279,6 @@
         font-size:12pt;
         margin:4px 0;
     }
-
-    .school-info{
-        font-size:11pt;
-        margin-bottom:20px;
-    }
   </style>
 </head>
 <body>
@@ -270,9 +301,9 @@
       <h1>📦 Property Inventory</h1>
       <div class="topbar-actions">
         <button class="btn btn-outline" onclick="openSignatoryModal()">
-          <i class="fas fa-users-cog"></i> Settings & Signatories
+          <i class="fas fa-users-cog"></i> Settings &amp; Signatories
         </button>
-        <a href="inventory-importer.html" class="btn" style="background: #f59e0b; color: #fff; text-decoration: none;">
+        <a href="inventory-importer.html" class="btn" style="background: #f59e0b; color: #fff;">
           <i class="fas fa-file-import"></i> Import Excel
         </a>
         <button class="btn" style="background: #475569; color: #fff;" onclick="window.print()">
@@ -294,6 +325,7 @@
         <table>
           <thead>
             <tr>
+              <th>Photo</th>
               <th>Article</th>
               <th>Description</th>
               <th>Date Acquired</th>
@@ -309,29 +341,52 @@
             </tr>
           </thead>
           <tbody id="inventory-body">
-            <tr><td colspan="12" style="text-align: center; padding: 30px; color: var(--text-muted);">Loading inventory data...</td></tr>
+            <tr><td colspan="13" style="text-align: center; padding: 30px; color: var(--text-muted);">Loading inventory data...</td></tr>
           </tbody>
         </table>
       </div>
     </div>
   </main>
 
-  <!-- ITEM MODAL -->
+  <!-- ADD / EDIT ITEM MODAL -->
   <div class="modal" id="itemModal">
     <div class="modal-content">
       <div class="modal-header">
         <h3 id="modalTitle">➕ Add New Property</h3>
-        <button onclick="closeModal('itemModal')" style="background: none; border: none; font-size: 1.5rem; cursor: pointer;">&times;</button>
+        <button type="button" onclick="closeModal('itemModal')" style="background: none; border: none; font-size: 1.5rem; cursor: pointer;">&times;</button>
       </div>
       <div class="modal-body">
         <input type="hidden" id="itemId">
+        <input type="hidden" id="f-imageUrl">
+
+        <div class="form-group full">
+          <label>Item Photo (Upload or Change Image)</label>
+          <div class="image-upload-box">
+            <div class="image-preview-frame" id="modalImagePreview">
+              <i class="fas fa-image"></i>
+            </div>
+            <div class="image-controls">
+              <input type="file" id="f-imageFile" accept="image/*" onchange="handleImageFileChange(event)">
+              <input type="text" id="f-imageUrlInput" placeholder="Or paste image URL (https://...)" oninput="handleImageUrlInput(this.value)">
+              <div style="display:flex; gap:8px; flex-wrap:wrap;">
+                <button type="button" class="btn btn-outline btn-sm" onclick="document.getElementById('f-imageFile').click()">
+                  <i class="fas fa-camera"></i> Change / Choose Photo
+                </button>
+                <button type="button" class="btn btn-outline btn-sm" style="color:var(--danger); border-color:#fecaca;" onclick="clearItemImage()">
+                  <i class="fas fa-times"></i> Remove Photo
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
         <div class="form-group full">
           <label>Article (Category)</label>
           <input type="text" id="f-article" readonly style="background: #f1f5f9;">
         </div>
         <div class="form-group full">
           <label>Description</label>
-          <input type="text" id="f-description" placeholder="e.g. picture frames">
+          <textarea id="f-description" rows="2" placeholder="e.g. picture frames, specs, model, condition notes"></textarea>
         </div>
         <div class="form-group">
           <label>Property Number</label>
@@ -343,7 +398,7 @@
         </div>
         <div class="form-group">
           <label>Unit Value (₱)</label>
-          <input type="number" id="f-unitValue" oninput="calcTotal()">
+          <input type="number" id="f-unitValue" step="0.01" oninput="calcTotal()">
         </div>
         <div class="form-group">
           <label>Unit of Measure</label>
@@ -359,7 +414,7 @@
         </div>
         <div class="form-group">
           <label>Total Cost (₱)</label>
-          <input type="number" id="f-totalCost" readonly style="background: #f1f5f9;">
+          <input type="number" id="f-totalCost" step="0.01" readonly style="background: #f1f5f9;">
         </div>
         <div class="form-group">
           <label>Source of Fund</label>
@@ -371,8 +426,65 @@
         </div>
       </div>
       <div class="modal-footer">
-        <button class="btn btn-outline" onclick="closeModal('itemModal')">Cancel</button>
-        <button class="btn btn-success" onclick="saveItem()">💾 Save Item</button>
+        <button type="button" class="btn btn-outline" onclick="closeModal('itemModal')">Cancel</button>
+        <button type="button" class="btn btn-success" id="saveItemBtn" onclick="saveItem()">💾 Save Item</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ITEM DETAILS & PHOTO VIEWER MODAL -->
+  <div class="modal" id="itemDetailModal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 id="detailTitle"><i class="fas fa-box-open"></i> Property Details</h3>
+        <button type="button" onclick="closeModal('itemDetailModal')" style="background: none; border: none; font-size: 1.5rem; cursor: pointer;">&times;</button>
+      </div>
+      <div class="modal-body" style="display:flex; flex-direction:column; gap:16px;">
+        <div class="detail-hero" id="detailImageBox"></div>
+
+        <div>
+          <div style="font-size:0.75rem; font-weight:700; color:var(--text-muted); text-transform:uppercase; margin-bottom:4px;">Description</div>
+          <div id="detailDescription" style="font-size:1rem; font-weight:700; color:var(--text-main); line-height:1.45;"></div>
+        </div>
+
+        <div class="detail-grid">
+          <div class="detail-cell">
+            <div class="lbl">Article / Category</div>
+            <div class="val" id="detailArticle">—</div>
+          </div>
+          <div class="detail-cell">
+            <div class="lbl">Property Number</div>
+            <div class="val" id="detailPropNo" style="font-family:monospace;">—</div>
+          </div>
+          <div class="detail-cell">
+            <div class="lbl">Date Acquired</div>
+            <div class="val" id="detailDate">—</div>
+          </div>
+          <div class="detail-cell">
+            <div class="lbl">Source of Fund</div>
+            <div class="val" id="detailFund">—</div>
+          </div>
+          <div class="detail-cell">
+            <div class="lbl">Unit Value / Unit</div>
+            <div class="val" id="detailUnitVal">—</div>
+          </div>
+          <div class="detail-cell">
+            <div class="lbl">Total Cost</div>
+            <div class="val" id="detailTotalCost" style="color:var(--primary);">—</div>
+          </div>
+          <div class="detail-cell">
+            <div class="lbl">Qty (Card / Physical Count)</div>
+            <div class="val" id="detailQty">—</div>
+          </div>
+          <div class="detail-cell">
+            <div class="lbl">Accountable Officer</div>
+            <div class="val" id="detailOfficer">—</div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-outline" onclick="closeModal('itemDetailModal')">Close</button>
+        <button type="button" class="btn btn-primary" id="detailEditBtn"><i class="fas fa-edit"></i> Edit Item &amp; Photo</button>
       </div>
     </div>
   </div>
@@ -381,8 +493,8 @@
   <div class="modal" id="signatoryModal">
     <div class="modal-content">
       <div class="modal-header">
-        <h3>⚙️ Report Settings & Signatories</h3>
-        <button onclick="closeModal('signatoryModal')" style="background: none; border: none; font-size: 1.5rem; cursor: pointer;">&times;</button>
+        <h3>⚙️ Report Settings &amp; Signatories</h3>
+        <button type="button" onclick="closeModal('signatoryModal')" style="background: none; border: none; font-size: 1.5rem; cursor: pointer;">&times;</button>
       </div>
       
       <div class="modal-body">
@@ -437,8 +549,8 @@
       </div>
       
       <div class="modal-footer">
-        <button class="btn btn-outline" onclick="closeModal('signatoryModal')">Cancel</button>
-        <button class="btn btn-primary" onclick="saveSignatories()">💾 Save Settings</button>
+        <button type="button" class="btn btn-outline" onclick="closeModal('signatoryModal')">Cancel</button>
+        <button type="button" class="btn btn-primary" onclick="saveSignatories()">💾 Save Settings</button>
       </div>
     </div>
   </div>
@@ -590,6 +702,69 @@
       verifiedTitle: "State Auditor IV"
     };
 
+    function renderModalImagePreview(src) {
+      const frame = document.getElementById('modalImagePreview');
+      const clean = (src || '').trim();
+      if (!clean) {
+        frame.innerHTML = `<i class="fas fa-image"></i>`;
+        return;
+      }
+      frame.innerHTML = `<img src="${escapeHTML(clean)}" alt="Item preview" onerror="this.parentElement.innerHTML='<i class=\\'fas fa-image\\'></i>'">`;
+    }
+
+    window.handleImageUrlInput = function(val) {
+      const clean = (val || '').trim();
+      document.getElementById('f-imageUrl').value = clean;
+      renderModalImagePreview(clean);
+    };
+
+    window.clearItemImage = function() {
+      document.getElementById('f-imageUrl').value = '';
+      document.getElementById('f-imageUrlInput').value = '';
+      document.getElementById('f-imageFile').value = '';
+      renderModalImagePreview('');
+    };
+
+    function compressImageFile(file, maxWidth = 800, quality = 0.72) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => {
+          const img = new Image();
+          img.onload = () => {
+            const scale = Math.min(1, maxWidth / img.width);
+            const canvas = document.createElement('canvas');
+            canvas.width = Math.round(img.width * scale);
+            canvas.height = Math.round(img.height * scale);
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+            resolve(canvas.toDataURL('image/jpeg', quality));
+          };
+          img.onerror = reject;
+          img.src = reader.result;
+        };
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+      });
+    }
+
+    window.handleImageFileChange = async function(evt) {
+      const file = evt.target.files?.[0];
+      if (!file) return;
+      if (!file.type.startsWith('image/')) {
+        alert("Please select a valid image file.");
+        return;
+      }
+      try {
+        const compressed = await compressImageFile(file);
+        document.getElementById('f-imageUrl').value = compressed;
+        document.getElementById('f-imageUrlInput').value = file.name;
+        renderModalImagePreview(compressed);
+      } catch (err) {
+        console.error("Image processing error:", err);
+        alert("Could not process image file.");
+      }
+    };
+
     function renderTabs() {
       const tabsContainer = document.getElementById('category-tabs');
       tabsContainer.innerHTML = CATEGORIES.map(cat => `
@@ -617,7 +792,7 @@
         renderTable();
       } catch (error) {
         console.error("Error loading inventory:", error);
-        document.getElementById('inventory-body').innerHTML = `<tr><td colspan="12" style="text-align: center; color: red;">Failed to load data.</td></tr>`;
+        document.getElementById('inventory-body').innerHTML = `<tr><td colspan="13" style="text-align: center; color: red;">Failed to load data.</td></tr>`;
       }
     }
 
@@ -633,16 +808,21 @@
       const filtered = allItems.filter(item => findCanonicalCategory(item.article) === currentTab);
 
       if (filtered.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="12" style="text-align: center; padding: 40px; color: var(--text-muted);"><div style="font-size: 2rem; margin-bottom: 10px;">📂</div>No items found in this folder. Click "Add New Item" to start.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="13" style="text-align: center; padding: 40px; color: var(--text-muted);"><div style="font-size: 2rem; margin-bottom: 10px;">📂</div>No items found in this folder. Click "Add New Item" to start.</td></tr>`;
         renderPrintArea([]);
         return;
       }
 
       tbody.innerHTML = filtered.map(item => {
+        const thumbHtml = item.imageUrl
+          ? `<img src="${escapeHTML(item.imageUrl)}" alt="${escapeHTML(item.description || 'Item')}" class="item-thumb">`
+          : `<div class="item-thumb-placeholder"><i class="fas fa-image"></i></div>`;
+
         return `
-          <tr>
+          <tr class="item-row" onclick="openItemDetail('${escapeJS(item.id)}')" title="Click to view full description & photo">
+            <td>${thumbHtml}</td>
             <td>${escapeHTML(item.article)}</td>
-            <td><strong>${escapeHTML(item.description || '-')}</strong></td>
+            <td><strong style="color:var(--primary); text-decoration:underline; text-underline-offset:3px;">${escapeHTML(item.description || '-')}</strong></td>
             <td>${escapeHTML(item.dateAcquired || '-')}</td>
             <td style="font-family: monospace;">${escapeHTML(item.propertyNumber || '-')}</td>
             <td>${escapeHTML(item.unitOfMeasure || '-')}</td>
@@ -652,10 +832,10 @@
             <td>₱${Number(item.totalCost || 0).toLocaleString()}</td>
             <td>${escapeHTML(item.sourceOfFund || '-')}</td>
             <td>${escapeHTML(item.accountableOfficer || '-')}</td>
-            <td>
+            <td onclick="event.stopPropagation()">
               <div class="action-btns">
-                <button type="button" class="btn btn-sm" style="background: #e0f2fe; color: #0369a1;" onclick="editItem('${escapeJS(item.id)}')"><i class="fas fa-edit"></i></button>
-                <button type="button" class="btn btn-sm btn-danger" onclick="deleteItem('${escapeJS(item.id)}', '${escapeJS(item.description || '')}')"><i class="fas fa-trash"></i></button>
+                <button type="button" class="btn btn-sm" style="background: #e0f2fe; color: #0369a1;" title="Edit item & photo" onclick="editItem('${escapeJS(item.id)}')"><i class="fas fa-edit"></i></button>
+                <button type="button" class="btn btn-sm btn-danger" title="Delete item" onclick="deleteItem('${escapeJS(item.id)}', '${escapeJS(item.description || '')}')"><i class="fas fa-trash"></i></button>
               </div>
             </td>
           </tr>
@@ -664,6 +844,42 @@
 
       renderPrintArea(filtered);
     }
+
+    window.openItemDetail = function(id) {
+      const item = allItems.find(i => i.id === id);
+      if (!item) return;
+
+      const unitValue = Number(item.unitValue) || 0;
+      const qtyPerCard = Number(item.qtyPerCard) || 0;
+      const qtyPerCount = Number(item.qtyPerCount) || 0;
+      const totalCost = Number(item.totalCost) || unitValue * qtyPerCount;
+
+      document.getElementById('detailTitle').textContent = item.description || "Property Details";
+      document.getElementById('detailDescription').textContent = item.description || "-";
+      document.getElementById('detailArticle').textContent = item.article || "-";
+      document.getElementById('detailPropNo').textContent = item.propertyNumber || "-";
+      document.getElementById('detailDate').textContent = item.dateAcquired || "-";
+      document.getElementById('detailFund').textContent = item.sourceOfFund || "-";
+      document.getElementById('detailUnitVal').textContent = `₱${unitValue.toLocaleString()} / ${item.unitOfMeasure || "unit"}`;
+      document.getElementById('detailTotalCost').textContent = `₱${totalCost.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+      document.getElementById('detailQty').textContent = `Card: ${qtyPerCard} • Count: ${qtyPerCount}`;
+      document.getElementById('detailOfficer').textContent = item.accountableOfficer || "-";
+
+      const imgBox = document.getElementById('detailImageBox');
+      if (item.imageUrl) {
+        imgBox.innerHTML = `<img src="${escapeHTML(item.imageUrl)}" alt="${escapeHTML(item.description || 'Property photo')}">`;
+      } else {
+        imgBox.innerHTML = `<div style="text-align:center; color:var(--text-muted); padding:24px;"><i class="fas fa-image" style="font-size:2.4rem; margin-bottom:8px; display:block;"></i>No photo attached yet. Click <strong>Edit Item &amp; Photo</strong> below to add one.</div>`;
+      }
+
+      const editBtn = document.getElementById('detailEditBtn');
+      editBtn.onclick = () => {
+        closeModal('itemDetailModal');
+        editItem(item.id);
+      };
+
+      document.getElementById('itemDetailModal').classList.add('show');
+    };
 
     function renderPrintArea(items) {
       const printTbody = document.getElementById('print-tbody');
@@ -721,6 +937,7 @@
       document.getElementById('f-totalCost').value = "";
       document.getElementById('f-sourceOfFund').value = "MOOE";
       document.getElementById('f-accountableOfficer').value = "";
+      clearItemImage();
       document.getElementById('itemModal').classList.add('show');
     };
 
@@ -735,24 +952,31 @@
     };
 
     window.saveItem = async function() {
+      const btn = document.getElementById('saveItemBtn');
       const id = document.getElementById('itemId').value;
       const description = document.getElementById('f-description').value.trim();
       if (!description) return alert("Description is required.");
+
+      const unitValue = parseFloat(document.getElementById('f-unitValue').value) || 0;
+      const qtyPerCount = parseInt(document.getElementById('f-qtyPerCount').value) || 0;
+      const totalCost = parseFloat(document.getElementById('f-totalCost').value) || (unitValue * qtyPerCount);
 
       const data = {
         article: document.getElementById('f-article').value,
         description: description,
         propertyNumber: document.getElementById('f-propertyNumber').value.trim(),
         dateAcquired: document.getElementById('f-dateAcquired').value,
-        unitValue: parseFloat(document.getElementById('f-unitValue').value) || 0,
+        unitValue: unitValue,
         unitOfMeasure: document.getElementById('f-unitOfMeasure').value.trim(),
         qtyPerCard: parseInt(document.getElementById('f-qtyPerCard').value) || 0,
-        qtyPerCount: parseInt(document.getElementById('f-qtyPerCount').value) || 0,
-        totalCost: parseFloat(document.getElementById('f-totalCost').value) || 0,
+        qtyPerCount: qtyPerCount,
+        totalCost: totalCost,
         sourceOfFund: document.getElementById('f-sourceOfFund').value.trim(),
         accountableOfficer: document.getElementById('f-accountableOfficer').value.trim(),
+        imageUrl: document.getElementById('f-imageUrl').value.trim()
       };
 
+      btn.disabled = true;
       try {
         if (id) {
           await setDoc(doc(db, "property_inventory", id), data, { merge: true });
@@ -765,6 +989,8 @@
       } catch (error) {
         console.error("Save Error:", error);
         alert("Error saving item: " + error.message);
+      } finally {
+        btn.disabled = false;
       }
     };
 
@@ -772,20 +998,26 @@
       const item = allItems.find(i => i.id === id);
       if (!item) return;
 
-      document.getElementById('modalTitle').textContent = "✏️ Edit Property";
+      document.getElementById('modalTitle').textContent = "✏️ Edit Property & Photo";
       document.getElementById('itemId').value = item.id;
       document.getElementById('f-article').value = item.article || "";
       document.getElementById('f-description').value = item.description || "";
       document.getElementById('f-propertyNumber').value = item.propertyNumber || "";
       document.getElementById('f-dateAcquired').value = item.dateAcquired || "";
-      document.getElementById('f-unitValue').value = item.unitValue || "";
+      document.getElementById('f-unitValue').value = item.unitValue ?? "";
       document.getElementById('f-unitOfMeasure').value = item.unitOfMeasure || "";
-      document.getElementById('f-qtyPerCard').value = item.qtyPerCard || "";
-      document.getElementById('f-qtyPerCount').value = item.qtyPerCount || "";
-      document.getElementById('f-totalCost').value = item.totalCost || "";
+      document.getElementById('f-qtyPerCard').value = item.qtyPerCard ?? 1;
+      document.getElementById('f-qtyPerCount').value = item.qtyPerCount ?? 1;
+      document.getElementById('f-totalCost').value = item.totalCost ?? "";
       document.getElementById('f-sourceOfFund').value = item.sourceOfFund || "";
       document.getElementById('f-accountableOfficer').value = item.accountableOfficer || "";
-      
+      document.getElementById('f-imageFile').value = "";
+
+      const imgVal = item.imageUrl || "";
+      document.getElementById('f-imageUrl').value = imgVal;
+      document.getElementById('f-imageUrlInput').value = imgVal.startsWith("data:") ? "(Uploaded Photo)" : imgVal;
+      renderModalImagePreview(imgVal);
+
       document.getElementById('itemModal').classList.add('show');
     };
 
