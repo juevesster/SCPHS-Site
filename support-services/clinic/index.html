@@ -405,6 +405,160 @@
       .kpi-grid, .form-row { grid-template-columns: 1fr; }
       .clinic-hero { padding: 22px 18px; }
     }
+
+    /* Learner Avatar & Clickable Name in BMI Table */
+    .bmi-learner-cell {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .bmi-thumb {
+      width: 40px;
+      height: 40px;
+      border-radius: 10px;
+      object-fit: cover;
+      border: 1.5px solid var(--clinic-line);
+      background: #f8fafc;
+      flex-shrink: 0;
+      cursor: pointer;
+    }
+    .bmi-thumb-fallback {
+      width: 40px;
+      height: 40px;
+      border-radius: 10px;
+      background: var(--clinic-teal-soft);
+      color: var(--clinic-teal);
+      font-weight: 800;
+      font-size: 0.85rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      border: 1px solid #99f6e4;
+      cursor: pointer;
+    }
+    .bmi-name-link {
+      background: none;
+      border: none;
+      padding: 0;
+      font-family: inherit;
+      font-size: 0.88rem;
+      font-weight: 800;
+      color: var(--clinic-teal);
+      text-decoration: underline;
+      text-underline-offset: 3px;
+      cursor: pointer;
+      text-align: left;
+    }
+    .bmi-name-link:hover { color: var(--clinic-teal-dark); }
+
+    /* Student Health Profile & ID Photo Modal */
+    .c-modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.6);
+      backdrop-filter: blur(4px);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      z-index: 3000;
+      padding: 18px;
+    }
+    .c-modal-backdrop.open { display: flex; }
+    .c-modal-box {
+      background: #fff;
+      border-radius: 20px;
+      width: 100%;
+      max-width: 600px;
+      border: 1px solid var(--clinic-line);
+      box-shadow: 0 24px 48px -12px rgba(15, 23, 42, 0.25);
+      overflow: hidden;
+    }
+    .c-modal-head {
+      padding: 16px 22px;
+      border-bottom: 1px solid var(--clinic-line);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .c-modal-head h3 {
+      margin: 0;
+      font-size: 1.12rem;
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .c-modal-body {
+      padding: 18px 22px;
+      max-height: 75vh;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+    .c-modal-foot {
+      padding: 14px 22px;
+      border-top: 1px solid var(--clinic-line);
+      background: #f8fafc;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+    .id-photo-panel {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      flex-wrap: wrap;
+      background: #f8fafc;
+      border: 1px solid var(--clinic-line);
+      border-radius: 14px;
+      padding: 12px 14px;
+    }
+    .id-photo-box {
+      width: 96px;
+      height: 96px;
+      border-radius: 14px;
+      border: 1.5px solid var(--clinic-line);
+      background: #fff;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      color: var(--clinic-muted);
+      font-size: 1.7rem;
+    }
+    .id-photo-box img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+    .id-photo-actions {
+      flex: 1;
+      min-width: 210px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .sf1-profile-strip {
+      background: #f0fdfa;
+      border: 1px solid #99f6e4;
+      border-radius: 12px;
+      padding: 10px 14px;
+      font-size: 0.82rem;
+      color: var(--clinic-ink);
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 6px 14px;
+    }
+    .sf1-profile-strip strong { color: var(--clinic-teal-dark); }
+    @media (max-width: 600px) {
+      .sf1-profile-strip { grid-template-columns: 1fr; }
+    }
   </style>
 </head>
 <body>
@@ -812,6 +966,105 @@
     </section>
   </main>
 
+  <!-- STUDENT PROFILE & ID PHOTO DIALOG -->
+  <div class="c-modal-backdrop" id="bmiProfileModal">
+    <div class="c-modal-box">
+      <div class="c-modal-head">
+        <h3><i class="fas fa-id-card" style="color:var(--clinic-teal);"></i> Learner Health Profile &amp; ID Photo</h3>
+        <button type="button" onclick="closeBmiProfileModal()" style="background:none;border:none;font-size:1.5rem;cursor:pointer;color:var(--clinic-muted);">&times;</button>
+      </div>
+      <form onsubmit="saveBmiProfileModal(event)">
+        <div class="c-modal-body">
+          <input type="hidden" id="prof-bmiId">
+          <input type="hidden" id="prof-photoUrl">
+
+          <!-- ID Photo Upload / Change / Remove -->
+          <div class="id-photo-panel">
+            <div class="id-photo-box" id="prof-photoPreview">
+              <i class="fas fa-user-graduate"></i>
+            </div>
+            <div class="id-photo-actions">
+              <label style="font-size:0.72rem;font-weight:800;color:var(--clinic-muted);text-transform:uppercase;">Learner ID Picture</label>
+              <input type="file" id="prof-photoFile" accept="image/*" onchange="handleProfPhotoFile(event)" style="font-size:0.82rem;">
+              <input type="text" id="prof-photoInput" placeholder="Or paste ID photo URL (https://...)" oninput="handleProfPhotoUrl(this.value)" style="padding:8px 10px;border:1.5px solid var(--clinic-line);border-radius:9px;font-size:0.84rem;">
+              <div style="display:flex;gap:8px;flex-wrap:wrap;">
+                <button type="button" class="btn-c btn-c-outline" style="padding:6px 11px;font-size:0.76rem;" onclick="document.getElementById('prof-photoFile').click()">
+                  <i class="fas fa-camera"></i> Change Photo
+                </button>
+                <button type="button" class="btn-c btn-c-danger" onclick="clearProfPhoto()">
+                  <i class="fas fa-trash-alt"></i> Remove Photo
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- SF1 Student Details Strip -->
+          <div class="sf1-profile-strip" id="prof-sf1Details"></div>
+
+          <!-- Editable Learner & BMI Fields -->
+          <div class="form-row" style="margin-bottom:0;">
+            <div class="form-field" style="margin-bottom:0;">
+              <label>Learner Name *</label>
+              <input type="text" id="prof-name" required>
+            </div>
+            <div class="form-field" style="margin-bottom:0;">
+              <label>LRN / Sex / Age</label>
+              <input type="text" id="prof-meta">
+            </div>
+          </div>
+
+          <div class="form-row" style="margin-bottom:0;">
+            <div class="form-field" style="margin-bottom:0;">
+              <label>SF1 Class</label>
+              <input type="text" id="prof-classLabel">
+            </div>
+            <div class="form-field" style="margin-bottom:0;">
+              <label>Assessment Cycle</label>
+              <select id="prof-period">
+                <option value="Baseline (Start of SY)">Baseline (Start of SY)</option>
+                <option value="Midline (Mid-SY)">Midline (Mid-SY)</option>
+                <option value="Endline (End of SY)">Endline (End of SY)</option>
+                <option value="Follow-up / Clinic Check">Follow-up / Clinic Check</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-row" style="grid-template-columns: 1fr 1fr 1fr; margin-bottom:0;">
+            <div class="form-field" style="margin-bottom:0;">
+              <label>Height (cm) *</label>
+              <input type="number" step="0.1" min="40" max="250" id="prof-height" required oninput="recalcModalBmi()">
+            </div>
+            <div class="form-field" style="margin-bottom:0;">
+              <label>Weight (kg) *</label>
+              <input type="number" step="0.1" min="5" max="250" id="prof-weight" required oninput="recalcModalBmi()">
+            </div>
+            <div class="form-field" style="margin-bottom:0;">
+              <label>Computed BMI</label>
+              <input type="text" id="prof-bmiReadout" readonly style="background:#f8fafc;font-weight:800;">
+            </div>
+          </div>
+
+          <div class="form-field" style="margin-bottom:0;">
+            <label>Nutritional / Health Notes or Intervention</label>
+            <input type="text" id="prof-notes" placeholder="e.g., SBFP beneficiary / dietary counseling / RHU checkup">
+          </div>
+        </div>
+
+        <div class="c-modal-foot">
+          <button type="button" class="btn-c btn-c-danger" onclick="deleteFromProfileModal()">
+            <i class="fas fa-trash"></i> Remove Assessment
+          </button>
+          <div style="display:flex;gap:8px;">
+            <button type="button" class="btn-c btn-c-outline" onclick="closeBmiProfileModal()">Cancel</button>
+            <button type="submit" class="btn-c btn-c-primary" id="prof-saveBtn">
+              <i class="fas fa-save"></i> Save Profile &amp; Photo
+            </button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+
   <!-- PRINTABLE DEPED CLINIC REPORT -->
   <div id="clinic-print-area">
     <div class="cprint-header">
@@ -1205,6 +1458,213 @@
       }
     };
 
+    function getInitials(name) {
+      const parts = String(name || "").replace(/,/g, " ").trim().split(/\s+/).filter(Boolean);
+      if (!parts.length) return "ST";
+      return parts.slice(0, 2).map(p => p[0].toUpperCase()).join("");
+    }
+
+    function findSf1StudentForRecord(rec) {
+      if (!rec) return null;
+      const lrnMatch = String(rec.studentMeta || "").match(/LRN:\s*(\d+)/i);
+      const targetLrn = lrnMatch ? lrnMatch[1] : "";
+      const targetName = String(rec.studentName || "").trim().toLowerCase();
+
+      const pools = rec.classId
+        ? [sf1Classes.find(c => c.id === rec.classId), ...sf1Classes].filter(Boolean)
+        : sf1Classes;
+
+      for (const cls of pools) {
+        const list = cls._cachedStudents || [];
+        const hit = list.find(s =>
+          (rec.studentId && s.id === rec.studentId) ||
+          (targetLrn && String(s.lrn || "").trim() === targetLrn) ||
+          ((s.fullName || `${s.lastName || ""}, ${s.firstName || ""}`).trim().toLowerCase() === targetName)
+        );
+        if (hit) return hit;
+      }
+      return null;
+    }
+
+    function renderProfPhotoPreview(src, name = "") {
+      const box = document.getElementById("prof-photoPreview");
+      const clean = (src || "").trim();
+      if (!clean) {
+        box.innerHTML = `<span style="font-weight:800;color:var(--clinic-teal);font-size:1.3rem;">${esc(getInitials(name))}</span>`;
+        return;
+      }
+      box.innerHTML = `<img src="${esc(clean)}" alt="${esc(name || "Learner ID")}" onerror="this.parentElement.innerHTML='<i class=\\'fas fa-user-graduate\\'></i>'">`;
+    }
+
+    window.handleProfPhotoUrl = function(val) {
+      const clean = (val || "").trim();
+      document.getElementById("prof-photoUrl").value = clean;
+      renderProfPhotoPreview(clean, document.getElementById("prof-name").value);
+    };
+
+    window.clearProfPhoto = function() {
+      document.getElementById("prof-photoUrl").value = "";
+      document.getElementById("prof-photoInput").value = "";
+      document.getElementById("prof-photoFile").value = "";
+      renderProfPhotoPreview("", document.getElementById("prof-name").value);
+    };
+
+    function compressLearnerPhoto(file, maxSize = 480, quality = 0.72) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => {
+          const img = new Image();
+          img.onload = () => {
+            const scale = Math.min(1, maxSize / Math.max(img.width, img.height));
+            const canvas = document.createElement("canvas");
+            canvas.width = Math.max(1, Math.round(img.width * scale));
+            canvas.height = Math.max(1, Math.round(img.height * scale));
+            const ctx = canvas.getContext("2d");
+            ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+            resolve(canvas.toDataURL("image/jpeg", quality));
+          };
+          img.onerror = reject;
+          img.src = reader.result;
+        };
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+      });
+    }
+
+    window.handleProfPhotoFile = async function(evt) {
+      const file = evt.target.files?.[0];
+      if (!file) return;
+      if (!file.type.startsWith("image/")) {
+        alert("Please select a valid image file.");
+        return;
+      }
+      try {
+        const compressed = await compressLearnerPhoto(file);
+        document.getElementById("prof-photoUrl").value = compressed;
+        document.getElementById("prof-photoInput").value = file.name;
+        renderProfPhotoPreview(compressed, document.getElementById("prof-name").value);
+      } catch (err) {
+        alert("Could not process ID photo.");
+      }
+    };
+
+    window.recalcModalBmi = function() {
+      const h = parseFloat(document.getElementById("prof-height").value);
+      const w = parseFloat(document.getElementById("prof-weight").value);
+      const out = document.getElementById("prof-bmiReadout");
+      if (!h || !w || h <= 0 || w <= 0) {
+        out.value = "—";
+        return null;
+      }
+      const bmi = +(w / ((h / 100) * (h / 100))).toFixed(1);
+      const info = classifyBmi(bmi);
+      out.value = `${bmi.toFixed(1)} (${info.label})`;
+      return { bmi, status: info.label };
+    };
+
+    window.openBmiProfileModal = function(id) {
+      const rec = bmiRecords.find(r => r.id === id);
+      if (!rec) return;
+
+      const sf1 = findSf1StudentForRecord(rec);
+      const photo = rec.photoUrl || sf1?.photoUrl || "";
+
+      document.getElementById("prof-bmiId").value = rec.id;
+      document.getElementById("prof-name").value = rec.studentName || "";
+      document.getElementById("prof-meta").value = rec.studentMeta || "";
+      document.getElementById("prof-classLabel").value = rec.classLabel || "";
+      document.getElementById("prof-period").value = rec.period || "Baseline (Start of SY)";
+      document.getElementById("prof-height").value = rec.heightCm ?? "";
+      document.getElementById("prof-weight").value = rec.weightKg ?? "";
+      document.getElementById("prof-notes").value = rec.notes || "";
+      document.getElementById("prof-photoFile").value = "";
+      document.getElementById("prof-photoUrl").value = photo;
+      document.getElementById("prof-photoInput").value = photo.startsWith("data:") ? "(Uploaded ID Photo)" : photo;
+
+      renderProfPhotoPreview(photo, rec.studentName);
+      recalcModalBmi();
+
+      const strip = document.getElementById("prof-sf1Details");
+      if (sf1) {
+        const addr = [sf1.addressHouse, sf1.addressBarangay, sf1.addressMunicipality, sf1.addressProvince].filter(Boolean).join(", ") || "—";
+        const parent = sf1.guardianName || sf1.motherName || sf1.fatherName || "—";
+        strip.innerHTML = `
+          <div><strong>Birth Date:</strong> ${esc(sf1.birthDate || "—")}</div>
+          <div><strong>Contact No.:</strong> ${esc(sf1.contactNumber || "—")}</div>
+          <div><strong>Parent / Guardian:</strong> ${esc(parent)}</div>
+          <div><strong>Address:</strong> ${esc(addr)}</div>
+        `;
+      } else {
+        strip.innerHTML = `<div style="grid-column:1/-1;"><strong>SF1 Profile:</strong> Walk-in / manual learner record (upload or update ID photo above).</div>`;
+      }
+
+      document.getElementById("bmiProfileModal").classList.add("open");
+    };
+
+    window.closeBmiProfileModal = function() {
+      document.getElementById("bmiProfileModal").classList.remove("open");
+    };
+
+    window.saveBmiProfileModal = async function(evt) {
+      evt.preventDefault();
+      const id = document.getElementById("prof-bmiId").value;
+      const rec = bmiRecords.find(r => r.id === id);
+      if (!rec) return;
+
+      const calc = recalcModalBmi();
+      const studentName = document.getElementById("prof-name").value.trim();
+      const heightCm = parseFloat(document.getElementById("prof-height").value);
+      const weightKg = parseFloat(document.getElementById("prof-weight").value);
+      if (!studentName || !calc) return alert("Please enter valid name, height, and weight.");
+
+      const photoUrl = document.getElementById("prof-photoUrl").value.trim();
+      const updates = {
+        studentName,
+        studentMeta: document.getElementById("prof-meta").value.trim(),
+        classLabel: document.getElementById("prof-classLabel").value.trim(),
+        period: document.getElementById("prof-period").value,
+        heightCm,
+        weightKg,
+        bmi: calc.bmi,
+        status: calc.status,
+        notes: document.getElementById("prof-notes").value.trim(),
+        photoUrl,
+        updatedAt: new Date().toISOString()
+      };
+
+      const btn = document.getElementById("prof-saveBtn");
+      btn.disabled = true;
+      try {
+        await setDoc(doc(db, BMI_COLLECTION, id), updates, { merge: true });
+        Object.assign(rec, updates);
+
+        // Also sync ID photo back to SF1 student document if linked
+        const sf1 = findSf1StudentForRecord(rec);
+        if (rec.classId && sf1?.id) {
+          try {
+            await setDoc(doc(db, `classes/${rec.classId}/students`, sf1.id), { photoUrl }, { merge: true });
+            sf1.photoUrl = photoUrl;
+          } catch (_) {
+            // Ignore if current user is not the class adviser
+          }
+        }
+
+        renderBmiTable();
+        closeBmiProfileModal();
+      } catch (err) {
+        alert("Failed to update learner profile: " + err.message);
+      } finally {
+        btn.disabled = false;
+      }
+    };
+
+    window.deleteFromProfileModal = async function() {
+      const id = document.getElementById("prof-bmiId").value;
+      if (!id) return;
+      await deleteBmiRecord(id);
+      closeBmiProfileModal();
+    };
+
     function renderBmiTable() {
       const tbody = document.getElementById("bmiTableBody");
       const q = (document.getElementById("bmiSearch")?.value || "").trim().toLowerCase();
@@ -1224,9 +1684,25 @@
 
       tbody.innerHTML = filtered.map(r => {
         const info = classifyBmi(Number(r.bmi) || 0);
+        const sf1 = findSf1StudentForRecord(r);
+        const photo = r.photoUrl || sf1?.photoUrl || "";
+        const avatarHtml = photo
+          ? `<img src="${esc(photo)}" alt="${esc(r.studentName)}" class="bmi-thumb" onclick="openBmiProfileModal('${escJS(r.id)}')">`
+          : `<div class="bmi-thumb-fallback" onclick="openBmiProfileModal('${escJS(r.id)}')">${esc(getInitials(r.studentName))}</div>`;
+
         return `
           <tr>
-            <td><strong>${esc(r.studentName)}</strong>${r.studentMeta ? `<div style="font-size:0.74rem;color:var(--clinic-muted);">${esc(r.studentMeta)}</div>` : ""}</td>
+            <td>
+              <div class="bmi-learner-cell">
+                ${avatarHtml}
+                <div>
+                  <button type="button" class="bmi-name-link" onclick="openBmiProfileModal('${escJS(r.id)}')">
+                    ${esc(r.studentName)}
+                  </button>
+                  ${r.studentMeta ? `<div style="font-size:0.74rem;color:var(--clinic-muted);">${esc(r.studentMeta)}</div>` : ""}
+                </div>
+              </div>
+            </td>
             <td>${esc(r.classLabel || "-")}<div style="font-size:0.74rem;color:var(--clinic-teal);font-weight:700;">${esc(r.period || "Baseline (Start of SY)")}</div></td>
             <td>${esc(r.heightCm)} cm / ${esc(r.weightKg)} kg</td>
             <td><strong>${Number(r.bmi).toFixed(1)}</strong></td>
