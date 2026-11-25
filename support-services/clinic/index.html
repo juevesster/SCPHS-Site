@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>School Clinic &amp; Health Services – SCPHS</title>
-  <meta name="description" content="SCPHS School Clinic – health services, first aid, BMI monitoring from SF1, referrals, and DepEd/DOH health mandates." />
+  <meta name="description" content="SCPHS School Clinic – health services, first aid, SF1 BMI tracking, sickness/emergency reporting, referrals, and DepEd/DOH health mandates." />
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css">
   <link rel="stylesheet" href="../../assets/css/styles.css" />
@@ -199,6 +199,7 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
+      flex-wrap: wrap;
       gap: 10px;
     }
 
@@ -238,6 +239,8 @@
     }
     .btn-c-primary { background: var(--clinic-teal); color: #fff; }
     .btn-c-primary:hover { background: var(--clinic-teal-dark); }
+    .btn-c-dark { background: #1e293b; color: #fff; }
+    .btn-c-dark:hover { background: #0f172a; }
     .btn-c-outline { background: #fff; border: 1.5px solid var(--clinic-line); color: var(--clinic-ink); }
     .btn-c-outline:hover { border-color: var(--clinic-teal); color: var(--clinic-teal); }
     .btn-c-danger { background: #fee2e2; color: #991b1b; padding: 6px 10px; font-size: 0.78rem; }
@@ -258,14 +261,27 @@
     .bmi-badge {
       padding: 5px 12px;
       border-radius: 999px;
-      font-size: 0.78rem;
+      font-size: 0.76rem;
       font-weight: 800;
       text-transform: uppercase;
+      white-space: nowrap;
     }
     .bmi-normal { background: #dcfce7; color: #166534; }
     .bmi-under { background: #dbeafe; color: #1e40af; }
     .bmi-over { background: #fef3c7; color: #92400e; }
     .bmi-obese { background: #ffe4e6; color: #9f1239; }
+
+    .sev-badge {
+      display: inline-block;
+      padding: 3px 9px;
+      border-radius: 999px;
+      font-size: 0.74rem;
+      font-weight: 800;
+      text-transform: uppercase;
+    }
+    .sev-emergency { background: #ffe4e6; color: #9f1239; }
+    .sev-urgent { background: #fef3c7; color: #92400e; }
+    .sev-routine { background: #e0f2fe; color: #0369a1; }
 
     /* Tables */
     .table-wrap { overflow-x: auto; }
@@ -303,6 +319,73 @@
     .law-card .law-code { font-size: 0.75rem; font-weight: 800; color: var(--clinic-teal); text-transform: uppercase; margin-bottom: 6px; display: block; }
     .law-card p { margin: 0; font-size: 0.88rem; color: var(--clinic-muted); }
 
+    /* Printable Report Layout */
+    #clinic-print-area { display: none; }
+
+    @media print {
+      @page { size: landscape; margin: 0.35in; }
+      body { background: #fff !important; margin: 0 !important; }
+      .mini-header, .clinic-shell, footer, .govph-footer, #scphs-chatbot-root { display: none !important; }
+      #clinic-print-area {
+        display: block !important;
+        width: 100%;
+        font-family: "Times New Roman", Times, serif;
+        color: #000;
+      }
+      .cprint-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 10px;
+      }
+      .cprint-header img { height: 60px; object-fit: contain; }
+      .cprint-center { flex: 1; text-align: center; line-height: 1.25; padding: 0 12px; }
+      .cprint-title {
+        text-align: center;
+        font-size: 12pt;
+        font-weight: bold;
+        text-transform: uppercase;
+        margin: 8px 0 4px;
+        text-decoration: underline;
+      }
+      .cprint-sub { text-align: center; font-size: 9.5pt; margin-bottom: 10px; }
+      .cprint-meta {
+        display: flex;
+        justify-content: space-between;
+        font-size: 9.5pt;
+        margin-bottom: 10px;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+      .cprint-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 8pt;
+        margin-bottom: 16px;
+      }
+      .cprint-table th, .cprint-table td {
+        border: 1px solid #000;
+        padding: 4px 6px;
+        text-align: left;
+        vertical-align: middle;
+      }
+      .cprint-table th {
+        background: #f1f5f9 !important;
+        font-weight: bold;
+        text-align: center;
+      }
+      .cprint-sigs {
+        display: flex;
+        justify-content: space-between;
+        gap: 20px;
+        margin-top: 24px;
+        page-break-inside: avoid;
+        font-size: 9.5pt;
+      }
+      .cprint-sig-col { width: 32%; text-align: center; }
+      .cprint-sig-line { border-bottom: 1px solid #000; height: 28px; margin-bottom: 4px; }
+    }
+
     @media (max-width: 960px) {
       .kpi-grid { grid-template-columns: repeat(2, 1fr); }
       .panel-grid-2, .law-grid { grid-template-columns: 1fr; }
@@ -336,10 +419,16 @@
       <div>
         <div class="pill"><i class="fas fa-heartbeat"></i> DepEd School Health &amp; Nutrition • DOH / RHU Link</div>
         <h1>School Health Clinic</h1>
-        <p>Sta. Cruz Pingkian High School • First aid, SF1 learner health &amp; BMI tracking, medical referrals, wellness advisories, and statutory health compliance.</p>
+        <p>Sta. Cruz Pingkian High School • First aid, SF1 learner BMI monitoring (Baseline / Midline / Endline), sickness &amp; emergency reports, RHU referrals, and legal mandates.</p>
       </div>
       <div class="hero-actions">
         <span class="sync-pill" id="clinicSyncStatus"><i class="fas fa-circle-notch fa-spin"></i> Syncing SF1 &amp; Firestore...</span>
+        <button type="button" class="btn-c btn-c-dark" onclick="printClinicReport('bmi')">
+          <i class="fas fa-print"></i> Print SF1 BMI Report
+        </button>
+        <button type="button" class="btn-c btn-c-primary" style="background:#0284c7;" onclick="printClinicReport('visits')">
+          <i class="fas fa-file-medical-alt"></i> Print Sickness &amp; Emergency Report
+        </button>
         <a href="../../sf1.html" class="btn-c btn-c-outline"><i class="fas fa-book-open"></i> Open SF1 Register</a>
       </div>
     </section>
@@ -364,14 +453,14 @@
         <div class="kpi-icon" style="background:var(--clinic-amber-soft); color:var(--clinic-amber);"><i class="fas fa-notes-medical"></i></div>
         <div>
           <div class="kpi-val" id="kpiVisitCount">0</div>
-          <div class="kpi-lbl">Clinic Visits Logged</div>
+          <div class="kpi-lbl">Sickness / Clinic Logs</div>
         </div>
       </div>
       <div class="kpi-card">
         <div class="kpi-icon" style="background:var(--clinic-rose-soft); color:var(--clinic-rose);"><i class="fas fa-ambulance"></i></div>
         <div>
           <div class="kpi-val" id="kpiReferralCount">0</div>
-          <div class="kpi-lbl">RHU / DOH Referrals</div>
+          <div class="kpi-lbl">Emergencies &amp; Referrals</div>
         </div>
       </div>
     </section>
@@ -382,7 +471,7 @@
         <i class="fas fa-weight-scale"></i> SF1 Roster &amp; BMI Tracker
       </button>
       <button type="button" class="c-tab" data-tab="visits" onclick="switchClinicTab('visits', this)">
-        <i class="fas fa-stethoscope"></i> Clinic Visits &amp; Referrals
+        <i class="fas fa-stethoscope"></i> Sickness, Emergency &amp; Referrals
       </button>
       <button type="button" class="c-tab" data-tab="overview" onclick="switchClinicTab('overview', this)">
         <i class="fas fa-clinic-medical"></i> Clinic Info &amp; Forms
@@ -416,13 +505,23 @@
 
             <div class="form-row">
               <div class="form-field">
-                <label>Learner Name</label>
+                <label>Learner Name *</label>
                 <input type="text" id="bmiStudentName" required placeholder="Auto-filled from SF1 or enter name">
               </div>
               <div class="form-field">
-                <label>LRN / Sex</label>
-                <input type="text" id="bmiStudentMeta" placeholder="e.g., 123456789012 • M/F">
+                <label>Assessment Cycle (DepEd)</label>
+                <select id="bmiPeriod">
+                  <option value="Baseline (Start of SY)">Baseline (Start of SY)</option>
+                  <option value="Midline (Mid-SY)">Midline (Mid-SY)</option>
+                  <option value="Endline (End of SY)">Endline (End of SY)</option>
+                  <option value="Follow-up / Clinic Check">Follow-up / Clinic Check</option>
+                </select>
               </div>
+            </div>
+
+            <div class="form-field">
+              <label>LRN / Sex / Age</label>
+              <input type="text" id="bmiStudentMeta" placeholder="e.g., LRN: 123456789012 • Sex: F • Age: 14">
             </div>
 
             <div class="form-row">
@@ -445,27 +544,32 @@
             </div>
 
             <div class="form-field">
-              <label>Nutritional / Health Notes or Action Plan</label>
-              <input type="text" id="bmiNotes" placeholder="e.g., SBFP / dietary counseling / RHU checkup">
+              <label>Nutritional / Health Notes or Intervention</label>
+              <input type="text" id="bmiNotes" placeholder="e.g., SBFP beneficiary / dietary counseling / RHU checkup">
             </div>
 
-            <button type="submit" class="btn-c btn-c-primary" id="saveBmiBtn">
-              <i class="fas fa-save"></i> Save BMI Assessment
-            </button>
+            <div style="display:flex; gap:10px; flex-wrap:wrap;">
+              <button type="submit" class="btn-c btn-c-primary" id="saveBmiBtn">
+                <i class="fas fa-save"></i> Save BMI Assessment
+              </button>
+              <button type="button" class="btn-c btn-c-outline" onclick="printClinicReport('bmi')">
+                <i class="fas fa-print"></i> Print BMI Sheet
+              </button>
+            </div>
           </form>
         </div>
 
         <div class="c-card">
           <h2 class="c-card-title">
             <span><i class="fas fa-clipboard-list" style="color:var(--clinic-blue);"></i> Recorded BMI Assessments</span>
-            <input type="text" id="bmiSearch" oninput="renderBmiTable()" placeholder="Filter by learner or class..." style="max-width:220px; padding:7px 11px; border:1.5px solid var(--clinic-line); border-radius:9px; font-size:0.82rem;">
+            <input type="text" id="bmiSearch" oninput="renderBmiTable()" placeholder="Filter by learner, class, or cycle..." style="max-width:230px; padding:7px 11px; border:1.5px solid var(--clinic-line); border-radius:9px; font-size:0.82rem;">
           </h2>
           <div class="table-wrap">
             <table class="c-table">
               <thead>
                 <tr>
                   <th>Learner</th>
-                  <th>Class</th>
+                  <th>Class / Cycle</th>
                   <th>Ht / Wt</th>
                   <th>BMI</th>
                   <th>Status</th>
@@ -481,11 +585,11 @@
       </div>
     </section>
 
-    <!-- TAB 2: CLINIC VISITS & REFERRALS -->
+    <!-- TAB 2: SICKNESS, EMERGENCY & REFERRALS -->
     <section class="tab-panel" id="panel-visits">
       <div class="panel-grid-2">
         <div class="c-card">
-          <h2 class="c-card-title"><span><i class="fas fa-plus-circle" style="color:var(--clinic-teal);"></i> Log Clinic Visit / Referral</span></h2>
+          <h2 class="c-card-title"><span><i class="fas fa-plus-circle" style="color:var(--clinic-teal);"></i> Log Sickness, Emergency or Visit</span></h2>
           <form onsubmit="saveClinicVisit(event)">
             <div class="form-row">
               <div class="form-field">
@@ -500,8 +604,12 @@
 
             <div class="form-row">
               <div class="form-field">
-                <label>Chief Complaint / Symptoms *</label>
-                <input type="text" id="visitComplaint" required placeholder="e.g., Fever, headache, minor sprain">
+                <label>Case Severity</label>
+                <select id="visitSeverity">
+                  <option value="Routine Visit">Routine Visit</option>
+                  <option value="Urgent / Sickness">Urgent / Sickness</option>
+                  <option value="Emergency">Emergency</option>
+                </select>
               </div>
               <div class="form-field">
                 <label>Disposition / Referral Status</label>
@@ -515,31 +623,41 @@
             </div>
 
             <div class="form-field">
-              <label>First Aid / Intervention &amp; Vitals</label>
-              <textarea id="visitNotes" rows="2" placeholder="Temperature, BP, first aid given, medicines or advice..."></textarea>
+              <label>Chief Complaint / Illness / Injury *</label>
+              <input type="text" id="visitComplaint" required placeholder="e.g., Fever (38.4°C), dizziness, laceration, asthma">
             </div>
 
-            <button type="submit" class="btn-c btn-c-primary" id="saveVisitBtn">
-              <i class="fas fa-check"></i> Save Clinic Log
-            </button>
+            <div class="form-field">
+              <label>Vitals, First Aid Given &amp; Parent/RHU Action</label>
+              <textarea id="visitNotes" rows="2" placeholder="Temp, BP, first aid administered, parent notified time, RHU notes..."></textarea>
+            </div>
+
+            <div style="display:flex; gap:10px; flex-wrap:wrap;">
+              <button type="submit" class="btn-c btn-c-primary" id="saveVisitBtn">
+                <i class="fas fa-check"></i> Save Sickness / Clinic Log
+              </button>
+              <button type="button" class="btn-c btn-c-outline" onclick="printClinicReport('visits')">
+                <i class="fas fa-print"></i> Print Sickness &amp; Emergency Report
+              </button>
+            </div>
           </form>
         </div>
 
         <div class="c-card">
-          <h2 class="c-card-title"><span><i class="fas fa-history" style="color:var(--clinic-amber);"></i> Clinic Consultation &amp; Referral Log</span></h2>
+          <h2 class="c-card-title"><span><i class="fas fa-history" style="color:var(--clinic-amber);"></i> Sickness &amp; Emergency Report Log</span></h2>
           <div class="table-wrap">
             <table class="c-table">
               <thead>
                 <tr>
                   <th>Date</th>
                   <th>Patient</th>
-                  <th>Complaint</th>
+                  <th>Severity / Case</th>
                   <th>Disposition</th>
                   <th>Action</th>
                 </tr>
               </thead>
               <tbody id="visitTableBody">
-                <tr><td colspan="5" style="text-align:center; padding:24px; color:var(--clinic-muted);">No clinic visits recorded yet.</td></tr>
+                <tr><td colspan="5" style="text-align:center; padding:24px; color:var(--clinic-muted);">No sickness or clinic visits recorded yet.</td></tr>
               </tbody>
             </table>
           </div>
@@ -560,10 +678,10 @@
           </ul>
           <h3 style="margin:12px 0 8px; font-size:0.95rem;">Core School Health Services</h3>
           <ul style="margin:0; padding-left:18px; color:var(--clinic-muted); font-size:0.9rem; display:grid; gap:4px;">
-            <li>Immediate first aid, injury response, and emergency stabilization</li>
-            <li>Nutritional status &amp; BMI screening synchronized with SF1 class rolls</li>
+            <li>Immediate first aid, sickness response, and emergency stabilization</li>
+            <li>Learner BMI &amp; nutritional screening (Baseline, Midline &amp; Endline) synced with SF1</li>
             <li>Mental health first aid, wellness counseling, and health advisories</li>
-            <li>Parent/guardian notification and coordination with Municipal RHU &amp; DOH</li>
+            <li>Parent/guardian notification and referral coordination with Municipal RHU &amp; DOH</li>
           </ul>
         </div>
 
@@ -602,14 +720,14 @@
             <p>Integrates population-based and individual-based health services through Primary Care Provider Networks (such as Rural Health Units / DOH facilities) with school-based health promotion and referral pathways.</p>
           </div>
           <div class="law-card">
-            <span class="law-code">DepEd Order No. 13, s. 2017 &amp; BLSS-SHD</span>
+            <span class="law-code">DepEd Order No. 13, s. 2017 &amp; SHNP / SF8</span>
             <h4>School Health, Nutrition &amp; Healthy Food Policy</h4>
-            <p>Guides learner nutritional assessment, physical wellness, healthy food and beverage standards in schools, and standardized clinic procedures under the DepEd Bureau of Learner Support Services – School Health Division.</p>
+            <p>Guides learner nutritional assessment (Baseline, Midline, and Endline cycles), healthy food and beverage standards in schools, and standardized health reporting.</p>
           </div>
           <div class="law-card">
             <span class="law-code">RA 10152 • RA 10627 • RA 11036</span>
             <h4>Immunization, Child Protection &amp; Mental Health</h4>
-            <p>Supports public health coordination with DOH/RHU immunization and health programs, safe/anti-bullying school environments, and campus mental health awareness and referral protocols.</p>
+            <p>Supports public health coordination with DOH/RHU health programs, safe/anti-bullying school environments, and campus mental health awareness and referral protocols.</p>
           </div>
         </div>
       </div>
@@ -630,6 +748,60 @@
       </div>
     </section>
   </main>
+
+  <!-- PRINTABLE DEPED CLINIC REPORT -->
+  <div id="clinic-print-area">
+    <div class="cprint-header">
+      <div style="width:85px; text-align:left;">
+        <img src="../../assets/images/deped-logo.png" alt="DepEd Logo" onerror="this.style.display='none'">
+      </div>
+      <div class="cprint-center">
+        <div>Republic of the Philippines</div>
+        <div style="font-weight:bold; font-size:11pt;">DEPARTMENT OF EDUCATION</div>
+        <div>Region II – Cagayan Valley • Schools Division of Nueva Vizcaya</div>
+        <div style="font-weight:bold; font-size:11pt;">STA. CRUZ PINGKIAN HIGH SCHOOL (School ID: 300648)</div>
+        <div>Brgy. Sta. Cruz, Pingkian, Nueva Vizcaya</div>
+      </div>
+      <div style="width:85px; text-align:right;">
+        <img src="../../assets/images/scphslogo.png" alt="SCPHS Logo" onerror="this.style.display='none'">
+      </div>
+    </div>
+
+    <div class="cprint-title" id="cprintTitle">SCHOOL HEALTH &amp; BMI ASSESSMENT REPORT</div>
+    <div class="cprint-sub" id="cprintSubtitle">Pursuant to PD 856, RA 11223, and DepEd School Health &amp; Nutrition Program Guidelines</div>
+
+    <div class="cprint-meta">
+      <div><strong>School:</strong> Sta. Cruz Pingkian High School</div>
+      <div><strong>Date Generated:</strong> <span id="cprintDate"></span></div>
+      <div id="cprintSummary"></div>
+    </div>
+
+    <table class="cprint-table">
+      <thead id="cprintThead"></thead>
+      <tbody id="cprintTbody"></tbody>
+    </table>
+
+    <div class="cprint-sigs">
+      <div class="cprint-sig-col">
+        <div style="text-align:left; font-weight:bold;">Prepared / Submitted by:</div>
+        <div class="cprint-sig-line"></div>
+        <div><strong>School Clinic / Health Coordinator</strong></div>
+        <div style="font-size:8pt;">Clinic &amp; Health Services</div>
+      </div>
+      <div class="cprint-sig-col">
+        <div style="text-align:left; font-weight:bold;">Noted / Coordinated with:</div>
+        <div class="cprint-sig-line"></div>
+        <div><strong>Municipal RHU / Health Officer</strong></div>
+        <div style="font-size:8pt;">Local Health Referral Link</div>
+      </div>
+      <div class="cprint-sig-col">
+        <div style="text-align:left; font-weight:bold;">Approved by:</div>
+        <div class="cprint-sig-line"></div>
+        <div><strong>School Head / Principal</strong></div>
+        <div style="font-size:8pt;">Sta. Cruz Pingkian High School</div>
+      </div>
+    </div>
+  </div>
 
   <!-- School Footer (SCPHS) -->
   <footer>
@@ -856,6 +1028,7 @@
       const classLabel = clsSelect.value
         ? (clsSelect.options[clsSelect.selectedIndex]?.text || "Assigned Class")
         : "Walk-in / Unassigned";
+      const period = document.getElementById("bmiPeriod").value;
       const docId = `bmi_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`;
 
       const record = {
@@ -863,6 +1036,7 @@
         studentMeta: document.getElementById("bmiStudentMeta").value.trim(),
         classId: clsSelect.value || "",
         classLabel,
+        period,
         heightCm,
         weightKg,
         bmi: calc.bmi,
@@ -907,6 +1081,7 @@
         ? bmiRecords.filter(r =>
             (r.studentName || "").toLowerCase().includes(q) ||
             (r.classLabel || "").toLowerCase().includes(q) ||
+            (r.period || "").toLowerCase().includes(q) ||
             (r.status || "").toLowerCase().includes(q)
           )
         : bmiRecords;
@@ -921,7 +1096,7 @@
         return `
           <tr>
             <td><strong>${esc(r.studentName)}</strong>${r.studentMeta ? `<div style="font-size:0.74rem;color:var(--clinic-muted);">${esc(r.studentMeta)}</div>` : ""}</td>
-            <td>${esc(r.classLabel || "-")}</td>
+            <td>${esc(r.classLabel || "-")}<div style="font-size:0.74rem;color:var(--clinic-teal);font-weight:700;">${esc(r.period || "Baseline (Start of SY)")}</div></td>
             <td>${esc(r.heightCm)} cm / ${esc(r.weightKg)} kg</td>
             <td><strong>${Number(r.bmi).toFixed(1)}</strong></td>
             <td><span class="bmi-badge ${info.cls}">${esc(r.status || info.label)}</span></td>
@@ -931,7 +1106,7 @@
       }).join("");
     }
 
-    /* ================= CLINIC VISITS & REFERRALS ================= */
+    /* ================= SICKNESS, EMERGENCY & REFERRALS ================= */
     window.saveClinicVisit = async function(evt) {
       evt.preventDefault();
       const patientName = document.getElementById("visitPatientName").value.trim();
@@ -942,6 +1117,7 @@
       const record = {
         patientName,
         groupLabel: document.getElementById("visitGroup").value.trim(),
+        severity: document.getElementById("visitSeverity").value,
         complaint,
         disposition: document.getElementById("visitDisposition").value,
         notes: document.getElementById("visitNotes").value.trim(),
@@ -957,14 +1133,14 @@
         renderVisitTable();
         evt.target.reset();
       } catch (err) {
-        alert("Failed to save clinic visit: " + err.message);
+        alert("Failed to save sickness / clinic visit: " + err.message);
       } finally {
         btn.disabled = false;
       }
     };
 
     window.deleteVisitRecord = async function(id) {
-      if (!confirm("Delete this clinic visit log?")) return;
+      if (!confirm("Delete this sickness / clinic log?")) return;
       try {
         await deleteDoc(doc(db, VISIT_COLLECTION, id));
         visitRecords = visitRecords.filter(v => v.id !== id);
@@ -975,21 +1151,28 @@
       }
     };
 
+    function severityBadgeClass(sev) {
+      if (/emergency/i.test(sev || "")) return "sev-emergency";
+      if (/urgent|sick/i.test(sev || "")) return "sev-urgent";
+      return "sev-routine";
+    }
+
     function renderVisitTable() {
       const tbody = document.getElementById("visitTableBody");
       if (!visitRecords.length) {
-        tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; padding:24px; color:var(--clinic-muted);">No clinic visits recorded yet.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; padding:24px; color:var(--clinic-muted);">No sickness or clinic visits recorded yet.</td></tr>`;
         return;
       }
 
       tbody.innerHTML = visitRecords.map(v => {
         const dt = v.visitedAt ? new Date(v.visitedAt).toLocaleDateString("en-PH", { month: "short", day: "numeric", year: "numeric" }) : "-";
+        const sev = v.severity || "Routine Visit";
         return `
           <tr>
             <td>${esc(dt)}</td>
             <td><strong>${esc(v.patientName)}</strong>${v.groupLabel ? `<div style="font-size:0.74rem;color:var(--clinic-muted);">${esc(v.groupLabel)}</div>` : ""}</td>
-            <td>${esc(v.complaint)}</td>
-            <td>${esc(v.disposition)}</td>
+            <td><span class="sev-badge ${severityBadgeClass(sev)}">${esc(sev)}</span><div style="margin-top:3px;">${esc(v.complaint)}</div></td>
+            <td>${esc(v.disposition)}${v.notes ? `<div style="font-size:0.74rem;color:var(--clinic-muted);">${esc(v.notes)}</div>` : ""}</td>
             <td><button type="button" class="btn-c btn-c-danger" onclick="deleteVisitRecord('${escJS(v.id)}')"><i class="fas fa-trash"></i></button></td>
           </tr>
         `;
@@ -999,9 +1182,93 @@
     function updateClinicKpis() {
       document.getElementById("kpiBmiCount").textContent = bmiRecords.length;
       document.getElementById("kpiVisitCount").textContent = visitRecords.length;
-      const referrals = visitRecords.filter(v => /refer/i.test(v.disposition || "")).length;
-      document.getElementById("kpiReferralCount").textContent = referrals;
+      const flagged = visitRecords.filter(v => /refer|emergency|urgent/i.test(`${v.disposition || ""} ${v.severity || ""}`)).length;
+      document.getElementById("kpiReferralCount").textContent = flagged;
     }
+
+    /* ================= PRINTABLE REPORTS ================= */
+    window.printClinicReport = function(mode) {
+      const thead = document.getElementById("cprintThead");
+      const tbody = document.getElementById("cprintTbody");
+      const titleEl = document.getElementById("cprintTitle");
+      const summaryEl = document.getElementById("cprintSummary");
+      document.getElementById("cprintDate").textContent = new Date().toLocaleDateString("en-PH", { year: "numeric", month: "long", day: "numeric" });
+
+      if (mode === "visits") {
+        titleEl.textContent = "SCHOOL CLINIC SICKNESS, FIRST AID & EMERGENCY REPORT";
+        const emergencies = visitRecords.filter(v => /emergency/i.test(v.severity || "")).length;
+        const referrals = visitRecords.filter(v => /refer/i.test(v.disposition || "")).length;
+        summaryEl.innerHTML = `<strong>Total Cases:</strong> ${visitRecords.length} • <strong>Emergencies:</strong> ${emergencies} • <strong>Referrals:</strong> ${referrals}`;
+
+        thead.innerHTML = `
+          <tr>
+            <th>#</th>
+            <th>Date</th>
+            <th>Patient / Learner</th>
+            <th>Grade / Section / Role</th>
+            <th>Severity</th>
+            <th>Chief Complaint / Sickness</th>
+            <th>Disposition / Referral</th>
+            <th>Vitals / Action Notes</th>
+          </tr>
+        `;
+
+        tbody.innerHTML = visitRecords.length
+          ? visitRecords.map((v, idx) => `
+              <tr>
+                <td>${idx + 1}</td>
+                <td>${esc(v.visitedAt ? new Date(v.visitedAt).toLocaleDateString("en-PH") : "-")}</td>
+                <td><strong>${esc(v.patientName)}</strong></td>
+                <td>${esc(v.groupLabel || "-")}</td>
+                <td>${esc(v.severity || "Routine Visit")}</td>
+                <td>${esc(v.complaint)}</td>
+                <td>${esc(v.disposition)}</td>
+                <td>${esc(v.notes || "-")}</td>
+              </tr>
+            `).join("")
+          : `<tr><td colspan="8" style="text-align:center;">No sickness or clinic visit records available.</td></tr>`;
+      } else {
+        titleEl.textContent = "SF1 LEARNER BODY MASS INDEX (BMI) & NUTRITIONAL STATUS REPORT";
+        const normalCnt = bmiRecords.filter(r => r.status === "Normal").length;
+        const underCnt = bmiRecords.filter(r => r.status === "Underweight").length;
+        const overObeseCnt = bmiRecords.filter(r => r.status === "Overweight" || r.status === "Obese").length;
+        summaryEl.innerHTML = `<strong>Assessed:</strong> ${bmiRecords.length} • <strong>Normal:</strong> ${normalCnt} • <strong>Underweight:</strong> ${underCnt} • <strong>Overweight/Obese:</strong> ${overObeseCnt}`;
+
+        thead.innerHTML = `
+          <tr>
+            <th>#</th>
+            <th>Learner Name</th>
+            <th>LRN / Sex / Age</th>
+            <th>SF1 Class</th>
+            <th>Cycle</th>
+            <th>Height (cm)</th>
+            <th>Weight (kg)</th>
+            <th>BMI</th>
+            <th>Nutritional Status</th>
+            <th>Notes / Intervention</th>
+          </tr>
+        `;
+
+        tbody.innerHTML = bmiRecords.length
+          ? bmiRecords.map((r, idx) => `
+              <tr>
+                <td>${idx + 1}</td>
+                <td><strong>${esc(r.studentName)}</strong></td>
+                <td>${esc(r.studentMeta || "-")}</td>
+                <td>${esc(r.classLabel || "-")}</td>
+                <td>${esc(r.period || "Baseline (Start of SY)")}</td>
+                <td>${esc(r.heightCm)}</td>
+                <td>${esc(r.weightKg)}</td>
+                <td><strong>${Number(r.bmi).toFixed(1)}</strong></td>
+                <td>${esc(r.status || classifyBmi(Number(r.bmi) || 0).label)}</td>
+                <td>${esc(r.notes || "-")}</td>
+              </tr>
+            `).join("")
+          : `<tr><td colspan="10" style="text-align:center;">No BMI records available.</td></tr>`;
+      }
+
+      window.print();
+    };
 
     async function loadClinicLogs() {
       try {
