@@ -206,6 +206,196 @@
       .bento-grid, .menu-grid, .form-grid, .form-grid-2, .role-selector { grid-template-columns: 1fr; }
       .span-2, .span-4, .form-group.span-2 { grid-column: span 1; }
     }
+
+    /* ================= DEPED LANDSCAPE PRINT REPORT ================= */
+.deped-print-header,
+.deped-print-signatories {
+  display: none;
+}
+
+@media print {
+  @page {
+    size: landscape;
+    margin: 12mm 14mm;
+  }
+
+  body {
+    background: #fff !important;
+    color: #000 !important;
+    display: block !important;
+  }
+
+  /* Hide web navigation, background orbs, buttons, and non-report sections */
+  .sidebar,
+  .sidebar-backdrop,
+  .topbar,
+  .orb,
+  .chat-fab,
+  #scphs-chatbot-root,
+  .toolbar,
+  .collapse-box,
+  .portal-footer,
+  #overview-section,
+  #attendance-section,
+  #catalog-section,
+  #circulation-section,
+  .modal-backdrop {
+    display: none !important;
+  }
+
+  /* Hide action column on Action Plan table during print */
+  #action-plan-body tr td:last-child,
+  #reports-plan-section table th:last-child {
+    /* Only hide last column on the Action Plan table */
+  }
+  #action-plan-table th:last-child,
+  #action-plan-table td:last-child {
+    display: none !important;
+  }
+
+  .main-content {
+    margin-left: 0 !important;
+    width: 100% !important;
+  }
+
+  .dashboard-scroll {
+    padding: 0 !important;
+  }
+
+  #reports-plan-section {
+    box-shadow: none !important;
+    border: none !important;
+    padding: 0 !important;
+    background: #fff !important;
+  }
+
+  /* Official DepEd Header (Logo on top of Republic of the Philippines) */
+  .deped-print-header {
+    display: block !important;
+    text-align: center;
+    margin-bottom: 14px;
+    padding-bottom: 10px;
+    border-bottom: 2px solid #000;
+    font-family: 'Bookman Old Style', Georgia, 'Times New Roman', serif;
+    color: #000;
+  }
+
+  .deped-print-header img {
+    width: 68px;
+    height: 68px;
+    object-fit: contain;
+    margin: 0 auto 4px;
+    display: block;
+  }
+
+  .deped-print-header .rep-ph {
+    font-size: 11pt;
+    line-height: 1.2;
+  }
+
+  .deped-print-header .dept-ed {
+    font-size: 14pt;
+    font-weight: 700;
+    line-height: 1.25;
+  }
+
+  .deped-print-header .reg-div {
+    font-size: 9.5pt;
+    line-height: 1.25;
+    text-transform: uppercase;
+  }
+
+  .deped-print-header .school-name {
+    font-size: 10.5pt;
+    font-weight: 700;
+    line-height: 1.25;
+    text-transform: uppercase;
+  }
+
+  .deped-print-header .report-main-title {
+    margin-top: 10px;
+    font-family: 'Outfit', sans-serif;
+    font-size: 12.5pt;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+  }
+
+  .deped-print-header .report-sub-meta {
+    font-family: 'Outfit', sans-serif;
+    font-size: 9pt;
+    color: #333;
+    margin-top: 2px;
+  }
+
+  /* Clean 4-column KPI layout for landscape paper */
+  #reports-plan-section .bento-grid {
+    display: grid !important;
+    grid-template-columns: repeat(4, 1fr) !important;
+    gap: 10px !important;
+    margin-bottom: 14px !important;
+  }
+
+  #reports-plan-section .stat-card {
+    border: 1px solid #94a3b8 !important;
+    border-radius: 8px !important;
+    padding: 10px !important;
+    box-shadow: none !important;
+    page-break-inside: avoid;
+  }
+
+  #reports-plan-section .stat-icon {
+    display: none !important;
+  }
+
+  #reports-plan-section .stat-value {
+    font-size: 16pt !important;
+  }
+
+  .table-wrap {
+    overflow: visible !important;
+    max-height: none !important;
+    border: none !important;
+  }
+
+  table {
+    width: 100% !important;
+    border-collapse: collapse !important;
+    font-size: 8.5pt !important;
+  }
+
+  th, td {
+    border: 1px solid #64748b !important;
+    padding: 5px 7px !important;
+    color: #000 !important;
+    white-space: normal !important;
+  }
+
+  th {
+    background: #e2e8f0 !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  /* Signatory block at bottom of report */
+  .deped-print-signatories {
+    display: grid !important;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 40px;
+    margin-top: 26px;
+    page-break-inside: avoid;
+    font-size: 9.5pt;
+    color: #000;
+  }
+
+  .sig-line {
+    margin-top: 32px;
+    border-top: 1px solid #000;
+    padding-top: 4px;
+    font-weight: 700;
+    text-transform: uppercase;
+  }
+}
   </style>
 </head>
 <body>
@@ -619,6 +809,31 @@
 
       <!-- LIBRARY REPORTS, AVERAGES & ACTION PLAN SECTION -->
       <div class="bento-card" id="reports-plan-section" style="margin-bottom:20px;">
+        <!-- OFFICIAL DEPED PRINT HEADER (LOGO ABOVE REPUBLIC OF THE PHILIPPINES) -->
+<div class="deped-print-header">
+  <img src="../../assets/images/deped-logo.png" alt="Department of Education Seal" onerror="this.src='https://upload.wikimedia.org/wikipedia/commons/thumb/8/8c/Department_of_Education_%28DepEd%29.svg/240px-Department_of_Education_%28DepEd%29.svg.png'">
+  <div class="rep-ph">Republic of the Philippines</div>
+  <div class="dept-ed">Department of Education</div>
+  <div class="reg-div">Region II – Cagayan Valley • Schools Division of Nueva Vizcaya</div>
+  <div class="school-name">STA. CRUZ PINGKIAN HIGH SCHOOL</div>
+  <div style="font-size:8.5pt;">Brgy. Sta. Cruz, Pingkian, Kayapa, Nueva Vizcaya • School ID: 300648</div>
+  <div class="report-main-title">Learning Resource Center &amp; Library Monthly Report &amp; Action Plan</div>
+  <div class="report-sub-meta" id="printReportFilterMeta">School Year: SY 2026–2027 • Period: Full School Year (Jun–Mar)</div>
+</div>
+
+<!-- SIGNATORIES FOR PRINTED REPORT -->
+<div class="deped-print-signatories">
+  <div>
+    <div>Prepared by:</div>
+    <div class="sig-line" id="printPreparedBy">LRC Coordinator / School Librarian</div>
+    <div>School Librarian / LRC Coordinator</div>
+  </div>
+  <div>
+    <div>Noted by:</div>
+    <div class="sig-line">School Head / Principal</div>
+    <div>Sta. Cruz Pingkian High School</div>
+  </div>
+</div>
         <div class="card-header">
           <div class="card-title">
             <i class="fas fa-chart-line" style="color:var(--primary);"></i>
@@ -2376,8 +2591,26 @@
 };
 
     window.printMonthlyReport = function() {
-      window.print();
-    };
+  const sySel = document.getElementById("repSchoolYear");
+  const termSel = document.getElementById("repTerm");
+  const monthSel = document.getElementById("repMonth");
+
+  const syText = sySel?.options[sySel.selectedIndex]?.text || "SY 2026–2027";
+  const termText = termSel?.options[termSel.selectedIndex]?.text || "Full School Year";
+  const monthText = monthSel?.options[monthSel.selectedIndex]?.text || "All Months";
+
+  const metaEl = document.getElementById("printReportFilterMeta");
+  if (metaEl) {
+    metaEl.textContent = `${syText} • Period: ${termText} • Month: ${monthText} • Generated: ${todayISO}`;
+  }
+
+  const prepEl = document.getElementById("printPreparedBy");
+  if (prepEl && currentProfile?.librarian) {
+    prepEl.textContent = currentProfile.librarian;
+  }
+
+  window.print();
+};
 
     restoreSessionLocal();
     loadLibraryProfile();
