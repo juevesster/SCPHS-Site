@@ -2259,117 +2259,121 @@
     };
 
     window.seedSampleLibraryData = async function() {
-      const btn = document.getElementById("seedSampleBtn");
-      if (!confirm("Add sample log-in/out entries, borrowing transactions, and an action plan item for SY 2026–2027 (Jun–Dec & Jan–Mar)?")) return;
-      btn.disabled = true;
+  const btn = document.getElementById("seedSampleBtn");
+  if (!confirm("Add sample log-in/out entries, borrowing transactions, and an action plan item for SY 2026–2027 (Jun–Dec & Jan–Mar)?")) return;
+  btn.disabled = true;
 
-      try {
-        const sampleLogs = [
-          {
-            role: "Student", name: "Ana Marie Santos", gradeLevel: "Grade 10", section: "Narra",
-            affiliationLabel: "Grade 10 • Narra", phone: "0917-111-2233", email: "ana.santos@scphs.edu.ph",
-            purpose: "Science research & STARBOOKS", dateLog: "2026-06-15", timeIn: "08:30 AM", timeOut: "09:45 AM",
-            status: "logged_out", createdAtMs: Date.now() - 600000
-          },
-          {
-            role: "Student", name: "Mark Anthony Reyes", gradeLevel: "Grade 11", section: "ICT-A",
-            affiliationLabel: "Grade 11 • ICT-A", phone: "0918-222-3344", email: "mark.reyes@scphs.edu.ph",
-            purpose: "Borrowing reference books", dateLog: "2026-08-20", timeIn: "01:15 PM", timeOut: "02:30 PM",
-            status: "logged_out", createdAtMs: Date.now() - 500000
-          },
-          {
-            role: "Teacher", name: "Elena D. Mendoza", position: "Teacher III", department: "TLE / ICT",
-            affiliationLabel: "Teacher III • TLE / ICT", phone: "0919-333-4455", email: "elena.mendoza@deped.gov.ph",
-            purpose: "DepEd LRMDS module review", dateLog: "2026-11-25", timeIn: "09:00 AM", timeOut: "10:15 AM",
-            status: "logged_out", createdAtMs: Date.now() - 400000
-          },
-          {
-            role: "Visitor", name: "Roberto L. Cruz", position: "Division Coordinator", agency: "DepEd Nueva Vizcaya",
-            affiliationLabel: "DepEd Nueva Vizcaya • Division Coordinator", phone: "0920-444-5566", email: "roberto.cruz@deped.gov.ph",
-            purpose: "LRC monitoring & consultation", dateLog: "2026-11-25", timeIn: "10:00 AM", timeOut: "",
-            status: "active", createdAtMs: Date.now() - 300000
-          },
-          {
-            role: "Student", name: "Ana Marie Santos", gradeLevel: "Grade 10", section: "Narra",
-            affiliationLabel: "Grade 10 • Narra", phone: "0917-111-2233", email: "ana.santos@scphs.edu.ph",
-            purpose: "Reading & review for 3rd quarter", dateLog: "2027-01-18", timeIn: "02:00 PM", timeOut: "03:15 PM",
-            status: "logged_out", createdAtMs: Date.now() - 200000
-          }
-        ];
-
-        for (const item of sampleLogs) {
-          const ref = await addDoc(collection(db, LOGS_COL), { ...item, createdAt: serverTimestamp() });
-          libraryLogs.unshift({ id: ref.id, ...item });
-        }
-
-        const firstBook = books.find(b => Number(b.availableCopies ?? b.totalCopies ?? 0) > 0) || books[0];
-        const sampleLoans = [
-          {
-            bookId: firstBook ? firstBook.id : "sample-bk-1",
-            bookTitle: firstBook ? firstBook.title : "General Science Reference",
-            callNo: firstBook ? (firstBook.callNo || "ACC-0001") : "ACC-0001",
-            borrowerName: "Ana Marie Santos",
-            borrowerMeta: "Student — Grade 10 • Narra",
-            dateBorrowed: "2026-07-10",
-            dueDate: "2026-07-17",
-            status: "Returned",
-            returnedDate: "2026-07-16",
-            createdAtMs: Date.now() - 150000
-          },
-          {
-            bookId: firstBook ? firstBook.id : "sample-bk-1",
-            bookTitle: firstBook ? firstBook.title : "General Science Reference",
-            callNo: firstBook ? (firstBook.callNo || "ACC-0001") : "ACC-0001",
-            borrowerName: "Mark Anthony Reyes",
-            borrowerMeta: "Student — Grade 11 • ICT-A",
-            dateBorrowed: "2026-11-25",
-            dueDate: "2026-12-02",
-            status: "Borrowed",
-            createdAtMs: Date.now() - 100000
-          },
-          {
-            bookId: firstBook ? firstBook.id : "sample-bk-1",
-            bookTitle: firstBook ? firstBook.title : "General Science Reference",
-            callNo: firstBook ? (firstBook.callNo || "ACC-0001") : "ACC-0001",
-            borrowerName: "Carla G. Ramos",
-            borrowerMeta: "Student — Grade 9 • Molave",
-            dateBorrowed: "2027-02-12",
-            dueDate: "2027-02-19",
-            status: "Returned",
-            returnedDate: "2027-02-18",
-            createdAtMs: Date.now() - 50000
-          }
-        ];
-
-        for (const loan of sampleLoans) {
-          const ref = await addDoc(collection(db, LOANS_COL), { ...loan, createdAt: serverTimestamp() });
-          loans.unshift({ id: ref.id, ...loan });
-        }
-
-        const samplePlan = {
-          objective: "Boost Student Reading & LRC Log-In / Borrowing Engagement",
-          activity: "Weekly reading hour, STARBOOKS orientation, and monthly circulation review",
-          targetPeriod: "June–December & January–March (SY 2026–2027)",
-          inCharge: "LRC Coordinator & Subject Teachers",
-          status: "In Progress",
-          remarks: "Seeded sample plan item",
-          createdAtMs: Date.now(),
-          createdAt: serverTimestamp()
-        };
-        const planRef = await addDoc(collection(db, ACTION_PLAN_COL), samplePlan);
-        actionPlans.unshift({ id: planRef.id, ...samplePlan });
-
-        updateKPIs();
-        renderLibraryLogs();
-        renderLoans();
-        renderReportsAndPlan();
-        alert("Sample log-in, borrowing, and action plan records added!");
-      } catch (err) {
-        alert("Could not seed sample data: " + err.message);
-      } finally {
-        btn.disabled = false;
+  try {
+    const sampleLogs = [
+      {
+        role: "Student", name: "Ana Marie Santos", gradeLevel: "Grade 10", section: "Narra",
+        affiliationLabel: "Grade 10 • Narra", phone: "0917-111-2233", email: "ana.santos@scphs.edu.ph",
+        purpose: "Science research & STARBOOKS", dateLog: "2026-06-15", timeIn: "08:30 AM", timeOut: "09:45 AM",
+        status: "logged_out", isSeedSample: true, createdAtMs: Date.now() - 600000
+      },
+      {
+        role: "Student", name: "Mark Anthony Reyes", gradeLevel: "Grade 11", section: "ICT-A",
+        affiliationLabel: "Grade 11 • ICT-A", phone: "0918-222-3344", email: "mark.reyes@scphs.edu.ph",
+        purpose: "Borrowing reference books", dateLog: "2026-08-20", timeIn: "01:15 PM", timeOut: "02:30 PM",
+        status: "logged_out", isSeedSample: true, createdAtMs: Date.now() - 500000
+      },
+      {
+        role: "Teacher", name: "Elena D. Mendoza", position: "Teacher III", department: "TLE / ICT",
+        affiliationLabel: "Teacher III • TLE / ICT", phone: "0919-333-4455", email: "elena.mendoza@deped.gov.ph",
+        purpose: "DepEd LRMDS module review", dateLog: "2026-11-25", timeIn: "09:00 AM", timeOut: "10:15 AM",
+        status: "logged_out", isSeedSample: true, createdAtMs: Date.now() - 400000
+      },
+      {
+        role: "Visitor", name: "Roberto L. Cruz", position: "Division Coordinator", agency: "DepEd Nueva Vizcaya",
+        affiliationLabel: "DepEd Nueva Vizcaya • Division Coordinator", phone: "0920-444-5566", email: "roberto.cruz@deped.gov.ph",
+        purpose: "LRC monitoring & consultation", dateLog: "2026-11-25", timeIn: "10:00 AM", timeOut: "",
+        status: "active", isSeedSample: true, createdAtMs: Date.now() - 300000
+      },
+      {
+        role: "Student", name: "Ana Marie Santos", gradeLevel: "Grade 10", section: "Narra",
+        affiliationLabel: "Grade 10 • Narra", phone: "0917-111-2233", email: "ana.santos@scphs.edu.ph",
+        purpose: "Reading & review for 3rd quarter", dateLog: "2027-01-18", timeIn: "02:00 PM", timeOut: "03:15 PM",
+        status: "logged_out", isSeedSample: true, createdAtMs: Date.now() - 200000
       }
+    ];
+
+    for (const item of sampleLogs) {
+      const ref = await addDoc(collection(db, LOGS_COL), { ...item, createdAt: serverTimestamp() });
+      libraryLogs.unshift({ id: ref.id, ...item });
+    }
+
+    const firstBook = books.find(b => Number(b.availableCopies ?? b.totalCopies ?? 0) > 0) || books[0];
+    const sampleLoans = [
+      {
+        bookId: firstBook ? firstBook.id : "sample-bk-1",
+        bookTitle: firstBook ? firstBook.title : "General Science Reference",
+        callNo: firstBook ? (firstBook.callNo || "ACC-0001") : "ACC-0001",
+        borrowerName: "Ana Marie Santos",
+        borrowerMeta: "Student — Grade 10 • Narra",
+        dateBorrowed: "2026-07-10",
+        dueDate: "2026-07-17",
+        status: "Returned",
+        returnedDate: "2026-07-16",
+        isSeedSample: true,
+        createdAtMs: Date.now() - 150000
+      },
+      {
+        bookId: firstBook ? firstBook.id : "sample-bk-1",
+        bookTitle: firstBook ? firstBook.title : "General Science Reference",
+        callNo: firstBook ? (firstBook.callNo || "ACC-0001") : "ACC-0001",
+        borrowerName: "Mark Anthony Reyes",
+        borrowerMeta: "Student — Grade 11 • ICT-A",
+        dateBorrowed: "2026-11-25",
+        dueDate: "2026-12-02",
+        status: "Borrowed",
+        isSeedSample: true,
+        createdAtMs: Date.now() - 100000
+      },
+      {
+        bookId: firstBook ? firstBook.id : "sample-bk-1",
+        bookTitle: firstBook ? firstBook.title : "General Science Reference",
+        callNo: firstBook ? (firstBook.callNo || "ACC-0001") : "ACC-0001",
+        borrowerName: "Carla G. Ramos",
+        borrowerMeta: "Student — Grade 9 • Molave",
+        dateBorrowed: "2027-02-12",
+        dueDate: "2027-02-19",
+        status: "Returned",
+        returnedDate: "2027-02-18",
+        isSeedSample: true,
+        createdAtMs: Date.now() - 50000
+      }
+    ];
+
+    for (const loan of sampleLoans) {
+      const ref = await addDoc(collection(db, LOANS_COL), { ...loan, createdAt: serverTimestamp() });
+      loans.unshift({ id: ref.id, ...loan });
+    }
+
+    const samplePlan = {
+      objective: "Boost Student Reading & LRC Log-In / Borrowing Engagement",
+      activity: "Weekly reading hour, STARBOOKS orientation, and monthly circulation review",
+      targetPeriod: "June–December & January–March (SY 2026–2027)",
+      inCharge: "LRC Coordinator & Subject Teachers",
+      status: "In Progress",
+      remarks: "Seeded sample plan item",
+      isSeedSample: true,
+      createdAtMs: Date.now(),
+      createdAt: serverTimestamp()
     };
+    const planRef = await addDoc(collection(db, ACTION_PLAN_COL), samplePlan);
+    actionPlans.unshift({ id: planRef.id, ...samplePlan });
+
+    updateKPIs();
+    renderLibraryLogs();
+    renderLoans();
+    renderReportsAndPlan();
+    alert("Sample log-in, borrowing, and action plan records added!");
+  } catch (err) {
+    alert("Could not seed sample data: " + err.message);
+  } finally {
+    btn.disabled = false;
+  }
+};
 
     window.printMonthlyReport = function() {
       window.print();
