@@ -73,11 +73,57 @@
     .mode-tab.active { background: var(--primary); color: #fff; border-color: var(--primary); }
 
     .q-card { border: 1px solid #cbd5e1; border-radius: 10px; padding: 14px; margin-bottom: 12px; background: #fff; }
-    .q-meta { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 8px; }
+    .q-meta { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+    .q-meta-tags { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
     .tag { padding: 2px 8px; border-radius: 999px; font-size: 11px; font-weight: 700; }
     .tag.lots { background: #dbeafe; color: #1e40af; }
     .tag.hots { background: #fef3c7; color: #92400e; }
     .tag.type { background: #f3e8ff; color: #6b21a8; }
+
+    .q-card ul, .q-card ol, .q-card li,
+    .clean-choices, .clean-choices li {
+      list-style: none !important;
+      list-style-type: none !important;
+      margin-left: 0 !important;
+      padding-left: 0 !important;
+    }
+    .clean-choices { margin: 8px 0; }
+    .clean-choices li { padding: 3px 0; font-size: 13.5px; }
+    .q-card li::before { content: none !important; display: none !important; }
+
+    .q-body-split {
+      display: flex;
+      gap: 14px;
+      align-items: flex-start;
+      justify-content: space-between;
+    }
+    .q-body-text { flex: 1; min-width: 0; }
+    .q-visual-side {
+      width: 230px;
+      flex-shrink: 0;
+      text-align: center;
+    }
+    .q-visual-side img, .q-visual-side svg {
+      max-width: 100%;
+      height: auto;
+      border: 1px solid #cbd5e1;
+      border-radius: 8px;
+      background: #fff;
+    }
+    @media (max-width: 720px) {
+      .q-body-split { flex-direction: column; }
+      .q-visual-side { width: 100%; max-width: 300px; }
+    }
+
+    .q-solution {
+      margin-top: 8px;
+      padding: 8px 10px;
+      background: #f0fdfa;
+      border-left: 3px solid #0f766e;
+      border-radius: 6px;
+      font-size: 12.5px;
+      color: #0f172a;
+    }
 
     .stats-mini { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 14px; }
     .stat-box { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 10px; text-align: center; }
@@ -121,79 +167,31 @@
     .sig-line { border-top: 1px solid #000; margin-top: 28px; margin-bottom: 4px; }
     .sig-name { font-weight: 700; text-transform: uppercase; }
     .sig-title { font-size: 9.5pt; }
-
-    .clean-choices,
-.clean-choices li {
-  list-style: none !important;
-  margin-left: 0 !important;
-  padding-left: 0 !important;
-}
-.clean-choices li {
-  padding: 2px 0;
-}
-.q-graph svg {
-  max-width: 100%;
-  height: auto;
-  border: 1px solid #e2e8f0;
-  border-radius: 8px;
-  background: #fff;
-}
-.q-solution {
-  margin-top: 8px;
-  padding: 8px 10px;
-  background: #f0fdfa;
-  border-left: 3px solid #0f766e;
-  border-radius: 6px;
-  font-size: 0.84rem;
-  color: #0f172a;
-}
-@media print {
-  .no-print { display: none !important; }
-  body:not(.print-teacher-key) .q-solution,
-  body:not(.print-teacher-key) .q-answer-key { display: none !important; }
-}
-
-.exam-q-card ul,
-.exam-q-card ol,
-.exam-q-card li,
-.question-card ul,
-.question-card ol,
-.question-card li {
-  list-style: none !important;
-  list-style-type: none !important;
-  padding-left: 0 !important;
-  margin-left: 0 !important;
-}
-.exam-q-card li::before,
-.question-card li::before {
-  content: none !important;
-  display: none !important;
-}
   </style>
 </head>
 <body>
 
 <div class="topbar">
   <div>
-    <div style="display:flex;gap:14px;flex-wrap:wrap;margin-bottom:2px;">
+    <div style="display:flex;gap:14px;flex-wrap:wrap;margin-bottom:4px;">
       <a href="open-exam-hub.html">&larr; Open Assessment Hub</a>
       <a href="question-bank.html" class="btn outline sm" style="background:#fff;"><i class="fas fa-database"></i> Question Bank</a>
       <a href="assessment-tools.html">&larr; Assessment Tools</a>
     </div>
-    <div class="no-print" style="display:flex;gap:8px;flex-wrap:wrap;margin:10px 0;">
-  <button type="button" class="btn teal sm" id="btnPrintClassQrSheets">
-    <i class="fas fa-users"></i> Print Whole-Class QR Sheets
-  </button>
-  <button type="button" class="btn outline sm" id="btnPrintTeacherKey">
-    <i class="fas fa-key"></i> Print Teacher Answer &amp; Solution Key
-  </button>
-  <button type="button" class="btn purple sm" id="btnOpenCheckerWithExam">
-    <i class="fas fa-check-double"></i> Grade in Exam Checker
-  </button>
-  <button type="button" class="btn outline sm" id="btnOpenQrScannerWithExam">
-    <i class="fas fa-qrcode"></i> Open QR Scanner
-  </button>
-</div>
+    <div class="no-print" style="display:flex;gap:8px;flex-wrap:wrap;margin:6px 0 8px;">
+      <button type="button" class="btn teal sm" id="btnPrintClassQrSheets">
+        <i class="fas fa-users"></i> Print Whole-Class QR Sheets
+      </button>
+      <button type="button" class="btn outline sm" id="btnPrintTeacherKey" style="background:#fff;">
+        <i class="fas fa-key"></i> Print Teacher Answer &amp; Solution Key
+      </button>
+      <button type="button" class="btn purple sm" id="btnOpenCheckerWithExam">
+        <i class="fas fa-check-double"></i> Grade in Exam Checker
+      </button>
+      <button type="button" class="btn outline sm" id="btnOpenQrScannerWithExam" style="background:#fff;">
+        <i class="fas fa-qrcode"></i> Open QR Scanner
+      </button>
+    </div>
     <h1><i class="fas fa-brain"></i> Smart Exam Creator (BoW + TOS + Online &amp; QR Print)</h1>
   </div>
   <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
@@ -206,7 +204,7 @@
 <div style="padding:0 16px;">
   <div id="guestCreatorBanner" class="guest-banner hidden">
     <div style="font-size:13px;">
-      <strong>🆓 Free Visiting / External Teacher Access:</strong> Create DepEd TOS exams (LOTS &amp; HOTS) with answer keys, save to your local Assessment Hub, print QR sheets, and log student scores for CSV export—no SCPHS account required.
+      <strong>🆓 Free Visiting / External Teacher Access:</strong> Create DepEd TOS exams (LOTS &amp; HOTS) with visuals &amp; answer keys, edit/upload images per question, save to your local Assessment Hub, print QR sheets, and log student scores for CSV export—no SCPHS account required.
     </div>
     <a href="../login.html" class="btn sm purple">SCPHS Faculty Sign In</a>
   </div>
@@ -339,9 +337,11 @@
       <div id="panel-preview" class="card mode-panel">
         <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:10px;">
           <h3 style="margin:0;"><i class="fas fa-pen-to-square"></i> Generated Questions &amp; Answer Key</h3>
-          <label style="display:inline-flex;align-items:center;gap:6px;margin:0;cursor:pointer;">
-            <input type="checkbox" id="toggleAnswerKey" checked style="width:auto;margin:0;" /> Show Answer Key
-          </label>
+          <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;">
+            <label style="display:inline-flex;align-items:center;gap:6px;margin:0;cursor:pointer;">
+              <input type="checkbox" id="toggleAnswerKey" checked style="width:auto;margin:0;" /> Show Answer Key &amp; Solutions
+            </label>
+          </div>
         </div>
         <div id="questionsPreviewHost">
           <p style="color:var(--muted);font-size:13.5px;">Configure your BoW topic and TOS on the left, then click <strong>Generate Exam, TOS &amp; Answer Key with Gemini AI</strong>.</p>
@@ -397,7 +397,7 @@
       <div id="panel-print" class="card mode-panel hidden">
         <h3><i class="fas fa-qrcode"></i> Option B: Printable / Downloadable Exam Sheet with Student QR Code</h3>
         <p style="font-size:13px;color:var(--muted);margin-top:0;">
-          Generates an A4 test paper with an embedded <strong>Student QR Code (LRN, Name, Class ID)</strong> and answer strip so you can scan completed papers directly into <strong>Smart Exam Checker Pro</strong>.
+          Generates an 8.5" x 13" test paper with an embedded <strong>Student QR Code (LRN, Name, Class ID)</strong> and question visuals so you can print and scan completed papers directly into <strong>Smart Exam Checker Pro</strong>.
         </p>
 
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
@@ -474,6 +474,64 @@
 <!-- Hidden Print Host -->
 <div id="printContainer" class="print-only"></div>
 
+<!-- Question & Visual Editor Modal -->
+<div id="questionEditModal" style="display:none;position:fixed;inset:0;background:rgba(15,23,42,0.65);z-index:2000;align-items:center;justify-content:center;padding:16px;">
+  <div style="background:#fff;border-radius:14px;max-width:700px;width:100%;padding:20px;max-height:90vh;overflow-y:auto;">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+      <h3 style="margin:0;color:#1e3c72;"><i class="fas fa-edit"></i> Edit Question, Visual &amp; Answer Key</h3>
+      <button type="button" id="btnCloseQModal" class="btn outline sm">Close</button>
+    </div>
+
+    <label>Question Text
+      <textarea id="editQText" rows="3"></textarea>
+    </label>
+
+    <label>Choices (one per line for Multiple Choice — no A./B. or bullets needed)
+      <textarea id="editQOptions" rows="4"></textarea>
+    </label>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+      <label>Answer Key
+        <input type="text" id="editQAnswer" />
+      </label>
+      <label>Points
+        <input type="number" id="editQPoints" min="1" />
+      </label>
+    </div>
+
+    <label>Step-by-Step Solution / Teacher Note
+      <textarea id="editQSolution" rows="2"></textarea>
+    </label>
+
+    <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;padding:12px;margin:10px 0;">
+      <label>Visual Image / Diagram Preference Prompt (for AI Image Generation)
+        <input type="text" id="editQVisualPrompt" placeholder="e.g., Clear labeled diagram of a right triangle with sides 3, 4, 5 for Grade 8 math" />
+      </label>
+
+      <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:8px;">
+        <button type="button" id="btnModalGenAiImg" class="btn purple sm">
+          <i class="fas fa-wand-magic-sparkles"></i> Generate AI Image
+        </button>
+        <label class="btn outline sm" style="margin:0;cursor:pointer;">
+          <i class="fas fa-upload"></i> Upload From Drive / Device
+          <input type="file" id="editQUploadFile" accept="image/*" class="hidden" />
+        </label>
+        <button type="button" id="btnModalRemoveImg" class="btn danger sm">
+          <i class="fas fa-trash"></i> Remove Visual
+        </button>
+      </div>
+
+      <div id="editQPreviewBox" style="margin-top:10px;"></div>
+    </div>
+
+    <div style="display:flex;justify-content:flex-end;gap:8px;">
+      <button type="button" id="btnSaveQuestionEdit" class="btn success">
+        <i class="fas fa-check"></i> Save Changes to Question
+      </button>
+    </div>
+  </div>
+</div>
+
 <script type="module">
   import { auth, db } from "../assets/js/firebase-config.js";
   import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
@@ -483,6 +541,10 @@
 
   const LOCAL_EXAMS_KEY = "scphs_open_exams_v1";
   const LOCAL_SCORES_KEY = "scphs_open_scores_v1";
+  const LOCAL_BANK_KEY = "scphs_question_bank_v1";
+  const STAGED_PULL_KEY = "scphs_pulled_questions_v1";
+  const STAGED_REPO_KEY = "scphs_pulled_repo_v1";
+
   let GEMINI_API_KEY = localStorage.getItem("scphs_gemini_api_key") || "";
   const GEMINI_MODEL_CASCADE = ["gemini-3.8-flash", "gemini-2.5-flash", "gemini-2.0-flash"];
 
@@ -500,6 +562,11 @@
   let ILAW_CONFIG = null;
   let SCORE_ROWS = [];
 
+  // Modal editing state
+  let EDITING_Q_INDEX = -1;
+  let MODAL_IMAGE_DATA_URL = "";
+  let MODAL_SVG_GRAPH = "";
+
   const $ = (id) => document.getElementById(id);
   const esc = (s) => String(s ?? "")
     .replace(/&/g, "&amp;").replace(/</g, "&lt;")
@@ -516,6 +583,47 @@
   }
   function writeLocalScores(list) {
     localStorage.setItem(LOCAL_SCORES_KEY, JSON.stringify(list));
+  }
+
+  function stripChoicePrefix(val) {
+    return String(val ?? "")
+      .replace(/^[•●○◉◎▪▸►\-\*\s]+/g, "")
+      .replace(/^(?:[A-Ea-e][\.\)\:\-]\s*)+/g, "")
+      .replace(/^\d+[\.\)\:\-]\s*/g, "")
+      .trim();
+  }
+
+  function normalizeQuestion(q, index = 0) {
+    const letters = ["A", "B", "C", "D", "E"];
+    const rawOptions = Array.isArray(q.options) ? q.options : [];
+    const seen = new Set();
+    const options = [];
+
+    for (const raw of rawOptions) {
+      const cleaned = stripChoicePrefix(raw);
+      const key = cleaned.toLowerCase();
+      if (cleaned && !seen.has(key)) {
+        seen.add(key);
+        options.push(cleaned);
+      }
+    }
+
+    let answer = String(q.correct_answer ?? "").trim();
+    if (q.type === "multiple_choice") {
+      const firstChar = stripChoicePrefix(answer).charAt(0).toUpperCase();
+      if (letters.includes(firstChar)) answer = firstChar;
+    }
+
+    return {
+      ...q,
+      order: index + 1,
+      question: String(q.question || "").replace(/^[•●○◉◎▪▸►\s]+/g, "").trim(),
+      options,
+      correct_answer: answer,
+      solution: String(q.solution || "").trim(),
+      svgGraph: String(q.svgGraph || "").trim(),
+      imageDataUrl: String(q.imageDataUrl || "").trim()
+    };
   }
 
   function switchPanel(panelId) {
@@ -542,6 +650,7 @@
     recalcTOS();
     if (INITIAL_PANEL === "results") switchPanel("panel-results");
     loadExistingExamIfAny();
+    importStagedFromBankOrRepo();
     loadScoresForExam();
   }
 
@@ -596,6 +705,7 @@
         if (found.duration) $("onlineDuration").value = found.duration;
         if (Array.isArray(found.questions) && found.questions.length) {
           GENERATED_EXAM = {
+            id: found.id,
             title: found.title,
             gradeLevel: found.gradeLevel || "",
             subjectCode: found.subject || "",
@@ -604,9 +714,10 @@
             week: String(found.week || "1"),
             tos: found.tos || recalcTOS(),
             tosMatrix: found.tosMatrix || [],
-            questions: found.questions
+            questions: found.questions.map((q, i) => normalizeQuestion(q, i)),
+            preparedBy: found.preparedBy || ""
           };
-          $("scoreTotal").value = found.questions.reduce((s, q) => s + (Number(q.points) || 1), 0);
+          $("scoreTotal").value = GENERATED_EXAM.questions.reduce((s, q) => s + (Number(q.points) || 1), 0);
           renderGeneratedPreview();
           renderTosMatrix();
         }
@@ -624,9 +735,11 @@
           if (data.duration) $("onlineDuration").value = data.duration;
           const qSnap = await getDocs(collection(db, "exams", ACTIVE_EXAM_ID, "questions"));
           const questions = qSnap.docs.map((d) => ({ id: d.id, ...d.data() }))
-            .sort((a, b) => (a.order || 0) - (b.order || 0));
+            .sort((a, b) => (a.order || 0) - (b.order || 0))
+            .map((q, i) => normalizeQuestion(q, i));
           if (questions.length) {
             GENERATED_EXAM = {
+              id: ACTIVE_EXAM_ID,
               title: data.title,
               gradeLevel: data.gradeLevel || "",
               subjectCode: data.subjectCode || data.subject || "",
@@ -635,7 +748,8 @@
               week: String(data.week || "1"),
               tos: data.tosSummary || recalcTOS(),
               tosMatrix: [],
-              questions
+              questions,
+              preparedBy: data.createdByEmail || ""
             };
             $("scoreTotal").value = questions.reduce((s, q) => s + (Number(q.points) || 1), 0);
             renderGeneratedPreview();
@@ -648,17 +762,41 @@
     }
   }
 
-  $("btnSaveToHub").addEventListener("click", async () => {
-    const title = $("examTitle").value.trim() || GENERATED_EXAM?.title || "Untitled Assessment";
-    const subjectName = ($("pickSubject").value ? $("pickSubject").selectedOptions[0]?.textContent : "") || GENERATED_EXAM?.subjectName || "General Subject";
-    const term = $("pickTerm").value || "1";
-    const questions = GENERATED_EXAM?.questions || [];
+  async function persistExamChanges(silent = false) {
+    if (!GENERATED_EXAM) return;
+    const title = $("examTitle").value.trim() || GENERATED_EXAM.title || "Untitled Assessment";
+    const subjectName = ($("pickSubject").value ? $("pickSubject").selectedOptions[0]?.textContent : "") || GENERATED_EXAM.subjectName || "General Subject";
+    const term = $("pickTerm").value || GENERATED_EXAM.term || "1";
+    const questions = (GENERATED_EXAM.questions || []).map((q, i) => normalizeQuestion(q, i));
+    GENERATED_EXAM.title = title;
+    GENERATED_EXAM.questions = questions;
 
     if (currentUser && ACTIVE_SOURCE === "cloud" && ACTIVE_EXAM_ID) {
       await setDoc(doc(db, "exams", ACTIVE_EXAM_ID), {
-        title, subject: subjectName, term: Number(term), questionsCount: questions.length, updatedAt: serverTimestamp()
+        title,
+        subject: subjectName,
+        term: Number(term),
+        questionsCount: questions.length,
+        updatedAt: serverTimestamp()
       }, { merge: true });
-      alert("Saved exam metadata to Cloud Assessment Hub!");
+
+      for (const q of questions) {
+        if (q.id) {
+          await setDoc(doc(db, "exams", ACTIVE_EXAM_ID, "questions", q.id), {
+            order: q.order,
+            type: q.type,
+            question: q.question,
+            options: q.options || [],
+            correct_answer: q.correct_answer || "",
+            matching_pairs: q.matching_pairs || [],
+            points: Number(q.points) || 1,
+            solution: q.solution || "",
+            svgGraph: q.svgGraph || "",
+            imageDataUrl: q.imageDataUrl || ""
+          }, { merge: true });
+        }
+      }
+      if (!silent) alert("Saved exam & question updates to Cloud Assessment Hub!");
       return;
     }
 
@@ -674,10 +812,11 @@
       term,
       duration: Number($("onlineDuration").value) || 60,
       status: idx >= 0 ? list[idx].status : "draft",
-      tos: GENERATED_EXAM?.tos || recalcTOS(),
-      tosMatrix: GENERATED_EXAM?.tosMatrix || [],
+      tos: GENERATED_EXAM.tos || recalcTOS(),
+      tosMatrix: GENERATED_EXAM.tosMatrix || [],
       questions,
       questionsCount: questions.length,
+      preparedBy: currentUser?.displayName || currentUser?.email || "Subject Teacher",
       updatedAt: new Date().toISOString()
     };
     if (idx >= 0) list[idx] = entry;
@@ -685,8 +824,11 @@
     writeLocalExams(list);
     ACTIVE_EXAM_ID = id;
     ACTIVE_SOURCE = "local";
-    alert("Saved to Open Assessment Hub (Browser Storage)!");
-  });
+    GENERATED_EXAM.id = id;
+    if (!silent) alert("Saved to Open Assessment Hub (Browser Storage)!");
+  }
+
+  $("btnSaveToHub").addEventListener("click", () => persistExamChanges(false));
 
   async function loadSubjects() {
     try {
@@ -932,7 +1074,7 @@
 
     const status = $("genStatus");
     status.classList.remove("hidden");
-    status.textContent = "Generating DepEd TOS-aligned exam questions & answer key with Gemini AI...";
+    status.textContent = "Generating DepEd TOS-aligned exam questions, solutions & visuals with Gemini AI...";
     $("btnGenerateExam").disabled = true;
 
     const compText = selectedComps.length
@@ -963,6 +1105,12 @@ Exact Question Type Counts to Generate:
 - matching: ${mix.matching} items (each item has matching_pairs array of { "left": "...", "right": "..." })
 - essay: ${mix.essay} items (HOTS constructed response with points: 5 or 10, and rubric/sample answer in correct_answer)
 
+STRICT FORMATTING & VISUAL RULES:
+1. Never include radio buttons, circles, or bullet symbols (such as ○, ●, ◉, ◎, •) in questions or options.
+2. In "options", write ONLY the plain answer choice text without any leading letter, number, or dot (e.g., ["Parisukat (Square)", "Bilog (Circle)", "Tatsulok (Triangle)", "Parihaba (Rectangle)"], NEVER "A. Parisukat (Square)"). The UI adds A, B, C, D automatically once.
+3. Include a concise step-by-step "solution" field for every question explaining how to solve or justify the answer.
+4. When a math graph, number line, geometric figure, or simple diagram helps visualize the question, provide a clean self-contained inline <svg viewBox="0 0 280 170" width="280" height="170">...</svg> in "svgGraph"; otherwise set "svgGraph" to "".
+
 Return STRICT JSON matching this exact schema:
 {
   "title": "${title}",
@@ -990,6 +1138,8 @@ Return STRICT JSON matching this exact schema:
       "question": "Question text here",
       "options": ["Option A text", "Option B text", "Option C text", "Option D text"],
       "correct_answer": "A",
+      "solution": "Step-by-step explanation here",
+      "svgGraph": "",
       "matching_pairs": []
     }
   ]
@@ -1006,13 +1156,15 @@ Return STRICT JSON matching this exact schema:
         week,
         tos,
         tosMatrix: result.tosMatrix || [],
-        questions: (result.questions || []).map((q, idx) => ({ ...q, order: idx + 1 }))
+        questions: (result.questions || []).map((q, idx) => normalizeQuestion(q, idx)),
+        preparedBy: currentUser?.displayName || currentUser?.email || "Subject Teacher"
       };
 
       $("scoreTotal").value = GENERATED_EXAM.questions.reduce((s, q) => s + (Number(q.points) || 1), 0);
       renderGeneratedPreview();
       renderTosMatrix();
-      status.textContent = `Generated ${GENERATED_EXAM.questions.length} items (${tos.lotsPct}% LOTS / ${tos.hotsPct}% HOTS). Ready for Online Secure Exam or QR Print!`;
+      saveGeneratedQuestionsToBank(GENERATED_EXAM);
+      status.textContent = `Generated ${GENERATED_EXAM.questions.length} items (${tos.lotsPct}% LOTS / ${tos.hotsPct}% HOTS). Click "Edit / Visual" on any item to generate or upload an image!`;
     } catch (err) {
       status.textContent = `Generation Error: ${err.message}`;
     } finally {
@@ -1020,16 +1172,11 @@ Return STRICT JSON matching this exact schema:
     }
   });
 
-  const LOCAL_BANK_KEY = "scphs_question_bank_v1";
-  const STAGED_PULL_KEY = "scphs_pulled_questions_v1";
-
   function makeBankDedupeKey(item) {
     const qNorm = String(item.question || "").toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
     const subjNorm = String(item.subject || "").toLowerCase().trim();
     return `${subjNorm}::${qNorm}`;
   }
-
-  const STAGED_REPO_KEY = "scphs_pulled_repo_v1";
 
   async function saveGeneratedQuestionsToBank(examObj) {
     if (!examObj?.questions?.length) return;
@@ -1057,6 +1204,9 @@ Return STRICT JSON matching this exact schema:
         question: q.question || "",
         options: q.options || [],
         correct_answer: q.correct_answer || "",
+        solution: q.solution || "",
+        svgGraph: q.svgGraph || "",
+        imageDataUrl: q.imageDataUrl || "",
         matching_pairs: q.matching_pairs || [],
         createdByUid: currentUser?.uid || "guest",
         createdAt: new Date().toISOString()
@@ -1086,7 +1236,7 @@ Return STRICT JSON matching this exact schema:
       localStorage.removeItem(STAGED_PULL_KEY);
 
       const existingQs = GENERATED_EXAM?.questions || [];
-      const combined = [...existingQs, ...staged].map((q, idx) => ({ ...q, order: idx + 1 }));
+      const combined = [...existingQs, ...staged].map((q, idx) => normalizeQuestion(q, idx));
       GENERATED_EXAM = {
         title: GENERATED_EXAM?.title || $("examTitle").value.trim() || "Bank-Imported Assessment",
         gradeLevel: GENERATED_EXAM?.gradeLevel || $("pickGrade").value || "",
@@ -1113,25 +1263,38 @@ Return STRICT JSON matching this exact schema:
   }
 
   // ============================================================
-  // 5. RENDER PREVIEW & TOS MATRIX
+  // 5. RENDER PREVIEW, VISUALS & TOS MATRIX
   // ============================================================
+  function renderQuestionVisual(q) {
+    if (q.imageDataUrl) {
+      return `<div class="q-visual-side"><img src="${q.imageDataUrl}" alt="Visual for item ${q.order}" /></div>`;
+    }
+    if (q.svgGraph && q.svgGraph.includes("<svg")) {
+      return `<div class="q-visual-side">${q.svgGraph}</div>`;
+    }
+    return "";
+  }
+
   function renderGeneratedPreview() {
     const host = $("questionsPreviewHost");
     if (!GENERATED_EXAM?.questions?.length) return;
     const showKey = $("toggleAnswerKey").checked;
+    const letters = ["A", "B", "C", "D", "E"];
 
-    host.innerHTML = GENERATED_EXAM.questions.map((q, i) => {
+    host.innerHTML = GENERATED_EXAM.questions.map((rawQ, i) => {
+      const q = normalizeQuestion(rawQ, i);
+      GENERATED_EXAM.questions[i] = q;
       const num = i + 1;
       const isHots = String(q.cognitiveGroup).toUpperCase() === "HOTS";
       let body = "";
 
       if (q.type === "multiple_choice") {
-        body = `<ul style="margin:6px 0 6px 18px;">` +
-          (q.options || []).map((opt, oi) => `<li><strong>${String.fromCharCode(65 + oi)}.</strong> ${esc(opt)}</li>`).join("") +
+        body = `<ul class="clean-choices">` +
+          (q.options || []).map((opt, oi) => `<li><strong>${letters[oi] || oi + 1}.</strong> ${esc(opt)}</li>`).join("") +
           `</ul>`;
       } else if (q.type === "matching") {
         body = `<div style="margin:6px 0;font-size:12.5px;">` +
-          (q.matching_pairs || []).map((p) => `<div>• <strong>${esc(p.left)}</strong> &rarr; ${esc(p.right)}</div>`).join("") +
+          (q.matching_pairs || []).map((p) => `<div><strong>${esc(p.left)}</strong> &rarr; ${esc(p.right)}</div>`).join("") +
           `</div>`;
       }
 
@@ -1139,22 +1302,180 @@ Return STRICT JSON matching this exact schema:
         ? `<div style="margin-top:6px;padding:6px 10px;background:#f0fdf4;border-radius:6px;color:#166534;font-size:12.5px;"><strong>Answer Key:</strong> ${esc(q.correct_answer)}</div>`
         : "";
 
+      const solHtml = (showKey && q.solution)
+        ? `<div class="q-solution"><strong>Step-by-Step Solution:</strong> ${esc(q.solution)}</div>`
+        : "";
+
+      const visualHtml = renderQuestionVisual(q);
+
       return `
         <div class="q-card">
           <div class="q-meta">
-            <span class="tag ${isHots ? "hots" : "lots"}">${esc(q.cognitiveGroup || "LOTS")} • ${esc(q.bloomLevel || "")}</span>
-            <span class="tag type">${esc(q.type)}</span>
-            <span class="tag" style="background:#f1f5f9;color:#334155;">${esc(q.competencyCode || "")} • ${q.points || 1} pt(s)</span>
+            <div class="q-meta-tags">
+              <span class="tag ${isHots ? "hots" : "lots"}">${esc(q.cognitiveGroup || "LOTS")} • ${esc(q.bloomLevel || "")}</span>
+              <span class="tag type">${esc(q.type)}</span>
+              <span class="tag" style="background:#f1f5f9;color:#334155;">${esc(q.competencyCode || "")} • ${q.points || 1} pt(s)</span>
+            </div>
+            <button type="button" class="btn outline sm" data-edit-q="${i}">
+              <i class="fas fa-image"></i> Edit / Visual
+            </button>
           </div>
-          <div style="font-weight:600;font-size:14px;">${num}. ${esc(q.question)}</div>
-          ${body}
+          <div class="q-body-split">
+            <div class="q-body-text">
+              <div style="font-weight:600;font-size:14px;">${num}. ${esc(q.question)}</div>
+              ${body}
+            </div>
+            ${visualHtml}
+          </div>
           ${keyHtml}
+          ${solHtml}
         </div>
       `;
     }).join("");
   }
 
   $("toggleAnswerKey").addEventListener("change", renderGeneratedPreview);
+
+  // ============================================================
+  // 5B. QUESTION & VISUAL MODAL (AI IMAGE + LOCAL DRIVE UPLOAD)
+  // ============================================================
+  function renderModalVisualPreview() {
+    const box = $("editQPreviewBox");
+    if (MODAL_IMAGE_DATA_URL) {
+      box.innerHTML = `<img src="${MODAL_IMAGE_DATA_URL}" alt="Question visual preview" style="max-width:260px;max-height:200px;border:1px solid #cbd5e1;border-radius:8px;" />`;
+    } else if (MODAL_SVG_GRAPH && MODAL_SVG_GRAPH.includes("<svg")) {
+      box.innerHTML = `<div>${MODAL_SVG_GRAPH}</div>`;
+    } else {
+      box.innerHTML = `<span style="font-size:12px;color:#64748b;">No visual attached to this question yet.</span>`;
+    }
+  }
+
+  function openQuestionEditModal(idx) {
+    const q = GENERATED_EXAM?.questions?.[idx];
+    if (!q) return;
+    EDITING_Q_INDEX = idx;
+    MODAL_IMAGE_DATA_URL = q.imageDataUrl || "";
+    MODAL_SVG_GRAPH = q.svgGraph || "";
+
+    $("editQText").value = q.question || "";
+    $("editQOptions").value = (q.options || []).join("\n");
+    $("editQAnswer").value = q.correct_answer || "";
+    $("editQPoints").value = q.points || 1;
+    $("editQSolution").value = q.solution || "";
+    $("editQVisualPrompt").value = q.question || "";
+    renderModalVisualPreview();
+
+    $("questionEditModal").style.display = "flex";
+  }
+
+  $("questionsPreviewHost").addEventListener("click", (e) => {
+    const btn = e.target.closest("[data-edit-q]");
+    if (!btn) return;
+    openQuestionEditModal(Number(btn.dataset.editQ));
+  });
+
+  $("btnCloseQModal").addEventListener("click", () => {
+    $("questionEditModal").style.display = "none";
+  });
+
+  $("btnModalGenAiImg").addEventListener("click", async () => {
+    const apiKey = ensureKey();
+    if (!apiKey) return;
+    const promptText = $("editQVisualPrompt").value.trim() || $("editQText").value.trim();
+    if (!promptText) return alert("Enter a visual prompt or question text first.");
+
+    const btn = $("btnModalGenAiImg");
+    btn.disabled = true;
+    btn.textContent = "Generating Image...";
+    try {
+      const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-image:generateContent?key=${encodeURIComponent(apiKey)}`;
+      const res = await fetch(endpoint, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          contents: [{
+            parts: [{
+              text: `Create a clean, high-contrast educational diagram or illustration for a school exam question. Keep labels clear and legible: ${promptText}`
+            }]
+          }],
+          generationConfig: { responseModalities: ["TEXT", "IMAGE"] }
+        })
+      });
+      if (!res.ok) {
+        const errText = await res.text();
+        throw new Error(`HTTP ${res.status}: ${errText.slice(0, 120)}`);
+      }
+      const data = await res.json();
+      const parts = data?.candidates?.[0]?.content?.parts || [];
+      const imgPart = parts.find((p) => p.inlineData?.data || p.inline_data?.data);
+      const inline = imgPart?.inlineData || imgPart?.inline_data;
+      if (!inline?.data) throw new Error("Gemini did not return an image.");
+
+      MODAL_IMAGE_DATA_URL = `data:${inline.mimeType || inline.mime_type || "image/png"};base64,${inline.data}`;
+      MODAL_SVG_GRAPH = "";
+      renderModalVisualPreview();
+    } catch (err) {
+      alert("AI Image Error: " + err.message);
+    } finally {
+      btn.disabled = false;
+      btn.innerHTML = `<i class="fas fa-wand-magic-sparkles"></i> Generate AI Image`;
+    }
+  });
+
+  $("editQUploadFile").addEventListener("change", (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const img = new Image();
+    const url = URL.createObjectURL(file);
+    img.onload = () => {
+      const maxSize = 720;
+      const scale = Math.min(1, maxSize / Math.max(img.width, img.height));
+      const canvas = document.createElement("canvas");
+      canvas.width = Math.max(1, Math.round(img.width * scale));
+      canvas.height = Math.max(1, Math.round(img.height * scale));
+      canvas.getContext("2d").drawImage(img, 0, 0, canvas.width, canvas.height);
+      URL.revokeObjectURL(url);
+      MODAL_IMAGE_DATA_URL = canvas.toDataURL("image/jpeg", 0.82);
+      MODAL_SVG_GRAPH = "";
+      renderModalVisualPreview();
+    };
+    img.src = url;
+  });
+
+  $("btnModalRemoveImg").addEventListener("click", () => {
+    MODAL_IMAGE_DATA_URL = "";
+    MODAL_SVG_GRAPH = "";
+    renderModalVisualPreview();
+  });
+
+  $("btnSaveQuestionEdit").addEventListener("click", async () => {
+    if (EDITING_Q_INDEX < 0 || !GENERATED_EXAM?.questions?.[EDITING_Q_INDEX]) return;
+    const prev = GENERATED_EXAM.questions[EDITING_Q_INDEX];
+    const updatedOpts = $("editQOptions").value
+      .split("\n")
+      .map((line) => stripChoicePrefix(line))
+      .filter(Boolean);
+
+    GENERATED_EXAM.questions[EDITING_Q_INDEX] = normalizeQuestion({
+      ...prev,
+      question: $("editQText").value.trim(),
+      options: updatedOpts,
+      correct_answer: $("editQAnswer").value.trim(),
+      points: Math.max(1, Number($("editQPoints").value) || 1),
+      solution: $("editQSolution").value.trim(),
+      imageDataUrl: MODAL_IMAGE_DATA_URL,
+      svgGraph: MODAL_SVG_GRAPH
+    }, EDITING_Q_INDEX);
+
+    $("scoreTotal").value = GENERATED_EXAM.questions.reduce((s, q) => s + (Number(q.points) || 1), 0);
+    renderGeneratedPreview();
+    $("questionEditModal").style.display = "none";
+
+    // Auto-persist if this exam is already saved in Hub/Cloud
+    if (ACTIVE_EXAM_ID) {
+      await persistExamChanges(true);
+    }
+  });
 
   function renderTosMatrix() {
     const host = $("tosMatrixHost");
@@ -1235,7 +1556,7 @@ Return STRICT JSON matching this exact schema:
       });
 
       for (let i = 0; i < GENERATED_EXAM.questions.length; i++) {
-        const q = GENERATED_EXAM.questions[i];
+        const q = normalizeQuestion(GENERATED_EXAM.questions[i], i);
         await addDoc(collection(db, "exams", examDoc.id, "questions"), {
           order: i + 1,
           type: q.type,
@@ -1246,7 +1567,10 @@ Return STRICT JSON matching this exact schema:
           points: Number(q.points) || 1,
           bloomLevel: q.bloomLevel || "",
           cognitiveGroup: q.cognitiveGroup || "LOTS",
-          competencyCode: q.competencyCode || ""
+          competencyCode: q.competencyCode || "",
+          solution: q.solution || "",
+          svgGraph: q.svgGraph || "",
+          imageDataUrl: q.imageDataUrl || ""
         });
       }
 
@@ -1275,6 +1599,69 @@ Return STRICT JSON matching this exact schema:
   // ============================================================
   // 7. OPTION B: PRINTABLE / DOWNLOADABLE EXAM WITH STUDENT QR
   // ============================================================
+  function triggerPrintExam(forceClassScope = false) {
+    if (!GENERATED_EXAM?.questions?.length) return alert("Generate or load an exam first.");
+    if (forceClassScope) {
+      if (!CLASS_STUDENTS.length) {
+        return alert("Select a Target SF1 Class / Section in Step 1 first so each student gets their own QR sheet.");
+      }
+      $("printScope").value = "class_roster";
+    }
+    const html = buildPrintableExamSheetsHTML();
+    if (!html) return;
+    $("printContainer").innerHTML = html;
+    window.print();
+  }
+
+  $("btnPrintExam").addEventListener("click", () => triggerPrintExam(false));
+  $("btnPrintClassQrSheets").addEventListener("click", () => triggerPrintExam(true));
+
+  $("btnPrintTeacherKey").addEventListener("click", () => {
+    if (!GENERATED_EXAM?.questions?.length) return alert("Generate or load an exam first.");
+    const keyHtml = buildTeacherKeyOnlyHTML();
+    $("printContainer").innerHTML = keyHtml;
+    window.print();
+  });
+
+  $("btnOpenCheckerWithExam").addEventListener("click", () => {
+    const title = encodeURIComponent($("examTitle").value.trim() || GENERATED_EXAM?.title || "");
+    location.href = `exam-checker.html${title ? `?exam=${title}` : ""}`;
+  });
+
+  $("btnOpenQrScannerWithExam").addEventListener("click", () => {
+    const title = encodeURIComponent($("examTitle").value.trim() || GENERATED_EXAM?.title || "");
+    location.href = `assessments/scan/index.html${title ? `?examTitle=${title}` : ""}`;
+  });
+
+  $("btnDownloadGuestKey").addEventListener("click", () => {
+    if (!GENERATED_EXAM?.questions?.length) return alert("Generate an exam first.");
+    const blob = new Blob([JSON.stringify(GENERATED_EXAM, null, 2)], { type: "application/json" });
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = `${(GENERATED_EXAM.title || "exam").replace(/[^a-z0-9]+/gi, "_")}_Key_TOS.json`;
+    a.click();
+  });
+
+  $("btnPushKeyToChecker").addEventListener("click", async () => {
+    if (!currentUser) return alert("Sign in with an SCPHS account first.");
+    if (!GENERATED_EXAM?.questions?.length) return alert("Generate an exam first.");
+    const examId = GENERATED_EXAM.title.trim();
+    const keys = GENERATED_EXAM.questions.map((q) => q.correct_answer || "");
+    try {
+      await setDoc(doc(db, "answer_keys", examId), {
+        examId,
+        examType: "mixed",
+        keys,
+        totalItems: keys.length,
+        updatedBy: currentUser.email || "",
+        updatedAt: serverTimestamp()
+      });
+      alert(`Saved answer key for "${examId}" directly to Smart Exam Checker Pro!`);
+    } catch (err) {
+      alert("Error pushing key: " + err.message);
+    }
+  });
+
   $("btnDownloadExamHtml").addEventListener("click", () => {
     const html = buildPrintableExamSheetsHTML();
     if (!html) return alert("Generate an exam first.");
@@ -1315,7 +1702,23 @@ Return STRICT JSON matching this exact schema:
     a.click();
   });
 
-  const preparedByName = GENERATED_EXAM.preparedBy || currentUser?.displayName || currentUser?.email || "Subject Teacher";
+  function buildTeacherKeyOnlyHTML() {
+    if (!GENERATED_EXAM?.questions?.length) return "";
+    return `
+      <div class="exam-sheet-page">
+        <h2 style="margin:0 0 8px;">TEACHER ANSWER &amp; SOLUTION KEY — ${esc(GENERATED_EXAM.title)}</h2>
+        <p><strong>LOTS:</strong> ${GENERATED_EXAM.tos.lotsPct}% (${GENERATED_EXAM.tos.lotsItems} items) &nbsp;|&nbsp; <strong>HOTS:</strong> ${GENERATED_EXAM.tos.hotsPct}% (${GENERATED_EXAM.tos.hotsItems} items)</p>
+        <div style="font-size:10.5pt;">
+          ${GENERATED_EXAM.questions.map((q, i) => `
+            <div style="margin-bottom:8px;border-bottom:1px dashed #cbd5e1;padding-bottom:6px;">
+              <div><strong>${i + 1}. ${esc(q.correct_answer)}</strong> <em>(${esc(q.bloomLevel || "")})</em></div>
+              ${q.solution ? `<div style="font-size:9.5pt;color:#334155;margin-top:2px;">Solution: ${esc(q.solution)}</div>` : ""}
+            </div>
+          `).join("")}
+        </div>
+      </div>
+    `;
+  }
 
   // ============================================================
   // 8. SCORES & CSV RESULTS PANEL (LOCAL + CLOUD)
@@ -1439,6 +1842,16 @@ Return STRICT JSON matching this exact schema:
     a.click();
   });
 
+  function renderPrintableVisual(q) {
+    if (q.imageDataUrl) {
+      return `<div style="margin:6px 0;"><img src="${q.imageDataUrl}" alt="Item ${q.order} visual" style="max-width:220px;max-height:160px;border:1px solid #94a3b8;" /></div>`;
+    }
+    if (q.svgGraph && q.svgGraph.includes("<svg")) {
+      return `<div style="margin:6px 0;">${q.svgGraph}</div>`;
+    }
+    return "";
+  }
+
   function buildPrintableExamSheetsHTML() {
     if (!GENERATED_EXAM?.questions?.length) return "";
     const scope = $("printScope").value;
@@ -1455,7 +1868,8 @@ Return STRICT JSON matching this exact schema:
       : [{ id: "MASTER", classId, lrn: "", fullName: "" }];
 
     const groups = { multiple_choice: [], true_false: [], identification: [], matching: [], essay: [] };
-    GENERATED_EXAM.questions.forEach((q) => {
+    GENERATED_EXAM.questions.forEach((rawQ, idx) => {
+      const q = normalizeQuestion(rawQ, idx);
       if (groups[q.type]) groups[q.type].push(q);
       else groups.identification.push(q);
     });
@@ -1469,7 +1883,7 @@ Return STRICT JSON matching this exact schema:
         const opts = (q.options || []).map((o, oi) =>
           `<div><strong>${String.fromCharCode(65 + oi)}.</strong> ${esc(o)}</div>`
         ).join("");
-        sectionsHtml += `<div class="question-item"><div class="q-num">${itemNo++}.</div><div style="flex:1;"><div>${esc(q.question)}</div><div class="options-grid">${opts}</div></div></div>`;
+        sectionsHtml += `<div class="question-item"><div class="q-num">${itemNo++}.</div><div style="flex:1;"><div>${esc(q.question)}</div>${renderPrintableVisual(q)}<div class="options-grid">${opts}</div></div></div>`;
       });
       sectionsHtml += `</div>`;
     }
@@ -1477,7 +1891,7 @@ Return STRICT JSON matching this exact schema:
     if (groups.true_false.length) {
       sectionsHtml += `<div class="test-section"><div class="test-header">II. True or False</div><div class="test-direction">Direction: Write TRUE if the statement is correct, and FALSE if it is incorrect.</div>`;
       groups.true_false.forEach((q) => {
-        sectionsHtml += `<div class="question-item"><div class="q-num">${itemNo++}.</div><div style="flex:1;">__________ ${esc(q.question)}</div></div>`;
+        sectionsHtml += `<div class="question-item"><div class="q-num">${itemNo++}.</div><div style="flex:1;"><div>__________ ${esc(q.question)}</div>${renderPrintableVisual(q)}</div></div>`;
       });
       sectionsHtml += `</div>`;
     }
@@ -1485,7 +1899,7 @@ Return STRICT JSON matching this exact schema:
     if (groups.identification.length) {
       sectionsHtml += `<div class="test-section"><div class="test-header">III. Identification</div><div class="test-direction">Direction: Identify what is being described in each statement. Write your answer on the blank.</div>`;
       groups.identification.forEach((q) => {
-        sectionsHtml += `<div class="question-item"><div class="q-num">${itemNo++}.</div><div style="flex:1;">${esc(q.question)} <span class="blank-line"></span></div></div>`;
+        sectionsHtml += `<div class="question-item"><div class="q-num">${itemNo++}.</div><div style="flex:1;"><div>${esc(q.question)} <span class="blank-line"></span></div>${renderPrintableVisual(q)}</div></div>`;
       });
       sectionsHtml += `</div>`;
     }
@@ -1504,13 +1918,14 @@ Return STRICT JSON matching this exact schema:
     if (groups.essay.length) {
       sectionsHtml += `<div class="test-section"><div class="test-header">V. Essay</div><div class="test-direction">Direction: Read and analyze each question. Write your answer clearly and concisely.</div>`;
       groups.essay.forEach((q) => {
-        sectionsHtml += `<div class="question-item"><div class="q-num">${itemNo++}.</div><div style="flex:1;"><div>${esc(q.question)} <em>(${q.points || 5} pts)</em></div><div class="essay-lines"><div class="essay-line"></div><div class="essay-line"></div><div class="essay-line"></div><div class="essay-line"></div></div></div></div>`;
+        sectionsHtml += `<div class="question-item"><div class="q-num">${itemNo++}.</div><div style="flex:1;"><div>${esc(q.question)} <em>(${q.points || 5} pts)</em></div>${renderPrintableVisual(q)}<div class="essay-lines"><div class="essay-line"></div><div class="essay-line"></div><div class="essay-line"></div><div class="essay-line"></div></div></div></div>`;
       });
       sectionsHtml += `</div>`;
     }
 
     const totalPts = GENERATED_EXAM.questions.reduce((s, q) => s + (Number(q.points) || 1), 0);
     const termLabel = GENERATED_EXAM.term === "4" ? "Legacy" : `Term ${GENERATED_EXAM.term || 1}`;
+    const preparedByName = GENERATED_EXAM.preparedBy || currentUser?.displayName || currentUser?.email || "Subject Teacher";
 
     const sheets = studentsToPrint.map((st) => {
       const qrPayload = JSON.stringify({
@@ -1563,7 +1978,7 @@ Return STRICT JSON matching this exact schema:
             <div class="sig-block">
               <div>Prepared by:</div>
               <div class="sig-line"></div>
-              <div class="sig-name">${esc(GENERATED_EXAM.preparedBy || "Subject Teacher")}</div>
+              <div class="sig-name">${esc(preparedByName)}</div>
               <div class="sig-title">Subject Teacher</div>
             </div>
             <div class="sig-block">
@@ -1583,103 +1998,9 @@ Return STRICT JSON matching this exact schema:
       `;
     }).join("");
 
-    const keySheet = includeKey ? `
-      <div class="exam-sheet-page">
-        <h2 style="margin:0 0 8px;">TEACHER ANSWER KEY &amp; TOS — ${esc(GENERATED_EXAM.title)}</h2>
-        <p><strong>LOTS:</strong> ${GENERATED_EXAM.tos.lotsPct}% (${GENERATED_EXAM.tos.lotsItems} items) &nbsp;|&nbsp; <strong>HOTS:</strong> ${GENERATED_EXAM.tos.hotsPct}% (${GENERATED_EXAM.tos.hotsItems} items)</p>
-        <div style="columns:2;font-size:10.5pt;">
-          ${GENERATED_EXAM.questions.map((q, i) => `<div style="margin-bottom:4px;"><strong>${i + 1}.</strong> ${esc(q.correct_answer)} <em>(${esc(q.bloomLevel || "")})</em></div>`).join("")}
-        </div>
-      </div>
-    ` : "";
-
+    const keySheet = includeKey ? buildTeacherKeyOnlyHTML() : "";
     return sheets + keySheet;
   }
-
-  function stripChoicePrefix(val) {
-  return String(val ?? "")
-    .replace(/^[•●○◉◎▪▸►\-\*\s]+/g, "")
-    .replace(/^(?:[A-Ea-e][\.\)\:\-]\s*)+/g, "")
-    .replace(/^\d+[\.\)\:\-]\s*/g, "")
-    .trim();
-}
-
-function normalizeQuestion(q, index = 0) {
-  const letters = ["A", "B", "C", "D", "E"];
-  const rawOptions = Array.isArray(q.options) ? q.options : [];
-  const seen = new Set();
-  const options = [];
-
-  for (const raw of rawOptions) {
-    const cleaned = stripChoicePrefix(raw);
-    const key = cleaned.toLowerCase();
-    if (cleaned && !seen.has(key)) {
-      seen.add(key);
-      options.push(cleaned);
-    }
-  }
-
-  let answer = String(q.correct_answer ?? "").trim();
-  if (q.type === "multiple_choice") {
-    const firstChar = stripChoicePrefix(answer).charAt(0).toUpperCase();
-    if (letters.includes(firstChar)) answer = firstChar;
-  }
-
-  return {
-    ...q,
-    order: q.order || index + 1,
-    question: String(q.question || "").replace(/^[•●○◉◎▪▸►\s]+/g, "").trim(),
-    options,
-    correct_answer: answer,
-    solution: String(q.solution || "").trim(),
-    svgGraph: String(q.svgGraph || "").trim()
-  };
-}
-
-function renderExamQuestionBlock(q) {
-  const item = normalizeQuestion(q, (q.order || 1) - 1);
-  const letters = ["A", "B", "C", "D", "E"];
-
-  const choicesHtml = item.type === "multiple_choice" && item.options.length
-    ? `<ul class="clean-choices">${item.options.map((opt, idx) =>
-        `<li><strong>${letters[idx] || idx + 1}.</strong> ${escapeHtml(opt)}</li>`
-      ).join("")}</ul>`
-    : "";
-
-  const graphHtml = item.svgGraph && item.svgGraph.includes("<svg")
-    ? `<div class="q-graph">${item.svgGraph}</div>`
-    : "";
-
-  const solHtml = item.solution
-    ? `<div class="q-solution"><strong>Step-by-Step Solution:</strong> ${escapeHtml(item.solution)}</div>`
-    : "";
-
-  return `
-    <div class="exam-q-card">
-      <div><strong>${item.order}.</strong> ${escapeHtml(item.question)} <em>(${item.points || 1} pt)</em></div>
-      ${graphHtml}
-      ${choicesHtml}
-      <div class="q-answer-key"><strong>Answer Key:</strong> ${escapeHtml(item.correct_answer)}</div>
-      ${solHtml}
-    </div>
-  `;
-}
-
-document.getElementById("btnPrintTeacherKey")?.addEventListener("click", () => {
-  document.body.classList.add("print-teacher-key");
-  window.print();
-  setTimeout(() => document.body.classList.remove("print-teacher-key"), 500);
-});
-
-document.getElementById("btnOpenCheckerWithExam")?.addEventListener("click", () => {
-  const title = encodeURIComponent(document.getElementById("examTitle")?.value.trim() || "");
-  location.href = `exam-checker.html${title ? `?exam=${title}` : ""}`;
-});
-
-document.getElementById("btnOpenQrScannerWithExam")?.addEventListener("click", () => {
-  const title = encodeURIComponent(document.getElementById("examTitle")?.value.trim() || "");
-  location.href = `assessments/scan/index.html${title ? `?examTitle=${title}` : ""}`;
-});
 </script>
 </body>
 </html>
