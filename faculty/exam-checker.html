@@ -275,35 +275,21 @@
 </div>
 
 <script type="module">
-  import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-app.js";
-  import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-auth.js";
+  import { auth, db } from "../assets/js/firebase-config.js";
+  import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
   import {
-    getFirestore, collection, doc, getDoc, getDocs, setDoc, addDoc, updateDoc,
+    collection, doc, getDoc, getDocs, setDoc, addDoc, updateDoc,
     query, orderBy, limit, serverTimestamp
-  } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js";
+  } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
-  // ============================================================
-  // 1. FIREBASE & GEMINI CONFIGURATION
-  // ============================================================
-  const firebaseConfig = window.SCPHS_FIREBASE_CONFIG || {
-    apiKey: "YOUR_FIREBASE_API_KEY",
-    authDomain: "YOUR_PROJECT.firebaseapp.com",
-    projectId: "YOUR_PROJECT_ID",
-    storageBucket: "YOUR_PROJECT.appspot.com",
-    messagingSenderId: "YOUR_SENDER_ID",
-    appId: "YOUR_APP_ID"
-  };
-
-  const GEMINI_API_KEY = window.SCPHS_GEMINI_API_KEY || "YOUR_GEMINI_API_KEY";
-  const GEMINI_MODEL = "gemini-3.8-flash";
-
-  const app = getApps().length ? getApps()[0] : initializeApp(firebaseConfig);
-  const auth = getAuth(app);
-  const db = window.scphsDb || getFirestore(app);
+  // Uses the exact same Gemini API key stored by your SF10 AI Importer
+  let GEMINI_API_KEY = localStorage.getItem("scphs_gemini_api_key") || "";
+  const GEMINI_MODEL_CASCADE = ["gemini-3.8-flash", "gemini-4-hydrogen", "gemini-3.5-flash-lite"];
 
   let currentUser = null;
-  let sf1Students = []; // Cached students of currently selected class
+  let sf1Students = [];
 
+  // Listen to your real SCPHS Portal auth session
   onAuthStateChanged(auth, (user) => {
     currentUser = user;
     const badge = document.getElementById("auth-badge");
@@ -313,12 +299,12 @@
       loadRecentResults();
     } else {
       badge.textContent = "Not signed in (Sign in to SCPHS Portal first)";
+      document.getElementById("sf1-class-select").innerHTML =
+        `<option value="">-- Sign in to SCPHS Portal first --</option>`;
     }
   });
 
-  // ============================================================
-  // 2. TAB & EXAM TYPE UI CONTROLS
-  // ============================================================
+  // Tab & Exam Type Switchers
   document.querySelectorAll(".tab-btn").forEach((btn) => {
     btn.addEventListener("click", () => {
       document.querySelectorAll(".tab-btn").forEach((b) => b.classList.remove("active"));
@@ -341,24 +327,46 @@
     document.getElementById("output-detail").textContent = detail;
   }
 
+  function ensureGeminiKey() {
+    if (!GEMINI_API_KEY) {
+      const entered = prompt("Enter your Google Gemini API Key (starts with AIza...):");
+      if (entered && entered.trim()) {
+        GEMINI_API_KEY = entered.trim();
+        localStorage.setItem("scphs_gemini_api_key", GEMINI_API_KEY);
+      }
+    }
+    return GEMINI_API_KEY;
+  }
+
   // ============================================================
-  // 3. SF1 CLASSES, STUDENT ROSTER & PROFILE ID PHOTO UPLOAD
+  // 1. LOAD SF1 CLASSES & STUDENTS FROM FIRESTORE
   // ============================================================
   async function loadSF1Classes() {
     const sel = document.getElementById("sf1-class-select");
+    sel.innerHTML = `<option value="">-- Loading SF1 Classes... --</option>`;
     try {
       const snap = await getDocs(collection(db, "classes"));
-      sel.innerHTML = `<option value="">-- Select SF1 Class / Section --</option>`;
+      if (snap.empty) {
+        sel.innerHTML = `<option value="">-- No classes found in Firestore --</option>`;
+        return;
+      }
+      sel.innerHTML = `<option value="">-- Select SF1 Class / Section (${snap.size}) --</option>`;
       snap.forEach((docSnap) => {
         const d = docSnap.data();
-        const label = d.className || d.sectionName || `${d.gradeLevel || ""} - ${d.section || docSnap.id}`;
+        const label =
+          d.className ||
+          d.sectionName ||
+          d.name ||
+          [d.gradeLevel || d.grade, d.section].filter(Boolean).join(" - ") ||
+          docSnap.id;
         const opt = document.createElement("option");
         opt.value = docSnap.id;
         opt.textContent = label;
         sel.appendChild(opt);
       });
     } catch (err) {
-      sel.innerHTML = `<option value="">Error loading classes: ${err.message}</option>`;
+      console.error("SF1 Classes Load Error:", err);
+      sel.innerHTML = `<option value="">Error: ${err.message}</option>`;
     }
   }
 
@@ -378,15 +386,21 @@
       const snap = await getDocs(collection(db, "classes", classId, "students"));
       snap.forEach((docSnap) => {
         const d = docSnap.data();
-        const fullName = d.fullName || `${d.lastName || ""}, ${d.firstName || ""} ${d.middleName || ""}`.trim();
+        const fullName =
+          d.fullName ||
+          d.fullname ||
+          d.studentName ||
+          `${d.lastName || d.last_name || ""}, ${d.firstName || d.first_name || ""} ${d.middleName || d.middle_name || ""}`.replace(/^,\s*/, "").trim() ||
+          docSnap.id;
+
         sf1Students.push({
           id: docSnap.id,
           classId,
-          lrn: d.lrn || docSnap.id,
+          lrn: String(d.lrn || d.LRN || docSnap.id),
           fullName,
           sex: d.sex || d.gender || "-",
-          status: d.enrollmentStatus || "Enrolled",
-          photo: d.photoDataUrl || d.photoUrl || ""
+          status: d.enrollmentStatus || d.status || "Enrolled",
+          photo: d.photoDataUrl || d.photoUrl || d.avatar || ""
         });
       });
 
@@ -401,6 +415,7 @@
 
       renderQrRoster();
     } catch (err) {
+      console.error("SF1 Students Load Error:", err);
       studentSel.innerHTML = `<option value="">Error: ${err.message}</option>`;
     }
   });
@@ -421,7 +436,7 @@
       st.photo || `https://ui-avatars.com/api/?name=${encodeURIComponent(st.fullName)}&background=1d4ed8&color=fff`;
   });
 
-  // Resize & Save Student ID Picture directly to Firestore Student Profile
+  // Update Student ID Photo in Firestore
   document.getElementById("student-photo-input").addEventListener("change", async (e) => {
     const file = e.target.files[0];
     const studentId = document.getElementById("sf1-student-select").value;
@@ -464,7 +479,7 @@
   }
 
   // ============================================================
-  // 4. ANSWER KEY SAVE / LOAD IN FIRESTORE
+  // 2. ANSWER KEY SAVE / LOAD
   // ============================================================
   function parseKeyList(raw) {
     return raw
@@ -519,7 +534,7 @@
   });
 
   // ============================================================
-  // 5. QR DETECTOR + GEMINI 3.8 FLASH VISION PAPER EXTRACTION
+  // 3. QR DETECTOR & GEMINI EXTRACTION WITH MODEL CASCADE
   // ============================================================
   async function detectQrFromFile(file) {
     if (!("BarcodeDetector" in window)) return null;
@@ -558,10 +573,39 @@
     return null;
   }
 
+  async function callGeminiJsonWithCascade(parts) {
+    const apiKey = ensureGeminiKey();
+    if (!apiKey) throw new Error("Gemini API Key is required.");
+
+    let lastErr = null;
+    for (const modelName of GEMINI_MODEL_CASCADE) {
+      try {
+        const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${encodeURIComponent(apiKey)}`;
+        const res = await fetch(endpoint, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            contents: [{ role: "user", parts }],
+            generationConfig: {
+              temperature: 0.1,
+              maxOutputTokens: 4096,
+              responseMimeType: "application/json"
+            }
+          })
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error?.message || `HTTP ${res.status}`);
+        return JSON.parse(data.candidates?.[0]?.content?.parts?.[0]?.text || "{}");
+      } catch (err) {
+        lastErr = err;
+        if (err.message?.includes("API_KEY_INVALID")) throw err;
+      }
+    }
+    throw lastErr || new Error("All Gemini models failed to respond.");
+  }
+
   async function extractTestPaperWithGemini(files, examType, expectedItems) {
     const images = await Promise.all(files.map((f) => fileToBase64(f)));
-    const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${encodeURIComponent(GEMINI_API_KEY)}`;
-
     const prompt = `Analyze this student test paper / answer sheet image(s).
 Exam Type: ${examType}
 Expected Objective Item Count: ${expectedItems || "auto-detect all numbered items"}
@@ -571,7 +615,7 @@ Tasks:
 2. Extract all numbered objective answers (1, 2, 3...) whether shaded bubbles, encircled letters, True/False, Matching letters, or handwritten words.
 3. If an essay/constructed-response answer is present, transcribe the handwritten essay completely (preserving English/Filipino/Taglish).
 
-Return STRICT JSON matching this schema:
+Return STRICT JSON:
 {
   "studentName": "",
   "lrn": "",
@@ -585,26 +629,10 @@ Return STRICT JSON matching this schema:
       parts.push({ inline_data: { mime_type: img.mimeType, data: img.base64 } });
     });
 
-    const res = await fetch(endpoint, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        contents: [{ role: "user", parts }],
-        generationConfig: {
-          temperature: 0.1,
-          maxOutputTokens: 4096,
-          responseMimeType: "application/json"
-        }
-      })
-    });
-
-    const data = await res.json();
-    if (!res.ok) throw new Error(data.error?.message || `Gemini HTTP ${res.status}`);
-    return JSON.parse(data.candidates?.[0]?.content?.parts?.[0]?.text || "{}");
+    return callGeminiJsonWithCascade(parts);
   }
 
   async function gradeEssayWithGemini(essayText, rubricPrompt, maxPoints) {
-    const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${encodeURIComponent(GEMINI_API_KEY)}`;
     const prompt = `Grade this DepEd student essay fairly.
 Question/Rubric: ${rubricPrompt || "Content, Organization, Relevance, and Mechanics"}
 Max Points: ${maxPoints}
@@ -615,24 +643,10 @@ ${essayText}
 Return STRICT JSON:
 { "score": 0, "feedback": "Concise constructive feedback in the essay's language" }`;
 
-    const res = await fetch(endpoint, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        contents: [{ role: "user", parts: [{ text: prompt }] }],
-        generationConfig: {
-          temperature: 0.2,
-          maxOutputTokens: 1024,
-          responseMimeType: "application/json"
-        }
-      })
-    });
-    const data = await res.json();
-    if (!res.ok) throw new Error(data.error?.message || `Gemini Essay Error`);
-    return JSON.parse(data.candidates?.[0]?.content?.parts?.[0]?.text || '{"score":0,"feedback":""}');
+    return callGeminiJsonWithCascade([{ text: prompt }]);
   }
 
-  function evaluateAnswers(keys, extractedMapOrArray, examType) {
+  function evaluateAnswers(keys, extractedMapOrArray) {
     let correct = 0;
     const lines = [];
     keys.forEach((key, idx) => {
@@ -643,8 +657,9 @@ Return STRICT JSON:
       const studentAns = String(rawAns).trim().toUpperCase();
       const targetKey = String(key).trim().toUpperCase();
 
-      // Flexible match for Identification / True-False aliases
-      const normalizedStudent = studentAns === "T" && targetKey === "TRUE" ? "TRUE" : studentAns === "F" && targetKey === "FALSE" ? "FALSE" : studentAns;
+      const normalizedStudent =
+        studentAns === "T" && targetKey === "TRUE" ? "TRUE" :
+        studentAns === "F" && targetKey === "FALSE" ? "FALSE" : studentAns;
       const isOk = normalizedStudent === targetKey;
       if (isOk) correct++;
       lines.push(`Q${qNum}: Student="${normalizedStudent || "-"}" | Key="${targetKey}" -> ${isOk ? "CORRECT" : "WRONG"}`);
@@ -662,7 +677,7 @@ Return STRICT JSON:
   }
 
   // ============================================================
-  // 6. SINGLE PAPER SCAN & GRADE
+  // 4. SINGLE PAPER SCAN & GRADE
   // ============================================================
   document.getElementById("scan-and-grade-single-btn").addEventListener("click", async () => {
     const files = Array.from(document.getElementById("single-paper-files").files || []);
@@ -675,12 +690,10 @@ Return STRICT JSON:
     const essayMax = Number(document.getElementById("essay-max-points").value) || 20;
 
     try {
-      showOutput("Scanning QR code & extracting student test paper with Gemini 3.8 Flash...");
-
+      showOutput("Scanning QR code & extracting student test paper with Gemini AI...");
       const qrRaw = await detectQrFromFile(files[0]);
       const extracted = await extractTestPaperWithGemini(files, examType, keys.length);
 
-      // Auto-select matching SF1 student if found
       const matched = matchStudentFromScan(qrRaw || extracted.qrText, extracted.studentName, extracted.lrn);
       if (matched) {
         document.getElementById("sf1-student-select").value = matched.id;
@@ -696,7 +709,7 @@ Return STRICT JSON:
       let breakdownLines = [];
 
       if (examType !== "essay" && keys.length > 0) {
-        const evalRes = evaluateAnswers(keys, extracted.answers || {}, examType);
+        const evalRes = evaluateAnswers(keys, extracted.answers || {});
         objScore = evalRes.correct;
         objTotal = evalRes.total;
         breakdownLines = evalRes.lines;
@@ -732,7 +745,7 @@ Return STRICT JSON:
       });
 
       showOutput(
-        `<strong>${studentName}</strong> (LRN: ${studentLrn}) — Score: <strong>${finalScore} / ${finalMax} (${pct}%)</strong> | Saved to Firestore (${docRef.id})`,
+        `<strong>${studentName}</strong> (LRN: ${studentLrn}) — Score: <strong>${finalScore} / ${finalMax} (${pct}%)</strong> | Saved (${docRef.id})`,
         breakdownLines.join("\n") + essayFeedback
       );
       loadRecentResults();
@@ -741,13 +754,12 @@ Return STRICT JSON:
     }
   });
 
-  // Re-calculate if teacher manually edits extracted answers
   document.getElementById("regrade-manual-btn").addEventListener("click", async () => {
     const keys = parseKeyList(document.getElementById("answer-key-input").value);
     const manualAnswers = parseKeyList(document.getElementById("single-extracted-answers").value);
     if (!keys.length || !manualAnswers.length) return alert("Provide both Answer Key and Student Answers.");
 
-    const evalRes = evaluateAnswers(keys, manualAnswers, "objective");
+    const evalRes = evaluateAnswers(keys, manualAnswers);
     const pct = Number(((evalRes.correct / evalRes.total) * 100).toFixed(2));
     const selectedStudent = sf1Students.find((s) => s.id === document.getElementById("sf1-student-select").value);
 
@@ -773,7 +785,7 @@ Return STRICT JSON:
   });
 
   // ============================================================
-  // 7. BULK ONE-CLICK CHECKING FOR ENTIRE CLASS
+  // 5. BULK ONE-CLICK CHECKING
   // ============================================================
   document.getElementById("run-bulk-check-btn").addEventListener("click", async () => {
     const files = Array.from(document.getElementById("bulk-paper-files").files || []);
@@ -809,7 +821,7 @@ Return STRICT JSON:
         let max = 0;
 
         if (examType !== "essay" && keys.length > 0) {
-          const ev = evaluateAnswers(keys, extracted.answers || {}, examType);
+          const ev = evaluateAnswers(keys, extracted.answers || {});
           score += ev.correct;
           max += ev.total;
         }
@@ -855,12 +867,12 @@ Return STRICT JSON:
       }
     }
 
-    progress.textContent = `Completed bulk checking for ${files.length} student papers! All results saved to Firestore.`;
+    progress.textContent = `Completed bulk checking for ${files.length} student papers!`;
     loadRecentResults();
   });
 
   // ============================================================
-  // 8. LOAD RECENT RESULTS & IMAGE UTILITIES
+  // 6. RECENT RESULTS & IMAGE HELPERS
   // ============================================================
   async function loadRecentResults() {
     const tbody = document.getElementById("records-tbody");
