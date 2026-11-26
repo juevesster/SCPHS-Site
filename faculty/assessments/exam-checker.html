@@ -1,0 +1,70 @@
+<div id="scphs-exam-checker" class="ec-container">
+  <div class="ec-header">
+    <h2>Smart Exam Checker Pro</h2>
+    <span class="ec-badge">Gemini AI • JS / Firestore</span>
+  </div>
+
+  <!-- Setup & Key Bar -->
+  <div class="ec-grid">
+    <div class="ec-card">
+      <h3>1. Answer Key & Assessment</h3>
+      <label>Assessment Title / ID
+        <input type="text" id="ec-exam-id" placeholder="e.g. Q2-SCI10-WW1" />
+      </label>
+      <label>Mode
+        <select id="ec-mode">
+          <option value="mcq">Multiple Choice / Objective (OMR / Manual)</option>
+          <option value="essay">Handwritten / Text Essay (DepEd Rubric)</option>
+        </select>
+      </label>
+      <label>Answer Key (comma-separated, e.g. A,B,C,D,A)
+        <input type="text" id="ec-key-input" placeholder="A, B, C, D, A, B, C, D, A, B" />
+      </label>
+      <div class="ec-actions">
+        <button type="button" id="ec-save-key-btn">Save Key to Firestore</button>
+        <button type="button" id="ec-load-key-btn" class="secondary">Load Saved Key</button>
+      </div>
+    </div>
+
+    <div class="ec-card">
+      <h3>2. Student & Sheet / Essay Input</h3>
+      <label>Student Name / LRN
+        <input type="text" id="ec-student-name" placeholder="Last, First or 12-digit LRN" />
+      </label>
+
+      <!-- MCQ / OMR Input -->
+      <div id="ec-mcq-panel">
+        <label>Student Answers (comma-separated or scan sheet below)
+          <input type="text" id="ec-student-answers" placeholder="A, B, C, B, A..." />
+        </label>
+        <label>Scan Answer Sheet Image (Gemini Vision)
+          <input type="file" id="ec-omr-file" accept="image/*" />
+        </label>
+        <button type="button" id="ec-scan-omr-btn">Scan Sheet with Gemini</button>
+      </div>
+
+      <!-- Essay Input -->
+      <div id="ec-essay-panel" class="hidden">
+        <label>Upload Handwritten Essay Photo(s) (Gemini OCR)
+          <input type="file" id="ec-essay-files" accept="image/*" multiple />
+        </label>
+        <button type="button" id="ec-transcribe-btn">Transcribe Handwriting</button>
+        <label>Essay Text
+          <textarea id="ec-essay-text" rows="5" placeholder="Transcribed or typed essay..."></textarea>
+        </label>
+        <label>Max Score
+          <input type="number" id="ec-essay-max" value="20" min="1" />
+        </label>
+        <button type="button" id="ec-grade-essay-btn">Grade Essay with Gemini</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Results -->
+  <div id="ec-result-box" class="ec-card ec-result hidden">
+    <h3>Result</h3>
+    <div id="ec-result-summary"></div>
+    <pre id="ec-result-detail"></pre>
+    <div id="ec-status-msg" class="ec-status"></div>
+  </div>
+</div>
