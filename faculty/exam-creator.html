@@ -191,6 +191,9 @@
       <button type="button" class="btn outline sm" id="btnOpenQrScannerWithExam" style="background:#fff;">
         <i class="fas fa-qrcode"></i> Open QR Scanner
       </button>
+      <a href="alo-report.html" class="btn btn-primary">
+  <i class="fas fa-file-signature"></i> Open ALO Report
+</a>
     </div>
     <h1><i class="fas fa-brain"></i> Smart Exam Creator (BoW + TOS + Online &amp; QR Print)</h1>
   </div>
@@ -2001,6 +2004,110 @@ Return STRICT JSON matching this exact schema:
     const keySheet = includeKey ? buildTeacherKeyOnlyHTML() : "";
     return sheets + keySheet;
   }
+
+  function formatMathText(raw) {
+  return String(raw ?? "")
+    .replace(/\^2\b/g, "²")
+    .replace(/\^3\b/g, "³")
+    .replace(/\bpi\b/gi, "π");
+}
+
+function buildStandaloneTosPrintHTML() {
+  if (!GENERATED_EXAM) return "";
+  const schoolName = ILAW_CONFIG?.schoolName || "Sta. Cruz Pingkian High School";
+  const schoolAddr = ILAW_CONFIG?.schoolAddress || "Pingkian Kayapa, Nueva Vizcaya";
+  const regionText = ILAW_CONFIG?.region || "Region II - Cagayan Valley";
+  const divisionText = ILAW_CONFIG?.division || "Schools Division of Nueva Vizcaya";
+  const termLabel = GENERATED_EXAM.term === "4" ? "Legacy" : `Term ${GENERATED_EXAM.term || 1}`;
+  const preparedByName = GENERATED_EXAM.preparedBy || currentUser?.displayName || currentUser?.email || "Subject Teacher";
+  const rows = GENERATED_EXAM.tosMatrix || [];
+
+  const matrixRowsHtml = rows.length
+    ? rows.map((r) => `
+        <tr>
+          <td style="text-align:left;">${esc(r.competency)}</td>
+          <td>${(r.remembering || []).join(", ") || "-"}</td>
+          <td>${(r.understanding || []).join(", ") || "-"}</td>
+          <td>${(r.applying || []).join(", ") || "-"}</td>
+          <td>${(r.analyzing || []).join(", ") || "-"}</td>
+          <td>${(r.evaluating || []).join(", ") || "-"}</td>
+          <td>${(r.creating || []).join(", ") || "-"}</td>
+          <td><strong>${r.totalItems || 0}</strong></td>
+          <td><strong>${r.percentage || 0}%</strong></td>
+        </tr>
+      `).join("")
+    : (GENERATED_EXAM.tos?.rows || []).map((r) => `
+        <tr>
+          <td style="text-align:left;">${esc(r.level)}</td>
+          <td colspan="6">${esc(r.domain)}</td>
+          <td><strong>${r.items}</strong></td>
+          <td><strong>${r.pct}%</strong></td>
+        </tr>
+      `).join("");
+
+  return `
+    <div class="exam-sheet-page">
+      <div class="deped-header">
+        <img src="../assets/images/deped-logo.png" alt="DepEd Logo" class="deped-logo" onerror="this.style.display='none'" />
+        <div>Republic of the Philippines</div>
+        <div><strong>Department of Education</strong></div>
+        <div>${esc(regionText)}</div>
+        <div>${esc(divisionText)}</div>
+        <div class="school-name">${esc(schoolName)}</div>
+        <div class="school-address">${esc(schoolAddr)}</div>
+      </div>
+      <hr class="header-line" />
+
+      <div class="exam-title">Table of Specification (TOS)</div>
+      <div class="exam-subtitle">
+        <strong>${esc(GENERATED_EXAM.title)}</strong><br/>
+        ${esc(GENERATED_EXAM.subjectName)} | ${esc(termLabel)} | Week ${esc(GENERATED_EXAM.week || 1)} | Total Items: ${GENERATED_EXAM.questions.length} (100%)
+      </div>
+
+      <table style="width:100%;border-collapse:collapse;font-size:10pt;margin-top:10px;">
+        <thead>
+          <tr>
+            <th rowspan="2" style="border:1px solid #000;padding:6px;">Learning Competency / Domain</th>
+            <th colspan="2" style="border:1px solid #000;padding:6px;">LOTS (${GENERATED_EXAM.tos?.lotsPct ?? 60}%)</th>
+            <th colspan="4" style="border:1px solid #000;padding:6px;">HOTS (${GENERATED_EXAM.tos?.hotsPct ?? 40}%)</th>
+            <th rowspan="2" style="border:1px solid #000;padding:6px;">No. of Items</th>
+            <th rowspan="2" style="border:1px solid #000;padding:6px;">%</th>
+          </tr>
+          <tr>
+            <th style="border:1px solid #000;padding:5px;">Rem</th>
+            <th style="border:1px solid #000;padding:5px;">Und</th>
+            <th style="border:1px solid #000;padding:5px;">App</th>
+            <th style="border:1px solid #000;padding:5px;">Ana</th>
+            <th style="border:1px solid #000;padding:5px;">Eva</th>
+            <th style="border:1px solid #000;padding:5px;">Cre</th>
+          </tr>
+        </thead>
+        <tbody>${matrixRowsHtml}</tbody>
+      </table>
+
+      <div class="signatories">
+        <div class="sig-block">
+          <div>Prepared by:</div>
+          <div class="sig-line"></div>
+          <div class="sig-name">${esc(preparedByName)}</div>
+          <div class="sig-title">Subject Teacher</div>
+        </div>
+        <div class="sig-block">
+          <div>Checked by:</div>
+          <div class="sig-line"></div>
+          <div class="sig-name">_________________________</div>
+          <div class="sig-title">Department Head</div>
+        </div>
+        <div class="sig-block">
+          <div>Approved by:</div>
+          <div class="sig-line"></div>
+          <div class="sig-name">_________________________</div>
+          <div class="sig-title">School Principal</div>
+        </div>
+      </div>
+    </div>
+  `;
+}
 </script>
 </body>
 </html>
