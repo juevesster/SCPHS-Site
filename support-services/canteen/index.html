@@ -1,101 +1,789 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="utf-8" />
+  <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Canteen Management – SCPHS</title>
-   <meta name="description" content="SCPHS Canteen – healthy services, food service, store and guided by the school guidelines in food preparation." />
+  <title>School Canteen Management – SCPHS</title>
+  <meta name="description" content="SCPHS School Canteen – healthy food and beverages, live menu & pricing, daily sales log, and DepEd/DOH food safety compliance." />
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css">
   <link rel="stylesheet" href="../../assets/css/styles.css" />
+
+  <style>
+    :root {
+      --can-bg: #f4f8f5;
+      --can-surface: #ffffff;
+      --can-ink: #0f172a;
+      --can-muted: #475569;
+      --can-green: #15803d;
+      --can-green-dark: #166534;
+      --can-green-soft: #dcfce7;
+      --can-amber: #b45309;
+      --can-amber-soft: #fef3c7;
+      --can-blue: #1d4ed8;
+      --can-blue-soft: #dbeafe;
+      --can-rose: #be123c;
+      --can-rose-soft: #ffe4e6;
+      --can-line: #e2e8f0;
+      --can-radius: 18px;
+      --can-shadow: 0 10px 28px -8px rgba(15, 23, 42, 0.08);
+    }
+
+    *, *::before, *::after { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: 'Outfit', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: var(--can-bg);
+      color: var(--can-ink);
+      line-height: 1.5;
+    }
+
+    .can-shell {
+      max-width: 1240px;
+      margin: 0 auto;
+      padding: 24px 20px 64px;
+    }
+
+    /* Hero Banner */
+    .can-hero {
+      background: linear-gradient(135deg, #0f172a 0%, #15803d 60%, #16a34a 100%);
+      color: #fff;
+      border-radius: 24px;
+      padding: 28px 32px;
+      box-shadow: 0 20px 35px -12px rgba(21, 128, 61, 0.35);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 20px;
+      margin-bottom: 20px;
+    }
+
+    .can-hero .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(255, 255, 255, 0.16);
+      border: 1px solid rgba(255, 255, 255, 0.25);
+      padding: 5px 12px;
+      border-radius: 999px;
+      font-size: 0.78rem;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      margin-bottom: 10px;
+    }
+
+    .can-hero h1 {
+      margin: 0 0 6px;
+      font-size: clamp(1.65rem, 3vw, 2.3rem);
+      font-weight: 800;
+      letter-spacing: -0.02em;
+    }
+
+    .can-hero p {
+      margin: 0;
+      color: rgba(255, 255, 255, 0.92);
+      font-size: 0.95rem;
+      max-width: 720px;
+    }
+
+    .hero-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .sync-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 14px;
+      border-radius: 999px;
+      font-size: 0.8rem;
+      font-weight: 700;
+      background: #fef3c7;
+      color: #92400e;
+    }
+    .sync-pill.ready { background: #dcfce7; color: #166534; }
+    .sync-pill.warn { background: #fee2e2; color: #991b1b; }
+
+    /* KPI Strip */
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+      margin-bottom: 22px;
+    }
+
+    .kpi-card {
+      background: var(--can-surface);
+      border: 1px solid var(--can-line);
+      border-radius: var(--can-radius);
+      padding: 18px 20px;
+      box-shadow: var(--can-shadow);
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .kpi-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.25rem;
+      flex-shrink: 0;
+    }
+
+    .kpi-val { font-size: 1.6rem; font-weight: 800; line-height: 1.1; }
+    .kpi-lbl { font-size: 0.78rem; font-weight: 700; color: var(--can-muted); text-transform: uppercase; letter-spacing: 0.04em; }
+
+    /* Tabs */
+    .can-tabs {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-bottom: 18px;
+    }
+
+    .c-tab {
+      padding: 10px 18px;
+      border-radius: 12px;
+      border: 1px solid var(--can-line);
+      background: #fff;
+      color: var(--can-muted);
+      font-weight: 700;
+      font-size: 0.88rem;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.18s ease;
+    }
+
+    .c-tab:hover { border-color: var(--can-green); color: var(--can-green); }
+    .c-tab.active {
+      background: var(--can-green);
+      border-color: var(--can-green);
+      color: #fff;
+      box-shadow: 0 8px 18px -6px rgba(21, 128, 61, 0.45);
+    }
+
+    .tab-panel { display: none; }
+    .tab-panel.active { display: block; }
+
+    .panel-grid-2 {
+      display: grid;
+      grid-template-columns: 1.02fr 1.28fr;
+      gap: 20px;
+      align-items: start;
+    }
+
+    .c-card {
+      background: var(--can-surface);
+      border: 1px solid var(--can-line);
+      border-radius: var(--can-radius);
+      padding: 22px;
+      box-shadow: var(--can-shadow);
+    }
+
+    .c-card-title {
+      margin: 0 0 14px;
+      font-size: 1.12rem;
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    /* Form Controls */
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px; }
+    .form-field { display: flex; flex-direction: column; gap: 5px; margin-bottom: 12px; }
+    .form-field label { font-size: 0.75rem; font-weight: 700; text-transform: uppercase; color: var(--can-muted); letter-spacing: 0.04em; }
+    .form-field input, .form-field select, .form-field textarea {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1.5px solid var(--can-line);
+      border-radius: 10px;
+      font-family: inherit;
+      font-size: 0.9rem;
+      color: var(--can-ink);
+      background: #fff;
+      outline: none;
+    }
+    .form-field input:focus, .form-field select:focus, .form-field textarea:focus {
+      border-color: var(--can-green);
+      box-shadow: 0 0 0 3px rgba(21, 128, 61, 0.12);
+    }
+
+    .btn-c {
+      padding: 10px 16px;
+      border-radius: 10px;
+      border: none;
+      font-family: inherit;
+      font-weight: 700;
+      font-size: 0.86rem;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      text-decoration: none;
+      transition: 0.18s ease;
+    }
+    .btn-c-primary { background: var(--can-green); color: #fff; }
+    .btn-c-primary:hover { background: var(--can-green-dark); }
+    .btn-c-dark { background: #1e293b; color: #fff; }
+    .btn-c-dark:hover { background: #0f172a; }
+    .btn-c-outline { background: #fff; border: 1.5px solid var(--can-line); color: var(--can-ink); }
+    .btn-c-outline:hover { border-color: var(--can-green); color: var(--can-green); }
+    .btn-c-danger { background: #fee2e2; color: #991b1b; padding: 6px 10px; font-size: 0.78rem; }
+    .btn-c-edit { background: #eff6ff; color: #1d4ed8; padding: 6px 10px; font-size: 0.78rem; }
+
+    /* DepEd DO 13 Food Traffic-Light Badges */
+    .food-badge {
+      display: inline-block;
+      padding: 3px 9px;
+      border-radius: 999px;
+      font-size: 0.72rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      white-space: nowrap;
+    }
+    .food-green { background: #dcfce7; color: #166534; }
+    .food-yellow { background: #fef3c7; color: #92400e; }
+    .food-red { background: #ffe4e6; color: #9f1239; }
+
+    /* Tables */
+    .table-wrap { overflow-x: auto; }
+    table.c-table { width: 100%; border-collapse: collapse; font-size: 0.86rem; }
+    table.c-table th, table.c-table td {
+      padding: 10px 12px;
+      border-bottom: 1px solid var(--can-line);
+      text-align: left;
+      vertical-align: middle;
+    }
+    table.c-table th {
+      background: #f8fafc;
+      font-size: 0.72rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      color: var(--can-muted);
+      letter-spacing: 0.04em;
+    }
+
+    .law-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 16px;
+    }
+    .law-card {
+      background: #fff;
+      border: 1px solid var(--can-line);
+      border-left: 4px solid var(--can-green);
+      border-radius: 14px;
+      padding: 18px;
+    }
+    .law-card h4 { margin: 0 0 6px; font-size: 1rem; font-weight: 800; color: var(--can-ink); }
+    .law-card .law-code { font-size: 0.75rem; font-weight: 800; color: var(--can-green); text-transform: uppercase; margin-bottom: 6px; display: block; }
+    .law-card p { margin: 0; font-size: 0.88rem; color: var(--can-muted); }
+
+    /* Printable Report Layout */
+    #canteen-print-area { display: none; }
+
+    @media print {
+      @page { size: landscape; margin: 0.35in; }
+      body { background: #fff !important; margin: 0 !important; }
+      .mini-header, .can-shell, footer, .govph-footer, #scphs-chatbot-root { display: none !important; }
+      #canteen-print-area {
+        display: block !important;
+        width: 100%;
+        font-family: "Times New Roman", Times, serif;
+        color: #000;
+      }
+      .cprint-header {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        position: relative;
+        gap: 4px;
+        margin-bottom: 10px;
+      }
+      .cprint-header .logo-deped { height: 56px; margin: 0 auto; object-fit: contain; }
+      .cprint-header .logo-school { height: 56px; position: absolute; right: 0; top: 4px; object-fit: contain; }
+      .cprint-center { text-align: center; line-height: 1.25; }
+      .cprint-title {
+        text-align: center;
+        font-size: 12pt;
+        font-weight: bold;
+        text-transform: uppercase;
+        margin: 8px 0 4px;
+        text-decoration: underline;
+      }
+      .cprint-sub { text-align: center; font-size: 9.5pt; margin-bottom: 10px; }
+      .cprint-meta {
+        display: flex;
+        justify-content: space-between;
+        font-size: 9.5pt;
+        margin-bottom: 8px;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+      .cprint-summary-box {
+        border: 1px solid #000;
+        padding: 6px 10px;
+        font-size: 8.8pt;
+        margin-bottom: 10px;
+        background: #f8fafc !important;
+      }
+      .cprint-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 8.2pt;
+        margin-bottom: 16px;
+      }
+      .cprint-table th, .cprint-table td {
+        border: 1px solid #000;
+        padding: 4px 6px;
+        text-align: left;
+        vertical-align: middle;
+      }
+      .cprint-table th {
+        background: #f1f5f9 !important;
+        font-weight: bold;
+        text-align: center;
+      }
+      .cprint-sigs {
+        display: flex;
+        justify-content: space-between;
+        gap: 20px;
+        margin-top: 24px;
+        page-break-inside: avoid;
+        font-size: 9.5pt;
+      }
+      .cprint-sig-col { width: 32%; text-align: center; }
+      .cprint-sig-line { border-bottom: 1px solid #000; height: 28px; margin-bottom: 4px; }
+    }
+
+    @media (max-width: 960px) {
+      .kpi-grid { grid-template-columns: repeat(2, 1fr); }
+      .panel-grid-2, .law-grid { grid-template-columns: 1fr; }
+    }
+
+    @media (max-width: 600px) {
+      .kpi-grid, .form-row { grid-template-columns: 1fr; }
+      .can-hero { padding: 22px 18px; }
+    }
+  </style>
 </head>
 <body>
 
-   <!-- PAGE HERO -->
-  <div class="page-hero">
-    <div class="wrap">
-      <span class="badge">Food Services</span>
-      <h1>School Canteen</h1>
-      <p class="meta">Sta. Cruz Pingkian High School • Food and Beverages, store following the guidelines of DepEd.</p>
-    </div>
-  </div>
-
-      <header class="mini-header">
+  <!-- Mini-header / Breadcrumb -->
+  <header class="mini-header">
     <div class="wrap" style="display:flex; align-items:center; gap:12px; padding:10px 0">
-      <!-- For offline/local file paths, use ../../index.html -->
-      <!-- When hosted online, you may change to: href="/index.html" -->
       <a href="../../index.html" class="brand">SCPHS</a>
-
-      <!-- Breadcrumb -->
       <nav aria-label="Breadcrumb" class="crumbs">
-        <!-- LOCAL/OFFLINE: ../../index.html  |  ONLINE: /index.html -->
         <a href="../../index.html">Home</a>
         /
-        <!-- If you create a landing page at /support-services/index.html, link to it: -->
-        <!-- LOCAL/OFFLINE: ../index.html  |  ONLINE: /support-services/index.html -->
-        <a href="../../index.html">Support Services</a>
+        <a href="../administration/admin.html">Support Services</a>
         /
-        <strong>Canteen</strong>
+        <strong>School Canteen</strong>
       </nav>
     </div>
   </header>
 
-  <main class="wrap" style="margin-top:16px">
-    <article class="card">
-      <header style="padding:16px; border-bottom:1px solid var(--line)">
-        <h1 style="margin:0">About the Canteen</h1>
-        <p class="meta">Nutritious and affordable food choices for learners and staff.</p>
-      </header>
+  <main class="can-shell">
+    <!-- HERO -->
+    <section class="can-hero">
+      <div>
+        <div class="pill"><i class="fas fa-utensils"></i> DepEd DO No. 13, s. 2017 • Food Services &amp; Nutrition</div>
+        <h1>School Canteen Management</h1>
+        <p>Sta. Cruz Pingkian High School • Nutritious and affordable meals, healthy food/beverage classification, daily sales tracking, and food safety compliance.</p>
+      </div>
+      <div class="hero-actions">
+        <span class="sync-pill" id="canSyncStatus"><i class="fas fa-circle-notch fa-spin"></i> Connecting Firestore...</span>
+        <button type="button" class="btn-c btn-c-dark" onclick="printCanteenReport('menu')">
+          <i class="fas fa-print"></i> Print Menu &amp; Price List
+        </button>
+        <button type="button" class="btn-c btn-c-primary" style="background:#0284c7;" onclick="printCanteenReport('sales')">
+          <i class="fas fa-file-invoice-dollar"></i> Print Sales &amp; Ops Report
+        </button>
+      </div>
+    </section>
 
-      <section style="padding:16px; display:grid; gap:18px">
-        <div class="info-grid" style="display:grid; grid-template-columns: 1fr 1fr; gap:16px">
-          <div class="card soft">
-            <h3>Location & Hours</h3>
-            <ul class="list">
-              <li>Location: Student Center</li>
-              <li>Hours: 7:00 AM – 4:30 PM (Mon–Fri)</li>
-            </ul>
+    <!-- KPI SUMMARY -->
+    <section class="kpi-grid">
+      <div class="kpi-card">
+        <div class="kpi-icon" style="background:var(--can-green-soft); color:var(--can-green);"><i class="fas fa-bowl-food"></i></div>
+        <div>
+          <div class="kpi-val" id="kpiMenuItems">0</div>
+          <div class="kpi-lbl">Menu Items</div>
+        </div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-icon" style="background:var(--can-blue-soft); color:var(--can-blue);"><i class="fas fa-seedling"></i></div>
+        <div>
+          <div class="kpi-val" id="kpiGreenItems">0</div>
+          <div class="kpi-lbl">Green (Healthy) Items</div>
+        </div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-icon" style="background:var(--can-amber-soft); color:var(--can-amber);"><i class="fas fa-peso-sign"></i></div>
+        <div>
+          <div class="kpi-val" id="kpiTotalSales">₱0.00</div>
+          <div class="kpi-lbl">Recorded Sales</div>
+        </div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-icon" style="background:var(--can-rose-soft); color:var(--can-rose);"><i class="fas fa-receipt"></i></div>
+        <div>
+          <div class="kpi-val" id="kpiTxCount">0</div>
+          <div class="kpi-lbl">Sales Transactions</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- EDITABLE REPORT HEADER & SIGNATORIES -->
+    <section class="c-card" style="margin-bottom:18px;">
+      <h2 class="c-card-title" style="margin-bottom:10px;">
+        <span><i class="fas fa-pen-to-square" style="color:var(--can-green);"></i> Editable Report Header &amp; Signatories (For Printing)</span>
+        <button type="button" class="btn-c btn-c-primary" style="padding:7px 14px; font-size:0.8rem;" onclick="saveCanteenPrintConfig()">
+          <i class="fas fa-cloud-arrow-up"></i> Save Header &amp; Signatories
+        </button>
+      </h2>
+      <div class="form-row" style="grid-template-columns: repeat(3, 1fr); margin-bottom:8px;">
+        <div class="form-field" style="margin-bottom:0;">
+          <label>Division / Region Line</label>
+          <input type="text" id="cfgDivision" oninput="syncCanteenPreviewFields()" value="Region II – Cagayan Valley • Schools Division of Nueva Vizcaya">
+        </div>
+        <div class="form-field" style="margin-bottom:0;">
+          <label>School &amp; School ID</label>
+          <input type="text" id="cfgSchool" oninput="syncCanteenPreviewFields()" value="STA. CRUZ PINGKIAN HIGH SCHOOL (School ID: 300648)">
+        </div>
+        <div class="form-field" style="margin-bottom:0;">
+          <label>School Address</label>
+          <input type="text" id="cfgAddress" oninput="syncCanteenPreviewFields()" value="Brgy. Sta. Cruz, Pingkian, Nueva Vizcaya">
+        </div>
+      </div>
+      <div class="form-row" style="grid-template-columns: repeat(3, 1fr); margin-bottom:0;">
+        <div class="form-field" style="margin-bottom:0;">
+          <label>Prepared By (Canteen Manager / Teacher-In-Charge)</label>
+          <input type="text" id="cfgSig1Name" oninput="syncCanteenPreviewFields()" placeholder="Enter Canteen Manager Name">
+          <input type="text" id="cfgSig1Title" oninput="syncCanteenPreviewFields()" style="margin-top:6px;" value="School Canteen Manager / Coordinator">
+        </div>
+        <div class="form-field" style="margin-bottom:0;">
+          <label>Checked / Audited By (Bookkeeper / Treasurer)</label>
+          <input type="text" id="cfgSig2Name" oninput="syncCanteenPreviewFields()" placeholder="Enter Bookkeeper / Treasurer Name">
+          <input type="text" id="cfgSig2Title" oninput="syncCanteenPreviewFields()" style="margin-top:6px;" value="Canteen Bookkeeper / Treasurer">
+        </div>
+        <div class="form-field" style="margin-bottom:0;">
+          <label>Approved By (School Head)</label>
+          <input type="text" id="cfgSig3Name" oninput="syncCanteenPreviewFields()" placeholder="Enter School Head Name">
+          <input type="text" id="cfgSig3Title" oninput="syncCanteenPreviewFields()" style="margin-top:6px;" value="School Head / Principal">
+        </div>
+      </div>
+    </section>
+
+    <!-- TABS -->
+    <div class="can-tabs" role="tablist">
+      <button type="button" class="c-tab active" data-tab="menu" onclick="switchCanteenTab('menu', this)">
+        <i class="fas fa-utensils"></i> Menu &amp; Pricing
+      </button>
+      <button type="button" class="c-tab" data-tab="sales" onclick="switchCanteenTab('sales', this)">
+        <i class="fas fa-cash-register"></i> Daily Sales Log
+      </button>
+      <button type="button" class="c-tab" data-tab="info" onclick="switchCanteenTab('info', this)">
+        <i class="fas fa-store"></i> Hours, Location &amp; Rules
+      </button>
+      <button type="button" class="c-tab" data-tab="legal" onclick="switchCanteenTab('legal', this)">
+        <i class="fas fa-scale-balanced"></i> DepEd DO 13 &amp; Food Safety Laws
+      </button>
+    </div>
+
+    <!-- TAB 1: MENU & PRICING -->
+    <section class="tab-panel active" id="panel-menu">
+      <div class="panel-grid-2">
+        <div class="c-card">
+          <h2 class="c-card-title">
+            <span id="menuFormTitle"><i class="fas fa-plus-circle" style="color:var(--can-green);"></i> Add / Edit Menu Item</span>
+            <button type="button" class="btn-c btn-c-outline" style="padding:5px 10px;font-size:0.76rem;" onclick="resetMenuForm()">Clear</button>
+          </h2>
+
+          <form onsubmit="saveMenuItem(event)">
+            <input type="hidden" id="menuItemId">
+            <div class="form-row">
+              <div class="form-field">
+                <label>Item / Meal Name *</label>
+                <input type="text" id="menuName" required placeholder="e.g., Tinola w/ Rice, Banana, Calamansi Juice">
+              </div>
+              <div class="form-field">
+                <label>Price (₱) *</label>
+                <input type="number" step="0.50" min="1" id="menuPrice" required placeholder="e.g., 35.00">
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-field">
+                <label>Category</label>
+                <select id="menuCategory">
+                  <option value="Breakfast / Budget Meal">Breakfast / Budget Meal</option>
+                  <option value="Healthy Snack">Healthy Snack</option>
+                  <option value="Beverage / Water">Beverage / Water</option>
+                  <option value="Fruits & Viands">Fruits &amp; Viands</option>
+                </select>
+              </div>
+              <div class="form-field">
+                <label>DepEd DO 13 Food Guide</label>
+                <select id="menuTrafficLight">
+                  <option value="Green (Everyday / Healthy)">Green (Everyday / Healthy)</option>
+                  <option value="Yellow (Moderate / Occasional)">Yellow (Moderate / Occasional)</option>
+                  <option value="Red (Restricted / Not Allowed)">Red (Restricted / Not Allowed)</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-field">
+                <label>Availability Status</label>
+                <select id="menuStatus">
+                  <option value="Available">Available</option>
+                  <option value="Low Stock">Low Stock</option>
+                  <option value="Sold Out">Sold Out</option>
+                </select>
+              </div>
+              <div class="form-field">
+                <label>Notes / Allergens / Portion</label>
+                <input type="text" id="menuNotes" placeholder="e.g., 1 cup rice + viand, low-sodium">
+              </div>
+            </div>
+
+            <button type="submit" class="btn-c btn-c-primary" id="saveMenuBtn">
+              <i class="fas fa-save"></i> Save Menu Item
+            </button>
+          </form>
+        </div>
+
+        <div class="c-card">
+          <h2 class="c-card-title">
+            <span><i class="fas fa-list" style="color:var(--can-blue);"></i> Canteen Menu &amp; Price List</span>
+            <div style="display:flex; gap:8px; flex-wrap:wrap;">
+              <select id="menuFilterGuide" onchange="renderMenuTable()" style="padding:7px 10px; border:1.5px solid var(--can-line); border-radius:9px; font-size:0.8rem;">
+                <option value="all">All DO 13 Tiers</option>
+                <option value="Green">Green (Healthy)</option>
+                <option value="Yellow">Yellow (Moderate)</option>
+                <option value="Red">Red (Restricted)</option>
+              </select>
+              <input type="text" id="menuSearch" oninput="renderMenuTable()" placeholder="Search menu item..." style="max-width:175px; padding:7px 11px; border:1.5px solid var(--can-line); border-radius:9px; font-size:0.8rem;">
+            </div>
+          </h2>
+          <div class="table-wrap">
+            <table class="c-table">
+              <thead>
+                <tr>
+                  <th>Item</th>
+                  <th>Category / DO 13</th>
+                  <th>Price</th>
+                  <th>Status</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="menuTableBody">
+                <tr><td colspan="5" style="text-align:center; padding:24px; color:var(--can-muted);">No menu items recorded yet.</td></tr>
+              </tbody>
+            </table>
           </div>
+        </div>
+      </div>
+    </section>
 
-          <div class="card soft">
-            <h3>Contact</h3>
-            <ul class="list">
-              <li>Email: <a href="mailto:300648@deped.gov.ph">300648@deped.gov.ph</a></li>
-              <li>Phone: +63 967‑8848989</li>
-            </ul>
+    <!-- TAB 2: DAILY SALES LOG -->
+    <section class="tab-panel" id="panel-sales">
+      <div class="panel-grid-2">
+        <div class="c-card">
+          <h2 class="c-card-title"><span><i class="fas fa-plus-circle" style="color:var(--can-green);"></i> Record Canteen Sale</span></h2>
+          <form onsubmit="saveSaleEntry(event)">
+            <div class="form-row">
+              <div class="form-field">
+                <label>Item / Order Summary *</label>
+                <input type="text" id="saleItem" required placeholder="e.g., Rice & Viand sets / Snack batch">
+              </div>
+              <div class="form-field">
+                <label>Quantity Sold *</label>
+                <input type="number" min="1" id="saleQty" required value="1" oninput="autoCalcSaleTotal()">
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-field">
+                <label>Unit Price (₱) *</label>
+                <input type="number" step="0.50" min="0" id="saleUnitPrice" required oninput="autoCalcSaleTotal()" placeholder="0.00">
+              </div>
+              <div class="form-field">
+                <label>Total Amount (₱) *</label>
+                <input type="number" step="0.50" min="0" id="saleTotal" required placeholder="0.00">
+              </div>
+            </div>
+
+            <div class="form-field">
+              <label>OR / Receipt / Shift Notes</label>
+              <input type="text" id="saleNotes" placeholder="e.g., Morning recess, cash / GCash">
+            </div>
+
+            <button type="submit" class="btn-c btn-c-primary" id="saveSaleBtn">
+              <i class="fas fa-check"></i> Record Sale
+            </button>
+          </form>
+        </div>
+
+        <div class="c-card">
+          <h2 class="c-card-title"><span><i class="fas fa-receipt" style="color:var(--can-amber);"></i> Canteen Sales Ledger</span></h2>
+          <div class="table-wrap">
+            <table class="c-table">
+              <thead>
+                <tr>
+                  <th>Date</th>
+                  <th>Item / Order</th>
+                  <th>Qty</th>
+                  <th>Total</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody id="salesTableBody">
+                <tr><td colspan="5" style="text-align:center; padding:24px; color:var(--can-muted);">No sales entries recorded yet.</td></tr>
+              </tbody>
+            </table>
           </div>
         </div>
+      </div>
+    </section>
 
-        <div class="card soft">
-          <h3>Menu & Pricing</h3>
-          <ul class="list">
-            <li>Breakfast sets (rice + viand)</li>
-            <li>Healthy snacks and beverages</li>
-            <li>Student budget meals</li>
-          </ul>
-          <p>Price list coming soon.</p>
-        </div>
-
-        <div class="card soft">
-          <h3>Guidelines</h3>
-          <ul class="list">
-            <li>Queue properly and keep the area clean.</li>
-            <li>Dispose of trash responsibly.</li>
-            <li>Follow cashless/receipt policies if implemented.</li>
+    <!-- TAB 3: HOURS, LOCATION & RULES -->
+    <section class="tab-panel" id="panel-info">
+      <div class="law-grid">
+        <div class="c-card">
+          <h2 class="c-card-title"><span><i class="fas fa-store" style="color:var(--can-green);"></i> Location, Hours &amp; Contact</span></h2>
+          <ul style="list-style:none; padding:0; margin:0; display:grid; gap:8px; font-size:0.92rem;">
+            <li><strong>Location:</strong> Student Center, Sta. Cruz Pingkian High School, Brgy. Sta. Cruz, Pingkian, Nueva Vizcaya</li>
+            <li><strong>Operating Hours:</strong> 7:00 AM – 4:30 PM (Monday–Friday)</li>
+            <li><strong>Email:</strong> <a href="mailto:300648@deped.gov.ph">300648@deped.gov.ph</a></li>
+            <li><strong>Phone:</strong> <a href="tel:+639678848989">+63 967-8848989</a></li>
           </ul>
         </div>
-      </section>
-    </article>
+
+        <div class="c-card">
+          <h2 class="c-card-title"><span><i class="fas fa-clipboard-check" style="color:var(--can-blue);"></i> Canteen &amp; Patron Guidelines</span></h2>
+          <ul style="margin:0; padding-left:18px; color:var(--can-muted); font-size:0.9rem; display:grid; gap:6px;">
+            <li>Form an orderly queue and observe courtesy during break and lunch periods.</li>
+            <li>Keep tables and surrounding grounds clean; segregate and dispose of waste properly.</li>
+            <li>Follow official pricing, receipt/cashless procedures, and healthy food choices.</li>
+            <li>Ensure food handlers wear hairnets, aprons, and clean attire with valid health/sanitation compliance.</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 4: LEGAL BASIS & FOOD SAFETY LAWS -->
+    <section class="tab-panel" id="panel-legal">
+      <div class="c-card" style="margin-bottom:18px;">
+        <h2 class="c-card-title"><span><i class="fas fa-landmark" style="color:var(--can-green);"></i> Legal &amp; Policy Basis for School Canteen Operations</span></h2>
+        <div class="law-grid">
+          <div class="law-card">
+            <span class="law-code">DepEd Order No. 13, s. 2017</span>
+            <h4>Healthy Food and Beverage Choices in Schools</h4>
+            <p>Categorizes food and beverages sold in schools into Green, Yellow, and Red choices to promote learner nutrition, prevent obesity and diet-related illnesses, and eliminate sugar-sweetened or nutrient-poor items.</p>
+          </div>
+          <div class="law-card">
+            <span class="law-code">Presidential Decree No. 856</span>
+            <h4>Code on Sanitation of the Philippines</h4>
+            <p>Establishes sanitation standards for food establishments, proper food storage/handling, potable water, waste management, and sanitary health certificates for food handlers.</p>
+          </div>
+          <div class="law-card">
+            <span class="law-code">Republic Act No. 10611</span>
+            <h4>Food Safety Act of 2013</h4>
+            <p>Strengthens food safety protection across preparation, handling, storage, and service so learners and staff receive safe, wholesome food.</p>
+          </div>
+          <div class="law-card">
+            <span class="law-code">DepEd School Canteen Management Guidelines</span>
+            <h4>Transparency, Affordability &amp; Learner Welfare</h4>
+            <p>Ensures affordable student budget meals, clear price posting, proper accounting of canteen funds/proceeds, and coordination with school health personnel.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="c-card">
+        <h3 style="margin:0 0 12px; font-size:1rem; font-weight:800;">Official Reference Portals</h3>
+        <div style="display:flex; flex-wrap:wrap; gap:10px;">
+          <a href="https://www.deped.gov.ph/" target="_blank" rel="noopener" class="btn-c btn-c-outline">
+            <i class="fas fa-school" style="color:var(--can-green);"></i> Department of Education (DepEd)
+          </a>
+          <a href="https://doh.gov.ph/" target="_blank" rel="noopener" class="btn-c btn-c-outline">
+            <i class="fas fa-hospital" style="color:var(--can-blue);"></i> Department of Health (DOH)
+          </a>
+          <a href="https://www.officialgazette.gov.ph/" target="_blank" rel="noopener" class="btn-c btn-c-outline">
+            <i class="fas fa-gavel"></i> Official Gazette
+          </a>
+        </div>
+      </div>
+    </section>
   </main>
 
-  <footer class="govph-footer" role="contentinfo" style="margin-top:24px">
-    <div class="govph-footer__bar">
-      <div class="wrap"><small>© <span id="yearNow"></span> SCPHS</small></div>
+  <!-- PRINTABLE DEPED CANTEEN REPORT -->
+  <div id="canteen-print-area">
+    <div class="cprint-header">
+      <img src="../../assets/images/deped-logo.png" alt="DepEd Logo" class="logo-deped" onerror="this.style.display='none'">
+      <img src="../../assets/images/scphslogo.png" alt="SCPHS Logo" class="logo-school" onerror="this.style.display='none'">
+      <div class="cprint-center">
+        <div>Republic of the Philippines</div>
+        <div style="font-weight:bold; font-size:11pt;">DEPARTMENT OF EDUCATION</div>
+        <div id="cOut-division">Region II – Cagayan Valley • Schools Division of Nueva Vizcaya</div>
+        <div style="font-weight:bold; font-size:11pt;" id="cOut-school">STA. CRUZ PINGKIAN HIGH SCHOOL (School ID: 300648)</div>
+        <div id="cOut-address">Brgy. Sta. Cruz, Pingkian, Nueva Vizcaya</div>
+      </div>
     </div>
-  </footer>
-  <script>document.getElementById('yearNow').textContent = new Date().getFullYear();</script>
-</body>
-</html>
 
-<!-- ======================= END ABOUT SECTION ======================= -->
+    <div class="cprint-title" id="cprintTitle">SCHOOL CANTEEN MENU &amp; HEALTHY FOOD COMPLIANCE LIST</div>
+    <div class="cprint-sub">Pursuant to DepEd Order No. 13, s. 2017, PD 856 (Code on Sanitation), and RA 10611 (Food Safety Act)</div>
+
+    <div class="cprint-meta">
+      <div><strong>Location:</strong> Student Center (Mon–Fri, 7:00 AM – 4:30 PM)</div>
+      <div><strong>Date Generated:</strong> <span id="cprintDate"></span></div>
+      <div id="cprintMetaRight"></div>
+    </div>
+
+    <div class="cprint-summary-box" id="cprintSummaryBox"></div>
+
+    <table class="cprint-table">
+      <thead id="cprintThead"></thead>
+      <tbody id="cprintTbody"></tbody>
+    </table>
+
+    <div class="cprint-sigs">
+      <div class="cprint-sig-col">
+        <div style="text-align:left; font-weight:bold;">Prepared / Submitted by:</div>
+        <div class="cprint-sig-line"></div>
+        <div style="font-weight:bold; text-transform:uppercase;" id="cOut-sig1Name">SCHOOL CANTEEN MANAGER / COORDINATOR</div>
+        <div style="font-size:8pt;" id="cOut-sig1Title">School Canteen Manager / Coordinator</div>
+      </div>
+      <div class="cprint-sig-col">
+        <div style="text-align:left; font-weight:bold;">Checked / Audited by:</div>
+        <div class="cprint-sig-line"></div>
+        <div style="font-weight:bold; text-transform:uppercase;" id="cOut-sig2Name">CANTEEN BOOKKEEPER / TREASURER</div>
+        <div style="font-size:8pt;" id="cOut-sig2Title">Canteen Bookkeeper / Treasurer</div>
+      </div>
+      <div class="cprint-sig-col">
+        <div style="text-align:left; font-weight:bold;">Approved by:</div>
+        <div class="cprint-sig-line"></div>
+        <div style="font-weight:bold; text-transform:uppercase;" id="cOut-sig3Name">SCHOOL HEAD / PRINCIPAL</div>
+        <div style="font-size:8pt;" id="cOut-sig3Title">School Head / Principal</div>
+      </div>
+    </div>
+  </div>
 
   <!-- School Footer (SCPHS) -->
   <footer>
@@ -113,11 +801,11 @@
           <a href="https://www.facebook.com/p/Santa-Cruz-Pingkian-High-School-Official-61554495084090/" target="_blank" rel="noopener">Facebook</a>
         </div>
       </div>
-      <div class="copy">© 2026 SCPHS. All rights reserved.</div>
+      <div class="copy">© <span class="js-year"></span> SCPHS. All rights reserved.</div>
     </div>
   </footer>
 
-  <!-- ================== GOVPH FOOTER (final, official) ================== -->
+  <!-- GOVPH FOOTER -->
   <footer class="govph-footer" role="contentinfo">
     <div class="wrap govph-footer__grid">
       <div class="govph-footer__col">
@@ -146,44 +834,465 @@
 
     <div class="govph-footer__bar">
       <div class="wrap">
-        <small>© <span id="yearNow"></span> Sta. Cruz Pingkian High School • A Philippine Government Website</small>
+        <small>© <span class="js-year"></span> Sta. Cruz Pingkian High School • A Philippine Government Website</small>
       </div>
     </div>
   </footer>
 
-           <!-- Chatbot mount -->
-<div id="scphs-chatbot-root"></div>
+  <!-- Chatbot mount -->
+  <div id="scphs-chatbot-root"></div>
 
-<!-- Chatbot auto-loader: tries absolute path, then ../, then ../../ -->
-<script>
-(function(){
-  const rootId = 'scphs-chatbot-root';
-  if (!document.getElementById(rootId)) {
-    const m = document.createElement('div');
-    m.id = rootId;
-    document.body.appendChild(m);
-  }
+  <script type="module">
+    import { auth, db } from "../../assets/js/firebase-config.js";
+    import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+    import {
+      collection, getDocs, getDoc, doc, setDoc, deleteDoc
+    } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
-  const tried = {};
-  function load(src, onOk, onFail){
-    if (tried[src]) return onFail && onFail();
-    tried[src] = true;
-    const s = document.createElement('script');
-    s.src = src; s.defer = true;
-    s.onload = onOk;
-    s.onerror = onFail;
-    document.body.appendChild(s);
-  }
+    const MENU_COL = "canteen_menu";
+    const SALES_COL = "canteen_sales";
+    const PRINT_CFG_DOC = doc(db, "config", "canteen_print_settings");
 
-  // Try absolute (works when hosted), then step-wise relatives (works offline)
-  load('/assets/js/chatbot.js', null, () =>
-    load('assets/js/chatbot.js', null, () =>
-      load('../assets/js/chatbot.js', null, () =>
-        load('../../assets/js/chatbot.js', null, () =>
-          console.warn('SCPHS chatbot: unable to load script from any known path.')
+    let menuItems = [];
+    let salesEntries = [];
+
+    function esc(s) {
+      return String(s ?? "").replace(/[&<>"']/g, m => ({
+        "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
+      }[m]));
+    }
+
+    function escJS(s) {
+      return String(s ?? "").replace(/\\/g, "\\\\").replace(/'/g, "\\'");
+    }
+
+    function fmtPeso(n) {
+      return "₱" + Number(n || 0).toLocaleString("en-PH", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    }
+
+    function setSyncStatus(mode, label, loginUrl = "") {
+      const el = document.getElementById("canSyncStatus");
+      if (!el) return;
+      el.className = `sync-pill ${mode}`;
+      if (loginUrl) {
+        el.innerHTML = `<i class="fas fa-lock"></i> <a href="${esc(loginUrl)}" style="color:inherit;text-decoration:underline;">${esc(label)}</a>`;
+      } else {
+        el.innerHTML = `<i class="fas ${mode === "ready" ? "fa-check-circle" : "fa-exclamation-circle"}"></i> ${esc(label)}`;
+      }
+    }
+
+    window.switchCanteenTab = function(tabKey, btnEl) {
+      document.querySelectorAll(".c-tab").forEach(b => b.classList.remove("active"));
+      document.querySelectorAll(".tab-panel").forEach(p => p.classList.remove("active"));
+      if (btnEl) btnEl.classList.add("active");
+      document.getElementById(`panel-${tabKey}`)?.classList.add("active");
+    };
+
+    /* ================= HEADER & SIGNATORIES ================= */
+    window.syncCanteenPreviewFields = function() {
+      const divVal = document.getElementById("cfgDivision")?.value.trim() || "Region II – Cagayan Valley • Schools Division of Nueva Vizcaya";
+      const schVal = document.getElementById("cfgSchool")?.value.trim() || "STA. CRUZ PINGKIAN HIGH SCHOOL (School ID: 300648)";
+      const addrVal = document.getElementById("cfgAddress")?.value.trim() || "Brgy. Sta. Cruz, Pingkian, Nueva Vizcaya";
+
+      const s1Name = document.getElementById("cfgSig1Name")?.value.trim() || "SCHOOL CANTEEN MANAGER / COORDINATOR";
+      const s1Title = document.getElementById("cfgSig1Title")?.value.trim() || "School Canteen Manager / Coordinator";
+      const s2Name = document.getElementById("cfgSig2Name")?.value.trim() || "CANTEEN BOOKKEEPER / TREASURER";
+      const s2Title = document.getElementById("cfgSig2Title")?.value.trim() || "Canteen Bookkeeper / Treasurer";
+      const s3Name = document.getElementById("cfgSig3Name")?.value.trim() || "SCHOOL HEAD / PRINCIPAL";
+      const s3Title = document.getElementById("cfgSig3Title")?.value.trim() || "School Head / Principal";
+
+      document.getElementById("cOut-division").textContent = divVal;
+      document.getElementById("cOut-school").textContent = schVal;
+      document.getElementById("cOut-address").textContent = addrVal;
+
+      document.getElementById("cOut-sig1Name").textContent = s1Name;
+      document.getElementById("cOut-sig1Title").textContent = s1Title;
+      document.getElementById("cOut-sig2Name").textContent = s2Name;
+      document.getElementById("cOut-sig2Title").textContent = s2Title;
+      document.getElementById("cOut-sig3Name").textContent = s3Name;
+      document.getElementById("cOut-sig3Title").textContent = s3Title;
+    };
+
+    window.saveCanteenPrintConfig = async function() {
+      const payload = {
+        division: document.getElementById("cfgDivision").value.trim(),
+        school: document.getElementById("cfgSchool").value.trim(),
+        address: document.getElementById("cfgAddress").value.trim(),
+        sig1Name: document.getElementById("cfgSig1Name").value.trim(),
+        sig1Title: document.getElementById("cfgSig1Title").value.trim(),
+        sig2Name: document.getElementById("cfgSig2Name").value.trim(),
+        sig2Title: document.getElementById("cfgSig2Title").value.trim(),
+        sig3Name: document.getElementById("cfgSig3Name").value.trim(),
+        sig3Title: document.getElementById("cfgSig3Title").value.trim(),
+        updatedAt: new Date().toISOString()
+      };
+      try {
+        await setDoc(PRINT_CFG_DOC, payload, { merge: true });
+        syncCanteenPreviewFields();
+        alert("Saved canteen report header and signatories.");
+      } catch (err) {
+        alert("Failed to save settings: " + err.message);
+      }
+    };
+
+    async function loadCanteenPrintConfig() {
+      try {
+        const snap = await getDoc(PRINT_CFG_DOC);
+        if (snap.exists()) {
+          const d = snap.data();
+          if (d.division) document.getElementById("cfgDivision").value = d.division;
+          if (d.school) document.getElementById("cfgSchool").value = d.school;
+          if (d.address) document.getElementById("cfgAddress").value = d.address;
+          if (d.sig1Name != null) document.getElementById("cfgSig1Name").value = d.sig1Name;
+          if (d.sig1Title) document.getElementById("cfgSig1Title").value = d.sig1Title;
+          if (d.sig2Name != null) document.getElementById("cfgSig2Name").value = d.sig2Name;
+          if (d.sig2Title) document.getElementById("cfgSig2Title").value = d.sig2Title;
+          if (d.sig3Name != null) document.getElementById("cfgSig3Name").value = d.sig3Name;
+          if (d.sig3Title) document.getElementById("cfgSig3Title").value = d.sig3Title;
+        }
+      } catch (err) {
+        console.warn("Canteen print config note:", err);
+      }
+      syncCanteenPreviewFields();
+    }
+
+    /* ================= MENU & PRICING ================= */
+    function foodBadgeClass(tier) {
+      if (/green/i.test(tier || "")) return "food-green";
+      if (/yellow/i.test(tier || "")) return "food-yellow";
+      return "food-red";
+    }
+
+    window.resetMenuForm = function() {
+      document.getElementById("menuItemId").value = "";
+      document.getElementById("menuName").value = "";
+      document.getElementById("menuPrice").value = "";
+      document.getElementById("menuCategory").value = "Breakfast / Budget Meal";
+      document.getElementById("menuTrafficLight").value = "Green (Everyday / Healthy)";
+      document.getElementById("menuStatus").value = "Available";
+      document.getElementById("menuNotes").value = "";
+      document.getElementById("menuFormTitle").innerHTML = `<i class="fas fa-plus-circle" style="color:var(--can-green);"></i> Add / Edit Menu Item`;
+    };
+
+    window.editMenuItem = function(id) {
+      const item = menuItems.find(m => m.id === id);
+      if (!item) return;
+      switchCanteenTab("menu", document.querySelector('.c-tab[data-tab="menu"]'));
+      document.getElementById("menuItemId").value = item.id;
+      document.getElementById("menuName").value = item.name || "";
+      document.getElementById("menuPrice").value = item.price ?? "";
+      document.getElementById("menuCategory").value = item.category || "Breakfast / Budget Meal";
+      document.getElementById("menuTrafficLight").value = item.trafficLight || "Green (Everyday / Healthy)";
+      document.getElementById("menuStatus").value = item.status || "Available";
+      document.getElementById("menuNotes").value = item.notes || "";
+      document.getElementById("menuFormTitle").innerHTML = `<i class="fas fa-pen" style="color:var(--can-blue);"></i> Editing: ${esc(item.name)}`;
+    };
+
+    window.saveMenuItem = async function(evt) {
+      evt.preventDefault();
+      const name = document.getElementById("menuName").value.trim();
+      const price = parseFloat(document.getElementById("menuPrice").value);
+      if (!name || isNaN(price) || price <= 0) return alert("Please enter item name and valid price.");
+
+      const existingId = document.getElementById("menuItemId").value;
+      const docId = existingId || `menu_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`;
+      const payload = {
+        name,
+        price,
+        category: document.getElementById("menuCategory").value,
+        trafficLight: document.getElementById("menuTrafficLight").value,
+        status: document.getElementById("menuStatus").value,
+        notes: document.getElementById("menuNotes").value.trim(),
+        updatedAt: new Date().toISOString()
+      };
+
+      const btn = document.getElementById("saveMenuBtn");
+      btn.disabled = true;
+      try {
+        await setDoc(doc(db, MENU_COL, docId), payload, { merge: true });
+        const idx = menuItems.findIndex(m => m.id === docId);
+        if (idx >= 0) menuItems[idx] = { id: docId, ...payload };
+        else menuItems.unshift({ id: docId, ...payload });
+        updateCanteenKpis();
+        renderMenuTable();
+        resetMenuForm();
+      } catch (err) {
+        alert("Failed to save menu item: " + err.message);
+      } finally {
+        btn.disabled = false;
+      }
+    };
+
+    window.deleteMenuItem = async function(id) {
+      if (!confirm("Remove this menu item?")) return;
+      try {
+        await deleteDoc(doc(db, MENU_COL, id));
+        menuItems = menuItems.filter(m => m.id !== id);
+        updateCanteenKpis();
+        renderMenuTable();
+      } catch (err) {
+        alert("Failed to delete menu item: " + err.message);
+      }
+    };
+
+    function renderMenuTable() {
+      const tbody = document.getElementById("menuTableBody");
+      const tierFilter = document.getElementById("menuFilterGuide")?.value || "all";
+      const q = (document.getElementById("menuSearch")?.value || "").trim().toLowerCase();
+
+      const filtered = menuItems.filter(m => {
+        const matchesTier = tierFilter === "all" || (m.trafficLight || "").toLowerCase().includes(tierFilter.toLowerCase());
+        const matchesQ = !q ||
+          (m.name || "").toLowerCase().includes(q) ||
+          (m.category || "").toLowerCase().includes(q) ||
+          (m.notes || "").toLowerCase().includes(q);
+        return matchesTier && matchesQ;
+      });
+
+      if (!filtered.length) {
+        tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; padding:24px; color:var(--can-muted);">No matching menu items.</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = filtered.map(m => `
+        <tr>
+          <td><strong>${esc(m.name)}</strong>${m.notes ? `<div style="font-size:0.75rem;color:var(--can-muted);">${esc(m.notes)}</div>` : ""}</td>
+          <td>
+            <div style="font-size:0.8rem;font-weight:600;">${esc(m.category || "Meal")}</div>
+            <span class="food-badge ${foodBadgeClass(m.trafficLight)}" style="margin-top:3px;">${esc(m.trafficLight || "Green")}</span>
+          </td>
+          <td><strong>${fmtPeso(m.price)}</strong></td>
+          <td>${esc(m.status || "Available")}</td>
+          <td style="white-space:nowrap;">
+            <button type="button" class="btn-c btn-c-edit" onclick="editMenuItem('${escJS(m.id)}')" title="Edit"><i class="fas fa-pen"></i></button>
+            <button type="button" class="btn-c btn-c-danger" onclick="deleteMenuItem('${escJS(m.id)}')" title="Delete"><i class="fas fa-trash"></i></button>
+          </td>
+        </tr>
+      `).join("");
+    }
+
+    /* ================= DAILY SALES ================= */
+    window.autoCalcSaleTotal = function() {
+      const qty = parseFloat(document.getElementById("saleQty").value) || 0;
+      const unit = parseFloat(document.getElementById("saleUnitPrice").value) || 0;
+      if (qty > 0 && unit > 0) {
+        document.getElementById("saleTotal").value = (qty * unit).toFixed(2);
+      }
+    };
+
+    window.saveSaleEntry = async function(evt) {
+      evt.preventDefault();
+      const item = document.getElementById("saleItem").value.trim();
+      const qty = parseInt(document.getElementById("saleQty").value, 10) || 1;
+      const total = parseFloat(document.getElementById("saleTotal").value);
+      if (!item || isNaN(total) || total < 0) return alert("Please enter item and valid total amount.");
+
+      const docId = `sale_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`;
+      const payload = {
+        item,
+        qty,
+        total,
+        notes: document.getElementById("saleNotes").value.trim(),
+        soldAt: new Date().toISOString()
+      };
+
+      const btn = document.getElementById("saveSaleBtn");
+      btn.disabled = true;
+      try {
+        await setDoc(doc(db, SALES_COL, docId), payload);
+        salesEntries.unshift({ id: docId, ...payload });
+        updateCanteenKpis();
+        renderSalesTable();
+        evt.target.reset();
+        document.getElementById("saleQty").value = "1";
+      } catch (err) {
+        alert("Failed to record sale: " + err.message);
+      } finally {
+        btn.disabled = false;
+      }
+    };
+
+    window.deleteSaleEntry = async function(id) {
+      if (!confirm("Delete this sales entry?")) return;
+      try {
+        await deleteDoc(doc(db, SALES_COL, id));
+        salesEntries = salesEntries.filter(s => s.id !== id);
+        updateCanteenKpis();
+        renderSalesTable();
+      } catch (err) {
+        alert("Failed to delete sale entry: " + err.message);
+      }
+    };
+
+    function renderSalesTable() {
+      const tbody = document.getElementById("salesTableBody");
+      if (!salesEntries.length) {
+        tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; padding:24px; color:var(--can-muted);">No sales entries recorded yet.</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = salesEntries.map(s => {
+        const dt = s.soldAt ? new Date(s.soldAt).toLocaleDateString("en-PH", { month: "short", day: "numeric", year: "numeric" }) : "-";
+        return `
+          <tr>
+            <td>${esc(dt)}</td>
+            <td><strong>${esc(s.item)}</strong>${s.notes ? `<div style="font-size:0.74rem;color:var(--can-muted);">${esc(s.notes)}</div>` : ""}</td>
+            <td>${esc(s.qty || 1)}</td>
+            <td><strong>${fmtPeso(s.total)}</strong></td>
+            <td><button type="button" class="btn-c btn-c-danger" onclick="deleteSaleEntry('${escJS(s.id)}')"><i class="fas fa-trash"></i></button></td>
+          </tr>
+        `;
+      }).join("");
+    }
+
+    function updateCanteenKpis() {
+      document.getElementById("kpiMenuItems").textContent = menuItems.length;
+      const greenCnt = menuItems.filter(m => /green/i.test(m.trafficLight || "")).length;
+      document.getElementById("kpiGreenItems").textContent = greenCnt;
+      const totalRev = salesEntries.reduce((acc, s) => acc + (Number(s.total) || 0), 0);
+      document.getElementById("kpiTotalSales").textContent = fmtPeso(totalRev);
+      document.getElementById("kpiTxCount").textContent = salesEntries.length;
+    }
+
+    /* ================= PRINTABLE REPORTS ================= */
+    window.printCanteenReport = function(mode) {
+      syncCanteenPreviewFields();
+      const thead = document.getElementById("cprintThead");
+      const tbody = document.getElementById("cprintTbody");
+      const titleEl = document.getElementById("cprintTitle");
+      const metaRight = document.getElementById("cprintMetaRight");
+      const summaryBox = document.getElementById("cprintSummaryBox");
+      document.getElementById("cprintDate").textContent = new Date().toLocaleDateString("en-PH", { year: "numeric", month: "long", day: "numeric" });
+
+      if (mode === "sales") {
+        titleEl.textContent = "SCHOOL CANTEEN DAILY SALES & OPERATIONS REPORT";
+        const totalRev = salesEntries.reduce((acc, s) => acc + (Number(s.total) || 0), 0);
+        const totalQty = salesEntries.reduce((acc, s) => acc + (Number(s.qty) || 1), 0);
+        metaRight.innerHTML = `<strong>Transactions:</strong> ${salesEntries.length} • <strong>Total Sales:</strong> ${fmtPeso(totalRev)}`;
+        summaryBox.innerHTML = `<strong>Sales Summary:</strong> Total Orders / Items Sold: <strong>${totalQty}</strong> &nbsp;|&nbsp; Total Recorded Revenue: <strong>${fmtPeso(totalRev)}</strong>`;
+
+        thead.innerHTML = `
+          <tr>
+            <th>#</th>
+            <th>Date</th>
+            <th>Item / Order</th>
+            <th>Qty</th>
+            <th>Total Amount</th>
+            <th>Shift / Receipt Notes</th>
+          </tr>
+        `;
+
+        tbody.innerHTML = salesEntries.length
+          ? salesEntries.map((s, idx) => `
+              <tr>
+                <td>${idx + 1}</td>
+                <td>${esc(s.soldAt ? new Date(s.soldAt).toLocaleDateString("en-PH") : "-")}</td>
+                <td><strong>${esc(s.item)}</strong></td>
+                <td>${esc(s.qty || 1)}</td>
+                <td><strong>${fmtPeso(s.total)}</strong></td>
+                <td>${esc(s.notes || "-")}</td>
+              </tr>
+            `).join("")
+          : `<tr><td colspan="6" style="text-align:center;">No canteen sales entries available.</td></tr>`;
+      } else {
+        titleEl.textContent = "SCHOOL CANTEEN MENU & DO 13 HEALTHY FOOD COMPLIANCE LIST";
+        const gCnt = menuItems.filter(m => /green/i.test(m.trafficLight || "")).length;
+        const yCnt = menuItems.filter(m => /yellow/i.test(m.trafficLight || "")).length;
+        const rCnt = menuItems.filter(m => /red/i.test(m.trafficLight || "")).length;
+        metaRight.innerHTML = `<strong>Total Menu Items:</strong> ${menuItems.length}`;
+        summaryBox.innerHTML = `<strong>DepEd DO 13 Classification:</strong> Green (Healthy / Everyday): <strong>${gCnt}</strong> &nbsp;|&nbsp; Yellow (Moderate): <strong>${yCnt}</strong> &nbsp;|&nbsp; Red (Restricted): <strong>${rCnt}</strong>`;
+
+        thead.innerHTML = `
+          <tr>
+            <th>#</th>
+            <th>Item / Meal Name</th>
+            <th>Category</th>
+            <th>DO 13 Guide</th>
+            <th>Price</th>
+            <th>Status</th>
+            <th>Notes</th>
+          </tr>
+        `;
+
+        tbody.innerHTML = menuItems.length
+          ? menuItems.map((m, idx) => `
+              <tr>
+                <td>${idx + 1}</td>
+                <td><strong>${esc(m.name)}</strong></td>
+                <td>${esc(m.category || "-")}</td>
+                <td>${esc(m.trafficLight || "Green")}</td>
+                <td><strong>${fmtPeso(m.price)}</strong></td>
+                <td>${esc(m.status || "Available")}</td>
+                <td>${esc(m.notes || "-")}</td>
+              </tr>
+            `).join("")
+          : `<tr><td colspan="7" style="text-align:center;">No canteen menu items available.</td></tr>`;
+      }
+
+      window.print();
+    };
+
+    async function loadCanteenData() {
+      try {
+        const [menuSnap, salesSnap] = await Promise.all([
+          getDocs(collection(db, MENU_COL)),
+          getDocs(collection(db, SALES_COL))
+        ]);
+        menuItems = menuSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+        salesEntries = salesSnap.docs.map(d => ({ id: d.id, ...d.data() }))
+          .sort((a, b) => String(b.soldAt || "").localeCompare(String(a.soldAt || "")));
+        updateCanteenKpis();
+        renderMenuTable();
+        renderSalesTable();
+        setSyncStatus("ready", `Canteen Firestore Synced (${menuItems.length} menu items)`);
+      } catch (err) {
+        console.warn("Canteen Firestore note:", err);
+        setSyncStatus("warn", "Sign in to sync or edit canteen records");
+      }
+    }
+
+    document.addEventListener("DOMContentLoaded", () => {
+      const yr = new Date().getFullYear();
+      document.querySelectorAll(".js-year").forEach(el => { el.textContent = yr; });
+
+      onAuthStateChanged(auth, async (user) => {
+        if (!user) {
+          const loginUrl = "../../login.html?next=" + encodeURIComponent(location.pathname);
+          setSyncStatus("warn", "Sign in for full canteen sync", loginUrl);
+        }
+        await Promise.all([loadCanteenData(), loadCanteenPrintConfig()]);
+      });
+    });
+  </script>
+
+  <!-- Chatbot auto-loader -->
+  <script>
+    (function(){
+      const rootId = 'scphs-chatbot-root';
+      if (!document.getElementById(rootId)) {
+        const m = document.createElement('div');
+        m.id = rootId;
+        document.body.appendChild(m);
+      }
+      const tried = {};
+      function load(src, onOk, onFail){
+        if (tried[src]) return onFail && onFail();
+        tried[src] = true;
+        const s = document.createElement('script');
+        s.src = src; s.defer = true;
+        s.onload = onOk; s.onerror = onFail;
+        document.body.appendChild(s);
+      }
+      load('/assets/js/chatbot.js', null, () =>
+        load('assets/js/chatbot.js', null, () =>
+          load('../assets/js/chatbot.js', null, () =>
+            load('../../assets/js/chatbot.js', null, () =>
+              console.warn('SCPHS chatbot: unable to load script from any known path.')
+            )
+          )
         )
-      )
-    )
-  );
-})();
-</script>
+      );
+    })();
+  </script>
+</body>
+</html>
