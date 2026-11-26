@@ -194,14 +194,19 @@
     });
 
     async function loadClasses() {
-      const snap = await getDocs(collection(db, "classes"));
-      const select = document.getElementById("classSelect");
-      CLASSES = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
-      select.innerHTML = '<option value="">-- Select Class --</option>';
-      CLASSES.forEach((c) => {
-        select.innerHTML += `<option value="${c.id}">${c.classLabel || c.className || c.name || c.id}</option>`;
-      });
-    }
+  const select = document.getElementById("classSelect");
+  try {
+    const snap = await getDocs(collection(db, "classes"));
+    CLASSES = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+    select.innerHTML = '<option value="">-- Select Class --</option>';
+    CLASSES.forEach((c) => {
+      select.innerHTML += `<option value="${c.id}">${c.classLabel || c.className || c.name || c.id}</option>`;
+    });
+  } catch (err) {
+    console.error("Failed to load classes:", err);
+    select.innerHTML = '<option value="">-- Could not load classes (Check sign-in / rules) --</option>';
+  }
+}
 
     async function loadALOData() {
       const classId = document.getElementById("classSelect").value;
