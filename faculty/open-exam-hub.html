@@ -3,277 +3,1374 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Open Assessment Hub — Free for All Teachers</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <title>Smart Exam Creator (BoW + TOS + QR) — SCPHS Portal</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
   <style>
-    :root { --primary: #1e3c72; --primary-light: #2a5298; --accent: #0f766e; --purple: #4f46e5; --bg: #f1f5f9; --card: #fff; --border: #e2e8f0; --text: #1e293b; --muted: #64748b; }
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); }
+    :root {
+      --primary: #1e3c72;
+      --primary-light: #2a5298;
+      --accent: #0f766e;
+      --purple: #6d28d9;
+      --bg: #f1f5f9;
+      --card: #ffffff;
+      --border: #cbd5e1;
+      --text: #0f172a;
+      --muted: #475569;
+      --success: #059669;
+      --warning: #d97706;
+      --danger: #dc2626;
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; background: var(--bg); color: var(--text); }
 
-    .header { background: linear-gradient(135deg, var(--primary), var(--primary-light)); color: #fff; padding: 22px 28px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
-    .header h1 { font-size: 1.35rem; display: flex; align-items: center; gap: 10px; }
-    .header-right { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
-    .mode-pill { background: rgba(255,255,255,0.18); padding: 6px 12px; border-radius: 999px; font-size: 0.78rem; font-weight: 700; }
-    .btn-back { background: rgba(255,255,255,0.2); color: #fff; border: none; padding: 9px 15px; border-radius: 8px; font-weight: 600; cursor: pointer; text-decoration: none; display: inline-flex; align-items: center; gap: 6px; font-size: 0.85rem; }
-    .btn-back:hover { background: rgba(255,255,255,0.3); }
+    .topbar { background: linear-gradient(135deg, #0f172a, #1e3c72); color: #fff; padding: 14px 24px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; position: sticky; top: 0; z-index: 100; }
+    .topbar h1 { margin: 0; font-size: 19px; display: flex; align-items: center; gap: 10px; }
+    .topbar a { color: #93c5fd; text-decoration: none; font-size: 13px; }
+    .badge { background: rgba(255,255,255,0.15); padding: 4px 10px; border-radius: 999px; font-size: 12px; }
 
-    .container { max-width: 1200px; margin: 24px auto; padding: 0 20px 50px; }
-    .guest-notice { background: #eef2ff; border: 1px solid #c7d2fe; color: #312e81; padding: 12px 16px; border-radius: 12px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; font-size: 0.88rem; }
+    .guest-banner { max-width: 1380px; margin: 14px auto 0; background: #f5f3ff; border: 1px solid #ddd6fe; color: #4c1d95; padding: 12px 16px; border-radius: 12px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
 
-    .action-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 12px; }
-    .term-tabs { display: flex; gap: 8px; flex-wrap: wrap; }
-    .term-tab { padding: 8px 18px; border-radius: 30px; border: 1px solid var(--border); background: #fff; font-weight: 600; cursor: pointer; transition: 0.2s; }
-    .term-tab.active { background: var(--primary); color: #fff; border-color: var(--primary); }
-    .btn-primary { background: var(--primary); color: #fff; border: none; padding: 11px 18px; border-radius: 8px; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; text-decoration: none; font-size: 0.88rem; }
-    .btn-primary:hover { background: var(--primary-light); }
+    .container { max-width: 1380px; margin: 18px auto; padding: 0 16px 40px; }
 
-    .exam-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 20px; }
-    .exam-card { background: var(--card); border-radius: 12px; padding: 20px; border: 1px solid var(--border); box-shadow: 0 2px 8px rgba(0,0,0,0.04); display: flex; flex-direction: column; }
-    .exam-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px; }
-    .badge { font-size: 0.65rem; padding: 4px 10px; border-radius: 20px; text-transform: uppercase; font-weight: 800; }
-    .badge-draft { background: #fef9c3; color: #854d0e; }
-    .badge-published { background: #dcfce7; color: #166534; }
-    .exam-title { font-size: 1.1rem; font-weight: 700; margin-bottom: 5px; }
-    .exam-meta { font-size: 0.8rem; color: var(--muted); margin-bottom: 15px; }
-    .exam-actions { display: flex; gap: 8px; margin-top: auto; flex-wrap: wrap; }
-    .btn-sm { padding: 7px 11px; border-radius: 6px; font-size: 0.75rem; font-weight: 600; cursor: pointer; border: none; text-decoration: none; display: inline-flex; align-items: center; gap: 4px; }
-    .btn-edit { background: #e0e7ff; color: #3730a3; }
-    .btn-results { background: #ccfbf1; color: #0f766e; }
-    .btn-publish { background: #dcfce7; color: #166534; }
-    .btn-delete { background: #fee2e2; color: #dc2626; }
+    .card { background: var(--card); border: 1px solid #e2e8f0; border-radius: 14px; padding: 18px; margin-bottom: 16px; box-shadow: 0 2px 10px rgba(15,23,42,0.04); }
+    .card h2, .card h3 { margin: 0 0 12px; font-size: 16px; color: var(--primary); display: flex; align-items: center; gap: 8px; }
 
-    .modal { display: none; position: fixed; inset: 0; background: rgba(15,23,42,0.6); z-index: 1000; justify-content: center; align-items: center; padding: 20px; }
-    .modal.show { display: flex; }
-    .modal-content { background: #fff; border-radius: 16px; max-width: 480px; width: 100%; padding: 26px; }
-    .form-group { margin-bottom: 14px; }
-    .form-group label { display: block; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; color: var(--muted); margin-bottom: 6px; }
-    .form-control { width: 100%; padding: 10px 12px; border: 2px solid var(--border); border-radius: 8px; font-family: inherit; font-size: 0.92rem; }
-    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .grid-context { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; }
+    .grid-2 { display: grid; grid-template-columns: 420px 1fr; gap: 16px; }
+    @media (max-width: 980px) { .grid-2 { grid-template-columns: 1fr; } }
+
+    label { display: block; font-size: 12px; font-weight: 700; color: var(--muted); margin-bottom: 8px; }
+    input, select, textarea { width: 100%; margin-top: 4px; padding: 9px 11px; border: 1px solid var(--border); border-radius: 8px; font-size: 13.5px; font-family: inherit; background: #fff; }
+    input:focus, select:focus, textarea:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(30,60,114,0.12); }
+
+    .btn { background: var(--primary); color: #fff; border: none; padding: 9px 15px; border-radius: 8px; font-weight: 700; font-size: 13px; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; transition: all 0.15s; text-decoration: none; }
+    .btn:hover:not(:disabled) { transform: translateY(-1px); opacity: 0.95; }
+    .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+    .btn.teal { background: var(--accent); }
+    .btn.purple { background: var(--purple); }
+    .btn.success { background: var(--success); }
+    .btn.warning { background: var(--warning); }
+    .btn.gray { background: #64748b; }
+    .btn.danger { background: var(--danger); }
+    .btn.outline { background: #fff; color: var(--primary); border: 1px solid var(--primary); }
+    .btn.sm { padding: 6px 10px; font-size: 12px; }
+
+    .bow-box { background: #eff6ff; border: 1px solid #bfdbfe; border-left: 4px solid #1d4ed8; border-radius: 10px; padding: 12px 14px; margin-bottom: 12px; font-size: 13px; }
+    .comp-list { max-height: 230px; overflow-y: auto; display: flex; flex-direction: column; gap: 6px; }
+    .comp-item { display: flex; gap: 8px; align-items: flex-start; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 8px 10px; font-size: 12.5px; cursor: pointer; }
+    .comp-item input { width: auto; margin-top: 3px; }
+
+    .tos-bar { display: flex; gap: 10px; flex-wrap: wrap; background: #f0fdf4; border: 1px solid #86efac; border-radius: 10px; padding: 10px 12px; margin-bottom: 12px; }
+    .tos-chip { background: #fff; border: 1px solid #bbf7d0; border-radius: 8px; padding: 6px 12px; font-size: 12px; font-weight: 700; color: #166534; }
+
+    table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+    th, td { border: 1px solid #cbd5e1; padding: 7px 8px; text-align: center; }
+    th { background: #1e3c72; color: #fff; font-size: 11.5px; }
+    td.left { text-align: left; }
+
+    .mode-tabs { display: flex; gap: 8px; margin-bottom: 14px; flex-wrap: wrap; }
+    .mode-tab { background: #fff; border: 1px solid var(--border); color: var(--muted); padding: 9px 14px; border-radius: 10px; font-weight: 700; font-size: 13px; cursor: pointer; display: inline-flex; align-items: center; gap: 7px; }
+    .mode-tab.active { background: var(--primary); color: #fff; border-color: var(--primary); }
+
+    .q-card { border: 1px solid #cbd5e1; border-radius: 10px; padding: 14px; margin-bottom: 12px; background: #fff; }
+    .q-meta { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 8px; }
+    .tag { padding: 2px 8px; border-radius: 999px; font-size: 11px; font-weight: 700; }
+    .tag.lots { background: #dbeafe; color: #1e40af; }
+    .tag.hots { background: #fef3c7; color: #92400e; }
+    .tag.type { background: #f3e8ff; color: #6b21a8; }
+
+    .stats-mini { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 14px; }
+    .stat-box { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 10px; text-align: center; }
+    .stat-box .val { font-size: 1.3rem; font-weight: 800; color: var(--primary); }
+    .stat-box .lbl { font-size: 0.7rem; font-weight: 700; color: var(--muted); text-transform: uppercase; }
+
+    .hidden { display: none !important; }
+    .status-bar { padding: 10px 14px; border-radius: 8px; background: #eff6ff; color: #1e40af; font-weight: 600; font-size: 13px; margin-top: 10px; }
+
+    .print-only { display: none; }
+    @media print {
+      body * { visibility: hidden; }
+      #printContainer, #printContainer * { visibility: visible; }
+      #printContainer { display: block !important; position: absolute; left: 0; top: 0; width: 100%; background: #fff; }
+      .exam-sheet-page { page-break-after: always; padding: 10mm 12mm; font-family: "Times New Roman", Times, serif; color: #000; font-size: 11pt; line-height: 1.4; }
+      .exam-sheet-page:last-child { page-break-after: auto; }
+    }
+    .sheet-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #000; padding-bottom: 8px; margin-bottom: 10px; gap: 12px; }
+    .sheet-student-box { border: 1.5px solid #000; padding: 8px 10px; margin-bottom: 12px; display: grid; grid-template-columns: 1fr 110px; gap: 10px; align-items: center; }
+    .bubble-strip { border: 1px dashed #475569; padding: 8px; margin-bottom: 12px; font-size: 9.5pt; background: #f8fafc; }
   </style>
 </head>
 <body>
 
-  <header class="header">
-    <h1><i class="fas fa-folder-open"></i> Open Assessment Hub <span style="font-size:0.85rem;font-weight:500;opacity:0.9;">— All Teachers Welcome</span></h1>
-    <div class="header-right">
-      <span class="mode-pill" id="hubModeBadge">Free Open Mode (Local + Cloud)</span>
-      <a href="assessment-tools.html" class="btn-back"><i class="fas fa-arrow-left"></i> Assessment Tools</a>
+<div class="topbar">
+  <div>
+    <div style="display:flex;gap:14px;flex-wrap:wrap;margin-bottom:2px;">
+      <a href="open-exam-hub.html">&larr; Open Assessment Hub</a>
+      <a href="assessment-tools.html">&larr; Assessment Tools</a>
     </div>
-  </header>
+    <h1><i class="fas fa-brain"></i> Smart Exam Creator (BoW + TOS + Online &amp; QR Print)</h1>
+  </div>
+  <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+    <button type="button" class="btn teal sm" id="btnSaveToHub"><i class="fas fa-save"></i> Save to Hub</button>
+    <span class="badge" id="authBadge">Initializing...</span>
+    <button type="button" class="btn gray sm" id="btnApiKey"><i class="fas fa-key"></i> Gemini API Key</button>
+  </div>
+</div>
 
-  <div class="container">
-    <div class="guest-notice" id="openTeacherBanner">
-      <div>
-        <strong>Free for All Teachers (Registered &amp; Non-Registered):</strong> Create exams, build TOS matrices, print QR sheets, and track results in your browser—no login required. SCPHS teachers can also sign in to sync with Firestore &amp; ECR.
-      </div>
-      <a href="login.html" class="btn-back" style="background:var(--purple);" id="signInLink">SCPHS Sign In</a>
+<div style="padding:0 16px;">
+  <div id="guestCreatorBanner" class="guest-banner hidden">
+    <div style="font-size:13px;">
+      <strong>🆓 Free Visiting / External Teacher Access:</strong> Create DepEd TOS exams (LOTS &amp; HOTS) with answer keys, save to your local Assessment Hub, print QR sheets, and log student scores for CSV export—no SCPHS account required.
+    </div>
+    <a href="../login.html" class="btn sm purple">SCPHS Faculty Sign In</a>
+  </div>
+</div>
+
+<div class="container">
+  <!-- STEP 1: DEPED BOW CONTEXT PICKER -->
+  <div class="card">
+    <h3><i class="fas fa-book-open"></i> 1. DepEd Budget of Work (BoW) Context</h3>
+    <div class="grid-context">
+      <label>Grade Level
+        <select id="pickGrade"><option value="">— Select —</option></select>
+      </label>
+      <label>Subject
+        <select id="pickSubject"><option value="">— Select —</option></select>
+      </label>
+      <label>Term
+        <select id="pickTerm">
+          <option value="1" selected>Term 1</option>
+          <option value="2">Term 2</option>
+          <option value="3">Term 3</option>
+          <option value="4">Term 4 (Legacy)</option>
+        </select>
+      </label>
+      <label>Week
+        <select id="pickWeek"></select>
+      </label>
+      <label>Target SF1 Class / Section
+        <select id="pickClass"><option value="">— Optional (for Online &amp; QR Print) —</option></select>
+      </label>
     </div>
 
-    <div class="action-bar">
-      <div class="term-tabs" id="termTabs">
-        <button class="term-tab active" data-term="1">Term 1</button>
-        <button class="term-tab" data-term="2">Term 2</button>
-        <button class="term-tab" data-term="3">Term 3</button>
-      </div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:12px;">
+      <button type="button" class="btn" id="btnLoadBoW" disabled><i class="fas fa-download"></i> Load BoW Competencies</button>
+      <span id="bowStatus" style="font-size:12.5px;color:var(--muted);align-self:center;">Select Grade, Subject, Term &amp; Week to load DepEd BoW competencies, or enter a custom topic below.</span>
+    </div>
 
-      <div style="display:flex;gap:10px;flex-wrap:wrap;">
-        <a href="exam-creator.html" class="btn-primary" style="background:var(--purple);">
-          <i class="fas fa-wand-magic-sparkles"></i> Smart Exam Creator (BoW + TOS)
-        </a>
-        <button class="btn-primary" onclick="openNewExamModal()">
-          <i class="fas fa-plus"></i> Quick New Assessment
+    <div id="bowStandardsWrap" class="hidden" style="margin-top:12px;">
+      <div id="bowContentStd" class="bow-box"></div>
+      <div id="bowPerfStd" class="bow-box" style="background:#f0fdf4;border-color:#bbf7d0;border-left-color:#15803d;"></div>
+      <label>Select Learning Competencies to Cover in Exam:
+        <div id="bowCompList" class="comp-list"></div>
+      </label>
+    </div>
+
+    <label style="margin-top:10px;">Custom Topic / Additional Competency Notes (Optional or if BoW is empty)
+      <textarea id="customTopicInput" rows="2" placeholder="e.g., Parts and Functions of an Automotive Engine Cooling System, Troubleshooting Overheating..."></textarea>
+    </label>
+  </div>
+
+  <div class="grid-2">
+    <!-- LEFT COLUMN: DEPED TOS (LOTS & HOTS) & QUESTION MIX -->
+    <div>
+      <div class="card">
+        <h3><i class="fas fa-table"></i> 2. DepEd Table of Specification (LOTS &amp; HOTS)</h3>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+          <label>Exam Title
+            <input type="text" id="examTitle" placeholder="e.g., Term 1 Summative Test #1" />
+          </label>
+          <label>Total Items
+            <input type="number" id="totalItems" value="20" min="5" max="100" />
+          </label>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+          <label>LOTS Percentage (%) <small>(Remembering &amp; Understanding)</small>
+            <input type="number" id="lotsPct" value="60" min="0" max="100" />
+          </label>
+          <label>HOTS Percentage (%) <small>(Applying, Analyzing, Evaluating, Creating)</small>
+            <input type="number" id="hotsPct" value="40" min="0" max="100" />
+          </label>
+        </div>
+
+        <div class="tos-bar" id="tosSummaryBar">
+          <div class="tos-chip" id="chipLots">LOTS: 60% (12 items)</div>
+          <div class="tos-chip" id="chipHots">HOTS: 40% (8 items)</div>
+        </div>
+
+        <label>Bloom's Cognitive Distribution (Auto-Calculated Items)</label>
+        <table>
+          <thead>
+            <tr>
+              <th>Level</th>
+              <th>Domain</th>
+              <th>Weight %</th>
+              <th>Items</th>
+            </tr>
+          </thead>
+          <tbody id="tosTableBody"></tbody>
+        </table>
+
+        <h3 style="margin-top:16px;"><i class="fas fa-list-check"></i> 3. Exam Question Types Mix</h3>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+          <label>Multiple Choice Items
+            <input type="number" id="cntMcq" value="10" min="0" />
+          </label>
+          <label>True or False Items
+            <input type="number" id="cntTf" value="4" min="0" />
+          </label>
+          <label>Identification Items
+            <input type="number" id="cntId" value="3" min="0" />
+          </label>
+          <label>Matching Type Pairs
+            <input type="number" id="cntMatch" value="2" min="0" />
+          </label>
+        </div>
+        <label>Essay / Constructed Response Items (HOTS)
+          <input type="number" id="cntEssay" value="1" min="0" max="10" />
+        </label>
+
+        <button type="button" class="btn purple" id="btnGenerateExam" style="width:100%;justify-content:center;padding:12px;margin-top:8px;">
+          <i class="fas fa-wand-magic-sparkles"></i> Generate Exam, TOS &amp; Answer Key with Gemini AI
         </button>
+        <div id="genStatus" class="status-bar hidden"></div>
       </div>
     </div>
 
-    <div class="exam-grid" id="examList"></div>
-  </div>
+    <!-- RIGHT COLUMN: GENERATED EXAM, ONLINE SECURE PUBLISH, QR PAPER PRINT & RESULTS -->
+    <div>
+      <div class="mode-tabs">
+        <button type="button" class="mode-tab active" data-panel="panel-preview"><i class="fas fa-file-alt"></i> Exam Questions &amp; Answer Key</button>
+        <button type="button" class="mode-tab" data-panel="panel-tos"><i class="fas fa-table"></i> Official DepEd TOS Matrix</button>
+        <button type="button" class="mode-tab" data-panel="panel-online"><i class="fas fa-shield-alt"></i> 1. Online Secured Exam</button>
+        <button type="button" class="mode-tab" data-panel="panel-print"><i class="fas fa-qrcode"></i> 2. Printable QR Exam Sheet</button>
+        <button type="button" class="mode-tab" data-panel="panel-results"><i class="fas fa-chart-bar"></i> 3. Scores &amp; CSV Results</button>
+      </div>
 
-  <!-- NEW ASSESSMENT MODAL -->
-  <div id="newExamModal" class="modal">
-    <div class="modal-content">
-      <h2 style="color:var(--primary);margin-bottom:16px;">Create New Assessment</h2>
-      <div class="form-group">
-        <label>Assessment Title *</label>
-        <input type="text" id="newExamTitle" class="form-control" placeholder="e.g., Summative Test 1 - Earth Science">
-      </div>
-      <div class="form-group">
-        <label>Subject / Class Label (Optional)</label>
-        <input type="text" id="newExamSubject" class="form-control" placeholder="e.g., Grade 8 Science - Section A">
-      </div>
-      <div class="form-row">
-        <div class="form-group">
-          <label>Category</label>
-          <select id="newExamCategory" class="form-control">
-            <option value="ww">Written Work (WW)</option>
-            <option value="pt">Performance Task (PT)</option>
-            <option value="st">Summative Test (ST)</option>
-            <option value="qa">Quarterly (QA)</option>
-          </select>
+      <!-- PANEL 1: QUESTIONS & ANSWER KEY -->
+      <div id="panel-preview" class="card mode-panel">
+        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:10px;">
+          <h3 style="margin:0;"><i class="fas fa-pen-to-square"></i> Generated Questions &amp; Answer Key</h3>
+          <label style="display:inline-flex;align-items:center;gap:6px;margin:0;cursor:pointer;">
+            <input type="checkbox" id="toggleAnswerKey" checked style="width:auto;margin:0;" /> Show Answer Key
+          </label>
         </div>
-        <div class="form-group">
-          <label>Term</label>
-          <select id="newExamTerm" class="form-control">
-            <option value="1">Term 1</option>
-            <option value="2">Term 2</option>
-            <option value="3">Term 3</option>
-          </select>
+        <div id="questionsPreviewHost">
+          <p style="color:var(--muted);font-size:13.5px;">Configure your BoW topic and TOS on the left, then click <strong>Generate Exam, TOS &amp; Answer Key with Gemini AI</strong>.</p>
         </div>
       </div>
-      <div class="form-group">
-        <label>Duration (Minutes)</label>
-        <input type="number" id="newExamDuration" class="form-control" value="60">
+
+      <!-- PANEL 2: OFFICIAL DEPED TOS MATRIX -->
+      <div id="panel-tos" class="card mode-panel hidden">
+        <h3><i class="fas fa-table"></i> Table of Specification (TOS) — LOTS &amp; HOTS Breakdown</h3>
+        <div id="tosMatrixHost">
+          <p style="color:var(--muted);font-size:13.5px;">Generate an exam to view the complete competency-by-Bloom's TOS matrix.</p>
+        </div>
       </div>
-      <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:18px;">
-        <button onclick="closeNewExamModal()" style="padding:10px 18px;border:none;background:#f1f5f9;color:#475569;border-radius:8px;font-weight:700;cursor:pointer;">Cancel</button>
-        <button onclick="createNewExam()" style="padding:10px 18px;border:none;background:var(--primary);color:#fff;border-radius:8px;font-weight:700;cursor:pointer;">Create &amp; Open Creator</button>
+
+      <!-- PANEL 3: ONLINE SECURED EXAM -->
+      <div id="panel-online" class="card mode-panel hidden">
+        <h3><i class="fas fa-lock"></i> Option A: Publish as Online Secured Exam (<code>secure-exam.html</code>)</h3>
+        <p style="font-size:13px;color:var(--muted);margin-top:0;">
+          Publishes this exam directly into Firestore (<code>exams</code> + <code>questions</code> subcollection) with anti-tab-switch, fullscreen lock, copy-paste block, and countdown timer enabled. <em>(Requires SCPHS Faculty Sign-In)</em>
+        </p>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+          <label>Exam Duration (Minutes)
+            <input type="number" id="onlineDuration" value="45" min="5" max="240" />
+          </label>
+          <label>Exam Status
+            <select id="onlineStatus">
+              <option value="published">Published (Ready for Students)</option>
+              <option value="draft">Draft (Hidden from Students)</option>
+            </select>
+          </label>
+        </div>
+        <button type="button" class="btn success" id="btnPublishOnline" style="margin-top:8px;">
+          <i class="fas fa-cloud-upload-alt"></i> Publish Online Secured Exam
+        </button>
+
+        <div id="onlineShareBox" class="hidden" style="margin-top:16px;padding:14px;background:#f0fdf4;border:1px solid #86efac;border-radius:10px;">
+          <div style="font-weight:700;color:#166534;margin-bottom:6px;">✅ Online Secured Exam Published!</div>
+          <label>Student Secure Exam Link
+            <input type="text" id="onlineExamUrl" readonly />
+          </label>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px;">
+            <button type="button" class="btn sm" id="btnCopyOnlineUrl"><i class="fas fa-copy"></i> Copy Link</button>
+            <a id="btnOpenOnlineExam" href="#" target="_blank" class="btn teal sm"><i class="fas fa-external-link-alt"></i> Preview Secure Exam</a>
+          </div>
+          <div style="margin-top:12px;text-align:center;">
+            <img id="onlineExamQr" alt="Secure Exam QR" width="160" height="160" style="border:1px solid #cbd5e1;border-radius:8px;padding:6px;background:#fff;" />
+            <div style="font-size:11.5px;color:#475569;margin-top:4px;">Students scan to launch Secure Exam</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- PANEL 4: PRINTABLE / DOWNLOADABLE QR EXAM SHEET FOR SMART EXAM CHECKER -->
+      <div id="panel-print" class="card mode-panel hidden">
+        <h3><i class="fas fa-qrcode"></i> Option B: Printable / Downloadable Exam Sheet with Student QR Code</h3>
+        <p style="font-size:13px;color:var(--muted);margin-top:0;">
+          Generates an A4 test paper with an embedded <strong>Student QR Code (LRN, Name, Class ID)</strong> and answer strip so you can scan completed papers directly into <strong>Smart Exam Checker Pro</strong>.
+        </p>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+          <label>Print Scope
+            <select id="printScope">
+              <option value="blank">Blank Master Copy (Student writes Name &amp; LRN)</option>
+              <option value="class_roster">Personalized SF1 Class Copy (1 Sheet per Student with QR)</option>
+            </select>
+          </label>
+          <label>Include Answer Key Page at End?
+            <select id="printIncludeKey">
+              <option value="yes">Yes — Append Teacher Answer Key &amp; TOS</option>
+              <option value="no">No — Student Test Paper Only</option>
+            </select>
+          </label>
+        </div>
+
+        <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:10px;">
+          <button type="button" class="btn" id="btnPrintExam"><i class="fas fa-print"></i> Print / Save as PDF</button>
+          <button type="button" class="btn teal" id="btnDownloadExamHtml"><i class="fas fa-file-download"></i> Download Printable HTML</button>
+          <button type="button" class="btn outline" id="btnDownloadGuestKey"><i class="fas fa-file-code"></i> Download Key &amp; TOS (JSON)</button>
+          <button type="button" class="btn purple" id="btnPushKeyToChecker"><i class="fas fa-sync"></i> Save Key to Smart Exam Checker</button>
+        </div>
+      </div>
+
+      <!-- PANEL 5: OPEN RESULTS & CSV SCORE LOGGER -->
+      <div id="panel-results" class="card mode-panel hidden">
+        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:12px;">
+          <h3 style="margin:0;"><i class="fas fa-chart-bar"></i> Student Scores &amp; Results (Free Local &amp; Cloud)</h3>
+          <button type="button" class="btn outline sm" id="btnExportScoresCsv"><i class="fas fa-file-csv"></i> Export Results CSV</button>
+        </div>
+
+        <div class="stats-mini">
+          <div class="stat-box"><div class="val" id="resCount">0</div><div class="lbl">Submissions</div></div>
+          <div class="stat-box"><div class="val" id="resAvg">0%</div><div class="lbl">Class Avg</div></div>
+          <div class="stat-box"><div class="val" id="resHigh">0</div><div class="lbl">Highest</div></div>
+          <div class="stat-box"><div class="val" id="resLow">0</div><div class="lbl">Lowest</div></div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1.5fr 0.7fr 0.7fr auto;gap:8px;align-items:end;margin-bottom:14px;">
+          <label style="margin:0;">Student Name / LRN
+            <input type="text" id="scoreStudentName" placeholder="e.g., Dela Cruz, Juan" />
+          </label>
+          <label style="margin:0;">Score
+            <input type="number" id="scoreEarned" min="0" value="0" />
+          </label>
+          <label style="margin:0;">Total Pts
+            <input type="number" id="scoreTotal" min="1" value="20" />
+          </label>
+          <button type="button" class="btn success" id="btnAddScore"><i class="fas fa-plus"></i> Log Score</button>
+        </div>
+
+        <div style="overflow-x:auto;">
+          <table>
+            <thead>
+              <tr>
+                <th>Student Name / LRN</th>
+                <th>Score</th>
+                <th>Percentage</th>
+                <th>Source</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody id="scoresTableBody">
+              <tr><td colspan="5" style="color:var(--muted);padding:18px;">No student scores logged yet.</td></tr>
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   </div>
+</div>
 
-  <script type="module">
-    import { auth, db } from "./assets/js/firebase-config.js";
-    import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-    import { collection, query, where, getDocs, addDoc, serverTimestamp, doc, updateDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+<!-- Hidden Print Host -->
+<div id="printContainer" class="print-only"></div>
 
-    const LOCAL_EXAMS_KEY = "scphs_open_exams_v1";
-    let CURRENT_USER = null;
-    let CURRENT_TERM = 1;
-    let CLASS_ID = new URLSearchParams(location.search).get("classId") || "OPEN-CLASS";
+<script type="module">
+  import { auth, db } from "../assets/js/firebase-config.js";
+  import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+  import {
+    collection, doc, getDoc, getDocs, setDoc, addDoc, query, where, serverTimestamp
+  } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
-    function readLocalExams() {
-      try { return JSON.parse(localStorage.getItem(LOCAL_EXAMS_KEY) || "[]"); } catch (_) { return []; }
+  const LOCAL_EXAMS_KEY = "scphs_open_exams_v1";
+  const LOCAL_SCORES_KEY = "scphs_open_scores_v1";
+  let GEMINI_API_KEY = localStorage.getItem("scphs_gemini_api_key") || "";
+  const GEMINI_MODEL_CASCADE = ["gemini-2.5-flash", "gemini-2.0-flash", "gemini-1.5-flash"];
+
+  const urlParams = new URLSearchParams(location.search);
+  let ACTIVE_EXAM_ID = urlParams.get("examId") || "";
+  let ACTIVE_SOURCE = urlParams.get("source") || "";
+  const INITIAL_PANEL = urlParams.get("panel") || "";
+
+  let currentUser = null;
+  let SUBJECTS = [];
+  let CLASSES = [];
+  let CLASS_STUDENTS = [];
+  let CURRENT_BOW = { termDoc: null, competencies: [] };
+  let GENERATED_EXAM = null;
+  let ILAW_CONFIG = null;
+  let SCORE_ROWS = [];
+
+  const $ = (id) => document.getElementById(id);
+  const esc = (s) => String(s ?? "")
+    .replace(/&/g, "&amp;").replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+
+  function readLocalExams() {
+    try { return JSON.parse(localStorage.getItem(LOCAL_EXAMS_KEY) || "[]"); } catch (_) { return []; }
+  }
+  function writeLocalExams(list) {
+    localStorage.setItem(LOCAL_EXAMS_KEY, JSON.stringify(list));
+  }
+  function readLocalScores() {
+    try { return JSON.parse(localStorage.getItem(LOCAL_SCORES_KEY) || "[]"); } catch (_) { return []; }
+  }
+  function writeLocalScores(list) {
+    localStorage.setItem(LOCAL_SCORES_KEY, JSON.stringify(list));
+  }
+
+  function switchPanel(panelId) {
+    const tab = document.querySelector(`.mode-tab[data-panel="${panelId}"]`);
+    if (!tab) return;
+    document.querySelectorAll(".mode-tab").forEach((b) => b.classList.remove("active"));
+    document.querySelectorAll(".mode-panel").forEach((p) => p.classList.add("hidden"));
+    tab.classList.add("active");
+    $(panelId).classList.remove("hidden");
+  }
+
+  // ============================================================
+  // 0. IMMEDIATE UI HYDRATION
+  // ============================================================
+  function initStaticDropdowns() {
+    $("pickWeek").innerHTML = Array.from({ length: 13 }, (_, i) =>
+      `<option value="${i + 1}">Week ${i + 1}</option>`
+    ).join("");
+
+    const grades = ["K", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12"];
+    $("pickGrade").innerHTML = `<option value="">— Select —</option>` +
+      grades.map((g) => `<option value="${g}">${g === "K" ? "Kindergarten" : "Grade " + g}</option>`).join("");
+
+    recalcTOS();
+    if (INITIAL_PANEL === "results") switchPanel("panel-results");
+    loadExistingExamIfAny();
+    loadScoresForExam();
+  }
+
+  initStaticDropdowns();
+
+  Promise.allSettled([
+    import("../assets/js/bow-store.js"),
+    import("../assets/js/ilaw-config.js")
+  ]).then(async () => {
+    if (window.ILAWConfig?.load) {
+      try { ILAW_CONFIG = await window.ILAWConfig.load(); } catch (_) {}
     }
-    function writeLocalExams(list) {
-      localStorage.setItem(LOCAL_EXAMS_KEY, JSON.stringify(list));
+  });
+
+  // ============================================================
+  // 1. AUTH & FREE VISITING TEACHER ACCESS
+  // ============================================================
+  onAuthStateChanged(auth, async (user) => {
+    currentUser = user || null;
+    const isGuest = !user;
+
+    $("authBadge").textContent = user
+      ? `Signed in: ${user.email}`
+      : "Free Guest / Visiting Teacher Mode";
+
+    $("guestCreatorBanner").classList.toggle("hidden", !isGuest);
+    $("btnPublishOnline").disabled = isGuest;
+    $("btnPushKeyToChecker").disabled = isGuest;
+
+    if (isGuest) {
+      $("btnPublishOnline").title = "Sign in with an SCPHS account to publish to the SCPHS Online Secure Exam portal";
+      $("btnPushKeyToChecker").title = "Sign in with an SCPHS account to push keys to SCPHS Firestore";
     }
 
-    onAuthStateChanged(auth, async (user) => {
-      CURRENT_USER = user || null;
-      document.getElementById("hubModeBadge").textContent = user
-        ? `Signed in: ${user.email}`
-        : "Free Open Mode (No Login Required)";
-      document.getElementById("signInLink").style.display = user ? "none" : "inline-flex";
-      await loadExams();
-    });
+    await loadSubjects();
+    if (!isGuest) {
+      await loadClasses();
+      if (ACTIVE_EXAM_ID && ACTIVE_SOURCE === "cloud") {
+        await loadExistingExamIfAny();
+      }
+      await loadScoresForExam();
+    }
+  });
 
-    document.getElementById("termTabs").addEventListener("click", (e) => {
-      if (!e.target.classList.contains("term-tab")) return;
-      document.querySelectorAll(".term-tab").forEach((b) => b.classList.remove("active"));
-      e.target.classList.add("active");
-      CURRENT_TERM = parseInt(e.target.dataset.term, 10);
-      loadExams();
-    });
-
-    async function loadExams() {
-      const listEl = document.getElementById("examList");
-      let exams = readLocalExams().map((e) => ({ ...e, _source: "local" }));
-
-      if (CURRENT_USER) {
-        try {
-          const q = CLASS_ID !== "OPEN-CLASS"
-            ? query(collection(db, "exams"), where("classId", "==", CLASS_ID))
-            : query(collection(db, "exams"), where("createdBy", "==", CURRENT_USER.uid));
-          const snap = await getDocs(q);
-          const cloudExams = snap.docs.map((d) => ({ id: d.id, ...d.data(), _source: "cloud" }));
-          exams = [...cloudExams, ...exams];
-        } catch (err) {
-          console.warn("Cloud exam list fallback to local:", err);
+  async function loadExistingExamIfAny() {
+    if (!ACTIVE_EXAM_ID) return;
+    if (ACTIVE_SOURCE === "local" || ACTIVE_EXAM_ID.startsWith("local_")) {
+      const found = readLocalExams().find((e) => e.id === ACTIVE_EXAM_ID);
+      if (found) {
+        $("examTitle").value = found.title || "";
+        if (found.term) $("pickTerm").value = String(found.term);
+        if (found.duration) $("onlineDuration").value = found.duration;
+        if (Array.isArray(found.questions) && found.questions.length) {
+          GENERATED_EXAM = {
+            title: found.title,
+            gradeLevel: found.gradeLevel || "",
+            subjectCode: found.subject || "",
+            subjectName: found.subject || "Subject",
+            term: String(found.term || "1"),
+            week: String(found.week || "1"),
+            tos: found.tos || recalcTOS(),
+            tosMatrix: found.tosMatrix || [],
+            questions: found.questions
+          };
+          $("scoreTotal").value = found.questions.reduce((s, q) => s + (Number(q.points) || 1), 0);
+          renderGeneratedPreview();
+          renderTosMatrix();
         }
       }
+      return;
+    }
 
-      const filtered = exams.filter((ex) => String(ex.term || "1") === String(CURRENT_TERM));
-      if (!filtered.length) {
-        listEl.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:50px;color:var(--muted);">
-          <div style="font-size:2.5rem;margin-bottom:10px;">📝</div>
-          <h3>No assessments for Term ${CURRENT_TERM} yet</h3>
-          <p>Click <strong>Smart Exam Creator (BoW + TOS)</strong> or <strong>Quick New Assessment</strong> to begin.</p>
-        </div>`;
+    if (currentUser && ACTIVE_SOURCE === "cloud") {
+      try {
+        const snap = await getDoc(doc(db, "exams", ACTIVE_EXAM_ID));
+        if (snap.exists()) {
+          const data = snap.data();
+          $("examTitle").value = data.title || "";
+          if (data.term) $("pickTerm").value = String(data.term);
+          if (data.duration) $("onlineDuration").value = data.duration;
+          const qSnap = await getDocs(collection(db, "exams", ACTIVE_EXAM_ID, "questions"));
+          const questions = qSnap.docs.map((d) => ({ id: d.id, ...d.data() }))
+            .sort((a, b) => (a.order || 0) - (b.order || 0));
+          if (questions.length) {
+            GENERATED_EXAM = {
+              title: data.title,
+              gradeLevel: data.gradeLevel || "",
+              subjectCode: data.subjectCode || data.subject || "",
+              subjectName: data.subject || "Subject",
+              term: String(data.term || "1"),
+              week: String(data.week || "1"),
+              tos: data.tosSummary || recalcTOS(),
+              tosMatrix: [],
+              questions
+            };
+            $("scoreTotal").value = questions.reduce((s, q) => s + (Number(q.points) || 1), 0);
+            renderGeneratedPreview();
+            renderTosMatrix();
+          }
+        }
+      } catch (err) {
+        console.warn("Cloud exam load note:", err);
+      }
+    }
+  }
+
+  $("btnSaveToHub").addEventListener("click", async () => {
+    const title = $("examTitle").value.trim() || GENERATED_EXAM?.title || "Untitled Assessment";
+    const subjectName = ($("pickSubject").value ? $("pickSubject").selectedOptions[0]?.textContent : "") || GENERATED_EXAM?.subjectName || "General Subject";
+    const term = $("pickTerm").value || "1";
+    const questions = GENERATED_EXAM?.questions || [];
+
+    if (currentUser && ACTIVE_SOURCE === "cloud" && ACTIVE_EXAM_ID) {
+      await setDoc(doc(db, "exams", ACTIVE_EXAM_ID), {
+        title, subject: subjectName, term: Number(term), questionsCount: questions.length, updatedAt: serverTimestamp()
+      }, { merge: true });
+      alert("Saved exam metadata to Cloud Assessment Hub!");
+      return;
+    }
+
+    const list = readLocalExams();
+    const id = ACTIVE_EXAM_ID && ACTIVE_EXAM_ID.startsWith("local_") ? ACTIVE_EXAM_ID : ("local_" + Date.now());
+    const idx = list.findIndex((e) => e.id === id);
+    const entry = {
+      id,
+      title,
+      subject: subjectName,
+      classId: $("pickClass").value || "OPEN-CLASS",
+      type: "ww",
+      term,
+      duration: Number($("onlineDuration").value) || 60,
+      status: idx >= 0 ? list[idx].status : "draft",
+      tos: GENERATED_EXAM?.tos || recalcTOS(),
+      tosMatrix: GENERATED_EXAM?.tosMatrix || [],
+      questions,
+      questionsCount: questions.length,
+      updatedAt: new Date().toISOString()
+    };
+    if (idx >= 0) list[idx] = entry;
+    else list.unshift(entry);
+    writeLocalExams(list);
+    ACTIVE_EXAM_ID = id;
+    ACTIVE_SOURCE = "local";
+    alert("Saved to Open Assessment Hub (Browser Storage)!");
+  });
+
+  async function loadSubjects() {
+    try {
+      const snap = await getDocs(collection(db, "subjects"));
+      SUBJECTS = snap.docs.map((d) => ({ id: d.id, ...d.data() })).filter((s) => s.active !== false);
+      const grade = $("pickGrade").value;
+      if (grade) {
+        const filtered = SUBJECTS.filter((s) => String(s.level) === String(grade));
+        $("pickSubject").innerHTML = `<option value="">— Select —</option>` +
+          filtered.map((s) => `<option value="${esc(s.id)}">${esc(s.displayName || s.id)}</option>`).join("");
+      }
+    } catch (_) {
+      SUBJECTS = [];
+    }
+  }
+
+  async function loadClasses() {
+    try {
+      const snap = await getDocs(collection(db, "classes"));
+      CLASSES = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+      $("pickClass").innerHTML = `<option value="">— Optional (for Online &amp; QR Print) —</option>` +
+        CLASSES.map((c) => `<option value="${esc(c.id)}">${esc(c.classLabel || c.name || c.id)}</option>`).join("");
+    } catch (_) {}
+  }
+
+  $("pickClass").addEventListener("change", async (e) => {
+    const classId = e.target.value;
+    CLASS_STUDENTS = [];
+    if (!classId) return;
+    try {
+      const snap = await getDocs(collection(db, "classes", classId, "students"));
+      CLASS_STUDENTS = snap.docs.map((d) => {
+        const st = d.data();
+        return {
+          id: d.id,
+          classId,
+          lrn: String(st.lrn || st.LRN || d.id),
+          fullName: st.fullName || `${st.lastName || ""}, ${st.firstName || ""}`.trim() || d.id
+        };
+      }).sort((a, b) => a.fullName.localeCompare(b.fullName));
+    } catch (_) {}
+  });
+
+  $("pickGrade").addEventListener("change", () => {
+    const grade = $("pickGrade").value;
+    const filtered = SUBJECTS.filter((s) => String(s.level) === String(grade));
+    $("pickSubject").innerHTML = `<option value="">— Select —</option>` +
+      filtered.map((s) => `<option value="${esc(s.id)}">${esc(s.displayName || s.id)}</option>`).join("");
+    checkBoWReady();
+  });
+
+  ["pickSubject", "pickTerm", "pickWeek"].forEach((id) => {
+    $(id).addEventListener("change", checkBoWReady);
+  });
+
+  function checkBoWReady() {
+    const ready = !!$("pickGrade").value && !!$("pickSubject").value;
+    $("btnLoadBoW").disabled = !ready;
+  }
+
+  // ============================================================
+  // 2. LOAD DEPED BOW COMPETENCIES
+  // ============================================================
+  $("btnLoadBoW").addEventListener("click", async () => {
+    const subjectCode = $("pickSubject").value;
+    const term = parseInt($("pickTerm").value, 10);
+    if (!subjectCode) return;
+
+    $("bowStatus").textContent = "Loading BoW from Firestore...";
+    try {
+      const termDoc = window.BoW ? await window.BoW.getBoWTerm(subjectCode, term) : null;
+      const competencies = (termDoc && window.BoW) ? await window.BoW.listCompetencies(subjectCode, term) : [];
+      CURRENT_BOW = { termDoc, competencies };
+
+      $("bowStandardsWrap").classList.remove("hidden");
+      $("bowContentStd").innerHTML = `<strong>Content Standard:</strong> ${esc(termDoc?.contentStandard || "Not specified in BoW")}`;
+      $("bowPerfStd").innerHTML = `<strong>Performance Standard:</strong> ${esc(termDoc?.performanceStandard || "Not specified in BoW")}`;
+
+      if (!competencies.length) {
+        $("bowCompList").innerHTML = `<div style="font-size:12.5px;color:#64748b;">No BoW competencies found for this term. Enter your topic below.</div>`;
+        $("bowStatus").textContent = "No BoW entries found — use custom topic box.";
         return;
       }
 
-      listEl.innerHTML = filtered.map((data) => {
-        const isPub = data.status === "published";
-        const safeTitle = String(data.title || "Untitled Exam").replace(/</g, "&lt;");
-        return `
-          <div class="exam-card">
-            <div class="exam-header">
-              <span class="badge ${isPub ? "badge-published" : "badge-draft"}">${data.status || "draft"}</span>
-              <span style="font-size:0.75rem;color:var(--muted);text-transform:uppercase;font-weight:700;">${data.type || "ww"} • ${data._source}</span>
-            </div>
-            <div class="exam-title">${safeTitle}</div>
-            <div class="exam-meta">${data.subject || CLASS_ID} • ${data.questionsCount || (data.questions?.length || 0)} Items • ${data.duration || 60} Mins</div>
-            <div class="exam-actions">
-              <a href="exam-creator.html?examId=${encodeURIComponent(data.id)}&source=${data._source}" class="btn-sm btn-edit"><i class="fas fa-edit"></i> Edit / Print</a>
-              <a href="exam-creator.html?examId=${encodeURIComponent(data.id)}&source=${data._source}&panel=results" class="btn-sm btn-results"><i class="fas fa-chart-bar"></i> Results</a>
-              ${!isPub ? `<button onclick="publishExam('${data.id}', '${data._source}')" class="btn-sm btn-publish"><i class="fas fa-rocket"></i> Publish</button>` : ""}
-              <button onclick="deleteExam('${data.id}', '${data._source}')" class="btn-sm btn-delete"><i class="fas fa-trash"></i></button>
-            </div>
+      $("bowCompList").innerHTML = competencies.map((c, idx) => `
+        <label class="comp-item">
+          <input type="checkbox" class="bow-comp-cb" value="${idx}" ${idx < 3 ? "checked" : ""} />
+          <div>
+            <strong>${esc(c.code || "LC-" + (idx + 1))}</strong>: ${esc(c.text)}
           </div>
-        `;
-      }).join("");
+        </label>
+      `).join("");
+
+      $("bowStatus").textContent = `Loaded ${competencies.length} BoW competencies.`;
+      if (!$("examTitle").value) {
+        const subjName = $("pickSubject").selectedOptions[0]?.textContent || subjectCode;
+        const termLbl = term === 4 ? "Legacy" : `Term ${term}`;
+        $("examTitle").value = `${subjName} — ${termLbl} Week ${$("pickWeek").value} Exam`;
+      }
+    } catch (err) {
+      $("bowStatus").textContent = `BoW Error: ${err.message}`;
+    }
+  });
+
+  // ============================================================
+  // 3. DEPED TOS (LOTS & HOTS) CALCULATOR
+  // ============================================================
+  function recalcTOS() {
+    const total = Math.max(5, Number($("totalItems").value) || 20);
+    let lotsPct = Math.min(100, Math.max(0, Number($("lotsPct").value) || 0));
+    const hotsPct = 100 - lotsPct;
+    $("hotsPct").value = hotsPct;
+
+    const lotsItems = Math.round((total * lotsPct) / 100);
+    const hotsItems = total - lotsItems;
+
+    $("chipLots").textContent = `LOTS: ${lotsPct}% (${lotsItems} items)`;
+    $("chipHots").textContent = `HOTS: ${hotsPct}% (${hotsItems} items)`;
+
+    const remItems = Math.ceil(lotsItems * 0.5);
+    const undItems = lotsItems - remItems;
+
+    const appItems = Math.round(hotsItems * 0.4);
+    const anaItems = Math.round(hotsItems * 0.3);
+    const evaItems = Math.round(hotsItems * 0.15);
+    const creItems = Math.max(0, hotsItems - appItems - anaItems - evaItems);
+
+    const rows = [
+      { level: "Remembering", domain: "LOTS", pct: total ? Math.round((remItems / total) * 100) : 0, items: remItems },
+      { level: "Understanding", domain: "LOTS", pct: total ? Math.round((undItems / total) * 100) : 0, items: undItems },
+      { level: "Applying", domain: "HOTS", pct: total ? Math.round((appItems / total) * 100) : 0, items: appItems },
+      { level: "Analyzing", domain: "HOTS", pct: total ? Math.round((anaItems / total) * 100) : 0, items: anaItems },
+      { level: "Evaluating", domain: "HOTS", pct: total ? Math.round((evaItems / total) * 100) : 0, items: evaItems },
+      { level: "Creating", domain: "HOTS", pct: total ? Math.round((creItems / total) * 100) : 0, items: creItems }
+    ];
+
+    $("tosTableBody").innerHTML = rows.map((r) => `
+      <tr>
+        <td class="left"><strong>${r.level}</strong></td>
+        <td><span class="tag ${r.domain.toLowerCase()}">${r.domain}</span></td>
+        <td>${r.pct}%</td>
+        <td><strong>${r.items}</strong></td>
+      </tr>
+    `).join("");
+
+    return { total, lotsPct, hotsPct, lotsItems, hotsItems, rows };
+  }
+
+  ["totalItems", "lotsPct"].forEach((id) => $(id).addEventListener("input", recalcTOS));
+  $("hotsPct").addEventListener("input", () => {
+    const h = Math.min(100, Math.max(0, Number($("hotsPct").value) || 0));
+    $("lotsPct").value = 100 - h;
+    recalcTOS();
+  });
+
+  // ============================================================
+  // 4. GEMINI AI EXAM + TOS GENERATOR
+  // ============================================================
+  $("btnApiKey").addEventListener("click", () => {
+    const k = prompt("Enter or update your Google Gemini API Key:", GEMINI_API_KEY);
+    if (k !== null) {
+      GEMINI_API_KEY = k.trim();
+      localStorage.setItem("scphs_gemini_api_key", GEMINI_API_KEY);
+      alert("API Key saved.");
+    }
+  });
+
+  function ensureKey() {
+    if (!GEMINI_API_KEY) {
+      const k = prompt("Enter your Google Gemini API Key (starts with AIza...):");
+      if (k && k.trim()) {
+        GEMINI_API_KEY = k.trim();
+        localStorage.setItem("scphs_gemini_api_key", GEMINI_API_KEY);
+      }
+    }
+    return GEMINI_API_KEY;
+  }
+
+  async function callGeminiJson(promptText) {
+    const key = ensureKey();
+    if (!key) throw new Error("Gemini API Key is required.");
+    let lastErr = null;
+    for (const model of GEMINI_MODEL_CASCADE) {
+      try {
+        const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${encodeURIComponent(key)}`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            contents: [{ role: "user", parts: [{ text: promptText }] }],
+            generationConfig: { temperature: 0.3, maxOutputTokens: 8192, responseMimeType: "application/json" }
+          })
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error?.message || `HTTP ${res.status}`);
+        return JSON.parse(data.candidates?.[0]?.content?.parts?.[0]?.text || "{}");
+      } catch (err) {
+        lastErr = err;
+        if (err.message?.includes("API_KEY_INVALID")) throw err;
+      }
+    }
+    throw lastErr || new Error("Gemini failed to respond.");
+  }
+
+  $("btnGenerateExam").addEventListener("click", async () => {
+    const selectedComps = Array.from(document.querySelectorAll(".bow-comp-cb:checked"))
+      .map((cb) => CURRENT_BOW.competencies[Number(cb.value)])
+      .filter(Boolean);
+    const customTopic = $("customTopicInput").value.trim();
+
+    if (!selectedComps.length && !customTopic) {
+      return alert("Select at least one BoW competency or enter a custom topic first.");
     }
 
-    window.openNewExamModal = () => {
-      document.getElementById("newExamTerm").value = String(CURRENT_TERM);
-      document.getElementById("newExamModal").classList.add("show");
-      document.getElementById("newExamTitle").focus();
-    };
-    window.closeNewExamModal = () => {
-      document.getElementById("newExamModal").classList.remove("show");
+    const tos = recalcTOS();
+    const mix = {
+      multiple_choice: Number($("cntMcq").value) || 0,
+      true_false: Number($("cntTf").value) || 0,
+      identification: Number($("cntId").value) || 0,
+      matching: Number($("cntMatch").value) || 0,
+      essay: Number($("cntEssay").value) || 0
     };
 
-    window.createNewExam = async () => {
-      const title = document.getElementById("newExamTitle").value.trim();
-      if (!title) return alert("Please enter an assessment title.");
-      const subject = document.getElementById("newExamSubject").value.trim() || "General Subject";
-      const category = document.getElementById("newExamCategory").value;
-      const term = document.getElementById("newExamTerm").value;
-      const duration = parseInt(document.getElementById("newExamDuration").value, 10) || 60;
+    const grade = $("pickGrade").value || "Senior High School";
+    const subjectName = ($("pickSubject").value ? $("pickSubject").selectedOptions[0]?.textContent : "") || "Subject";
+    const term = $("pickTerm").value;
+    const week = $("pickWeek").value;
+    const title = $("examTitle").value.trim() || `${subjectName} Term ${term} Week ${week} Assessment`;
 
-      if (CURRENT_USER) {
-        try {
-          const docRef = await addDoc(collection(db, "exams"), {
-            title, subject, classId: CLASS_ID, type: category, term, duration,
-            status: "draft", createdBy: CURRENT_USER.uid, createdAt: serverTimestamp(), questionsCount: 0
-          });
-          location.href = `exam-creator.html?examId=${encodeURIComponent(docRef.id)}&source=cloud`;
-          return;
-        } catch (err) {
-          console.warn("Saving locally instead:", err);
-        }
+    const status = $("genStatus");
+    status.classList.remove("hidden");
+    status.textContent = "Generating DepEd TOS-aligned exam questions & answer key with Gemini AI...";
+    $("btnGenerateExam").disabled = true;
+
+    const compText = selectedComps.length
+      ? selectedComps.map((c) => `- [${c.code || "LC"}] ${c.text}`).join("\n")
+      : `- [TOPIC] ${customTopic}`;
+
+    const prompt = `You are a Philippine DepEd Master Teacher and Assessment Specialist.
+Create a complete, high-quality exam aligned with the DepEd Budget of Work (BoW) and Table of Specification (TOS).
+
+Context:
+- Grade Level: ${grade}
+- Subject: ${subjectName}
+- Term: ${term === "4" ? "Legacy" : "Term " + term}, Week ${week}
+- Content Standard: ${CURRENT_BOW.termDoc?.contentStandard || "N/A"}
+- Performance Standard: ${CURRENT_BOW.termDoc?.performanceStandard || "N/A"}
+- Competencies / Topics:
+${compText}
+${customTopic ? `Additional Focus: ${customTopic}` : ""}
+
+DepEd Table of Specification (TOS) Target:
+- LOTS (${tos.lotsPct}% = ${tos.lotsItems} items): Remembering, Understanding
+- HOTS (${tos.hotsPct}% = ${tos.hotsItems} items): Applying, Analyzing, Evaluating, Creating
+
+Exact Question Type Counts to Generate:
+- multiple_choice: ${mix.multiple_choice} items (4 options, correct_answer must be "A", "B", "C", or "D")
+- true_false: ${mix.true_false} items (correct_answer must be "True" or "False")
+- identification: ${mix.identification} items (short exact term/phrase as correct_answer)
+- matching: ${mix.matching} items (each item has matching_pairs array of { "left": "...", "right": "..." })
+- essay: ${mix.essay} items (HOTS constructed response with points: 5 or 10, and rubric/sample answer in correct_answer)
+
+Return STRICT JSON matching this exact schema:
+{
+  "title": "${title}",
+  "tosMatrix": [
+    {
+      "competency": "Code & Competency",
+      "remembering": [1, 2],
+      "understanding": [3],
+      "applying": [4],
+      "analyzing": [],
+      "evaluating": [],
+      "creating": [],
+      "totalItems": 4,
+      "percentage": 20
+    }
+  ],
+  "questions": [
+    {
+      "order": 1,
+      "type": "multiple_choice",
+      "bloomLevel": "Remembering",
+      "cognitiveGroup": "LOTS",
+      "competencyCode": "LC-1",
+      "points": 1,
+      "question": "Question text here",
+      "options": ["Option A text", "Option B text", "Option C text", "Option D text"],
+      "correct_answer": "A",
+      "matching_pairs": []
+    }
+  ]
+}`;
+
+    try {
+      const result = await callGeminiJson(prompt);
+      GENERATED_EXAM = {
+        title: result.title || title,
+        gradeLevel: grade,
+        subjectCode: $("pickSubject").value || subjectName,
+        subjectName,
+        term,
+        week,
+        tos,
+        tosMatrix: result.tosMatrix || [],
+        questions: (result.questions || []).map((q, idx) => ({ ...q, order: idx + 1 }))
+      };
+
+      $("scoreTotal").value = GENERATED_EXAM.questions.reduce((s, q) => s + (Number(q.points) || 1), 0);
+      renderGeneratedPreview();
+      renderTosMatrix();
+      status.textContent = `Generated ${GENERATED_EXAM.questions.length} items (${tos.lotsPct}% LOTS / ${tos.hotsPct}% HOTS). Ready for Online Secure Exam or QR Print!`;
+    } catch (err) {
+      status.textContent = `Generation Error: ${err.message}`;
+    } finally {
+      $("btnGenerateExam").disabled = false;
+    }
+  });
+
+  // ============================================================
+  // 5. RENDER PREVIEW & TOS MATRIX
+  // ============================================================
+  function renderGeneratedPreview() {
+    const host = $("questionsPreviewHost");
+    if (!GENERATED_EXAM?.questions?.length) return;
+    const showKey = $("toggleAnswerKey").checked;
+
+    host.innerHTML = GENERATED_EXAM.questions.map((q, i) => {
+      const num = i + 1;
+      const isHots = String(q.cognitiveGroup).toUpperCase() === "HOTS";
+      let body = "";
+
+      if (q.type === "multiple_choice") {
+        body = `<ul style="margin:6px 0 6px 18px;">` +
+          (q.options || []).map((opt, oi) => `<li><strong>${String.fromCharCode(65 + oi)}.</strong> ${esc(opt)}</li>`).join("") +
+          `</ul>`;
+      } else if (q.type === "matching") {
+        body = `<div style="margin:6px 0;font-size:12.5px;">` +
+          (q.matching_pairs || []).map((p) => `<div>• <strong>${esc(p.left)}</strong> &rarr; ${esc(p.right)}</div>`).join("") +
+          `</div>`;
       }
 
-      const localId = "local_" + Date.now();
-      const list = readLocalExams();
-      list.unshift({
-        id: localId, title, subject, classId: CLASS_ID, type: category, term, duration,
-        status: "draft", questions: [], questionsCount: 0, createdAt: new Date().toISOString()
+      const keyHtml = showKey
+        ? `<div style="margin-top:6px;padding:6px 10px;background:#f0fdf4;border-radius:6px;color:#166534;font-size:12.5px;"><strong>Answer Key:</strong> ${esc(q.correct_answer)}</div>`
+        : "";
+
+      return `
+        <div class="q-card">
+          <div class="q-meta">
+            <span class="tag ${isHots ? "hots" : "lots"}">${esc(q.cognitiveGroup || "LOTS")} • ${esc(q.bloomLevel || "")}</span>
+            <span class="tag type">${esc(q.type)}</span>
+            <span class="tag" style="background:#f1f5f9;color:#334155;">${esc(q.competencyCode || "")} • ${q.points || 1} pt(s)</span>
+          </div>
+          <div style="font-weight:600;font-size:14px;">${num}. ${esc(q.question)}</div>
+          ${body}
+          ${keyHtml}
+        </div>
+      `;
+    }).join("");
+  }
+
+  $("toggleAnswerKey").addEventListener("change", renderGeneratedPreview);
+
+  function renderTosMatrix() {
+    const host = $("tosMatrixHost");
+    if (!GENERATED_EXAM) return;
+    const rows = GENERATED_EXAM.tosMatrix || [];
+    if (!rows.length) {
+      host.innerHTML = `<p>TOS matrix generated from question distribution.</p>`;
+      return;
+    }
+    host.innerHTML = `
+      <table>
+        <thead>
+          <tr>
+            <th rowspan="2">Learning Competency</th>
+            <th colspan="2">LOTS (${GENERATED_EXAM.tos.lotsPct}%)</th>
+            <th colspan="4">HOTS (${GENERATED_EXAM.tos.hotsPct}%)</th>
+            <th rowspan="2">Items</th>
+            <th rowspan="2">%</th>
+          </tr>
+          <tr>
+            <th>Rem</th>
+            <th>Und</th>
+            <th>App</th>
+            <th>Ana</th>
+            <th>Eva</th>
+            <th>Cre</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${rows.map((r) => `
+            <tr>
+              <td class="left">${esc(r.competency)}</td>
+              <td>${(r.remembering || []).join(", ") || "-"}</td>
+              <td>${(r.understanding || []).join(", ") || "-"}</td>
+              <td>${(r.applying || []).join(", ") || "-"}</td>
+              <td>${(r.analyzing || []).join(", ") || "-"}</td>
+              <td>${(r.evaluating || []).join(", ") || "-"}</td>
+              <td>${(r.creating || []).join(", ") || "-"}</td>
+              <td><strong>${r.totalItems || 0}</strong></td>
+              <td>${r.percentage || 0}%</td>
+            </tr>
+          `).join("")}
+        </tbody>
+      </table>
+    `;
+  }
+
+  document.querySelectorAll(".mode-tab").forEach((btn) => {
+    btn.addEventListener("click", () => switchPanel(btn.dataset.panel));
+  });
+
+  // ============================================================
+  // 6. OPTION A: PUBLISH TO ONLINE SECURED EXAM
+  // ============================================================
+  $("btnPublishOnline").addEventListener("click", async () => {
+    if (!currentUser) return alert("Please sign in with an SCPHS faculty account to publish online exams.");
+    if (!GENERATED_EXAM?.questions?.length) return alert("Generate an exam first.");
+    const btn = $("btnPublishOnline");
+    btn.disabled = true;
+    btn.textContent = "Publishing...";
+
+    try {
+      const examDoc = await addDoc(collection(db, "exams"), {
+        title: GENERATED_EXAM.title,
+        subject: GENERATED_EXAM.subjectName,
+        subjectCode: GENERATED_EXAM.subjectCode,
+        gradeLevel: GENERATED_EXAM.gradeLevel,
+        term: Number(GENERATED_EXAM.term) || 1,
+        week: Number(GENERATED_EXAM.week) || 1,
+        classId: $("pickClass").value || "",
+        duration: Number($("onlineDuration").value) || 45,
+        status: $("onlineStatus").value,
+        questionsCount: GENERATED_EXAM.questions.length,
+        tosSummary: GENERATED_EXAM.tos,
+        createdBy: currentUser?.uid || "",
+        createdByEmail: currentUser?.email || "",
+        createdAt: serverTimestamp()
       });
-      writeLocalExams(list);
-      location.href = `exam-creator.html?examId=${encodeURIComponent(localId)}&source=local`;
-    };
 
-    window.publishExam = async (examId, source) => {
-      if (source === "cloud" && CURRENT_USER) {
-        await updateDoc(doc(db, "exams", examId), { status: "published" });
-      } else {
-        const list = readLocalExams().map((e) => e.id === examId ? { ...e, status: "published" } : e);
-        writeLocalExams(list);
+      for (let i = 0; i < GENERATED_EXAM.questions.length; i++) {
+        const q = GENERATED_EXAM.questions[i];
+        await addDoc(collection(db, "exams", examDoc.id, "questions"), {
+          order: i + 1,
+          type: q.type,
+          question: q.question,
+          options: q.options || [],
+          correct_answer: q.correct_answer || "",
+          matching_pairs: q.matching_pairs || [],
+          points: Number(q.points) || 1,
+          bloomLevel: q.bloomLevel || "",
+          cognitiveGroup: q.cognitiveGroup || "LOTS",
+          competencyCode: q.competencyCode || ""
+        });
       }
-      loadExams();
-    };
 
-    window.deleteExam = async (examId, source) => {
-      if (!confirm("Delete this assessment?")) return;
-      if (source === "cloud" && CURRENT_USER) {
-        await deleteDoc(doc(db, "exams", examId));
-      } else {
-        writeLocalExams(readLocalExams().filter((e) => e.id !== examId));
+      ACTIVE_EXAM_ID = examDoc.id;
+      ACTIVE_SOURCE = "cloud";
+
+      const baseUrl = location.href.substring(0, location.href.lastIndexOf("/") + 1);
+      const secureUrl = `${baseUrl}secure-exam.html?examId=${encodeURIComponent(examDoc.id)}`;
+      $("onlineExamUrl").value = secureUrl;
+      $("btnOpenOnlineExam").href = secureUrl;
+      $("onlineExamQr").src = `https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(secureUrl)}`;
+      $("onlineShareBox").classList.remove("hidden");
+    } catch (err) {
+      alert("Publish Error: " + err.message);
+    } finally {
+      btn.disabled = false;
+      btn.innerHTML = `<i class="fas fa-cloud-upload-alt"></i> Publish Online Secured Exam`;
+    }
+  });
+
+  $("btnCopyOnlineUrl").addEventListener("click", () => {
+    navigator.clipboard.writeText($("onlineExamUrl").value);
+    alert("Secure Exam URL copied!");
+  });
+
+  // ============================================================
+  // 7. OPTION B: PRINTABLE / DOWNLOADABLE EXAM WITH STUDENT QR
+  // ============================================================
+  function buildPrintableExamSheetsHTML() {
+    if (!GENERATED_EXAM?.questions?.length) return "";
+    const scope = $("printScope").value;
+    const includeKey = $("printIncludeKey").value === "yes";
+    const schoolName = ILAW_CONFIG?.schoolName || "STA. CRUZ PINGKIAN HIGH SCHOOL";
+    const schoolAddr = ILAW_CONFIG?.schoolAddress || "Kayapa, Nueva Vizcaya";
+    const classId = $("pickClass").value || "UNASSIGNED";
+    const classLabel = $("pickClass").selectedOptions[0]?.textContent || "";
+
+    const studentsToPrint = (scope === "class_roster" && CLASS_STUDENTS.length)
+      ? CLASS_STUDENTS
+      : [{ id: "MASTER", classId, lrn: "", fullName: "" }];
+
+    const questionsHtml = GENERATED_EXAM.questions.map((q, i) => {
+      const n = i + 1;
+      if (q.type === "multiple_choice") {
+        const opts = (q.options || []).map((o, oi) =>
+          `<span style="display:inline-block;min-width:46%;margin-right:10px;">${String.fromCharCode(65 + oi)}. ${esc(o)}</span>`
+        ).join("");
+        return `<div style="margin-bottom:8px;"><strong>${n}.</strong> ${esc(q.question)}<div style="margin-left:16px;margin-top:2px;">${opts}</div></div>`;
       }
-      loadExams();
+      if (q.type === "true_false") {
+        return `<div style="margin-bottom:8px;">_____ <strong>${n}.</strong> ${esc(q.question)} <em>(Write True or False)</em></div>`;
+      }
+      if (q.type === "identification") {
+        return `<div style="margin-bottom:8px;">____________________ <strong>${n}.</strong> ${esc(q.question)}</div>`;
+      }
+      if (q.type === "matching") {
+        const pairs = (q.matching_pairs || []).map((p) => `<div>_____ ${esc(p.left)} &nbsp;&nbsp;|&nbsp;&nbsp; [ ] ${esc(p.right)}</div>`).join("");
+        return `<div style="margin-bottom:8px;"><strong>${n}.</strong> ${esc(q.question)}<div style="margin-left:16px;">${pairs}</div></div>`;
+      }
+      return `<div style="margin-bottom:10px;"><strong>${n}. (Essay — ${q.points || 5} pts)</strong> ${esc(q.question)}<div style="border-bottom:1px solid #666;height:22px;"></div><div style="border-bottom:1px solid #666;height:22px;"></div><div style="border-bottom:1px solid #666;height:22px;"></div></div>`;
+    }).join("");
+
+    const bubbleGrid = GENERATED_EXAM.questions
+      .filter((q) => q.type === "multiple_choice" || q.type === "true_false")
+      .map((q, idx) => `<strong>${q.order || idx + 1}:</strong> [A] [B] [C] [D]`)
+      .join(" &nbsp;|&nbsp; ");
+
+    const sheets = studentsToPrint.map((st) => {
+      const qrPayload = JSON.stringify({
+        classId: st.classId,
+        studentId: st.id === "MASTER" ? "" : st.id,
+        lrn: st.lrn,
+        name: st.fullName,
+        examTitle: GENERATED_EXAM.title
+      });
+      const qrImgUrl = `https://api.qrserver.com/v1/create-qr-code/?size=110x110&data=${encodeURIComponent(qrPayload)}`;
+
+      return `
+        <div class="exam-sheet-page">
+          <div class="sheet-header">
+            <div>
+              <div style="font-size:9.5pt;">Republic of the Philippines • Department of Education</div>
+              <div style="font-size:12pt;font-weight:800;">${esc(schoolName)}</div>
+              <div style="font-size:9pt;">${esc(schoolAddr)}</div>
+              <div style="font-size:11pt;font-weight:700;margin-top:4px;">${esc(GENERATED_EXAM.title)}</div>
+            </div>
+            <div style="text-align:center;">
+              <img src="${qrImgUrl}" width="96" height="96" alt="Student QR" />
+              <div style="font-size:7.5pt;font-family:monospace;">SCAN FOR CHECKER</div>
+            </div>
+          </div>
+
+          <div class="sheet-student-box">
+            <div>
+              <div><strong>Student Name:</strong> ${st.fullName ? `<u>${esc(st.fullName)}</u>` : "________________________________________"}</div>
+              <div style="margin-top:4px;"><strong>12-Digit LRN:</strong> ${st.lrn ? `<u>${esc(st.lrn)}</u>` : "________________________"} &nbsp;&nbsp; <strong>Section:</strong> ${classLabel ? esc(classLabel) : "________________"}</div>
+              <div style="margin-top:4px;"><strong>Subject:</strong> ${esc(GENERATED_EXAM.subjectName)} &nbsp;&nbsp; <strong>Date:</strong> ________________</div>
+            </div>
+            <div style="border-left:1px solid #000;padding-left:8px;text-align:center;">
+              <div style="font-size:8.5pt;font-weight:700;">SCORE</div>
+              <div style="font-size:15pt;font-weight:800;margin-top:4px;">____ / ${GENERATED_EXAM.questions.reduce((s, q) => s + (Number(q.points) || 1), 0)}</div>
+            </div>
+          </div>
+
+          ${bubbleGrid ? `<div class="bubble-strip"><strong>OMR / Quick Answer Strip (Shade or Encircle):</strong><br/>${bubbleGrid}</div>` : ""}
+
+          <div>${questionsHtml}</div>
+        </div>
+      `;
+    }).join("");
+
+    const keySheet = includeKey ? `
+      <div class="exam-sheet-page">
+        <h2 style="margin:0 0 8px;">TEACHER ANSWER KEY &amp; TOS — ${esc(GENERATED_EXAM.title)}</h2>
+        <p><strong>LOTS:</strong> ${GENERATED_EXAM.tos.lotsPct}% (${GENERATED_EXAM.tos.lotsItems} items) &nbsp;|&nbsp; <strong>HOTS:</strong> ${GENERATED_EXAM.tos.hotsPct}% (${GENERATED_EXAM.tos.hotsItems} items)</p>
+        <div style="columns:2;font-size:10.5pt;">
+          ${GENERATED_EXAM.questions.map((q, i) => `<div style="margin-bottom:4px;"><strong>${i + 1}.</strong> ${esc(q.correct_answer)} <em>(${esc(q.bloomLevel || "")})</em></div>`).join("")}
+        </div>
+      </div>
+    ` : "";
+
+    return sheets + keySheet;
+  }
+
+  $("btnPrintExam").addEventListener("click", () => {
+    const html = buildPrintableExamSheetsHTML();
+    if (!html) return alert("Generate an exam first.");
+    $("printContainer").innerHTML = html;
+    setTimeout(() => window.print(), 250);
+  });
+
+  $("btnDownloadExamHtml").addEventListener("click", () => {
+    const html = buildPrintableExamSheetsHTML();
+    if (!html) return alert("Generate an exam first.");
+    const fullDoc = `<!DOCTYPE html><html><head><meta charset="UTF-8"><title>${esc(GENERATED_EXAM.title)}</title>
+      <style>
+        body { font-family: "Times New Roman", serif; margin: 0; padding: 12mm; }
+        .exam-sheet-page { page-break-after: always; margin-bottom: 20mm; }
+        .sheet-header { display: flex; justify-content: space-between; border-bottom: 2px solid #000; padding-bottom: 8px; margin-bottom: 10px; }
+        .sheet-student-box { border: 1.5px solid #000; padding: 8px; margin-bottom: 12px; display: grid; grid-template-columns: 1fr 110px; }
+        .bubble-strip { border: 1px dashed #475569; padding: 8px; margin-bottom: 12px; font-size: 9.5pt; }
+      </style></head><body>${html}</body></html>`;
+    const blob = new Blob([fullDoc], { type: "text/html;charset=utf-8;" });
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = `${(GENERATED_EXAM.title || "exam").replace(/[^a-z0-9]+/gi, "_")}.html`;
+    a.click();
+  });
+
+  $("btnPushKeyToChecker").addEventListener("click", async () => {
+    if (!currentUser) return alert("Please sign in with an SCPHS faculty account to save keys to Firestore.");
+    if (!GENERATED_EXAM?.questions?.length) return alert("Generate an exam first.");
+    const examId = GENERATED_EXAM.title.replace(/[^a-zA-Z0-9_-]+/g, "-").slice(0, 40);
+    const objectiveKeys = GENERATED_EXAM.questions
+      .filter((q) => q.type !== "essay")
+      .map((q) => String(q.correct_answer || "").trim().toUpperCase());
+
+    try {
+      await setDoc(doc(db, "answer_keys", examId), {
+        examId,
+        examType: "mixed",
+        keys: objectiveKeys,
+        totalItems: objectiveKeys.length,
+        updatedBy: currentUser?.email || "",
+        updatedAt: serverTimestamp()
+      });
+      alert(`Saved Answer Key "${examId}" (${objectiveKeys.length} items)! You can now load "${examId}" directly in Smart Exam Checker Pro.`);
+    } catch (err) {
+      alert("Error saving key: " + err.message);
+    }
+  });
+
+  $("btnDownloadGuestKey").addEventListener("click", () => {
+    if (!GENERATED_EXAM?.questions?.length) return alert("Generate an exam first.");
+    const payload = {
+      title: GENERATED_EXAM.title,
+      gradeLevel: GENERATED_EXAM.gradeLevel,
+      subject: GENERATED_EXAM.subjectName,
+      tos: GENERATED_EXAM.tos,
+      tosMatrix: GENERATED_EXAM.tosMatrix,
+      answerKey: GENERATED_EXAM.questions.map((q, i) => ({
+        item: i + 1,
+        type: q.type,
+        bloomLevel: q.bloomLevel,
+        cognitiveGroup: q.cognitiveGroup,
+        points: q.points || 1,
+        answer: q.correct_answer
+      }))
     };
-  </script>
+    const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = `${(GENERATED_EXAM.title || "exam").replace(/[^a-z0-9]+/gi, "_")}_key_tos.json`;
+    a.click();
+  });
+
+  // ============================================================
+  // 8. SCORES & CSV RESULTS PANEL (LOCAL + CLOUD)
+  // ============================================================
+  function getExamScopeKey() {
+    return ACTIVE_EXAM_ID || ($("examTitle").value.trim() || "DEFAULT_OPEN_EXAM");
+  }
+
+  async function loadScoresForExam() {
+    const scopeKey = getExamScopeKey();
+    const localRows = readLocalScores()
+      .filter((r) => r.examKey === scopeKey)
+      .map((r) => ({ ...r, _source: "local" }));
+
+    let cloudRows = [];
+    if (currentUser && ACTIVE_EXAM_ID && ACTIVE_SOURCE === "cloud") {
+      try {
+        const q = query(collection(db, "exam_submissions"), where("examId", "==", ACTIVE_EXAM_ID));
+        const snap = await getDocs(q);
+        cloudRows = snap.docs.map((d) => {
+          const s = d.data();
+          return {
+            id: d.id,
+            studentName: s.studentName || "Student",
+            score: Number(s.score) || 0,
+            totalPoints: Number(s.totalPoints) || 0,
+            _source: "cloud"
+          };
+        });
+      } catch (err) {
+        console.warn("Cloud submissions note:", err);
+      }
+    }
+
+    SCORE_ROWS = [...cloudRows, ...localRows];
+    renderScoresTable();
+  }
+
+  function renderScoresTable() {
+    const tbody = $("scoresTableBody");
+    const n = SCORE_ROWS.length;
+    $("resCount").textContent = n;
+
+    if (!n) {
+      $("resAvg").textContent = "0%";
+      $("resHigh").textContent = "0";
+      $("resLow").textContent = "0";
+      tbody.innerHTML = `<tr><td colspan="5" style="color:var(--muted);padding:18px;">No student scores logged yet.</td></tr>`;
+      return;
+    }
+
+    let pctSum = 0, high = 0, low = Infinity;
+    SCORE_ROWS.forEach((r) => {
+      const pct = r.totalPoints > 0 ? Math.round((r.score / r.totalPoints) * 100) : 0;
+      pctSum += pct;
+      high = Math.max(high, r.score);
+      low = Math.min(low, r.score);
+    });
+
+    $("resAvg").textContent = `${Math.round(pctSum / n)}%`;
+    $("resHigh").textContent = high;
+    $("resLow").textContent = low === Infinity ? 0 : low;
+
+    tbody.innerHTML = SCORE_ROWS.map((r) => {
+      const pct = r.totalPoints > 0 ? Math.round((r.score / r.totalPoints) * 100) : 0;
+      return `
+        <tr>
+          <td class="left"><strong>${esc(r.studentName)}</strong></td>
+          <td>${r.score} / ${r.totalPoints}</td>
+          <td><strong>${pct}%</strong></td>
+          <td>${esc(r._source)}</td>
+          <td>
+            ${r._source === "local"
+              ? `<button type="button" class="btn danger sm" data-del-score="${esc(r.id)}"><i class="fas fa-trash"></i></button>`
+              : `<span style="font-size:11px;color:var(--muted);">Cloud</span>`}
+          </td>
+        </tr>
+      `;
+    }).join("");
+  }
+
+  $("btnAddScore").addEventListener("click", () => {
+    const name = $("scoreStudentName").value.trim();
+    if (!name) return alert("Enter student name or LRN.");
+    const score = Number($("scoreEarned").value) || 0;
+    const totalPoints = Math.max(1, Number($("scoreTotal").value) || 20);
+    const list = readLocalScores();
+    list.unshift({
+      id: "sc_" + Date.now(),
+      examKey: getExamScopeKey(),
+      studentName: name,
+      score,
+      totalPoints,
+      loggedAt: new Date().toISOString()
+    });
+    writeLocalScores(list);
+    $("scoreStudentName").value = "";
+    loadScoresForExam();
+  });
+
+  $("scoresTableBody").addEventListener("click", (e) => {
+    const btn = e.target.closest("[data-del-score]");
+    if (!btn) return;
+    const id = btn.dataset.delScore;
+    writeLocalScores(readLocalScores().filter((r) => r.id !== id));
+    loadScoresForExam();
+  });
+
+  $("btnExportScoresCsv").addEventListener("click", () => {
+    if (!SCORE_ROWS.length) return alert("No scores to export.");
+    const title = ($("examTitle").value.trim() || "Exam_Results").replace(/[^a-z0-9]+/gi, "_");
+    let csv = "Student Name / LRN,Score,Total Points,Percentage,Source\n";
+    SCORE_ROWS.forEach((r) => {
+      const pct = r.totalPoints > 0 ? Math.round((r.score / r.totalPoints) * 100) : 0;
+      csv += `"${String(r.studentName).replace(/"/g, '""')}",${r.score},${r.totalPoints},${pct}%,${r._source}\n`;
+    });
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = `${title}_Results.csv`;
+    a.click();
+  });
+</script>
 </body>
 </html>
