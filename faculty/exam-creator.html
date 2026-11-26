@@ -101,11 +101,11 @@
 
 <div class="topbar">
   <div>
-    <a href="teacher.html">&larr; Back to Portal</a>
+    <a href="assessment-tools.html">&larr; Back to Assessment Tools</a>
     <h1><i class="fas fa-brain"></i> Smart Exam Creator (BoW + TOS + Online &amp; QR Print)</h1>
   </div>
   <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
-    <span class="badge" id="authBadge">Connecting...</span>
+    <span class="badge" id="authBadge">Initializing...</span>
     <button type="button" class="btn gray sm" id="btnApiKey"><i class="fas fa-key"></i> Gemini API Key</button>
   </div>
 </div>
@@ -115,7 +115,7 @@
     <div style="font-size:13px;">
       <strong>🆓 Free Visiting / External Teacher Access:</strong> Create DepEd TOS exams (LOTS &amp; HOTS) with answer keys, print/download QR exam sheets, and export keys for free—no SCPHS account required.
     </div>
-    <a href="login.html" class="btn sm purple">SCPHS Faculty Sign In</a>
+    <a href="../login.html" class="btn sm purple">SCPHS Faculty Sign In</a>
   </div>
 </div>
 
@@ -336,13 +336,11 @@
 <div id="printContainer" class="print-only"></div>
 
 <script type="module">
-  import { auth, db } from "./assets/js/firebase-config.js";
+  import { auth, db } from "../assets/js/firebase-config.js";
   import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
   import {
     collection, doc, getDocs, setDoc, addDoc, serverTimestamp
   } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
-  import "./assets/js/bow-store.js";
-  import "./assets/js/ilaw-config.js";
 
   let GEMINI_API_KEY = localStorage.getItem("scphs_gemini_api_key") || "";
   const GEMINI_MODEL_CASCADE = ["gemini-2.5-flash", "gemini-2.0-flash", "gemini-1.5-flash"];
@@ -359,6 +357,33 @@
   const esc = (s) => String(s ?? "")
     .replace(/&/g, "&amp;").replace(/</g, "&lt;")
     .replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+
+  // ============================================================
+  // 0. IMMEDIATE UI HYDRATION (NEVER BLOCKS ON AUTH OR OPTIONAL SCRIPTS)
+  // ============================================================
+  function initStaticDropdowns() {
+    $("pickWeek").innerHTML = Array.from({ length: 13 }, (_, i) =>
+      `<option value="${i + 1}">Week ${i + 1}</option>`
+    ).join("");
+
+    const grades = ["K", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12"];
+    $("pickGrade").innerHTML = `<option value="">— Select —</option>` +
+      grades.map((g) => `<option value="${g}">${g === "K" ? "Kindergarten" : "Grade " + g}</option>`).join("");
+
+    recalcTOS();
+  }
+
+  initStaticDropdowns();
+
+  // Safely load optional helper scripts from ../assets/js/ without breaking module execution
+  Promise.allSettled([
+    import("../assets/js/bow-store.js"),
+    import("../assets/js/ilaw-config.js")
+  ]).then(async () => {
+    if (window.ILAWConfig?.load) {
+      try { ILAW_CONFIG = await window.ILAWConfig.load(); } catch (_) {}
+    }
+  });
 
   // ============================================================
   // 1. AUTH & FREE VISITING TEACHER ACCESS
@@ -380,29 +405,22 @@
       $("btnPushKeyToChecker").title = "Sign in with an SCPHS account to push keys to SCPHS Firestore";
     }
 
-    if (window.ILAWConfig?.load) {
-      try { ILAW_CONFIG = await window.ILAWConfig.load(); } catch (_) {}
-    }
-
-    $("pickWeek").innerHTML = Array.from({ length: 13 }, (_, i) =>
-      `<option value="${i + 1}">Week ${i + 1}</option>`
-    ).join("");
-
-    const grades = ["K", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12"];
-    $("pickGrade").innerHTML = `<option value="">— Select —</option>` +
-      grades.map((g) => `<option value="${g}">${g === "K" ? "Kindergarten" : "Grade " + g}</option>`).join("");
-
     await loadSubjects();
     if (!isGuest) {
       await loadClasses();
     }
-    recalcTOS();
   });
 
   async function loadSubjects() {
     try {
       const snap = await getDocs(collection(db, "subjects"));
       SUBJECTS = snap.docs.map((d) => ({ id: d.id, ...d.data() })).filter((s) => s.active !== false);
+      const grade = $("pickGrade").value;
+      if (grade) {
+        const filtered = SUBJECTS.filter((s) => String(s.level) === String(grade));
+        $("pickSubject").innerHTML = `<option value="">— Select —</option>` +
+          filtered.map((s) => `<option value="${esc(s.id)}">${esc(s.displayName || s.id)}</option>`).join("");
+      }
     } catch (_) {
       SUBJECTS = [];
     }
@@ -615,7 +633,7 @@
     };
 
     const grade = $("pickGrade").value || "Senior High School";
-    const subjectName = $("pickSubject").selectedOptions[0]?.textContent || "Subject";
+    const subjectName = ($("pickSubject").value ? $("pickSubject").selectedOptions[0]?.textContent : "") || "Subject";
     const term = $("pickTerm").value;
     const week = $("pickWeek").value;
     const title = $("examTitle").value.trim() || `${subjectName} Term ${term} Week ${week} Assessment`;
