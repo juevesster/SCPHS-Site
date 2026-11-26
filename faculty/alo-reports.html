@@ -10,6 +10,7 @@
     :root { --primary: #1e3c72; --bg: #f1f5f9; --border: #e2e8f0; --text: #1e293b; --danger: #dc2626; }
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); }
+
     .no-print { background: #fff; padding: 16px 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; margin-bottom: 20px; position: sticky; top: 0; z-index: 100; }
     .header-title { font-size: 1.15rem; font-weight: 800; color: var(--primary); display: flex; align-items: center; gap: 10px; }
     .controls { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
@@ -96,7 +97,7 @@
 
     <div class="paper" id="printArea">
       <div class="deped-header">
-        <img src="./assets/images/deped-logo.png" alt="DepEd Logo" onerror="this.style.display='none'">
+        <img src="../assets/images/deped-logo.png" alt="DepEd Logo" onerror="this.style.display='none'">
         <div>Republic of the Philippines</div>
         <div><strong>Department of Education</strong></div>
         <div>Region II - Cagayan Valley</div>
@@ -175,7 +176,7 @@
   </div>
 
   <script type="module">
-    import { auth, db } from "./assets/js/firebase-config.js";
+    import { auth, db } from "../assets/js/firebase-config.js";
     import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
     import { collection, getDocs, doc, getDoc, query, where, setDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
@@ -183,7 +184,7 @@
     let CLASSES = [];
 
     onAuthStateChanged(auth, async (user) => {
-      if (!user) { window.location.href = "login.html"; return; }
+      if (!user) { window.location.href = "../login.html"; return; }
       CURRENT_USER = user;
       if (user.displayName) {
         document.getElementById("sigTeacher").value = user.displayName.toUpperCase();
@@ -194,19 +195,19 @@
     });
 
     async function loadClasses() {
-  const select = document.getElementById("classSelect");
-  try {
-    const snap = await getDocs(collection(db, "classes"));
-    CLASSES = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
-    select.innerHTML = '<option value="">-- Select Class --</option>';
-    CLASSES.forEach((c) => {
-      select.innerHTML += `<option value="${c.id}">${c.classLabel || c.className || c.name || c.id}</option>`;
-    });
-  } catch (err) {
-    console.error("Failed to load classes:", err);
-    select.innerHTML = '<option value="">-- Could not load classes (Check sign-in / rules) --</option>';
-  }
-}
+      const select = document.getElementById("classSelect");
+      try {
+        const snap = await getDocs(collection(db, "classes"));
+        CLASSES = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+        select.innerHTML = '<option value="">-- Select Class --</option>';
+        CLASSES.forEach((c) => {
+          select.innerHTML += `<option value="${c.id}">${c.classLabel || c.className || c.name || c.id}</option>`;
+        });
+      } catch (err) {
+        console.error("Failed to load classes:", err);
+        select.innerHTML = '<option value="">-- Could not load classes (Check sign-in / rules) --</option>';
+      }
+    }
 
     async function loadALOData() {
       const classId = document.getElementById("classSelect").value;
@@ -269,7 +270,6 @@
       const form23Data = [];
       const form24Data = [];
 
-      // 1. Pull ECR term grades (computed after WW / PT / Summative / Exam checks)
       const ecrSnap = await getDocs(collection(db, "classes", classId, "ecr"));
       for (const ecrDoc of ecrSnap.docs) {
         const subjectCode = ecrDoc.id;
@@ -309,7 +309,6 @@
         }
       }
 
-      // 2. Pull published exams & submissions for this class
       const examSnap = await getDocs(query(collection(db, "exams"), where("classId", "==", classId)));
       for (const exDoc of examSnap.docs) {
         const exam = exDoc.data();
