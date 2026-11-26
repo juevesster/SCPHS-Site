@@ -805,26 +805,41 @@
   async function callGeminiJson(promptText) {
     const key = ensureKey();
     if (!key) throw new Error("Gemini API Key is required.");
-    let lastErr = null;
+    let primaryErr = null;
+
     for (const model of GEMINI_MODEL_CASCADE) {
       try {
-        const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${encodeURIComponent(key)}`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            contents: [{ role: "user", parts: [{ text: promptText }] }],
-            generationConfig: { temperature: 0.3, maxOutputTokens: 8192, responseMimeType: "application/json" }
-          })
-        });
+        const res = await fetch(
+          `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${encodeURIComponent(key)}`,
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              contents: [{ role: "user", parts: [{ text: promptText }] }],
+              generationConfig: {
+                temperature: 0.3,
+                maxOutputTokens: 8192,
+                responseMimeType: "application/json"
+              }
+            })
+          }
+        );
         const data = await res.json();
-        if (!res.ok) throw new Error(data.error?.message || `HTTP ${res.status}`);
-        return JSON.parse(data.candidates?.[0]?.content?.parts?.[0]?.text || "{}");
+        if (!res.ok) {
+          const msg = data.error?.message || `HTTP ${res.status}`;
+          throw new Error(`${model}: ${msg}`);
+        }
+        const rawText = data.candidates?.[0]?.content?.parts?.[0]?.text || "{}";
+        return JSON.parse(rawText);
       } catch (err) {
-        lastErr = err;
-        if (err.message?.includes("API_KEY_INVALID")) throw err;
+        if (!primaryErr) primaryErr = err;
+        const msg = String(err?.message || "");
+        if (msg.includes("API_KEY_INVALID") || msg.includes("401") || msg.includes("403")) {
+          throw err;
+        }
       }
     }
-    throw lastErr || new Error("Gemini failed to respond.");
+    throw primaryErr || new Error("Gemini failed to respond.");
   }
 
   $("btnGenerateExam").addEventListener("click", async () => {
