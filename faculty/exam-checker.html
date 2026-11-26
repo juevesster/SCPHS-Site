@@ -76,7 +76,10 @@
 
     .guest-note { background: #f5f3ff; border: 1px solid #ddd6fe; color: #4c1d95; border-radius: 12px; padding: 12px 14px; font-size: 12.5px; line-height: 1.5; }
 
-    /* Tables & Status */
+    /* Progress & Tables */
+    .progress-track { width: 100%; height: 8px; background: #e2e8f0; border-radius: 999px; overflow: hidden; margin-top: 8px; }
+    .progress-fill { height: 100%; width: 0%; background: linear-gradient(90deg, var(--primary), var(--accent)); transition: width 0.25s ease; }
+
     table { width: 100%; border-collapse: collapse; font-size: 13px; margin-top: 10px; }
     th, td { text-align: left; padding: 9px 10px; border-bottom: 1px solid #e2e8f0; }
     th { background: #f8fafc; font-weight: 700; color: var(--muted); }
@@ -94,6 +97,7 @@
   <div>
     <a href="assessment-tools.html">&larr; Back to Assessment Tools</a>
     <a href="open-exam-hub.html" style="margin-left:12px;">Open Assessment Hub</a>
+    <a href="exam-creator.html" style="margin-left:12px;">Smart Exam Creator</a>
     <h1><i class="fas fa-check-double"></i> Smart Exam Checker Pro</h1>
   </div>
   <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
@@ -161,28 +165,28 @@
 
         <div class="row">
           <label>Sync to ECR?
-          <select id="ecr-sync-enabled">
-          <option value="yes">Yes — Sync Score to ECR</option>
-          <option value="no">No — Check Only (No ECR Sync)</option>
-          </select>
+            <select id="ecr-sync-enabled">
+              <option value="yes">Yes — Sync Score to ECR</option>
+              <option value="no">No — Check Only (No ECR Sync)</option>
+            </select>
           </label>
 
-        <label>ECR Component &amp; Slot
-        <select id="ecr-slot-select">
-        <option value="ww:0">Written Works — WW1</option>
-        <option value="ww:1">Written Works — WW2</option>
-        <option value="ww:2">Written Works — WW3</option>
-        <option value="ww:3">Written Works — WW4</option>
-        <option value="ww:4">Written Works — WW5</option>
-        <option value="pt:0">Performance Task — PT1</option>
-        <option value="pt:1">Performance Task — PT2</option>
-        <option value="pt:2">Performance Task — PT3</option>
-        <option value="st:st1">Summative / Exam — ST1</option>
-        <option value="st:st2">Summative / Exam — ST2</option>
-        <option value="st:te">Summative / Exam — TE (Exam)</option>
-      </select>
-      </label>
-      </div>
+          <label>ECR Component &amp; Slot
+            <select id="ecr-slot-select">
+              <option value="ww:0">Written Works — WW1</option>
+              <option value="ww:1">Written Works — WW2</option>
+              <option value="ww:2">Written Works — WW3</option>
+              <option value="ww:3">Written Works — WW4</option>
+              <option value="ww:4">Written Works — WW5</option>
+              <option value="pt:0">Performance Task — PT1</option>
+              <option value="pt:1">Performance Task — PT2</option>
+              <option value="pt:2">Performance Task — PT3</option>
+              <option value="st:st1">Summative / Exam — ST1</option>
+              <option value="st:st2">Summative / Exam — ST2</option>
+              <option value="st:te">Summative / Exam — TE (Exam)</option>
+            </select>
+          </label>
+        </div>
 
         <label>Select Student (or Auto-Match via QR / Name)
           <select id="sf1-student-select">
@@ -212,7 +216,7 @@
       <div class="card hidden" id="guest-mode-card">
         <h3><i class="fas fa-user-clock"></i> 1. Visiting / External Teacher Setup</h3>
         <div class="guest-note">
-          You are in <strong>Standalone Checker Mode</strong>. No SF1 class or SCPHS ECR record is required or modified. Scan single or bulk test papers, review scores, and <strong>download results as CSV or JSON</strong>.
+          You are in <strong>Standalone Checker Mode</strong>. No SF1 class or SCPHS ECR record is required or modified. Scan single or bulk test papers or multi-page PDFs, review scores, and <strong>download results as CSV or JSON</strong>.
         </div>
         <label style="margin-top:12px;">Default Examinee / Test Taker Name (Optional)
           <input type="text" id="guest-default-name" placeholder="e.g. Candidate #1 or Leave blank for auto-read" />
@@ -225,6 +229,13 @@
       <!-- Exam Setup & Answer Key Card -->
       <div class="card">
         <h3><i class="fas fa-key"></i> 2. Exam Setup &amp; Answer Key</h3>
+
+        <label>Quick-Pull Key from Saved / Created Exams
+          <select id="creator-exam-pull-select">
+            <option value="">-- Optional: Pull Key &amp; Rubric from Exam Creator --</option>
+          </select>
+        </label>
+
         <div class="row">
           <label>Assessment ID / Title
             <input type="text" id="exam-id" placeholder="e.g. Q2-MATH10-SUM1" />
@@ -268,10 +279,10 @@
         <div class="card">
           <h3><i class="fas fa-file-upload"></i> 3. Scan Single Test Paper / Answer Sheet</h3>
           <p style="font-size:13px;color:var(--muted);margin-top:0;">
-            Upload one or more photos of a student's test paper or QR answer sheet. Gemini AI reads the student name/LRN/QR, extracts answers, grades them, and syncs to ECR (if enabled in SCPHS mode).
+            Upload photos (JPG, PNG, WEBP) or a PDF of a student's test paper or QR answer sheet. Gemini AI reads the student name/LRN/QR, extracts answers across all question types, grades them, and syncs to ECR (if enabled in SCPHS mode).
           </p>
-          <label>Test Paper / Answer Sheet Image(s)
-            <input type="file" id="single-paper-files" accept="image/*" multiple />
+          <label>Test Paper / Answer Sheet Image(s) or PDF
+            <input type="file" id="single-paper-files" accept="image/*,.pdf,application/pdf" multiple />
           </label>
           <div class="row" style="margin-top:6px;">
             <button type="button" class="btn teal" id="scan-and-grade-single-btn">
@@ -293,10 +304,10 @@
         <div class="card">
           <h3><i class="fas fa-layer-group"></i> Bulk Class / Batch Checking (One-Click All)</h3>
           <p style="font-size:13px;color:var(--muted);margin-top:0;">
-            Select multiple scanned test papers or answer sheets at once. Each paper is checked automatically, shown in the batch table below, synced to ECR if in SCPHS mode, and included in your downloadable CSV/JSON export.
+            Select multiple scanned test papers/answer sheets OR a multi-page class PDF at once. Each page/paper is automatically compressed, QR-scanned, checked across all test types, shown in the batch table below, synced to ECR if in SCPHS mode, and included in your downloadable CSV/JSON export.
           </p>
-          <label>Select Multiple Student Papers (JPG, PNG, WEBP)
-            <input type="file" id="bulk-paper-files" accept="image/*" multiple />
+          <label>Select Multiple Student Papers or Multi-Page Class PDF (JPG, PNG, WEBP, PDF)
+            <input type="file" id="bulk-paper-files" accept="image/*,.pdf,application/pdf" multiple />
           </label>
           <div class="row" style="align-items:center;">
             <button type="button" class="btn teal" id="run-bulk-check-btn">
@@ -307,12 +318,15 @@
             </button>
           </div>
           <div id="bulk-progress" class="status-bar hidden">Ready for bulk checking.</div>
+          <div class="progress-track hidden" id="bulk-progress-track">
+            <div class="progress-fill" id="bulk-progress-fill"></div>
+          </div>
 
           <table id="bulk-results-table" class="hidden">
             <thead>
               <tr>
                 <th>#</th>
-                <th>Detected Name / File</th>
+                <th>Detected Name / Page</th>
                 <th>SF1 / Roster Match</th>
                 <th>Score</th>
                 <th>%</th>
@@ -343,6 +357,7 @@
           <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;">
             <h3 style="margin:0;"><i class="fas fa-download"></i> Checked Results &amp; Downloads</h3>
             <div style="display:flex;gap:8px;flex-wrap:wrap;">
+              <button type="button" class="btn teal sm" id="flush-offline-ecr-btn"><i class="fas fa-sync-alt"></i> Sync Queued Offline ECR (<span id="offline-ecr-count">0</span>)</button>
               <button type="button" class="btn purple sm" id="export-csv-btn"><i class="fas fa-file-csv"></i> Download CSV</button>
               <button type="button" class="btn gray sm" id="export-json-btn"><i class="fas fa-file-code"></i> Download JSON</button>
               <button type="button" class="btn sm" id="refresh-records-btn"><i class="fas fa-sync"></i> Refresh</button>
@@ -375,6 +390,8 @@
   </div>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script type="module">
   import { auth, db } from "../assets/js/firebase-config.js";
   import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
@@ -383,11 +400,18 @@
     query, orderBy, limit, serverTimestamp
   } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
+  if (window.pdfjsLib) {
+    pdfjsLib.GlobalWorkerOptions.workerSrc = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
+  }
+
   // Optional external ecr-weights.js integration with built-in DepEd weight fallback
   let externalEcrWeights = null;
   try {
     externalEcrWeights = await import("./assets/js/ecr-weights.js");
   } catch (_) {}
+
+  const OFFLINE_ECR_QUEUE_KEY = "scphs_pending_ecr_sync_v1";
+  const LOCAL_EXAMS_KEY = "scphs_open_exams_v1";
 
   let GEMINI_API_KEY = localStorage.getItem("scphs_gemini_api_key") || "";
   const GEMINI_MODEL_CASCADE = ["gemini-3.8-flash", "gemini-4-hydrogen", "gemini-3.5-flash-lite"];
@@ -396,8 +420,22 @@
   let workflowMode = "scphs"; // "scphs" | "guest"
   let sf1Students = [];
   let classSubjects = [];
-  let sessionResults = []; // Stores results from current session for instant CSV/JSON download (works even for visiting teachers)
+  let creatorExams = [];
+  let sessionResults = [];
   let bulkSessionRows = [];
+
+  function readOfflineEcrQueue() {
+    try { return JSON.parse(localStorage.getItem(OFFLINE_ECR_QUEUE_KEY) || "[]"); } catch (_) { return []; }
+  }
+  function writeOfflineEcrQueue(list) {
+    localStorage.setItem(OFFLINE_ECR_QUEUE_KEY, JSON.stringify(list));
+    updateOfflineBadge();
+  }
+  function updateOfflineBadge() {
+    const el = document.getElementById("offline-ecr-count");
+    if (el) el.textContent = String(readOfflineEcrQueue().length);
+  }
+  updateOfflineBadge();
 
   // ============================================================
   // 1. AUTH & WORKFLOW MODE SWITCHING
@@ -408,10 +446,13 @@
     if (user) {
       badge.textContent = `Signed in: ${user.email}`;
       loadSF1Classes();
+      loadCreatorExams();
       loadRecentResults();
+      flushOfflineEcrQueue();
     } else {
       badge.textContent = workflowMode === "guest" ? "Guest / External Mode" : "Not signed in (Sign in or switch to Visiting Teacher)";
       document.getElementById("sf1-class-select").innerHTML = `<option value="">-- Sign in to load SF1 Classes --</option>`;
+      loadCreatorExams();
     }
   });
 
@@ -433,7 +474,7 @@
 
     document.getElementById("workflow-desc").textContent = isScphs
       ? "SCPHS Faculty mode pulls SF1 rosters and syncs checked scores to Term 1, 2, 3, or Legacy ECR."
-      : "Visiting / External Teacher mode checks any test paper without SF1/ECR sync and lets you download CSV/JSON results.";
+      : "Visiting / External Teacher mode checks any test paper or PDF without SF1/ECR sync and lets you download CSV/JSON results.";
 
     if (!isScphs && document.querySelector('.tab-btn.active')?.dataset.tab === "qr") {
       document.querySelector('.tab-btn[data-tab="single"]').click();
@@ -668,7 +709,7 @@
   }
 
   // ============================================================
-  // 3. SYNC SCORE INTO SCPHS ECR (TERM 1, 2, 3 OR LEGACY 4)
+  // 3. SYNC SCORE INTO SCPHS ECR (WITH OFFLINE RETRY QUEUE)
   // ============================================================
   function fallbackTransmute(initialGrade) {
     if (initialGrade >= 100) return 100;
@@ -708,32 +749,10 @@
     const termGrade = externalEcrWeights?.transmute ? externalEcrWeights.transmute(initialGrade) : fallbackTransmute(initialGrade);
     const descriptor = externalEcrWeights?.describe ? externalEcrWeights.describe(termGrade) : fallbackDescriptor(termGrade);
 
-    return {
-      wwTotal: wwRes.total,
-      ptTotal: ptRes.total,
-      stTotal: stRes.total,
-      wwWs,
-      ptWs,
-      exWs,
-      initialGrade,
-      termGrade,
-      descriptor
-    };
+    return { wwTotal: wwRes.total, ptTotal: ptRes.total, stTotal: stRes.total, wwWs, ptWs, exWs, initialGrade, termGrade, descriptor };
   }
 
-  async function syncScoreToECR({ student, rawScore, maxScore }) {
-    if (workflowMode !== "scphs") return "Skipped (Visiting Teacher Mode)";
-    if (document.getElementById("ecr-sync-enabled").value !== "yes") return "Sync Off";
-
-    const classId = document.getElementById("sf1-class-select").value;
-    const subjectCode = document.getElementById("ecr-subject-select").value;
-    const term = document.getElementById("ecr-term-select").value; // "1", "2", "3", or "4" (Legacy)
-    const slotRaw = document.getElementById("ecr-slot-select").value; // e.g. "ww:0", "pt:1", "st:te"
-
-    if (!classId || !subjectCode || !student?.id) {
-      return "Not synced (Select Class, Subject & Student)";
-    }
-
+  async function writeEcrPayload({ classId, subjectCode, term, slotRaw, student, rawScore, maxScore }) {
     const [comp, slotKey] = slotRaw.split(":");
     const ecrDocRef = doc(db, "classes", classId, "ecr", subjectCode);
     const ecrSnap = await getDoc(ecrDocRef);
@@ -787,9 +806,99 @@
     return `Synced to ${subjectCode} (${termLabel} • ${slotRaw.toUpperCase()})`;
   }
 
+  async function syncScoreToECR({ student, rawScore, maxScore }) {
+    if (workflowMode !== "scphs") return "Skipped (Visiting Teacher Mode)";
+    if (document.getElementById("ecr-sync-enabled").value !== "yes") return "Sync Off";
+
+    const classId = document.getElementById("sf1-class-select").value;
+    const subjectCode = document.getElementById("ecr-subject-select").value;
+    const term = document.getElementById("ecr-term-select").value;
+    const slotRaw = document.getElementById("ecr-slot-select").value;
+
+    if (!classId || !subjectCode || !student?.id) {
+      return "Not synced (Select Class, Subject & Student)";
+    }
+
+    try {
+      return await writeEcrPayload({ classId, subjectCode, term, slotRaw, student, rawScore, maxScore });
+    } catch (_) {
+      const q = readOfflineEcrQueue();
+      q.push({ classId, subjectCode, term, slotRaw, student, rawScore, maxScore, queuedAt: new Date().toISOString() });
+      writeOfflineEcrQueue(q);
+      return "Queued Offline for ECR Sync";
+    }
+  }
+
+  async function flushOfflineEcrQueue() {
+    if (!currentUser) return;
+    const q = readOfflineEcrQueue();
+    if (!q.length) return;
+    const remaining = [];
+    for (const item of q) {
+      try {
+        await writeEcrPayload(item);
+      } catch (_) {
+        remaining.push(item);
+      }
+    }
+    writeOfflineEcrQueue(remaining);
+  }
+
+  document.getElementById("flush-offline-ecr-btn").addEventListener("click", async () => {
+    await flushOfflineEcrQueue();
+    alert(`Offline ECR queue check complete. Remaining queued: ${readOfflineEcrQueue().length}`);
+  });
+
   // ============================================================
-  // 4. ANSWER KEY SAVE / LOAD (SCPHS MODE)
+  // 4. ANSWER KEY SAVE / LOAD + PULL FROM EXAM CREATOR
   // ============================================================
+  async function loadCreatorExams() {
+    let localEx = [];
+    try { localEx = JSON.parse(localStorage.getItem(LOCAL_EXAMS_KEY) || "[]"); } catch (_) {}
+    let cloudEx = [];
+    if (currentUser) {
+      try {
+        const snap = await getDocs(collection(db, "exams"));
+        cloudEx = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+      } catch (_) {}
+    }
+
+    const seen = new Set();
+    creatorExams = [];
+    for (const ex of [...localEx, ...cloudEx]) {
+      const key = String(ex.title || ex.id || "").toLowerCase();
+      if (!key || seen.has(key)) continue;
+      seen.add(key);
+      creatorExams.push(ex);
+    }
+
+    const sel = document.getElementById("creator-exam-pull-select");
+    sel.innerHTML = `<option value="">-- Optional: Pull Key &amp; Rubric from Exam Creator (${creatorExams.length}) --</option>` +
+      creatorExams.map((ex, i) => `<option value="${i}">${ex.title} (${ex.questions?.length || 0} items)</option>`).join("");
+  }
+
+  document.getElementById("creator-exam-pull-select").addEventListener("change", (e) => {
+    if (e.target.value === "") return;
+    const ex = creatorExams[Number(e.target.value)];
+    if (!ex) return;
+    document.getElementById("exam-id").value = ex.title || "";
+    const qs = ex.questions || [];
+    const hasEssay = qs.some((q) => q.type === "essay");
+    const hasObj = qs.some((q) => q.type !== "essay");
+    const mappedType = hasEssay && hasObj ? "mixed" : (hasEssay ? "essay" : "mcq");
+    document.getElementById("exam-type").value = mappedType;
+    document.getElementById("exam-type").dispatchEvent(new Event("change"));
+
+    const objKeys = qs.filter((q) => q.type !== "essay").map((q) => q.correct_answer || "");
+    if (objKeys.length) document.getElementById("answer-key-input").value = objKeys.join(", ");
+
+    const essayQs = qs.filter((q) => q.type === "essay");
+    if (essayQs.length) {
+      document.getElementById("essay-prompt-input").value = essayQs.map((q) => `${q.question} [Key/Rubric: ${q.correct_answer || ""}]`).join(" | ");
+      document.getElementById("essay-max-points").value = essayQs.reduce((s, q) => s + (Number(q.points) || 5), 0);
+    }
+  });
+
   function parseKeyList(raw) {
     return raw
       .split(/[\n,]+/)
@@ -836,17 +945,75 @@
   });
 
   // ============================================================
-  // 5. QR + GEMINI VISION EXTRACTION & GRADING
+  // 5. MULTI-PAGE PDF + IMAGE COMPRESSION + QR + GEMINI VISION
   // ============================================================
-  async function detectQrFromFile(file) {
-    if (!("BarcodeDetector" in window)) return null;
-    try {
-      const detector = new BarcodeDetector({ formats: ["qr_code"] });
-      const bitmap = await createImageBitmap(file);
-      const codes = await detector.detect(bitmap);
-      if (codes.length > 0) return codes[0].rawValue;
-    } catch (_) {}
-    return null;
+  async function filesToPreparedPages(fileList) {
+    const pages = [];
+    for (const file of Array.from(fileList || [])) {
+      if (file.type === "application/pdf" || file.name.toLowerCase().endsWith(".pdf")) {
+        if (!window.pdfjsLib) throw new Error("PDF reader is still loading; please retry.");
+        const buf = await file.arrayBuffer();
+        const pdf = await pdfjsLib.getDocument({ data: buf }).promise;
+        for (let p = 1; p <= pdf.numPages; p++) {
+          const page = await pdf.getPage(p);
+          const viewport = page.getViewport({ scale: 1.5 });
+          const canvas = document.createElement("canvas");
+          canvas.width = viewport.width;
+          canvas.height = viewport.height;
+          await page.render({ canvasContext: canvas.getContext("2d"), viewport }).promise;
+          pages.push(await canvasToCompressedPayload(canvas, `${file.name} (Page ${p})`));
+        }
+      } else if (file.type.startsWith("image/")) {
+        const img = await loadHtmlImageFromFile(file);
+        const canvas = document.createElement("canvas");
+        canvas.width = img.naturalWidth;
+        canvas.height = img.naturalHeight;
+        canvas.getContext("2d").drawImage(img, 0, 0);
+        pages.push(await canvasToCompressedPayload(canvas, file.name));
+      }
+    }
+    return pages;
+  }
+
+  async function canvasToCompressedPayload(sourceCanvas, label) {
+    const maxDim = 1400;
+    let w = sourceCanvas.width;
+    let h = sourceCanvas.height;
+    if (w > maxDim || h > maxDim) {
+      const ratio = Math.min(maxDim / w, maxDim / h);
+      w = Math.round(w * ratio);
+      h = Math.round(h * ratio);
+    }
+    const canvas = document.createElement("canvas");
+    canvas.width = w;
+    canvas.height = h;
+    const ctx = canvas.getContext("2d");
+    ctx.drawImage(sourceCanvas, 0, 0, w, h);
+
+    let qrRaw = null;
+    if (window.jsQR) {
+      try {
+        const imgData = ctx.getImageData(0, 0, w, h);
+        const code = jsQR(imgData.data, w, h);
+        if (code?.data) qrRaw = code.data;
+      } catch (_) {}
+    }
+
+    if (!qrRaw && "BarcodeDetector" in window) {
+      try {
+        const detector = new BarcodeDetector({ formats: ["qr_code"] });
+        const codes = await detector.detect(canvas);
+        if (codes.length > 0) qrRaw = codes[0].rawValue;
+      } catch (_) {}
+    }
+
+    const dataUrl = canvas.toDataURL("image/jpeg", 0.82);
+    return {
+      label,
+      qrRaw,
+      base64: dataUrl.split(",")[1],
+      mimeType: "image/jpeg"
+    };
   }
 
   function matchStudentFromScan(qrRaw, detectedName, detectedLrn) {
@@ -903,8 +1070,7 @@
     throw lastErr || new Error("All Gemini models failed.");
   }
 
-  async function extractTestPaperWithGemini(files, examType, expectedItems) {
-    const images = await Promise.all(files.map((f) => fileToBase64(f)));
+  async function extractPayloadsWithGemini(pages, examType, expectedItems) {
     const prompt = `Analyze this student test paper / answer sheet image(s).
 Exam Type: ${examType}
 Expected Objective Item Count: ${expectedItems || "auto-detect all numbered items"}
@@ -924,7 +1090,7 @@ Return STRICT JSON:
 }`;
 
     const parts = [{ text: prompt }];
-    images.forEach((img) => parts.push({ inline_data: { mime_type: img.mimeType, data: img.base64 } }));
+    pages.forEach((p) => parts.push({ inline_data: { mime_type: p.mimeType, data: p.base64 } }));
     return callGeminiJsonWithCascade(parts);
   }
 
@@ -982,7 +1148,7 @@ Return STRICT JSON:
   // ============================================================
   document.getElementById("scan-and-grade-single-btn").addEventListener("click", async () => {
     const files = Array.from(document.getElementById("single-paper-files").files || []);
-    if (!files.length) return alert("Select at least one test paper image.");
+    if (!files.length) return alert("Select at least one test paper image or PDF.");
 
     const examId = document.getElementById("exam-id").value.trim() || "UNLABELED-EXAM";
     const examType = document.getElementById("exam-type").value;
@@ -991,13 +1157,14 @@ Return STRICT JSON:
     const essayMax = Number(document.getElementById("essay-max-points").value) || 20;
 
     try {
-      showOutput("Scanning paper & grading with Gemini AI...");
-      const qrRaw = await detectQrFromFile(files[0]);
-      const extracted = await extractTestPaperWithGemini(files, examType, keys.length);
+      showOutput("Preparing paper, reading QR & grading with Gemini AI...");
+      const pages = await filesToPreparedPages(files);
+      const extracted = await extractPayloadsWithGemini(pages, examType, keys.length);
+      const qrRaw = pages.find((p) => p.qrRaw)?.qrRaw || extracted.qrText;
 
       let selectedStudent = null;
       if (workflowMode === "scphs") {
-        const matched = matchStudentFromScan(qrRaw || extracted.qrText, extracted.studentName, extracted.lrn);
+        const matched = matchStudentFromScan(qrRaw, extracted.studentName, extracted.lrn);
         if (matched) {
           document.getElementById("sf1-student-select").value = matched.id;
           document.getElementById("sf1-student-select").dispatchEvent(new Event("change"));
@@ -1084,7 +1251,7 @@ Return STRICT JSON:
 
   document.getElementById("run-bulk-check-btn").addEventListener("click", async () => {
     const files = Array.from(document.getElementById("bulk-paper-files").files || []);
-    if (!files.length) return alert("Select student paper images first.");
+    if (!files.length) return alert("Select student paper images or a multi-page PDF first.");
 
     const examId = document.getElementById("exam-id").value.trim() || "BULK-EXAM";
     const examType = document.getElementById("exam-type").value;
@@ -1095,22 +1262,42 @@ Return STRICT JSON:
     if (examType !== "essay" && !keys.length) return alert("Enter or load an Answer Key first.");
 
     const progress = document.getElementById("bulk-progress");
+    const progTrack = document.getElementById("bulk-progress-track");
+    const progFill = document.getElementById("bulk-progress-fill");
     const table = document.getElementById("bulk-results-table");
     const tbody = document.getElementById("bulk-results-tbody");
+
     progress.classList.remove("hidden");
+    progTrack.classList.remove("hidden");
     table.classList.remove("hidden");
     tbody.innerHTML = "";
     bulkSessionRows = [];
+    progFill.style.width = "0%";
+    progress.textContent = "Splitting PDFs & compressing pages...";
 
-    for (let i = 0; i < files.length; i++) {
-      const file = files[i];
-      progress.textContent = `Checking ${i + 1} of ${files.length}: ${file.name}...`;
+    let pages = [];
+    try {
+      pages = await filesToPreparedPages(files);
+    } catch (err) {
+      progress.textContent = `Preparation error: ${err.message}`;
+      return;
+    }
+
+    if (!pages.length) {
+      progress.textContent = "No readable pages found in selected files.";
+      return;
+    }
+
+    for (let i = 0; i < pages.length; i++) {
+      const page = pages[i];
+      progress.textContent = `Checking ${i + 1} of ${pages.length}: ${page.label}...`;
+      progFill.style.width = `${Math.round(((i) / pages.length) * 100)}%`;
 
       try {
-        const qrRaw = await detectQrFromFile(file);
-        const extracted = await extractTestPaperWithGemini([file], examType, keys.length);
+        const extracted = await extractPayloadsWithGemini([page], examType, keys.length);
+        const qrRaw = page.qrRaw || extracted.qrText;
         const matched = workflowMode === "scphs"
-          ? matchStudentFromScan(qrRaw || extracted.qrText, extracted.studentName, extracted.lrn)
+          ? matchStudentFromScan(qrRaw, extracted.studentName, extracted.lrn)
           : null;
 
         let score = 0, max = 0;
@@ -1127,7 +1314,7 @@ Return STRICT JSON:
 
         const pct = max > 0 ? Number(((score / max) * 100).toFixed(2)) : 0;
         const passed = pct >= 60;
-        const studentName = matched?.fullName || extracted.studentName || file.name;
+        const studentName = matched?.fullName || extracted.studentName || page.label;
         const lrn = matched?.lrn || extracted.lrn || (workflowMode === "guest" ? "GUEST" : "Unmatched");
         const ecrStatus = await syncScoreToECR({ student: matched, rawScore: score, maxScore: max });
 
@@ -1138,7 +1325,7 @@ Return STRICT JSON:
         const tr = document.createElement("tr");
         tr.innerHTML = `
           <td>${i + 1}</td>
-          <td>${extracted.studentName || file.name}</td>
+          <td>${extracted.studentName || page.label}</td>
           <td>${matched ? `<strong>${matched.fullName}</strong> (${matched.lrn})` : (workflowMode === "guest" ? "Standalone" : "Unmatched")}</td>
           <td><strong>${score}/${max}</strong></td>
           <td>${pct}%</td>
@@ -1148,12 +1335,13 @@ Return STRICT JSON:
         tbody.appendChild(tr);
       } catch (err) {
         const tr = document.createElement("tr");
-        tr.innerHTML = `<td>${i + 1}</td><td>${file.name}</td><td colspan="5" style="color:#b91c1c;">Error: ${err.message}</td>`;
+        tr.innerHTML = `<td>${i + 1}</td><td>${page.label}</td><td colspan="5" style="color:#b91c1c;">Error: ${err.message}</td>`;
         tbody.appendChild(tr);
       }
     }
 
-    progress.textContent = `Bulk check complete (${files.length} papers). Click "Download Batch CSV" to save results.`;
+    progFill.style.width = "100%";
+    progress.textContent = `Bulk check complete (${pages.length} page(s)/paper(s)). Click "Download Batch CSV" to save results.`;
   });
 
   // ============================================================
@@ -1242,33 +1430,30 @@ Return STRICT JSON:
   // ============================================================
   // 8. IMAGE UTILITIES
   // ============================================================
-  function fileToBase64(file) {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload = () => {
-        const [, base64 = ""] = String(reader.result).split(",");
-        resolve({ base64, mimeType: file.type || "image/jpeg" });
-      };
-      reader.onerror = reject;
-      reader.readAsDataURL(file);
-    });
-  }
-
-  function compressImageToDataUrl(file, maxSize = 260, quality = 0.82) {
+  function loadHtmlImageFromFile(file) {
     return new Promise((resolve, reject) => {
       const img = new Image();
       const url = URL.createObjectURL(file);
       img.onload = () => {
-        const scale = Math.min(1, maxSize / Math.max(img.width, img.height));
-        const canvas = document.createElement("canvas");
-        canvas.width = Math.round(img.width * scale);
-        canvas.height = Math.round(img.height * scale);
-        canvas.getContext("2d").drawImage(img, 0, 0, canvas.width, canvas.height);
         URL.revokeObjectURL(url);
-        resolve(canvas.toDataURL("image/jpeg", quality));
+        resolve(img);
       };
-      img.onerror = reject;
+      img.onerror = (err) => {
+        URL.revokeObjectURL(url);
+        reject(err);
+      };
       img.src = url;
+    });
+  }
+
+  function compressImageToDataUrl(file, maxSize = 260, quality = 0.82) {
+    return loadHtmlImageFromFile(file).then((img) => {
+      const scale = Math.min(1, maxSize / Math.max(img.width, img.height));
+      const canvas = document.createElement("canvas");
+      canvas.width = Math.round(img.width * scale);
+      canvas.height = Math.round(img.height * scale);
+      canvas.getContext("2d").drawImage(img, 0, 0, canvas.width, canvas.height);
+      return canvas.toDataURL("image/jpeg", quality);
     });
   }
 </script>
