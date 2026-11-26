@@ -121,6 +121,37 @@
     .sig-line { border-top: 1px solid #000; margin-top: 28px; margin-bottom: 4px; }
     .sig-name { font-weight: 700; text-transform: uppercase; }
     .sig-title { font-size: 9.5pt; }
+
+    .clean-choices,
+.clean-choices li {
+  list-style: none !important;
+  margin-left: 0 !important;
+  padding-left: 0 !important;
+}
+.clean-choices li {
+  padding: 2px 0;
+}
+.q-graph svg {
+  max-width: 100%;
+  height: auto;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  background: #fff;
+}
+.q-solution {
+  margin-top: 8px;
+  padding: 8px 10px;
+  background: #f0fdfa;
+  border-left: 3px solid #0f766e;
+  border-radius: 6px;
+  font-size: 0.84rem;
+  color: #0f172a;
+}
+@media print {
+  .no-print { display: none !important; }
+  body:not(.print-teacher-key) .q-solution,
+  body:not(.print-teacher-key) .q-answer-key { display: none !important; }
+}
   </style>
 </head>
 <body>
@@ -132,6 +163,20 @@
       <a href="question-bank.html" class="btn outline sm" style="background:#fff;"><i class="fas fa-database"></i> Question Bank</a>
       <a href="assessment-tools.html">&larr; Assessment Tools</a>
     </div>
+    <div class="no-print" style="display:flex;gap:8px;flex-wrap:wrap;margin:10px 0;">
+  <button type="button" class="btn teal sm" id="btnPrintClassQrSheets">
+    <i class="fas fa-users"></i> Print Whole-Class QR Sheets
+  </button>
+  <button type="button" class="btn outline sm" id="btnPrintTeacherKey">
+    <i class="fas fa-key"></i> Print Teacher Answer &amp; Solution Key
+  </button>
+  <button type="button" class="btn purple sm" id="btnOpenCheckerWithExam">
+    <i class="fas fa-check-double"></i> Grade in Exam Checker
+  </button>
+  <button type="button" class="btn outline sm" id="btnOpenQrScannerWithExam">
+    <i class="fas fa-qrcode"></i> Open QR Scanner
+  </button>
+</div>
     <h1><i class="fas fa-brain"></i> Smart Exam Creator (BoW + TOS + Online &amp; QR Print)</h1>
   </div>
   <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
@@ -1533,6 +1578,91 @@ Return STRICT JSON matching this exact schema:
 
     return sheets + keySheet;
   }
+
+  function stripChoicePrefix(val) {
+  return String(val ?? "")
+    .replace(/^[•●○◉◎▪▸►\-\*\s]+/g, "")
+    .replace(/^(?:[A-Ea-e][\.\)\:\-]\s*)+/g, "")
+    .replace(/^\d+[\.\)\:\-]\s*/g, "")
+    .trim();
+}
+
+function normalizeQuestion(q, index = 0) {
+  const letters = ["A", "B", "C", "D", "E"];
+  const rawOptions = Array.isArray(q.options) ? q.options : [];
+  const seen = new Set();
+  const options = [];
+
+  for (const raw of rawOptions) {
+    const cleaned = stripChoicePrefix(raw);
+    const key = cleaned.toLowerCase();
+    if (cleaned && !seen.has(key)) {
+      seen.add(key);
+      options.push(cleaned);
+    }
+  }
+
+  let answer = String(q.correct_answer ?? "").trim();
+  if (q.type === "multiple_choice") {
+    const firstChar = stripChoicePrefix(answer).charAt(0).toUpperCase();
+    if (letters.includes(firstChar)) answer = firstChar;
+  }
+
+  return {
+    ...q,
+    order: q.order || index + 1,
+    question: String(q.question || "").replace(/^[•●○◉◎▪▸►\s]+/g, "").trim(),
+    options,
+    correct_answer: answer,
+    solution: String(q.solution || "").trim(),
+    svgGraph: String(q.svgGraph || "").trim()
+  };
+}
+
+function renderExamQuestionBlock(q) {
+  const item = normalizeQuestion(q, (q.order || 1) - 1);
+  const letters = ["A", "B", "C", "D", "E"];
+
+  const choicesHtml = item.type === "multiple_choice" && item.options.length
+    ? `<ul class="clean-choices">${item.options.map((opt, idx) =>
+        `<li><strong>${letters[idx] || idx + 1}.</strong> ${escapeHtml(opt)}</li>`
+      ).join("")}</ul>`
+    : "";
+
+  const graphHtml = item.svgGraph && item.svgGraph.includes("<svg")
+    ? `<div class="q-graph">${item.svgGraph}</div>`
+    : "";
+
+  const solHtml = item.solution
+    ? `<div class="q-solution"><strong>Step-by-Step Solution:</strong> ${escapeHtml(item.solution)}</div>`
+    : "";
+
+  return `
+    <div class="exam-q-card">
+      <div><strong>${item.order}.</strong> ${escapeHtml(item.question)} <em>(${item.points || 1} pt)</em></div>
+      ${graphHtml}
+      ${choicesHtml}
+      <div class="q-answer-key"><strong>Answer Key:</strong> ${escapeHtml(item.correct_answer)}</div>
+      ${solHtml}
+    </div>
+  `;
+}
+
+document.getElementById("btnPrintTeacherKey")?.addEventListener("click", () => {
+  document.body.classList.add("print-teacher-key");
+  window.print();
+  setTimeout(() => document.body.classList.remove("print-teacher-key"), 500);
+});
+
+document.getElementById("btnOpenCheckerWithExam")?.addEventListener("click", () => {
+  const title = encodeURIComponent(document.getElementById("examTitle")?.value.trim() || "");
+  location.href = `exam-checker.html${title ? `?exam=${title}` : ""}`;
+});
+
+document.getElementById("btnOpenQrScannerWithExam")?.addEventListener("click", () => {
+  const title = encodeURIComponent(document.getElementById("examTitle")?.value.trim() || "");
+  location.href = `assessments/scan/index.html${title ? `?examTitle=${title}` : ""}`;
+});
 </script>
 </body>
 </html>
