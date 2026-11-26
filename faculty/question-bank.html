@@ -1,0 +1,1001 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Open Question Bank &amp; Teacher Repository — Free for All Teachers</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <style>
+    :root {
+      --primary: #1e3c72;
+      --accent: #0f766e;
+      --purple: #6d28d9;
+      --amber: #b45309;
+      --bg: #f1f5f9;
+      --card: #ffffff;
+      --border: #cbd5e1;
+      --text: #0f172a;
+      --muted: #475569;
+      --success: #059669;
+      --danger: #dc2626;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); }
+
+    .topbar {
+      background: linear-gradient(135deg, #0f172a, #1e3c72);
+      color: #fff;
+      padding: 16px 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 12px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .topbar h1 { font-size: 1.22rem; display: flex; align-items: center; gap: 10px; }
+    .topbar a { color: #93c5fd; text-decoration: none; font-size: 0.84rem; }
+    .badge { background: rgba(255,255,255,0.16); padding: 5px 12px; border-radius: 999px; font-size: 0.76rem; font-weight: 700; }
+
+    .container { max-width: 1320px; margin: 20px auto; padding: 0 16px 56px; }
+
+    .banner {
+      background: #eff6ff;
+      border: 1px solid #bfdbfe;
+      color: #1e3a8a;
+      padding: 12px 16px;
+      border-radius: 12px;
+      margin-bottom: 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 10px;
+      font-size: 0.88rem;
+    }
+
+    .main-tabs { display: flex; gap: 8px; margin-bottom: 14px; flex-wrap: wrap; }
+    .main-tab {
+      background: #fff;
+      border: 1px solid var(--border);
+      color: var(--muted);
+      padding: 9px 15px;
+      border-radius: 10px;
+      font-weight: 700;
+      font-size: 0.84rem;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+    }
+    .main-tab.active { background: var(--primary); color: #fff; border-color: var(--primary); }
+
+    .card {
+      background: var(--card);
+      border: 1px solid #e2e8f0;
+      border-radius: 14px;
+      padding: 18px;
+      margin-bottom: 16px;
+      box-shadow: 0 2px 10px rgba(15,23,42,0.04);
+    }
+
+    .filters-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(155px, 1fr));
+      gap: 11px;
+      align-items: end;
+    }
+    label { display: block; font-size: 0.72rem; font-weight: 700; color: var(--muted); text-transform: uppercase; }
+    input, select, textarea {
+      width: 100%;
+      margin-top: 5px;
+      padding: 8px 10px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      font-family: inherit;
+      font-size: 0.86rem;
+      background: #fff;
+    }
+
+    .toolbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 14px;
+      padding-top: 14px;
+      border-top: 1px solid #e2e8f0;
+    }
+
+    .btn {
+      background: var(--primary);
+      color: #fff;
+      border: none;
+      padding: 8px 13px;
+      border-radius: 8px;
+      font-weight: 700;
+      font-size: 0.8rem;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      text-decoration: none;
+    }
+    .btn:hover { opacity: 0.94; }
+    .btn.teal { background: var(--accent); }
+    .btn.purple { background: var(--purple); }
+    .btn.amber { background: var(--amber); }
+    .btn.success { background: var(--success); }
+    .btn.danger { background: var(--danger); }
+    .btn.outline { background: #fff; color: var(--primary); border: 1px solid var(--primary); }
+    .btn.sm { padding: 6px 10px; font-size: 0.74rem; }
+
+    .item-list { display: flex; flex-direction: column; gap: 12px; }
+    .item-card {
+      background: #fff;
+      border: 1px solid #cbd5e1;
+      border-radius: 12px;
+      padding: 15px;
+      display: flex;
+      gap: 12px;
+      align-items: flex-start;
+    }
+    .item-check { width: 18px; height: 18px; margin-top: 3px; cursor: pointer; }
+    .item-main { flex: 1; }
+    .item-tags { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 8px; }
+    .tag { padding: 3px 9px; border-radius: 999px; font-size: 0.7rem; font-weight: 700; }
+    .tag.lots { background: #dbeafe; color: #1e40af; }
+    .tag.hots { background: #fef3c7; color: #92400e; }
+    .tag.term { background: #e0f2fe; color: #0369a1; }
+    .tag.bow { background: #fce7f3; color: #9d174d; }
+    .tag.meta { background: #f1f5f9; color: #334155; }
+    .tag.src { background: #ede9fe; color: #5b21b6; }
+    .item-title { font-weight: 700; font-size: 0.95rem; margin-bottom: 6px; }
+    .item-opts { margin: 4px 0 8px 18px; font-size: 0.85rem; }
+    .item-box {
+      background: #f0fdf4;
+      border: 1px solid #bbf7d0;
+      color: #166534;
+      padding: 8px 11px;
+      border-radius: 8px;
+      font-size: 0.83rem;
+      margin-top: 6px;
+      white-space: pre-wrap;
+    }
+    .item-actions { display: flex; flex-direction: column; gap: 6px; }
+
+    .modal { display: none; position: fixed; inset: 0; background: rgba(15,23,42,0.6); z-index: 1000; justify-content: center; align-items: center; padding: 16px; }
+    .modal.show { display: flex; }
+    .modal-box { background: #fff; border-radius: 14px; max-width: 640px; width: 100%; padding: 22px; max-height: 90vh; overflow-y: auto; }
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
+    .hidden { display: none !important; }
+
+    @media (max-width: 680px) {
+      .grid-2, .grid-3 { grid-template-columns: 1fr; }
+      .item-card { flex-direction: column; }
+      .item-actions { flex-direction: row; flex-wrap: wrap; }
+    }
+  </style>
+</head>
+<body>
+
+  <header class="topbar">
+    <div>
+      <div style="display:flex;gap:14px;flex-wrap:wrap;margin-bottom:3px;">
+        <a href="open-exam-hub.html">&larr; Open Assessment Hub</a>
+        <a href="exam-creator.html">&larr; Smart Exam Creator</a>
+        <a href="assessment-tools.html">&larr; Assessment Tools</a>
+      </div>
+      <h1><i class="fas fa-layer-group"></i> Open Question Bank &amp; Teacher Repository</h1>
+    </div>
+    <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+      <span class="badge" id="bankStatusBadge">Free Open Bank</span>
+      <button type="button" class="btn success sm" id="btnOpenAddQuestion"><i class="fas fa-plus"></i> Add Question</button>
+      <button type="button" class="btn amber sm" id="btnOpenAddRepo"><i class="fas fa-folder-plus"></i> Add Repository Material</button>
+    </div>
+  </header>
+
+  <div class="container">
+    <div class="banner">
+      <div>
+        <strong>Free Reusable Bank &amp; Teaching Repository:</strong> Filter by <strong>Term / Quarter / Legacy</strong>, <strong>Subject</strong>, <strong>BoW Competency</strong>, <strong>Week</strong>, or <strong>Search</strong>—then edit, update, delete, export, or pull questions and materials into your exams for free.
+      </div>
+      <a href="../login.html" class="btn purple sm" id="bankSignInBtn">SCPHS Sign In</a>
+    </div>
+
+    <div class="main-tabs">
+      <button type="button" class="main-tab active" data-view="questions"><i class="fas fa-question-circle"></i> Questions &amp; Answer Keys</button>
+      <button type="button" class="main-tab" data-view="repository"><i class="fas fa-book-reader"></i> Repository Materials (TOS, Rubrics, Guides &amp; Keys)</button>
+    </div>
+
+    <!-- FILTER & BULK ACTION BAR -->
+    <div class="card">
+      <div class="filters-grid">
+        <label>Search Keyword
+          <input type="text" id="fltSearch" placeholder="Topic, question, BoW, answer..." />
+        </label>
+        <label>Term / Quarter / Legacy
+          <select id="fltTerm">
+            <option value="">All Terms / Quarters</option>
+            <option value="1">Term 1 / Quarter 1</option>
+            <option value="2">Term 2 / Quarter 2</option>
+            <option value="3">Term 3 / Quarter 3</option>
+            <option value="4">Term 4 / Legacy (Q4)</option>
+          </select>
+        </label>
+        <label>Grade Level
+          <select id="fltGrade">
+            <option value="">All Grades</option>
+            <option value="K">Kindergarten</option>
+            <option value="1">Grade 1</option><option value="2">Grade 2</option><option value="3">Grade 3</option>
+            <option value="4">Grade 4</option><option value="5">Grade 5</option><option value="6">Grade 6</option>
+            <option value="7">Grade 7</option><option value="8">Grade 8</option><option value="9">Grade 9</option>
+            <option value="10">Grade 10</option><option value="11">Grade 11</option><option value="12">Grade 12</option>
+          </select>
+        </label>
+        <label>Subject
+          <input type="text" id="fltSubject" placeholder="e.g., Automotive, Math..." />
+        </label>
+        <label>BoW / Competency
+          <input type="text" id="fltBow" placeholder="e.g., LC-1, T1-S01, cooling..." />
+        </label>
+        <label>Week
+          <select id="fltWeek">
+            <option value="">All Weeks</option>
+            <option value="1">Week 1</option><option value="2">Week 2</option><option value="3">Week 3</option>
+            <option value="4">Week 4</option><option value="5">Week 5</option><option value="6">Week 6</option>
+            <option value="7">Week 7</option><option value="8">Week 8</option><option value="9">Week 9</option>
+            <option value="10">Week 10</option><option value="11">Week 11</option><option value="12">Week 12</option>
+            <option value="13">Week 13</option>
+          </select>
+        </label>
+        <label id="fltCogWrap">Cognitive Domain
+          <select id="fltCog">
+            <option value="">LOTS &amp; HOTS</option>
+            <option value="LOTS">LOTS</option>
+            <option value="HOTS">HOTS</option>
+          </select>
+        </label>
+        <label id="fltTypeWrap">Question Type
+          <select id="fltType">
+            <option value="">All Types</option>
+            <option value="multiple_choice">Multiple Choice</option>
+            <option value="true_false">True or False</option>
+            <option value="identification">Identification</option>
+            <option value="matching">Matching</option>
+            <option value="essay">Essay</option>
+          </select>
+        </label>
+        <label id="fltRepoKindWrap" class="hidden">Material Kind
+          <select id="fltRepoKind">
+            <option value="">All Materials</option>
+            <option value="tos">TOS Matrix</option>
+            <option value="rubric">Rubric / Scoring Guide</option>
+            <option value="bow_guide">BoW / Lesson Guide</option>
+            <option value="answer_key">Answer Key Pack</option>
+            <option value="reference">Reference / Handout</option>
+          </select>
+        </label>
+        <label style="display:flex;align-items:center;gap:6px;text-transform:none;cursor:pointer;padding-bottom:6px;">
+          <input type="checkbox" id="fltShowDetails" checked style="width:auto;margin:0;" /> Show Keys / Details
+        </label>
+      </div>
+
+      <div class="toolbar">
+        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+          <strong id="countLabel">0 items shown</strong>
+          <button type="button" class="btn outline sm" id="btnResetFilters">Reset Filters</button>
+          <button type="button" class="btn outline sm" id="btnSelectAll">Select All Shown</button>
+          <button type="button" class="btn outline sm" id="btnClearSelection">Clear</button>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+          <button type="button" class="btn purple sm" id="btnPullSelected"><i class="fas fa-file-import"></i> Pull Selected to Exam Creator</button>
+          <button type="button" class="btn teal sm" id="btnExportCsv"><i class="fas fa-file-csv"></i> Export CSV</button>
+          <button type="button" class="btn outline sm" id="btnExportJson"><i class="fas fa-file-code"></i> Export JSON</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="item-list" id="listHost"></div>
+  </div>
+
+  <!-- QUESTION CREATE / EDIT MODAL -->
+  <div id="questionModal" class="modal">
+    <div class="modal-box">
+      <h2 id="qModalTitle" style="color:var(--primary);margin-bottom:14px;font-size:1.1rem;">Add / Edit Question &amp; Answer Key</h2>
+      <input type="hidden" id="qEditId" />
+      <input type="hidden" id="qEditStorage" />
+
+      <div class="grid-3" style="margin-bottom:10px;">
+        <label>Term / Quarter / Legacy
+          <select id="qTerm">
+            <option value="1">Term 1 / Q1</option>
+            <option value="2">Term 2 / Q2</option>
+            <option value="3">Term 3 / Q3</option>
+            <option value="4">Term 4 / Legacy (Q4)</option>
+          </select>
+        </label>
+        <label>Week
+          <select id="qWeek">
+            <option value="1">Week 1</option><option value="2">Week 2</option><option value="3">Week 3</option>
+            <option value="4">Week 4</option><option value="5">Week 5</option><option value="6">Week 6</option>
+            <option value="7">Week 7</option><option value="8">Week 8</option><option value="9">Week 9</option>
+            <option value="10">Week 10</option><option value="11">Week 11</option><option value="12">Week 12</option>
+            <option value="13">Week 13</option>
+          </select>
+        </label>
+        <label>Grade Level
+          <input type="text" id="qGrade" placeholder="e.g., 11 or Grade 11" />
+        </label>
+      </div>
+
+      <div class="grid-2" style="margin-bottom:10px;">
+        <label>Subject
+          <input type="text" id="qSubject" placeholder="e.g., Automotive Servicing" />
+        </label>
+        <label>BoW / Competency Code &amp; Ref
+          <input type="text" id="qBow" placeholder="e.g., LC-1 / Engine Cooling" />
+        </label>
+      </div>
+
+      <div class="grid-3" style="margin-bottom:10px;">
+        <label>Type
+          <select id="qType">
+            <option value="multiple_choice">Multiple Choice</option>
+            <option value="true_false">True or False</option>
+            <option value="identification">Identification</option>
+            <option value="matching">Matching</option>
+            <option value="essay">Essay</option>
+          </select>
+        </label>
+        <label>Cognitive Domain
+          <select id="qCog">
+            <option value="LOTS">LOTS</option>
+            <option value="HOTS">HOTS</option>
+          </select>
+        </label>
+        <label>Bloom Level
+          <input type="text" id="qBloom" value="Remembering" />
+        </label>
+      </div>
+
+      <label style="margin-bottom:10px;">Question Prompt *
+        <textarea id="qPrompt" rows="3" placeholder="Enter question text..."></textarea>
+      </label>
+      <label style="margin-bottom:10px;">Options (Multiple Choice, one per line: A, B, C, D)
+        <textarea id="qOptions" rows="4" placeholder="Option A&#10;Option B&#10;Option C&#10;Option D"></textarea>
+      </label>
+      <label style="margin-bottom:14px;">Answer Key / Rubric *
+        <input type="text" id="qAnswer" placeholder="e.g., A or True or key answer" />
+      </label>
+
+      <div style="display:flex;justify-content:flex-end;gap:8px;">
+        <button type="button" class="btn outline" id="btnCloseQModal">Cancel</button>
+        <button type="button" class="btn success" id="btnSaveQuestion"><i class="fas fa-check"></i> Save Question</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- REPOSITORY MATERIAL CREATE / EDIT MODAL -->
+  <div id="repoModal" class="modal">
+    <div class="modal-box">
+      <h2 id="rModalTitle" style="color:var(--primary);margin-bottom:14px;font-size:1.1rem;">Add / Edit Repository Material</h2>
+      <input type="hidden" id="rEditId" />
+      <input type="hidden" id="rEditStorage" />
+
+      <div class="grid-3" style="margin-bottom:10px;">
+        <label>Material Kind
+          <select id="rKind">
+            <option value="tos">TOS Matrix</option>
+            <option value="rubric">Rubric / Scoring Guide</option>
+            <option value="bow_guide">BoW / Lesson Guide</option>
+            <option value="answer_key">Answer Key Pack</option>
+            <option value="reference">Reference / Handout</option>
+          </select>
+        </label>
+        <label>Term / Quarter / Legacy
+          <select id="rTerm">
+            <option value="1">Term 1 / Q1</option>
+            <option value="2">Term 2 / Q2</option>
+            <option value="3">Term 3 / Q3</option>
+            <option value="4">Term 4 / Legacy (Q4)</option>
+          </select>
+        </label>
+        <label>Week
+          <select id="rWeek">
+            <option value="1">Week 1</option><option value="2">Week 2</option><option value="3">Week 3</option>
+            <option value="4">Week 4</option><option value="5">Week 5</option><option value="6">Week 6</option>
+            <option value="7">Week 7</option><option value="8">Week 8</option><option value="9">Week 9</option>
+            <option value="10">Week 10</option><option value="11">Week 11</option><option value="12">Week 12</option>
+            <option value="13">Week 13</option>
+          </select>
+        </label>
+      </div>
+
+      <div class="grid-3" style="margin-bottom:10px;">
+        <label>Grade Level
+          <input type="text" id="rGrade" placeholder="e.g., 11" />
+        </label>
+        <label>Subject
+          <input type="text" id="rSubject" placeholder="e.g., Automotive Servicing" />
+        </label>
+        <label>BoW / Competency Ref
+          <input type="text" id="rBow" placeholder="e.g., BoW Week 1-2" />
+        </label>
+      </div>
+
+      <label style="margin-bottom:10px;">Material Title *
+        <input type="text" id="rTitle" placeholder="e.g., Term 1 Week 1 TOS Matrix & Rubric" />
+      </label>
+      <label style="margin-bottom:14px;">Content / Notes / Key / Rubric Text *
+        <textarea id="rContent" rows="6" placeholder="Paste TOS notes, grading rubric, BoW guide, answer key, or reference notes..."></textarea>
+      </label>
+
+      <div style="display:flex;justify-content:flex-end;gap:8px;">
+        <button type="button" class="btn outline" id="btnCloseRModal">Cancel</button>
+        <button type="button" class="btn success" id="btnSaveRepo"><i class="fas fa-check"></i> Save Material</button>
+      </div>
+    </div>
+  </div>
+
+  <script type="module">
+    import { auth, db } from "../assets/js/firebase-config.js";
+    import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+    import { collection, getDocs, addDoc, updateDoc, deleteDoc, doc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+    const LOCAL_Q_KEY = "scphs_question_bank_v1";
+    const LOCAL_R_KEY = "scphs_teacher_repository_v1";
+    const STAGED_PULL_KEY = "scphs_pulled_questions_v1";
+    const STAGED_REPO_KEY = "scphs_pulled_repo_v1";
+
+    let ACTIVE_VIEW = "questions";
+    let QUESTIONS = [];
+    let REPO_ITEMS = [];
+    let SELECTED_IDS = new Set();
+    let CURRENT_USER = null;
+
+    const $ = (id) => document.getElementById(id);
+    const esc = (s) => String(s ?? "")
+      .replace(/&/g, "&amp;").replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+
+    function termLabel(t) {
+      const v = String(t || "1");
+      if (v === "4") return "Term 4 / Legacy (Q4)";
+      return `Term ${v} / Q${v}`;
+    }
+
+    function readLocal(key) {
+      try { return JSON.parse(localStorage.getItem(key) || "[]"); } catch (_) { return []; }
+    }
+    function writeLocal(key, val) {
+      localStorage.setItem(key, JSON.stringify(val));
+    }
+
+    function makeDedupeKey(item) {
+      const titleOrQ = String(item.question || item.title || "").toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
+      const subj = String(item.subject || "").toLowerCase().trim();
+      return `${subj}::${titleOrQ}`;
+    }
+
+    async function loadAllData() {
+      const localQ = readLocal(LOCAL_Q_KEY).map((x, i) => ({ ...x, id: x.id || `lq_${i}`, _storage: "local" }));
+      let cloudQ = [];
+      try {
+        const snap = await getDocs(collection(db, "question_bank"));
+        cloudQ = snap.docs.map((d) => ({ id: d.id, ...d.data(), _storage: "cloud" }));
+      } catch (_) {}
+
+      const seenQ = new Set();
+      QUESTIONS = [];
+      for (const item of [...cloudQ, ...localQ]) {
+        const k = item.dedupeKey || makeDedupeKey(item);
+        if (!seenQ.has(k)) { seenQ.add(k); QUESTIONS.push(item); }
+      }
+
+      const localR = readLocal(LOCAL_R_KEY).map((x, i) => ({ ...x, id: x.id || `lr_${i}`, _storage: "local" }));
+      let cloudR = [];
+      try {
+        const snap = await getDocs(collection(db, "teacher_repository"));
+        cloudR = snap.docs.map((d) => ({ id: d.id, ...d.data(), _storage: "cloud" }));
+      } catch (_) {}
+
+      const seenR = new Set();
+      REPO_ITEMS = [];
+      for (const item of [...cloudR, ...localR]) {
+        const k = item.dedupeKey || makeDedupeKey(item);
+        if (!seenR.has(k)) { seenR.add(k); REPO_ITEMS.push(item); }
+      }
+
+      renderCurrentView();
+    }
+
+    function getFilteredList() {
+      const kw = $("fltSearch").value.trim().toLowerCase();
+      const trm = $("fltTerm").value.trim();
+      const grd = $("fltGrade").value.trim().toLowerCase().replace(/^grade\s*/i, "");
+      const sbj = $("fltSubject").value.trim().toLowerCase();
+      const bow = $("fltBow").value.trim().toLowerCase();
+      const wk = $("fltWeek").value.trim();
+      const cog = $("fltCog").value.trim().toUpperCase();
+      const tp = $("fltType").value.trim().toLowerCase();
+      const rk = $("fltRepoKind").value.trim().toLowerCase();
+
+      const source = ACTIVE_VIEW === "questions" ? QUESTIONS : REPO_ITEMS;
+
+      return source.filter((item) => {
+        if (trm && String(item.term || "") !== trm) return false;
+        if (grd) {
+          const itemGrd = String(item.gradeLevel || "").toLowerCase().replace(/^grade\s*/i, "");
+          if (itemGrd !== grd) return false;
+        }
+        if (sbj && !String(item.subject || "").toLowerCase().includes(sbj)) return false;
+        if (bow) {
+          const bowHay = `${item.competencyCode || ""} ${item.bowRef || ""}`.toLowerCase();
+          if (!bowHay.includes(bow)) return false;
+        }
+        if (wk && String(item.week || "") !== wk) return false;
+
+        if (ACTIVE_VIEW === "questions") {
+          if (cog && String(item.cognitiveGroup || "LOTS").toUpperCase() !== cog) return false;
+          if (tp && String(item.type || "").toLowerCase() !== tp) return false;
+          if (kw) {
+            const hay = `${item.question || ""} ${item.correct_answer || ""} ${item.competencyCode || ""} ${item.bowRef || ""} ${item.subject || ""} ${item.bloomLevel || ""}`.toLowerCase();
+            if (!hay.includes(kw)) return false;
+          }
+        } else {
+          if (rk && String(item.kind || "").toLowerCase() !== rk) return false;
+          if (kw) {
+            const hay = `${item.title || ""} ${item.content || ""} ${item.competencyCode || ""} ${item.bowRef || ""} ${item.subject || ""}`.toLowerCase();
+            if (!hay.includes(kw)) return false;
+          }
+        }
+        return true;
+      });
+    }
+
+    function renderCurrentView() {
+      const isQ = ACTIVE_VIEW === "questions";
+      $("fltCogWrap").classList.toggle("hidden", !isQ);
+      $("fltTypeWrap").classList.toggle("hidden", !isQ);
+      $("fltRepoKindWrap").classList.toggle("hidden", isQ);
+
+      const list = getFilteredList();
+      const showDetails = $("fltShowDetails").checked;
+      $("countLabel").textContent = `${list.length} item(s) shown (${SELECTED_IDS.size} selected)`;
+
+      const host = $("listHost");
+      if (!list.length) {
+        host.innerHTML = `<div class="card" style="text-align:center;color:var(--muted);padding:34px;">
+          No matching ${isQ ? "questions" : "repository materials"} found. Adjust your filters or add new items above.
+        </div>`;
+        return;
+      }
+
+      if (isQ) {
+        host.innerHTML = list.map((q) => {
+          const checked = SELECTED_IDS.has(String(q.id)) ? "checked" : "";
+          const isHots = String(q.cognitiveGroup || "LOTS").toUpperCase() === "HOTS";
+          const bowText = q.bowRef || q.competencyCode || "";
+          const optsHtml = Array.isArray(q.options) && q.options.length
+            ? `<ul class="item-opts">${q.options.map((o, i) => `<li><strong>${String.fromCharCode(65 + i)}.</strong> ${esc(o)}</li>`).join("")}</ul>`
+            : "";
+          const keyHtml = showDetails
+            ? `<div class="item-box"><strong>Answer Key:</strong> ${esc(q.correct_answer || "N/A")}</div>`
+            : "";
+
+          return `
+            <div class="item-card">
+              <input type="checkbox" class="item-check" data-chk="${esc(q.id)}" ${checked} />
+              <div class="item-main">
+                <div class="item-tags">
+                  <span class="tag term">${esc(termLabel(q.term))}</span>
+                  ${q.week ? `<span class="tag meta">Week ${esc(q.week)}</span>` : ""}
+                  <span class="tag ${isHots ? "hots" : "lots"}">${esc(q.cognitiveGroup || "LOTS")} • ${esc(q.bloomLevel || "")}</span>
+                  <span class="tag meta">${esc(q.type || "multiple_choice")} • ${Number(q.points) || 1} pt(s)</span>
+                  ${q.gradeLevel ? `<span class="tag meta">Grade ${esc(String(q.gradeLevel).replace(/^grade\s*/i, ""))}</span>` : ""}
+                  ${q.subject ? `<span class="tag meta">${esc(q.subject)}</span>` : ""}
+                  ${bowText ? `<span class="tag bow">BoW: ${esc(bowText)}</span>` : ""}
+                  <span class="tag src">${esc(q._storage)}</span>
+                </div>
+                <div class="item-title">${esc(q.question)}</div>
+                ${optsHtml}
+                ${keyHtml}
+              </div>
+              <div class="item-actions">
+                <button type="button" class="btn purple sm" data-pull-q="${esc(q.id)}"><i class="fas fa-plus-circle"></i> Pull</button>
+                <button type="button" class="btn outline sm" data-edit-q="${esc(q.id)}"><i class="fas fa-edit"></i> Edit</button>
+                <button type="button" class="btn outline sm" data-copy-q="${esc(q.id)}"><i class="fas fa-copy"></i> Key</button>
+                <button type="button" class="btn danger sm" data-del-q="${esc(q.id)}" data-src="${esc(q._storage)}"><i class="fas fa-trash"></i></button>
+              </div>
+            </div>
+          `;
+        }).join("");
+      } else {
+        host.innerHTML = list.map((r) => {
+          const checked = SELECTED_IDS.has(String(r.id)) ? "checked" : "";
+          const bowText = r.bowRef || r.competencyCode || "";
+          const bodyHtml = showDetails
+            ? `<div class="item-box">${esc(r.content || "")}</div>`
+            : "";
+
+          return `
+            <div class="item-card">
+              <input type="checkbox" class="item-check" data-chk="${esc(r.id)}" ${checked} />
+              <div class="item-main">
+                <div class="item-tags">
+                  <span class="tag term">${esc(termLabel(r.term))}</span>
+                  ${r.week ? `<span class="tag meta">Week ${esc(r.week)}</span>` : ""}
+                  <span class="tag hots">${esc((r.kind || "reference").toUpperCase())}</span>
+                  ${r.gradeLevel ? `<span class="tag meta">Grade ${esc(String(r.gradeLevel).replace(/^grade\s*/i, ""))}</span>` : ""}
+                  ${r.subject ? `<span class="tag meta">${esc(r.subject)}</span>` : ""}
+                  ${bowText ? `<span class="tag bow">BoW: ${esc(bowText)}</span>` : ""}
+                  <span class="tag src">${esc(r._storage)}</span>
+                </div>
+                <div class="item-title">${esc(r.title)}</div>
+                ${bodyHtml}
+              </div>
+              <div class="item-actions">
+                <button type="button" class="btn purple sm" data-use-r="${esc(r.id)}"><i class="fas fa-file-import"></i> Use</button>
+                <button type="button" class="btn outline sm" data-edit-r="${esc(r.id)}"><i class="fas fa-edit"></i> Edit</button>
+                <button type="button" class="btn outline sm" data-copy-r="${esc(r.id)}"><i class="fas fa-copy"></i> Copy</button>
+                <button type="button" class="btn danger sm" data-del-r="${esc(r.id)}" data-src="${esc(r._storage)}"><i class="fas fa-trash"></i></button>
+              </div>
+            </div>
+          `;
+        }).join("");
+      }
+    }
+
+    // Tabs
+    document.querySelectorAll(".main-tab").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        ACTIVE_VIEW = btn.dataset.view;
+        SELECTED_IDS.clear();
+        document.querySelectorAll(".main-tab").forEach((b) => b.classList.remove("active"));
+        btn.classList.add("active");
+        renderCurrentView();
+      });
+    });
+
+    // Open Question Modal (Create or Edit)
+    function openQuestionModal(q = null) {
+      $("qEditId").value = q?.id || "";
+      $("qEditStorage").value = q?._storage || "local";
+      $("qModalTitle").textContent = q ? "Edit Question & Answer Key" : "Add Question & Answer Key";
+      $("qTerm").value = String(q?.term || $("fltTerm").value || "1");
+      $("qWeek").value = String(q?.week || $("fltWeek").value || "1");
+      $("qGrade").value = String(q?.gradeLevel || $("fltGrade").value || "").replace(/^grade\s*/i, "");
+      $("qSubject").value = q?.subject || $("fltSubject").value || "";
+      $("qBow").value = q?.bowRef || q?.competencyCode || $("fltBow").value || "";
+      $("qType").value = q?.type || "multiple_choice";
+      $("qCog").value = q?.cognitiveGroup || "LOTS";
+      $("qBloom").value = q?.bloomLevel || "Remembering";
+      $("qPrompt").value = q?.question || "";
+      $("qOptions").value = Array.isArray(q?.options) ? q.options.join("\n") : "";
+      $("qAnswer").value = q?.correct_answer || "";
+      $("questionModal").classList.add("show");
+    }
+
+    $("btnOpenAddQuestion").addEventListener("click", () => openQuestionModal(null));
+    $("btnCloseQModal").addEventListener("click", () => $("questionModal").classList.remove("show"));
+
+    $("btnSaveQuestion").addEventListener("click", async () => {
+      const question = $("qPrompt").value.trim();
+      const correct_answer = $("qAnswer").value.trim();
+      if (!question || !correct_answer) return alert("Question prompt and answer key are required.");
+
+      const editId = $("qEditId").value;
+      const editSrc = $("qEditStorage").value;
+      const bowVal = $("qBow").value.trim();
+      const opts = $("qOptions").value.split(/\r?\n/).map((s) => s.trim()).filter(Boolean);
+
+      const payload = {
+        term: $("qTerm").value,
+        week: $("qWeek").value,
+        gradeLevel: $("qGrade").value.trim(),
+        subject: $("qSubject").value.trim(),
+        bowRef: bowVal,
+        competencyCode: bowVal,
+        type: $("qType").value,
+        cognitiveGroup: $("qCog").value,
+        bloomLevel: $("qBloom").value.trim() || "Remembering",
+        points: $("qType").value === "essay" ? 5 : 1,
+        question,
+        options: opts,
+        correct_answer
+      };
+      payload.dedupeKey = makeDedupeKey(payload);
+
+      if (editId) {
+        const localList = readLocal(LOCAL_Q_KEY);
+        const lIdx = localList.findIndex((x) => String(x.id) === editId);
+        if (lIdx >= 0) {
+          localList[lIdx] = { ...localList[lIdx], ...payload, updatedAt: new Date().toISOString() };
+          writeLocal(LOCAL_Q_KEY, localList);
+        } else if (editSrc === "local") {
+          writeLocal(LOCAL_Q_KEY, [{ id: editId, ...payload, updatedAt: new Date().toISOString() }, ...localList]);
+        }
+
+        if (editSrc === "cloud") {
+          try {
+            await updateDoc(doc(db, "question_bank", editId), { ...payload, updatedAt: serverTimestamp() });
+          } catch (err) {
+            alert("Updated locally; cloud note: " + err.message);
+          }
+        }
+      } else {
+        const newRecord = {
+          id: "qb_" + Date.now(),
+          ...payload,
+          createdByUid: CURRENT_USER?.uid || "guest",
+          createdAt: new Date().toISOString()
+        };
+        const localList = readLocal(LOCAL_Q_KEY);
+        writeLocal(LOCAL_Q_KEY, [newRecord, ...localList]);
+        try {
+          await addDoc(collection(db, "question_bank"), { ...newRecord, createdAt: serverTimestamp() });
+        } catch (_) {}
+      }
+
+      $("questionModal").classList.remove("show");
+      await loadAllData();
+    });
+
+    // Open Repository Modal (Create or Edit)
+    function openRepoModal(r = null) {
+      $("rEditId").value = r?.id || "";
+      $("rEditStorage").value = r?._storage || "local";
+      $("rModalTitle").textContent = r ? "Edit Repository Material" : "Add Repository Material";
+      $("rKind").value = r?.kind || "tos";
+      $("rTerm").value = String(r?.term || $("fltTerm").value || "1");
+      $("rWeek").value = String(r?.week || $("fltWeek").value || "1");
+      $("rGrade").value = String(r?.gradeLevel || $("fltGrade").value || "").replace(/^grade\s*/i, "");
+      $("rSubject").value = r?.subject || $("fltSubject").value || "";
+      $("rBow").value = r?.bowRef || r?.competencyCode || $("fltBow").value || "";
+      $("rTitle").value = r?.title || "";
+      $("rContent").value = r?.content || "";
+      $("repoModal").classList.add("show");
+    }
+
+    $("btnOpenAddRepo").addEventListener("click", () => {
+      ACTIVE_VIEW = "repository";
+      document.querySelectorAll(".main-tab").forEach((b) => b.classList.toggle("active", b.dataset.view === "repository"));
+      openRepoModal(null);
+    });
+    $("btnCloseRModal").addEventListener("click", () => $("repoModal").classList.remove("show"));
+
+    $("btnSaveRepo").addEventListener("click", async () => {
+      const title = $("rTitle").value.trim();
+      const content = $("rContent").value.trim();
+      if (!title || !content) return alert("Title and material content/notes are required.");
+
+      const editId = $("rEditId").value;
+      const editSrc = $("rEditStorage").value;
+      const bowVal = $("rBow").value.trim();
+
+      const payload = {
+        kind: $("rKind").value,
+        term: $("rTerm").value,
+        week: $("rWeek").value,
+        gradeLevel: $("rGrade").value.trim(),
+        subject: $("rSubject").value.trim(),
+        bowRef: bowVal,
+        competencyCode: bowVal,
+        title,
+        content
+      };
+      payload.dedupeKey = makeDedupeKey(payload);
+
+      if (editId) {
+        const localList = readLocal(LOCAL_R_KEY);
+        const lIdx = localList.findIndex((x) => String(x.id) === editId);
+        if (lIdx >= 0) {
+          localList[lIdx] = { ...localList[lIdx], ...payload, updatedAt: new Date().toISOString() };
+          writeLocal(LOCAL_R_KEY, localList);
+        } else if (editSrc === "local") {
+          writeLocal(LOCAL_R_KEY, [{ id: editId, ...payload, updatedAt: new Date().toISOString() }, ...localList]);
+        }
+
+        if (editSrc === "cloud") {
+          try {
+            await updateDoc(doc(db, "teacher_repository", editId), { ...payload, updatedAt: serverTimestamp() });
+          } catch (err) {
+            alert("Updated locally; cloud note: " + err.message);
+          }
+        }
+      } else {
+        const newRecord = {
+          id: "repo_" + Date.now(),
+          ...payload,
+          createdByUid: CURRENT_USER?.uid || "guest",
+          createdAt: new Date().toISOString()
+        };
+        writeLocal(LOCAL_R_KEY, [newRecord, ...readLocal(LOCAL_R_KEY)]);
+        try {
+          await addDoc(collection(db, "teacher_repository"), { ...newRecord, createdAt: serverTimestamp() });
+        } catch (_) {}
+      }
+
+      $("repoModal").classList.remove("show");
+      await loadAllData();
+    });
+
+    // List interactions (select, pull, edit, copy, delete)
+    $("listHost").addEventListener("change", (e) => {
+      const cb = e.target.closest("[data-chk]");
+      if (!cb) return;
+      if (cb.checked) SELECTED_IDS.add(cb.dataset.chk);
+      else SELECTED_IDS.delete(cb.dataset.chk);
+      $("countLabel").textContent = `${getFilteredList().length} item(s) shown (${SELECTED_IDS.size} selected)`;
+    });
+
+    $("listHost").addEventListener("click", async (e) => {
+      const pullQ = e.target.closest("[data-pull-q]");
+      if (pullQ) {
+        const item = QUESTIONS.find((x) => String(x.id) === pullQ.dataset.pullQ);
+        if (item) {
+          const prev = JSON.parse(localStorage.getItem(STAGED_PULL_KEY) || "[]");
+          localStorage.setItem(STAGED_PULL_KEY, JSON.stringify([...prev, item]));
+          location.href = "exam-creator.html?imported=bank";
+        }
+        return;
+      }
+
+      const editQ = e.target.closest("[data-edit-q]");
+      if (editQ) {
+        const item = QUESTIONS.find((x) => String(x.id) === editQ.dataset.editQ);
+        if (item) openQuestionModal(item);
+        return;
+      }
+
+      const copyQ = e.target.closest("[data-copy-q]");
+      if (copyQ) {
+        const item = QUESTIONS.find((x) => String(x.id) === copyQ.dataset.copyQ);
+        if (item) {
+          navigator.clipboard.writeText(`Q: ${item.question}\nAnswer Key: ${item.correct_answer}`);
+          alert("Question & Answer Key copied!");
+        }
+        return;
+      }
+
+      const delQ = e.target.closest("[data-del-q]");
+      if (delQ) {
+        if (!confirm("Delete this question?")) return;
+        const id = delQ.dataset.delQ;
+        const src = delQ.dataset.src;
+        writeLocal(LOCAL_Q_KEY, readLocal(LOCAL_Q_KEY).filter((x) => String(x.id) !== id));
+        if (src === "cloud") {
+          try { await deleteDoc(doc(db, "question_bank", id)); } catch (err) { alert("Cloud delete note: " + err.message); }
+        }
+        SELECTED_IDS.delete(id);
+        await loadAllData();
+        return;
+      }
+
+      const useR = e.target.closest("[data-use-r]");
+      if (useR) {
+        const item = REPO_ITEMS.find((x) => String(x.id) === useR.dataset.useR);
+        if (item) {
+          localStorage.setItem(STAGED_REPO_KEY, JSON.stringify(item));
+          location.href = "exam-creator.html?imported=repo";
+        }
+        return;
+      }
+
+      const editR = e.target.closest("[data-edit-r]");
+      if (editR) {
+        const item = REPO_ITEMS.find((x) => String(x.id) === editR.dataset.editR);
+        if (item) openRepoModal(item);
+        return;
+      }
+
+      const copyR = e.target.closest("[data-copy-r]");
+      if (copyR) {
+        const item = REPO_ITEMS.find((x) => String(x.id) === copyR.dataset.copyR);
+        if (item) {
+          navigator.clipboard.writeText(`${item.title}\n\n${item.content}`);
+          alert("Repository material copied!");
+        }
+        return;
+      }
+
+      const delR = e.target.closest("[data-del-r]");
+      if (delR) {
+        if (!confirm("Delete this repository material?")) return;
+        const id = delR.dataset.delR;
+        const src = delR.dataset.src;
+        writeLocal(LOCAL_R_KEY, readLocal(LOCAL_R_KEY).filter((x) => String(x.id) !== id));
+        if (src === "cloud") {
+          try { await deleteDoc(doc(db, "teacher_repository", id)); } catch (err) { alert("Cloud delete note: " + err.message); }
+        }
+        SELECTED_IDS.delete(id);
+        await loadAllData();
+      }
+    });
+
+    $("btnPullSelected").addEventListener("click", () => {
+      if (!SELECTED_IDS.size) return alert("Select at least one item first.");
+      if (ACTIVE_VIEW === "questions") {
+        const chosen = QUESTIONS.filter((x) => SELECTED_IDS.has(String(x.id)));
+        const prev = JSON.parse(localStorage.getItem(STAGED_PULL_KEY) || "[]");
+        localStorage.setItem(STAGED_PULL_KEY, JSON.stringify([...prev, ...chosen]));
+        location.href = "exam-creator.html?imported=bank";
+      } else {
+        const chosen = REPO_ITEMS.filter((x) => SELECTED_IDS.has(String(x.id)));
+        localStorage.setItem(STAGED_REPO_KEY, JSON.stringify(chosen[0]));
+        location.href = "exam-creator.html?imported=repo";
+      }
+    });
+
+    $("btnSelectAll").addEventListener("click", () => {
+      getFilteredList().forEach((x) => SELECTED_IDS.add(String(x.id)));
+      renderCurrentView();
+    });
+
+    $("btnClearSelection").addEventListener("click", () => {
+      SELECTED_IDS.clear();
+      renderCurrentView();
+    });
+
+    $("btnResetFilters").addEventListener("click", () => {
+      ["fltSearch", "fltTerm", "fltGrade", "fltSubject", "fltBow", "fltWeek", "fltCog", "fltType", "fltRepoKind"]
+        .forEach((id) => { $(id).value = ""; });
+      renderCurrentView();
+    });
+
+    $("btnExportCsv").addEventListener("click", () => {
+      const rows = getFilteredList();
+      if (!rows.length) return alert("No items to export.");
+      let csv = "";
+      if (ACTIVE_VIEW === "questions") {
+        csv = "Term,Week,Grade,Subject,BoW,Cognitive,Bloom,Type,Points,Question,Options,Answer Key\n";
+        rows.forEach((q) => {
+          const opts = Array.isArray(q.options) ? q.options.join(" | ") : "";
+          csv += `"${termLabel(q.term)}","W${q.week || ""}","${q.gradeLevel || ""}","${q.subject || ""}","${(q.bowRef || q.competencyCode || "").replace(/"/g, '""')}","${q.cognitiveGroup || "LOTS"}","${q.bloomLevel || ""}","${q.type || ""}",${Number(q.points) || 1},"${String(q.question || "").replace(/"/g, '""')}","${opts.replace(/"/g, '""')}","${String(q.correct_answer || "").replace(/"/g, '""')}"\n`;
+        });
+      } else {
+        csv = "Kind,Term,Week,Grade,Subject,BoW,Title,Content\n";
+        rows.forEach((r) => {
+          csv += `"${r.kind || ""}","${termLabel(r.term)}","W${r.week || ""}","${r.gradeLevel || ""}","${r.subject || ""}","${(r.bowRef || r.competencyCode || "").replace(/"/g, '""')}","${String(r.title || "").replace(/"/g, '""')}","${String(r.content || "").replace(/"/g, '""')}"\n`;
+        });
+      }
+      const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = ACTIVE_VIEW === "questions" ? "Question_Bank.csv" : "Teacher_Repository.csv";
+      a.click();
+    });
+
+    $("btnExportJson").addEventListener("click", () => {
+      const rows = getFilteredList();
+      if (!rows.length) return alert("No items to export.");
+      const blob = new Blob([JSON.stringify(rows, null, 2)], { type: "application/json" });
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = ACTIVE_VIEW === "questions" ? "Question_Bank.json" : "Teacher_Repository.json";
+      a.click();
+    });
+
+    ["fltSearch", "fltTerm", "fltGrade", "fltSubject", "fltBow", "fltWeek", "fltCog", "fltType", "fltRepoKind", "fltShowDetails"]
+      .forEach((id) => {
+        $(id).addEventListener("input", renderCurrentView);
+        $(id).addEventListener("change", renderCurrentView);
+      });
+
+    onAuthStateChanged(auth, (u) => {
+      CURRENT_USER = u || null;
+      $("bankStatusBadge").textContent = u ? `Signed in: ${u.email}` : "Free Open Bank & Repository";
+      $("bankSignInBtn").style.display = u ? "none" : "inline-flex";
+      loadAllData();
+    });
+
+    loadAllData();
+  </script>
+</body>
+</html>

@@ -129,6 +129,7 @@
   <div>
     <div style="display:flex;gap:14px;flex-wrap:wrap;margin-bottom:2px;">
       <a href="open-exam-hub.html">&larr; Open Assessment Hub</a>
+      <a href="question-bank.html" class="btn outline sm" style="background:#fff;"><i class="fas fa-database"></i> Question Bank</a>
       <a href="assessment-tools.html">&larr; Assessment Tools</a>
     </div>
     <h1><i class="fas fa-brain"></i> Smart Exam Creator (BoW + TOS + Online &amp; QR Print)</h1>
@@ -956,6 +957,98 @@ Return STRICT JSON matching this exact schema:
       $("btnGenerateExam").disabled = false;
     }
   });
+
+  const LOCAL_BANK_KEY = "scphs_question_bank_v1";
+  const STAGED_PULL_KEY = "scphs_pulled_questions_v1";
+
+  function makeBankDedupeKey(item) {
+    const qNorm = String(item.question || "").toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
+    const subjNorm = String(item.subject || "").toLowerCase().trim();
+    return `${subjNorm}::${qNorm}`;
+  }
+
+  const STAGED_REPO_KEY = "scphs_pulled_repo_v1";
+
+  async function saveGeneratedQuestionsToBank(examObj) {
+    if (!examObj?.questions?.length) return;
+    const existingLocal = JSON.parse(localStorage.getItem(LOCAL_BANK_KEY) || "[]");
+    const seen = new Set(existingLocal.map((x) => x.dedupeKey || makeBankDedupeKey(x)));
+    const bowSummary = Array.from(document.querySelectorAll(".bow-comp-cb:checked"))
+      .map((cb) => CURRENT_BOW.competencies[Number(cb.value)]?.code || "")
+      .filter(Boolean).join(", ");
+    const toAdd = [];
+
+    for (const q of examObj.questions) {
+      const bowTag = q.competencyCode || bowSummary || $("customTopicInput").value.trim().slice(0, 60);
+      const record = {
+        id: "qb_" + Date.now() + "_" + Math.random().toString(36).slice(2, 6),
+        gradeLevel: examObj.gradeLevel || "",
+        subject: examObj.subjectName || "",
+        term: String(examObj.term || "1"),
+        week: String(examObj.week || "1"),
+        bowRef: bowTag,
+        competencyCode: q.competencyCode || bowTag,
+        bloomLevel: q.bloomLevel || "Remembering",
+        cognitiveGroup: q.cognitiveGroup || "LOTS",
+        type: q.type || "multiple_choice",
+        points: Number(q.points) || 1,
+        question: q.question || "",
+        options: q.options || [],
+        correct_answer: q.correct_answer || "",
+        matching_pairs: q.matching_pairs || [],
+        createdByUid: currentUser?.uid || "guest",
+        createdAt: new Date().toISOString()
+      };
+      record.dedupeKey = makeBankDedupeKey(record);
+      if (!seen.has(record.dedupeKey)) {
+        seen.add(record.dedupeKey);
+        toAdd.push(record);
+      }
+    }
+
+    if (!toAdd.length) return;
+    localStorage.setItem(LOCAL_BANK_KEY, JSON.stringify([...toAdd, ...existingLocal]));
+
+    for (const rec of toAdd) {
+      try {
+        await addDoc(collection(db, "question_bank"), { ...rec, createdAt: serverTimestamp() });
+      } catch (_) {}
+    }
+  }
+
+  function importStagedFromBankOrRepo() {
+    const mode = urlParams.get("imported");
+    if (mode === "bank") {
+      const staged = JSON.parse(localStorage.getItem(STAGED_PULL_KEY) || "[]");
+      if (!staged.length) return;
+      localStorage.removeItem(STAGED_PULL_KEY);
+
+      const existingQs = GENERATED_EXAM?.questions || [];
+      const combined = [...existingQs, ...staged].map((q, idx) => ({ ...q, order: idx + 1 }));
+      GENERATED_EXAM = {
+        title: GENERATED_EXAM?.title || $("examTitle").value.trim() || "Bank-Imported Assessment",
+        gradeLevel: GENERATED_EXAM?.gradeLevel || $("pickGrade").value || "",
+        subjectCode: GENERATED_EXAM?.subjectCode || $("pickSubject").value || "",
+        subjectName: GENERATED_EXAM?.subjectName || staged[0]?.subject || "Subject",
+        term: GENERATED_EXAM?.term || staged[0]?.term || $("pickTerm").value || "1",
+        week: GENERATED_EXAM?.week || staged[0]?.week || $("pickWeek").value || "1",
+        tos: recalcTOS(),
+        tosMatrix: GENERATED_EXAM?.tosMatrix || [],
+        questions: combined
+      };
+      $("scoreTotal").value = combined.reduce((s, q) => s + (Number(q.points) || 1), 0);
+      renderGeneratedPreview();
+      renderTosMatrix();
+    } else if (mode === "repo") {
+      const repoItem = JSON.parse(localStorage.getItem(STAGED_REPO_KEY) || "null");
+      if (!repoItem) return;
+      localStorage.removeItem(STAGED_REPO_KEY);
+      if (repoItem.term) $("pickTerm").value = String(repoItem.term);
+      if (repoItem.week) $("pickWeek").value = String(repoItem.week);
+      if (repoItem.title && !$("examTitle").value) $("examTitle").value = repoItem.title;
+      $("customTopicInput").value = `[Repository: ${repoItem.title}] ${repoItem.content || ""}`.slice(0, 800);
+    }
+  }
 
   // ============================================================
   // 5. RENDER PREVIEW & TOS MATRIX
