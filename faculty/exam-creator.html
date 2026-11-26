@@ -87,17 +87,40 @@
     .hidden { display: none !important; }
     .status-bar { padding: 10px 14px; border-radius: 8px; background: #eff6ff; color: #1e40af; font-weight: 600; font-size: 13px; margin-top: 10px; }
 
+    /* ================= 8.5" x 13" PORTRAIT DEPED EXAM PAPER ================= */
     .print-only { display: none; }
     @media print {
+      @page { size: 8.5in 13in portrait; margin: 10mm 14mm; }
       body * { visibility: hidden; }
       #printContainer, #printContainer * { visibility: visible; }
       #printContainer { display: block !important; position: absolute; left: 0; top: 0; width: 100%; background: #fff; }
-      .exam-sheet-page { page-break-after: always; padding: 10mm 12mm; font-family: "Times New Roman", Times, serif; color: #000; font-size: 11pt; line-height: 1.4; }
+      .exam-sheet-page { page-break-after: always; padding: 4mm 2mm; font-family: "Times New Roman", Times, serif; color: #000; font-size: 11pt; line-height: 1.4; }
       .exam-sheet-page:last-child { page-break-after: auto; }
+      * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
     }
-    .sheet-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #000; padding-bottom: 8px; margin-bottom: 10px; gap: 12px; }
-    .sheet-student-box { border: 1.5px solid #000; padding: 8px 10px; margin-bottom: 12px; display: grid; grid-template-columns: 1fr 110px; gap: 10px; align-items: center; }
-    .bubble-strip { border: 1px dashed #475569; padding: 8px; margin-bottom: 12px; font-size: 9.5pt; background: #f8fafc; }
+    .deped-header { text-align: center; margin-bottom: 12px; font-size: 11pt; line-height: 1.35; }
+    .deped-logo { height: 60px; width: auto; margin: 0 auto 6px auto; display: block; }
+    .school-name { font-size: 13.5pt; font-weight: 800; text-transform: uppercase; margin-top: 4px; letter-spacing: 0.4px; }
+    .school-address { font-size: 10pt; text-transform: uppercase; }
+    .header-line { border: none; border-top: 2px solid #000; margin: 8px 0 12px; }
+    .exam-title { text-align: center; font-size: 14pt; font-weight: 800; margin: 10px 0 4px; text-transform: uppercase; }
+    .exam-subtitle { text-align: center; font-size: 10.5pt; margin-bottom: 12px; }
+    .student-info { display: flex; justify-content: space-between; border-top: 1px solid #000; border-bottom: 1px solid #000; padding: 7px 0; margin-bottom: 12px; font-size: 10.5pt; flex-wrap: wrap; gap: 8px; }
+    .instructions { font-size: 10pt; background: #f8fafc; padding: 7px 10px; border-left: 3px solid #000; margin-bottom: 14px; }
+    .test-section { margin-bottom: 18px; }
+    .test-header { font-size: 11.5pt; font-weight: 800; text-transform: uppercase; margin-bottom: 3px; }
+    .test-direction { font-size: 10pt; font-style: italic; margin-bottom: 10px; }
+    .question-item { margin-bottom: 11px; display: flex; gap: 8px; font-size: 11pt; line-height: 1.38; page-break-inside: avoid; }
+    .q-num { font-weight: 700; min-width: 22px; }
+    .options-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 4px 14px; margin-left: 12px; margin-top: 4px; }
+    .blank-line { display: inline-block; border-bottom: 1px solid #000; width: 150px; margin-left: 6px; }
+    .essay-lines { margin-top: 8px; margin-left: 12px; }
+    .essay-line { border-bottom: 1px solid #94a3b8; height: 22px; }
+    .signatories { display: flex; justify-content: space-between; margin-top: 28px; font-size: 10.5pt; page-break-inside: avoid; }
+    .sig-block { text-align: center; width: 31%; }
+    .sig-line { border-top: 1px solid #000; margin-top: 28px; margin-bottom: 4px; }
+    .sig-name { font-weight: 700; text-transform: uppercase; }
+    .sig-title { font-size: 9.5pt; }
   </style>
 </head>
 <body>
@@ -1371,6 +1394,163 @@ Return STRICT JSON matching this exact schema:
     a.download = `${title}_Results.csv`;
     a.click();
   });
+
+  function buildPrintableExamSheetsHTML() {
+    if (!GENERATED_EXAM?.questions?.length) return "";
+    const scope = $("printScope").value;
+    const includeKey = $("printIncludeKey").value === "yes";
+    const schoolName = ILAW_CONFIG?.schoolName || "Sta. Cruz Pingkian High School";
+    const schoolAddr = ILAW_CONFIG?.schoolAddress || "Pingkian Kayapa, Nueva Vizcaya";
+    const regionText = ILAW_CONFIG?.region || "Region II - Cagayan Valley";
+    const divisionText = ILAW_CONFIG?.division || "Schools Division of Nueva Vizcaya";
+    const classId = $("pickClass").value || "UNASSIGNED";
+    const classLabel = $("pickClass").selectedOptions[0]?.textContent || "";
+
+    const studentsToPrint = (scope === "class_roster" && CLASS_STUDENTS.length)
+      ? CLASS_STUDENTS
+      : [{ id: "MASTER", classId, lrn: "", fullName: "" }];
+
+    const groups = { multiple_choice: [], true_false: [], identification: [], matching: [], essay: [] };
+    GENERATED_EXAM.questions.forEach((q) => {
+      if (groups[q.type]) groups[q.type].push(q);
+      else groups.identification.push(q);
+    });
+
+    let itemNo = 1;
+    let sectionsHtml = "";
+
+    if (groups.multiple_choice.length) {
+      sectionsHtml += `<div class="test-section"><div class="test-header">I. Multiple Choice</div><div class="test-direction">Direction: Read each question carefully. Choose the letter of the correct answer.</div>`;
+      groups.multiple_choice.forEach((q) => {
+        const opts = (q.options || []).map((o, oi) =>
+          `<div><strong>${String.fromCharCode(65 + oi)}.</strong> ${esc(o)}</div>`
+        ).join("");
+        sectionsHtml += `<div class="question-item"><div class="q-num">${itemNo++}.</div><div style="flex:1;"><div>${esc(q.question)}</div><div class="options-grid">${opts}</div></div></div>`;
+      });
+      sectionsHtml += `</div>`;
+    }
+
+    if (groups.true_false.length) {
+      sectionsHtml += `<div class="test-section"><div class="test-header">II. True or False</div><div class="test-direction">Direction: Write TRUE if the statement is correct, and FALSE if it is incorrect.</div>`;
+      groups.true_false.forEach((q) => {
+        sectionsHtml += `<div class="question-item"><div class="q-num">${itemNo++}.</div><div style="flex:1;">__________ ${esc(q.question)}</div></div>`;
+      });
+      sectionsHtml += `</div>`;
+    }
+
+    if (groups.identification.length) {
+      sectionsHtml += `<div class="test-section"><div class="test-header">III. Identification</div><div class="test-direction">Direction: Identify what is being described in each statement. Write your answer on the blank.</div>`;
+      groups.identification.forEach((q) => {
+        sectionsHtml += `<div class="question-item"><div class="q-num">${itemNo++}.</div><div style="flex:1;">${esc(q.question)} <span class="blank-line"></span></div></div>`;
+      });
+      sectionsHtml += `</div>`;
+    }
+
+    if (groups.matching.length) {
+      sectionsHtml += `<div class="test-section"><div class="test-header">IV. Matching Type</div><div class="test-direction">Direction: Match Column A with the corresponding item in Column B.</div>`;
+      groups.matching.forEach((q) => {
+        const pairs = (q.matching_pairs || []).map((p) =>
+          `<div>_____ ${esc(p.left)} &nbsp;&nbsp;|&nbsp;&nbsp; [ ] ${esc(p.right)}</div>`
+        ).join("");
+        sectionsHtml += `<div class="question-item"><div class="q-num">${itemNo++}.</div><div style="flex:1;"><div>${esc(q.question)}</div><div style="margin-left:12px;">${pairs}</div></div></div>`;
+      });
+      sectionsHtml += `</div>`;
+    }
+
+    if (groups.essay.length) {
+      sectionsHtml += `<div class="test-section"><div class="test-header">V. Essay</div><div class="test-direction">Direction: Read and analyze each question. Write your answer clearly and concisely.</div>`;
+      groups.essay.forEach((q) => {
+        sectionsHtml += `<div class="question-item"><div class="q-num">${itemNo++}.</div><div style="flex:1;"><div>${esc(q.question)} <em>(${q.points || 5} pts)</em></div><div class="essay-lines"><div class="essay-line"></div><div class="essay-line"></div><div class="essay-line"></div><div class="essay-line"></div></div></div></div>`;
+      });
+      sectionsHtml += `</div>`;
+    }
+
+    const totalPts = GENERATED_EXAM.questions.reduce((s, q) => s + (Number(q.points) || 1), 0);
+    const termLabel = GENERATED_EXAM.term === "4" ? "Legacy" : `Term ${GENERATED_EXAM.term || 1}`;
+
+    const sheets = studentsToPrint.map((st) => {
+      const qrPayload = JSON.stringify({
+        classId: st.classId,
+        studentId: st.id === "MASTER" ? "" : st.id,
+        lrn: st.lrn,
+        name: st.fullName,
+        examTitle: GENERATED_EXAM.title
+      });
+      const qrImgUrl = `https://api.qrserver.com/v1/create-qr-code/?size=96x96&data=${encodeURIComponent(qrPayload)}`;
+
+      return `
+        <div class="exam-sheet-page">
+          <div class="deped-header">
+            <img src="../assets/images/deped-logo.png" alt="DepEd Logo" class="deped-logo" onerror="this.style.display='none'" />
+            <div>Republic of the Philippines</div>
+            <div><strong>Department of Education</strong></div>
+            <div>${esc(regionText)}</div>
+            <div>${esc(divisionText)}</div>
+            <div class="school-name">${esc(schoolName)}</div>
+            <div class="school-address">${esc(schoolAddr)}</div>
+          </div>
+          <hr class="header-line" />
+
+          <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;">
+            <div style="flex:1;">
+              <div class="exam-title">${esc(GENERATED_EXAM.title)}</div>
+              <div class="exam-subtitle">${esc(GENERATED_EXAM.subjectName)} | ${esc(termLabel)} | Week ${esc(GENERATED_EXAM.week || 1)}</div>
+            </div>
+            <div style="text-align:center;">
+              <img src="${qrImgUrl}" width="76" height="76" alt="Student QR" />
+              <div style="font-size:7.5pt;font-family:monospace;">SCAN FOR CHECKER</div>
+            </div>
+          </div>
+
+          <div class="student-info">
+            <div><strong>Name:</strong> ${st.fullName ? `<u>${esc(st.fullName)}</u>` : "____________________________"}</div>
+            <div><strong>LRN / Section:</strong> ${st.lrn ? esc(st.lrn) + " / " : ""}${classLabel ? esc(classLabel) : "__________________"}</div>
+            <div><strong>Date:</strong> ____________</div>
+            <div><strong>Score:</strong> ____ / ${totalPts}</div>
+          </div>
+
+          <div class="instructions">
+            <strong>GENERAL INSTRUCTIONS:</strong> Read each question carefully. Write your answers clearly on the space provided. Erasures or alterations on objective items may affect scoring.
+          </div>
+
+          ${sectionsHtml}
+
+          <div class="signatories">
+            <div class="sig-block">
+              <div>Prepared by:</div>
+              <div class="sig-line"></div>
+              <div class="sig-name">${esc(GENERATED_EXAM.preparedBy || "Subject Teacher")}</div>
+              <div class="sig-title">Subject Teacher</div>
+            </div>
+            <div class="sig-block">
+              <div>Checked by:</div>
+              <div class="sig-line"></div>
+              <div class="sig-name">_________________________</div>
+              <div class="sig-title">Head Teacher / Dept. Head</div>
+            </div>
+            <div class="sig-block">
+              <div>Approved by:</div>
+              <div class="sig-line"></div>
+              <div class="sig-name">_________________________</div>
+              <div class="sig-title">School Principal</div>
+            </div>
+          </div>
+        </div>
+      `;
+    }).join("");
+
+    const keySheet = includeKey ? `
+      <div class="exam-sheet-page">
+        <h2 style="margin:0 0 8px;">TEACHER ANSWER KEY &amp; TOS — ${esc(GENERATED_EXAM.title)}</h2>
+        <p><strong>LOTS:</strong> ${GENERATED_EXAM.tos.lotsPct}% (${GENERATED_EXAM.tos.lotsItems} items) &nbsp;|&nbsp; <strong>HOTS:</strong> ${GENERATED_EXAM.tos.hotsPct}% (${GENERATED_EXAM.tos.hotsItems} items)</p>
+        <div style="columns:2;font-size:10.5pt;">
+          ${GENERATED_EXAM.questions.map((q, i) => `<div style="margin-bottom:4px;"><strong>${i + 1}.</strong> ${esc(q.correct_answer)} <em>(${esc(q.bloomLevel || "")})</em></div>`).join("")}
+        </div>
+      </div>
+    ` : "";
+
+    return sheets + keySheet;
+  }
 </script>
 </body>
 </html>
