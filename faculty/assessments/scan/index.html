@@ -1,41 +1,616 @@
-<!-- In the <body> of /faculty/assessments/scan/index.html -->
-<div class="wrap card">
-  <h2>Scan Student QR</h2>
-  <div id="reader" style="width:320px;max-width:100%"></div>
-  <pre id="log" style="background:#f7f7f7;padding:8px;border-radius:6px"></pre>
-</div>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Student &amp; Exam QR Scanner — SCPHS Portal</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <style>
+    :root {
+      --primary: #1e3c72;
+      --accent: #0f766e;
+      --purple: #6d28d9;
+      --bg: #f1f5f9;
+      --card: #ffffff;
+      --border: #cbd5e1;
+      --text: #0f172a;
+      --muted: #475569;
+      --success: #059669;
+      --warning: #d97706;
+      --danger: #dc2626;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); }
 
-<!-- Load library then your init script -->
-<script src="https://unpkg.com/html5-qrcode" defer></script>
-<script defer>
-document.addEventListener('DOMContentLoaded', () => {
-  const log = (m) => { const el = document.getElementById('log'); el.textContent = m + '\n' + el.textContent; };
+    .topbar {
+      background: linear-gradient(135deg, #0f172a, #1e3c72);
+      color: #fff;
+      padding: 15px 22px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 10px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .topbar h1 { font-size: 1.18rem; display: flex; align-items: center; gap: 10px; }
+    .topbar a { color: #93c5fd; text-decoration: none; font-size: 0.82rem; }
+    .badge { background: rgba(255,255,255,0.16); padding: 5px 11px; border-radius: 999px; font-size: 0.75rem; font-weight: 700; }
 
-  const onScanSuccess = async (decodedText) => {
-    log("Scanned: " + decodedText);
+    .container { max-width: 1180px; margin: 18px auto; padding: 0 14px 48px; }
+    .grid-main { display: grid; grid-template-columns: 420px 1fr; gap: 16px; align-items: start; }
+    @media (max-width: 900px) { .grid-main { grid-template-columns: 1fr; } }
 
-    // Call your backend (Django or static mock)
-    try {
-      const res = await fetch("/api/verify-student/", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          // In Django templates, include {% csrf_token %} or read csrftoken cookie:
-          "X-CSRFToken": (document.cookie.match(/csrftoken=([^;]+)/)||[])[1] || ""
-        },
-        credentials: "include",
-        body: JSON.stringify({ student_id: decodedText })
+    .card {
+      background: var(--card);
+      border: 1px solid #e2e8f0;
+      border-radius: 14px;
+      padding: 16px;
+      margin-bottom: 14px;
+      box-shadow: 0 2px 10px rgba(15,23,42,0.04);
+    }
+    .card h2, .card h3 {
+      font-size: 0.98rem;
+      color: var(--primary);
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    #reader {
+      width: 100%;
+      min-height: 270px;
+      border-radius: 12px;
+      overflow: hidden;
+      background: #0f172a;
+      border: 1px solid var(--border);
+    }
+
+    .cam-controls { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
+    .btn {
+      background: var(--primary);
+      color: #fff;
+      border: none;
+      padding: 8px 13px;
+      border-radius: 8px;
+      font-weight: 700;
+      font-size: 0.8rem;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      text-decoration: none;
+    }
+    .btn:hover:not(:disabled) { opacity: 0.94; }
+    .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+    .btn.teal { background: var(--accent); }
+    .btn.purple { background: var(--purple); }
+    .btn.success { background: var(--success); }
+    .btn.warning { background: var(--warning); }
+    .btn.danger { background: var(--danger); }
+    .btn.outline { background: #fff; color: var(--primary); border: 1px solid var(--primary); }
+    .btn.sm { padding: 6px 10px; font-size: 0.75rem; }
+
+    label { display: block; font-size: 0.72rem; font-weight: 700; color: var(--muted); text-transform: uppercase; }
+    input, select {
+      width: 100%;
+      margin-top: 5px;
+      padding: 8px 10px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      font-family: inherit;
+      font-size: 0.86rem;
+      background: #fff;
+    }
+
+    .result-box {
+      border: 1px solid #cbd5e1;
+      border-radius: 12px;
+      padding: 14px;
+      background: #f8fafc;
+      margin-bottom: 12px;
+    }
+    .result-box.verified { background: #f0fdf4; border-color: #86efac; }
+    .result-box.warn { background: #fffbeb; border-color: #fde68a; }
+
+    .kv-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 8px; margin: 10px 0; font-size: 0.84rem; }
+    .kv { background: #fff; border: 1px solid #e2e8f0; border-radius: 8px; padding: 8px 10px; }
+    .kv .k { font-size: 0.68rem; font-weight: 700; color: var(--muted); text-transform: uppercase; }
+    .kv .v { font-weight: 700; margin-top: 2px; word-break: break-word; }
+
+    .score-form { display: grid; grid-template-columns: 1fr 1fr auto; gap: 8px; align-items: end; margin-top: 10px; }
+    @media (max-width: 560px) { .score-form { grid-template-columns: 1fr; } }
+
+    pre#log {
+      background: #0f172a;
+      color: #e2e8f0;
+      padding: 10px 12px;
+      border-radius: 10px;
+      font-size: 0.76rem;
+      max-height: 190px;
+      overflow-y: auto;
+      white-space: pre-wrap;
+      line-height: 1.45;
+    }
+
+    table { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
+    th, td { border: 1px solid #cbd5e1; padding: 7px 8px; text-align: left; }
+    th { background: #1e3c72; color: #fff; font-size: 0.74rem; text-transform: uppercase; }
+  </style>
+</head>
+<body>
+
+  <header class="topbar">
+    <div>
+      <div style="display:flex;gap:14px;flex-wrap:wrap;margin-bottom:3px;">
+        <a href="../../open-exam-hub.html">&larr; Open Assessment Hub</a>
+        <a href="../../exam-creator.html">&larr; Smart Exam Creator</a>
+        <a href="../../assessment-tools.html">&larr; Assessment Tools</a>
+      </div>
+      <h1><i class="fas fa-qrcode"></i> Student &amp; Exam QR Scanner</h1>
+    </div>
+    <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+      <span class="badge" id="authBadge">Ready</span>
+      <a href="../../exam-creator.html?panel=results" class="btn teal sm"><i class="fas fa-chart-bar"></i> View Scores &amp; CSV</a>
+    </div>
+  </header>
+
+  <div class="container">
+    <div class="grid-main">
+      <!-- LEFT: CAMERA SCANNER & MANUAL FALLBACK -->
+      <div>
+        <div class="card">
+          <h2><i class="fas fa-camera"></i> Camera QR Reader</h2>
+          <div id="reader"></div>
+          <div class="cam-controls">
+            <button type="button" class="btn success sm" id="btnStartCam"><i class="fas fa-play"></i> Start</button>
+            <button type="button" class="btn warning sm" id="btnPauseCam" disabled><i class="fas fa-pause"></i> Pause</button>
+            <button type="button" class="btn outline sm" id="btnSwitchCam" disabled><i class="fas fa-sync"></i> Switch Camera</button>
+            <button type="button" class="btn outline sm" id="btnTorchCam" disabled><i class="fas fa-bolt"></i> Torch</button>
+          </div>
+          <div style="margin-top:10px;">
+            <label>Active Exam Context for Score Logging
+              <input type="text" id="activeExamTitle" placeholder="Auto-filled from QR or enter Exam Title..." />
+            </label>
+          </div>
+        </div>
+
+        <div class="card">
+          <h3><i class="fas fa-keyboard"></i> Manual LRN / Student ID Lookup</h3>
+          <div style="display:flex;gap:8px;align-items:end;">
+            <label style="flex:1;">LRN, Student ID, or Name
+              <input type="text" id="manualLookupInput" placeholder="e.g., 123456789012 or Dela Cruz, Juan" />
+            </label>
+            <button type="button" class="btn sm" id="btnManualLookup"><i class="fas fa-search"></i> Verify</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- RIGHT: VERIFIED STUDENT CARD, QUICK SCORE LOGGER & SCAN LOG -->
+      <div>
+        <div class="card">
+          <h2><i class="fas fa-id-card"></i> Scanned Student &amp; Exam Verification</h2>
+          <div id="verificationHost" class="result-box">
+            <div style="color:var(--muted);font-size:0.88rem;">
+              Point the camera at a <strong>Student Exam QR Code</strong> (from your printable exam sheet) or enter an LRN on the left to verify student details and log scores.
+            </div>
+          </div>
+
+          <form id="quickScoreForm" class="score-form">
+            <label>Score Earned
+              <input type="number" id="qsEarned" min="0" step="0.5" value="0" required />
+            </label>
+            <label>Total Points
+              <input type="number" id="qsTotal" min="1" step="1" value="20" required />
+            </label>
+            <button type="submit" class="btn success" id="btnSaveScannedScore" disabled>
+              <i class="fas fa-check-circle"></i> Save Score
+            </button>
+          </form>
+        </div>
+
+        <div class="card">
+          <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:10px;">
+            <h3 style="margin:0;"><i class="fas fa-list-check"></i> Session Scans &amp; Logged Scores</h3>
+            <button type="button" class="btn outline sm" id="btnClearLog"><i class="fas fa-broom"></i> Clear Log</button>
+          </div>
+          <div style="overflow-x:auto;margin-bottom:10px;">
+            <table>
+              <thead>
+                <tr>
+                  <th>Student / LRN</th>
+                  <th>Exam / Class</th>
+                  <th>Status / Score</th>
+                </tr>
+              </thead>
+              <tbody id="recentScansBody">
+                <tr><td colspan="3" style="color:var(--muted);text-align:center;padding:14px;">No QR codes scanned yet.</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <pre id="log">Scanner initialized. Waiting for camera or manual lookup...</pre>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://unpkg.com/html5-qrcode"></script>
+  <script type="module">
+    import { auth, db } from "../../../assets/js/firebase-config.js";
+    import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+    import {
+      collection, doc, getDoc, getDocs, addDoc, query, where, serverTimestamp
+    } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+    const LOCAL_SCORES_KEY = "scphs_open_scores_v1";
+    const LOCAL_EXAMS_KEY = "scphs_open_exams_v1";
+
+    let CURRENT_USER = null;
+    let CAMERAS = [];
+    let CAM_INDEX = 0;
+    let QR_SCANNER = null;
+    let IS_RUNNING = false;
+    let IS_PAUSED = false;
+    let TORCH_ON = false;
+    let LAST_RAW = "";
+    let LAST_SCAN_AT = 0;
+    let CURRENT_VERIFIED = null;
+    let SESSION_SCANS = [];
+
+    const $ = (id) => document.getElementById(id);
+    const esc = (s) => String(s ?? "")
+      .replace(/&/g, "&amp;").replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+
+    function writeLog(msg) {
+      const stamp = new Date().toLocaleTimeString([], { hour12: false });
+      $("log").textContent = `[${stamp}] ${msg}\n` + $("log").textContent;
+    }
+
+    function readLocalScores() {
+      try { return JSON.parse(localStorage.getItem(LOCAL_SCORES_KEY) || "[]"); } catch (_) { return []; }
+    }
+    function writeLocalScores(list) {
+      localStorage.setItem(LOCAL_SCORES_KEY, JSON.stringify(list));
+    }
+    function readLocalExams() {
+      try { return JSON.parse(localStorage.getItem(LOCAL_EXAMS_KEY) || "[]"); } catch (_) { return []; }
+    }
+
+    function parseQrPayload(rawText) {
+      const trimmed = String(rawText || "").trim();
+      if (!trimmed) return { raw: "" };
+      try {
+        const obj = JSON.parse(trimmed);
+        if (obj && typeof obj === "object") {
+          return {
+            raw: trimmed,
+            classId: obj.classId || "",
+            studentId: obj.studentId || "",
+            lrn: String(obj.lrn || "").trim(),
+            name: String(obj.name || "").trim(),
+            examTitle: String(obj.examTitle || "").trim()
+          };
+        }
+      } catch (_) {}
+
+      try {
+        const url = new URL(trimmed);
+        const lrn = url.searchParams.get("lrn") || "";
+        const studentId = url.searchParams.get("studentId") || "";
+        if (lrn || studentId) {
+          return {
+            raw: trimmed,
+            classId: url.searchParams.get("classId") || "",
+            studentId,
+            lrn,
+            name: url.searchParams.get("name") || "",
+            examTitle: url.searchParams.get("examTitle") || ""
+          };
+        }
+      } catch (_) {}
+
+      return { raw: trimmed, lrn: trimmed };
+    }
+
+    async function verifyStudentRecord(parsed) {
+      const info = {
+        matched: false,
+        source: "qr",
+        studentId: parsed.studentId || "",
+        lrn: parsed.lrn || "",
+        name: parsed.name || "",
+        classId: parsed.classId || "",
+        section: parsed.classId || "",
+        examTitle: parsed.examTitle || $("activeExamTitle").value.trim() || ""
+      };
+
+      if (info.examTitle && !$("activeExamTitle").value.trim()) {
+        $("activeExamTitle").value = info.examTitle;
+      }
+
+      // 1. Try Firestore lookup if classId + studentId or LRN is provided
+      try {
+        if (info.classId && info.studentId) {
+          const snap = await getDoc(doc(db, "classes", info.classId, "students", info.studentId));
+          if (snap.exists()) {
+            const d = snap.data();
+            info.matched = true;
+            info.source = "firestore";
+            info.name = d.fullName || `${d.lastName || ""}, ${d.firstName || ""}`.trim() || info.name || snap.id;
+            info.lrn = String(d.lrn || d.LRN || info.lrn || "");
+            info.section = d.section || info.classId;
+          }
+        }
+
+        if (!info.matched && info.lrn) {
+          const classesSnap = await getDocs(collection(db, "classes"));
+          for (const cDoc of classesSnap.docs) {
+            const qByLrn = query(collection(db, "classes", cDoc.id, "students"), where("lrn", "==", info.lrn));
+            const sSnap = await getDocs(qByLrn);
+            if (!sSnap.empty) {
+              const first = sSnap.docs[0];
+              const d = first.data();
+              info.matched = true;
+              info.source = "firestore";
+              info.studentId = first.id;
+              info.classId = cDoc.id;
+              info.section = cDoc.data().classLabel || cDoc.data().name || cDoc.id;
+              info.name = d.fullName || `${d.lastName || ""}, ${d.firstName || ""}`.trim() || info.name || first.id;
+              break;
+            }
+          }
+        }
+      } catch (_) {
+        // Offline or guest mode continues smoothly with parsed QR / manual fields
+      }
+
+      // 2. Suggest matching exam total points from local exams if available
+      const examTitleMatch = info.examTitle || $("activeExamTitle").value.trim();
+      if (examTitleMatch) {
+        const localExam = readLocalExams().find((e) =>
+          String(e.title || "").toLowerCase() === examTitleMatch.toLowerCase()
+        );
+        if (localExam?.questions?.length) {
+          const pts = localExam.questions.reduce((acc, q) => acc + (Number(q.points) || 1), 0);
+          $("qsTotal").value = pts || 20;
+        }
+      }
+
+      if (!info.name && info.lrn) {
+        info.name = `Learner (${info.lrn})`;
+      }
+
+      return info;
+    }
+
+    function renderVerificationCard(info) {
+      CURRENT_VERIFIED = info;
+      $("btnSaveScannedScore").disabled = false;
+
+      const host = $("verificationHost");
+      host.className = info.matched ? "result-box verified" : "result-box warn";
+      host.innerHTML = `
+        <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;">
+          <strong style="font-size:0.95rem;">
+            ${info.matched
+              ? `<i class="fas fa-check-circle" style="color:var(--success);"></i> Verified Roster Record`
+              : `<i class="fas fa-qrcode" style="color:var(--warning);"></i> Scanned QR / Manual Entry`}
+          </strong>
+          <span class="badge" style="background:#e2e8f0;color:#0f172a;">${esc(info.source.toUpperCase())}</span>
+        </div>
+        <div class="kv-grid">
+          <div class="kv"><div class="k">Student Name</div><div class="v">${esc(info.name || "—")}</div></div>
+          <div class="kv"><div class="k">LRN / ID</div><div class="v">${esc(info.lrn || info.studentId || "—")}</div></div>
+          <div class="kv"><div class="k">Class / Section</div><div class="v">${esc(info.section || "—")}</div></div>
+          <div class="kv"><div class="k">Exam</div><div class="v">${esc(info.examTitle || $("activeExamTitle").value.trim() || "General Assessment")}</div></div>
+        </div>
+      `;
+    }
+
+    function renderRecentScans() {
+      const tbody = $("recentScansBody");
+      if (!SESSION_SCANS.length) {
+        tbody.innerHTML = `<tr><td colspan="3" style="color:var(--muted);text-align:center;padding:14px;">No QR codes scanned yet.</td></tr>`;
+        return;
+      }
+      tbody.innerHTML = SESSION_SCANS.slice(0, 20).map((row) => `
+        <tr>
+          <td><strong>${esc(row.name || row.lrn || "Student")}</strong>${row.lrn ? `<div style="font-size:0.72rem;color:var(--muted);">LRN: ${esc(row.lrn)}</div>` : ""}</td>
+          <td>${esc(row.examTitle || row.section || "—")}</td>
+          <td><strong>${esc(row.statusText)}</strong></td>
+        </tr>
+      `).join("");
+    }
+
+    async function handleDecodedQr(decodedText) {
+      const now = Date.now();
+      if (decodedText === LAST_RAW && now - LAST_SCAN_AT < 1800) return;
+      LAST_RAW = decodedText;
+      LAST_SCAN_AT = now;
+
+      writeLog(`Scanned QR: ${decodedText}`);
+      const parsed = parseQrPayload(decodedText);
+      const info = await verifyStudentRecord(parsed);
+      renderVerificationCard(info);
+
+      SESSION_SCANS.unshift({
+        name: info.name,
+        lrn: info.lrn,
+        section: info.section,
+        examTitle: info.examTitle || $("activeExamTitle").value.trim(),
+        statusText: info.matched ? "Verified (Ready to Score)" : "Scanned (Ready to Score)"
       });
-      const data = await res.json();
-      log("Verified: " + (data.name ? `${data.name} (${data.section})` : "Unknown student"));
-    } catch (e) { log("Error: " + e.message); }
-  };
+      renderRecentScans();
+      writeLog(`Verified: ${info.name || info.lrn || "Unknown"} (${info.section || "No Section"})`);
+    }
 
-  const html5QrCode = new Html5Qrcode("reader");
-  Html5Qrcode.getCameras().then(devs => {
-    const camId = (devs.find(d => /back|rear|environment/i.test(d.label)) || devs[0] || {}).id;
-    if (!camId) return log("No camera found.");
-    html5QrCode.start(camId, { fps: 10, qrbox: 240 }, onScanSuccess, () => {});
-  }).catch(err => log("Camera error: " + err));
-});
-</script>
+    async function startCamera(preferredIndex = null) {
+      if (!window.Html5Qrcode) {
+        writeLog("html5-qrcode library not loaded.");
+        return;
+      }
+      try {
+        if (!CAMERAS.length) {
+          CAMERAS = await Html5Qrcode.getCameras();
+          if (!CAMERAS.length) {
+            writeLog("No camera found on this device.");
+            return;
+          }
+          const backIdx = CAMERAS.findIndex((d) => /back|rear|environment/i.test(d.label));
+          CAM_INDEX = backIdx >= 0 ? backIdx : 0;
+        }
+        if (typeof preferredIndex === "number") {
+          CAM_INDEX = ((preferredIndex % CAMERAS.length) + CAMERAS.length) % CAMERAS.length;
+        }
+
+        if (!QR_SCANNER) {
+          QR_SCANNER = new Html5Qrcode("reader");
+        } else if (IS_RUNNING) {
+          await QR_SCANNER.stop();
+          IS_RUNNING = false;
+        }
+
+        const cam = CAMERAS[CAM_INDEX];
+        await QR_SCANNER.start(
+          cam.id,
+          { fps: 10, qrbox: { width: 220, height: 220 } },
+          (decodedText) => { handleDecodedQr(decodedText); },
+          () => {}
+        );
+
+        IS_RUNNING = true;
+        IS_PAUSED = false;
+        TORCH_ON = false;
+        $("btnPauseCam").disabled = false;
+        $("btnPauseCam").innerHTML = `<i class="fas fa-pause"></i> Pause`;
+        $("btnSwitchCam").disabled = CAMERAS.length < 2;
+        $("btnTorchCam").disabled = false;
+        writeLog(`Camera active: ${cam.label || cam.id}`);
+      } catch (err) {
+        writeLog(`Camera error: ${err.message || err}`);
+      }
+    }
+
+    $("btnStartCam").addEventListener("click", () => startCamera(CAM_INDEX));
+
+    $("btnPauseCam").addEventListener("click", async () => {
+      if (!QR_SCANNER || !IS_RUNNING) return;
+      try {
+        if (!IS_PAUSED) {
+          await QR_SCANNER.pause(true);
+          IS_PAUSED = true;
+          $("btnPauseCam").innerHTML = `<i class="fas fa-play"></i> Resume`;
+          writeLog("Scanner paused.");
+        } else {
+          await QR_SCANNER.resume();
+          IS_PAUSED = false;
+          $("btnPauseCam").innerHTML = `<i class="fas fa-pause"></i> Pause`;
+          writeLog("Scanner resumed.");
+        }
+      } catch (err) {
+        writeLog(`Pause/Resume error: ${err.message || err}`);
+      }
+    });
+
+    $("btnSwitchCam").addEventListener("click", () => {
+      if (CAMERAS.length > 1) startCamera(CAM_INDEX + 1);
+    });
+
+    $("btnTorchCam").addEventListener("click", async () => {
+      if (!QR_SCANNER || !IS_RUNNING) return;
+      try {
+        TORCH_ON = !TORCH_ON;
+        await QR_SCANNER.applyVideoConstraints({ advanced: [{ torch: TORCH_ON }] });
+        writeLog(`Torch ${TORCH_ON ? "enabled" : "disabled"}.`);
+      } catch (_) {
+        TORCH_ON = false;
+        writeLog("Torch not supported on this camera/browser.");
+      }
+    });
+
+    $("btnManualLookup").addEventListener("click", async () => {
+      const val = $("manualLookupInput").value.trim();
+      if (!val) return alert("Enter an LRN, Student ID, or Name.");
+      const isLrn = /^\d{6,14}$/.test(val);
+      const parsed = isLrn ? { raw: val, lrn: val } : { raw: val, name: val };
+      const info = await verifyStudentRecord(parsed);
+      renderVerificationCard(info);
+      writeLog(`Manual lookup: ${info.name || val}`);
+    });
+
+    $("quickScoreForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      if (!CURRENT_VERIFIED) return alert("Scan a QR code or look up a student first.");
+
+      const earned = Number($("qsEarned").value) || 0;
+      const total = Math.max(1, Number($("qsTotal").value) || 20);
+      const examTitle = $("activeExamTitle").value.trim() || CURRENT_VERIFIED.examTitle || "DEFAULT_OPEN_EXAM";
+      const studentLabel = CURRENT_VERIFIED.lrn
+        ? `${CURRENT_VERIFIED.name || "Student"} (${CURRENT_VERIFIED.lrn})`
+        : (CURRENT_VERIFIED.name || CURRENT_VERIFIED.studentId || "Student");
+
+      const scoreRecord = {
+        id: "sc_" + Date.now(),
+        examKey: examTitle,
+        studentName: studentLabel,
+        lrn: CURRENT_VERIFIED.lrn || "",
+        classId: CURRENT_VERIFIED.classId || "",
+        score: earned,
+        totalPoints: total,
+        loggedAt: new Date().toISOString()
+      };
+
+      const localScores = readLocalScores();
+      localScores.unshift(scoreRecord);
+      writeLocalScores(localScores);
+
+      if (CURRENT_USER) {
+        try {
+          await addDoc(collection(db, "exam_submissions"), {
+            examTitle,
+            studentName: CURRENT_VERIFIED.name || studentLabel,
+            lrn: CURRENT_VERIFIED.lrn || "",
+            studentId: CURRENT_VERIFIED.studentId || "",
+            classId: CURRENT_VERIFIED.classId || "",
+            score: earned,
+            totalPoints: total,
+            submittedByUid: CURRENT_USER.uid,
+            createdAt: serverTimestamp()
+          });
+        } catch (_) {}
+      }
+
+      const pct = Math.round((earned / total) * 100);
+      SESSION_SCANS.unshift({
+        name: CURRENT_VERIFIED.name || studentLabel,
+        lrn: CURRENT_VERIFIED.lrn,
+        section: CURRENT_VERIFIED.section,
+        examTitle,
+        statusText: `Saved: ${earned}/${total} (${pct}%)`
+      });
+      renderRecentScans();
+      writeLog(`Saved score for ${studentLabel}: ${earned}/${total} (${pct}%)`);
+    });
+
+    $("btnClearLog").addEventListener("click", () => {
+      SESSION_SCANS = [];
+      renderRecentScans();
+      $("log").textContent = "Log cleared.\n";
+    });
+
+    onAuthStateChanged(auth, (u) => {
+      CURRENT_USER = u || null;
+      $("authBadge").textContent = u ? `Signed in: ${u.email}` : "Guest / Offline Ready";
+    });
+
+    document.addEventListener("DOMContentLoaded", () => {
+      startCamera();
+    });
+  </script>
+</body>
+</html>
