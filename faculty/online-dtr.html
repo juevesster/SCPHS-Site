@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Online DTR & AI Hardcopy Scanner — SCPHS Portal</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+  <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
   <style>
     :root {
       --primary: #1e3c72;
@@ -77,6 +78,7 @@
       .stats-row { grid-template-columns: repeat(2, 1fr); }
       .cs48-sheet { overflow-x: auto; }
       .cs48-two-up { min-width: 640px; }
+      .two-col-mobile-stack { grid-template-columns: 1fr !important; }
     }
 
     .clock-hero {
@@ -114,6 +116,7 @@
       text-align: center;
     }
     .punch-slot.done { background: #ecfdf5; border-color: #6ee7b7; }
+    .punch-slot.pending { background: #fffbeb; border-color: #fcd34d; }
     .punch-slot .lbl { font-size: 11px; font-weight: 800; color: var(--muted); text-transform: uppercase; }
     .punch-slot .val { font-size: 16px; font-weight: 800; color: var(--primary); margin-top: 4px; }
     .punch-slot .meta { font-size: 11px; color: var(--muted); margin-top: 2px; }
@@ -140,7 +143,7 @@
     .btn.purple { background: var(--purple); }
     .btn.teal { background: var(--accent); }
     .btn.outline { background: #fff; color: var(--primary); border: 1px solid var(--primary); }
-    .btn.sm { padding: 6px 10px; font-size: 12px; }
+    .btn.sm { padding: 5px 9px; font-size: 11.5px; }
 
     table.scan-table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
     table.scan-table th, table.scan-table td { border: 1px solid #cbd5e1; padding: 7px 6px; text-align: center; }
@@ -182,6 +185,14 @@
       flex-wrap: wrap;
       gap: 8px;
       font-size: 12.5px;
+    }
+
+    #qrReaderBox {
+      margin-top: 8px;
+      border: 1px solid #cbd5e1;
+      border-radius: 10px;
+      overflow: hidden;
+      background: #0f172a;
     }
 
     /* Portrait Mirrored CS Form 48 Sheet (A4 Full-Height + Duplex Back) */
@@ -364,14 +375,29 @@
           </select>
         </label>
 
-        <div style="display:grid;grid-template-columns:1.35fr 0.65fr;gap:10px;">
+        <div class="two-col-mobile-stack" style="display:grid;grid-template-columns:1.25fr 0.75fr;gap:10px;">
           <label>Travel Order / Locator Slip / Memo No. &amp; Reason (Required if Off-Campus)
             <input type="text" id="supportingRef" placeholder="e.g., TO No. 2026-114 / Locator Slip #08" />
           </label>
-          <label>Faculty Room Daily Code (If Weak GPS)
-            <input type="text" id="campusCodeInput" maxlength="6" placeholder="4-digit code" />
+          <label>Campus QR / Daily Code (If Weak GPS)
+            <div style="display:flex;gap:6px;margin-top:4px;">
+              <input type="text" id="campusCodeInput" placeholder="Code or QR" style="margin-top:0;" />
+              <button type="button" class="btn teal sm" id="btnToggleQrScan" title="Scan Office QR Code"><i class="fas fa-qrcode"></i></button>
+            </div>
           </label>
         </div>
+
+        <div id="qrScannerWrap" class="hidden" style="margin-bottom:10px;">
+          <div id="qrReaderBox"></div>
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-top:6px;">
+            <small style="color:var(--muted);">Point camera at the Faculty Room Daily QR placard.</small>
+            <button type="button" class="btn outline sm" id="btnStopQrScan">Close Camera</button>
+          </div>
+        </div>
+
+        <label>Proof Photo (Optional / Recommended if Off-Campus — TO, Locator Slip, or Site Photo)
+          <input type="file" id="punchProofInput" accept="image/*" capture="environment" />
+        </label>
 
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:8px;">
           <button type="button" class="btn success" id="btnAutoPunch" style="padding:13px;font-size:14px;">
@@ -398,26 +424,30 @@
             <div class="lbl">Morning Arrival (AM IN)</div>
             <div class="val" id="val_amIn">--:--</div>
             <div class="meta" id="meta_amIn">Not logged</div>
+            <button type="button" class="btn outline sm hidden" id="edit_amIn" style="margin-top:6px;" onclick="window.editTodaySlot('amIn')"><i class="fas fa-pen"></i> Edit</button>
           </div>
           <div class="punch-slot" id="slot_amOut">
             <div class="lbl">Noon Departure (AM OUT)</div>
             <div class="val" id="val_amOut">--:--</div>
             <div class="meta" id="meta_amOut">Not logged</div>
+            <button type="button" class="btn outline sm hidden" id="edit_amOut" style="margin-top:6px;" onclick="window.editTodaySlot('amOut')"><i class="fas fa-pen"></i> Edit</button>
           </div>
           <div class="punch-slot" id="slot_pmIn">
             <div class="lbl">Afternoon Arrival (PM IN)</div>
             <div class="val" id="val_pmIn">--:--</div>
             <div class="meta" id="meta_pmIn">Not logged</div>
+            <button type="button" class="btn outline sm hidden" id="edit_pmIn" style="margin-top:6px;" onclick="window.editTodaySlot('pmIn')"><i class="fas fa-pen"></i> Edit</button>
           </div>
           <div class="punch-slot" id="slot_pmOut">
             <div class="lbl">Afternoon Departure (PM OUT)</div>
             <div class="val" id="val_pmOut">--:--</div>
             <div class="meta" id="meta_pmOut">Not logged</div>
+            <button type="button" class="btn outline sm hidden" id="edit_pmOut" style="margin-top:6px;" onclick="window.editTodaySlot('pmOut')"><i class="fas fa-pen"></i> Edit</button>
           </div>
         </div>
 
         <div class="alert-bar alert-warn" style="font-size:12px;">
-          <strong>CSC &amp; DepEd Anti-Spoofing Policy:</strong> Teachers staying in nearby boarding houses must be physically on campus (verified via GPS or the <strong>Faculty Room Daily Code</strong>) before clocking in. Off-campus entries require a valid Travel Order, Locator Slip, or Memo and are routed to the School Head for approval.
+          <strong>CSC &amp; DepEd Verification &amp; Edit Policy:</strong> On-campus entries verified by GPS or the Faculty Room QR/Code are approved automatically. Off-campus entries—and any edits made to off-campus logs—require a valid Travel Order, Locator Slip, or Memo and are routed to the School Head for approval.
         </div>
       </div>
     </div>
@@ -526,7 +556,7 @@
         <div>
           <strong><i class="fas fa-key"></i> Today's Faculty Room Check-In Code:</strong>
           <span id="dailyCodeDisplay" style="font-size:16px;font-weight:900;color:#0f766e;letter-spacing:2px;margin-left:6px;">----</span>
-          <span style="color:var(--muted);margin-left:6px;">(Post on office board for teachers with weak indoor GPS)</span>
+          <span style="color:var(--muted);margin-left:6px;">| QR String: <code id="dailyQrPayloadDisplay">SCPHS-QR-----</code></span>
         </div>
         <button type="button" class="btn outline sm" id="btnRotateDailyCode"><i class="fas fa-rotate"></i> Generate New Code</button>
       </div>
@@ -540,7 +570,7 @@
               <th>Employee</th>
               <th>Date &amp; Slot</th>
               <th>Time</th>
-              <th>Duty &amp; Supporting Ref</th>
+              <th>Duty, Ref &amp; Proof</th>
               <th>GPS / Device ID</th>
               <th>Status</th>
               <th>School Head Action</th>
@@ -575,6 +605,7 @@
   let GEMINI_API_KEY = localStorage.getItem("scphs_gemini_api_key") || "";
   let SCANNED_IMAGE_BASE64 = "";
   let SCANNED_IMAGE_MIME = "image/jpeg";
+  let html5QrScanner = null;
 
   function getDeviceFingerprint() {
     let devId = localStorage.getItem("scphs_dtr_device_id");
@@ -629,6 +660,29 @@
     return Math.round(R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a)));
   }
 
+  function compressProofImage(file, maxWidth = 640, quality = 0.65) {
+    return new Promise((resolve) => {
+      if (!file) return resolve("");
+      const reader = new FileReader();
+      reader.onload = () => {
+        const img = new Image();
+        img.onload = () => {
+          const scale = Math.min(1, maxWidth / img.width);
+          const canvas = document.createElement("canvas");
+          canvas.width = Math.round(img.width * scale);
+          canvas.height = Math.round(img.height * scale);
+          const ctx = canvas.getContext("2d");
+          ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+          resolve(canvas.toDataURL("image/jpeg", quality));
+        };
+        img.onerror = () => resolve("");
+        img.src = String(reader.result || "");
+      };
+      reader.onerror = () => resolve("");
+      reader.readAsDataURL(file);
+    });
+  }
+
   function getSmartNextSlot(docData, now = new Date()) {
     const mins = now.getHours() * 60 + now.getMinutes();
     if (docData.amIn && docData.amOut && docData.pmIn && docData.pmOut) return "completed";
@@ -663,6 +717,11 @@
   $("cs48Month").value = todayIso().slice(0, 7);
   $("reviewDateFilter").value = todayIso();
 
+  function updateDailyCodeUI() {
+    $("dailyCodeDisplay").textContent = ACTIVE_DAILY_CODE;
+    $("dailyQrPayloadDisplay").textContent = `SCPHS-QR-${todayIso()}-${ACTIVE_DAILY_CODE}`;
+  }
+
   async function loadSchoolGeofence() {
     ACTIVE_DAILY_CODE = defaultDailyCode();
     try {
@@ -680,7 +739,7 @@
         }
       }
     } catch (_) {}
-    $("dailyCodeDisplay").textContent = ACTIVE_DAILY_CODE;
+    updateDailyCodeUI();
   }
 
   function refreshGpsCheck() {
@@ -705,11 +764,51 @@
           : `<i class="fas fa-map-pin"></i> Off-Campus (${dist >= 1000 ? (dist / 1000).toFixed(1) + " km" : dist + "m"} away)`;
       },
       () => {
-        $("pillGeo").innerHTML = `<i class="fas fa-location-crosshairs"></i> GPS Unavailable (Use Code or Ref)`;
+        $("pillGeo").innerHTML = `<i class="fas fa-location-crosshairs"></i> GPS Unavailable (Use QR/Code or Ref)`;
       },
       { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
     );
   }
+
+  // Live QR Camera Scanner in Tab 1
+  async function stopQrCamera() {
+    if (html5QrScanner) {
+      try { await html5QrScanner.stop(); } catch (_) {}
+      try { html5QrScanner.clear(); } catch (_) {}
+      html5QrScanner = null;
+    }
+    $("qrScannerWrap").classList.add("hidden");
+  }
+
+  $("btnToggleQrScan").addEventListener("click", async () => {
+    if (!$("qrScannerWrap").classList.contains("hidden")) {
+      await stopQrCamera();
+      return;
+    }
+    if (typeof Html5Qrcode === "undefined") {
+      return alert("QR scanner library is still loading. You can also type the 4-digit Faculty Room Code directly.");
+    }
+    $("qrScannerWrap").classList.remove("hidden");
+    html5QrScanner = new Html5Qrcode("qrReaderBox");
+    try {
+      await html5QrScanner.start(
+        { facingMode: "environment" },
+        { fps: 10, qrbox: { width: 210, height: 210 } },
+        async (decodedText) => {
+          $("campusCodeInput").value = decodedText.trim();
+          await stopQrCamera();
+          $("punchFeedback").className = "alert-bar alert-ok";
+          $("punchFeedback").textContent = "Campus QR scanned! Tap the green punch button to record your time.";
+        },
+        () => {}
+      );
+    } catch (err) {
+      await stopQrCamera();
+      alert("Unable to access camera for QR scan: " + err.message);
+    }
+  });
+
+  $("btnStopQrScan").addEventListener("click", stopQrCamera);
 
   $("btnCalibrateSchool").addEventListener("click", async () => {
     if (!currentGeo.available || currentGeo.lat === null) {
@@ -749,7 +848,7 @@
         updatedAt: serverTimestamp()
       }, { merge: true });
       ACTIVE_DAILY_CODE = newCode;
-      $("dailyCodeDisplay").textContent = ACTIVE_DAILY_CODE;
+      updateDailyCodeUI();
       alert(`New Faculty Room Daily Code generated: ${newCode}`);
     } catch (err) {
       alert("Unable to update daily code (Admin permission required): " + err.message);
@@ -757,7 +856,8 @@
   });
 
   document.querySelectorAll(".tab-btn").forEach((btn) => {
-    btn.addEventListener("click", () => {
+    btn.addEventListener("click", async () => {
+      await stopQrCamera();
       document.querySelectorAll(".tab-btn").forEach((b) => b.classList.remove("active"));
       document.querySelectorAll(".tab-panel").forEach((p) => p.classList.add("hidden"));
       btn.classList.add("active");
@@ -799,14 +899,19 @@
     ["amIn", "amOut", "pmIn", "pmOut"].forEach((slot) => {
       const entry = todayDocData[slot];
       const box = $(`slot_${slot}`);
+      const editBtn = $(`edit_${slot}`);
+      box.classList.remove("done", "pending");
+
       if (entry?.timeText) {
-        box.classList.add("done");
+        const isPending = entry.verificationStatus === "pending_approval";
+        box.classList.add(isPending ? "pending" : "done");
         $(`val_${slot}`).textContent = entry.timeText;
-        $(`meta_${slot}`).textContent = `${entry.dutyType || "On-Campus"} • ${entry.locationStatus || ""}`;
+        $(`meta_${slot}`).textContent = `${entry.dutyType || "On-Campus"} • ${entry.locationStatus || ""}${isPending ? " (Pending Approval)" : ""}`;
+        editBtn.classList.remove("hidden");
       } else {
-        box.classList.remove("done");
         $(`val_${slot}`).textContent = "--:--";
         $(`meta_${slot}`).textContent = "Not logged";
+        editBtn.classList.add("hidden");
       }
     });
 
@@ -826,6 +931,72 @@
 
   $("manualSlotOverride").addEventListener("change", loadTodayLog);
 
+  // Edit Today's DTR Entry: Direct if On-Campus, Routed for Admin Approval if Off-Campus
+  window.editTodaySlot = async (slot) => {
+    if (!currentUser || !todayDocData[slot]) return;
+    const existing = todayDocData[slot];
+    const wasOffCampus =
+      !String(existing.locationStatus || "").startsWith("On-Campus") ||
+      existing.dutyType !== "On-Campus Regular";
+
+    const newTime = prompt(`Edit ${slot.toUpperCase()} time (e.g., 07:45 AM):`, existing.timeText || "");
+    if (newTime === null || !newTime.trim()) return;
+
+    const newRef = prompt(
+      wasOffCampus
+        ? "Off-Campus Edit requires School Head approval. Enter updated Travel Order / Locator Slip / Reason:"
+        : "Optional note/reason for updating your On-Campus entry:",
+      existing.supportingRef || ""
+    );
+    if (newRef === null) return;
+    if (wasOffCampus && !newRef.trim()) {
+      return alert("Supporting reference / reason is required when editing an off-campus DTR entry.");
+    }
+
+    const dateKey = todayIso();
+    const updatedStatus = wasOffCampus ? "pending_approval" : "verified";
+
+    try {
+      const updatedEntry = {
+        ...existing,
+        timeText: newTime.trim(),
+        supportingRef: newRef.trim(),
+        verificationStatus: updatedStatus,
+        editedAt: new Date().toISOString(),
+        editedBy: currentUser.email
+      };
+
+      await setDoc(doc(db, "dtr_logs", `${currentUser.uid}_${dateKey}`), {
+        [slot]: updatedEntry,
+        updatedAt: serverTimestamp()
+      }, { merge: true });
+
+      await addDoc(collection(db, "dtr_audit_trail"), {
+        uid: currentUser.uid,
+        employeeName: currentUser.displayName || currentUser.email,
+        date: dateKey,
+        slot,
+        action: "entry_edited",
+        previousTime: existing.timeText,
+        newTime: newTime.trim(),
+        supportingRef: newRef.trim(),
+        verificationStatus: updatedStatus,
+        deviceId: getDeviceFingerprint(),
+        createdAt: serverTimestamp()
+      });
+
+      $("punchFeedback").className = wasOffCampus ? "alert-bar alert-warn" : "alert-bar alert-ok";
+      $("punchFeedback").textContent = wasOffCampus
+        ? `Updated ${slot.toUpperCase()} to ${newTime.trim()} — sent to School Head Verification Queue (Tab 4) for approval.`
+        : `Updated On-Campus ${slot.toUpperCase()} entry to ${newTime.trim()} (Verified).`;
+
+      await loadTodayLog();
+      await loadMonthlyCs48();
+    } catch (err) {
+      alert("Unable to update DTR entry: " + err.message);
+    }
+  };
+
   $("btnAutoPunch").addEventListener("click", async () => {
     if (!currentUser) return;
     const override = $("manualSlotOverride").value;
@@ -834,15 +1005,19 @@
 
     const dutyType = $("dutyType").value;
     const supportingRef = $("supportingRef").value.trim();
-    const enteredCode = $("campusCodeInput").value.trim();
-    const validCampusCode = enteredCode && enteredCode === ACTIVE_DAILY_CODE;
+    const rawQrOrCode = $("campusCodeInput").value.trim();
+    const validCampusQr = Boolean(rawQrOrCode) && (
+      rawQrOrCode === ACTIVE_DAILY_CODE ||
+      rawQrOrCode.endsWith("-" + ACTIVE_DAILY_CODE) ||
+      rawQrOrCode.includes(ACTIVE_DAILY_CODE)
+    );
 
-    const verifiedOnCampus = currentGeo.onCampus || validCampusCode;
+    const verifiedOnCampus = currentGeo.onCampus || validCampusQr;
     const isOffCampus = !verifiedOnCampus || dutyType !== "On-Campus Regular";
 
     if (isOffCampus && !supportingRef) {
       $("punchFeedback").className = "alert-bar alert-warn";
-      $("punchFeedback").textContent = "CSC Compliance: You are outside the campus geofence (or logging non-regular duty). Enter the Faculty Room Daily Code if on campus, OR enter your Travel Order / Locator Slip / Memo No.";
+      $("punchFeedback").textContent = "CSC Compliance: You are outside the campus geofence (or logging non-regular duty). Scan/enter the Campus QR/Code if on campus, OR enter your Travel Order / Locator Slip / Memo No.";
       $("supportingRef").focus();
       return;
     }
@@ -853,10 +1028,13 @@
     const timeText = now.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" });
     const locationStatus = currentGeo.onCampus
       ? "On-Campus (GPS)"
-      : validCampusCode
-        ? "On-Campus (Faculty Room Code)"
+      : validCampusQr
+        ? "On-Campus (QR / Office Code)"
         : "Off-Campus / Field";
     const verificationStatus = verifiedOnCampus && dutyType === "On-Campus Regular" ? "verified" : "pending_approval";
+
+    const proofFile = $("punchProofInput").files?.[0] || null;
+    const proofDataUrl = await compressProofImage(proofFile, 640, 0.65);
 
     try {
       const punchPayload = {
@@ -864,11 +1042,12 @@
         isoTime: now.toISOString(),
         serverAt: serverTimestamp(),
         dutyType,
-        supportingRef: validCampusCode && !supportingRef ? "Verified via Faculty Room Daily Code" : supportingRef,
+        supportingRef: validCampusQr && !supportingRef ? "Verified via Campus QR / Office Code" : supportingRef,
         locationStatus,
         verificationStatus,
         deviceId: getDeviceFingerprint(),
-        gps: currentGeo
+        gps: currentGeo,
+        ...(proofDataUrl ? { proofPhotoDataUrl: proofDataUrl } : {})
       };
 
       await setDoc(doc(db, "dtr_logs", `${currentUser.uid}_${dateKey}`), {
@@ -890,6 +1069,7 @@
         supportingRef: punchPayload.supportingRef,
         locationStatus,
         verificationStatus,
+        hasProofPhoto: Boolean(proofDataUrl),
         deviceId: getDeviceFingerprint(),
         createdAt: serverTimestamp()
       });
@@ -897,6 +1077,7 @@
       $("punchFeedback").className = "alert-bar alert-ok";
       $("punchFeedback").textContent = `Recorded ${slot.toUpperCase()} at ${timeText} (${locationStatus}${verificationStatus === "pending_approval" ? " — routed for School Head approval" : ""}).`;
       $("campusCodeInput").value = "";
+      $("punchProofInput").value = "";
       await loadTodayLog();
     } catch (err) {
       $("punchFeedback").className = "alert-bar alert-warn";
@@ -921,7 +1102,6 @@
       const snap = await getDocs(q);
       const docs = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
 
-      // Detect if multiple different employees used the exact same Device ID on this date
       const deviceUsers = new Map();
       docs.forEach((rec) => {
         ["amIn", "amOut", "pmIn", "pmOut"].forEach((s) => {
@@ -964,6 +1144,9 @@
         const st = entry.verificationStatus || "verified";
         const pillCls = st === "pending_approval" ? "pending" : st === "rejected_undertime" ? "rejected" : "verified";
         const distInfo = entry.gps?.distanceMeters != null ? `${entry.gps.distanceMeters}m from school` : "No GPS";
+        const photoThumb = entry.proofPhotoDataUrl
+          ? `<div style="margin-top:4px;"><a href="${entry.proofPhotoDataUrl}" target="_blank" rel="noopener" style="font-size:11px;font-weight:700;color:#0f766e;"><i class="fas fa-image"></i> View Proof Photo</a></div>`
+          : "";
         return `
           <tr>
             <td><strong>${esc(rec.employeeName || rec.employeeEmail || rec.uid)}</strong></td>
@@ -972,6 +1155,7 @@
             <td style="text-align:left;">
               <strong>${esc(entry.dutyType || "")}</strong><br/>
               <small>${esc(entry.supportingRef || "—")}</small>
+              ${photoThumb}
             </td>
             <td>
               <small>${esc(entry.locationStatus || "")} (${esc(distInfo)})</small><br/>
