@@ -1,0 +1,1021 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Online DTR & AI Hardcopy Scanner — SCPHS Portal</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+  <style>
+    :root {
+      --primary: #1e3c72;
+      --accent: #0f766e;
+      --purple: #6d28d9;
+      --bg: #f1f5f9;
+      --card: #ffffff;
+      --border: #cbd5e1;
+      --text: #0f172a;
+      --muted: #475569;
+      --success: #059669;
+      --warning: #d97706;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; background: var(--bg); color: var(--text); }
+
+    .topbar {
+      background: linear-gradient(135deg, #0f172a, #1e3c72);
+      color: #fff;
+      padding: 14px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 10px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .topbar h1 { font-size: 18px; display: flex; align-items: center; gap: 9px; }
+    .topbar a { color: #93c5fd; text-decoration: none; font-size: 13px; }
+    .badge { background: rgba(255,255,255,0.16); padding: 4px 11px; border-radius: 999px; font-size: 12px; }
+
+    .container { max-width: 1260px; margin: 18px auto; padding: 0 14px 40px; }
+
+    .tabs { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 14px; }
+    .tab-btn {
+      background: #fff;
+      border: 1px solid var(--border);
+      color: var(--muted);
+      padding: 10px 15px;
+      border-radius: 10px;
+      font-weight: 700;
+      font-size: 13px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+    }
+    .tab-btn.active { background: var(--primary); color: #fff; border-color: var(--primary); }
+
+    .card {
+      background: var(--card);
+      border: 1px solid #e2e8f0;
+      border-radius: 14px;
+      padding: 18px;
+      margin-bottom: 16px;
+      box-shadow: 0 2px 10px rgba(15,23,42,0.04);
+    }
+    .card h2, .card h3 { font-size: 16px; color: var(--primary); margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
+
+    .grid-2 { display: grid; grid-template-columns: 1.05fr 1fr; gap: 16px; }
+    @media (max-width: 880px) { .grid-2 { grid-template-columns: 1fr; } }
+
+    .clock-hero {
+      background: linear-gradient(135deg, #1e3c72, #0f766e);
+      color: #fff;
+      border-radius: 14px;
+      padding: 20px;
+      text-align: center;
+      margin-bottom: 14px;
+    }
+    .clock-time { font-size: 2.3rem; font-weight: 900; letter-spacing: 1px; margin: 4px 0; }
+    .clock-date { font-size: 13px; opacity: 0.9; }
+
+    .security-pills { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; margin-top: 12px; }
+    .sec-pill { background: rgba(255,255,255,0.16); padding: 5px 10px; border-radius: 999px; font-size: 11.5px; font-weight: 600; }
+
+    label { display: block; font-size: 12px; font-weight: 700; color: var(--muted); margin-bottom: 10px; }
+    input, select {
+      width: 100%;
+      margin-top: 4px;
+      padding: 9px 11px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      font-size: 13.5px;
+      font-family: inherit;
+      background: #fff;
+    }
+
+    .punch-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin: 12px 0; }
+    .punch-slot {
+      border: 1px solid #cbd5e1;
+      border-radius: 10px;
+      padding: 12px;
+      background: #f8fafc;
+      text-align: center;
+    }
+    .punch-slot.done { background: #ecfdf5; border-color: #6ee7b7; }
+    .punch-slot .lbl { font-size: 11px; font-weight: 800; color: var(--muted); text-transform: uppercase; }
+    .punch-slot .val { font-size: 16px; font-weight: 800; color: var(--primary); margin-top: 4px; }
+    .punch-slot .meta { font-size: 11px; color: var(--muted); margin-top: 2px; }
+
+    .btn {
+      background: var(--primary);
+      color: #fff;
+      border: none;
+      padding: 10px 16px;
+      border-radius: 9px;
+      font-weight: 700;
+      font-size: 13.5px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
+      transition: 0.15s;
+    }
+    .btn:hover:not(:disabled) { opacity: 0.94; transform: translateY(-1px); }
+    .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+    .btn.success { background: var(--success); }
+    .btn.purple { background: var(--purple); }
+    .btn.teal { background: var(--accent); }
+    .btn.outline { background: #fff; color: var(--primary); border: 1px solid var(--primary); }
+    .btn.sm { padding: 6px 10px; font-size: 12px; }
+
+    table.scan-table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+    table.scan-table th, table.scan-table td { border: 1px solid #cbd5e1; padding: 7px 6px; text-align: center; }
+    table.scan-table th { background: #1e3c72; color: #fff; font-size: 11.5px; }
+    table.scan-table td input { margin-top: 0; padding: 5px 6px; font-size: 12px; }
+
+    .stats-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 14px; }
+    .stat-box { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 10px; text-align: center; }
+    .stat-box .num { font-size: 1.35rem; font-weight: 800; color: var(--primary); }
+    .stat-box .txt { font-size: 11px; font-weight: 700; color: var(--muted); text-transform: uppercase; }
+
+    .hidden { display: none !important; }
+    .alert-bar { padding: 10px 12px; border-radius: 8px; font-size: 12.5px; font-weight: 600; margin-top: 10px; }
+    .alert-info { background: #eff6ff; color: #1e40af; border: 1px solid #bfdbfe; }
+    .alert-warn { background: #fef3c7; color: #92400e; border: 1px solid #fde68a; }
+    .alert-ok { background: #ecfdf5; color: #065f46; border: 1px solid #a7f3d0; }
+
+    /* Portrait Mirrored CS Form 48 Sheet */
+    .cs48-sheet {
+      background: #fff;
+      color: #000;
+      font-family: 'Times New Roman', Times, serif;
+      border: 2px solid #000;
+      padding: 8px;
+      margin-top: 12px;
+    }
+    .cs48-two-up {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+    .cs48-copy {
+      border: 1px solid #000;
+      padding: 6px;
+      font-size: 7.5pt;
+      line-height: 1.2;
+    }
+    .cs48-title-wrap {
+      text-align: center;
+      border-bottom: 1.5px solid #000;
+      padding-bottom: 3px;
+      margin-bottom: 4px;
+    }
+    .cs48-form-no { font-size: 7pt; font-weight: 700; }
+    .cs48-main-title { font-size: 11pt; font-weight: 800; letter-spacing: 1px; }
+    .cs48-meta-row {
+      display: flex;
+      justify-content: space-between;
+      gap: 6px;
+      font-size: 7pt;
+      border-bottom: 1px solid #000;
+      padding: 2px 0;
+      margin-bottom: 3px;
+    }
+    table.cs48-grid {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 6.5pt;
+    }
+    table.cs48-grid th, table.cs48-grid td {
+      border: 1px solid #000;
+      padding: 1px 2px;
+      text-align: center;
+    }
+    .cs48-cert {
+      font-size: 6.2pt;
+      text-align: justify;
+      margin-top: 4px;
+      line-height: 1.25;
+    }
+    .cs48-sigs {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-top: 12px;
+      text-align: center;
+      font-size: 6.8pt;
+    }
+    .cs48-sig-line {
+      border-top: 1px solid #000;
+      padding-top: 2px;
+      font-weight: 700;
+    }
+    .cs48-back-page {
+      margin-top: 14px;
+      page-break-before: always;
+      break-before: page;
+    }
+    .cs48-inst-title {
+      text-align: center;
+      font-size: 11pt;
+      font-weight: 800;
+      border-bottom: 1.5px solid #000;
+      padding-bottom: 3px;
+      margin-bottom: 6px;
+    }
+    .cs48-inst-body {
+      font-size: 7.2pt;
+      line-height: 1.38;
+      text-align: justify;
+    }
+    .cs48-inst-body p { margin-bottom: 6px; }
+
+    @media print {
+      @page { size: portrait; margin: 6mm; }
+      body { background: #fff; }
+      .no-print { display: none !important; }
+      .container { max-width: 100%; margin: 0; padding: 0; }
+      .card { border: none; box-shadow: none; padding: 0; margin: 0; }
+      .cs48-sheet { border: none; padding: 0; margin-top: 0; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="topbar no-print">
+  <div>
+    <a href="dashboard.html">&larr; Faculty Dashboard</a>
+    <h1><i class="fas fa-user-clock"></i> SCPHS Online DTR &amp; AI Hardcopy Scanner</h1>
+  </div>
+  <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+    <span class="badge" id="userBadge">Connecting...</span>
+    <button type="button" class="btn outline sm" id="btnApiKey" style="background:#fff;"><i class="fas fa-key"></i> Gemini Key</button>
+  </div>
+</div>
+
+<div class="container">
+  <div class="tabs no-print">
+    <button type="button" class="tab-btn active" data-tab="tab-clock"><i class="fas fa-mobile-screen-button"></i> 1. Mobile / Laptop Time In &amp; Out</button>
+    <button type="button" class="tab-btn" data-tab="tab-scan"><i class="fas fa-wand-magic-sparkles"></i> 2. AI Hardcopy Cursive DTR Scanner</button>
+    <button type="button" class="tab-btn" data-tab="tab-cs48"><i class="fas fa-file-lines"></i> 3. Monthly DTR (CS Form 48 Portrait)</button>
+  </div>
+
+  <!-- TAB 1: MOBILE / LAPTOP CSC-COMPLIANT ONLINE DTR -->
+  <div id="tab-clock" class="tab-panel">
+    <div class="grid-2">
+      <div class="card">
+        <div class="clock-hero">
+          <div style="font-size:12px;text-transform:uppercase;letter-spacing:1px;">Philippine Standard Time (Server-Verified)</div>
+          <div class="clock-time" id="liveClock">--:--:--</div>
+          <div class="clock-date" id="liveDate">Loading date...</div>
+          <div class="security-pills">
+            <span class="sec-pill" id="pillGeo"><i class="fas fa-location-dot"></i> Checking GPS...</span>
+            <span class="sec-pill" id="pillDevice"><i class="fas fa-shield-halved"></i> Device Verified</span>
+          </div>
+        </div>
+
+        <label>Attendance / CSC Duty Classification
+          <select id="dutyType">
+            <option value="On-Campus Regular">Regular On-Campus Duty (Sta. Cruz Pingkian HS)</option>
+            <option value="Official Business / Travel Order">Official Business (OB) / Travel Order / DepEd Activity</option>
+            <option value="Seminar / Training / Workshop">DepEd Seminar / Training / INSET</option>
+            <option value="Approved WFH / AWA">Approved Work-From-Home / Alternative Work Arrangement</option>
+            <option value="Pass Slip / Official Errand">Official Pass Slip / District / Division Errand</option>
+          </select>
+        </label>
+
+        <label>Travel Order / Memo / Pass Slip No. &amp; Reason (Required if Off-Campus)
+          <input type="text" id="supportingRef" placeholder="e.g., TO No. 2026-114 — Division Assessment Workshop" />
+        </label>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:8px;">
+          <button type="button" class="btn success" id="btnAutoPunch" style="padding:13px;font-size:14px;">
+            <i class="fas fa-fingerprint"></i> <span id="nextPunchLabel">Log AM Time In</span>
+          </button>
+          <select id="manualSlotOverride">
+            <option value="auto">Auto-Detect Next Slot</option>
+            <option value="amIn">Force: AM Time In</option>
+            <option value="amOut">Force: AM Time Out (12:00 NN)</option>
+            <option value="pmIn">Force: PM Time In (1:00 PM)</option>
+            <option value="pmOut">Force: PM Time Out (5:00 PM)</option>
+          </select>
+        </div>
+
+        <div id="punchFeedback" class="alert-bar alert-info">
+          Ready. Your device ID and GPS coordinates are attached automatically for CSC/DepEd audit compliance.
+        </div>
+      </div>
+
+      <div class="card">
+        <h3><i class="fas fa-calendar-day"></i> Today's Official DTR Log</h3>
+        <div class="punch-grid">
+          <div class="punch-slot" id="slot_amIn">
+            <div class="lbl">Morning Arrival (AM IN)</div>
+            <div class="val" id="val_amIn">--:--</div>
+            <div class="meta" id="meta_amIn">Not logged</div>
+          </div>
+          <div class="punch-slot" id="slot_amOut">
+            <div class="lbl">Noon Departure (AM OUT)</div>
+            <div class="val" id="val_amOut">--:--</div>
+            <div class="meta" id="meta_amOut">Not logged</div>
+          </div>
+          <div class="punch-slot" id="slot_pmIn">
+            <div class="lbl">Afternoon Arrival (PM IN)</div>
+            <div class="val" id="val_pmIn">--:--</div>
+            <div class="meta" id="meta_pmIn">Not logged</div>
+          </div>
+          <div class="punch-slot" id="slot_pmOut">
+            <div class="lbl">Afternoon Departure (PM OUT)</div>
+            <div class="val" id="val_pmOut">--:--</div>
+            <div class="meta" id="meta_pmOut">Not logged</div>
+          </div>
+        </div>
+
+        <div class="alert-bar alert-warn" style="font-size:12px;">
+          <strong>CSC &amp; DepEd Compliance Notice:</strong> Raw timestamps use server time and cannot be edited directly. Off-campus logs are flagged for School Head / Admin verification using your Travel Order or Memo reference.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB 2: GEMINI AI CURSIVE HARDCOPY DTR SCANNER -->
+  <div id="tab-scan" class="tab-panel hidden">
+    <div class="card">
+      <h3><i class="fas fa-file-signature"></i> Migrate Hardcopy / Cursive Office DTR via Gemini Vision AI</h3>
+      <p style="font-size:13px;color:var(--muted);margin-bottom:12px;">
+        Upload or snap a photo of the office handwritten attendance logbook or hardcopy CS Form 48. Gemini AI transcribes cursive employee names, dates, and <strong>AM IN / AM OUT / PM IN / PM OUT</strong> entries so you can verify and migrate them into Firestore.
+      </p>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr auto;gap:12px;align-items:end;margin-bottom:14px;">
+        <label style="margin:0;">Select Hardcopy DTR Photo (JPG / PNG)
+          <input type="file" id="dtrImageInput" accept="image/*" />
+        </label>
+        <label style="margin:0;">Default Date (if sheet has one date)
+          <input type="date" id="scanDefaultDate" />
+        </label>
+        <button type="button" class="btn purple" id="btnRunAiDtrScan">
+          <i class="fas fa-wand-magic-sparkles"></i> Read Cursive DTR with Gemini
+        </button>
+      </div>
+
+      <div id="scanPreviewWrap" class="hidden" style="margin-bottom:14px;text-align:center;">
+        <img id="scanPreviewImg" alt="Hardcopy DTR preview" style="max-height:240px;border:1px solid #cbd5e1;border-radius:10px;" />
+      </div>
+
+      <div id="scanStatus" class="alert-bar alert-info hidden"></div>
+
+      <div style="overflow-x:auto;margin-top:12px;">
+        <table class="scan-table">
+          <thead>
+            <tr>
+              <th>Employee Name (Transcribed)</th>
+              <th>Date (YYYY-MM-DD)</th>
+              <th>AM IN</th>
+              <th>AM OUT</th>
+              <th>PM IN</th>
+              <th>PM OUT</th>
+              <th>Remarks / Reason</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody id="scannedDtrBody">
+            <tr><td colspan="8" style="color:var(--muted);padding:18px;">Upload a photo of a handwritten DTR sheet and click <strong>Read Cursive DTR with Gemini</strong>.</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:12px;">
+        <button type="button" class="btn outline sm" id="btnAddScanRow"><i class="fas fa-plus"></i> Add Row</button>
+        <button type="button" class="btn success" id="btnCommitScannedDtr"><i class="fas fa-cloud-upload-alt"></i> Migrate Verified Rows to DTR System</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB 3: PORTRAIT TWO-UP CS FORM 48 -->
+  <div id="tab-cs48" class="tab-panel hidden">
+    <div class="card">
+      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:12px;" class="no-print">
+        <h3 style="margin:0;"><i class="fas fa-table"></i> Civil Service Form No. 48 — Portrait Two-Up Print View</h3>
+        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+          <input type="month" id="cs48Month" style="margin:0;width:auto;" />
+          <input type="text" id="cs48InCharge" placeholder="In-Charge / School Head Name" style="margin:0;width:210px;" />
+          <button type="button" class="btn teal sm" id="btnLoadCs48"><i class="fas fa-sync"></i> Refresh</button>
+          <button type="button" class="btn sm" onclick="window.print()"><i class="fas fa-print"></i> Print Portrait Form 48</button>
+        </div>
+      </div>
+
+      <div class="stats-row no-print">
+        <div class="stat-box"><div class="num" id="mDays">0</div><div class="txt">Days Logged</div></div>
+        <div class="stat-box"><div class="num" id="mUndertime">0h 0m</div><div class="txt">Total Undertime</div></div>
+        <div class="stat-box"><div class="num" id="mLate">0</div><div class="txt">Late Arrivals</div></div>
+        <div class="stat-box"><div class="num" id="mPending">0</div><div class="txt">Off-Campus Logs</div></div>
+      </div>
+
+      <div class="cs48-sheet" id="cs48PrintArea">
+        <div class="cs48-two-up" id="cs48FrontTwoUp"></div>
+        <div class="cs48-back-page">
+          <div class="cs48-two-up" id="cs48BackTwoUp"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script type="module">
+  import { auth, db } from "../assets/js/firebase-config.js";
+  import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+  import {
+    doc, getDoc, setDoc, addDoc, getDocs, collection, query, where, serverTimestamp
+  } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+  const $ = (id) => document.getElementById(id);
+  const esc = (s) => String(s ?? "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+
+  const SCHOOL_COORDS = { lat: 16.3685, lng: 120.8925 };
+  const GEOFENCE_RADIUS_METERS = 350;
+
+  let currentUser = null;
+  let currentGeo = { available: false, lat: null, lng: null, distanceMeters: null, onCampus: false };
+  let todayDocData = {};
+  let GEMINI_API_KEY = localStorage.getItem("scphs_gemini_api_key") || "";
+  let SCANNED_IMAGE_BASE64 = "";
+  let SCANNED_IMAGE_MIME = "image/jpeg";
+
+  function getDeviceFingerprint() {
+    let devId = localStorage.getItem("scphs_dtr_device_id");
+    if (!devId) {
+      devId = "DEV-" + crypto.randomUUID().slice(0, 8).toUpperCase();
+      localStorage.setItem("scphs_dtr_device_id", devId);
+    }
+    return devId;
+  }
+
+  function todayIso() {
+    const d = new Date();
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+  }
+
+  function formatTime12(d = new Date()) {
+    return d.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit", second: "2-digit" });
+  }
+
+  function parseTimeToMinutes(timeStr) {
+    if (!timeStr || typeof timeStr !== "string") return null;
+    const trimmed = timeStr.trim();
+    const m12 = trimmed.match(/^(\d{1,2}):(\d{2})(?::\d{2})?\s*(AM|PM)$/i);
+    if (m12) {
+      let h = parseInt(m12[1], 10);
+      const min = parseInt(m12[2], 10);
+      const mer = m12[3].toUpperCase();
+      if (mer === "PM" && h !== 12) h += 12;
+      if (mer === "AM" && h === 12) h = 0;
+      return h * 60 + min;
+    }
+    const m24 = trimmed.match(/^(\d{1,2}):(\d{2})/);
+    if (m24) return parseInt(m24[1], 10) * 60 + parseInt(m24[2], 10);
+    return null;
+  }
+
+  function calcDistanceMeters(lat1, lon1, lat2, lon2) {
+    const R = 6371000;
+    const toRad = (v) => (v * Math.PI) / 180;
+    const dLat = toRad(lat2 - lat1);
+    const dLon = toRad(lon2 - lon1);
+    const a = Math.sin(dLat / 2) ** 2 + Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLon / 2) ** 2;
+    return Math.round(R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a)));
+  }
+
+  setInterval(() => {
+    const now = new Date();
+    $("liveClock").textContent = formatTime12(now);
+    $("liveDate").textContent = now.toLocaleDateString("en-US", { weekday: "long", year: "numeric", month: "long", day: "numeric" });
+  }, 1000);
+
+  $("pillDevice").innerHTML = `<i class="fas fa-shield-halved"></i> Device: ${getDeviceFingerprint()}`;
+  $("scanDefaultDate").value = todayIso();
+  $("cs48Month").value = todayIso().slice(0, 7);
+
+  if ("geolocation" in navigator) {
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        const dist = calcDistanceMeters(pos.coords.latitude, pos.coords.longitude, SCHOOL_COORDS.lat, SCHOOL_COORDS.lng);
+        const onCampus = dist <= GEOFENCE_RADIUS_METERS;
+        currentGeo = {
+          available: true,
+          lat: Number(pos.coords.latitude.toFixed(6)),
+          lng: Number(pos.coords.longitude.toFixed(6)),
+          distanceMeters: dist,
+          onCampus
+        };
+        $("pillGeo").innerHTML = onCampus
+          ? `<i class="fas fa-location-dot"></i> On-Campus (${dist}m)`
+          : `<i class="fas fa-map-pin"></i> Off-Campus (${(dist / 1000).toFixed(1)} km away)`;
+      },
+      () => {
+        $("pillGeo").innerHTML = `<i class="fas fa-location-crosshairs"></i> GPS Unavailable (Reason Required)`;
+      },
+      { enableHighAccuracy: true, timeout: 8000 }
+    );
+  }
+
+  document.querySelectorAll(".tab-btn").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      document.querySelectorAll(".tab-btn").forEach((b) => b.classList.remove("active"));
+      document.querySelectorAll(".tab-panel").forEach((p) => p.classList.add("hidden"));
+      btn.classList.add("active");
+      $(btn.dataset.tab).classList.remove("hidden");
+      if (btn.dataset.tab === "tab-cs48") loadMonthlyCs48();
+    });
+  });
+
+  $("btnApiKey").addEventListener("click", () => {
+    const k = prompt("Enter your Google Gemini API Key:", GEMINI_API_KEY);
+    if (k !== null) {
+      GEMINI_API_KEY = k.trim();
+      localStorage.setItem("scphs_gemini_api_key", GEMINI_API_KEY);
+      alert("Gemini API Key saved.");
+    }
+  });
+
+  onAuthStateChanged(auth, async (user) => {
+    if (!user) {
+      location.href = "../login.html";
+      return;
+    }
+    currentUser = user;
+    const displayName = user.displayName || user.email.split("@")[0];
+    $("userBadge").textContent = displayName;
+    await loadTodayLog();
+    await loadMonthlyCs48();
+  });
+
+  async function loadTodayLog() {
+    if (!currentUser) return;
+    const dateKey = todayIso();
+    const snap = await getDoc(doc(db, "dtr_logs", `${currentUser.uid}_${dateKey}`));
+    todayDocData = snap.exists() ? snap.data() : {};
+
+    ["amIn", "amOut", "pmIn", "pmOut"].forEach((slot) => {
+      const entry = todayDocData[slot];
+      const box = $(`slot_${slot}`);
+      if (entry?.timeText) {
+        box.classList.add("done");
+        $(`val_${slot}`).textContent = entry.timeText;
+        $(`meta_${slot}`).textContent = `${entry.dutyType || "On-Campus"} • ${entry.locationStatus || ""}`;
+      } else {
+        box.classList.remove("done");
+        $(`val_${slot}`).textContent = "--:--";
+        $(`meta_${slot}`).textContent = "Not logged";
+      }
+    });
+
+    const nextSlot = !todayDocData.amIn ? "amIn"
+      : !todayDocData.amOut ? "amOut"
+      : !todayDocData.pmIn ? "pmIn"
+      : !todayDocData.pmOut ? "pmOut" : "completed";
+
+    const labels = {
+      amIn: "Log AM Time In",
+      amOut: "Log AM Time Out",
+      pmIn: "Log PM Time In",
+      pmOut: "Log PM Time Out",
+      completed: "All 4 Daily Punches Logged"
+    };
+    $("nextPunchLabel").textContent = labels[nextSlot];
+    $("btnAutoPunch").disabled = nextSlot === "completed" && $("manualSlotOverride").value === "auto";
+  }
+
+  $("manualSlotOverride").addEventListener("change", loadTodayLog);
+
+  $("btnAutoPunch").addEventListener("click", async () => {
+    if (!currentUser) return;
+    const override = $("manualSlotOverride").value;
+    const slot = override !== "auto"
+      ? override
+      : (!todayDocData.amIn ? "amIn" : !todayDocData.amOut ? "amOut" : !todayDocData.pmIn ? "pmIn" : "pmOut");
+
+    const dutyType = $("dutyType").value;
+    const supportingRef = $("supportingRef").value.trim();
+    const isOffCampus = !currentGeo.onCampus || dutyType !== "On-Campus Regular";
+
+    if (isOffCampus && !supportingRef) {
+      $("punchFeedback").className = "alert-bar alert-warn";
+      $("punchFeedback").textContent = "CSC Compliance: Enter your Travel Order, Memo, Pass Slip, or valid reason before logging off-campus.";
+      $("supportingRef").focus();
+      return;
+    }
+
+    $("btnAutoPunch").disabled = true;
+    const now = new Date();
+    const dateKey = todayIso();
+    const timeText = now.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" });
+    const locationStatus = currentGeo.onCampus ? "On-Campus" : "Off-Campus / Field";
+    const verificationStatus = currentGeo.onCampus && dutyType === "On-Campus Regular" ? "verified" : "pending_approval";
+
+    try {
+      const punchPayload = {
+        timeText,
+        isoTime: now.toISOString(),
+        serverAt: serverTimestamp(),
+        dutyType,
+        supportingRef,
+        locationStatus,
+        verificationStatus,
+        deviceId: getDeviceFingerprint(),
+        gps: currentGeo
+      };
+
+      await setDoc(doc(db, "dtr_logs", `${currentUser.uid}_${dateKey}`), {
+        uid: currentUser.uid,
+        employeeName: currentUser.displayName || currentUser.email,
+        employeeEmail: currentUser.email,
+        date: dateKey,
+        [slot]: punchPayload,
+        updatedAt: serverTimestamp()
+      }, { merge: true });
+
+      await addDoc(collection(db, "dtr_audit_trail"), {
+        uid: currentUser.uid,
+        employeeName: currentUser.displayName || currentUser.email,
+        date: dateKey,
+        slot,
+        timeText,
+        dutyType,
+        supportingRef,
+        locationStatus,
+        deviceId: getDeviceFingerprint(),
+        createdAt: serverTimestamp()
+      });
+
+      $("punchFeedback").className = "alert-bar alert-ok";
+      $("punchFeedback").textContent = `Recorded ${slot.toUpperCase()} at ${timeText} (${locationStatus}${verificationStatus === "pending_approval" ? " — flagged for School Head review" : ""}).`;
+      await loadTodayLog();
+    } catch (err) {
+      $("punchFeedback").className = "alert-bar alert-warn";
+      $("punchFeedback").textContent = "Error saving punch: " + err.message;
+    } finally {
+      $("btnAutoPunch").disabled = false;
+    }
+  });
+
+  // Gemini AI Cursive Hardcopy DTR Scanner
+  $("dtrImageInput").addEventListener("change", (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    SCANNED_IMAGE_MIME = file.type || "image/jpeg";
+    const reader = new FileReader();
+    reader.onload = () => {
+      const result = String(reader.result || "");
+      SCANNED_IMAGE_BASE64 = result.split(",")[1] || "";
+      $("scanPreviewImg").src = result;
+      $("scanPreviewWrap").classList.remove("hidden");
+    };
+    reader.readAsDataURL(file);
+  });
+
+  $("btnRunAiDtrScan").addEventListener("click", async () => {
+    if (!SCANNED_IMAGE_BASE64) return alert("Select a hardcopy DTR image first.");
+    if (!GEMINI_API_KEY) {
+      const k = prompt("Enter your Google Gemini API Key:");
+      if (!k) return;
+      GEMINI_API_KEY = k.trim();
+      localStorage.setItem("scphs_gemini_api_key", GEMINI_API_KEY);
+    }
+
+    const status = $("scanStatus");
+    status.classList.remove("hidden");
+    status.className = "alert-bar alert-info";
+    status.textContent = "Reading cursive handwriting and timestamps from hardcopy DTR with Gemini Vision...";
+    $("btnRunAiDtrScan").disabled = true;
+
+    const defaultDate = $("scanDefaultDate").value || todayIso();
+    const promptText = `You are a Philippine DepEd Administrative Officer transcribing a hardcopy Daily Time Record (DTR) or handwritten office attendance logbook (often written in cursive).
+Extract every employee attendance row visible in the image.
+If a row has no explicit date column, use "${defaultDate}".
+Normalize times to 12-hour format like "07:45 AM", "12:02 PM", "12:55 PM", "05:03 PM" (or "" if blank).
+
+Return STRICT JSON:
+{
+  "rows": [
+    {
+      "employeeName": "Full Name",
+      "date": "${defaultDate}",
+      "amIn": "07:45 AM",
+      "amOut": "12:01 PM",
+      "pmIn": "12:55 PM",
+      "pmOut": "05:02 PM",
+      "remarks": "Any handwritten note or OB/Leave remark"
+    }
+  ]
+}`;
+
+    try {
+      const res = await fetch(
+        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${encodeURIComponent(GEMINI_API_KEY)}`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            contents: [{
+              role: "user",
+              parts: [
+                { text: promptText },
+                { inlineData: { mimeType: SCANNED_IMAGE_MIME, data: SCANNED_IMAGE_BASE64 } }
+              ]
+            }],
+            generationConfig: { temperature: 0.1, responseMimeType: "application/json" }
+          })
+        }
+      );
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error?.message || `HTTP ${res.status}`);
+      const parsed = JSON.parse(data.candidates?.[0]?.content?.parts?.[0]?.text || "{}");
+      const rows = parsed.rows || [];
+      renderScannedDtrRows(rows);
+      status.className = "alert-bar alert-ok";
+      status.textContent = `Extracted ${rows.length} handwritten DTR row(s). Verify spelling and times below before migrating.`;
+    } catch (err) {
+      status.className = "alert-bar alert-warn";
+      status.textContent = "AI Scan Error: " + err.message;
+    } finally {
+      $("btnRunAiDtrScan").disabled = false;
+    }
+  });
+
+  function renderScannedDtrRows(rows) {
+    const tbody = $("scannedDtrBody");
+    if (!rows.length) {
+      tbody.innerHTML = `<tr><td colspan="8" style="color:var(--muted);padding:14px;">No rows detected. Click Add Row to enter manually.</td></tr>`;
+      return;
+    }
+    tbody.innerHTML = rows.map((r) => `
+      <tr>
+        <td><input type="text" value="${esc(r.employeeName || "")}" /></td>
+        <td><input type="date" value="${esc(r.date || todayIso())}" /></td>
+        <td><input type="text" value="${esc(r.amIn || "")}" placeholder="07:45 AM" /></td>
+        <td><input type="text" value="${esc(r.amOut || "")}" placeholder="12:00 PM" /></td>
+        <td><input type="text" value="${esc(r.pmIn || "")}" placeholder="01:00 PM" /></td>
+        <td><input type="text" value="${esc(r.pmOut || "")}" placeholder="05:00 PM" /></td>
+        <td><input type="text" value="${esc(r.remarks || "Hardcopy Logbook Migration")}" /></td>
+        <td><button type="button" class="btn outline sm" onclick="this.closest('tr').remove()">Remove</button></td>
+      </tr>
+    `).join("");
+  }
+
+  $("btnAddScanRow").addEventListener("click", () => {
+    const tbody = $("scannedDtrBody");
+    if (tbody.querySelector("td[colspan]")) tbody.innerHTML = "";
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td><input type="text" placeholder="Employee Name" /></td>
+      <td><input type="date" value="${todayIso()}" /></td>
+      <td><input type="text" placeholder="07:45 AM" /></td>
+      <td><input type="text" placeholder="12:00 PM" /></td>
+      <td><input type="text" placeholder="01:00 PM" /></td>
+      <td><input type="text" placeholder="05:00 PM" /></td>
+      <td><input type="text" value="Hardcopy Logbook Migration" /></td>
+      <td><button type="button" class="btn outline sm" onclick="this.closest('tr').remove()">Remove</button></td>
+    `;
+    tbody.appendChild(tr);
+  });
+
+  $("btnCommitScannedDtr").addEventListener("click", async () => {
+    if (!currentUser) return;
+    const trs = Array.from($("scannedDtrBody").querySelectorAll("tr")).filter((tr) => tr.querySelectorAll("input").length >= 7);
+    if (!trs.length) return alert("No rows to migrate.");
+
+    let migrated = 0;
+    for (const tr of trs) {
+      const inp = tr.querySelectorAll("input");
+      const empName = inp[0].value.trim();
+      const dateStr = inp[1].value.trim() || todayIso();
+      if (!empName) continue;
+
+      const slug = empName.toLowerCase().replace(/[^a-z0-9]+/g, "_");
+      const makeSlot = (timeText) => timeText ? ({
+        timeText,
+        dutyType: "Hardcopy Logbook Migration",
+        supportingRef: inp[6].value.trim(),
+        locationStatus: "On-Campus (Hardcopy)",
+        verificationStatus: "migrated_verified",
+        migratedBy: currentUser.email,
+        serverAt: serverTimestamp()
+      }) : null;
+
+      const payload = {
+        employeeName: empName,
+        date: dateStr,
+        source: "ai_hardcopy_scan",
+        migratedByUid: currentUser.uid,
+        updatedAt: serverTimestamp()
+      };
+      if (inp[2].value.trim()) payload.amIn = makeSlot(inp[2].value.trim());
+      if (inp[3].value.trim()) payload.amOut = makeSlot(inp[3].value.trim());
+      if (inp[4].value.trim()) payload.pmIn = makeSlot(inp[4].value.trim());
+      if (inp[5].value.trim()) payload.pmOut = makeSlot(inp[5].value.trim());
+
+      await setDoc(doc(db, "dtr_logs", `migrated_${slug}_${dateStr}`), payload, { merge: true });
+      migrated++;
+    }
+
+    alert(`Successfully migrated ${migrated} hardcopy DTR record(s) into Firestore!`);
+  });
+
+  // Portrait Two-Up CS Form 48 Renderer
+  function getDayUndertimeMinutes(dateStr, log) {
+    if (!log) return 0;
+    const d = new Date(`${dateStr}T00:00:00`);
+    const dow = d.getDay(); // 0=Sun, 6=Sat
+    if (dow === 0) return 0; // Sunday: As Required
+
+    const duty = log.amIn?.dutyType || log.pmIn?.dutyType || "";
+    if (duty.includes("Official Business")) return 0;
+
+    const requiredMins = dow === 6 ? 240 : 480;
+    let worked = 0;
+    const amInMin = parseTimeToMinutes(log.amIn?.timeText);
+    const amOutMin = parseTimeToMinutes(log.amOut?.timeText);
+    if (amInMin !== null && amOutMin !== null && amOutMin > amInMin) {
+      worked += amOutMin - amInMin;
+    }
+    if (dow !== 6) {
+      const pmInMin = parseTimeToMinutes(log.pmIn?.timeText);
+      const pmOutMin = parseTimeToMinutes(log.pmOut?.timeText);
+      if (pmInMin !== null && pmOutMin !== null && pmOutMin > pmInMin) {
+        worked += pmOutMin - pmInMin;
+      }
+    }
+    return Math.max(0, requiredMins - worked);
+  }
+
+  function buildForm48CopyHtml(copyLabel, empName, ym, logMap, inCharge) {
+    const [yearStr, monthStr] = ym.split("-");
+    const yearNum = parseInt(yearStr, 10) || new Date().getFullYear();
+    const monthNum = parseInt(monthStr, 10) || (new Date().getMonth() + 1);
+    const daysInMonth = new Date(yearNum, monthNum, 0).getDate();
+    const monthName = new Date(yearNum, monthNum - 1, 1).toLocaleString("en-US", { month: "long" });
+
+    let totalUnderMins = 0;
+    let bodyRows = "";
+
+    for (let day = 1; day <= daysInMonth; day++) {
+      const dateStr = `${yearNum}-${String(monthNum).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+      const dow = new Date(`${dateStr}T00:00:00`).getDay();
+      const log = logMap[dateStr];
+      const duty = log?.amIn?.dutyType || log?.pmIn?.dutyType || "";
+      const isOb = duty.includes("Official Business");
+      const isSunday = dow === 0;
+
+      let amInText = log?.amIn?.timeText || "";
+      let amOutText = log?.amOut?.timeText || "";
+      let pmInText = log?.pmIn?.timeText || "";
+      let pmOutText = isSunday ? "As Required" : (log?.pmOut?.timeText || "");
+      let uHrs = 0;
+      let uMins = 0;
+
+      if (isOb) {
+        amInText = amOutText = pmInText = pmOutText = "OB";
+      } else if (log) {
+        const u = getDayUndertimeMinutes(dateStr, log);
+        totalUnderMins += u;
+        uHrs = Math.floor(u / 60);
+        uMins = u % 60;
+      }
+
+      bodyRows += `
+        <tr>
+          <td>${day}</td>
+          <td>${esc(amInText)}</td>
+          <td>${esc(amOutText)}</td>
+          <td>${esc(pmInText)}</td>
+          <td>${esc(pmOutText)}</td>
+          <td>${log ? uHrs : ""}</td>
+          <td>${log ? uMins : ""}</td>
+        </tr>
+      `;
+    }
+
+    const totHrs = Math.floor(totalUnderMins / 60);
+    const totMins = totalUnderMins % 60;
+
+    return `
+      <div class="cs48-copy">
+        <div class="cs48-title-wrap">
+          <div class="cs48-form-no">Civil Service Form No. 48 (${esc(copyLabel)})</div>
+          <div class="cs48-main-title">DAILY TIME RECORD</div>
+        </div>
+        <div class="cs48-meta-row">
+          <div><strong>Name:</strong> ${esc(empName.toUpperCase())}</div>
+          <div><strong>Month:</strong> ${esc(monthName)} ${yearNum}</div>
+        </div>
+        <div class="cs48-meta-row">
+          <div><strong>Regular:</strong> 8:00–12:00 &amp; 1:00–5:00</div>
+          <div><strong>Sat:</strong> 8:00–12:00 | <strong>Sun:</strong> As Required</div>
+        </div>
+        <table class="cs48-grid">
+          <thead>
+            <tr>
+              <th rowspan="2">Day</th>
+              <th colspan="2">A.M.</th>
+              <th colspan="2">P.M.</th>
+              <th colspan="2">UNDER TIME</th>
+            </tr>
+            <tr>
+              <th>Arrival</th>
+              <th>Departure</th>
+              <th>Arrival</th>
+              <th>Departure</th>
+              <th>Hrs</th>
+              <th>Mins</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${bodyRows}
+            <tr style="font-weight:700;">
+              <td colspan="5" style="text-align:right;padding-right:4px;">TOTAL UNDERTIME</td>
+              <td>${totHrs}</td>
+              <td>${totMins}</td>
+            </tr>
+          </tbody>
+        </table>
+        <div class="cs48-cert">
+          I CERTIFY on my honor that the above is a true and correct report of the hours of work performed, record of which was made daily at the time of arrival and departure from office.
+        </div>
+        <div class="cs48-sigs">
+          <div>
+            <div style="min-height:14px;font-weight:700;">${esc(empName.toUpperCase())}</div>
+            <div class="cs48-sig-line">Signature of Employee</div>
+          </div>
+          <div>
+            <div style="min-height:14px;font-weight:700;">${esc(inCharge)}</div>
+            <div class="cs48-sig-line">In-Charge</div>
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  function buildInstructionsCopyHtml(copyLabel) {
+    return `
+      <div class="cs48-copy">
+        <div class="cs48-inst-title">INSTRUCTIONS (${esc(copyLabel)})</div>
+        <div class="cs48-inst-body">
+          <p>Civil Service Form No. 48, after completion, should be filed in the records of the Bureau or Office which submits the monthly report on Civil Service Form No. 3 to the Bureau of Civil Service.</p>
+          <p>In the space provided on the face of this form are indicated the official hours of arrival and departure required of the employee.</p>
+          <p>Each chief of a Bureau or Office shall require a daily record of attendance of all officers and employees under him (including teachers) to be kept on the proper form and report absences and undertime accurately. Falsification of time records renders the offender liable to disciplinary and criminal action.</p>
+          <p>(NOTE — A record made from memory subsequent to the occurrence of an event is not reliable. Where service is rendered outside the office on official business, proper notation and authority must be indicated.)</p>
+        </div>
+      </div>
+    `;
+  }
+
+  async function loadMonthlyCs48() {
+    if (!currentUser) return;
+    const ym = $("cs48Month").value || todayIso().slice(0, 7);
+    const empName = currentUser.displayName || currentUser.email.split("@")[0];
+    const inCharge = $("cs48InCharge").value.trim() || "School Head / In-Charge";
+
+    const q = query(collection(db, "dtr_logs"), where("uid", "==", currentUser.uid));
+    const snap = await getDocs(q);
+    const rows = snap.docs
+      .map((d) => d.data())
+      .filter((r) => String(r.date || "").startsWith(ym));
+
+    const logMap = {};
+    let totalUnderMins = 0;
+    let lateCount = 0;
+    let pendingCount = 0;
+
+    rows.forEach((r) => {
+      logMap[r.date] = r;
+      totalUnderMins += getDayUndertimeMinutes(r.date, r);
+      const amMin = parseTimeToMinutes(r.amIn?.timeText);
+      if (amMin !== null && amMin > 480) lateCount++;
+      if ([r.amIn, r.amOut, r.pmIn, r.pmOut].some((s) => s?.verificationStatus === "pending_approval")) {
+        pendingCount++;
+      }
+    });
+
+    $("mDays").textContent = rows.length;
+    $("mUndertime").textContent = `${Math.floor(totalUnderMins / 60)}h ${totalUnderMins % 60}m`;
+    $("mLate").textContent = lateCount;
+    $("mPending").textContent = pendingCount;
+
+    $("cs48FrontTwoUp").innerHTML =
+      buildForm48CopyHtml("Original", empName, ym, logMap, inCharge) +
+      buildForm48CopyHtml("Duplicate", empName, ym, logMap, inCharge);
+
+    $("cs48BackTwoUp").innerHTML =
+      buildInstructionsCopyHtml("Original") +
+      buildInstructionsCopyHtml("Duplicate");
+  }
+
+  $("btnLoadCs48").addEventListener("click", loadMonthlyCs48);
+  $("cs48Month").addEventListener("change", loadMonthlyCs48);
+  $("cs48InCharge").addEventListener("input", loadMonthlyCs48);
+</script>
+</body>
+</html>
