@@ -3,76 +3,519 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Faculty Portal – SCPHS</title>
-  <meta name="description" content="SCPHS Faculty Portal for teaching personnel: JHS and SHS." />
+  <title>Faculty Portal – Sta. Cruz Pingkian High School</title>
+  <meta name="description" content="SCPHS Faculty Command Center: Online DTR, Assessment Tools, SF1/SF10 Registers, JHS & SHS." />
   <link rel="stylesheet" href="../assets/css/styles.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
   <style>
-    /* SF1 card highlight */
-    .sf1-card {
-      border: 2px solid #059669 !important;
-      background: linear-gradient(135deg, #f0fdf4 0%, #ffffff 100%);
+    :root {
+      --fp-navy: #0f172a;
+      --fp-blue: #1e3c72;
+      --fp-teal: #0f766e;
+      --fp-emerald: #059669;
+      --fp-purple: #6d28d9;
+      --fp-amber: #d97706;
+      --fp-bg: #f1f5f9;
+      --fp-card: #ffffff;
+      --fp-border: #e2e8f0;
+      --fp-text: #0f172a;
+      --fp-muted: #475569;
     }
-    .sf1-card h2 { color: #047857; }
-    .sf1-card .badge {
-      display: inline-block;
-      font-size: 10px;
-      font-weight: 700;
+
+    body {
+      background: var(--fp-bg);
+      color: var(--fp-text);
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    }
+
+    /* Hero Banner */
+    .fp-hero {
+      background: linear-gradient(135deg, #0f172a 0%, #1e3c72 58%, #0f766e 100%);
+      color: #ffffff;
+      padding: 28px 0 34px;
+      border-bottom: 4px solid #f59e0b;
+    }
+    .fp-hero-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+    .fp-kicker {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 0.08em;
       text-transform: uppercase;
-      letter-spacing: 0.05em;
-      padding: 3px 8px;
-      border-radius: 4px;
-      background: #dcfce7;
-      color: #166534;
+      background: rgba(255, 255, 255, 0.14);
+      padding: 4px 11px;
+      border-radius: 999px;
       margin-bottom: 8px;
     }
-    .sf1-card .links span { color: #047857; font-weight: 700; }
+    .fp-hero h1 {
+      margin: 0 0 6px;
+      font-size: clamp(1.55rem, 2.6vw, 2.15rem);
+      font-weight: 800;
+      letter-spacing: -0.01em;
+    }
+    .fp-hero .meta {
+      margin: 0;
+      color: #cbd5e1;
+      font-size: 14px;
+    }
+
+    /* User Session Pill */
+    .fp-user-box {
+      background: rgba(255, 255, 255, 0.12);
+      border: 1px solid rgba(255, 255, 255, 0.22);
+      backdrop-filter: blur(8px);
+      border-radius: 12px;
+      padding: 10px 14px;
+      min-width: 240px;
+      text-align: right;
+    }
+    .fp-user-name {
+      font-weight: 800;
+      font-size: 14px;
+      color: #fff;
+    }
+    .fp-user-role {
+      font-size: 11.5px;
+      color: #93c5fd;
+      margin-top: 2px;
+    }
+    .fp-user-actions {
+      margin-top: 8px;
+      display: flex;
+      justify-content: flex-end;
+      gap: 8px;
+    }
+    .fp-pill-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      background: #ffffff;
+      color: var(--fp-blue);
+      font-size: 11.5px;
+      font-weight: 700;
+      padding: 5px 10px;
+      border-radius: 7px;
+      text-decoration: none;
+    }
+    .fp-pill-btn.teal {
+      background: #10b981;
+      color: #ffffff;
+    }
+
+    /* Live KPI Strip */
+    .fp-kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(195px, 1fr));
+      gap: 12px;
+      margin-top: 20px;
+    }
+    .fp-kpi {
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      border-radius: 12px;
+      padding: 12px 14px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .fp-kpi-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 10px;
+      background: rgba(255, 255, 255, 0.16);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 17px;
+      color: #fde68a;
+      flex-shrink: 0;
+    }
+    .fp-kpi-val {
+      font-size: 1.25rem;
+      font-weight: 800;
+      line-height: 1.1;
+    }
+    .fp-kpi-lbl {
+      font-size: 11.5px;
+      color: #cbd5e1;
+      margin-top: 2px;
+    }
+
+    /* Filter & Search Bar */
+    .fp-toolbar {
+      background: #ffffff;
+      border: 1px solid var(--fp-border);
+      border-radius: 14px;
+      padding: 14px 16px;
+      margin: 20px 0 18px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 12px;
+      box-shadow: 0 2px 10px rgba(15, 23, 42, 0.04);
+    }
+    .fp-filter-pills {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+    .fp-filter-btn {
+      border: 1px solid var(--fp-border);
+      background: #f8fafc;
+      color: var(--fp-muted);
+      font-size: 12.5px;
+      font-weight: 700;
+      padding: 7px 13px;
+      border-radius: 999px;
+      cursor: pointer;
+      transition: 0.15s;
+    }
+    .fp-filter-btn.active {
+      background: var(--fp-blue);
+      color: #ffffff;
+      border-color: var(--fp-blue);
+    }
+    .fp-search-wrap {
+      position: relative;
+      min-width: 250px;
+      flex: 1;
+      max-width: 340px;
+    }
+    .fp-search-wrap i {
+      position: absolute;
+      left: 11px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: #64748b;
+      font-size: 13px;
+    }
+    .fp-search-wrap input {
+      width: 100%;
+      padding: 8px 12px 8px 32px;
+      border: 1px solid var(--fp-border);
+      border-radius: 999px;
+      font-size: 13px;
+      outline: none;
+    }
+    .fp-search-wrap input:focus {
+      border-color: var(--fp-blue);
+    }
+
+    /* Section Headings */
+    .fp-section-title {
+      font-size: 15px;
+      font-weight: 800;
+      color: var(--fp-navy);
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      margin: 22px 0 12px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    /* Module Cards Grid */
+    .fp-grid {
+      display: grid;
+      gap: 16px;
+      grid-template-columns: repeat(auto-fit, minmax(290px, 1fr));
+    }
+    .fp-card {
+      background: var(--fp-card);
+      border: 1px solid var(--fp-border);
+      border-top: 4px solid var(--accent-color, #1e3c72);
+      border-radius: 14px;
+      padding: 18px;
+      text-decoration: none;
+      color: inherit;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      box-shadow: 0 2px 10px rgba(15, 23, 42, 0.04);
+      transition: transform 0.16s ease, box-shadow 0.16s ease;
+    }
+    .fp-card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 10px 24px rgba(15, 23, 42, 0.09);
+    }
+    .fp-card-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+    .fp-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 10.5px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      padding: 4px 9px;
+      border-radius: 999px;
+      background: var(--badge-bg, #eff6ff);
+      color: var(--accent-color, #1e3c72);
+    }
+    .fp-card-icon {
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+      background: var(--badge-bg, #eff6ff);
+      color: var(--accent-color, #1e3c72);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+    }
+    .fp-card h2 {
+      font-size: 17px;
+      font-weight: 800;
+      margin: 0 0 6px;
+      color: var(--fp-navy);
+    }
+    .fp-card p {
+      font-size: 13px;
+      line-height: 1.48;
+      color: var(--fp-muted);
+      margin: 0 0 14px;
+    }
+    .fp-card-cta {
+      font-size: 12.5px;
+      font-weight: 800;
+      color: var(--accent-color, #1e3c72);
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    /* Quick Workflow Strip */
+    .fp-workflow {
+      background: #ffffff;
+      border: 1px solid var(--fp-border);
+      border-radius: 14px;
+      padding: 18px;
+      margin-top: 22px;
+      box-shadow: 0 2px 10px rgba(15, 23, 42, 0.04);
+    }
+    .fp-workflow h3 {
+      margin: 0 0 12px;
+      font-size: 15px;
+      color: var(--fp-navy);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .fp-steps {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+      gap: 10px;
+    }
+    .fp-step {
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 10px;
+      padding: 11px 12px;
+      font-size: 12.5px;
+    }
+    .fp-step strong {
+      display: block;
+      color: var(--fp-blue);
+      margin-bottom: 3px;
+    }
+
+    .hidden { display: none !important; }
   </style>
 </head>
 <body>
 
-  <header class="subhead">
+  <!-- HERO HEADER -->
+  <header class="fp-hero">
     <div class="wrap">
-      <h1>Faculty Portal</h1>
-      <p class="meta">Teaching Personnel • Junior High School (Grades 7–10) and Senior High School (Grades 11–12)</p>
+      <div class="fp-hero-top">
+        <div>
+          <div class="fp-kicker"><i class="fas fa-school"></i> DepEd Region II • Division of Nueva Vizcaya</div>
+          <h1>SCPHS Faculty Command Center</h1>
+          <p class="meta">Teaching Personnel Portal • Junior High School (Grades 7–10) &amp; Senior High School (Grades 11–12)</p>
+        </div>
+
+        <div class="fp-user-box">
+          <div class="fp-user-name" id="fpUserName">Welcome, Faculty Member</div>
+          <div class="fp-user-role" id="fpUserRole">Checking portal session...</div>
+          <div class="fp-user-actions">
+            <a href="online-dtr.html" class="fp-pill-btn teal"><i class="fas fa-user-clock"></i> Clock In / Out</a>
+            <a href="../login.html" class="fp-pill-btn" id="fpAuthLink"><i class="fas fa-right-to-bracket"></i> Faculty Login</a>
+          </div>
+        </div>
+      </div>
+
+      <!-- LIVE STATS STRIP -->
+      <div class="fp-kpi-grid">
+        <div class="fp-kpi">
+          <div class="fp-kpi-icon"><i class="fas fa-clock"></i></div>
+          <div>
+            <div class="fp-kpi-val" id="kpiDtrStatus">—</div>
+            <div class="fp-kpi-lbl">Today's DTR Status</div>
+          </div>
+        </div>
+        <div class="fp-kpi">
+          <div class="fp-kpi-icon"><i class="fas fa-chalkboard-user"></i></div>
+          <div>
+            <div class="fp-kpi-val" id="kpiClasses">—</div>
+            <div class="fp-kpi-lbl">Active Sections</div>
+          </div>
+        </div>
+        <div class="fp-kpi">
+          <div class="fp-kpi-icon"><i class="fas fa-file-circle-check"></i></div>
+          <div>
+            <div class="fp-kpi-val" id="kpiExams">—</div>
+            <div class="fp-kpi-lbl">Published Exams</div>
+          </div>
+        </div>
+        <div class="fp-kpi">
+          <div class="fp-kpi-icon"><i class="fas fa-database"></i></div>
+          <div>
+            <div class="fp-kpi-val" id="kpiBank">—</div>
+            <div class="fp-kpi-lbl">Open Question Bank Items</div>
+          </div>
+        </div>
+      </div>
     </div>
   </header>
 
   <main class="wrap">
-    <section class="grid-2" style="display:grid; gap:16px; grid-template-columns:repeat(auto-fit,minmax(280px,1fr))">
 
-      <!-- ⭐ SF1 — School Register (NEW) -->
-      <a class="card sf1-card" href="../sf1.html">
-        <span class="badge">🔒 Teachers & Admins</span>
-        <h2>📚 SF1 — School Register</h2>
-        <p>View and manage your class register. Upload LIS-exported SF1 files, edit student rosters, and export in the official DepEd format.</p>
-        <div class="links"><span>Open SF1</span> →</div>
+    <!-- FILTER & SEARCH TOOLBAR -->
+    <div class="fp-toolbar">
+      <div class="fp-filter-pills">
+        <button type="button" class="fp-filter-btn active" data-filter="all">All Modules</button>
+        <button type="button" class="fp-filter-btn" data-filter="dtr">Attendance &amp; DTR</button>
+        <button type="button" class="fp-filter-btn" data-filter="assessment">Assessment &amp; Grades</button>
+        <button type="button" class="fp-filter-btn" data-filter="forms">School Forms &amp; Levels</button>
+      </div>
+      <div class="fp-search-wrap">
+        <i class="fas fa-search"></i>
+        <input type="search" id="fpSearchInput" placeholder="Search tools (e.g., DTR, TOS, SF1, ALO, JHS)..." />
+      </div>
+    </div>
+
+    <!-- PRIMARY FACULTY TOOLS -->
+    <div class="fp-section-title"><i class="fas fa-grid-2"></i> Core Faculty &amp; Academic Systems</div>
+    <section class="fp-grid" id="fpCardGrid">
+
+      <!-- 1. ONLINE DTR & AI HARDCOPY SCANNER -->
+      <a class="fp-card" href="online-dtr.html" data-cat="dtr" data-keywords="dtr attendance clock in out form 48 cursive gps" style="--accent-color:#0f766e; --badge-bg:#ccfbf1;">
+        <div>
+          <div class="fp-card-top">
+            <span class="fp-badge"><i class="fas fa-shield-halved"></i> CSC / DepEd DTR</span>
+            <div class="fp-card-icon"><i class="fas fa-user-clock"></i></div>
+          </div>
+          <h2>Online DTR &amp; AI Scanner</h2>
+          <p>Mobile GPS time-in/out, off-campus Travel Order logging, Gemini AI cursive hardcopy DTR migration, and portrait two-up CS Form 48 printing.</p>
+        </div>
+        <div class="fp-card-cta">Open Online DTR <i class="fas fa-arrow-right"></i></div>
       </a>
 
-      <a class="card" href="jhs.html">
-        <h2>Junior High School</h2>
-        <p>Grades 7–10 • Subject areas, teacher directory, sections, and loads.</p>
-        <div class="links"><span>Open JHS</span> →</div>
+      <!-- 2. ASSESSMENT TOOLS & EXAM CREATOR -->
+      <a class="fp-card" href="assessment-tools.html" data-cat="assessment" data-keywords="exam creator tos table of specification qr checker ecr alo" style="--accent-color:#1e3c72; --badge-bg:#dbeafe;">
+        <div>
+          <div class="fp-card-top">
+            <span class="fp-badge"><i class="fas fa-wand-magic-sparkles"></i> AI Assessment</span>
+            <div class="fp-card-icon"><i class="fas fa-file-pen"></i></div>
+          </div>
+          <h2>Assessment &amp; Exam Creator</h2>
+          <p>Generate Bloom's-aligned exams with Gemini AI, print DepEd-formatted exam sheets &amp; standalone TOS, manage the Open Question Bank, and sync scores.</p>
+        </div>
+        <div class="fp-card-cta">Open Assessment Tools <i class="fas fa-arrow-right"></i></div>
       </a>
 
-      <a class="card" href="shs.html">
-        <h2>Senior High School</h2>
-        <p>Grades 11–12 • Tracks & specializations, teacher directory, and schedules.</p>
-        <div class="links"><span>Open SHS</span> →</div>
+      <!-- 3. ALO REPORTS (FORM 23 & 24) -->
+      <a class="fp-card" href="alo-reports.html" data-cat="assessment" data-keywords="alo form 23 form 24 least learned competencies ecr average" style="--accent-color:#d97706; --badge-bg:#fef3c7;">
+        <div>
+          <div class="fp-card-top">
+            <span class="fp-badge"><i class="fas fa-chart-line"></i> Form 23 &amp; 24</span>
+            <div class="fp-card-icon"><i class="fas fa-file-signature"></i></div>
+          </div>
+          <h2>ALO Reports (Form 23 &amp; 24)</h2>
+          <p>Auto-sync computed ECR term grades and exam results into DepEd Assessment of Learning Outcomes reports with printable signatories.</p>
+        </div>
+        <div class="fp-card-cta">Open ALO Reports <i class="fas fa-arrow-right"></i></div>
+      </a>
+
+      <!-- 4. SF1 — SCHOOL REGISTER -->
+      <a class="fp-card" href="../sf1.html" data-cat="forms" data-keywords="sf1 school register lis roster enrollment students" style="--accent-color:#059669; --badge-bg:#dcfce7;">
+        <div>
+          <div class="fp-card-top">
+            <span class="fp-badge"><i class="fas fa-lock"></i> Teachers &amp; Admins</span>
+            <div class="fp-card-icon"><i class="fas fa-book-open-reader"></i></div>
+          </div>
+          <h2>SF1 — School Register</h2>
+          <p>View and manage class registers, upload LIS-exported SF1 files, update learner rosters, and export in the official DepEd format.</p>
+        </div>
+        <div class="fp-card-cta">Open SF1 Register <i class="fas fa-arrow-right"></i></div>
+      </a>
+
+      <!-- 5. JUNIOR HIGH SCHOOL -->
+      <a class="fp-card" href="jhs.html" data-cat="forms" data-keywords="jhs junior high school grade 7 grade 8 grade 9 grade 10 matatag" style="--accent-color:#2563eb; --badge-bg:#eff6ff;">
+        <div>
+          <div class="fp-card-top">
+            <span class="fp-badge"><i class="fas fa-layer-group"></i> Grades 7–10</span>
+            <div class="fp-card-icon"><i class="fas fa-school"></i></div>
+          </div>
+          <h2>Junior High School (JHS)</h2>
+          <p>Grades 7–10 subject areas, MATATAG / K–12 department directory, sections, advisers, and teaching loads.</p>
+        </div>
+        <div class="fp-card-cta">Open JHS Portal <i class="fas fa-arrow-right"></i></div>
+      </a>
+
+      <!-- 6. SENIOR HIGH SCHOOL -->
+      <a class="fp-card" href="shs.html" data-cat="forms" data-keywords="shs senior high school grade 11 grade 12 tracks techpro academic" style="--accent-color:#6d28d9; --badge-bg:#ede9fe;">
+        <div>
+          <div class="fp-card-top">
+            <span class="fp-badge"><i class="fas fa-graduation-cap"></i> Grades 11–12</span>
+            <div class="fp-card-icon"><i class="fas fa-award"></i></div>
+          </div>
+          <h2>Senior High School (SHS)</h2>
+          <p>Grades 11–12 Academic &amp; TechPro tracks, specializations, faculty directory, immersion &amp; term schedules.</p>
+        </div>
+        <div class="fp-card-cta">Open SHS Portal <i class="fas fa-arrow-right"></i></div>
       </a>
 
     </section>
 
-    <section class="card" style="margin-top:18px">
-      <h3>What you can put here next</h3>
-      <ul class="list">
-        <li>Teacher directory (names, emails) grouped by department</li>
-        <li>Teaching loads & sections</li>
-        <li>Curriculum mapping to <strong>MATATAG</strong> and <strong>K to 12</strong></li>
-        <li>Downloadables (templates, IPCRF, COT, etc.) restricted or public</li>
-      </ul>
+    <!-- END-TO-END TEACHER WORKFLOW GUIDE -->
+    <section class="fp-workflow">
+      <h3><i class="fas fa-diagram-project"></i> Integrated SCPHS Faculty Digital Workflow</h3>
+      <div class="fp-steps">
+        <div class="fp-step">
+          <strong>1. Daily Attendance (CS Form 48)</strong>
+          Clock in/out on campus via mobile GPS or migrate office logbook entries with Gemini AI.
+        </div>
+        <div class="fp-step">
+          <strong>2. BoW, TOS &amp; Exam Creation</strong>
+          Generate Bloom's-aligned tests, diagrams, and standalone DepEd TOS printouts.
+        </div>
+        <div class="fp-step">
+          <strong>3. QR Checking &amp; ECR Sync</strong>
+          Scan student QR answer sheets and compute term grades in the E-Class Record.
+        </div>
+        <div class="fp-step">
+          <strong>4. ALO &amp; School Forms</strong>
+          Generate Form 23 &amp; 24 least-learned reports and maintain updated SF1/SF10 records.
+        </div>
+      </div>
     </section>
 
-    <nav class="links" style="margin-top:12px">
+    <nav class="links" style="margin-top:16px">
       <a href="../index.html" class="btn-return">← Return to Home</a>
     </nav>
 
@@ -94,7 +537,7 @@
           <a href="https://www.facebook.com/p/Santa-Cruz-Pingkian-High-School-Official-61554495084090/" target="_blank" rel="noopener">Facebook</a>
         </div>
       </div>
-      <div class="copy">© 2026 SCPHS. All rights reserved.</div>
+      <div class="copy">© <span id="yearFooter">2026</span> SCPHS. All rights reserved.</div>
     </div>
   </footer>
 
@@ -126,14 +569,105 @@
     </div>
     <div class="govph-footer__bar">
       <div class="wrap">
-        <small>© <span id="yearNow"></span> Sta. Cruz Pingkian High School • A Philippine Government Website</small>
+        <small>© <span id="yearNow">2026</span> Sta. Cruz Pingkian High School • A Philippine Government Website</small>
       </div>
     </div>
   </footer>
 
+  <!-- Live Auth, Stats & Filtering Script -->
+  <script type="module">
+    import { auth, db } from "../assets/js/firebase-config.js";
+    import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+    import { collection, doc, getDoc, getCountFromServer } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+    const yr = String(new Date().getFullYear());
+    document.getElementById("yearNow").textContent = yr;
+    document.getElementById("yearFooter").textContent = yr;
+
+    // Category filter & live search
+    let activeCategory = "all";
+    const cards = Array.from(document.querySelectorAll(".fp-card"));
+    const searchInput = document.getElementById("fpSearchInput");
+
+    function applyFilters() {
+      const q = searchInput.value.trim().toLowerCase();
+      cards.forEach((card) => {
+        const catMatch = activeCategory === "all" || card.dataset.cat === activeCategory;
+        const text = (card.textContent + " " + (card.dataset.keywords || "")).toLowerCase();
+        const searchMatch = !q || text.includes(q);
+        card.classList.toggle("hidden", !(catMatch && searchMatch));
+      });
+    }
+
+    document.querySelectorAll(".fp-filter-btn").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        document.querySelectorAll(".fp-filter-btn").forEach((b) => b.classList.remove("active"));
+        btn.classList.add("active");
+        activeCategory = btn.dataset.filter;
+        applyFilters();
+      });
+    });
+
+    searchInput.addEventListener("input", applyFilters);
+
+    // Load public question bank count immediately
+    try {
+      const qbCount = await getCountFromServer(collection(db, "question_bank"));
+      document.getElementById("kpiBank").textContent = qbCount.data().count;
+    } catch (_) {}
+
+    // Live Firebase Auth & Personalized DTR / Portal KPIs
+    onAuthStateChanged(auth, async (user) => {
+      const nameEl = document.getElementById("fpUserName");
+      const roleEl = document.getElementById("fpUserRole");
+      const authLink = document.getElementById("fpAuthLink");
+
+      if (!user) {
+        nameEl.textContent = "Visiting Guest / Public View";
+        roleEl.textContent = "Sign in with DepEd / Faculty email for full access";
+        document.getElementById("kpiDtrStatus").textContent = "Sign In";
+        return;
+      }
+
+      const display = user.displayName || user.email.split("@")[0];
+      nameEl.textContent = display;
+      roleEl.textContent = user.email;
+      authLink.innerHTML = '<i class="fas fa-gauge-high"></i> Dashboard';
+      authLink.href = "dashboard.html";
+
+      // Check today's DTR log
+      const now = new Date();
+      const dateKey = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
+      try {
+        const dtrSnap = await getDoc(doc(db, "dtr_logs", `${user.uid}_${dateKey}`));
+        if (dtrSnap.exists()) {
+          const d = dtrSnap.data();
+          const lastPunch = d.pmOut?.timeText ? `PM Out ${d.pmOut.timeText}`
+            : d.pmIn?.timeText ? `PM In ${d.pmIn.timeText}`
+            : d.amOut?.timeText ? `AM Out ${d.amOut.timeText}`
+            : d.amIn?.timeText ? `AM In ${d.amIn.timeText}` : "Active";
+          document.getElementById("kpiDtrStatus").textContent = lastPunch;
+        } else {
+          document.getElementById("kpiDtrStatus").textContent = "Not Logged";
+        }
+      } catch (_) {
+        document.getElementById("kpiDtrStatus").textContent = "Ready";
+      }
+
+      // Load active classes & published exams counts
+      try {
+        const [clsSnap, exSnap] = await Promise.all([
+          getCountFromServer(collection(db, "classes")),
+          getCountFromServer(collection(db, "exams"))
+        ]);
+        document.getElementById("kpiClasses").textContent = clsSnap.data().count;
+        document.getElementById("kpiExams").textContent = exSnap.data().count;
+      } catch (_) {}
+    });
+  </script>
+
   <!-- Chatbot mount -->
   <div id="scphs-chatbot-root"></div>
-
   <script>
   (function(){
     const rootId = 'scphs-chatbot-root';
