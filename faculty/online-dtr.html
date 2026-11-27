@@ -252,12 +252,9 @@
   </div>
   <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
     <span class="badge" id="userBadge">Connecting...</span>
-    <button type="button" class="btn outline sm" id="btnApiKey" style="background:#fff;"><i class="fas fa-key"></i> Gemini Key</button>
-    <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
-    <span class="badge" id="userBadge">Connecting...</span>
     <button type="button" class="btn outline sm" id="btnCalibrateSchool" style="background:#fff;"><i class="fas fa-crosshairs"></i> Set School GPS</button>
+    <button type="button" class="btn outline sm" id="btnApiKey" style="background:#fff;"><i class="fas fa-key"></i> Gemini Key</button>
   </div>
-</div>
 </div>
 
 <div class="container">
@@ -492,6 +489,39 @@
     return Math.round(R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a)));
   }
 
+  function getSmartNextSlot(docData, now = new Date()) {
+    const mins = now.getHours() * 60 + now.getMinutes(); // 12:00 = 720, 12:30 = 750, 1:00 PM = 780
+
+    if (docData.amIn && docData.amOut && docData.pmIn && docData.pmOut) {
+      return "completed";
+    }
+
+    // 1. Morning window (before 12:00 PM)
+    if (mins < 720) {
+      if (!docData.amIn) return "amIn";
+      if (!docData.amOut) return "amOut";
+      return "pmIn";
+    }
+
+    // 2. Noon departure window (12:00 PM – 12:30 PM)
+    if (mins >= 720 && mins <= 750) {
+      if (docData.amIn && !docData.amOut) return "amOut";
+      if (!docData.pmIn) return "pmIn";
+      return "pmOut";
+    }
+
+    // 3. Afternoon arrival window (12:31 PM – 1:00 PM)
+    if (mins > 750 && mins <= 780) {
+      if (!docData.pmIn) return "pmIn";
+      return "pmOut";
+    }
+
+    // 4. Afternoon session & departure window (1:01 PM onwards)
+    if (!docData.pmIn) return "pmIn";
+    if (!docData.pmOut) return "pmOut";
+    return "completed";
+  }
+
   setInterval(() => {
     const now = new Date();
     $("liveClock").textContent = formatTime12(now);
@@ -627,10 +657,8 @@
       }
     });
 
-    const nextSlot = !todayDocData.amIn ? "amIn"
-      : !todayDocData.amOut ? "amOut"
-      : !todayDocData.pmIn ? "pmIn"
-      : !todayDocData.pmOut ? "pmOut" : "completed";
+    const override = $("manualSlotOverride").value;
+    const nextSlot = override !== "auto" ? override : getSmartNextSlot(todayDocData, new Date());
 
     const labels = {
       amIn: "Log AM Time In",
@@ -640,7 +668,7 @@
       completed: "All 4 Daily Punches Logged"
     };
     $("nextPunchLabel").textContent = labels[nextSlot];
-    $("btnAutoPunch").disabled = nextSlot === "completed" && $("manualSlotOverride").value === "auto";
+    $("btnAutoPunch").disabled = nextSlot === "completed" && override === "auto";
   }
 
   $("manualSlotOverride").addEventListener("change", loadTodayLog);
@@ -648,9 +676,8 @@
   $("btnAutoPunch").addEventListener("click", async () => {
     if (!currentUser) return;
     const override = $("manualSlotOverride").value;
-    const slot = override !== "auto"
-      ? override
-      : (!todayDocData.amIn ? "amIn" : !todayDocData.amOut ? "amOut" : !todayDocData.pmIn ? "pmIn" : "pmOut");
+    const autoSlot = getSmartNextSlot(todayDocData, new Date());
+    const slot = override !== "auto" ? override : (autoSlot === "completed" ? "pmOut" : autoSlot);
 
     const dutyType = $("dutyType").value;
     const supportingRef = $("supportingRef").value.trim();
@@ -838,66 +865,65 @@ Return STRICT JSON:
   });
 
   $("btnCommitScannedDtr").addEventListener("click", async () => {
-  if (!currentUser) return;
-  const trs = Array.from($("scannedDtrBody").querySelectorAll("tr")).filter((tr) => tr.querySelectorAll("input").length >= 7);
-  if (!trs.length) return alert("No rows to migrate.");
+    if (!currentUser) return;
+    const trs = Array.from($("scannedDtrBody").querySelectorAll("tr")).filter((tr) => tr.querySelectorAll("input").length >= 7);
+    if (!trs.length) return alert("No rows to migrate.");
 
-  // Load known users/employees so transcribed names map to their real uid
-  const userMap = new Map();
-  try {
-    const usersSnap = await getDocs(collection(db, "users"));
-    usersSnap.forEach((d) => {
-      const u = d.data();
-      const key = String(u.name || u.fullName || u.displayName || "").trim().toLowerCase();
-      if (key) userMap.set(key, { uid: d.id, email: u.email || "", name: u.name || u.fullName || u.displayName });
-    });
-  } catch (_) {}
-  // Always include the currently signed-in user as a match candidate
-  const selfName = (currentUser.displayName || currentUser.email.split("@")[0]).trim().toLowerCase();
-  userMap.set(selfName, { uid: currentUser.uid, email: currentUser.email, name: currentUser.displayName || selfName });
+    const userMap = new Map();
+    try {
+      const usersSnap = await getDocs(collection(db, "users"));
+      usersSnap.forEach((d) => {
+        const u = d.data();
+        const key = String(u.name || u.fullName || u.displayName || "").trim().toLowerCase();
+        if (key) userMap.set(key, { uid: d.id, email: u.email || "", name: u.name || u.fullName || u.displayName });
+      });
+    } catch (_) {}
 
-  let migrated = 0;
-  for (const tr of trs) {
-    const inp = tr.querySelectorAll("input");
-    const empName = inp[0].value.trim();
-    const dateStr = inp[1].value.trim() || todayIso();
-    if (!empName) continue;
+    const selfName = (currentUser.displayName || currentUser.email.split("@")[0]).trim().toLowerCase();
+    userMap.set(selfName, { uid: currentUser.uid, email: currentUser.email, name: currentUser.displayName || selfName });
 
-    const matched = userMap.get(empName.toLowerCase());
-    const slug = empName.toLowerCase().replace(/[^a-z0-9]+/g, "_");
-    const docId = matched ? `${matched.uid}_${dateStr}` : `migrated_${slug}_${dateStr}`;
+    let migrated = 0;
+    for (const tr of trs) {
+      const inp = tr.querySelectorAll("input");
+      const empName = inp[0].value.trim();
+      const dateStr = inp[1].value.trim() || todayIso();
+      if (!empName) continue;
 
-    const makeSlot = (timeText) => timeText ? ({
-      timeText,
-      dutyType: "Hardcopy Logbook Catch-Up",
-      supportingRef: inp[6].value.trim() || "Office Hardcopy Logbook",
-      locationStatus: "On-Campus (Hardcopy)",
-      verificationStatus: "migrated_verified",
-      migratedBy: currentUser.email,
-      serverAt: serverTimestamp()
-    }) : null;
+      const matched = userMap.get(empName.toLowerCase());
+      const slug = empName.toLowerCase().replace(/[^a-z0-9]+/g, "_");
+      const docId = matched ? `${matched.uid}_${dateStr}` : `migrated_${slug}_${dateStr}`;
 
-    const payload = {
-      ...(matched ? { uid: matched.uid, employeeEmail: matched.email } : {}),
-      employeeName: matched ? matched.name : empName,
-      date: dateStr,
-      source: "ai_hardcopy_scan",
-      migratedByUid: currentUser.uid,
-      updatedAt: serverTimestamp()
-    };
-    if (inp[2].value.trim()) payload.amIn = makeSlot(inp[2].value.trim());
-    if (inp[3].value.trim()) payload.amOut = makeSlot(inp[3].value.trim());
-    if (inp[4].value.trim()) payload.pmIn = makeSlot(inp[4].value.trim());
-    if (inp[5].value.trim()) payload.pmOut = makeSlot(inp[5].value.trim());
+      const makeSlot = (timeText) => timeText ? ({
+        timeText,
+        dutyType: "Hardcopy Logbook Catch-Up",
+        supportingRef: inp[6].value.trim() || "Office Hardcopy Logbook",
+        locationStatus: "On-Campus (Hardcopy)",
+        verificationStatus: "migrated_verified",
+        migratedBy: currentUser.email,
+        serverAt: serverTimestamp()
+      }) : null;
 
-    await setDoc(doc(db, "dtr_logs", docId), payload, { merge: true });
-    migrated++;
-  }
+      const payload = {
+        ...(matched ? { uid: matched.uid, employeeEmail: matched.email } : {}),
+        employeeName: matched ? matched.name : empName,
+        date: dateStr,
+        source: "ai_hardcopy_scan",
+        migratedByUid: currentUser.uid,
+        updatedAt: serverTimestamp()
+      };
+      if (inp[2].value.trim()) payload.amIn = makeSlot(inp[2].value.trim());
+      if (inp[3].value.trim()) payload.amOut = makeSlot(inp[3].value.trim());
+      if (inp[4].value.trim()) payload.pmIn = makeSlot(inp[4].value.trim());
+      if (inp[5].value.trim()) payload.pmOut = makeSlot(inp[5].value.trim());
 
-  alert(`Successfully migrated ${migrated} hardcopy DTR record(s) into the system!`);
-  await loadTodayLog();
-  await loadMonthlyCs48();
-});
+      await setDoc(doc(db, "dtr_logs", docId), payload, { merge: true });
+      migrated++;
+    }
+
+    alert(`Successfully migrated ${migrated} hardcopy DTR record(s) into the system!`);
+    await loadTodayLog();
+    await loadMonthlyCs48();
+  });
 
   // Portrait Two-Up CS Form 48 Renderer
   function getDayUndertimeMinutes(dateStr, log) {
@@ -1048,53 +1074,52 @@ Return STRICT JSON:
   }
 
   async function loadMonthlyCs48() {
-  if (!currentUser) return;
-  const ym = $("cs48Month").value || todayIso().slice(0, 7);
-  const empName = currentUser.displayName || currentUser.email.split("@")[0];
-  const inCharge = $("cs48InCharge").value.trim() || "School Head / In-Charge";
-
-  // Always render the blank CS Form 48 layout immediately
-  $("cs48FrontTwoUp").innerHTML =
-    buildForm48CopyHtml("Original", empName, ym, {}, inCharge) +
-    buildForm48CopyHtml("Duplicate", empName, ym, {}, inCharge);
-  $("cs48BackTwoUp").innerHTML =
-    buildInstructionsCopyHtml("Original") +
-    buildInstructionsCopyHtml("Duplicate");
-
-  try {
-    const q = query(collection(db, "dtr_logs"), where("uid", "==", currentUser.uid));
-    const snap = await getDocs(q);
-    const rows = snap.docs
-      .map((d) => d.data())
-      .filter((r) => String(r.date || "").startsWith(ym));
-
-    const logMap = {};
-    let totalUnderMins = 0;
-    let lateCount = 0;
-    let pendingCount = 0;
-
-    rows.forEach((r) => {
-      logMap[r.date] = r;
-      totalUnderMins += getDayUndertimeMinutes(r.date, r);
-      const amMin = parseTimeToMinutes(r.amIn?.timeText);
-      if (amMin !== null && amMin > 480) lateCount++;
-      if ([r.amIn, r.amOut, r.pmIn, r.pmOut].some((s) => s?.verificationStatus === "pending_approval")) {
-        pendingCount++;
-      }
-    });
-
-    $("mDays").textContent = rows.length;
-    $("mUndertime").textContent = `${Math.floor(totalUnderMins / 60)}h ${totalUnderMins % 60}m`;
-    $("mLate").textContent = lateCount;
-    $("mPending").textContent = pendingCount;
+    if (!currentUser) return;
+    const ym = $("cs48Month").value || todayIso().slice(0, 7);
+    const empName = currentUser.displayName || currentUser.email.split("@")[0];
+    const inCharge = $("cs48InCharge").value.trim() || "School Head / In-Charge";
 
     $("cs48FrontTwoUp").innerHTML =
-      buildForm48CopyHtml("Original", empName, ym, logMap, inCharge) +
-      buildForm48CopyHtml("Duplicate", empName, ym, logMap, inCharge);
-  } catch (err) {
-    console.error("CS Form 48 Firestore read error:", err);
+      buildForm48CopyHtml("Original", empName, ym, {}, inCharge) +
+      buildForm48CopyHtml("Duplicate", empName, ym, {}, inCharge);
+    $("cs48BackTwoUp").innerHTML =
+      buildInstructionsCopyHtml("Original") +
+      buildInstructionsCopyHtml("Duplicate");
+
+    try {
+      const q = query(collection(db, "dtr_logs"), where("uid", "==", currentUser.uid));
+      const snap = await getDocs(q);
+      const rows = snap.docs
+        .map((d) => d.data())
+        .filter((r) => String(r.date || "").startsWith(ym));
+
+      const logMap = {};
+      let totalUnderMins = 0;
+      let lateCount = 0;
+      let pendingCount = 0;
+
+      rows.forEach((r) => {
+        logMap[r.date] = r;
+        totalUnderMins += getDayUndertimeMinutes(r.date, r);
+        const amMin = parseTimeToMinutes(r.amIn?.timeText);
+        if (amMin !== null && amMin > 480) lateCount++;
+        if ([r.amIn, r.amOut, r.pmIn, r.pmOut].some((s) => s?.verificationStatus === "pending_approval")) {
+          pendingCount++;
+        }
+      });
+
+      $("mDays").textContent = rows.length;
+      $("mUndertime").textContent = `${Math.floor(totalUnderMins / 60)}h ${totalUnderMins % 60}m`;
+      $("mLate").textContent = lateCount;
+      $("mPending").textContent = pendingCount;
+
+      $("cs48FrontTwoUp").innerHTML =
+        buildForm48CopyHtml("Original", empName, ym, logMap, inCharge) +
+        buildForm48CopyHtml("Duplicate", empName, ym, logMap, inCharge);
+    } catch (err) {
+      console.error("CS Form 48 Firestore read error:", err);
+    }
   }
-}
 
   $("btnLoadCs48").addEventListener("click", loadMonthlyCs48);
   $("cs48Month").addEventListener("change", loadMonthlyCs48);
