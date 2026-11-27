@@ -783,46 +783,66 @@ Return STRICT JSON:
   });
 
   $("btnCommitScannedDtr").addEventListener("click", async () => {
-    if (!currentUser) return;
-    const trs = Array.from($("scannedDtrBody").querySelectorAll("tr")).filter((tr) => tr.querySelectorAll("input").length >= 7);
-    if (!trs.length) return alert("No rows to migrate.");
+  if (!currentUser) return;
+  const trs = Array.from($("scannedDtrBody").querySelectorAll("tr")).filter((tr) => tr.querySelectorAll("input").length >= 7);
+  if (!trs.length) return alert("No rows to migrate.");
 
-    let migrated = 0;
-    for (const tr of trs) {
-      const inp = tr.querySelectorAll("input");
-      const empName = inp[0].value.trim();
-      const dateStr = inp[1].value.trim() || todayIso();
-      if (!empName) continue;
+  // Load known users/employees so transcribed names map to their real uid
+  const userMap = new Map();
+  try {
+    const usersSnap = await getDocs(collection(db, "users"));
+    usersSnap.forEach((d) => {
+      const u = d.data();
+      const key = String(u.name || u.fullName || u.displayName || "").trim().toLowerCase();
+      if (key) userMap.set(key, { uid: d.id, email: u.email || "", name: u.name || u.fullName || u.displayName });
+    });
+  } catch (_) {}
+  // Always include the currently signed-in user as a match candidate
+  const selfName = (currentUser.displayName || currentUser.email.split("@")[0]).trim().toLowerCase();
+  userMap.set(selfName, { uid: currentUser.uid, email: currentUser.email, name: currentUser.displayName || selfName });
 
-      const slug = empName.toLowerCase().replace(/[^a-z0-9]+/g, "_");
-      const makeSlot = (timeText) => timeText ? ({
-        timeText,
-        dutyType: "Hardcopy Logbook Migration",
-        supportingRef: inp[6].value.trim(),
-        locationStatus: "On-Campus (Hardcopy)",
-        verificationStatus: "migrated_verified",
-        migratedBy: currentUser.email,
-        serverAt: serverTimestamp()
-      }) : null;
+  let migrated = 0;
+  for (const tr of trs) {
+    const inp = tr.querySelectorAll("input");
+    const empName = inp[0].value.trim();
+    const dateStr = inp[1].value.trim() || todayIso();
+    if (!empName) continue;
 
-      const payload = {
-        employeeName: empName,
-        date: dateStr,
-        source: "ai_hardcopy_scan",
-        migratedByUid: currentUser.uid,
-        updatedAt: serverTimestamp()
-      };
-      if (inp[2].value.trim()) payload.amIn = makeSlot(inp[2].value.trim());
-      if (inp[3].value.trim()) payload.amOut = makeSlot(inp[3].value.trim());
-      if (inp[4].value.trim()) payload.pmIn = makeSlot(inp[4].value.trim());
-      if (inp[5].value.trim()) payload.pmOut = makeSlot(inp[5].value.trim());
+    const matched = userMap.get(empName.toLowerCase());
+    const slug = empName.toLowerCase().replace(/[^a-z0-9]+/g, "_");
+    const docId = matched ? `${matched.uid}_${dateStr}` : `migrated_${slug}_${dateStr}`;
 
-      await setDoc(doc(db, "dtr_logs", `migrated_${slug}_${dateStr}`), payload, { merge: true });
-      migrated++;
-    }
+    const makeSlot = (timeText) => timeText ? ({
+      timeText,
+      dutyType: "Hardcopy Logbook Catch-Up",
+      supportingRef: inp[6].value.trim() || "Office Hardcopy Logbook",
+      locationStatus: "On-Campus (Hardcopy)",
+      verificationStatus: "migrated_verified",
+      migratedBy: currentUser.email,
+      serverAt: serverTimestamp()
+    }) : null;
 
-    alert(`Successfully migrated ${migrated} hardcopy DTR record(s) into Firestore!`);
-  });
+    const payload = {
+      ...(matched ? { uid: matched.uid, employeeEmail: matched.email } : {}),
+      employeeName: matched ? matched.name : empName,
+      date: dateStr,
+      source: "ai_hardcopy_scan",
+      migratedByUid: currentUser.uid,
+      updatedAt: serverTimestamp()
+    };
+    if (inp[2].value.trim()) payload.amIn = makeSlot(inp[2].value.trim());
+    if (inp[3].value.trim()) payload.amOut = makeSlot(inp[3].value.trim());
+    if (inp[4].value.trim()) payload.pmIn = makeSlot(inp[4].value.trim());
+    if (inp[5].value.trim()) payload.pmOut = makeSlot(inp[5].value.trim());
+
+    await setDoc(doc(db, "dtr_logs", docId), payload, { merge: true });
+    migrated++;
+  }
+
+  alert(`Successfully migrated ${migrated} hardcopy DTR record(s) into the system!`);
+  await loadTodayLog();
+  await loadMonthlyCs48();
+});
 
   // Portrait Two-Up CS Form 48 Renderer
   function getDayUndertimeMinutes(dateStr, log) {
