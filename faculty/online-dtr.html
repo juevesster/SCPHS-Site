@@ -280,6 +280,15 @@
         break-before: page;
       }
     }
+
+    @media (max-width: 600px) {
+      .topbar { padding: 10px 12px; }
+      .topbar h1 { font-size: 15px; }
+      .clock-time { font-size: 1.9rem; }
+      .stats-row { grid-template-columns: repeat(2, 1fr); }
+      .cs48-sheet { overflow-x: auto; }
+      .cs48-two-up { min-width: 640px; }
+    }
   </style>
 </head>
 <body>
@@ -389,9 +398,9 @@
         Upload or snap a photo of the office handwritten attendance logbook or hardcopy CS Form 48. Gemini AI transcribes cursive employee names, dates, and <strong>AM IN / AM OUT / PM IN / PM OUT</strong> entries so you can verify and migrate them into Firestore.
       </p>
 
-      <div style="display:grid;grid-template-columns:1fr 1fr auto;gap:12px;align-items:end;margin-bottom:14px;">
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:12px;align-items:end;margin-bottom:14px;">
         <label style="margin:0;">Select Hardcopy DTR Photo (JPG / PNG)
-          <input type="file" id="dtrImageInput" accept="image/*" />
+          <input type="file" id="dtrImageInput" accept="image/*" capture="environment" />
         </label>
         <label style="margin:0;">Default Date (if sheet has one date)
           <input type="date" id="scanDefaultDate" />
