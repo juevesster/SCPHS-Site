@@ -17,6 +17,7 @@
       --muted: #475569;
       --success: #059669;
       --warning: #d97706;
+      --danger: #dc2626;
     }
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body { font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; background: var(--bg); color: var(--text); }
@@ -68,6 +69,15 @@
 
     .grid-2 { display: grid; grid-template-columns: 1.05fr 1fr; gap: 16px; }
     @media (max-width: 880px) { .grid-2 { grid-template-columns: 1fr; } }
+
+    @media (max-width: 600px) {
+      .topbar { padding: 10px 12px; }
+      .topbar h1 { font-size: 15px; }
+      .clock-time { font-size: 1.9rem; }
+      .stats-row { grid-template-columns: repeat(2, 1fr); }
+      .cs48-sheet { overflow-x: auto; }
+      .cs48-two-up { min-width: 640px; }
+    }
 
     .clock-hero {
       background: linear-gradient(135deg, #1e3c72, #0f766e);
@@ -126,6 +136,7 @@
     .btn:hover:not(:disabled) { opacity: 0.94; transform: translateY(-1px); }
     .btn:disabled { opacity: 0.5; cursor: not-allowed; }
     .btn.success { background: var(--success); }
+    .btn.danger { background: var(--danger); }
     .btn.purple { background: var(--purple); }
     .btn.teal { background: var(--accent); }
     .btn.outline { background: #fff; color: var(--primary); border: 1px solid var(--primary); }
@@ -146,8 +157,33 @@
     .alert-info { background: #eff6ff; color: #1e40af; border: 1px solid #bfdbfe; }
     .alert-warn { background: #fef3c7; color: #92400e; border: 1px solid #fde68a; }
     .alert-ok { background: #ecfdf5; color: #065f46; border: 1px solid #a7f3d0; }
+    .alert-danger { background: #fef2f2; color: #991b1b; border: 1px solid #fecaca; }
 
-    /* Portrait Mirrored CS Form 48 Sheet */
+    .status-pill {
+      display: inline-block;
+      padding: 3px 8px;
+      border-radius: 999px;
+      font-size: 11px;
+      font-weight: 800;
+    }
+    .status-pill.pending { background: #fef3c7; color: #92400e; }
+    .status-pill.verified { background: #dcfce7; color: #166534; }
+    .status-pill.rejected { background: #fee2e2; color: #991b1b; }
+
+    .kiosk-banner {
+      background: #f0fdfa;
+      border: 1px dashed #0d9488;
+      border-radius: 10px;
+      padding: 10px 12px;
+      margin-bottom: 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 8px;
+      font-size: 12.5px;
+    }
+
     /* Portrait Mirrored CS Form 48 Sheet (A4 Full-Height + Duplex Back) */
     .cs48-sheet {
       background: #fff;
@@ -266,7 +302,7 @@
         margin: 0 !important;
       }
       .cs48-page {
-        min-height: 285mm; /* Fits A4 height (297mm) minus top/bottom margins */
+        min-height: 285mm;
       }
       .cs48-two-up {
         flex: 1 1 auto;
@@ -279,15 +315,6 @@
         page-break-before: always;
         break-before: page;
       }
-    }
-
-    @media (max-width: 600px) {
-      .topbar { padding: 10px 12px; }
-      .topbar h1 { font-size: 15px; }
-      .clock-time { font-size: 1.9rem; }
-      .stats-row { grid-template-columns: repeat(2, 1fr); }
-      .cs48-sheet { overflow-x: auto; }
-      .cs48-two-up { min-width: 640px; }
     }
   </style>
 </head>
@@ -310,6 +337,7 @@
     <button type="button" class="tab-btn active" data-tab="tab-clock"><i class="fas fa-mobile-screen-button"></i> 1. Mobile / Laptop Time In &amp; Out</button>
     <button type="button" class="tab-btn" data-tab="tab-scan"><i class="fas fa-wand-magic-sparkles"></i> 2. AI Hardcopy Cursive DTR Scanner</button>
     <button type="button" class="tab-btn" data-tab="tab-cs48"><i class="fas fa-file-lines"></i> 3. Monthly DTR (CS Form 48 Portrait)</button>
+    <button type="button" class="tab-btn" data-tab="tab-review"><i class="fas fa-user-shield"></i> 4. School Head Verification &amp; Audit</button>
   </div>
 
   <!-- TAB 1: MOBILE / LAPTOP CSC-COMPLIANT ONLINE DTR -->
@@ -330,15 +358,20 @@
           <select id="dutyType">
             <option value="On-Campus Regular">Regular On-Campus Duty (Sta. Cruz Pingkian HS)</option>
             <option value="Official Business / Travel Order">Official Business (OB) / Travel Order / DepEd Activity</option>
+            <option value="Pass Slip / Official Errand">Official Locator / Pass Slip (District / Division Errand)</option>
             <option value="Seminar / Training / Workshop">DepEd Seminar / Training / INSET</option>
-            <option value="Approved WFH / AWA">Approved Work-From-Home / Alternative Work Arrangement</option>
-            <option value="Pass Slip / Official Errand">Official Pass Slip / District / Division Errand</option>
+            <option value="Approved WFH / AWA">Approved WFH / Alternative Work Arrangement (With Memo)</option>
           </select>
         </label>
 
-        <label>Travel Order / Memo / Pass Slip No. &amp; Reason (Required if Off-Campus)
-          <input type="text" id="supportingRef" placeholder="e.g., TO No. 2026-114 — Division Assessment Workshop" />
-        </label>
+        <div style="display:grid;grid-template-columns:1.35fr 0.65fr;gap:10px;">
+          <label>Travel Order / Locator Slip / Memo No. &amp; Reason (Required if Off-Campus)
+            <input type="text" id="supportingRef" placeholder="e.g., TO No. 2026-114 / Locator Slip #08" />
+          </label>
+          <label>Faculty Room Daily Code (If Weak GPS)
+            <input type="text" id="campusCodeInput" maxlength="6" placeholder="4-digit code" />
+          </label>
+        </div>
 
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:8px;">
           <button type="button" class="btn success" id="btnAutoPunch" style="padding:13px;font-size:14px;">
@@ -384,7 +417,7 @@
         </div>
 
         <div class="alert-bar alert-warn" style="font-size:12px;">
-          <strong>CSC &amp; DepEd Compliance Notice:</strong> Raw timestamps use server time and cannot be edited directly. Off-campus logs are flagged for School Head / Admin verification using your Travel Order or Memo reference.
+          <strong>CSC &amp; DepEd Anti-Spoofing Policy:</strong> Teachers staying in nearby boarding houses must be physically on campus (verified via GPS or the <strong>Faculty Room Daily Code</strong>) before clocking in. Off-campus entries require a valid Travel Order, Locator Slip, or Memo and are routed to the School Head for approval.
         </div>
       </div>
     </div>
@@ -473,6 +506,53 @@
       </div>
     </div>
   </div>
+
+  <!-- TAB 4: SCHOOL HEAD APPROVAL & DEVICE AUDIT -->
+  <div id="tab-review" class="tab-panel hidden">
+    <div class="card">
+      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:12px;">
+        <h3 style="margin:0;"><i class="fas fa-user-shield"></i> School Head Verification Queue &amp; Anti-Buddy-Punch Audit</h3>
+        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+          <input type="date" id="reviewDateFilter" style="margin:0;width:auto;" />
+          <select id="reviewStatusFilter" style="margin:0;width:auto;">
+            <option value="pending_approval">Pending School Head Approval</option>
+            <option value="all">All Logs for Selected Date</option>
+          </select>
+          <button type="button" class="btn teal sm" id="btnRefreshReview"><i class="fas fa-sync"></i> Load Logs</button>
+        </div>
+      </div>
+
+      <div class="kiosk-banner">
+        <div>
+          <strong><i class="fas fa-key"></i> Today's Faculty Room Check-In Code:</strong>
+          <span id="dailyCodeDisplay" style="font-size:16px;font-weight:900;color:#0f766e;letter-spacing:2px;margin-left:6px;">----</span>
+          <span style="color:var(--muted);margin-left:6px;">(Post on office board for teachers with weak indoor GPS)</span>
+        </div>
+        <button type="button" class="btn outline sm" id="btnRotateDailyCode"><i class="fas fa-rotate"></i> Generate New Code</button>
+      </div>
+
+      <div id="sharedDeviceAlert" class="alert-bar alert-danger hidden" style="margin-bottom:12px;"></div>
+
+      <div style="overflow-x:auto;">
+        <table class="scan-table">
+          <thead>
+            <tr>
+              <th>Employee</th>
+              <th>Date &amp; Slot</th>
+              <th>Time</th>
+              <th>Duty &amp; Supporting Ref</th>
+              <th>GPS / Device ID</th>
+              <th>Status</th>
+              <th>School Head Action</th>
+            </tr>
+          </thead>
+          <tbody id="reviewQueueBody">
+            <tr><td colspan="7" style="color:var(--muted);padding:18px;">Click <strong>Load Logs</strong> to review pending off-campus punches and device audits.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
 </div>
 
 <script type="module">
@@ -487,6 +567,7 @@
 
   let SCHOOL_COORDS = { lat: 16.30563, lng: 120.9526 };
   let GEOFENCE_RADIUS_METERS = 350;
+  let ACTIVE_DAILY_CODE = "";
 
   let currentUser = null;
   let currentGeo = { available: false, lat: null, lng: null, distanceMeters: null, onCampus: false };
@@ -507,6 +588,15 @@
   function todayIso() {
     const d = new Date();
     return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+  }
+
+  function defaultDailyCode(dateStr = todayIso()) {
+    let hash = 0;
+    const seed = `SCPHS-${dateStr}`;
+    for (let i = 0; i < seed.length; i++) {
+      hash = (hash * 31 + seed.charCodeAt(i)) % 9000;
+    }
+    return String(1000 + Math.abs(hash));
   }
 
   function formatTime12(d = new Date()) {
@@ -540,33 +630,23 @@
   }
 
   function getSmartNextSlot(docData, now = new Date()) {
-    const mins = now.getHours() * 60 + now.getMinutes(); // 12:00 = 720, 12:30 = 750, 1:00 PM = 780
+    const mins = now.getHours() * 60 + now.getMinutes();
+    if (docData.amIn && docData.amOut && docData.pmIn && docData.pmOut) return "completed";
 
-    if (docData.amIn && docData.amOut && docData.pmIn && docData.pmOut) {
-      return "completed";
-    }
-
-    // 1. Morning window (before 12:00 PM)
     if (mins < 720) {
       if (!docData.amIn) return "amIn";
       if (!docData.amOut) return "amOut";
       return "pmIn";
     }
-
-    // 2. Noon departure window (12:00 PM – 12:30 PM)
     if (mins >= 720 && mins <= 750) {
       if (docData.amIn && !docData.amOut) return "amOut";
       if (!docData.pmIn) return "pmIn";
       return "pmOut";
     }
-
-    // 3. Afternoon arrival window (12:31 PM – 1:00 PM)
     if (mins > 750 && mins <= 780) {
       if (!docData.pmIn) return "pmIn";
       return "pmOut";
     }
-
-    // 4. Afternoon session & departure window (1:01 PM onwards)
     if (!docData.pmIn) return "pmIn";
     if (!docData.pmOut) return "pmOut";
     return "completed";
@@ -581,20 +661,26 @@
   $("pillDevice").innerHTML = `<i class="fas fa-shield-halved"></i> Device: ${getDeviceFingerprint()}`;
   $("scanDefaultDate").value = todayIso();
   $("cs48Month").value = todayIso().slice(0, 7);
+  $("reviewDateFilter").value = todayIso();
 
   async function loadSchoolGeofence() {
+    ACTIVE_DAILY_CODE = defaultDailyCode();
     try {
       const snap = await getDoc(doc(db, "config", "school"));
-      if (snap.exists() && snap.data().lat && snap.data().lng) {
-        SCHOOL_COORDS = {
-          lat: Number(snap.data().lat),
-          lng: Number(snap.data().lng)
-        };
-        if (snap.data().geofenceRadiusMeters) {
-          GEOFENCE_RADIUS_METERS = Number(snap.data().geofenceRadiusMeters);
+      if (snap.exists()) {
+        const d = snap.data();
+        if (d.lat && d.lng) {
+          SCHOOL_COORDS = { lat: Number(d.lat), lng: Number(d.lng) };
+        }
+        if (d.geofenceRadiusMeters) {
+          GEOFENCE_RADIUS_METERS = Number(d.geofenceRadiusMeters);
+        }
+        if (d.dailyCampusCode && d.dailyCampusCodeDate === todayIso()) {
+          ACTIVE_DAILY_CODE = String(d.dailyCampusCode);
         }
       }
     } catch (_) {}
+    $("dailyCodeDisplay").textContent = ACTIVE_DAILY_CODE;
   }
 
   function refreshGpsCheck() {
@@ -619,7 +705,7 @@
           : `<i class="fas fa-map-pin"></i> Off-Campus (${dist >= 1000 ? (dist / 1000).toFixed(1) + " km" : dist + "m"} away)`;
       },
       () => {
-        $("pillGeo").innerHTML = `<i class="fas fa-location-crosshairs"></i> GPS Unavailable (Reason Required)`;
+        $("pillGeo").innerHTML = `<i class="fas fa-location-crosshairs"></i> GPS Unavailable (Use Code or Ref)`;
       },
       { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
     );
@@ -654,6 +740,22 @@
     }
   });
 
+  $("btnRotateDailyCode").addEventListener("click", async () => {
+    const newCode = String(Math.floor(1000 + Math.random() * 9000));
+    try {
+      await setDoc(doc(db, "config", "school"), {
+        dailyCampusCode: newCode,
+        dailyCampusCodeDate: todayIso(),
+        updatedAt: serverTimestamp()
+      }, { merge: true });
+      ACTIVE_DAILY_CODE = newCode;
+      $("dailyCodeDisplay").textContent = ACTIVE_DAILY_CODE;
+      alert(`New Faculty Room Daily Code generated: ${newCode}`);
+    } catch (err) {
+      alert("Unable to update daily code (Admin permission required): " + err.message);
+    }
+  });
+
   document.querySelectorAll(".tab-btn").forEach((btn) => {
     btn.addEventListener("click", () => {
       document.querySelectorAll(".tab-btn").forEach((b) => b.classList.remove("active"));
@@ -661,6 +763,7 @@
       btn.classList.add("active");
       $(btn.dataset.tab).classList.remove("hidden");
       if (btn.dataset.tab === "tab-cs48") loadMonthlyCs48();
+      if (btn.dataset.tab === "tab-review") loadReviewQueue();
     });
   });
 
@@ -731,11 +834,15 @@
 
     const dutyType = $("dutyType").value;
     const supportingRef = $("supportingRef").value.trim();
-    const isOffCampus = !currentGeo.onCampus || dutyType !== "On-Campus Regular";
+    const enteredCode = $("campusCodeInput").value.trim();
+    const validCampusCode = enteredCode && enteredCode === ACTIVE_DAILY_CODE;
+
+    const verifiedOnCampus = currentGeo.onCampus || validCampusCode;
+    const isOffCampus = !verifiedOnCampus || dutyType !== "On-Campus Regular";
 
     if (isOffCampus && !supportingRef) {
       $("punchFeedback").className = "alert-bar alert-warn";
-      $("punchFeedback").textContent = "CSC Compliance: Enter your Travel Order, Memo, Pass Slip, or valid reason before logging off-campus.";
+      $("punchFeedback").textContent = "CSC Compliance: You are outside the campus geofence (or logging non-regular duty). Enter the Faculty Room Daily Code if on campus, OR enter your Travel Order / Locator Slip / Memo No.";
       $("supportingRef").focus();
       return;
     }
@@ -744,8 +851,12 @@
     const now = new Date();
     const dateKey = todayIso();
     const timeText = now.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" });
-    const locationStatus = currentGeo.onCampus ? "On-Campus" : "Off-Campus / Field";
-    const verificationStatus = currentGeo.onCampus && dutyType === "On-Campus Regular" ? "verified" : "pending_approval";
+    const locationStatus = currentGeo.onCampus
+      ? "On-Campus (GPS)"
+      : validCampusCode
+        ? "On-Campus (Faculty Room Code)"
+        : "Off-Campus / Field";
+    const verificationStatus = verifiedOnCampus && dutyType === "On-Campus Regular" ? "verified" : "pending_approval";
 
     try {
       const punchPayload = {
@@ -753,7 +864,7 @@
         isoTime: now.toISOString(),
         serverAt: serverTimestamp(),
         dutyType,
-        supportingRef,
+        supportingRef: validCampusCode && !supportingRef ? "Verified via Faculty Room Daily Code" : supportingRef,
         locationStatus,
         verificationStatus,
         deviceId: getDeviceFingerprint(),
@@ -776,14 +887,16 @@
         slot,
         timeText,
         dutyType,
-        supportingRef,
+        supportingRef: punchPayload.supportingRef,
         locationStatus,
+        verificationStatus,
         deviceId: getDeviceFingerprint(),
         createdAt: serverTimestamp()
       });
 
       $("punchFeedback").className = "alert-bar alert-ok";
-      $("punchFeedback").textContent = `Recorded ${slot.toUpperCase()} at ${timeText} (${locationStatus}${verificationStatus === "pending_approval" ? " — flagged for School Head review" : ""}).`;
+      $("punchFeedback").textContent = `Recorded ${slot.toUpperCase()} at ${timeText} (${locationStatus}${verificationStatus === "pending_approval" ? " — routed for School Head approval" : ""}).`;
+      $("campusCodeInput").value = "";
       await loadTodayLog();
     } catch (err) {
       $("punchFeedback").className = "alert-bar alert-warn";
@@ -792,6 +905,133 @@
       $("btnAutoPunch").disabled = false;
     }
   });
+
+  // Tab 4: School Head Verification & Anti-Buddy-Punch Audit
+  async function loadReviewQueue() {
+    const tbody = $("reviewQueueBody");
+    const alertBox = $("sharedDeviceAlert");
+    alertBox.classList.add("hidden");
+    tbody.innerHTML = `<tr><td colspan="7" style="padding:14px;color:var(--muted);">Loading DTR logs...</td></tr>`;
+
+    const targetDate = $("reviewDateFilter").value || todayIso();
+    const statusFilter = $("reviewStatusFilter").value;
+
+    try {
+      const q = query(collection(db, "dtr_logs"), where("date", "==", targetDate));
+      const snap = await getDocs(q);
+      const docs = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+
+      // Detect if multiple different employees used the exact same Device ID on this date
+      const deviceUsers = new Map();
+      docs.forEach((rec) => {
+        ["amIn", "amOut", "pmIn", "pmOut"].forEach((s) => {
+          const dev = rec[s]?.deviceId;
+          if (dev) {
+            if (!deviceUsers.has(dev)) deviceUsers.set(dev, new Set());
+            deviceUsers.get(dev).add(rec.employeeName || rec.uid);
+          }
+        });
+      });
+
+      const sharedWarnings = [];
+      deviceUsers.forEach((namesSet, devId) => {
+        if (namesSet.size > 1) {
+          sharedWarnings.push(`Device ${devId} was used by multiple accounts on ${targetDate}: ${Array.from(namesSet).join(", ")}`);
+        }
+      });
+
+      if (sharedWarnings.length) {
+        alertBox.classList.remove("hidden");
+        alertBox.innerHTML = `<strong><i class="fas fa-triangle-exclamation"></i> Shared Device / Buddy-Punch Audit Flag:</strong> ${esc(sharedWarnings.join(" | "))}`;
+      }
+
+      const items = [];
+      docs.forEach((rec) => {
+        ["amIn", "amOut", "pmIn", "pmOut"].forEach((slot) => {
+          const entry = rec[slot];
+          if (!entry?.timeText) return;
+          if (statusFilter === "pending_approval" && entry.verificationStatus !== "pending_approval") return;
+          items.push({ docId: rec.id, rec, slot, entry });
+        });
+      });
+
+      if (!items.length) {
+        tbody.innerHTML = `<tr><td colspan="7" style="padding:16px;color:var(--muted);">No ${statusFilter === "pending_approval" ? "pending off-campus" : ""} DTR records found for ${esc(targetDate)}.</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = items.map(({ docId, rec, slot, entry }) => {
+        const st = entry.verificationStatus || "verified";
+        const pillCls = st === "pending_approval" ? "pending" : st === "rejected_undertime" ? "rejected" : "verified";
+        const distInfo = entry.gps?.distanceMeters != null ? `${entry.gps.distanceMeters}m from school` : "No GPS";
+        return `
+          <tr>
+            <td><strong>${esc(rec.employeeName || rec.employeeEmail || rec.uid)}</strong></td>
+            <td>${esc(rec.date)}<br/><small>${slot.toUpperCase()}</small></td>
+            <td><strong>${esc(entry.timeText)}</strong></td>
+            <td style="text-align:left;">
+              <strong>${esc(entry.dutyType || "")}</strong><br/>
+              <small>${esc(entry.supportingRef || "—")}</small>
+            </td>
+            <td>
+              <small>${esc(entry.locationStatus || "")} (${esc(distInfo)})</small><br/>
+              <code>${esc(entry.deviceId || "—")}</code>
+            </td>
+            <td><span class="status-pill ${pillCls}">${esc(st)}</span></td>
+            <td>
+              <button type="button" class="btn success sm" onclick="window.reviewDtrPunch('${esc(docId)}','${esc(slot)}','verified_by_head')">Approve</button>
+              <button type="button" class="btn danger sm" onclick="window.reviewDtrPunch('${esc(docId)}','${esc(slot)}','rejected_undertime')">Reject</button>
+            </td>
+          </tr>
+        `;
+      }).join("");
+    } catch (err) {
+      tbody.innerHTML = `<tr><td colspan="7" style="color:#991b1b;padding:14px;">Error loading review queue (School Head / Admin role required): ${esc(err.message)}</td></tr>`;
+    }
+  }
+
+  window.reviewDtrPunch = async (docId, slot, decision) => {
+    if (!currentUser) return;
+    const note = prompt(
+      decision === "verified_by_head"
+        ? "Optional School Head approval note (e.g., Valid TO verified):"
+        : "Reason for rejecting this off-campus log:",
+      decision === "verified_by_head" ? "Verified by School Head" : "Invalid / Unapproved Off-Campus Punch"
+    );
+    if (note === null) return;
+
+    try {
+      const ref = doc(db, "dtr_logs", docId);
+      const snap = await getDoc(ref);
+      if (!snap.exists()) return;
+      const data = snap.data();
+      const updatedSlot = {
+        ...data[slot],
+        verificationStatus: decision,
+        reviewedBy: currentUser.email,
+        reviewNote: note.trim(),
+        reviewedAt: new Date().toISOString()
+      };
+      await setDoc(ref, { [slot]: updatedSlot, updatedAt: serverTimestamp() }, { merge: true });
+
+      await addDoc(collection(db, "dtr_audit_trail"), {
+        uid: currentUser.uid,
+        targetDocId: docId,
+        slot,
+        action: decision,
+        reviewNote: note.trim(),
+        createdAt: serverTimestamp()
+      });
+
+      await loadReviewQueue();
+    } catch (err) {
+      alert("Unable to save review decision: " + err.message);
+    }
+  };
+
+  $("btnRefreshReview").addEventListener("click", loadReviewQueue);
+  $("reviewDateFilter").addEventListener("change", loadReviewQueue);
+  $("reviewStatusFilter").addEventListener("change", loadReviewQueue);
 
   // Gemini AI Cursive Hardcopy DTR Scanner
   $("dtrImageInput").addEventListener("change", (e) => {
@@ -979,8 +1219,8 @@ Return STRICT JSON:
   function getDayUndertimeMinutes(dateStr, log) {
     if (!log) return 0;
     const d = new Date(`${dateStr}T00:00:00`);
-    const dow = d.getDay(); // 0=Sun, 6=Sat
-    if (dow === 0) return 0; // Sunday: As Required
+    const dow = d.getDay();
+    if (dow === 0) return 0;
 
     const duty = log.amIn?.dutyType || log.pmIn?.dutyType || "";
     if (duty.includes("Official Business")) return 0;
