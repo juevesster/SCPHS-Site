@@ -148,6 +148,7 @@
     .alert-ok { background: #ecfdf5; color: #065f46; border: 1px solid #a7f3d0; }
 
     /* Portrait Mirrored CS Form 48 Sheet */
+    /* Portrait Mirrored CS Form 48 Sheet (A4 Full-Height + Duplex Back) */
     .cs48-sheet {
       background: #fff;
       color: #000;
@@ -156,16 +157,24 @@
       padding: 8px;
       margin-top: 12px;
     }
+    .cs48-page {
+      display: flex;
+      flex-direction: column;
+    }
     .cs48-two-up {
       display: grid;
       grid-template-columns: 1fr 1fr;
       gap: 10px;
+      align-items: stretch;
     }
     .cs48-copy {
       border: 1px solid #000;
-      padding: 6px;
-      font-size: 7.5pt;
-      line-height: 1.2;
+      padding: 6px 7px;
+      font-size: 7.8pt;
+      line-height: 1.22;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
     }
     .cs48-title-wrap {
       text-align: center;
@@ -173,40 +182,43 @@
       padding-bottom: 3px;
       margin-bottom: 4px;
     }
-    .cs48-form-no { font-size: 7pt; font-weight: 700; }
-    .cs48-main-title { font-size: 11pt; font-weight: 800; letter-spacing: 1px; }
+    .cs48-form-no { font-size: 7.2pt; font-weight: 700; }
+    .cs48-main-title { font-size: 11.5pt; font-weight: 800; letter-spacing: 1px; }
     .cs48-meta-row {
       display: flex;
       justify-content: space-between;
       gap: 6px;
-      font-size: 7pt;
+      font-size: 7.2pt;
       border-bottom: 1px solid #000;
       padding: 2px 0;
       margin-bottom: 3px;
     }
     table.cs48-grid {
       width: 100%;
+      flex: 1 1 auto;
+      height: 100%;
       border-collapse: collapse;
-      font-size: 6.5pt;
+      font-size: 7pt;
     }
     table.cs48-grid th, table.cs48-grid td {
       border: 1px solid #000;
-      padding: 1px 2px;
+      padding: 1.5px 2px;
       text-align: center;
+      vertical-align: middle;
     }
     .cs48-cert {
-      font-size: 6.2pt;
+      font-size: 6.6pt;
       text-align: justify;
-      margin-top: 4px;
-      line-height: 1.25;
+      margin-top: 5px;
+      line-height: 1.28;
     }
     .cs48-sigs {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 10px;
-      margin-top: 12px;
+      gap: 12px;
+      margin-top: 14px;
       text-align: center;
-      font-size: 6.8pt;
+      font-size: 7.2pt;
     }
     .cs48-sig-line {
       border-top: 1px solid #000;
@@ -214,32 +226,59 @@
       font-weight: 700;
     }
     .cs48-back-page {
-      margin-top: 14px;
+      margin-top: 16px;
       page-break-before: always;
       break-before: page;
     }
     .cs48-inst-title {
       text-align: center;
-      font-size: 11pt;
+      font-size: 11.5pt;
       font-weight: 800;
       border-bottom: 1.5px solid #000;
-      padding-bottom: 3px;
-      margin-bottom: 6px;
+      padding-bottom: 4px;
+      margin-bottom: 8px;
     }
     .cs48-inst-body {
-      font-size: 7.2pt;
-      line-height: 1.38;
+      flex: 1 1 auto;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      font-size: 8.2pt;
+      line-height: 1.48;
       text-align: justify;
+      padding: 4px 2px;
     }
-    .cs48-inst-body p { margin-bottom: 6px; }
+    .cs48-inst-body p { margin-bottom: 8px; }
 
     @media print {
-      @page { size: portrait; margin: 6mm; }
-      body { background: #fff; }
+      @page { size: A4 portrait; margin: 5mm; }
+      html, body {
+        background: #fff;
+        margin: 0 !important;
+        padding: 0 !important;
+      }
       .no-print { display: none !important; }
-      .container { max-width: 100%; margin: 0; padding: 0; }
-      .card { border: none; box-shadow: none; padding: 0; margin: 0; }
-      .cs48-sheet { border: none; padding: 0; margin-top: 0; }
+      .container { max-width: 100% !important; width: 100% !important; margin: 0 !important; padding: 0 !important; }
+      .card { border: none !important; box-shadow: none !important; padding: 0 !important; margin: 0 !important; }
+      .cs48-sheet {
+        border: none !important;
+        padding: 0 !important;
+        margin: 0 !important;
+      }
+      .cs48-page {
+        min-height: 285mm; /* Fits A4 height (297mm) minus top/bottom margins */
+      }
+      .cs48-two-up {
+        flex: 1 1 auto;
+        height: 100%;
+      }
+      .cs48-back-page {
+        margin-top: 0 !important;
+        padding-top: 0 !important;
+        min-height: 285mm;
+        page-break-before: always;
+        break-before: page;
+      }
     }
   </style>
 </head>
@@ -416,7 +455,9 @@
       </div>
 
       <div class="cs48-sheet" id="cs48PrintArea">
-        <div class="cs48-two-up" id="cs48FrontTwoUp"></div>
+        <div class="cs48-page">
+          <div class="cs48-two-up" id="cs48FrontTwoUp"></div>
+        </div>
         <div class="cs48-back-page">
           <div class="cs48-two-up" id="cs48BackTwoUp"></div>
         </div>
