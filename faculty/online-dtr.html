@@ -559,7 +559,11 @@
           <span style="color:var(--muted);margin-left:6px;">| QR String: <code id="dailyQrPayloadDisplay">SCPHS-QR-----</code></span>
         </div>
         <button type="button" class="btn outline sm" id="btnRotateDailyCode"><i class="fas fa-rotate"></i> Generate New Code</button>
-      </div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap;">
+          <button type="button" class="btn outline sm" id="btnRotateDailyCode"><i class="fas fa-rotate"></i> Generate New Code</button>
+          <button type="button" class="btn teal sm" id="btnPrintDailyQr"><i class="fas fa-qrcode"></i> Print QR Sign</button>
+        </div>
+    </div>
 
       <div id="sharedDeviceAlert" class="alert-bar alert-danger hidden" style="margin-bottom:12px;"></div>
 
@@ -853,6 +857,29 @@
     } catch (err) {
       alert("Unable to update daily code (Admin permission required): " + err.message);
     }
+  });
+
+  $("btnPrintDailyQr").addEventListener("click", () => {
+    const payload = `SCPHS-QR-${todayIso()}-${ACTIVE_DAILY_CODE}`;
+    const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=240x240&data=${encodeURIComponent(payload)}`;
+    const win = window.open("", "_blank", "width=420,height=540");
+    if (!win) return alert("Allow pop-ups to print the Daily QR Sign.");
+    win.document.write(`
+      <!DOCTYPE html>
+      <html>
+      <head><title>SCPHS Daily Campus QR</title></head>
+      <body style="font-family:sans-serif;text-align:center;padding:28px;">
+        <h2>Sta. Cruz Pingkian High School</h2>
+        <p><strong>Faculty Room Daily Check-In QR</strong></p>
+        <p>Date: <strong>${esc(todayIso())}</strong></p>
+        <img src="${qrUrl}" alt="Daily Campus QR" style="margin:14px auto;display:block;" />
+        <p style="font-size:22px;font-weight:800;letter-spacing:3px;">CODE: ${esc(ACTIVE_DAILY_CODE)}</p>
+        <p style="font-size:12px;color:#475569;">${esc(payload)}</p>
+        <script>window.onload = () => setTimeout(() => window.print(), 350);<\/script>
+      </body>
+      </html>
+    `);
+    win.document.close();
   });
 
   document.querySelectorAll(".tab-btn").forEach((btn) => {
