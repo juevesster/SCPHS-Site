@@ -993,11 +993,20 @@ Return STRICT JSON:
   }
 
   async function loadMonthlyCs48() {
-    if (!currentUser) return;
-    const ym = $("cs48Month").value || todayIso().slice(0, 7);
-    const empName = currentUser.displayName || currentUser.email.split("@")[0];
-    const inCharge = $("cs48InCharge").value.trim() || "School Head / In-Charge";
+  if (!currentUser) return;
+  const ym = $("cs48Month").value || todayIso().slice(0, 7);
+  const empName = currentUser.displayName || currentUser.email.split("@")[0];
+  const inCharge = $("cs48InCharge").value.trim() || "School Head / In-Charge";
 
+  // Always render the blank CS Form 48 layout immediately
+  $("cs48FrontTwoUp").innerHTML =
+    buildForm48CopyHtml("Original", empName, ym, {}, inCharge) +
+    buildForm48CopyHtml("Duplicate", empName, ym, {}, inCharge);
+  $("cs48BackTwoUp").innerHTML =
+    buildInstructionsCopyHtml("Original") +
+    buildInstructionsCopyHtml("Duplicate");
+
+  try {
     const q = query(collection(db, "dtr_logs"), where("uid", "==", currentUser.uid));
     const snap = await getDocs(q);
     const rows = snap.docs
@@ -1027,11 +1036,10 @@ Return STRICT JSON:
     $("cs48FrontTwoUp").innerHTML =
       buildForm48CopyHtml("Original", empName, ym, logMap, inCharge) +
       buildForm48CopyHtml("Duplicate", empName, ym, logMap, inCharge);
-
-    $("cs48BackTwoUp").innerHTML =
-      buildInstructionsCopyHtml("Original") +
-      buildInstructionsCopyHtml("Duplicate");
+  } catch (err) {
+    console.error("CS Form 48 Firestore read error:", err);
   }
+}
 
   $("btnLoadCs48").addEventListener("click", loadMonthlyCs48);
   $("cs48Month").addEventListener("change", loadMonthlyCs48);
