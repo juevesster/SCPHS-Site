@@ -253,7 +253,12 @@
   <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
     <span class="badge" id="userBadge">Connecting...</span>
     <button type="button" class="btn outline sm" id="btnApiKey" style="background:#fff;"><i class="fas fa-key"></i> Gemini Key</button>
+    <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+    <span class="badge" id="userBadge">Connecting...</span>
+    <button type="button" class="btn outline sm" id="btnCalibrateSchool" style="background:#fff;"><i class="fas fa-crosshairs"></i> Set School GPS</button>
+    <button type="button" class="btn outline sm" id="btnApiKey" style="background:#fff;"><i class="fas fa-key"></i> Gemini Key</button>
   </div>
+</div>
 </div>
 
 <div class="container">
@@ -434,8 +439,8 @@
   const $ = (id) => document.getElementById(id);
   const esc = (s) => String(s ?? "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
 
-  const SCHOOL_COORDS = { lat: 16.3685, lng: 120.8925 };
-  const GEOFENCE_RADIUS_METERS = 350;
+  let SCHOOL_COORDS = { lat: 16.3685, lng: 120.8925 };
+  let GEOFENCE_RADIUS_METERS = 350;
 
   let currentUser = null;
   let currentGeo = { available: false, lat: null, lng: null, distanceMeters: null, onCampus: false };
@@ -498,7 +503,27 @@
   $("scanDefaultDate").value = todayIso();
   $("cs48Month").value = todayIso().slice(0, 7);
 
-  if ("geolocation" in navigator) {
+  async function loadSchoolGeofence() {
+    try {
+      const snap = await getDoc(doc(db, "config", "school"));
+      if (snap.exists() && snap.data().lat && snap.data().lng) {
+        SCHOOL_COORDS = {
+          lat: Number(snap.data().lat),
+          lng: Number(snap.data().lng)
+        };
+        if (snap.data().geofenceRadiusMeters) {
+          GEOFENCE_RADIUS_METERS = Number(snap.data().geofenceRadiusMeters);
+        }
+      }
+    } catch (_) {}
+  }
+
+  function refreshGpsCheck() {
+    if (!("geolocation" in navigator)) {
+      $("pillGeo").innerHTML = `<i class="fas fa-location-crosshairs"></i> GPS Not Supported`;
+      return;
+    }
+    $("pillGeo").innerHTML = `<i class="fas fa-spinner fa-spin"></i> Checking GPS...`;
     navigator.geolocation.getCurrentPosition(
       (pos) => {
         const dist = calcDistanceMeters(pos.coords.latitude, pos.coords.longitude, SCHOOL_COORDS.lat, SCHOOL_COORDS.lng);
@@ -512,14 +537,43 @@
         };
         $("pillGeo").innerHTML = onCampus
           ? `<i class="fas fa-location-dot"></i> On-Campus (${dist}m)`
-          : `<i class="fas fa-map-pin"></i> Off-Campus (${(dist / 1000).toFixed(1)} km away)`;
+          : `<i class="fas fa-map-pin"></i> Off-Campus (${dist >= 1000 ? (dist / 1000).toFixed(1) + " km" : dist + "m"} away)`;
       },
       () => {
         $("pillGeo").innerHTML = `<i class="fas fa-location-crosshairs"></i> GPS Unavailable (Reason Required)`;
       },
-      { enableHighAccuracy: true, timeout: 8000 }
+      { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
     );
   }
+
+  $("btnCalibrateSchool").addEventListener("click", async () => {
+    if (!currentGeo.available || currentGeo.lat === null) {
+      refreshGpsCheck();
+      return alert("Waiting for GPS coordinates. Make sure Location is enabled on your phone, then tap Set School GPS again.");
+    }
+    const radiusInput = prompt(
+      `Set Sta. Cruz Pingkian High School center to your current GPS (${currentGeo.lat}, ${currentGeo.lng})?\n\nEnter campus radius in meters:`,
+      String(GEOFENCE_RADIUS_METERS)
+    );
+    if (radiusInput === null) return;
+    const radius = Math.max(50, parseInt(radiusInput, 10) || 350);
+
+    try {
+      await setDoc(doc(db, "config", "school"), {
+        lat: currentGeo.lat,
+        lng: currentGeo.lng,
+        geofenceRadiusMeters: radius,
+        calibratedBy: currentUser?.email || "",
+        updatedAt: serverTimestamp()
+      }, { merge: true });
+      SCHOOL_COORDS = { lat: currentGeo.lat, lng: currentGeo.lng };
+      GEOFENCE_RADIUS_METERS = radius;
+      refreshGpsCheck();
+      alert(`School GPS calibrated to (${currentGeo.lat}, ${currentGeo.lng}) with a ${radius}m radius!`);
+    } catch (err) {
+      alert("Calibration failed (Admin permission required on config/school): " + err.message);
+    }
+  });
 
   document.querySelectorAll(".tab-btn").forEach((btn) => {
     btn.addEventListener("click", () => {
@@ -548,6 +602,8 @@
     currentUser = user;
     const displayName = user.displayName || user.email.split("@")[0];
     $("userBadge").textContent = displayName;
+    await loadSchoolGeofence();
+    refreshGpsCheck();
     await loadTodayLog();
     await loadMonthlyCs48();
   });
