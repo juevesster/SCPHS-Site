@@ -1,146 +1,652 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Faculty – SHS Specialization | SCPHS</title>
-  <meta name="description" content="SHS specialization faculty, tracks, sections, schedules." />
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Faculty – SHS Specialization (DepEd Order No. 09, s. 2026) | SCPHS</title>
+  <meta name="description" content="Sta. Cruz Pingkian High School Senior High School (Grades 11–12) specialization faculty, sections, and Strengthened SHS Curriculum (DepEd Order No. 09, s. 2026) alignment." />
   <link rel="stylesheet" href="../assets/css/styles.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
   <style>
-    .two-col { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
-    @media (max-width: 800px){ .two-col { grid-template-columns: 1fr; } }
-    .teacher-card { padding:12px; border:1px solid var(--border); border-radius:10px; background:var(--card); }
-    .muted { color: var(--muted); }
+    :root {
+      --navy: #0f172a;
+      --primary: #1e3c72;
+      --teal: #0f766e;
+      --amber: #d97706;
+      --bg: #f1f5f9;
+      --card: #ffffff;
+      --border: #e2e8f0;
+      --text: #0f172a;
+      --muted: #475569;
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.5;
+    }
+
+    .shs-wrap {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 18px;
+    }
+
+    /* Hero Banner */
+    .spec-hero {
+      background: linear-gradient(135deg, #0f172a 0%, #1e3c72 58%, #0f766e 100%);
+      color: #fff;
+      padding: 26px 0 34px;
+      border-bottom: 4px solid #f59e0b;
+      position: relative;
+      overflow: hidden;
+    }
+    .hero-top-nav {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+    .kicker-group {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+    .kicker-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      background: rgba(255, 255, 255, 0.14);
+      border: 1px solid rgba(255, 255, 255, 0.22);
+      padding: 5px 12px;
+      border-radius: 999px;
+      font-size: 11.5px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+    }
+    .kicker-pill.do-badge {
+      background: rgba(245, 158, 11, 0.22);
+      border-color: rgba(253, 230, 138, 0.55);
+      color: #fde68a;
+    }
+    .hero-actions {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .hero-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      padding: 8px 14px;
+      border-radius: 9px;
+      font-size: 13px;
+      font-weight: 700;
+      text-decoration: none;
+      background: rgba(255, 255, 255, 0.14);
+      color: #fff;
+      border: 1px solid rgba(255, 255, 255, 0.28);
+      transition: 0.16s ease;
+    }
+    .hero-btn:hover {
+      background: rgba(255, 255, 255, 0.24);
+      transform: translateY(-1px);
+    }
+
+    .spec-hero h1 {
+      margin: 0 0 6px;
+      font-size: clamp(1.6rem, 3vw, 2.2rem);
+      font-weight: 800;
+      color: #fff;
+    }
+    .spec-hero p.meta {
+      margin: 0;
+      color: #cbd5e1;
+      font-size: 14.5px;
+      max-width: 780px;
+    }
+
+    .hero-metrics {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-top: 18px;
+    }
+    .metric-pill {
+      background: rgba(255, 255, 255, 0.12);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 10px;
+      padding: 8px 14px;
+      font-size: 13px;
+      font-weight: 700;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .metric-pill i { color: #fde68a; }
+
+    /* Switcher & Grade Filter Bar */
+    .switcher-bar {
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 12px 16px;
+      margin: -18px auto 22px;
+      box-shadow: 0 8px 24px rgba(15, 23, 42, 0.06);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 10px;
+      position: relative;
+      z-index: 10;
+    }
+    .spec-links {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+    .spec-pill {
+      text-decoration: none;
+      font-size: 12.5px;
+      font-weight: 700;
+      padding: 6px 12px;
+      border-radius: 999px;
+      background: #f8fafc;
+      color: #334155;
+      border: 1px solid #cbd5e1;
+      transition: 0.15s;
+    }
+    .spec-pill:hover {
+      border-color: var(--primary);
+      color: var(--primary);
+    }
+    .spec-pill.active {
+      background: var(--primary);
+      border-color: var(--primary);
+      color: #fff;
+    }
+
+    .grade-filter-group {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+    .grade-btn {
+      border: 1px solid #cbd5e1;
+      background: #f8fafc;
+      color: #334155;
+      padding: 6px 12px;
+      border-radius: 8px;
+      font-size: 12.5px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    .grade-btn.active {
+      background: var(--teal);
+      border-color: var(--teal);
+      color: #fff;
+    }
+
+    /* Main Two-Column Grid */
+    .two-col {
+      display: grid;
+      grid-template-columns: 1.25fr 0.95fr;
+      gap: 18px;
+      align-items: start;
+    }
+    @media (max-width: 860px) {
+      .two-col { grid-template-columns: 1fr; }
+    }
+
+    .panel-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 20px;
+      box-shadow: 0 3px 12px rgba(15, 23, 42, 0.04);
+    }
+    .panel-card h2 {
+      margin: 0 0 14px;
+      font-size: 16px;
+      font-weight: 800;
+      color: var(--primary);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid #f1f5f9;
+    }
+
+    /* Teacher Cards */
+    .teacher-list {
+      display: grid;
+      gap: 12px;
+    }
+    .teacher-card {
+      display: flex;
+      align-items: flex-start;
+      gap: 13px;
+      padding: 14px;
+      border: 1px solid #e2e8f0;
+      border-left: 4px solid var(--primary);
+      border-radius: 12px;
+      background: #f8fafc;
+      transition: 0.16s ease;
+    }
+    .teacher-card:hover {
+      background: #fff;
+      box-shadow: 0 6px 18px rgba(15, 23, 42, 0.06);
+    }
+    .avatar-circle {
+      width: 44px;
+      height: 44px;
+      border-radius: 12px;
+      background: linear-gradient(135deg, #1e3c72, #0f766e);
+      color: #fff;
+      font-weight: 800;
+      font-size: 15px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+    .teacher-info {
+      flex: 1 1 auto;
+      min-width: 0;
+    }
+    .teacher-name-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-bottom: 4px;
+    }
+    .teacher-name-row strong {
+      font-size: 15.5px;
+      color: var(--navy);
+    }
+    .role-tag {
+      font-size: 11px;
+      font-weight: 700;
+      padding: 2px 8px;
+      border-radius: 999px;
+      background: #dbeafe;
+      color: #1e40af;
+    }
+    .teacher-meta {
+      font-size: 13px;
+      color: var(--muted);
+      margin-top: 3px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+    .teacher-meta a {
+      color: var(--teal);
+      text-decoration: none;
+      font-weight: 600;
+    }
+    .teacher-meta a:hover { text-decoration: underline; }
+
+    /* Section Cards */
+    .section-list {
+      display: grid;
+      gap: 11px;
+    }
+    .grade-group-card {
+      border: 1px solid #e2e8f0;
+      border-radius: 12px;
+      padding: 14px;
+      background: #f8fafc;
+      transition: 0.16s ease;
+    }
+    .grade-group-card.highlighted-grade {
+      background: #f0fdfa;
+      border-color: #0d9488;
+      box-shadow: 0 4px 14px rgba(13, 148, 136, 0.12);
+    }
+    .grade-group-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+      gap: 8px;
+    }
+    .grade-group-header strong {
+      font-size: 14.5px;
+      color: var(--navy);
+    }
+    .sec-count {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--teal);
+      background: #ccfbf1;
+      padding: 2px 8px;
+      border-radius: 999px;
+    }
+    .section-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+    .sec-chip {
+      background: #fff;
+      border: 1px solid #cbd5e1;
+      color: #1e293b;
+      padding: 4px 10px;
+      border-radius: 7px;
+      font-size: 12.5px;
+      font-weight: 700;
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 24px 16px;
+      color: var(--muted);
+      background: #f8fafc;
+      border: 1px dashed #cbd5e1;
+      border-radius: 12px;
+      font-size: 13.5px;
+    }
+
+    /* DepEd Order No. 09, s. 2026 Strengthened SHS Curriculum Card */
+    .do09-panel {
+      background: #fff;
+      border: 1px solid var(--border);
+      border-top: 4px solid var(--amber);
+      border-radius: 14px;
+      padding: 20px;
+      margin-top: 18px;
+      box-shadow: 0 3px 12px rgba(15, 23, 42, 0.04);
+    }
+    .do09-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-bottom: 14px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid #f1f5f9;
+    }
+    .do09-header h3 {
+      margin: 0 0 4px;
+      font-size: 16.5px;
+      font-weight: 800;
+      color: var(--navy);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .do09-header p {
+      margin: 0;
+      font-size: 13px;
+      color: var(--muted);
+    }
+    .sy-tag {
+      background: #fef3c7;
+      color: #92400e;
+      border: 1px solid #fde68a;
+      font-size: 11.5px;
+      font-weight: 800;
+      padding: 5px 11px;
+      border-radius: 999px;
+      white-space: nowrap;
+    }
+
+    .do09-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 14px;
+      margin-bottom: 14px;
+    }
+    .do09-box {
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 11px;
+      padding: 14px;
+    }
+    .do09-box h4 {
+      margin: 0 0 8px;
+      font-size: 13.5px;
+      font-weight: 800;
+      color: var(--primary);
+      display: flex;
+      align-items: center;
+      gap: 7px;
+    }
+    .do09-box ul {
+      margin: 0;
+      padding-left: 18px;
+      font-size: 12.8px;
+      color: #334155;
+      line-height: 1.55;
+    }
+    .do09-box li { margin-bottom: 4px; }
+
+    .curr-links {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      align-items: center;
+      padding-top: 10px;
+      border-top: 1px solid #f1f5f9;
+    }
+    .pill-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      padding: 8px 14px;
+      border-radius: 9px;
+      font-size: 13px;
+      font-weight: 700;
+      text-decoration: none;
+      background: #f8fafc;
+      border: 1px solid #cbd5e1;
+      color: var(--primary);
+      transition: 0.15s;
+    }
+    .pill-link:hover {
+      background: var(--primary);
+      border-color: var(--primary);
+      color: #fff;
+    }
+
+    .bottom-nav-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 22px;
+      padding: 16px 0 30px;
+      border-top: 1px solid #cbd5e1;
+    }
+
+    /* School & GOVPH Footers */
+    .scphs-footer {
+      background: #0f172a;
+      color: #cbd5e1;
+      padding: 26px 0;
+      font-size: 13px;
+      border-top: 3px solid var(--teal);
+    }
+    .scphs-footer .foot-grid {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      flex-wrap: wrap;
+      gap: 16px;
+      margin-bottom: 14px;
+    }
+    .scphs-footer strong {
+      color: #fff;
+      font-size: 15px;
+    }
+    .scphs-footer a {
+      color: #93c5fd;
+      text-decoration: none;
+    }
+    .scphs-footer a:hover { text-decoration: underline; }
+    .scphs-footer .copy {
+      border-top: 1px solid rgba(255,255,255,0.12);
+      padding-top: 12px;
+      font-size: 12px;
+      color: #94a3b8;
+    }
+
+    .govph-footer {
+      background: #1e293b;
+      color: #cbd5e1;
+      font-size: 12.5px;
+    }
+    .govph-footer__grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 20px;
+      padding: 24px 18px;
+    }
+    .govph-footer h4 {
+      margin: 0 0 8px;
+      color: #fff;
+      font-size: 13.5px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .govph-footer__links {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+    .govph-footer__links li { margin-bottom: 5px; }
+    .govph-footer__links a {
+      color: #93c5fd;
+      text-decoration: none;
+    }
+    .govph-footer__links a:hover { text-decoration: underline; }
+    .govph-footer__bar {
+      background: #0b1120;
+      padding: 11px 0;
+      color: #94a3b8;
+      text-align: center;
+    }
   </style>
 </head>
 <body>
-  <header class="subhead">
-    <div class="wrap">
-      <h1 id="title">Loading…</h1>
-      <p id="subtitle" class="meta"></p>
+
+  <!-- HERO HEADER -->
+  <header class="spec-hero">
+    <div class="shs-wrap">
+      <div class="hero-top-nav">
+        <div class="kicker-group">
+          <span class="kicker-pill"><i class="fas fa-graduation-cap"></i> Senior High School • Grades 11–12</span>
+          <span class="kicker-pill do-badge"><i class="fas fa-file-signature"></i> DepEd Order No. 09, s. 2026</span>
+        </div>
+        <div class="hero-actions">
+          <a href="shs.html" class="hero-btn"><i class="fas fa-arrow-left"></i> All SHS Tracks</a>
+          <a href="index.html" class="hero-btn"><i class="fas fa-table-columns"></i> Faculty Command Center</a>
+        </div>
+      </div>
+
+      <h1 id="title">Loading Specialization…</h1>
+      <p id="subtitle" class="meta">Fetching Sta. Cruz Pingkian High School SHS faculty roster and Strengthened SHS Curriculum alignment…</p>
+
+      <div class="hero-metrics">
+        <span class="metric-pill"><i class="fas fa-users"></i> <span id="statTeachers">0 Faculty Members</span></span>
+        <span class="metric-pill"><i class="fas fa-door-open"></i> <span id="statSections">0 Class Sections</span></span>
+        <span class="metric-pill"><i class="fas fa-compass"></i> <span id="statPathway">Strengthened SHS Curriculum</span></span>
+      </div>
     </div>
   </header>
 
-  <main class="wrap">
+  <main class="shs-wrap">
+    <!-- TRACK SPECIALIZATION SWITCHER & GRADE FILTER -->
+    <div class="switcher-bar">
+      <div class="spec-links" id="specSwitcher" aria-label="Switch Specialization within Track"></div>
+
+      <div class="grade-filter-group" aria-label="Filter Sections by Grade Level">
+        <button type="button" class="grade-btn active" data-grade="all">Grades 11 &amp; 12</button>
+        <button type="button" class="grade-btn" data-grade="11">Grade 11</button>
+        <button type="button" class="grade-btn" data-grade="12">Grade 12</button>
+      </div>
+    </div>
+
+    <!-- MAIN TWO-COLUMN ROSTER & SECTIONS -->
     <div class="two-col">
-      <section class="card">
-        <h2>Faculty</h2>
-        <div id="teachers" class="list"></div>
+      <section class="panel-card">
+        <h2><i class="fas fa-chalkboard-user"></i> Specialization Teaching Personnel</h2>
+        <div id="teachers" class="teacher-list"></div>
       </section>
 
-      <section class="card">
-        <h2>Sections</h2>
-        <div id="sections"></div>
+      <section class="panel-card">
+        <h2><i class="fas fa-sitemap"></i> Grade Levels &amp; Assigned Sections</h2>
+        <div id="sections" class="section-list"></div>
       </section>
     </div>
 
-    <section class="card" style="margin-top:16px">
-      <h3>Curriculum</h3>
-      <p class="meta">Map specialization competencies to curriculum pages when available.</p>
-      <div class="links">
-        <a href="../curriculum/matatag.html">MATATAG</a> ·
-        <a href="../curriculum/k12.html">K to 12</a>
+    <!-- DEPED ORDER NO. 09, S. 2026 CURRICULUM FRAMEWORK PANEL -->
+    <section class="do09-panel" aria-labelledby="do09Heading">
+      <div class="do09-header">
+        <div>
+          <h3 id="do09Heading"><i class="fas fa-award" style="color:var(--amber);"></i> Strengthened Senior High School Curriculum (DepEd Order No. 09, s. 2026)</h3>
+          <p id="do09Summary">Implementing Guidelines on the Strengthened Senior High School Curriculum for School Year 2026–2027.</p>
+        </div>
+        <span class="sy-tag">SY 2026–2027 Official Alignment</span>
+      </div>
+
+      <div class="do09-grid">
+        <div class="do09-box">
+          <h4><i class="fas fa-book-open"></i> Grade 11 Foundational Core (5 Core Subjects)</h4>
+          <ul>
+            <li><strong>Effective Communication</strong> (Mabisang Komunikasyon)</li>
+            <li><strong>General Mathematics</strong> &amp; Quantitative Reasoning</li>
+            <li><strong>General Science</strong> &amp; Scientific Inquiry</li>
+            <li><strong>Life and Career Skills</strong> (Career Readiness &amp; Well-Being)</li>
+            <li><strong>Pag-aaral ng Kasaysayan at Lipunang Pilipino</strong></li>
+          </ul>
+        </div>
+
+        <div class="do09-box">
+          <h4 id="electiveBoxTitle"><i class="fas fa-layer-group"></i> Grade 11–12 Track Electives &amp; Immersion</h4>
+          <ul id="electiveClusterList">
+            <li>Flexible discipline-based electives aligned to higher education or industry readiness</li>
+            <li>Supervised <strong>Work Immersion / Practicum / Capstone</strong> in Grade 12</li>
+            <li>TESDA NC II competency integration for Technical-Professional (TechPro) pathways</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="curr-links">
+        <a href="../curriculum/matatag.html" class="pill-link"><i class="fas fa-sparkles"></i> MATATAG &amp; Strengthened SHS</a>
+        <a href="../curriculum/k12.html" class="pill-link"><i class="fas fa-graduation-cap"></i> K to 12 Curriculum Guides</a>
+        <a href="shs.html" class="pill-link"><i class="fas fa-compass"></i> Explore All SHS Tracks</a>
       </div>
     </section>
 
-    <nav class="links" style="margin-top:12px">
-      <a href="shs.html">← Back to SHS</a>
-      <span>·</span>
-      <a href="index.html">Faculty Home</a>
-      <span>·</span>
-      <a href="../index.html">SCPHS Home</a>
+    <!-- BOTTOM NAVIGATION -->
+    <nav class="bottom-nav-bar" aria-label="Breadcrumb Navigation">
+      <a href="shs.html" class="pill-link"><i class="fas fa-arrow-left"></i> Back to SHS Tracks</a>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;">
+        <a href="index.html" class="pill-link"><i class="fas fa-table-columns"></i> Faculty Portal</a>
+        <a href="../index.html" class="pill-link"><i class="fas fa-house"></i> SCPHS Home</a>
+      </div>
     </nav>
   </main>
 
-  <script src="../assets/js/faculty-data.js"></script>
-  <script>
-    function esc(s=''){ return String(s)
-      .replaceAll('&','&amp;')
-      .replaceAll('<','&lt;')
-      .replaceAll('>','&gt;')
-      .replaceAll('"','&quot;')
-      .replaceAll("'","&#39;"); }
-    function param(k){ const p=new URLSearchParams(location.search); return p.get(k)||''; }
-
-    function renderTeachers(list){
-      const host = document.getElementById('teachers');
-      host.innerHTML = '';
-      if (!Array.isArray(list) || !list.length){
-        host.innerHTML = '<div class="muted">No teachers listed yet.</div>';
-        return;
-      }
-      list.forEach(t => {
-        const div = document.createElement('div');
-        div.className = 'teacher-card';
-        const name = esc(t.name||'Unnamed');
-        const email = esc(t.email||'');
-        const role = esc(t.role||'');
-        div.innerHTML = `
-          <strong>${name}</strong>
-          ${role ? `<div class="meta">${role}</div>` : ''}
-          ${email ? `<div class="meta">${email}</div>` : ''}
-        `;
-        host.appendChild(div);
-      });
-    }
-
-    function renderSections(map){
-      const host = document.getElementById('sections');
-      host.innerHTML = '';
-      const keys = Object.keys(map||{});
-      if (!keys.length){
-        host.innerHTML = '<div class="muted">No sections assigned yet.</div>';
-        return;
-      }
-      keys.forEach(grade => {
-        const card = document.createElement('div');
-        card.className = 'teacher-card';
-        const sections = Array.isArray(map[grade]) ? map[grade] : [];
-        card.innerHTML = `<strong>${esc(grade)}</strong><div class="meta">${sections.map(esc).join(', ') || '—'}</div>`;
-        host.appendChild(card);
-      });
-    }
-
-    (function(){
-      const trackKey = (param('track')||'').toLowerCase();
-      const specParam = decodeURIComponent(param('spec')||'');
-      const data = window.FACULTY_DATA && FACULTY_DATA.shs;
-      const tracks = (data && data.tracks) ? data.tracks : {};
-      const track = tracks[trackKey];
-      const title = document.getElementById('title');
-      const subtitle = document.getElementById('subtitle');
-
-      if (!track){
-        title.textContent = 'Track not found';
-        subtitle.textContent = 'Check the link or select a track/specialization from the SHS page.';
-        return;
-      }
-
-      // try to match spec by exact key or by case-insensitive name
-      let specData = track.specs[specParam];
-      if (!specData){
-        const key = Object.keys(track.specs||{}).find(k => k.toLowerCase() === specParam.toLowerCase());
-        if (key) specData = track.specs[key];
-      }
-
-      const trackName = track.name || 'Track';
-      const specName = specParam || 'Specialization';
-
-      title.textContent = `SHS • ${specName} (${trackName})`;
-      subtitle.textContent = 'Teaching Personnel, Sections & Loads';
-
-      renderTeachers((specData && specData.teachers) || []);
-      renderSections((specData && specData.sections) || {});
-    })();
-  </script>
-</body>
-</html>
-
-<!-- ======================= END ABOUT SECTION ======================= -->
-
   <!-- School Footer (SCPHS) -->
-  <footer>
-    <div class="wrap">
+  <footer class="scphs-footer">
+    <div class="shs-wrap">
       <div class="foot-grid">
         <div>
           <strong>Sta. Cruz Pingkian High School</strong><br/>
@@ -154,13 +660,13 @@
           <a href="https://www.facebook.com/p/Santa-Cruz-Pingkian-High-School-Official-61554495084090/" target="_blank" rel="noopener">Facebook</a>
         </div>
       </div>
-      <div class="copy">© 2026 SCPHS. All rights reserved.</div>
+      <div class="copy">© 2026 Sta. Cruz Pingkian High School (SCPHS). All rights reserved.</div>
     </div>
   </footer>
 
-  <!-- ================== GOVPH FOOTER (final, official) ================== -->
+  <!-- GOVPH Footer -->
   <footer class="govph-footer" role="contentinfo">
-    <div class="wrap govph-footer__grid">
+    <div class="shs-wrap govph-footer__grid">
       <div class="govph-footer__col">
         <h4>Republic of the Philippines</h4>
         <p>All content is in the public domain unless otherwise stated.</p>
@@ -186,44 +692,346 @@
     </div>
 
     <div class="govph-footer__bar">
-      <div class="wrap">
+      <div class="shs-wrap">
         <small>© <span id="yearNow"></span> Sta. Cruz Pingkian High School • A Philippine Government Website</small>
       </div>
     </div>
   </footer>
-    <!-- Chatbot mount -->
-<div id="scphs-chatbot-root"></div>
 
-<!-- Chatbot auto-loader: tries absolute path, then ../, then ../../ -->
-<script>
-(function(){
-  const rootId = 'scphs-chatbot-root';
-  if (!document.getElementById(rootId)) {
-    const m = document.createElement('div');
-    m.id = rootId;
-    document.body.appendChild(m);
-  }
+  <!-- Chatbot mount -->
+  <div id="scphs-chatbot-root"></div>
 
-  const tried = {};
-  function load(src, onOk, onFail){
-    if (tried[src]) return onFail && onFail();
-    tried[src] = true;
-    const s = document.createElement('script');
-    s.src = src; s.defer = true;
-    s.onload = onOk;
-    s.onerror = onFail;
-    document.body.appendChild(s);
-  }
+  <script src="../assets/js/faculty-data.js"></script>
+  <script>
+    function esc(s = '') {
+      return String(s)
+        .replaceAll('&', '&amp;')
+        .replaceAll('<', '&lt;')
+        .replaceAll('>', '&gt;')
+        .replaceAll('"', '&quot;')
+        .replaceAll("'", '&#39;');
+    }
 
-  // Try absolute (works when hosted), then step-wise relatives (works offline)
-  load('/assets/js/chatbot.js', null, () =>
-    load('assets/js/chatbot.js', null, () =>
-      load('../assets/js/chatbot.js', null, () =>
-        load('../../assets/js/chatbot.js', null, () =>
-          console.warn('SCPHS chatbot: unable to load script from any known path.')
+    function param(k) {
+      return new URLSearchParams(location.search).get(k) || '';
+    }
+
+    function getInitials(name = '') {
+      const parts = String(name).trim().split(/\s+/).filter(Boolean);
+      if (!parts.length) return 'T';
+      if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
+      return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+    }
+
+    function matchesGrade(text = '', gradeNum = 'all') {
+      if (!gradeNum || gradeNum === 'all') return true;
+      const re = new RegExp(`(?:grade\\s*|g\\s*|\\b)${gradeNum}\\b`, 'i');
+      return re.test(String(text));
+    }
+
+    // DepEd Order No. 09, s. 2026 Strengthened SHS Track & Elective Mapping
+    const DO09_PATHWAY_META = {
+      acad: {
+        pathwayLabel: 'Academic Track (D.O. 09, s. 2026)',
+        summary: 'Strengthened Academic Track preparing learners for university/college programs through the 5 Core Subjects and flexible discipline electives.',
+        specs: ['STEM', 'ABM', 'HUMSS', 'GAS'],
+        electivesBySpec: {
+          STEM: [
+            '<strong>Science, Technology, Engineering &amp; Mathematics Electives:</strong> Pre-Calculus, Basic Calculus, General Biology 1–2, General Chemistry 1–2, General Physics 1–2',
+            '<strong>Research &amp; Capstone:</strong> Science/Engineering Investigatory Research &amp; Work Immersion (Grade 12)',
+            '<strong>Pathway Outcome:</strong> Direct readiness for STEM, Engineering, Health Sciences, and Computing degrees'
+          ],
+          ABM: [
+            '<strong>Accountancy, Business &amp; Management Electives:</strong> Fundamentals of ABM 1–2, Business Finance, Principles of Marketing, Applied Economics',
+            '<strong>Enterprise &amp; Immersion:</strong> Business Enterprise Simulation &amp; Work Immersion (Grade 12)',
+            '<strong>Pathway Outcome:</strong> Readiness for Accountancy, Business Administration, Entrepreneurship, and Finance'
+          ],
+          HUMSS: [
+            '<strong>Humanities &amp; Social Sciences Electives:</strong> Philippine Politics &amp; Governance, Disciplines in Social Sciences, Creative Writing, Community Engagement',
+            '<strong>Culminating Portfolio:</strong> Social Research / Community Action Practicum &amp; Work Immersion (Grade 12)',
+            '<strong>Pathway Outcome:</strong> Readiness for Education, Law, Public Administration, Communication, and Social Work'
+          ],
+          GAS: [
+            '<strong>General Academic Multidisciplinary Electives:</strong> Cross-cluster electives drawn from STEM, ABM, HUMSS, and TechPro offerings',
+            '<strong>Capstone &amp; Immersion:</strong> Applied Research / Integrative Project &amp; Work Immersion (Grade 12)',
+            '<strong>Pathway Outcome:</strong> Flexible college and career exploration across multiple disciplines'
+          ]
+        }
+      },
+      tvl: {
+        pathwayLabel: 'TechPro / TVL Track (D.O. 09, s. 2026)',
+        summary: 'Technical-Professional (TechPro) / TVL Pathway integrating the 5 Core Subjects with industry-aligned competencies, TESDA National Certificates, and Work Immersion.',
+        specs: ['ICT', 'HE', 'IA', 'Agri-Fishery'],
+        electivesBySpec: {
+          ICT: [
+            '<strong>Information &amp; Communications Technology Electives:</strong> Computer Systems Servicing (CSS NC II), Programming, Web &amp; Digital Media Production',
+            '<strong>Industry Immersion:</strong> Supervised ICT Workplace Immersion &amp; Portfolio Assessment (Grade 12)',
+            '<strong>Pathway Outcome:</strong> TESDA NC II certification, IT support/development roles, or BSIT/BSCS pathways'
+          ],
+          HE: [
+            '<strong>Home Economics Electives:</strong> Cookery NC II, Bread &amp; Pastry Production NC II, Food &amp; Beverage Services, Housekeeping / Caregiving',
+            '<strong>Industry Immersion:</strong> Hospitality &amp; Service Practicum / Work Immersion (Grade 12)',
+            '<strong>Pathway Outcome:</strong> TESDA NC II certification, hospitality employment, culinary entrepreneurship, or BSHM'
+          ],
+          IA: [
+            '<strong>Industrial Arts Electives:</strong> Automotive Servicing, Electrical Installation &amp; Maintenance (EIM NC II), Shielded Metal Arc Welding (SMAW)',
+            '<strong>Industry Immersion:</strong> Technical Shop Practicum &amp; Field Work Immersion (Grade 12)',
+            '<strong>Pathway Outcome:</strong> TESDA NC II certification, skilled trade employment, or Industrial/Engineering Technology'
+          ],
+          'Agri-Fishery': [
+            '<strong>Agri-Fishery Arts Electives:</strong> Agricultural Crops Production NC II, Animal Production, Organic Agriculture &amp; Aquaculture',
+            '<strong>Industry Immersion:</strong> Farm-Based Practicum &amp; Agribusiness Work Immersion (Grade 12)',
+            '<strong>Pathway Outcome:</strong> TESDA NC II certification, agri-entrepreneurship, or BS Agriculture / Forestry'
+          ]
+        }
+      },
+      arts: {
+        pathwayLabel: 'Arts & Design Elective Cluster (D.O. 09, s. 2026)',
+        summary: 'Strengthened SHS Arts & Design offerings combining foundational core competencies with studio production, media arts, and creative exhibition.',
+        specs: ['Arts and Design Production'],
+        electivesBySpec: {
+          'Arts and Design Production': [
+            '<strong>Creative &amp; Media Production Electives:</strong> Visual Arts, Performing Arts, Media &amp; Digital Design, Creative Industries Management',
+            '<strong>Culminating Showcase:</strong> Senior High Creative Production / Exhibition &amp; Work Immersion (Grade 12)',
+            '<strong>Pathway Outcome:</strong> Creative portfolio readiness for Fine Arts, Multimedia Arts, Architecture, and Design industries'
+          ]
+        }
+      },
+      sports: {
+        pathwayLabel: 'Sports & Human Kinetics Elective Cluster (D.O. 09, s. 2026)',
+        summary: 'Strengthened SHS Sports offerings integrating foundational core subjects with coaching, officiating, sports safety, and fitness leadership.',
+        specs: ['Sports Coaching', 'Fitness'],
+        electivesBySpec: {
+          'Sports Coaching': [
+            '<strong>Sports Coaching &amp; Officiating Electives:</strong> Principles of Coaching, Sports Officiating &amp; Activity Management, Human Movement &amp; Safety',
+            '<strong>Field Practicum:</strong> Athletic Coaching Apprenticeship &amp; Work Immersion (Grade 12)',
+            '<strong>Pathway Outcome:</strong> Readiness for Physical Education, Sports Science, Coaching, and Athletic Administration'
+          ],
+          Fitness: [
+            '<strong>Fitness &amp; Conditioning Electives:</strong> Exercise Physiology, Fitness Testing &amp; Programming, Psychosocial Aspects of Sports &amp; Wellness',
+            '<strong>Field Practicum:</strong> Wellness &amp; Conditioning Practicum / Work Immersion (Grade 12)',
+            '<strong>Pathway Outcome:</strong> Fitness instruction, wellness leadership, or Kinesiology / Exercise Science degrees'
+          ]
+        }
+      }
+    };
+
+    function renderTeachers(list, activeGrade = 'all') {
+      const host = document.getElementById('teachers');
+      host.innerHTML = '';
+
+      if (!Array.isArray(list) || !list.length) {
+        host.innerHTML = '<div class="empty-state"><i class="fas fa-user-slash"></i><br/>No teachers listed yet for this specialization.</div>';
+        return 0;
+      }
+
+      const filtered = activeGrade === 'all'
+        ? list
+        : list.filter((t) => {
+            const haystack = [t.advisory, t.load, t.loads, t.grade, t.grades, t.sections]
+              .flat()
+              .filter(Boolean)
+              .join(' ');
+            return !haystack.trim() || matchesGrade(haystack, activeGrade);
+          });
+
+      if (!filtered.length) {
+        host.innerHTML = `<div class="empty-state">No specific faculty match for Grade ${esc(activeGrade)}. Select <strong>Grades 11 &amp; 12</strong> to view all specialization teachers.</div>`;
+        return 0;
+      }
+
+      filtered.forEach((t) => {
+        const div = document.createElement('div');
+        div.className = 'teacher-card';
+        const name = esc(t.name || 'Unnamed Faculty');
+        const role = esc(t.role || t.position || t.rank || '');
+        const email = esc(t.email || '');
+        const advisory = esc(t.advisory || '');
+        const loadText = Array.isArray(t.loads)
+          ? t.loads.map(esc).join(', ')
+          : esc(t.load || t.loads || '');
+
+        div.innerHTML = `
+          <div class="avatar-circle">${esc(getInitials(t.name))}</div>
+          <div class="teacher-info">
+            <div class="teacher-name-row">
+              <strong>${name}</strong>
+              ${role ? `<span class="role-tag">${role}</span>` : ''}
+            </div>
+            ${email ? `<div class="teacher-meta"><i class="fas fa-envelope"></i> <a href="mailto:${email}">${email}</a></div>` : ''}
+            ${advisory ? `<div class="teacher-meta"><i class="fas fa-chalkboard"></i> Advisory: <strong>${advisory}</strong></div>` : ''}
+            ${loadText ? `<div class="teacher-meta"><i class="fas fa-book"></i> Load / Subjects: ${loadText}</div>` : ''}
+          </div>
+        `;
+        host.appendChild(div);
+      });
+
+      return filtered.length;
+    }
+
+    function renderSections(map, activeGrade = 'all') {
+      const host = document.getElementById('sections');
+      host.innerHTML = '';
+      const keys = Object.keys(map || {});
+      if (!keys.length) {
+        host.innerHTML = '<div class="empty-state"><i class="fas fa-door-closed"></i><br/>No sections assigned yet for this specialization.</div>';
+        return 0;
+      }
+
+      let totalSections = 0;
+      keys.forEach((grade) => {
+        const sections = Array.isArray(map[grade]) ? map[grade] : [];
+        totalSections += sections.length;
+
+        const isHighlighted = activeGrade !== 'all' && matchesGrade(grade, activeGrade);
+        const card = document.createElement('div');
+        card.className = 'grade-group-card' + (isHighlighted ? ' highlighted-grade' : '');
+
+        const chipsHtml = sections.length
+          ? sections.map((sec) => `<span class="sec-chip">${esc(sec)}</span>`).join('')
+          : '<span class="muted">No sections listed</span>';
+
+        card.innerHTML = `
+          <div class="grade-group-header">
+            <strong>${esc(grade)}</strong>
+            <span class="sec-count">${sections.length} ${sections.length === 1 ? 'Section' : 'Sections'}</span>
+          </div>
+          <div class="section-chips">${chipsHtml}</div>
+        `;
+        host.appendChild(card);
+      });
+
+      return totalSections;
+    }
+
+    (function () {
+      const yearEl = document.getElementById('yearNow');
+      if (yearEl) yearEl.textContent = new Date().getFullYear();
+
+      const trackKey = (param('track') || '').trim().toLowerCase();
+      const specParam = decodeURIComponent(param('spec') || '').trim();
+      let activeGrade = param('grade').trim() || 'all';
+
+      const data = window.FACULTY_DATA && FACULTY_DATA.shs;
+      const tracks = (data && data.tracks) ? data.tracks : {};
+      const track = tracks[trackKey];
+      const pathwayMeta = DO09_PATHWAY_META[trackKey] || null;
+
+      const title = document.getElementById('title');
+      const subtitle = document.getElementById('subtitle');
+
+      // Populate Track Specialization Switcher Pills
+      const switcher = document.getElementById('specSwitcher');
+      const specList = (track && track.specs)
+        ? Object.keys(track.specs)
+        : (pathwayMeta ? pathwayMeta.specs : []);
+
+      if (specList.length && trackKey) {
+        switcher.innerHTML = specList.map((sp) => {
+          const isActive = sp.toLowerCase() === specParam.toLowerCase();
+          const href = `shs-spec.html?track=${encodeURIComponent(trackKey)}&spec=${encodeURIComponent(sp)}`;
+          return `<a class="spec-pill${isActive ? ' active' : ''}" href="${href}">${esc(sp)}</a>`;
+        }).join('');
+      } else {
+        switcher.innerHTML = `<a class="spec-pill" href="shs.html"><i class="fas fa-compass"></i> Select Track &amp; Specialization</a>`;
+      }
+
+      if (!track && !pathwayMeta) {
+        title.textContent = 'Track or Specialization Not Found';
+        subtitle.textContent = 'Select a Senior High School track and specialization from the SHS Faculty Directory.';
+        renderTeachers([]);
+        renderSections({});
+        return;
+      }
+
+      let specData = (track && track.specs) ? track.specs[specParam] : null;
+      let matchedSpecKey = specParam;
+      if (!specData && track && track.specs) {
+        const key = Object.keys(track.specs).find((k) => k.toLowerCase() === specParam.toLowerCase());
+        if (key) {
+          specData = track.specs[key];
+          matchedSpecKey = key;
+        }
+      }
+
+      const trackName = (track && track.name) || (pathwayMeta && pathwayMeta.pathwayLabel) || 'SHS Track';
+      const specName = matchedSpecKey || 'Specialization';
+
+      document.title = `SHS ${specName} (${trackName}) — DepEd Order No. 09, s. 2026 | SCPHS`;
+      title.textContent = `SHS • ${specName} (${trackName})`;
+      subtitle.textContent = (pathwayMeta && pathwayMeta.summary) || 'Teaching Personnel, Sections & Strengthened SHS Curriculum (DepEd Order No. 09, s. 2026)';
+
+      if (pathwayMeta) {
+        document.getElementById('statPathway').textContent = pathwayMeta.pathwayLabel;
+        document.getElementById('do09Summary').textContent = pathwayMeta.summary;
+
+        const electiveItems = pathwayMeta.electivesBySpec[matchedSpecKey]
+          || Object.entries(pathwayMeta.electivesBySpec).find(([k]) => k.toLowerCase() === specName.toLowerCase())?.[1];
+
+        if (electiveItems && electiveItems.length) {
+          document.getElementById('electiveBoxTitle').innerHTML = `<i class="fas fa-layer-group"></i> ${esc(specName)} Electives &amp; Immersion (D.O. 09, s. 2026)`;
+          document.getElementById('electiveClusterList').innerHTML = electiveItems.map((item) => `<li>${item}</li>`).join('');
+        }
+      }
+
+      function refreshView() {
+        const tCount = renderTeachers((specData && specData.teachers) || [], activeGrade);
+        const sCount = renderSections((specData && specData.sections) || {}, activeGrade);
+
+        document.getElementById('statTeachers').textContent = `${tCount} ${tCount === 1 ? 'Faculty Member' : 'Faculty Members'}`;
+        document.getElementById('statSections').textContent = `${sCount} ${sCount === 1 ? 'Class Section' : 'Class Sections'}`;
+
+        document.querySelectorAll('.grade-btn').forEach((btn) => {
+          btn.classList.toggle('active', (btn.dataset.grade || 'all') === activeGrade);
+        });
+      }
+
+      document.querySelectorAll('.grade-btn').forEach((btn) => {
+        btn.addEventListener('click', () => {
+          activeGrade = btn.dataset.grade || 'all';
+          const url = new URL(location.href);
+          if (activeGrade === 'all') url.searchParams.delete('grade');
+          else url.searchParams.set('grade', activeGrade);
+          history.replaceState(null, '', url.toString());
+          refreshView();
+        });
+      });
+
+      refreshView();
+    })();
+  </script>
+
+  <!-- Chatbot auto-loader: tries absolute path, then ../, then ../../ -->
+  <script>
+  (function(){
+    const rootId = 'scphs-chatbot-root';
+    if (!document.getElementById(rootId)) {
+      const m = document.createElement('div');
+      m.id = rootId;
+      document.body.appendChild(m);
+    }
+
+    const tried = {};
+    function load(src, onOk, onFail){
+      if (tried[src]) return onFail && onFail();
+      tried[src] = true;
+      const s = document.createElement('script');
+      s.src = src; s.defer = true;
+      s.onload = onOk;
+      s.onerror = onFail;
+      document.body.appendChild(s);
+    }
+
+    load('/assets/js/chatbot.js', null, () =>
+      load('assets/js/chatbot.js', null, () =>
+        load('../assets/js/chatbot.js', null, () =>
+          load('../../assets/js/chatbot.js', null, () =>
+            console.warn('SCPHS chatbot: unable to load script from any known path.')
+          )
         )
       )
-    )
-  );
-})();
-</script>
+    );
+  })();
+  </script>
+</body>
+</html>

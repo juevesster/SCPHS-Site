@@ -1,86 +1,747 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Faculty – SHS (Grades 11–12) | SCPHS</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Faculty – Senior High School (Grades 11–12) | SCPHS</title>
+  <meta name="description" content="Sta. Cruz Pingkian High School Senior High School (Grades 11–12) tracks, strands, specializations, and faculty directory." />
   <link rel="stylesheet" href="../assets/css/styles.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
   <style>
-    /* Optional: nicer specialization chips */
-    .spec-list { display:flex; flex-wrap:wrap; gap:8px; margin-top:8px; }
-    .spec-link {
-      display:inline-block; padding:6px 10px; border:1px solid var(--border);
-      border-radius:999px; text-decoration:none; color:inherit; background:var(--card);
+    :root {
+      --navy: #0f172a;
+      --primary: #1e3c72;
+      --teal: #0f766e;
+      --bg: #f1f5f9;
+      --card: #ffffff;
+      --border: #e2e8f0;
+      --text: #0f172a;
+      --muted: #475569;
     }
-    .spec-link:hover { border-color: var(--primary); color: var(--primary); }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.5;
+    }
+
+    .shs-wrap {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 18px;
+    }
+
+    /* Hero Banner */
+    .shs-hero {
+      background: linear-gradient(135deg, #0f172a 0%, #1e3c72 58%, #0f766e 100%);
+      color: #fff;
+      padding: 26px 0 34px;
+      border-bottom: 4px solid #f59e0b;
+      position: relative;
+      overflow: hidden;
+    }
+    .shs-hero::after {
+      content: "";
+      position: absolute;
+      right: -60px;
+      top: -60px;
+      width: 280px;
+      height: 280px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(255,255,255,0.12), transparent 70%);
+      pointer-events: none;
+    }
+
+    .hero-top-nav {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 18px;
+    }
+    .kicker-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      background: rgba(255, 255, 255, 0.14);
+      border: 1px solid rgba(255, 255, 255, 0.22);
+      padding: 5px 12px;
+      border-radius: 999px;
+      font-size: 11.5px;
+      font-weight: 700;
+      letter-spacing: 0.6px;
+      text-transform: uppercase;
+    }
+    .hero-actions {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .hero-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      padding: 8px 14px;
+      border-radius: 9px;
+      font-size: 13px;
+      font-weight: 700;
+      text-decoration: none;
+      transition: 0.18s ease;
+    }
+    .hero-btn.primary {
+      background: #10b981;
+      color: #fff;
+    }
+    .hero-btn.secondary {
+      background: rgba(255, 255, 255, 0.14);
+      color: #fff;
+      border: 1px solid rgba(255, 255, 255, 0.28);
+    }
+    .hero-btn:hover {
+      transform: translateY(-1px);
+      opacity: 0.95;
+    }
+
+    .shs-hero h1 {
+      margin: 0 0 6px;
+      font-size: clamp(1.65rem, 3vw, 2.25rem);
+      font-weight: 800;
+      letter-spacing: -0.3px;
+      color: #fff;
+    }
+    .shs-hero p.subtitle {
+      margin: 0;
+      color: #cbd5e1;
+      font-size: 14.5px;
+      max-width: 740px;
+    }
+
+    .hero-stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(175px, 1fr));
+      gap: 12px;
+      margin-top: 22px;
+    }
+    .hero-stat {
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      backdrop-filter: blur(6px);
+      border-radius: 12px;
+      padding: 12px 14px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .hero-stat i {
+      width: 38px;
+      height: 38px;
+      border-radius: 10px;
+      background: rgba(255, 255, 255, 0.16);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+      color: #fde68a;
+      flex-shrink: 0;
+    }
+    .hero-stat .stat-val {
+      font-size: 16px;
+      font-weight: 800;
+      color: #fff;
+      line-height: 1.2;
+    }
+    .hero-stat .stat-lbl {
+      font-size: 11.5px;
+      color: #cbd5e1;
+    }
+
+    /* Filter & Search Bar */
+    .filter-toolbar {
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 14px 16px;
+      margin: -18px auto 22px;
+      box-shadow: 0 8px 24px rgba(15, 23, 42, 0.06);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 12px;
+      position: relative;
+      z-index: 10;
+    }
+    .track-pills {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      flex-wrap: wrap;
+    }
+    .filter-label {
+      font-size: 12px;
+      font-weight: 800;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-right: 4px;
+    }
+    .track-chip {
+      border: 1px solid #cbd5e1;
+      background: #f8fafc;
+      color: #334155;
+      padding: 7px 14px;
+      border-radius: 999px;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: 0.16s ease;
+    }
+    .track-chip:hover {
+      border-color: var(--primary);
+      color: var(--primary);
+    }
+    .track-chip.active {
+      background: var(--primary);
+      border-color: var(--primary);
+      color: #fff;
+      box-shadow: 0 3px 10px rgba(30, 60, 114, 0.25);
+    }
+
+    .toolbar-right {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+      flex: 1 1 300px;
+      justify-content: flex-end;
+    }
+    .grade-select {
+      padding: 8px 12px;
+      border: 1px solid #cbd5e1;
+      border-radius: 999px;
+      font-size: 13px;
+      font-weight: 700;
+      color: #334155;
+      background: #f8fafc;
+      cursor: pointer;
+    }
+    .search-box {
+      position: relative;
+      min-width: 240px;
+      flex: 1 1 250px;
+      max-width: 340px;
+    }
+    .search-box i {
+      position: absolute;
+      left: 13px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: #94a3b8;
+      font-size: 13.5px;
+    }
+    .search-box input {
+      width: 100%;
+      padding: 9px 14px 9px 36px;
+      border: 1px solid #cbd5e1;
+      border-radius: 999px;
+      font-size: 13.5px;
+      font-family: inherit;
+      outline: none;
+      background: #f8fafc;
+      transition: 0.15s;
+    }
+    .search-box input:focus {
+      background: #fff;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(30, 60, 114, 0.12);
+    }
+
+    .section-heading {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 14px;
+    }
+    .section-heading h2 {
+      margin: 0;
+      font-size: 15px;
+      font-weight: 800;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      color: var(--navy);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .section-heading span {
+      font-size: 12.5px;
+      color: var(--muted);
+    }
+
+    /* Track Cards Grid */
+    .track-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 18px;
+      margin-bottom: 24px;
+    }
+    .track-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-top: 5px solid var(--accent-color, var(--primary));
+      border-radius: 16px;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      box-shadow: 0 4px 14px rgba(15, 23, 42, 0.04);
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    .track-card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 12px 26px rgba(15, 23, 42, 0.09);
+    }
+    .track-card.hidden-card {
+      display: none;
+    }
+
+    .card-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+    .track-badge {
+      display: inline-block;
+      font-size: 10.5px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      padding: 4px 10px;
+      border-radius: 6px;
+      background: var(--badge-bg, #eff6ff);
+      color: var(--accent-color, var(--primary));
+    }
+    .track-icon {
+      width: 46px;
+      height: 46px;
+      border-radius: 12px;
+      background: var(--badge-bg, #eff6ff);
+      color: var(--accent-color, var(--primary));
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      flex-shrink: 0;
+    }
+
+    .track-card h3 {
+      margin: 0 0 6px;
+      font-size: 19px;
+      font-weight: 800;
+      color: var(--navy);
+    }
+    .track-card p {
+      margin: 0 0 16px;
+      font-size: 13.5px;
+      color: var(--muted);
+      line-height: 1.5;
+    }
+
+    .spec-section-label {
+      font-size: 11px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--muted);
+      margin-bottom: 8px;
+      display: block;
+    }
+    .spec-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .spec-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      padding: 8px 13px;
+      border: 1px solid #cbd5e1;
+      border-radius: 10px;
+      text-decoration: none;
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--navy);
+      background: #f8fafc;
+      transition: 0.16s ease;
+    }
+    .spec-link i.spec-ico {
+      color: var(--accent-color, var(--primary));
+      font-size: 13px;
+    }
+    .spec-link i.arrow-ico {
+      font-size: 11px;
+      opacity: 0.65;
+      transition: transform 0.16s ease;
+    }
+    .spec-link:hover {
+      background: var(--accent-color, var(--primary));
+      border-color: var(--accent-color, var(--primary));
+      color: #fff;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(15, 23, 42, 0.14);
+    }
+    .spec-link:hover i.spec-ico {
+      color: #fff;
+    }
+    .spec-link:hover i.arrow-ico {
+      opacity: 1;
+      transform: translateX(3px);
+    }
+    .spec-link.dimmed-spec {
+      opacity: 0.35;
+    }
+
+    /* Info Strip */
+    .shs-info-banner {
+      background: #fff;
+      border: 1px solid var(--border);
+      border-left: 5px solid var(--teal);
+      border-radius: 14px;
+      padding: 18px 20px;
+      margin-bottom: 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 14px;
+    }
+    .shs-info-banner h3 {
+      margin: 0 0 4px;
+      font-size: 15.5px;
+      color: var(--primary);
+    }
+    .shs-info-banner p {
+      margin: 0;
+      font-size: 13px;
+      color: var(--muted);
+    }
+
+    .bottom-nav-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 10px;
+      padding: 14px 0 28px;
+      border-top: 1px solid #cbd5e1;
+    }
+    .back-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: #fff;
+      border: 1px solid #cbd5e1;
+      color: var(--primary);
+      padding: 9px 16px;
+      border-radius: 10px;
+      font-size: 13.5px;
+      font-weight: 700;
+      text-decoration: none;
+      transition: 0.16s;
+    }
+    .back-pill:hover {
+      background: var(--primary);
+      color: #fff;
+      border-color: var(--primary);
+    }
+
+    /* School & GOVPH Footers */
+    .scphs-footer {
+      background: #0f172a;
+      color: #cbd5e1;
+      padding: 26px 0;
+      font-size: 13px;
+      border-top: 3px solid var(--teal);
+    }
+    .scphs-footer .foot-grid {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      flex-wrap: wrap;
+      gap: 16px;
+      margin-bottom: 14px;
+    }
+    .scphs-footer strong {
+      color: #fff;
+      font-size: 15px;
+    }
+    .scphs-footer a {
+      color: #93c5fd;
+      text-decoration: none;
+    }
+    .scphs-footer a:hover {
+      text-decoration: underline;
+    }
+    .scphs-footer .copy {
+      border-top: 1px solid rgba(255,255,255,0.12);
+      padding-top: 12px;
+      font-size: 12px;
+      color: #94a3b8;
+    }
+
+    .govph-footer {
+      background: #1e293b;
+      color: #cbd5e1;
+      font-size: 12.5px;
+    }
+    .govph-footer__grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 20px;
+      padding: 24px 18px;
+    }
+    .govph-footer h4 {
+      margin: 0 0 8px;
+      color: #fff;
+      font-size: 13.5px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .govph-footer__links {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+    .govph-footer__links li { margin-bottom: 5px; }
+    .govph-footer__links a {
+      color: #93c5fd;
+      text-decoration: none;
+    }
+    .govph-footer__links a:hover { text-decoration: underline; }
+    .govph-footer__bar {
+      background: #0b1120;
+      padding: 11px 0;
+      color: #94a3b8;
+      text-align: center;
+    }
   </style>
 </head>
 <body>
-  <header class="subhead">
-    <div class="wrap">
-      <h1>Faculty – Senior High School</h1>
-      <p class="meta">Grades 11–12 • Tracks &amp; Specializations</p>
+
+  <!-- HERO HEADER -->
+  <header class="shs-hero">
+    <div class="shs-wrap">
+      <div class="hero-top-nav">
+        <span class="kicker-pill"><i class="fas fa-landmark"></i> DepEd Region II • Division of Nueva Vizcaya</span>
+        <div class="hero-actions">
+          <a href="index.html" class="hero-btn secondary"><i class="fas fa-arrow-left"></i> Faculty Command Center</a>
+          <a href="jhs.html" class="hero-btn primary"><i class="fas fa-school"></i> Junior High (Grades 7–10)</a>
+        </div>
+      </div>
+
+      <h1>Senior High School Faculty Directory</h1>
+      <p class="subtitle">
+        Explore Sta. Cruz Pingkian High School's Grades 11–12 career tracks, academic strands, TVL specializations, and teaching personnel.
+      </p>
+
+      <div class="hero-stats">
+        <div class="hero-stat">
+          <i class="fas fa-compass"></i>
+          <div>
+            <div class="stat-val">4 Career Tracks</div>
+            <div class="stat-lbl">Acad, TVL, Arts &amp; Sports</div>
+          </div>
+        </div>
+        <div class="hero-stat">
+          <i class="fas fa-layer-group"></i>
+          <div>
+            <div class="stat-val">11 Specializations</div>
+            <div class="stat-lbl">Strands &amp; Tech-Voc Offerings</div>
+          </div>
+        </div>
+        <div class="hero-stat">
+          <i class="fas fa-graduation-cap"></i>
+          <div>
+            <div class="stat-val">Grades 11 – 12</div>
+            <div class="stat-lbl">Senior High Curriculum</div>
+          </div>
+        </div>
+        <div class="hero-stat">
+          <i class="fas fa-certificate"></i>
+          <div>
+            <div class="stat-val">College &amp; TESDA Ready</div>
+            <div class="stat-lbl">NC II &amp; Higher Ed Pathways</div>
+          </div>
+        </div>
+      </div>
     </div>
   </header>
 
-  <main class="wrap">
-    <section class="grid-2" style="display:grid; gap:16px; grid-template-columns:repeat(auto-fit,minmax(260px,1fr))">
+  <main class="shs-wrap">
+    <!-- INTERACTIVE TRACK FILTER & SEARCH -->
+    <div class="filter-toolbar">
+      <div class="track-pills" role="group" aria-label="Filter by SHS Track">
+        <span class="filter-label"><i class="fas fa-filter"></i> Track:</span>
+        <button type="button" class="track-chip active" data-track="all">All Tracks (4)</button>
+        <button type="button" class="track-chip" data-track="acad">Academic</button>
+        <button type="button" class="track-chip" data-track="tvl">TVL</button>
+        <button type="button" class="track-chip" data-track="arts">Arts &amp; Design</button>
+        <button type="button" class="track-chip" data-track="sports">Sports</button>
+      </div>
 
+      <div class="toolbar-right">
+        <select id="shsGradeSelect" class="grade-select" aria-label="Filter SHS Grade Level">
+          <option value="all">Grades 11 &amp; 12</option>
+          <option value="11">Grade 11 Only</option>
+          <option value="12">Grade 12 Only</option>
+        </select>
+
+        <div class="search-box">
+          <i class="fas fa-search"></i>
+          <input type="search" id="specSearch" placeholder="Search strand or specialization (e.g., STEM, ICT)..." aria-label="Search SHS Strands and Specializations" />
+        </div>
+      </div>
+    </div>
+
+    <div class="section-heading">
+      <h2><i class="fas fa-sitemap"></i> Senior High School Tracks &amp; Specializations</h2>
+      <span id="filterHint">Showing all 4 SHS career tracks • Select a strand pill to view faculty &amp; sections</span>
+    </div>
+
+    <!-- TRACK CARDS GRID -->
+    <section class="track-grid" id="trackGrid">
       <!-- Academic Track -->
-      <article class="card">
-        <h2>Academic Track</h2>
-        <div class="spec-list">
-          <a class="spec-link" href="shs-spec.html?track=acad&spec=STEM">STEM</a>
-          <a class="spec-link" href="shs-spec.html?track=acad&spec=ABM">ABM</a>
-          <a class="spec-link" href="shs-spec.html?track=acad&spec=HUMSS">HUMSS</a>
-          <a class="spec-link" href="shs-spec.html?track=acad&spec=GAS">GAS</a>
+      <article class="track-card" data-track="acad" data-keywords="academic stem abm humss gas science technology engineering mathematics accountancy business management humanities social sciences general" style="--accent-color:#1d4ed8;--badge-bg:#dbeafe;">
+        <div>
+          <div class="card-top">
+            <span class="track-badge">University &amp; College Prep</span>
+            <span class="track-icon"><i class="fas fa-atom"></i></span>
+          </div>
+          <h3>Academic Track</h3>
+          <p>Prepares Grade 11 and 12 learners for higher education degrees in science, engineering, business, humanities, and multidisciplinary studies.</p>
+        </div>
+        <div>
+          <span class="spec-section-label">Academic Strands (Select to View Faculty)</span>
+          <div class="spec-list">
+            <a class="spec-link" data-base-href="shs-spec.html?track=acad&spec=STEM" data-spec-keywords="stem science technology engineering mathematics" href="shs-spec.html?track=acad&spec=STEM">
+              <i class="fas fa-flask spec-ico"></i> STEM <i class="fas fa-chevron-right arrow-ico"></i>
+            </a>
+            <a class="spec-link" data-base-href="shs-spec.html?track=acad&spec=ABM" data-spec-keywords="abm accountancy business management" href="shs-spec.html?track=acad&spec=ABM">
+              <i class="fas fa-chart-line spec-ico"></i> ABM <i class="fas fa-chevron-right arrow-ico"></i>
+            </a>
+            <a class="spec-link" data-base-href="shs-spec.html?track=acad&spec=HUMSS" data-spec-keywords="humss humanities social sciences" href="shs-spec.html?track=acad&spec=HUMSS">
+              <i class="fas fa-scale-balanced spec-ico"></i> HUMSS <i class="fas fa-chevron-right arrow-ico"></i>
+            </a>
+            <a class="spec-link" data-base-href="shs-spec.html?track=acad&spec=GAS" data-spec-keywords="gas general academic strand" href="shs-spec.html?track=acad&spec=GAS">
+              <i class="fas fa-book-open spec-ico"></i> GAS <i class="fas fa-chevron-right arrow-ico"></i>
+            </a>
+          </div>
         </div>
       </article>
 
       <!-- TVL Track -->
-      <article class="card">
-        <h2>TVL Track</h2>
-        <div class="spec-list">
-          <a class="spec-link" href="shs-spec.html?track=tvl&spec=ICT">ICT</a>
-          <a class="spec-link" href="shs-spec.html?track=tvl&spec=HE">Home Economics</a>
-          <a class="spec-link" href="shs-spec.html?track=tvl&spec=IA">Industrial Arts</a>
-          <a class="spec-link" href="shs-spec.html?track=tvl&spec=Agri-Fishery">Agri-Fishery</a>
+      <article class="track-card" data-track="tvl" data-keywords="tvl technical vocational livelihood ict computer programming home economics cookery industrial arts automotive electrical agri fishery" style="--accent-color:#0f766e;--badge-bg:#ccfbf1;">
+        <div>
+          <div class="card-top">
+            <span class="track-badge">Technical-Vocational &amp; TESDA NC</span>
+            <span class="track-icon"><i class="fas fa-gears"></i></span>
+          </div>
+          <h3>TVL Track</h3>
+          <p>Technical-Vocational-Livelihood track equipping students with industry-aligned practical skills and TESDA National Certificates for immediate employment or entrepreneurship.</p>
+        </div>
+        <div>
+          <span class="spec-section-label">TVL Strands &amp; Specializations</span>
+          <div class="spec-list">
+            <a class="spec-link" data-base-href="shs-spec.html?track=tvl&spec=ICT" data-spec-keywords="ict information communications technology computer" href="shs-spec.html?track=tvl&spec=ICT">
+              <i class="fas fa-laptop-code spec-ico"></i> ICT <i class="fas fa-chevron-right arrow-ico"></i>
+            </a>
+            <a class="spec-link" data-base-href="shs-spec.html?track=tvl&spec=HE" data-spec-keywords="he home economics cookery bread pastry housekeeping" href="shs-spec.html?track=tvl&spec=HE">
+              <i class="fas fa-utensils spec-ico"></i> Home Economics <i class="fas fa-chevron-right arrow-ico"></i>
+            </a>
+            <a class="spec-link" data-base-href="shs-spec.html?track=tvl&spec=IA" data-spec-keywords="ia industrial arts automotive electrical carpentry" href="shs-spec.html?track=tvl&spec=IA">
+              <i class="fas fa-wrench spec-ico"></i> Industrial Arts <i class="fas fa-chevron-right arrow-ico"></i>
+            </a>
+            <a class="spec-link" data-base-href="shs-spec.html?track=tvl&spec=Agri-Fishery" data-spec-keywords="agri fishery agriculture crop production" href="shs-spec.html?track=tvl&spec=Agri-Fishery">
+              <i class="fas fa-seedling spec-ico"></i> Agri-Fishery <i class="fas fa-chevron-right arrow-ico"></i>
+            </a>
+          </div>
         </div>
       </article>
 
       <!-- Arts & Design -->
-      <article class="card">
-        <h2>Arts &amp; Design</h2>
-        <div class="spec-list">
-          <a class="spec-link" href="shs-spec.html?track=arts&spec=Arts%20and%20Design%20Production">Arts &amp; Design Production</a>
+      <article class="track-card" data-track="arts" data-keywords="arts design production theater music visual media creative" style="--accent-color:#6d28d9;--badge-bg:#ede9fe;">
+        <div>
+          <div class="card-top">
+            <span class="track-badge">Creative Industries</span>
+            <span class="track-icon"><i class="fas fa-palette"></i></span>
+          </div>
+          <h3>Arts &amp; Design</h3>
+          <p>Develops artistic expression, visual and media production, performing arts, and creative portfolio mastery for design and cultural careers.</p>
+        </div>
+        <div>
+          <span class="spec-section-label">Arts &amp; Design Specialization</span>
+          <div class="spec-list">
+            <a class="spec-link" data-base-href="shs-spec.html?track=arts&spec=Arts%20and%20Design%20Production" data-spec-keywords="arts and design production creative visual media" href="shs-spec.html?track=arts&spec=Arts%20and%20Design%20Production">
+              <i class="fas fa-masks-theater spec-ico"></i> Arts &amp; Design Production <i class="fas fa-chevron-right arrow-ico"></i>
+            </a>
+          </div>
         </div>
       </article>
 
       <!-- Sports -->
-      <article class="card">
-        <h2>Sports</h2>
-        <div class="spec-list">
-          <a class="spec-link" href="shs-spec.html?track=sports&spec=Sports%20Coaching">Sports Coaching</a>
-          <a class="spec-link" href="shs-spec.html?track=sports&spec=Fitness">Fitness</a>
+      <article class="track-card" data-track="sports" data-keywords="sports coaching fitness athletics physical conditioning" style="--accent-color:#b45309;--badge-bg:#fef3c7;">
+        <div>
+          <div class="card-top">
+            <span class="track-badge">Athletics &amp; Human Kinetics</span>
+            <span class="track-icon"><i class="fas fa-medal"></i></span>
+          </div>
+          <h3>Sports</h3>
+          <p>Focuses on sports science, athletic coaching, officiating, and physical fitness leadership for student-athletes and wellness practitioners.</p>
+        </div>
+        <div>
+          <span class="spec-section-label">Sports Specializations</span>
+          <div class="spec-list">
+            <a class="spec-link" data-base-href="shs-spec.html?track=sports&spec=Sports%20Coaching" data-spec-keywords="sports coaching officiating athletics" href="shs-spec.html?track=sports&spec=Sports%20Coaching">
+              <i class="fas fa-whistle spec-ico"></i> Sports Coaching <i class="fas fa-chevron-right arrow-ico"></i>
+            </a>
+            <a class="spec-link" data-base-href="shs-spec.html?track=sports&spec=Fitness" data-spec-keywords="fitness conditioning exercise wellness" href="shs-spec.html?track=sports&spec=Fitness">
+              <i class="fas fa-dumbbell spec-ico"></i> Fitness <i class="fas fa-chevron-right arrow-ico"></i>
+            </a>
+          </div>
         </div>
       </article>
-
     </section>
 
-    <nav class="links" style="margin-top:12px">
-      <a href="index.html" class="btn-return">← Back to Faculty Portal</a>
-      <span>·</span>
-      <a href="../index.html">SCPHS Home</a>
+    <!-- INFORMATION CALLOUT -->
+    <section class="shs-info-banner">
+      <div>
+        <h3><i class="fas fa-compass-drafting"></i> Need SHS Career Counseling or Student Records?</h3>
+        <p>Access the SF1 School Register, Junior High School directory, or return to the Faculty Command Center for class rosters and tools.</p>
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;">
+        <a href="jhs.html" class="back-pill"><i class="fas fa-school"></i> JHS Directory (7–10)</a>
+        <a href="sf1.html" class="back-pill"><i class="fas fa-users"></i> SF1 School Register</a>
+      </div>
+    </section>
+
+    <!-- BOTTOM NAVIGATION -->
+    <nav class="bottom-nav-bar" aria-label="Breadcrumb Navigation">
+      <a href="index.html" class="back-pill"><i class="fas fa-arrow-left"></i> Back to Faculty Portal</a>
+      <a href="../index.html" class="back-pill"><i class="fas fa-house"></i> SCPHS Home</a>
     </nav>
   </main>
-</body>
-</html>
-
-<!-- ======================= END ABOUT SECTION ======================= -->
 
   <!-- School Footer (SCPHS) -->
-  <footer>
-    <div class="wrap">
+  <footer class="scphs-footer">
+    <div class="shs-wrap">
       <div class="foot-grid">
         <div>
           <strong>Sta. Cruz Pingkian High School</strong><br/>
@@ -94,13 +755,13 @@
           <a href="https://www.facebook.com/p/Santa-Cruz-Pingkian-High-School-Official-61554495084090/" target="_blank" rel="noopener">Facebook</a>
         </div>
       </div>
-      <div class="copy">© 2026 SCPHS. All rights reserved.</div>
+      <div class="copy">© 2026 Sta. Cruz Pingkian High School (SCPHS). All rights reserved.</div>
     </div>
   </footer>
 
-  <!-- ================== GOVPH FOOTER (final, official) ================== -->
+  <!-- GOVPH Footer -->
   <footer class="govph-footer" role="contentinfo">
-    <div class="wrap govph-footer__grid">
+    <div class="shs-wrap govph-footer__grid">
       <div class="govph-footer__col">
         <h4>Republic of the Philippines</h4>
         <p>All content is in the public domain unless otherwise stated.</p>
@@ -126,45 +787,102 @@
     </div>
 
     <div class="govph-footer__bar">
-      <div class="wrap">
+      <div class="shs-wrap">
         <small>© <span id="yearNow"></span> Sta. Cruz Pingkian High School • A Philippine Government Website</small>
       </div>
     </div>
   </footer>
 
-    <!-- Chatbot mount -->
-<div id="scphs-chatbot-root"></div>
+  <!-- Chatbot mount -->
+  <div id="scphs-chatbot-root"></div>
 
-<!-- Chatbot auto-loader: tries absolute path, then ../, then ../../ -->
-<script>
-(function(){
-  const rootId = 'scphs-chatbot-root';
-  if (!document.getElementById(rootId)) {
-    const m = document.createElement('div');
-    m.id = rootId;
-    document.body.appendChild(m);
-  }
+  <script>
+    (function () {
+      const yearEl = document.getElementById('yearNow');
+      if (yearEl) yearEl.textContent = new Date().getFullYear();
 
-  const tried = {};
-  function load(src, onOk, onFail){
-    if (tried[src]) return onFail && onFail();
-    tried[src] = true;
-    const s = document.createElement('script');
-    s.src = src; s.defer = true;
-    s.onload = onOk;
-    s.onerror = onFail;
-    document.body.appendChild(s);
-  }
+      const chips = document.querySelectorAll('.track-chip');
+      const cards = document.querySelectorAll('.track-card');
+      const searchInput = document.getElementById('specSearch');
+      const gradeSelect = document.getElementById('shsGradeSelect');
+      const filterHint = document.getElementById('filterHint');
+      let selectedTrack = 'all';
 
-  // Try absolute (works when hosted), then step-wise relatives (works offline)
-  load('/assets/js/chatbot.js', null, () =>
-    load('assets/js/chatbot.js', null, () =>
-      load('../assets/js/chatbot.js', null, () =>
-        load('../../assets/js/chatbot.js', null, () =>
-          console.warn('SCPHS chatbot: unable to load script from any known path.')
+      function applyFilters() {
+        const term = (searchInput.value || '').trim().toLowerCase();
+        const gradeVal = gradeSelect.value || 'all';
+        let visibleTracks = 0;
+
+        cards.forEach((card) => {
+          const trackKey = card.dataset.track || '';
+          const cardKeywords = (card.dataset.keywords || '').toLowerCase();
+          const title = (card.querySelector('h3')?.textContent || '').toLowerCase();
+          const matchesTrack = selectedTrack === 'all' || trackKey === selectedTrack;
+          const matchesSearch = !term || cardKeywords.includes(term) || title.includes(term);
+
+          card.classList.toggle('hidden-card', !(matchesTrack && matchesSearch));
+          if (matchesTrack && matchesSearch) visibleTracks++;
+
+          card.querySelectorAll('.spec-link').forEach((link) => {
+            const baseHref = link.dataset.baseHref || link.getAttribute('href');
+            link.setAttribute('href', gradeVal === 'all' ? baseHref : `${baseHref}&grade=${gradeVal}`);
+
+            const specKw = (link.dataset.specKeywords || '').toLowerCase();
+            const specText = (link.textContent || '').toLowerCase();
+            const specHit = !term || specKw.includes(term) || specText.includes(term);
+            link.classList.toggle('dimmed-spec', Boolean(term) && !specHit);
+          });
+        });
+
+        const gradeLabel = gradeVal === 'all' ? 'Grades 11–12' : `Grade ${gradeVal}`;
+        filterHint.textContent = `Showing ${visibleTracks} SHS track(s) (${gradeLabel}) • Select a strand pill to view faculty & sections`;
+      }
+
+      chips.forEach((chip) => {
+        chip.addEventListener('click', () => {
+          chips.forEach((c) => c.classList.remove('active'));
+          chip.classList.add('active');
+          selectedTrack = chip.dataset.track || 'all';
+          applyFilters();
+        });
+      });
+
+      searchInput.addEventListener('input', applyFilters);
+      gradeSelect.addEventListener('change', applyFilters);
+    })();
+  </script>
+
+  <!-- Chatbot auto-loader: tries absolute path, then ../, then ../../ -->
+  <script>
+  (function(){
+    const rootId = 'scphs-chatbot-root';
+    if (!document.getElementById(rootId)) {
+      const m = document.createElement('div');
+      m.id = rootId;
+      document.body.appendChild(m);
+    }
+
+    const tried = {};
+    function load(src, onOk, onFail){
+      if (tried[src]) return onFail && onFail();
+      tried[src] = true;
+      const s = document.createElement('script');
+      s.src = src; s.defer = true;
+      s.onload = onOk;
+      s.onerror = onFail;
+      document.body.appendChild(s);
+    }
+
+    load('/assets/js/chatbot.js', null, () =>
+      load('assets/js/chatbot.js', null, () =>
+        load('../assets/js/chatbot.js', null, () =>
+          load('../../assets/js/chatbot.js', null, () =>
+            console.warn('SCPHS chatbot: unable to load script from any known path.')
+          )
         )
       )
-    )
-  );
-})();
-</script>
+    );
+  })();
+  </script>
+</body>
+</html>
