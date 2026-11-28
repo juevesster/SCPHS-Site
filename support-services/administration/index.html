@@ -171,7 +171,7 @@
     }
     .modal-backdrop.open { display: flex; }
     .modal-box {
-      background: #fff; border-radius: 20px; width: 100%; max-width: 560px;
+      background: #fff; border-radius: 20px; width: 100%; max-width: 580px;
       box-shadow: var(--shadow-lg); border: 1px solid var(--border); overflow: hidden;
     }
     .modal-header {
@@ -365,7 +365,7 @@
             </button>
           </div>
           <p style="font-size:0.8rem; color:var(--text-muted); margin-bottom:12px;">
-            Click any staff name or row to view ID photo, assign SHS/JHS specialization &amp; sections, or remove record.
+            Click any staff name or row to view ID photo, assign SSHS Academic/TechPro electives &amp; sections, or remove record.
           </p>
 
           <div class="staff-search-wrap">
@@ -374,7 +374,7 @@
               type="text"
               id="staffSearchInput"
               class="staff-search-input"
-              placeholder="Search staff by name, role, strand, subject, or email..."
+              placeholder="Search staff by name, role, SSHS cluster/elective, subject, or email..."
               oninput="filterStaffDirectory()"
             >
             <button type="button" id="staffSearchClear" class="staff-search-clear" onclick="clearStaffSearch()" title="Clear search">
@@ -442,11 +442,11 @@
     </div>
   </main>
 
-  <!-- STAFF EDIT / REMOVE DIALOG -->
+  <!-- STAFF / TEACHER PROFILE DIALOG -->
   <div class="modal-backdrop" id="staffDialog">
     <div class="modal-box">
       <div class="modal-header">
-        <h3 id="staffDialogTitle"><i class="fas fa-id-card" style="color:var(--primary);"></i> Staff Profile</h3>
+        <h3 id="staffDialogTitle"><i class="fas fa-id-card" style="color:var(--primary);"></i> Staff / Teacher Profile</h3>
         <button type="button" onclick="closeStaffDialog()" style="background:none;border:none;font-size:1.5rem;cursor:pointer;color:var(--text-muted);">&times;</button>
       </div>
       <form onsubmit="saveStaffDialog(event)">
@@ -495,10 +495,15 @@
               <label>Department / Office</label>
               <input type="text" id="stf-department" placeholder="e.g., SHS / JHS / Administration">
             </div>
-            <div class="form-group">
-              <label>SHS Strand / Specialization</label>
-              <input type="text" id="stf-shsSpecs" list="shsSpecSuggestions" placeholder="e.g., STEM, ABM, ICT, HE">
-              <datalist id="shsSpecSuggestions">
+            <div class="form-group full">
+              <label>SSHS Track &amp; Electives / Clusters (comma-separated)</label>
+              <input type="text" id="stf-shsSpecs" list="sshsClusterSuggestions" placeholder="e.g., STEM, Business and Entrepreneurship, ICT">
+              <datalist id="sshsClusterSuggestions">
+                <option value="Arts, Social Science, and Humanities">
+                <option value="Business and Entrepreneurship">
+                <option value="Science, Technology, Engineering, and Mathematics">
+                <option value="Sports, Health, and Wellness">
+                <option value="Field Experience">
                 <option value="STEM">
                 <option value="ABM">
                 <option value="HUMSS">
@@ -507,9 +512,6 @@
                 <option value="HE">
                 <option value="IA">
                 <option value="Agri-Fishery">
-                <option value="Arts and Design Production">
-                <option value="Sports Coaching">
-                <option value="Fitness">
               </datalist>
             </div>
             <div class="form-group">
@@ -518,11 +520,11 @@
             </div>
             <div class="form-group">
               <label>Class Advisory</label>
-              <input type="text" id="stf-advisory" placeholder="e.g., Grade 11 – ABM Mabini">
+              <input type="text" id="stf-advisory" placeholder="e.g., Grade 11 – STEM Einstein">
             </div>
-            <div class="form-group">
+            <div class="form-group full">
               <label>Assigned Sections (comma-separated)</label>
-              <input type="text" id="stf-sections" placeholder="e.g., Grade 11 - ABM A, Grade 12 - ABM B">
+              <input type="text" id="stf-sections" placeholder="e.g., Grade 11 - STEM A, Grade 12 - STEM B">
             </div>
             <div class="form-group full">
               <label>Email Address</label>
@@ -770,12 +772,12 @@
     window.openStaffDialog = function(id) {
       const person = id ? staffList.find(s => s.id === id) : null;
       document.getElementById("staffDialogTitle").innerHTML = person
-        ? `<i class="fas fa-id-card" style="color:var(--primary);"></i> Edit or Remove Staff`
-        : `<i class="fas fa-user-plus" style="color:var(--primary);"></i> Add Staff Member`;
+        ? `<i class="fas fa-id-card" style="color:var(--primary);"></i> Edit or Remove Staff / Teacher`
+        : `<i class="fas fa-user-plus" style="color:var(--primary);"></i> Add Staff / Teacher`;
 
       document.getElementById("stf-id").value = person ? person.id : "";
       document.getElementById("stf-name").value = person ? person.name : "";
-      document.getElementById("stf-role").value = person ? person.rawRole : "staff";
+      document.getElementById("stf-role").value = person ? person.rawRole : "teacher";
       document.getElementById("stf-department").value = person ? person.department : "";
       document.getElementById("stf-shsSpecs").value = person ? (person.shsSpecs || []).join(", ") : "";
       document.getElementById("stf-jhsSubjects").value = person ? (person.jhsSubjects || []).join(", ") : "";
@@ -801,7 +803,7 @@
       evt.preventDefault();
       const btn = document.getElementById("saveStaffBtn");
       const name = document.getElementById("stf-name").value.trim();
-      if (!name) return alert("Staff name is required.");
+      if (!name) return alert("Staff/Teacher name is required.");
 
       const existingId = document.getElementById("stf-id").value;
       const docId = existingId || `staff_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`;
