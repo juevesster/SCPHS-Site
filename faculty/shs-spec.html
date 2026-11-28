@@ -571,9 +571,9 @@
   </header>
 
   <main class="shs-wrap">
-    <!-- TRACK SPECIALIZATION SWITCHER & GRADE FILTER -->
+    <!-- TRACK CLUSTER SWITCHER & GRADE FILTER -->
     <div class="switcher-bar">
-      <div class="spec-links" id="specSwitcher" aria-label="Switch Specialization within Track"></div>
+      <div class="spec-links" id="specSwitcher" aria-label="Switch Cluster within Track"></div>
 
       <div class="grade-filter-group" aria-label="Filter Sections by Grade Level">
         <button type="button" class="grade-btn active" data-grade="all">Grades 11 &amp; 12</button>
@@ -713,6 +713,15 @@
       "staff"
     ]);
 
+    // Maps legacy URL query params or legacy teacher tags to the official SSHS cluster names
+    const LEGACY_TO_SSHS = {
+      stem: "Science, Technology, Engineering, and Mathematics",
+      abm: "Business and Entrepreneurship",
+      humss: "Arts, Social Science, and Humanities",
+      gas: "Field Experience",
+      he: "Family and Consumer Science"
+    };
+
     const SSHS_TRACKS = {
       acad: {
         trackLabel: "Academic Track",
@@ -724,12 +733,15 @@
           "Business and Entrepreneurship",
           "Science, Technology, Engineering, and Mathematics",
           "Sports, Health, and Wellness",
-          "Field Experience",
-          "STEM",
-          "ABM",
-          "HUMSS",
-          "GAS"
+          "Field Experience"
         ],
+        aliasesBySpec: {
+          "Arts, Social Science, and Humanities": ["arts, social science, and humanities", "humss", "arts", "humanities"],
+          "Business and Entrepreneurship": ["business and entrepreneurship", "abm", "business", "entrepreneurship"],
+          "Science, Technology, Engineering, and Mathematics": ["science, technology, engineering, and mathematics", "stem"],
+          "Sports, Health, and Wellness": ["sports, health, and wellness", "sports", "wellness"],
+          "Field Experience": ["field experience", "gas"]
+        },
         electivesBySpec: {
           "Arts, Social Science, and Humanities": [
             "<strong>Cluster Focus:</strong> Humanities, social sciences, culture, communication, and creative/critical inquiry",
@@ -750,22 +762,6 @@
           "Field Experience": [
             "<strong>Cluster Focus:</strong> Applied field exposure, practicum, research, and real-world academic immersion",
             "<strong>Pathway Alignment:</strong> Bridges classroom learning with actual institutional, community, and research environments"
-          ],
-          STEM: [
-            "<strong>STEM Focus:</strong> Science, Technology, Engineering, and Mathematics electives and investigatory work",
-            "<strong>Pathway Alignment:</strong> Aligns with the Science, Technology, Engineering, and Mathematics cluster under the Academic Track"
-          ],
-          ABM: [
-            "<strong>ABM Focus:</strong> Accountancy, business, economics, and enterprise electives",
-            "<strong>Pathway Alignment:</strong> Aligns with the Business and Entrepreneurship cluster under the Academic Track"
-          ],
-          HUMSS: [
-            "<strong>HUMSS Focus:</strong> Humanities, society, culture, and social research electives",
-            "<strong>Pathway Alignment:</strong> Aligns with the Arts, Social Science, and Humanities cluster under the Academic Track"
-          ],
-          GAS: [
-            "<strong>General Academic Focus:</strong> Cross-disciplinary Academic electives and Field Experience",
-            "<strong>Pathway Alignment:</strong> Supports flexible academic exploration across SSHS clusters"
           ]
         }
       },
@@ -774,17 +770,28 @@
         pathwayBadge: "TechPro Track (SSHS)",
         summary: "Strengthened SHS TechPro Track pairing core subjects with technical-professional electives, hands-on skills development, and Work Immersion.",
         do09Note: "Under the Strengthened SHS Program, learners in the TechPro Track complete technical-professional electives and Work Immersion aligned with industry standards and national competency benchmarks.",
-        specs: ["ICT", "HE", "IA", "Agri-Fishery"],
+        specs: [
+          "ICT",
+          "Family and Consumer Science",
+          "Industrial Arts",
+          "Agri-Fishery"
+        ],
+        aliasesBySpec: {
+          "ICT": ["ict", "information and communication technology"],
+          "Family and Consumer Science": ["family and consumer science", "he", "home economics"],
+          "Industrial Arts": ["industrial arts", "ia"],
+          "Agri-Fishery": ["agri-fishery", "agri-fishery arts", "agriculture"]
+        },
         electivesBySpec: {
-          ICT: [
+          "ICT": [
             "<strong>ICT Electives:</strong> Computer systems servicing, programming, digital systems, and information technology competencies",
             "<strong>Work Immersion:</strong> Supervised workplace immersion and practical skills demonstration"
           ],
-          HE: [
-            "<strong>Home Economics Electives:</strong> Culinary arts, baking/pastry, hospitality, food & beverage, and care services",
+          "Family and Consumer Science": [
+            "<strong>Family &amp; Consumer Science Electives:</strong> Culinary arts, baking/pastry, hospitality, food &amp; beverage, and care services",
             "<strong>Work Immersion:</strong> Hospitality, service, or enterprise practicum and work immersion"
           ],
-          IA: [
+          "Industrial Arts": [
             "<strong>Industrial Arts Electives:</strong> Automotive, electrical, electronics, welding, and industrial trade competencies",
             "<strong>Work Immersion:</strong> Technical shop practicum and industry work immersion"
           ],
@@ -841,7 +848,7 @@
       host.innerHTML = "";
 
       if (!Array.isArray(list) || !list.length) {
-        host.innerHTML = '<div class="empty-state"><i class="fas fa-user-slash"></i><br/>No teachers assigned to this specialization/cluster yet. Add or assign teachers in the Admin Office.</div>';
+        host.innerHTML = '<div class="empty-state"><i class="fas fa-user-slash"></i><br/>No teachers assigned to this cluster yet. Add or assign teachers in the Admin Office.</div>';
         return 0;
       }
 
@@ -894,7 +901,7 @@
       host.innerHTML = "";
       const keys = Object.keys(map || {});
       if (!keys.length) {
-        host.innerHTML = '<div class="empty-state"><i class="fas fa-door-closed"></i><br/>No sections assigned yet for this specialization/cluster.</div>';
+        host.innerHTML = '<div class="empty-state"><i class="fas fa-door-closed"></i><br/>No sections assigned yet for this cluster.</div>';
         return 0;
       }
 
@@ -924,10 +931,10 @@
       return totalSections;
     }
 
-    async function loadFirestoreUsersForSpec(specName) {
+    async function loadFirestoreUsersForSpec(specName, aliases = []) {
       try {
         const snap = await getDocs(collection(db, "users"));
-        const targetSpec = specName.trim().toLowerCase();
+        const terms = Array.from(new Set([specName.toLowerCase(), ...aliases.map((a) => a.toLowerCase())])).filter(Boolean);
         const teachers = [];
         const sectionsByGrade = {};
 
@@ -945,12 +952,13 @@
             .filter(Boolean);
 
           const deptText = String(u.department || "").toLowerCase();
-          const combinedText = `${userSpecs.join(" ")} ${deptText}`;
+          const combinedText = `${userSpecs.join(" ")} ${deptText}`.toLowerCase();
 
-          const matchesSpec = targetSpec && (
-            userSpecs.some((s) => s.toLowerCase() === targetSpec) ||
-            new RegExp(`\\b${targetSpec.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\b`, "i").test(combinedText)
-          );
+          const matchesSpec = terms.some((term) => {
+            if (userSpecs.some((s) => s.toLowerCase() === term)) return true;
+            const escaped = term.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+            return new RegExp(`\\b${escaped}\\b`, "i").test(combinedText);
+          });
 
           if (!matchesSpec) return;
 
@@ -993,23 +1001,24 @@
       if (yearCopyEl) yearCopyEl.textContent = yearNow;
 
       const trackKey = (param("track") || "acad").trim().toLowerCase();
-      const specParam = decodeURIComponent(param("spec") || "").trim();
+      const rawSpecParam = decodeURIComponent(param("spec") || "").trim();
+      const normalizedSpec = LEGACY_TO_SSHS[rawSpecParam.toLowerCase()] || rawSpecParam;
       let activeGrade = param("grade").trim() || "all";
 
       const pathwayMeta = SSHS_TRACKS[trackKey] || SSHS_TRACKS.acad;
       const switcher = document.getElementById("specSwitcher");
       const specList = pathwayMeta.specs || [];
+      const specName = normalizedSpec || specList[0] || "Specialization";
 
       if (specList.length) {
         switcher.innerHTML = specList.map((sp) => {
-          const isActive = sp.toLowerCase() === specParam.toLowerCase();
+          const isActive = sp.toLowerCase() === specName.toLowerCase();
           const href = `shs-spec.html?track=${encodeURIComponent(trackKey)}&spec=${encodeURIComponent(sp)}`;
           return `<a class="spec-pill${isActive ? " active" : ""}" href="${href}">${esc(sp)}</a>`;
         }).join("");
       }
 
       const trackName = pathwayMeta.trackLabel;
-      const specName = specParam || specList[0] || "Specialization";
 
       document.title = `SHS ${specName} (${trackName}) — Strengthened SHS Program | SCPHS`;
       document.getElementById("title").textContent = `SHS • ${specName} (${trackName})`;
@@ -1025,7 +1034,8 @@
         document.getElementById("electiveClusterList").innerHTML = electiveItems.map((item) => `<li>${item}</li>`).join("");
       }
 
-      const liveData = await loadFirestoreUsersForSpec(specName);
+      const aliases = (pathwayMeta.aliasesBySpec && pathwayMeta.aliasesBySpec[specName]) || [];
+      const liveData = await loadFirestoreUsersForSpec(specName, aliases);
 
       function refreshView() {
         const tCount = renderTeachers(liveData.teachers, activeGrade);
