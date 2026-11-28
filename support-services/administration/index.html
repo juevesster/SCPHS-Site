@@ -171,7 +171,7 @@
     }
     .modal-backdrop.open { display: flex; }
     .modal-box {
-      background: #fff; border-radius: 20px; width: 100%; max-width: 540px;
+      background: #fff; border-radius: 20px; width: 100%; max-width: 560px;
       box-shadow: var(--shadow-lg); border: 1px solid var(--border); overflow: hidden;
     }
     .modal-header {
@@ -365,7 +365,7 @@
             </button>
           </div>
           <p style="font-size:0.8rem; color:var(--text-muted); margin-bottom:12px;">
-            Click any staff name or row to view ID photo, edit details, or remove record.
+            Click any staff name or row to view ID photo, assign SHS/JHS specialization &amp; sections, or remove record.
           </p>
 
           <div class="staff-search-wrap">
@@ -374,7 +374,7 @@
               type="text"
               id="staffSearchInput"
               class="staff-search-input"
-              placeholder="Search staff by name, role, department, or email..."
+              placeholder="Search staff by name, role, strand, subject, or email..."
               oninput="filterStaffDirectory()"
             >
             <button type="button" id="staffSearchClear" class="staff-search-clear" onclick="clearStaffSearch()" title="Clear search">
@@ -493,7 +493,36 @@
             </div>
             <div class="form-group">
               <label>Department / Office</label>
-              <input type="text" id="stf-department" placeholder="e.g., Administration / ICT">
+              <input type="text" id="stf-department" placeholder="e.g., SHS / JHS / Administration">
+            </div>
+            <div class="form-group">
+              <label>SHS Strand / Specialization</label>
+              <input type="text" id="stf-shsSpecs" list="shsSpecSuggestions" placeholder="e.g., STEM, ABM, ICT, HE">
+              <datalist id="shsSpecSuggestions">
+                <option value="STEM">
+                <option value="ABM">
+                <option value="HUMSS">
+                <option value="GAS">
+                <option value="ICT">
+                <option value="HE">
+                <option value="IA">
+                <option value="Agri-Fishery">
+                <option value="Arts and Design Production">
+                <option value="Sports Coaching">
+                <option value="Fitness">
+              </datalist>
+            </div>
+            <div class="form-group">
+              <label>JHS Subject(s)</label>
+              <input type="text" id="stf-jhsSubjects" placeholder="e.g., Science, Mathematics">
+            </div>
+            <div class="form-group">
+              <label>Class Advisory</label>
+              <input type="text" id="stf-advisory" placeholder="e.g., Grade 11 – ABM Mabini">
+            </div>
+            <div class="form-group">
+              <label>Assigned Sections (comma-separated)</label>
+              <input type="text" id="stf-sections" placeholder="e.g., Grade 11 - ABM A, Grade 12 - ABM B">
             </div>
             <div class="form-group full">
               <label>Email Address</label>
@@ -539,6 +568,13 @@
 
     const STAFF_ROLES = new Set(Object.keys(ROLE_ORDER));
     let staffList = [];
+
+    function parseTagList(str) {
+      return String(str || "")
+        .split(",")
+        .map(s => s.trim())
+        .filter(Boolean);
+    }
 
     function escapeHTML(str) {
       return String(str ?? "").replace(/[&<>"']/g, m => ({
@@ -644,7 +680,9 @@
             p.name.toLowerCase().includes(query) ||
             p.roleLabel.toLowerCase().includes(query) ||
             (p.department && p.department.toLowerCase().includes(query)) ||
-            (p.email && p.email.toLowerCase().includes(query))
+            (p.email && p.email.toLowerCase().includes(query)) ||
+            (p.shsSpecs && p.shsSpecs.join(", ").toLowerCase().includes(query)) ||
+            (p.jhsSubjects && p.jhsSubjects.join(", ").toLowerCase().includes(query))
           )
         : staffList;
 
@@ -663,6 +701,10 @@
           ? `<img src="${escapeHTML(person.photoUrl)}" alt="${escapeHTML(person.name)}" class="staff-id-photo">`
           : `<div class="staff-id-fallback">${escapeHTML(getInitials(person.name))}</div>`;
 
+        const extraTag = person.shsSpecs?.length
+          ? person.shsSpecs.join(", ")
+          : (person.jhsSubjects?.length ? person.jhsSubjects.join(", ") : person.department);
+
         return `
           <li class="staff-item" onclick="openStaffDialog('${escapeJS(person.id)}')" title="Click to view ID photo, edit, or remove">
             <div class="staff-left">
@@ -671,7 +713,7 @@
                 <button type="button" class="staff-name-btn" onclick="event.stopPropagation(); openStaffDialog('${escapeJS(person.id)}')">
                   ${escapeHTML(person.name)}
                 </button>
-                <div class="staff-role-tag">${escapeHTML(person.roleLabel)}${person.department ? ` • ${escapeHTML(person.department)}` : ""}</div>
+                <div class="staff-role-tag">${escapeHTML(person.roleLabel)}${extraTag ? ` • ${escapeHTML(extraTag)}` : ""}</div>
               </div>
             </div>
             <span class="staff-right-hint"><i class="fas fa-pen"></i> Edit / Remove</span>
@@ -695,6 +737,10 @@
           if (STAFF_ROLES.has(rawRole)) {
             const fullName = data.name || `${data.firstName || ""} ${data.lastName || ""}`.trim() || "Unnamed Staff";
             const photoUrl = data.photoUrl || data.avatarUrl || data.imageUrl || "";
+            const shsSpecs = Array.isArray(data.shsSpecs) ? data.shsSpecs : parseTagList(data.specialization || data.strand || "");
+            const jhsSubjects = Array.isArray(data.jhsSubjects) ? data.jhsSubjects : parseTagList(data.subject || "");
+            const sections = Array.isArray(data.sections) ? data.sections : parseTagList(data.sections || "");
+
             loaded.push({
               id: d.id,
               name: fullName,
@@ -703,6 +749,10 @@
               department: data.department || "",
               email: data.email || "",
               photoUrl,
+              shsSpecs,
+              jhsSubjects,
+              advisory: data.advisory || "",
+              sections,
               order: ROLE_ORDER[rawRole] ?? 99
             });
           }
@@ -727,6 +777,10 @@
       document.getElementById("stf-name").value = person ? person.name : "";
       document.getElementById("stf-role").value = person ? person.rawRole : "staff";
       document.getElementById("stf-department").value = person ? person.department : "";
+      document.getElementById("stf-shsSpecs").value = person ? (person.shsSpecs || []).join(", ") : "";
+      document.getElementById("stf-jhsSubjects").value = person ? (person.jhsSubjects || []).join(", ") : "";
+      document.getElementById("stf-advisory").value = person ? (person.advisory || "") : "";
+      document.getElementById("stf-sections").value = person ? (person.sections || []).join(", ") : "";
       document.getElementById("stf-email").value = person ? person.email : "";
       document.getElementById("stf-photoFile").value = "";
 
@@ -754,6 +808,10 @@
       const rawRole = document.getElementById("stf-role").value;
       const photoUrl = document.getElementById("stf-photoUrl").value.trim();
       const department = document.getElementById("stf-department").value.trim();
+      const shsSpecs = parseTagList(document.getElementById("stf-shsSpecs").value);
+      const jhsSubjects = parseTagList(document.getElementById("stf-jhsSubjects").value);
+      const advisory = document.getElementById("stf-advisory").value.trim();
+      const sections = parseTagList(document.getElementById("stf-sections").value);
       const email = document.getElementById("stf-email").value.trim();
 
       const payload = {
@@ -761,6 +819,11 @@
         primaryRole: rawRole,
         role: rawRole,
         department,
+        shsSpecs,
+        specialization: shsSpecs[0] || "",
+        jhsSubjects,
+        advisory,
+        sections,
         email,
         photoUrl,
         updatedAt: new Date().toISOString()
