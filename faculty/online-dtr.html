@@ -675,7 +675,7 @@
   }
 
   function formatTime12(d = new Date()) {
-    return d.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit", second: "2-digit" });
+    return d.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit", second: "2-digit" });
   }
 
   function parseTimeToMinutes(timeStr) {
@@ -695,21 +695,14 @@
     return null;
   }
 
-  function normalizeTimeInput(rawStr, mode = "12h_no_zero") {
+  function normalizeTimeInput(rawStr) {
     const mins = parseTimeToMinutes(rawStr);
     if (mins === null) return String(rawStr || "").trim();
-
     const h24 = Math.floor(mins / 60) % 24;
-    const m = mins % 60;
-    const mm = String(m).padStart(2, "0");
-
-    if (mode === "24h") {
-      return `${String(h24).padStart(2, "0")}:${mm}`;
-    }
+    const mm = String(mins % 60).padStart(2, "0");
     const period = h24 >= 12 ? "PM" : "AM";
     const h12 = h24 % 12 === 0 ? 12 : h24 % 12;
-    const hh = mode === "12h_pad" ? String(h12).padStart(2, "0") : String(h12);
-    return `${hh}:${mm} ${period}`;
+    return `${h12}:${mm} ${period}`;
   }
 
   function calcDistanceMeters(lat1, lon1, lat2, lon2) {
@@ -1111,7 +1104,7 @@
     $("btnAutoPunch").disabled = true;
     const now = new Date();
     const dateKey = todayIso();
-    const timeText = now.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" });
+    const timeText = now.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" });
     const locationStatus = currentGeo.onCampus
       ? "On-Campus (GPS)"
       : validCampusQr
