@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Faculty – Senior High School (Grades 11–12) | SCPHS</title>
-  <meta name="description" content="Sta. Cruz Pingkian High School Senior High School (Grades 11–12) tracks, strands, specializations, and faculty directory." />
+  <title>Faculty – Senior High School (Academic &amp; TechPro) | SCPHS</title>
+  <meta name="description" content="Sta. Cruz Pingkian High School Strengthened Senior High School (SY 2026–2027 & Onwards) Academic and Technical-Professional (TechPro) Tracks and Faculty Directory." />
   <link rel="stylesheet" href="../assets/css/styles.css" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
   <style>
@@ -12,6 +12,7 @@
       --navy: #0f172a;
       --primary: #1e3c72;
       --teal: #0f766e;
+      --amber: #d97706;
       --bg: #f1f5f9;
       --card: #ffffff;
       --border: #e2e8f0;
@@ -63,6 +64,12 @@
       gap: 10px;
       margin-bottom: 18px;
     }
+    .kicker-group {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
     .kicker-pill {
       display: inline-flex;
       align-items: center;
@@ -75,6 +82,11 @@
       font-weight: 700;
       letter-spacing: 0.6px;
       text-transform: uppercase;
+    }
+    .kicker-pill.sy-pill {
+      background: rgba(245, 158, 11, 0.22);
+      border-color: rgba(253, 230, 138, 0.55);
+      color: #fde68a;
     }
     .hero-actions {
       display: flex;
@@ -117,12 +129,12 @@
       margin: 0;
       color: #cbd5e1;
       font-size: 14.5px;
-      max-width: 740px;
+      max-width: 780px;
     }
 
     .hero-stats {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(175px, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(185px, 1fr));
       gap: 12px;
       margin-top: 22px;
     }
@@ -149,7 +161,7 @@
       flex-shrink: 0;
     }
     .hero-stat .stat-val {
-      font-size: 16px;
+      font-size: 15.5px;
       font-weight: 800;
       color: #fff;
       line-height: 1.2;
@@ -283,28 +295,32 @@
       color: var(--muted);
     }
 
-    /* Track Cards Grid */
+    /* Two-Track Main Grid */
     .track-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-      gap: 18px;
+      grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
+      gap: 20px;
       margin-bottom: 24px;
     }
+    @media (max-width: 440px) {
+      .track-grid { grid-template-columns: 1fr; }
+    }
+
     .track-card {
       background: var(--card);
       border: 1px solid var(--border);
       border-top: 5px solid var(--accent-color, var(--primary));
       border-radius: 16px;
-      padding: 20px;
+      padding: 22px;
       display: flex;
       flex-direction: column;
       justify-content: space-between;
-      box-shadow: 0 4px 14px rgba(15, 23, 42, 0.04);
+      box-shadow: 0 4px 16px rgba(15, 23, 42, 0.05);
       transition: transform 0.2s ease, box-shadow 0.2s ease;
     }
     .track-card:hover {
       transform: translateY(-3px);
-      box-shadow: 0 12px 26px rgba(15, 23, 42, 0.09);
+      box-shadow: 0 12px 28px rgba(15, 23, 42, 0.1);
     }
     .track-card.hidden-card {
       display: none;
@@ -319,7 +335,7 @@
     }
     .track-badge {
       display: inline-block;
-      font-size: 10.5px;
+      font-size: 11px;
       font-weight: 800;
       text-transform: uppercase;
       letter-spacing: 0.5px;
@@ -329,31 +345,52 @@
       color: var(--accent-color, var(--primary));
     }
     .track-icon {
-      width: 46px;
-      height: 46px;
+      width: 48px;
+      height: 48px;
       border-radius: 12px;
       background: var(--badge-bg, #eff6ff);
       color: var(--accent-color, var(--primary));
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      font-size: 20px;
+      font-size: 21px;
       flex-shrink: 0;
     }
 
     .track-card h3 {
       margin: 0 0 6px;
-      font-size: 19px;
+      font-size: 21px;
       font-weight: 800;
       color: var(--navy);
     }
     .track-card p {
-      margin: 0 0 16px;
+      margin: 0 0 14px;
       font-size: 13.5px;
       color: var(--muted);
-      line-height: 1.5;
+      line-height: 1.52;
     }
 
+    .track-highlights {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-bottom: 16px;
+    }
+    .hl-tag {
+      font-size: 11.5px;
+      font-weight: 700;
+      background: #f1f5f9;
+      color: #334155;
+      border: 1px solid #e2e8f0;
+      padding: 3px 9px;
+      border-radius: 6px;
+    }
+
+    .spec-group-block {
+      margin-top: 12px;
+      padding-top: 12px;
+      border-top: 1px solid #f1f5f9;
+    }
     .spec-section-label {
       font-size: 11px;
       font-weight: 800;
@@ -398,40 +435,70 @@
       transform: translateY(-1px);
       box-shadow: 0 4px 12px rgba(15, 23, 42, 0.14);
     }
-    .spec-link:hover i.spec-ico {
-      color: #fff;
-    }
+    .spec-link:hover i.spec-ico { color: #fff; }
     .spec-link:hover i.arrow-ico {
       opacity: 1;
       transform: translateX(3px);
     }
-    .spec-link.dimmed-spec {
-      opacity: 0.35;
-    }
+    .spec-link.dimmed-spec { opacity: 0.35; }
 
-    /* Info Strip */
-    .shs-info-banner {
+    /* Strengthened SHS Core & Cross-Track Card */
+    .sshs-core-panel {
       background: #fff;
       border: 1px solid var(--border);
-      border-left: 5px solid var(--teal);
+      border-top: 4px solid var(--amber);
       border-radius: 14px;
-      padding: 18px 20px;
-      margin-bottom: 24px;
+      padding: 20px;
+      margin-bottom: 22px;
+      box-shadow: 0 3px 12px rgba(15, 23, 42, 0.04);
+    }
+    .sshs-core-header {
       display: flex;
       justify-content: space-between;
       align-items: center;
       flex-wrap: wrap;
-      gap: 14px;
+      gap: 10px;
+      margin-bottom: 14px;
     }
-    .shs-info-banner h3 {
-      margin: 0 0 4px;
-      font-size: 15.5px;
-      color: var(--primary);
-    }
-    .shs-info-banner p {
+    .sshs-core-header h3 {
       margin: 0;
-      font-size: 13px;
+      font-size: 16px;
+      font-weight: 800;
+      color: var(--navy);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .core-chips {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+    .core-item {
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-left: 3px solid var(--primary);
+      border-radius: 9px;
+      padding: 10px 12px;
+      font-size: 12.8px;
+      font-weight: 700;
+      color: var(--navy);
+    }
+    .core-item small {
+      display: block;
+      font-weight: 500;
       color: var(--muted);
+      font-size: 11.5px;
+      margin-top: 2px;
+    }
+    .doorway-note {
+      background: #fffbeb;
+      border: 1px solid #fde68a;
+      border-radius: 10px;
+      padding: 11px 14px;
+      font-size: 12.8px;
+      color: #78350f;
     }
 
     .bottom-nav-bar {
@@ -487,9 +554,7 @@
       color: #93c5fd;
       text-decoration: none;
     }
-    .scphs-footer a:hover {
-      text-decoration: underline;
-    }
+    .scphs-footer a:hover { text-decoration: underline; }
     .scphs-footer .copy {
       border-top: 1px solid rgba(255,255,255,0.12);
       padding-top: 12px;
@@ -540,7 +605,10 @@
   <header class="shs-hero">
     <div class="shs-wrap">
       <div class="hero-top-nav">
-        <span class="kicker-pill"><i class="fas fa-landmark"></i> DepEd Region II • Division of Nueva Vizcaya</span>
+        <div class="kicker-group">
+          <span class="kicker-pill"><i class="fas fa-landmark"></i> DepEd Region II • Division of Nueva Vizcaya</span>
+          <span class="kicker-pill sy-pill"><i class="fas fa-sparkles"></i> Strengthened SHS • SY 2026–2027 &amp; Onwards</span>
+        </div>
         <div class="hero-actions">
           <a href="index.html" class="hero-btn secondary"><i class="fas fa-arrow-left"></i> Faculty Command Center</a>
           <a href="jhs.html" class="hero-btn primary"><i class="fas fa-school"></i> Junior High (Grades 7–10)</a>
@@ -549,36 +617,36 @@
 
       <h1>Senior High School Faculty Directory</h1>
       <p class="subtitle">
-        Explore Sta. Cruz Pingkian High School's Grades 11–12 career tracks, academic strands, TVL specializations, and teaching personnel.
+        Strengthened Senior High School Curriculum (SY 2026–2027 &amp; Onwards) featuring two streamlined career tracks—<strong>Academic</strong> and <strong>Technical-Professional (TechPro)</strong>—built around flexible elective clusters and real-world immersion.
       </p>
 
       <div class="hero-stats">
         <div class="hero-stat">
-          <i class="fas fa-compass"></i>
+          <i class="fas fa-route"></i>
           <div>
-            <div class="stat-val">4 Career Tracks</div>
-            <div class="stat-lbl">Acad, TVL, Arts &amp; Sports</div>
+            <div class="stat-val">2 Career Tracks</div>
+            <div class="stat-lbl">Academic &amp; TechPro</div>
+          </div>
+        </div>
+        <div class="hero-stat">
+          <i class="fas fa-book-open"></i>
+          <div>
+            <div class="stat-val">5 Core Subjects</div>
+            <div class="stat-lbl">Streamlined Grade 11 Core</div>
           </div>
         </div>
         <div class="hero-stat">
           <i class="fas fa-layer-group"></i>
           <div>
-            <div class="stat-val">11 Specializations</div>
-            <div class="stat-lbl">Strands &amp; Tech-Voc Offerings</div>
+            <div class="stat-val">Elective Clusters</div>
+            <div class="stat-lbl">Flexible Pathway Choices</div>
           </div>
         </div>
         <div class="hero-stat">
-          <i class="fas fa-graduation-cap"></i>
+          <i class="fas fa-briefcase"></i>
           <div>
-            <div class="stat-val">Grades 11 – 12</div>
-            <div class="stat-lbl">Senior High Curriculum</div>
-          </div>
-        </div>
-        <div class="hero-stat">
-          <i class="fas fa-certificate"></i>
-          <div>
-            <div class="stat-val">College &amp; TESDA Ready</div>
-            <div class="stat-lbl">NC II &amp; Higher Ed Pathways</div>
+            <div class="stat-val">320–640 Hrs Immersion</div>
+            <div class="stat-lbl">College &amp; TESDA NC Ready</div>
           </div>
         </div>
       </div>
@@ -588,154 +656,155 @@
   <main class="shs-wrap">
     <!-- INTERACTIVE TRACK FILTER & SEARCH -->
     <div class="filter-toolbar">
-      <div class="track-pills" role="group" aria-label="Filter by SHS Track">
+      <div class="track-pills" role="group" aria-label="Filter by Strengthened SHS Track">
         <span class="filter-label"><i class="fas fa-filter"></i> Track:</span>
-        <button type="button" class="track-chip active" data-track="all">All Tracks (4)</button>
-        <button type="button" class="track-chip" data-track="acad">Academic</button>
-        <button type="button" class="track-chip" data-track="tvl">TVL</button>
-        <button type="button" class="track-chip" data-track="arts">Arts &amp; Design</button>
-        <button type="button" class="track-chip" data-track="sports">Sports</button>
+        <button type="button" class="track-chip active" data-track="all">All Tracks (Academic &amp; TechPro)</button>
+        <button type="button" class="track-chip" data-track="acad">Academic Track</button>
+        <button type="button" class="track-chip" data-track="techpro">TechPro Track</button>
       </div>
 
       <div class="toolbar-right">
         <select id="shsGradeSelect" class="grade-select" aria-label="Filter SHS Grade Level">
           <option value="all">Grades 11 &amp; 12</option>
-          <option value="11">Grade 11 Only</option>
-          <option value="12">Grade 12 Only</option>
+          <option value="11">Grade 11 (Strengthened SHS)</option>
+          <option value="12">Grade 12 (Transition / Electives)</option>
         </select>
 
         <div class="search-box">
           <i class="fas fa-search"></i>
-          <input type="search" id="specSearch" placeholder="Search strand or specialization (e.g., STEM, ICT)..." aria-label="Search SHS Strands and Specializations" />
+          <input type="search" id="specSearch" placeholder="Search elective cluster (e.g., STEM, ICT, HE, Sports)..." aria-label="Search SHS Elective Clusters" />
         </div>
       </div>
     </div>
 
     <div class="section-heading">
-      <h2><i class="fas fa-sitemap"></i> Senior High School Tracks &amp; Specializations</h2>
-      <span id="filterHint">Showing all 4 SHS career tracks • Select a strand pill to view faculty &amp; sections</span>
+      <h2><i class="fas fa-sitemap"></i> Strengthened SHS Tracks &amp; Elective Clusters</h2>
+      <span id="filterHint">Showing Academic &amp; TechPro Tracks (Grades 11–12) • Select a cluster to view faculty &amp; sections</span>
     </div>
 
-    <!-- TRACK CARDS GRID -->
+    <!-- TWO-TRACK GRID: ACADEMIC & TECHPRO -->
     <section class="track-grid" id="trackGrid">
-      <!-- Academic Track -->
-      <article class="track-card" data-track="acad" data-keywords="academic stem abm humss gas science technology engineering mathematics accountancy business management humanities social sciences general" style="--accent-color:#1d4ed8;--badge-bg:#dbeafe;">
+
+      <!-- 1. ACADEMIC TRACK -->
+      <article class="track-card" data-track="acad" data-keywords="academic track stem abm humss gas arts design production sports coaching fitness science math business humanities" style="--accent-color:#1d4ed8;--badge-bg:#dbeafe;">
         <div>
           <div class="card-top">
-            <span class="track-badge">University &amp; College Prep</span>
-            <span class="track-icon"><i class="fas fa-atom"></i></span>
+            <span class="track-badge">Track 1 • Higher Education &amp; Field Experience</span>
+            <span class="track-icon"><i class="fas fa-graduation-cap"></i></span>
           </div>
           <h3>Academic Track</h3>
-          <p>Prepares Grade 11 and 12 learners for higher education degrees in science, engineering, business, humanities, and multidisciplinary studies.</p>
-        </div>
-        <div>
-          <span class="spec-section-label">Academic Strands (Select to View Faculty)</span>
-          <div class="spec-list">
-            <a class="spec-link" data-base-href="shs-spec.html?track=acad&spec=STEM" data-spec-keywords="stem science technology engineering mathematics" href="shs-spec.html?track=acad&spec=STEM">
-              <i class="fas fa-flask spec-ico"></i> STEM <i class="fas fa-chevron-right arrow-ico"></i>
-            </a>
-            <a class="spec-link" data-base-href="shs-spec.html?track=acad&spec=ABM" data-spec-keywords="abm accountancy business management" href="shs-spec.html?track=acad&spec=ABM">
-              <i class="fas fa-chart-line spec-ico"></i> ABM <i class="fas fa-chevron-right arrow-ico"></i>
-            </a>
-            <a class="spec-link" data-base-href="shs-spec.html?track=acad&spec=HUMSS" data-spec-keywords="humss humanities social sciences" href="shs-spec.html?track=acad&spec=HUMSS">
-              <i class="fas fa-scale-balanced spec-ico"></i> HUMSS <i class="fas fa-chevron-right arrow-ico"></i>
-            </a>
-            <a class="spec-link" data-base-href="shs-spec.html?track=acad&spec=GAS" data-spec-keywords="gas general academic strand" href="shs-spec.html?track=acad&spec=GAS">
-              <i class="fas fa-book-open spec-ico"></i> GAS <i class="fas fa-chevron-right arrow-ico"></i>
-            </a>
+          <p>
+            Designed for learners pursuing university/college degrees or specialized field apprenticeships. Combines the 5 Grade 11 Core Subjects with flexible discipline elective clusters—including Arts, Design, and Sports electives—plus optional 320-hour Field Experience / Work Immersion.
+          </p>
+
+          <div class="track-highlights">
+            <span class="hl-tag">800 Hrs Core</span>
+            <span class="hl-tag">1,200+ Hrs Electives</span>
+            <span class="hl-tag">Cross-Track Option (1 TechPro Elective)</span>
+          </div>
+
+          <div class="spec-group-block">
+            <span class="spec-section-label">Academic Discipline Clusters (Grades 11–12)</span>
+            <div class="spec-list">
+              <a class="spec-link" data-base-href="shs-spec.html?track=acad&spec=STEM" data-spec-keywords="stem science technology engineering mathematics" href="shs-spec.html?track=acad&spec=STEM">
+                <i class="fas fa-flask spec-ico"></i> STEM <i class="fas fa-chevron-right arrow-ico"></i>
+              </a>
+              <a class="spec-link" data-base-href="shs-spec.html?track=acad&spec=ABM" data-spec-keywords="abm accountancy business management" href="shs-spec.html?track=acad&spec=ABM">
+                <i class="fas fa-chart-line spec-ico"></i> ABM <i class="fas fa-chevron-right arrow-ico"></i>
+              </a>
+              <a class="spec-link" data-base-href="shs-spec.html?track=acad&spec=HUMSS" data-spec-keywords="humss humanities social sciences" href="shs-spec.html?track=acad&spec=HUMSS">
+                <i class="fas fa-scale-balanced spec-ico"></i> HUMSS <i class="fas fa-chevron-right arrow-ico"></i>
+              </a>
+              <a class="spec-link" data-base-href="shs-spec.html?track=acad&spec=GAS" data-spec-keywords="gas general academic strand" href="shs-spec.html?track=acad&spec=GAS">
+                <i class="fas fa-book-open spec-ico"></i> GAS <i class="fas fa-chevron-right arrow-ico"></i>
+              </a>
+            </div>
+          </div>
+
+          <div class="spec-group-block">
+            <span class="spec-section-label">Arts, Design &amp; Sports Field Experience Clusters</span>
+            <div class="spec-list">
+              <a class="spec-link" data-base-href="shs-spec.html?track=arts&spec=Arts%20and%20Design%20Production" data-spec-keywords="arts and design production creative visual media" href="shs-spec.html?track=arts&spec=Arts%20and%20Design%20Production">
+                <i class="fas fa-palette spec-ico"></i> Arts &amp; Design Production <i class="fas fa-chevron-right arrow-ico"></i>
+              </a>
+              <a class="spec-link" data-base-href="shs-spec.html?track=sports&spec=Sports%20Coaching" data-spec-keywords="sports coaching officiating athletics" href="shs-spec.html?track=sports&spec=Sports%20Coaching">
+                <i class="fas fa-medal spec-ico"></i> Sports Coaching <i class="fas fa-chevron-right arrow-ico"></i>
+              </a>
+              <a class="spec-link" data-base-href="shs-spec.html?track=sports&spec=Fitness" data-spec-keywords="fitness conditioning exercise wellness" href="shs-spec.html?track=sports&spec=Fitness">
+                <i class="fas fa-dumbbell spec-ico"></i> Fitness <i class="fas fa-chevron-right arrow-ico"></i>
+              </a>
+            </div>
           </div>
         </div>
       </article>
 
-      <!-- TVL Track -->
-      <article class="track-card" data-track="tvl" data-keywords="tvl technical vocational livelihood ict computer programming home economics cookery industrial arts automotive electrical agri fishery" style="--accent-color:#0f766e;--badge-bg:#ccfbf1;">
+      <!-- 2. TECHNICAL-PROFESSIONAL (TECHPRO) TRACK -->
+      <article class="track-card" data-track="techpro" data-keywords="techpro technical professional tvl ict home economics industrial arts agri fishery tesda nc ii immersion" style="--accent-color:#0f766e;--badge-bg:#ccfbf1;">
         <div>
           <div class="card-top">
-            <span class="track-badge">Technical-Vocational &amp; TESDA NC</span>
+            <span class="track-badge">Track 2 • Employment, Entrepreneurship &amp; TESDA NC II</span>
             <span class="track-icon"><i class="fas fa-gears"></i></span>
           </div>
-          <h3>TVL Track</h3>
-          <p>Technical-Vocational-Livelihood track equipping students with industry-aligned practical skills and TESDA National Certificates for immediate employment or entrepreneurship.</p>
-        </div>
-        <div>
-          <span class="spec-section-label">TVL Strands &amp; Specializations</span>
-          <div class="spec-list">
-            <a class="spec-link" data-base-href="shs-spec.html?track=tvl&spec=ICT" data-spec-keywords="ict information communications technology computer" href="shs-spec.html?track=tvl&spec=ICT">
-              <i class="fas fa-laptop-code spec-ico"></i> ICT <i class="fas fa-chevron-right arrow-ico"></i>
-            </a>
-            <a class="spec-link" data-base-href="shs-spec.html?track=tvl&spec=HE" data-spec-keywords="he home economics cookery bread pastry housekeeping" href="shs-spec.html?track=tvl&spec=HE">
-              <i class="fas fa-utensils spec-ico"></i> Home Economics <i class="fas fa-chevron-right arrow-ico"></i>
-            </a>
-            <a class="spec-link" data-base-href="shs-spec.html?track=tvl&spec=IA" data-spec-keywords="ia industrial arts automotive electrical carpentry" href="shs-spec.html?track=tvl&spec=IA">
-              <i class="fas fa-wrench spec-ico"></i> Industrial Arts <i class="fas fa-chevron-right arrow-ico"></i>
-            </a>
-            <a class="spec-link" data-base-href="shs-spec.html?track=tvl&spec=Agri-Fishery" data-spec-keywords="agri fishery agriculture crop production" href="shs-spec.html?track=tvl&spec=Agri-Fishery">
-              <i class="fas fa-seedling spec-ico"></i> Agri-Fishery <i class="fas fa-chevron-right arrow-ico"></i>
-            </a>
+          <h3>Technical-Professional (TechPro) Track</h3>
+          <p>
+            Formerly the TVL Track—strengthened for immediate employability, entrepreneurship, and middle-level skills certification. Pairs the 5 Grade 11 Core Subjects with intensive 320-hour TechPro electives and 320–640 hours of mandatory Grade 12 Work Immersion.
+          </p>
+
+          <div class="track-highlights">
+            <span class="hl-tag">800 Hrs Core</span>
+            <span class="hl-tag">1,280+ Hrs TechPro &amp; Immersion</span>
+            <span class="hl-tag">Doorway Option (Up to 4 Academic Electives)</span>
+          </div>
+
+          <div class="spec-group-block">
+            <span class="spec-section-label">TechPro Specialization Clusters (Grades 11–12)</span>
+            <div class="spec-list">
+              <a class="spec-link" data-base-href="shs-spec.html?track=tvl&spec=ICT" data-spec-keywords="ict information communications technology computer programming css" href="shs-spec.html?track=tvl&spec=ICT">
+                <i class="fas fa-laptop-code spec-ico"></i> ICT <i class="fas fa-chevron-right arrow-ico"></i>
+              </a>
+              <a class="spec-link" data-base-href="shs-spec.html?track=tvl&spec=HE" data-spec-keywords="he home economics cookery bread pastry housekeeping caregiving" href="shs-spec.html?track=tvl&spec=HE">
+                <i class="fas fa-utensils spec-ico"></i> Home Economics <i class="fas fa-chevron-right arrow-ico"></i>
+              </a>
+              <a class="spec-link" data-base-href="shs-spec.html?track=tvl&spec=IA" data-spec-keywords="ia industrial arts automotive electrical carpentry welding" href="shs-spec.html?track=tvl&spec=IA">
+                <i class="fas fa-wrench spec-ico"></i> Industrial Arts <i class="fas fa-chevron-right arrow-ico"></i>
+              </a>
+              <a class="spec-link" data-base-href="shs-spec.html?track=tvl&spec=Agri-Fishery" data-spec-keywords="agri fishery agriculture crop production aquaculture" href="shs-spec.html?track=tvl&spec=Agri-Fishery">
+                <i class="fas fa-seedling spec-ico"></i> Agri-Fishery <i class="fas fa-chevron-right arrow-ico"></i>
+              </a>
+            </div>
           </div>
         </div>
       </article>
 
-      <!-- Arts & Design -->
-      <article class="track-card" data-track="arts" data-keywords="arts design production theater music visual media creative" style="--accent-color:#6d28d9;--badge-bg:#ede9fe;">
-        <div>
-          <div class="card-top">
-            <span class="track-badge">Creative Industries</span>
-            <span class="track-icon"><i class="fas fa-palette"></i></span>
-          </div>
-          <h3>Arts &amp; Design</h3>
-          <p>Develops artistic expression, visual and media production, performing arts, and creative portfolio mastery for design and cultural careers.</p>
-        </div>
-        <div>
-          <span class="spec-section-label">Arts &amp; Design Specialization</span>
-          <div class="spec-list">
-            <a class="spec-link" data-base-href="shs-spec.html?track=arts&spec=Arts%20and%20Design%20Production" data-spec-keywords="arts and design production creative visual media" href="shs-spec.html?track=arts&spec=Arts%20and%20Design%20Production">
-              <i class="fas fa-masks-theater spec-ico"></i> Arts &amp; Design Production <i class="fas fa-chevron-right arrow-ico"></i>
-            </a>
-          </div>
-        </div>
-      </article>
-
-      <!-- Sports -->
-      <article class="track-card" data-track="sports" data-keywords="sports coaching fitness athletics physical conditioning" style="--accent-color:#b45309;--badge-bg:#fef3c7;">
-        <div>
-          <div class="card-top">
-            <span class="track-badge">Athletics &amp; Human Kinetics</span>
-            <span class="track-icon"><i class="fas fa-medal"></i></span>
-          </div>
-          <h3>Sports</h3>
-          <p>Focuses on sports science, athletic coaching, officiating, and physical fitness leadership for student-athletes and wellness practitioners.</p>
-        </div>
-        <div>
-          <span class="spec-section-label">Sports Specializations</span>
-          <div class="spec-list">
-            <a class="spec-link" data-base-href="shs-spec.html?track=sports&spec=Sports%20Coaching" data-spec-keywords="sports coaching officiating athletics" href="shs-spec.html?track=sports&spec=Sports%20Coaching">
-              <i class="fas fa-whistle spec-ico"></i> Sports Coaching <i class="fas fa-chevron-right arrow-ico"></i>
-            </a>
-            <a class="spec-link" data-base-href="shs-spec.html?track=sports&spec=Fitness" data-spec-keywords="fitness conditioning exercise wellness" href="shs-spec.html?track=sports&spec=Fitness">
-              <i class="fas fa-dumbbell spec-ico"></i> Fitness <i class="fas fa-chevron-right arrow-ico"></i>
-            </a>
-          </div>
-        </div>
-      </article>
     </section>
 
-    <!-- INFORMATION CALLOUT -->
-    <section class="shs-info-banner">
-      <div>
-        <h3><i class="fas fa-compass-drafting"></i> Need SHS Career Counseling or Student Records?</h3>
-        <p>Access the SF1 School Register, Junior High School directory, or return to the Faculty Command Center for class rosters and tools.</p>
+    <!-- 5 CORE SUBJECTS & CROSS-TRACK DOORWAY CALLOUT -->
+    <section class="sshs-core-panel">
+      <div class="sshs-core-header">
+        <h3><i class="fas fa-book-bookmark" style="color:var(--amber);"></i> Grade 11 Foundational Core Subjects (Strengthened SHS)</h3>
+        <span class="track-badge" style="background:#fef3c7;color:#92400e;">Common Across Academic &amp; TechPro</span>
       </div>
-      <div style="display:flex;gap:8px;flex-wrap:wrap;">
-        <a href="jhs.html" class="back-pill"><i class="fas fa-school"></i> JHS Directory (7–10)</a>
-        <a href="sf1.html" class="back-pill"><i class="fas fa-users"></i> SF1 School Register</a>
+
+      <div class="core-chips">
+        <div class="core-item">1. Effective Communication<small>Mabisang Komunikasyon (160 hrs)</small></div>
+        <div class="core-item">2. General Mathematics<small>Quantitative &amp; Analytical Skills (160 hrs)</small></div>
+        <div class="core-item">3. General Science<small>Scientific Literacy &amp; Inquiry (160 hrs)</small></div>
+        <div class="core-item">4. Life and Career Skills<small>Work Readiness &amp; Well-Being (160 hrs)</small></div>
+        <div class="core-item">5. Pag-aaral ng Kasaysayan at Lipunang Pilipino<small>Philippine History &amp; Society (160 hrs)</small></div>
+      </div>
+
+      <div class="doorway-note">
+        <strong><i class="fas fa-arrows-left-right"></i> Cross-Track ("Doorway") Flexibility:</strong> Academic Track students may take 1 TechPro elective in Grade 12, while TechPro Track students may take up to 4 Academic electives in Grade 12 to support college admission alongside TESDA NC II certification.
       </div>
     </section>
 
     <!-- BOTTOM NAVIGATION -->
     <nav class="bottom-nav-bar" aria-label="Breadcrumb Navigation">
       <a href="index.html" class="back-pill"><i class="fas fa-arrow-left"></i> Back to Faculty Portal</a>
-      <a href="../index.html" class="back-pill"><i class="fas fa-house"></i> SCPHS Home</a>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;">
+        <a href="jhs.html" class="back-pill"><i class="fas fa-school"></i> JHS Directory (7–10)</a>
+        <a href="../index.html" class="back-pill"><i class="fas fa-house"></i> SCPHS Home</a>
+      </div>
     </nav>
   </main>
 
@@ -835,7 +904,7 @@
         });
 
         const gradeLabel = gradeVal === 'all' ? 'Grades 11–12' : `Grade ${gradeVal}`;
-        filterHint.textContent = `Showing ${visibleTracks} SHS track(s) (${gradeLabel}) • Select a strand pill to view faculty & sections`;
+        filterHint.textContent = `Showing ${visibleTracks} Strengthened SHS track(s) (${gradeLabel}) • Select a cluster to view faculty & sections`;
       }
 
       chips.forEach((chip) => {
